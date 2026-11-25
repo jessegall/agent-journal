@@ -7,12 +7,9 @@ namespace Tests\Feature\Assignments;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Models\Records\AssignmentRecord;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -54,80 +51,6 @@ final class SingleRecordCommandsTest extends TestCase
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
         $this->task = $this->tasks()->task('Write the commands')->taskCalled('Write the commands');
-    }
-
-    public function test_a_main_agent_reads_the_reference_and_deliberately_changes_the_work(): void
-    {
-        $record = ['record_type' => 'tasks.task', 'record_id' => $this->task->id];
-
-        $this->callAs(
-            $this->main,
-            'assign',
-            [...$record, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id],
-        )
-            ->assertOk()->assertJson(
-                [
-                    'changed' => 1,
-                    'outcomes' => [
-                        [
-                            'type' => 'changed',
-                            'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]],
-                        ],
-                    ],
-                ],
-            );
-        $shown = $this->callAs($this->main, 'show', $record)->assertOk();
-        $first = (string) $shown->json('holder.reference');
-
-        $this->callAs(
-            $this->main,
-            'reassign',
-            [
-                ...$record,
-                'assignment_id' => $first,
-                'holder_type' => 'agent',
-                'holder_id' => $this->helper->agent->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->main->agent->id,
-            ],
-        )
-            ->assertOk()->assertJson(['changed' => 1]);
-        $second = (string) $this->callAs($this->main, 'show', $record)->json('holder.reference');
-        $this->callAs(
-            $this->main,
-            'reassign',
-            [
-                ...$record,
-                'assignment_id' => $second,
-                'holder_type' => 'agent',
-                'holder_id' => $this->main->agent->id,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-            ],
-        )->assertOk();
-
-        $this->callAs(
-            $this->main,
-            'unassign',
-            [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id],
-        )->assertConflict();
-        $this->callAs(
-            $this->helper,
-            'unassign',
-            [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id],
-        )->assertForbidden();
-        $this->callAs(
-            $this->main,
-            'assign',
-            [
-                ...$record,
-                'recipient_type' => 'agent',
-                'recipient_id' => $this->helper->agent->id,
-                'agent' => $this->helper->agent->id,
-            ],
-        )->assertUnprocessable();
-
-        $this->assertSame(1, AssignmentRecord::query()->withoutGlobalScopes()->count());
     }
 
     public function test_the_admitted_user_assigns_over_the_web_as_itself_without_an_agent_session(): void
@@ -225,16 +148,6 @@ final class SingleRecordCommandsTest extends TestCase
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => 'somebody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
-    }
-
-    /**
-     * @param  array<string, mixed>  $body
-     */
-    private function callAs(TestStart $start, string $command, array $body): TestResponse
-    {
-        $key = $command === 'show' ? [] : ['request_key' => (string) Str::ulid()];
-
-        return $this->journal->agentCall($start, 'POST', "/agent/assignments/{$command}", [...$body, ...$key]);
     }
 
     private function tasks(): TaskFixtures

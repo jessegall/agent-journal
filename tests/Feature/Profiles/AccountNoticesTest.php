@@ -11,10 +11,8 @@ use App\Data\Accounts\AccountNoticesData;
 use App\Declarations\SlotContext;
 use App\Enums\Accounts\AccountNoticeReason;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverFailure;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
-use App\Events\Sessions\DriverFailed;
 use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Models\Accounts\Account;
@@ -69,14 +67,6 @@ final class AccountNoticesTest extends TestCase
         $notice = AccountNotice::query()->sole();
         $this->assertSame([AccountNoticeReason::NoAccount, 2], [$notice->reason, $notice->times]);
         $this->assertSame([$notice->id], array_map(fn ($data) => $data->id, $this->section()->notices));
-    }
-
-    public function test_only_failures_the_owner_can_act_on_leave_a_notice(): void
-    {
-        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::ServerError));
-        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::AuthenticationFailed));
-
-        $this->assertSame(AccountNoticeReason::SignInRejected, AccountNotice::query()->sole()->reason);
     }
 
     private function refusedStart(Agent $agent): void

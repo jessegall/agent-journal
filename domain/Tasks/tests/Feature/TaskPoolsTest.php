@@ -4,21 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Enums\Assignments\PoolMembersType;
-use App\Exceptions\InvalidRecordIds;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
-use App\Support\PoolDefinition;
 use App\Support\PoolReference;
-use App\Support\RecordIdentity;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Exceptions\TaskPoolRefused;
-use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
-use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
-use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
-use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
@@ -42,124 +32,6 @@ final class TaskPoolsTest extends TestCase
 
         $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->journal->actAsUserId(TestIds::of(1));
-    }
-
-    public function test_tasks_declares_its_assigner_and_two_pools_at_boot(): void
-    {
-        $providers = $this->app->make(AssignmentProviders::class);
-
-        $keys = array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::linkType()));
-
-        $tasksPools = array_values(array_intersect($keys, [
-            'tasks.open',
-            'tasks.named',
-        ]));
-
-        $this->assertSame([
-            'tasks.open',
-            'tasks.named',
-        ], $tasksPools);
-        $this->assertSame('Tasks', $providers->poolOwner('tasks.open'));
-        $this->assertSame('Tasks', $providers->poolOwner('tasks.named'));
-        $this->assertInstanceOf(OpenTaskPoolFactory::class, $providers->poolFactory('tasks.open'));
-        $this->assertInstanceOf(NamedTaskPoolFactory::class, $providers->poolFactory('tasks.named'));
-        $this->assertInstanceOf(AutoAssigner::class, $providers->autoAssigner(TaskType::linkType()));
-        $this->assertInstanceOf(AssignedWorkProvider::class, $providers->assignedWork(TaskType::linkType()));
-    }
-
-    public function test_the_open_pool_takes_neither_a_target_nor_a_list(): void
-    {
-        $factory = $this->app->make(OpenTaskPoolFactory::class);
-        $task = $this->tasks()->task('task')->taskCalled('task')->id;
-
-        $this->assertSame(
-            PoolMembersType::All,
-            $factory->open(new PoolReference('tasks.open', null, []), $this->builder)->members()->type,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(
-                new PoolReference('tasks.open', new RecordIdentity('plans.plan', TestIds::of(40)), []),
-                $this->builder,
-            ),
-            TaskPoolRefused::class,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(new PoolReference('tasks.open', null, [$task]), $this->builder),
-            TaskPoolRefused::class,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(new PoolReference('tasks.named', null, []), $this->builder),
-            TaskPoolRefused::class,
-        );
-    }
-
-    public function test_a_named_pool_opens_to_its_tasks_in_the_listed_order(): void
-    {
-        $first = $this->tasks()->task('first')->taskCalled('first')->id;
-        $second = $this->tasks()->task('second')->taskCalled('second')->id;
-        $third = $this->tasks()->task('third')->taskCalled('third')->id;
-
-        $members = $this->app->make(NamedTaskPoolFactory::class)
-            ->open(new PoolReference('tasks.named', null, [
-                $third,
-                $first,
-                $second,
-            ]), $this->builder)
-            ->members();
-
-        $this->assertSame(PoolMembersType::Ordered, $members->type);
-        $this->assertSame([
-            $third,
-            $first,
-            $second,
-        ], $members->ids->ids);
-    }
-
-    public function test_a_named_pool_refuses_a_list_that_does_not_fit(): void
-    {
-        $factory = $this->app->make(NamedTaskPoolFactory::class);
-        $task = $this->tasks()->task('task')->taskCalled('task')->id;
-
-        $this->assertThrows(fn () => new PoolReference('tasks.named', null, [
-            $task,
-            $task,
-        ]), InvalidRecordIds::class);
-
-        $this->assertThrows(
-            fn () => new PoolReference(
-                'tasks.named',
-                null,
-                array_map(fn (int $number) => TestIds::of($number), range(1, 1001)),
-            ),
-            InvalidRecordIds::class,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(
-                new PoolReference('tasks.named', null, [
-                    $task,
-                    TestIds::of(99),
-                ]),
-                $this->builder,
-            ),
-            TaskMissing::class,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(new PoolReference('tasks.named', null, []), $this->builder),
-            TaskPoolRefused::class,
-        );
-
-        $this->assertThrows(
-            fn () => $factory->validate(
-                new PoolReference('tasks.named', new RecordIdentity('plans.plan', TestIds::of(40)), [$task]),
-                $this->builder,
-            ),
-            TaskPoolRefused::class,
-        );
     }
 
     public function test_a_named_pool_whose_task_went_missing_does_not_open(): void

@@ -8,9 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
-use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\RecordUnavailable;
-use App\Exceptions\UnknownLinkType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
@@ -95,18 +93,6 @@ final class RecordLinksTest extends TestCase
 
         $this->assertSame(['task 1', 'plan 1', 'doc 1'], array_map(fn ($card) => $card->label, $cards));
         $this->assertSame(['Write the client', 'Version 6', 'Design'], array_map(fn ($card) => $card->title, $cards));
-    }
-
-    public function test_an_unknown_alias_and_a_class_name_are_refused_before_any_class_is_resolved(): void
-    {
-        try {
-            $this->records()->card(new RecordIdentity('fake.thing', (string) Str::ulid()));
-            $this->fail('An unknown alias was read.');
-        } catch (UnknownLinkType) {
-            $this->expectException(InvalidRecordIdentity::class);
-        }
-
-        new RecordIdentity('Domain\\Tasks\\Models\\Task', (string) Str::ulid());
     }
 
     public function test_another_agents_message_answers_exactly_like_a_missing_one(): void

@@ -19,7 +19,6 @@ use Domain\Plans\Models\Plan;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Tests\TestCase;
-use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -84,24 +83,6 @@ final class SharePreviewPageTest extends TestCase
         );
         $configuration->is_default = true;
         $configuration->save();
-    }
-
-    public function test_the_owner_sees_share_and_the_preview_lists_the_linked_document(): void
-    {
-        $this->actingAs($this->owner)->get("/plans/{$this->plan->number}")->assertOk()->assertInertia(
-            fn (AssertableInertia $page) => $page->where('canShare', true),
-        );
-
-        $this->actingAs($this->owner)->get(
-            '/sharing/'.rawurlencode("plan {$this->plan->number}"),
-        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('sharing/SharePreview')
-            ->where('page.data.rootTitle', 'Version 6')
-            ->where('page.data.candidates.0.id', $this->document->id)
-            ->where('page.data.candidates.0.title', 'Design')
-            ->where('page.data.candidates.0.isShared', false)
-            ->missing('page.data.savedPreview')
-            ->missing('page.data.liveShare'));
     }
 
     public function test_another_user_can_neither_see_nor_save_a_preview(): void

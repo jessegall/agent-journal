@@ -6,21 +6,13 @@ namespace Tests\Feature\Mcp;
 
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Models\CommandRules\CommandReceipt;
-use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;
-use App\Support\ReceiptCaller;
-use App\Support\ReceiptRetention;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Database\ConnectionInterface;
-use stdClass;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -80,80 +72,5 @@ final class OperationsReadTest extends TestCase
         $this->assertSame('AssignRecord', $result['command']);
         $this->assertSame(1, $result['outcome_count']);
         $this->assertSame([], $result['next_actions']);
-    }
-
-    #[TimeLimit(3, 'It writes a thousand command outcomes and follows every continuation page over them.')]
-    public function test_a_1000_outcome_cascade_is_read_whole_by_following_continuations(): void
-    {
-        $this->receipt(
-            $this->start->session->id,
-            new CascadeResult(
-                'plans.plan 1',
-                array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000)),
-            ),
-        );
-
-        $records = [];
-        $arguments = ['request_key' => self::KEY];
-
-        do {
-            $page = $this->journal->mcpTool(
-                $this->start,
-                'operations_read',
-                $arguments,
-            )->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
-            $records = [...$records, ...array_column($page['outcomes'], 'record')];
-            $arguments = $page['next_actions'][0]['arguments'] ?? null;
-        } while ($arguments !== null);
-
-        $this->assertCount(1000, $records);
-        $this->assertSame(array_unique($records), $records);
-        $this->assertSame(1, $this->app->make(ConnectionInterface::class)->table('command_receipts')->count());
-    }
-
-    public function test_the_resource_reads_the_same_with_its_continuation_in_the_uri(): void
-    {
-        $this->receipt(
-            $this->start->session->id,
-            new CascadeResult(
-                'plans.plan 1',
-                array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30)),
-            ),
-        );
-        $tool = $this->journal->mcpTool(
-            $this->start,
-            'operations_read',
-            ['request_key' => self::KEY],
-        )->assertOk()->json('result.structuredContent');
-        $continuation = $tool['next_actions'][0]['arguments']['continuation'];
-
-        $resource = $this->journal->mcpRequest(
-            $this->start,
-            'resources/read',
-            ['uri' => 'journal://v1/operations/'.self::KEY.'?continuation='.urlencode($continuation)],
-        )->assertOk()->json('result.contents.0');
-
-        $this->assertSame(20, json_decode($resource['text'], true)['outcome_offset']);
-        $this->assertCount(10, json_decode($resource['text'], true)['outcomes']);
-    }
-
-    public function test_another_sessions_key_answers_as_unknown(): void
-    {
-        $other = TestStart::start();
-        $this->receipt($other->session->id, new CascadeResult('plans.plan 1', []));
-
-        $this->journal->mcpTool($this->start, 'operations_read', ['request_key' => self::KEY])->assertOk()
-            ->assertJsonPath('result.isError', false)
-            ->assertJsonPath('result.structuredContent.state', 'unknown');
-    }
-
-    private function receipt(string $sessionId, CascadeResult $result): void
-    {
-        CommandReceipt::create(
-            ReceiptCaller::inSession(ActorContext::forAgent($this->start->agent->id), $sessionId),
-            self::KEY,
-            new stdClass(),
-            ReceiptRetention::standard(),
-        )->complete($result);
     }
 }

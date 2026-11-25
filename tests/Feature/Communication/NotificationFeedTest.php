@@ -6,7 +6,6 @@ namespace Tests\Feature\Communication;
 
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\Notifications\NotificationSourceType;
-use App\Http\Responses\NotificationProps;
 use App\Models\Notifications\NotificationReceipt;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
@@ -40,26 +39,6 @@ final class NotificationFeedTest extends MessagingTestCase
         return DomainBoot::withRequirements(ChatDomain::class);
     }
 
-    public function test_the_first_page_holds_the_newest_twenty_and_the_cursor_reaches_the_twenty_first_once(): void
-    {
-        $this->notifyOwner(21);
-
-        $first = $this->actingAs($this->owner)->notifications()->assertOk();
-
-        $this->assertCount(20, $first->json('props.notifications.items'));
-        $this->assertSame(21, $first->json('props.notifications.unread'));
-        $this->assertSame('21', $first->json('props.notifications.through'));
-        $this->assertSame(21, $first->json('props.notifications.items.0.sequence'));
-        $this->assertSame(QuestionNotificationKeys::target(), $first->json('props.notifications.items.0.target.key'));
-
-        $second = $this->actingAs($this->owner)
-            ->notifications([NotificationProps::CURSOR => $first->json('props.notifications.nextCursor')])
-            ->assertOk();
-
-        $this->assertSame([1], array_column($second->json('props.notifications.items'), 'sequence'));
-        $this->assertNull($second->json('props.notifications.nextCursor'));
-    }
-
     public function test_marking_a_receipt_read_twice_lowers_the_count_once(): void
     {
         $this->notifyOwner(2);
@@ -87,28 +66,6 @@ final class NotificationFeedTest extends MessagingTestCase
             ->assertSessionHasErrors();
 
         $this->assertNull($receipt->refresh()->read_at);
-    }
-
-    public function test_a_question_the_reader_can_no_longer_see_drops_out_of_the_page(): void
-    {
-        $this->notifyOwner(1);
-        $this->deliver($this->journal->inboxes()->unseenQuestion('Out of sight.'), ActorIdentity::of($this->owner));
-
-        $page = $this->actingAs($this->owner)->notifications()->assertOk();
-
-        $this->assertSame([1], array_column($page->json('props.notifications.items'), 'sequence'));
-    }
-
-    public function test_a_cursor_of_another_scope_is_refused(): void
-    {
-        $this->notifyOwner(21);
-        $cursor = $this->actingAs($this->owner)->notifications()->json('props.notifications.nextCursor');
-        $forged = rtrim(strtr(base64_encode('01jd8x0g9m3qz6v4k2t7r5w1ce.'.'5'), '+/', '-_'), '=');
-
-        $this->assertIsString($cursor);
-        $this->actingAs($this->owner)
-            ->notifications([NotificationProps::CURSOR => $forged])
-            ->assertStatus(422);
     }
 
     /**

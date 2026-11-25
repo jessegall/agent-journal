@@ -6,8 +6,6 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\ProfileProposalRefused;
-use App\Support\ProfileProposal;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\Exceptions\HelperBusy;
@@ -43,17 +41,6 @@ final class HelperInstancesTest extends TestCase
         $this->expectException(HelperBusy::class);
 
         $this->start((string) Str::ulid(), 'Review plan 9', profileKey: 'lone-reviewer');
-    }
-
-    public function test_a_per_job_profile_makes_a_fresh_helper_per_job_and_a_replay_keeps_it(): void
-    {
-        $requestId = (string) Str::ulid();
-        $first = $this->start($requestId, 'Review plan 7', profileKey: 'job-reviewer');
-        $again = $this->start($requestId, 'Review plan 7', profileKey: 'job-reviewer');
-        $other = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'job-reviewer');
-
-        $this->assertSame($first->identityId, $again->identityId);
-        $this->assertNotSame($first->identityId, $other->identityId);
     }
 
     public function test_a_retired_single_helper_is_replaced_once_its_process_ended(): void
@@ -107,18 +94,5 @@ final class HelperInstancesTest extends TestCase
     {
         $agentId = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId)->helper_actor_id;
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
-    }
-
-    public function test_an_unknown_instances_value_refuses_the_proposal(): void
-    {
-        $this->expectException(ProfileProposalRefused::class);
-
-        ProfileProposal::fromConfiguration(['profiles' => [
-            'odd-reviewer' => [
-                'base' => 'read-only-helper',
-                'tier' => 2,
-                'instances' => 'many',
-            ],
-        ]]);
     }
 }

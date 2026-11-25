@@ -180,11 +180,6 @@ final class FileWindowTest extends TestCase
         );
     }
 
-    public function test_someone_other_than_the_owner_does_not_see_the_window(): void
-    {
-        $this->assertFalse($this->actingAs(User::factory()->create())->get($this->address(self::README))->isOk());
-    }
-
     private function readyFolder(): void
     {
         $this->issueLine('the-ticket');

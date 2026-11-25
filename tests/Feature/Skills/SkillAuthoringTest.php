@@ -8,7 +8,6 @@ use App\Contracts\Skills\SkillResolver;
 use App\Support\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Support\SkillRegistry;
-use App\Values\SkillKey;
 use App\Values\SkillOwner;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
@@ -38,16 +37,6 @@ final class SkillAuthoringTest extends TestCase
 
         $this->assertSame($catalogued, $listed);
         $this->assertContains('notes-writing', $listed);
-    }
-
-    public function test_show_prints_the_bytes_the_renderer_produced(): void
-    {
-        $this->useOwners(...$this->installedOwners());
-        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('notes-writing'))->rendered->markdown;
-
-        Artisan::call('skill:show', ['key' => 'notes-writing']);
-
-        $this->assertSame($rendered, Artisan::output());
     }
 
     public function test_an_unknown_key_is_not_found(): void

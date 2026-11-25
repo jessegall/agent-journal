@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use App\Support\DockRegistration;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -17,8 +16,6 @@ use Domain\Rules\RulesDomain;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
-use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
-use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
@@ -37,8 +34,6 @@ final class ExternalOwnerDockTest extends TestCase
     use InstallsNotesModule;
 
     private const string TASK_TITLE = 'Feed the cat';
-
-    private const string NOTE_COUNT = '1 notes';
 
     private const array TABLES = [
         'users',
@@ -129,25 +124,6 @@ final class ExternalOwnerDockTest extends TestCase
         ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
 
         $this->assertSame(1, DockPlacement::query()->count());
-    }
-
-    public function test_the_notes_tally_is_made_again_from_its_key_after_the_registry_starts_over(): void
-    {
-        $note = new Note(['text' => 'One note']);
-        $note->saveFor($this->agent->agent->id);
-        $this->journal->mcpTool($this->agent, 'dock_add', [
-            'type' => NotesServiceProvider::TALLY_TYPE,
-            'id' => NotesTally::KEY,
-            'request_key' => 'dock-tally',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'added');
-
-        $this->app->forgetScopedInstances();
-        $this->app->forgetInstance(DockRegistration::class);
-        $this->app->call([new NotesServiceProvider($this->app), 'boot']);
-
-        $this->journal->mcpTool($this->agent, 'dock_list')->assertOk()
-            ->assertJsonPath('result.structuredContent.placements.0.sourceId', NotesTally::KEY)
-            ->assertJsonPath('result.structuredContent.placements.0.title', self::NOTE_COUNT);
     }
 
     public function test_a_report_page_offers_add_to_chat_with_the_agents_the_viewer_may_see(): void

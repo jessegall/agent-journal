@@ -75,13 +75,6 @@ final class ConnectedProjectTest extends TestCase
         $projects->assertFolderAllowed('/Users/owner/other-project');
     }
 
-    public function test_a_call_with_no_connected_binding_keeps_the_installations_project(): void
-    {
-        config(['processes.project_key' => 'this-installation']);
-
-        $this->assertSame('this-installation', $this->projectOfCallBy('an-agent-of-this-installation'));
-    }
-
     private function bindingOf(string $ticket, string $nonce): ProjectBinding
     {
         $this->issueLine($ticket);

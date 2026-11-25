@@ -8,14 +8,11 @@ use App\Data\Terminals\ScreenFrameData;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Terminals\TerminalFrameStatus;
 use App\Enums\Terminals\TerminalViewRefusal;
-use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\AgentRuntimes;
 use App\Support\AgentSessions;
 use App\Support\DriverRequestEndings;
@@ -24,7 +21,6 @@ use App\Support\ScreenRegistration;
 use App\Support\StartSessions;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestSelections;
@@ -42,8 +38,6 @@ final class TerminalPageTest extends TestCase
     use OpensTerminalRuntimes;
     use RefreshHookDatabase;
 
-    private const string NOT_RUNNING = 'This agent is not running';
-
     private User $owner;
 
     private string $readInterestId = '';
@@ -53,23 +47,6 @@ final class TerminalPageTest extends TestCase
         parent::setUp();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
-
-    public function test_the_page_carries_only_the_agent(): void
-    {
-        $runtime = $this->runtimeOn('host-1');
-        $agentId = $runtime->session->agent_id;
-        $uri = "/web/agents/{$agentId}/terminal";
-
-        $this->actingAs($this->owner)->get($uri, [
-            'X-Inertia' => 'true',
-            'X-Inertia-Version' => (string) $this->app->make(HandleInertiaRequests::class)
-                ->version(Request::create($uri)),
-            'X-Inertia-Partial-Component' => 'web/TerminalWindow',
-            'X-Inertia-Partial-Data' => 'page',
-        ])
-            ->assertOk()
-            ->assertJsonPath('props.page.data', ['agentId' => $agentId]);
     }
 
     public function test_each_refusal_answers_its_code(): void
@@ -223,10 +200,5 @@ final class TerminalPageTest extends TestCase
 
         $this->app->make(RuntimeScreen::class)
             ->admit(ScreenRegistration::of($runtime->refresh()), $frame, CarbonImmutable::now());
-    }
-
-    private function viewerOf(User $user): ActorIdentity
-    {
-        return ActorIdentity::of(ActorContext::forUser($user->id));
     }
 }

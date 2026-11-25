@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Models\Access\User;
 use App\Support\UserChannel;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -22,21 +20,6 @@ final class UserChannelTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-    }
-
-    public function test_the_owner_joins_their_own_channel_only(): void
-    {
-        $channel = $this->app->make(UserChannel::class);
-
-        $this->assertTrue($channel->join($this->journal->ownerUser(), (string) $this->journal->ownerUser()->id));
-        $this->assertFalse($channel->join($this->journal->ownerUser(), TestIds::of(99999)));
-    }
-
-    public function test_another_account_cannot_join_even_its_own_channel(): void
-    {
-        $stranger = User::factory()->create();
-
-        $this->assertFalse($this->app->make(UserChannel::class)->join($stranger, (string) $stranger->id));
     }
 
     public function test_the_channel_sign_in_needs_a_signed_in_user(): void

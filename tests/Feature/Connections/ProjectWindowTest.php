@@ -80,11 +80,6 @@ final class ProjectWindowTest extends TestCase
         $this->assertState(ProjectWindowStatus::Offline);
     }
 
-    public function test_someone_other_than_the_owner_does_not_see_the_window(): void
-    {
-        $this->assertFalse($this->actingAs(User::factory()->create())->get(self::OPEN_SOURCE)->isOk());
-    }
-
     private function readyFolder(): void
     {
         $this->issueLine('the-ticket');

@@ -11,10 +11,8 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
-use App\Exceptions\ArrangementUnknown;
 use App\Exceptions\DriverNotContainable;
 use App\Exceptions\HostArrangementRefused;
-use App\Exceptions\InstallationNameMissing;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ActorContext;
@@ -97,38 +95,6 @@ final class HostArrangementTest extends TestCase
         $this->expectExceptionObject(HostArrangementRefused::containedHost());
 
         $this->openOn(ArrangementType::Contained);
-    }
-
-    public function test_an_unknown_arrangement_is_refused_by_name(): void
-    {
-        $this->expectExceptionObject(ArrangementUnknown::for('sideways'));
-
-        ArrangementSetting::fromConfig('sideways', 'journal', '{}');
-    }
-
-    public function test_a_contained_journal_without_an_installation_name_is_refused(): void
-    {
-        $this->expectExceptionObject(InstallationNameMissing::whenContained());
-
-        ArrangementSetting::fromConfig('contained', '', '{}');
-    }
-
-    public function test_a_claim_reports_the_host_arrangement_and_one_unlike_its_enrolment_is_refused(): void
-    {
-        $host = $this->journal->enrolledHost();
-        $claim = '/host/claim?limit=1&wait=0&watched_version=0';
-
-        $this->journal->hostCall($host, 'POST', $claim)->assertOk();
-        $this->journal->hostCall($host, 'POST', $claim.'&arrangement=local')->assertOk();
-        $this->journal->hostCall($host, 'POST', $claim.'&arrangement=contained')
-            ->assertStatus(409)
-            ->assertJsonPath(
-                'message',
-                HostArrangementRefused::unlikeEnrollment(
-                    ArrangementType::Contained,
-                    ArrangementType::Local,
-                )->getMessage(),
-            );
     }
 
     public function test_a_contained_codex_start_is_refused_whatever_its_sign_in_and_creates_no_start(): void

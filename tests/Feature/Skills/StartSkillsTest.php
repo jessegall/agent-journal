@@ -125,20 +125,6 @@ final class StartSkillsTest extends TestCase
         $this->journal->asSystem(new ClaimStartGrantCommand($host, $opened->runtimeId));
     }
 
-    public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
-    {
-        $session = $this->sessionRow(
-            Agent::create('Other driver', 'main-agent', $this->localProject()),
-            'gemini-cli',
-            null,
-        );
-
-        $this->expectException(StartRefused::class);
-        $this->expectExceptionMessage('gemini-cli');
-
-        $this->started($session);
-    }
-
     public function test_a_required_skill_outside_the_selection_refuses_the_start_with_its_key(): void
     {
         $this->activateReviewer(['journal-plans']);

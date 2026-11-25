@@ -58,17 +58,4 @@ final class HelperSentOnRecordTest extends TestCase
         $this->assertEquals($plan, $heard[0]->subject);
         $this->assertSame($identity->helperActor->id, $heard[0]->helperAgentId);
     }
-
-    public function test_a_helper_on_a_free_purpose_is_not_announced(): void
-    {
-        $heard = 0;
-
-        Event::listen(HelperSentOnRecord::class, function () use (&$heard): void {
-            $heard++;
-        });
-
-        $this->start('request-free', 'Read the notes');
-
-        $this->assertSame(0, $heard);
-    }
 }

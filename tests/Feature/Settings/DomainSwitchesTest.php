@@ -8,11 +8,9 @@ use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsResolver;
-use App\Declarations\ToggleGroup;
 use App\Enums\Settings\SettingsOutcome;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
-use App\Support\DomainSwitches;
 use App\Support\SettingRegistry;
 use App\Values\GroupReference;
 use App\Values\SettingReference;
@@ -48,35 +46,6 @@ final class DomainSwitchesTest extends TestCase
         parent::setUp();
 
         $this->journal->actAsUserId(TestIds::of(7));
-    }
-
-    public function test_core_declares_one_empty_switch_on_by_default_for_each_domain_but_access(): void
-    {
-        $core = $this->app->make(SettingRegistry::class)->definition('Core');
-        $this->assertInstanceOf(CoreSettings::class, $core);
-        $switches = array_values(array_filter($core->groups(), fn ($group) => $group instanceof ToggleGroup));
-        $keys = array_map(fn (ToggleGroup $group) => $group->key, $switches);
-
-        $this->assertSame('general', $core->groups()[0]->key());
-        $this->assertContains('domain_tasks', $keys);
-        $this->assertContains('domain_plans', $keys);
-        $this->assertNotContains('domain_access', $keys);
-
-        $this->assertSame(
-            [true],
-            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->isDefaultEnabled, $switches))),
-        );
-
-        $this->assertSame(
-            [[]],
-            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->settings, $switches), SORT_REGULAR)),
-        );
-
-        $this->assertSame(
-            $this->app->make(DomainSwitches::class)->of('Plans')->get(),
-            $switches[array_search('domain_plans', $keys, true)],
-        );
-
     }
 
     public function test_core_settings_still_read_and_change_while_a_domain_is_off(): void

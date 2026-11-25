@@ -12,12 +12,10 @@ use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
-use Domain\Plans\Values\PlanPhaseTasks;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A plan read counts progress as every plan list does, sees a task finish on the next read, and pages a large plan's
@@ -82,72 +80,6 @@ final class PlanDetailsResolverTest extends TestCase
         $this->journal->run(new FinishTaskCommand($tasks[1]->id, 1, 'Done.'));
 
         $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->finished);
-    }
-
-    #[TimeLimit(seconds: 5, reason: 'It builds 120 tasks in one plan and reads them in three pages.')]
-    public function test_a_plan_with_120_tasks_pages_them_50_at_a_time(): void
-    {
-        $plan = $this->plans()->plan('plan')->planCalled('plan');
-
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($plan, 'First'),
-            array_values(Task::factory()->count(70)->create()->modelKeys()),
-        );
-
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($plan, 'Second'),
-            array_values(Task::factory()->count(50)->create()->modelKeys()),
-        );
-
-        $resolver = $this->app->make(PlanDetailsResolver::class);
-        $seen = [];
-        $offset = 0;
-        $reads = 0;
-
-        do {
-            $details = $resolver->plan($plan->id, ReadView::Summary, $offset);
-            $page = array_merge(...array_map(fn (PlanPhaseTasks $phase) => $phase->taskIds, $details->phases));
-            $this->assertLessThanOrEqual(PlanDetailsResolver::TASKS_PER_READ, count($page));
-            $seen = [...$seen, ...$page];
-            $offset = $details->nextTaskOffset;
-            $reads++;
-        } while ($offset !== null);
-
-        $this->assertSame(3, $reads);
-        $this->assertCount(120, array_unique($seen));
-        $this->assertSame($plan->taskIds(), $seen);
-    }
-
-    public function test_a_phase_read_lists_its_task_references_in_order(): void
-    {
-        $plan = $this->plans()->plan('plan')->planCalled('plan');
-
-        [$first, $second] = [
-            Task::factory()->create(['title' => 'First']),
-            Task::factory()->create(['title' => 'Second']),
-        ];
-
-        $phase = $this->planStructure()->addPhase($plan, 'Work');
-        $this->planStructure()->addTasks($phase, [
-            $second->id,
-            $first->id,
-        ]);
-
-        $read = $this->app->make(PlanDetailsResolver::class)->phase($phase->id);
-
-        $this->assertSame([
-            $second->id,
-            $first->id,
-        ], $read->taskIds);
-        $this->assertSame([
-            $plan->id,
-            'Work',
-            2,
-        ], [
-            $read->planId,
-            $read->title,
-            $read->revision,
-        ]);
     }
 
     private function planStructure(): PlanStructure

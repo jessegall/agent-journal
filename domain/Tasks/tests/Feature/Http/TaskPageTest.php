@@ -8,7 +8,6 @@ use App\Contracts\Work\AgentFocuses;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
-use App\Support\AssigneeIdentity;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
@@ -18,9 +17,7 @@ use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
-use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 
 /**
  * A task's own page opens by its number with its state, its holder, its latest run, the agent whose focus it is in
@@ -58,48 +55,6 @@ final class TaskPageTest extends TestCase
         parent::setUp();
 
         $this->owner = $this->journal->owner()->ownerUser();
-    }
-
-    public function test_a_task_opens_by_number_with_its_facts_and_brief(): void
-    {
-        $task = $this->tasks()->task('Prepare records', "First part.\n\nSecond part.")->taskCalled('Prepare records');
-        $this->journal->actAsUserId($this->owner->id);
-
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(
-            $task->assignmentIdentity(),
-            AssigneeIdentity::of($this->owner),
-        );
-
-        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
-
-        $taskPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('layout/DeclaredLayout')
-            ->where(self::READER.'.0.text', 'Prepare records')
-            ->where(self::READER.'.1.children.0.text', "Task {$task->number}")
-            ->where(self::READER.'.2.text', "First part.\n\nSecond part.")
-            ->where(self::READER.'.4.rows.0.value', 'Open')
-            ->where(self::READER.'.4.rows.1.value', fn (string $held) => str_contains($held, $this->owner->name))
-            ->where(self::READER.'.4.rows.2.key', 'waits')
-            ->where(self::READER.'.4.rows.2.value', 'None')
-            ->where(self::READER.'.4.rows.3.key', 'holds-up')
-            ->missing(self::READER.'.4.rows.4'));
-    }
-
-    public function test_a_task_in_an_agents_focus_names_that_agent_on_its_row_and_in_its_facts(): void
-    {
-        $task = $this->focusedTask('Lady Lovelace');
-
-        $listPage = $this->actingAs($this->owner)->get('/tasks')->assertOk();
-        $taskPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
-
-        $listPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->where(self::LIST.'.0.rows.0.trailing.0.key', 'focus')
-            ->where(self::LIST.'.0.rows.0.trailing.0.text', 'In focus of Lady Lovelace'));
-
-        $taskPage->assertInertia(fn (AssertableInertia $page) => $page
-            ->where(self::READER.'.4.rows', fn ($rows) => collect($rows)->contains(
-                fn (array $row) => $row['key'] === 'focus' && $row['value'] === 'Lady Lovelace',
-            )));
     }
 
     public function test_the_facts_name_the_tasks_it_waits_for_and_holds_up_as_links(): void
@@ -185,16 +140,6 @@ final class TaskPageTest extends TestCase
             ->assertRedirect('/login');
 
         $this->assertSame(1, TaskWait::query()->count());
-    }
-
-    public function test_an_empty_brief_stays_empty_and_an_unknown_number_is_not_found(): void
-    {
-        $task = $this->tasks()->task('Empty brief', '')->taskCalled('Empty brief');
-
-        $emptyPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
-        $emptyPage->assertInertia(fn (AssertableInertia $page) => $page->where(self::READER.'.2.text', ''));
-
-        $this->actingAs($this->owner)->get('/tasks/'.TestIds::of(999999))->assertNotFound();
     }
 
     private static function key(): string

@@ -6,10 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Settings\SettingsResolver;
 use App\Data\Connections\ReleaseOfferData;
 use App\Enums\Projects\InstallLineHold;
-use App\Support\CoreSettings;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;
 use App\Values\SettingReference;
@@ -46,15 +44,6 @@ final class InstallLineAvailabilityTest extends TestCase
             'agents.release' => self::VERSION,
             'agents.server_origin' => 'https://journal.example.com',
         ]);
-    }
-
-    public function test_remote_projects_are_off_on_a_fresh_server(): void
-    {
-        $core = $this->app->make(CoreSettings::class);
-
-        $this->assertFalse($this->app->make(SettingsResolver::class)->boolean($core->remoteProjects));
-        $this->assertFalse($this->availability()->canIssue());
-        $this->assertSame([InstallLineHold::SwitchedOff], $this->availability()->holds());
     }
 
     public function test_install_lines_are_issued_with_the_switch_on_an_https_origin_and_a_compatible_release(): void

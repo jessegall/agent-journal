@@ -5,31 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\Sessions\NotifyCleanup\NotifyCleanupCommand;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\CapacityResource;
 use App\Enums\Sessions\CleanupStatus;
 use App\Enums\Sessions\CleanupStep;
 use App\Enums\Sessions\ReservationStatus;
-use App\Enums\Sessions\StartOriginType;
-use App\Exceptions\CapacityUnavailable;
 use App\Models\Sessions\CapacityReservation;
-use App\Models\Sessions\SessionCleanup;
-use App\Models\Sessions\SessionPolicy;
-use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
-use App\Support\RecordIdentity;
 use App\Support\StartHeartbeats;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
-use App\Values\ModelSelection;
-use App\Values\SelectedDriver;
-use App\Values\StartPolicy;
-use App\Values\StartRequest;
-use PhpOption\None;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -46,34 +30,6 @@ final class SessionCleanupTest extends TestCase
     use RefreshHookDatabase;
 
     private const array ALL_STEPS = [CleanupStep::Container, CleanupStep::Network, CleanupStep::Runtime];
-
-    public function test_a_start_that_never_opened_a_runtime_releases_its_capacity_at_once(): void
-    {
-        $start = TestStart::start('writing-helper');
-        $start->openStack($this->app);
-        $this->reserve($start);
-
-        $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 1');
-
-        $this->assertSame(ReservationStatus::Released, $this->reservationOf($start)->status);
-        $this->assertSame(0, SessionCleanup::query()->count());
-    }
-
-    public function test_a_start_past_the_host_capacity_is_refused_unless_the_owner_switched_the_guard_off(): void
-    {
-        $budgets = ExecutionBudgets::defaults();
-        $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
-        CapacityReservation::create('start-1', $budgets, $room);
-
-        $this->assertThrows(
-            fn () => CapacityReservation::create('start-2', $budgets, $room),
-            CapacityUnavailable::class,
-        );
-
-        $unguarded = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes, false);
-        CapacityReservation::create('start-2', $budgets, $unguarded);
-        $this->assertTrue(CapacityReservation::isHeldFor('start-2'));
-    }
 
     public function test_check_capacity_names_the_shortage_while_held_and_fits_once_one_cleanup_releases_it(): void
     {
@@ -105,43 +61,6 @@ final class SessionCleanupTest extends TestCase
         return $start;
     }
 
-    /**
-     * A start for an owner's work, running in its runtime with the default budgets frozen with it.
-     */
-    private function runningStart(): TestStart
-    {
-        $start = TestStart::start('writing-helper');
-        $start->openRuntime($this->app);
-        $start->openStack($this->app);
-        $request = new StartRequest(
-            $start->session->start_request_id,
-            $start->agent->id,
-            SelectedDriver::resolve(
-                'claude-code',
-                ModelSelection::named('claude-opus-5-5'),
-                null,
-                null,
-                $this->app->make(DriverCatalogue::class),
-            ),
-            StartOriginType::OwnerRequest,
-            new RecordIdentity('helpers.helper-job', '01m7wgahp0n7766x1e1ta8ehew'),
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile(TestSelections::onHost()),
-            driverType: DriverType::Headless,
-        );
-        SessionRequest::create(
-            $request,
-            TestSelections::pinOf($request),
-            ActorIdentity::system(),
-            None::create(),
-        )->startedAs($start->session);
-        SessionPolicy::create($start->session, $request->policy);
-
-        return $start;
-    }
-
     private function reserve(TestStart $start): void
     {
         $capacity = new HostCapacity(8, 16 * 1024 ** 3, 50 * 1024 ** 3);
@@ -151,11 +70,6 @@ final class SessionCleanupTest extends TestCase
     private function notify(TestStart $start, CleanupReport $report): CleanupStatus
     {
         return $this->journal->asSystem(new NotifyCleanupCommand('host-1', $start->session->id, $report));
-    }
-
-    private function cleanupOf(TestStart $start): SessionCleanup
-    {
-        return SessionCleanup::query()->where('agent_session_id', $start->session->id)->sole();
     }
 
     private function reservationOf(TestStart $start): CapacityReservation

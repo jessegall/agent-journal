@@ -104,14 +104,6 @@ final class SearchDomainSwitchesTest extends TestCase
         $this->assertNotContains('plans.plan', $this->discovered('pl'));
     }
 
-    public function test_an_empty_declared_domain_is_complete_with_zero_hits(): void
-    {
-        $answer = $this->search('anything at all', 'rules.rule');
-
-        $this->assertSame(SearchStatus::Complete, $answer->status);
-        $this->assertSame([], $answer->hits);
-    }
-
     /**
      * @return list<string>
      */

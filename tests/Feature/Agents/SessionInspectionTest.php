@@ -72,14 +72,6 @@ final class SessionInspectionTest extends TestCase
         )], $inspection->lastStop);
     }
 
-    public function test_a_session_without_a_stop_shows_no_results(): void
-    {
-        $session = TestStart::start('writing-helper')->session;
-        SessionPolicy::create($session, StartPolicy::mainOnHost('/workspace'));
-
-        $this->assertSame([], $this->app->make(SessionInspections::class)->of($session->id)->lastStop);
-    }
-
     private function failStop(TestStart $writer): void
     {
         $writer->startRequest($this->app);

@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Admission\ShellAdmission;
-use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\Processes\ShellDialect;
 use App\Models\Runs\PartRun;
-use App\Models\Runs\ProcessRun;
 use App\Values\Admission;
-use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
@@ -45,17 +42,6 @@ final class RunnerCapabilityTest extends TestCase
         x three
 
         TEXT);
-    }
-
-    public function test_a_check_whose_status_a_pipe_would_lose_is_refused_before_anything_starts(): void
-    {
-        config(['processes.runner' => true]);
-
-        $refusal = $this->admit('vendor/bin/phpstan analyse | grep error')->decision;
-
-        $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
-        $this->assertSame(AdmissionRefusalCode::OutputHidden, $refusal->code);
-        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
     /**

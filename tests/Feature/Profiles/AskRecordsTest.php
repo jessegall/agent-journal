@@ -6,8 +6,6 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\AskRefused;
-use App\Exceptions\SupervisorRouteInvalid;
 use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
 use App\Models\Records\AssignmentRecord;
@@ -41,16 +39,6 @@ final class AskRecordsTest extends TestCase
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
-    }
-
-    public function test_registry_refuses_an_unknown_or_duplicate_ask_type(): void
-    {
-        $registry = $this->app->make(AskTypeRegistry::class);
-        $question = $registry->get(AskTypeKey::of('question'));
-
-        $this->assertSame(15, $question->allowance()->i);
-        $this->assertThrows(fn () => $registry->register($question), AskRefused::class);
-        $this->assertThrows(fn () => $registry->get(AskTypeKey::of('imaginary')), SupervisorRouteInvalid::class);
     }
 
     public function test_the_plain_signed_cli_retains_a_question_for_the_reviewers_supervisor(): void

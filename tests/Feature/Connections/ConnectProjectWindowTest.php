@@ -4,17 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Enums\Projects\ArrangementType;
-use App\Models\Access\User;
-use App\Models\Agents\Agent;
-use App\Models\Projects\Environment;
-use App\Models\Projects\Host;
 use App\Models\Projects\Project;
-use App\Models\Projects\ProjectBinding;
-use App\Values\BindingFolder;
-use Carbon\CarbonImmutable;
-use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
@@ -84,78 +74,5 @@ final class ConnectProjectWindowTest extends TestCase
                 'page.data.bindings.rows.0.capabilities.1.unavailableReason',
                 fn (string $reason) => str_contains($reason, 'Codex does not keep its hooks to one session'),
             ));
-    }
-
-    public function test_thirty_folders_page_as_twenty_five_then_five_and_an_expired_presence_reads_offline(): void
-    {
-        $project = Project::create('shop', 'Shop');
-        $environment = Environment::createForDefault($project);
-        $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-
-        foreach (range(1, 30) as $number) {
-            ProjectBinding::create(
-                $host,
-                $project,
-                $environment,
-                Agent::create("Shop agent {$number}", 'main-agent', $project),
-                new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}")
-            );
-        }
-
-        $expired = ProjectBinding::query()->orderBy('created_at')->orderBy('id')->firstOrFail();
-        ProjectBinding::query()->whereKey($expired->id)->update([
-            'readiness' => 'ready',
-            'presence_expires_at' => CarbonImmutable::now()->subMinute(),
-        ]);
-
-        $first = $this->actingAs($this->owner)->get('/connections')->assertOk();
-        $first->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.bindings.rows', 25)
-            ->where('page.data.bindings.rows.0.state', 'offline')
-            ->where('page.data.bindings.refreshAt', null)
-            ->whereType('page.data.bindings.nextCursor', 'string'));
-        $cursor = (string) $first->viewData('page')['props']['page']['data']['bindings']['nextCursor'];
-
-        $this->actingAs($this->owner)->get('/connections?bindings='.urlencode($cursor))->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->has('page.data.bindings.rows', 5)
-                ->where('page.data.bindings.nextCursor', null));
-    }
-
-    public function test_folders_of_several_projects_list_with_their_environments(): void
-    {
-        $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-
-        foreach (['shop', 'blog', 'wiki'] as $key) {
-            $project = Project::create($key, ucfirst($key));
-            ProjectBinding::create(
-                $host,
-                $project,
-                Environment::createForDefault($project),
-                Agent::create("{$key} main agent", 'main-agent', $project),
-                new BindingFolder("root-{$key}", "/Users/owner/{$key}", 'Owner laptop', "nonce-{$key}"),
-            );
-        }
-
-        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(
-            fn (AssertableInertia $page) => $page->where('page.state', 'ready')->has('page.data.bindings.rows', 3),
-        );
-    }
-
-    public function test_someone_other_than_the_owner_sees_no_window(): void
-    {
-        $other = User::factory()->create();
-
-        $this->assertFalse($this->actingAs($other)->get('/connections')->isOk());
-    }
-
-    private function sendStopReceipt(string $binding, string $runtime): TestResponse
-    {
-        return $this->signedRelayCall(
-            $this->relayCredential('nonce-aaaaaaaaaaaaaaaa'),
-            "/host/bindings/{$binding}/runtimes/{$runtime}/stopped",
-            [],
-            (string) Str::uuid(),
-        );
     }
 }

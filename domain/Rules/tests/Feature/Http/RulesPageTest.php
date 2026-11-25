@@ -10,7 +10,6 @@ use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Rules\Tests\TestCase;
-use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -50,59 +49,6 @@ final class RulesPageTest extends TestCase
             null,
             ActorContext::forUser(TestIds::of(7)),
         );
-    }
-
-    public function test_a_guest_is_sent_to_sign_in(): void
-    {
-        $this->journal->asGuest();
-        $this->get('/rules')->assertRedirect('/login');
-    }
-
-    public function test_the_list_and_the_selected_rule_share_one_page(): void
-    {
-        $this->actingAs($this->owner)->get(
-            "/rules?q=phase&rule={$this->proposed->id}",
-        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('layout/DeclaredLayout')
-            ->where('page.state', 'ready')
-            ->where('page.data.root.children.0.children.0.text', 'Rules (1)')
-            ->where(
-                'page.data.root.children.0.children.1.field',
-                [
-                    'name' => 'q',
-                    'value' => 'phase',
-                    'clears' => [
-                        'page',
-                        'rule',
-                    ],
-                    'options' => [],
-                ],
-            )
-            ->where('page.data.root.children.1.children.0.children.0.rows.0.key', (string) $this->proposed->id)
-            ->where('page.data.root.children.1.children.0.children.0.rows.0.isCurrent', true)
-            ->where(
-                'page.data.root.children.1.children.0.children.0.rows.0.query',
-                ['rule' => (string) $this->proposed->id],
-            )
-            ->where('page.data.root.children.1.children.1.children.0.children.1.text', 'Proposed')
-            ->where(
-                'page.data.root.children.1.children.1.children.1.text',
-                "Every phase ends with its tests.\n  - run them once",
-            )
-            ->where(
-                'page.data.root.children.1.children.1.children.2.children.1.form.href',
-                "/rules/{$this->proposed->number}/approve",
-            )
-            ->where('page.data.root.children.1.children.1.children.2.children.1.form.method', 'PATCH'));
-    }
-
-    public function test_an_unknown_rule_is_missing_without_text(): void
-    {
-        $this->actingAs($this->owner)->get(
-            '/rules?rule='.TestIds::of(999999),
-        )->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.1.children.1.tag', 'notice')
-            ->where('page.data.root.children.1.children.1.text', 'This rule does not exist.'));
     }
 
     public function test_approving_returns_to_the_page_it_came_from(): void

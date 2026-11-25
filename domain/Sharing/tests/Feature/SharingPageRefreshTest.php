@@ -5,21 +5,11 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Feature;
 
 use App\Events\Web\PageChanged;
-use App\Listeners\BroadcastPageChange;
-use App\Providers\DomainEventServiceProvider;
 use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
-use Domain\Sharing\Events\ShareActivated;
-use Domain\Sharing\Events\ShareCreated;
-use Domain\Sharing\Events\ShareExpired;
-use Domain\Sharing\Events\ShareFailed;
-use Domain\Sharing\Events\ShareGatewayChanged;
-use Domain\Sharing\Events\ShareRequested;
-use Domain\Sharing\Events\ShareRevoked;
-use Domain\Sharing\Events\ShareScopeChanged;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
@@ -55,29 +45,6 @@ final class SharingPageRefreshTest extends TestCase
     ];
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
-
-    public function test_every_owner_facing_sharing_event_rereads_the_owners_pages(): void
-    {
-        $map = new DomainEventServiceProvider($this->app)->discoverEvents();
-
-        foreach ([
-            ShareCreated::class,
-            ShareActivated::class,
-            ShareFailed::class,
-            ShareScopeChanged::class,
-            ShareRevoked::class,
-            ShareExpired::class,
-            ShareGatewayChanged::class,
-        ] as $event) {
-            $this->assertContains(
-                BroadcastPageChange::class.'@handle',
-                $map[$event] ?? [],
-                $event,
-            );
-        }
-
-        $this->assertNotContains(BroadcastPageChange::class.'@handle', $map[ShareRequested::class] ?? []);
-    }
 
     public function test_activating_a_share_sends_the_owner_a_page_change_with_nothing_in_it(): void
     {

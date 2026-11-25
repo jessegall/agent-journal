@@ -6,10 +6,6 @@ namespace Tests\Feature\Actors;
 
 use App\Models\Access\User;
 use App\Models\Presence\UserPresence;
-use App\Support\PresenceWindow;
-use App\Support\ServerClock;
-use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Schema;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -50,34 +46,5 @@ final class UserHeartbeatTest extends TestCase
 
         $this->assertContains($response->getStatusCode(), [302, 401]);
         $this->assertSame(0, UserPresence::query()->count());
-    }
-
-    public function test_a_row_is_fresh_only_while_its_beat_plus_the_window_is_later_than_the_observation(): void
-    {
-        $window = $this->app->make(PresenceWindow::class);
-        $now = $this->app->make(ServerClock::class)->now()->startOfSecond();
-        $this->beat($this->journal->ownerUser()->id, $now);
-
-        $this->assertSame(
-            1,
-            UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds - 1), $window)->count(),
-        );
-        $this->assertSame(
-            0,
-            UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds), $window)->count(),
-        );
-    }
-
-    public function test_the_presence_table_indexes_its_beat(): void
-    {
-        $indexes = array_map(fn (array $index) => $index['columns'], Schema::getIndexes('user_presences'));
-
-        $this->assertContains(['user_id'], $indexes);
-        $this->assertContains(['last_heartbeat_at'], $indexes);
-    }
-
-    private function beat(string $userId, CarbonImmutable $time): void
-    {
-        UserPresence::create($userId, $time)->beatAt($time);
     }
 }

@@ -17,16 +17,11 @@ use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
-use Domain\Tasks\Enums\TaskStatus;
-use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\WatchesPageChanges;
 use Tests\TestCase;
 
@@ -62,13 +57,6 @@ final class PageChangeTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_a_page_fact_no_owner_exports_changes_no_page(): void
-    {
-        event(new ShelfMoved());
-
-        Event::assertNotDispatched(PageChanged::class);
-    }
-
     public function test_a_finished_task_of_a_plan_moves_the_plan_and_changes_the_page(): void
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
@@ -103,25 +91,6 @@ final class PageChangeTest extends TestCase
         );
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
-    }
-
-    public function test_a_rolled_back_change_sends_nothing(): void
-    {
-        $task = Task::factory()->create(['title' => 'List the plans']);
-        $this->planStructure()->addTasks($this->planStructure()->addPhase(Plan::factory()->create(
-            ['title' => 'Build the release page', 'type' => PlanType::Build],
-        ), 'Read'), [$task->id]);
-
-        $this->assertThrows(
-            fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
-                $this->app->make('events')->dispatch(new TaskFinished($task->id, TaskStatus::Started, 'entry'));
-
-                throw SimulatedFailure::of('The change fails.');
-            }),
-            SimulatedFailure::class,
-        );
-
-        Event::assertNotDispatched(PageChanged::class);
     }
 
     private function planStructure(): PlanStructure

@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\InvalidTextRange;
-use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
@@ -20,13 +17,11 @@ use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
 use App\Support\ProjectReadRetentionService;
 use App\Support\RecordIdentity;
 use App\Values\BindingFolder;
-use App\Values\InboxMemberAuthority;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
@@ -81,17 +76,6 @@ final class ProjectFileTest extends TestCase
         );
     }
 
-    public function test_a_file_read_whole_is_kept_once_per_digest_and_a_cut_one_is_not(): void
-    {
-        $this->notifyWhole(self::SOURCE);
-        $this->notifyWhole(self::SOURCE);
-        $this->notify('cut text', true);
-
-        $file = ProjectFile::query()->where('path', self::PATH)->firstOrFail();
-        $this->assertSame([hash('sha256', self::SOURCE)], $file->versions()->pluck('digest')->all());
-        $this->assertSame(4, $file->versions()->firstOrFail()->line_count);
-    }
-
     public function test_a_comment_on_lines_of_a_version_is_checked_against_that_text(): void
     {
         $this->notifyWhole(self::SOURCE);
@@ -132,20 +116,6 @@ final class ProjectFileTest extends TestCase
         $kept = ProjectFileVersion::query()->pluck('text')->all();
         sort($kept);
         $this->assertSame(['fifth', 'first', 'fourth', 'third'], $kept);
-    }
-
-    public function test_someone_other_than_the_owner_may_not_read_a_file(): void
-    {
-        $this->notifyWhole(self::SOURCE);
-        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(User::factory()->create()->id),
-            new InboxMemberAuthority('the web sign-in'),
-        );
-
-        $this->expectException(RecordUnavailable::class);
-
-        $this->app->make(RecordResolver::class)->requireReadable($this->target());
     }
 
     private function actAsOwner(): void

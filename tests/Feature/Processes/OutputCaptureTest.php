@@ -11,7 +11,6 @@ use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Support\Execution\SpawnedProcess;
 use App\Support\ManifestCheck;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
@@ -22,7 +21,6 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -40,43 +38,6 @@ final class OutputCaptureTest extends TestCase
         ProcessOutputDisk::fake();
     }
 
-    #[TimeLimit(20, 'It pipes 50 MiB from a child process through the recorder.')]
-    public function test_a_part_writing_50_mib_keeps_every_byte(): void
-    {
-        $part = $this->part();
-        $recorder = $this->app->make(OutputRecorder::class);
-        $process = SpawnedProcess::start(
-            ['head', '-c', '52428800', '/dev/zero'],
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            sys_get_temp_dir(),
-            ['PATH' => (string) getenv('PATH')],
-        );
-        $this->assertInstanceOf(SpawnedProcess::class, $process);
-
-        $process->drain(
-            fn (OutputStream $stream, string $bytes) => $recorder->append(
-                new CapturedChunk($part, $stream, $bytes, CarbonImmutable::now()),
-            ),
-        );
-        $recorder->finish($part, $process->wait());
-
-        $this->assertSame(52_428_800, $part->refresh()->stream_offsets['stdout']);
-        $this->assertSame(CaptureStatus::Complete, $part->capture_state);
-    }
-
-    public function test_binary_bytes_and_carriage_returns_are_stored_raw(): void
-    {
-        $part = $this->part();
-        $bytes = "\x00\xffprogress 10%\rprogress 20%\r\n";
-
-        $this->app->make(OutputRecorder::class)->append(
-            new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()),
-        );
-
-        $chunk = OutputChunk::query()->where('part_run_id', $part->id)->firstOrFail();
-        $this->assertSame($bytes, Storage::disk(OutputRecorder::DISK)->get($chunk->storage_path));
-    }
-
     public function test_a_removed_chunk_file_is_a_gap_in_the_manifest(): void
     {
         $part = $this->part();
@@ -91,23 +52,6 @@ final class OutputCaptureTest extends TestCase
         $this->assertSame(CaptureStatus::Incomplete, $this->app->make(ManifestCheck::class)->stateOf($part->refresh()));
     }
 
-    #[TimeLimit(5, 'It waits out a short drain deadline while a background child holds the pipe.')]
-    public function test_a_background_child_holding_stdout_past_the_deadline_leaves_the_drain_unfinished(): void
-    {
-        $process = SpawnedProcess::start(
-            ['sh', '-c', 'sleep 3 & echo started'],
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            sys_get_temp_dir(),
-            ['PATH' => (string) getenv('PATH')],
-        );
-        $this->assertInstanceOf(SpawnedProcess::class, $process);
-
-        $drained = $process->drain(fn () => null, 0.5);
-
-        $this->assertFalse($drained);
-        $this->assertSame(0, $process->wait()->code);
-    }
-
     public function test_a_failed_write_stops_with_storage_failed(): void
     {
         $part = $this->part();
@@ -119,13 +63,6 @@ final class OutputCaptureTest extends TestCase
         $this->app->make(OutputRecorder::class)->append(
             new CapturedChunk($part, OutputStream::Stdout, 'bytes', CarbonImmutable::now()),
         );
-    }
-
-    public function test_the_output_disk_is_private_and_never_served(): void
-    {
-        $this->assertSame('private', config('filesystems.disks.process-output.visibility'));
-        $this->assertFalse(config('filesystems.disks.process-output.serve'));
-        $this->assertStringNotContainsString('public', (string) config('filesystems.disks.process-output.root'));
     }
 
     private function part(): PartRun

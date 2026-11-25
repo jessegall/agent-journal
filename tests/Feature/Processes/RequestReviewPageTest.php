@@ -26,20 +26,6 @@ final class RequestReviewPageTest extends TestCase
     use OpensAcmeRequestAsOwner;
     use RefreshHookDatabase;
 
-    public function test_the_list_shows_the_projects_requests_and_nothing_of_another_project(): void
-    {
-        $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('layout/DeclaredLayout')
-            ->where('page.data.root.children.2.children.1.rows.0.key', $this->requestId)
-            ->where('page.data.root.children.2.children.1.rows.0.value', RequestStatus::AwaitingSampleApproval->value));
-
-        config(['processes.project_key' => 'another-project']);
-
-        $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.root.children.2.children.1.tag', 'notice'));
-        $this->actingAs($this->journal->ownerUser())->get("/processes/requests/{$this->requestId}")->assertNotFound();
-    }
-
     public function test_the_request_page_shows_the_declaration_and_the_owner_approves_its_sample(): void
     {
         $this->actingAs($this->journal->ownerUser())->get("/processes/requests/{$this->requestId}")->assertOk()

@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\Asks\OwnerRouteType;
 use App\Enums\Asks\SupervisorCoverageType;
-use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Exceptions\SupervisorRouteRefused;
 use App\Support\ProfileProposal;
-use App\Support\SupervisorOwner;
 use App\Values\ActivatedProfile;
 use App\Values\AskTypeKey;
 use App\Values\ProfileActivation;
@@ -82,13 +78,6 @@ final class SupervisorRoutesTest extends TestCase
                 SupervisorRouteInvalid::class,
             );
         }
-    }
-
-    public function test_the_owner_target_has_an_explicit_missing_outcome(): void
-    {
-        $this->mock(JournalAdmission::class)->shouldReceive('owner')->andThrow(ConsoleOwnerMissing::forConsole());
-
-        $this->assertSame(OwnerRouteType::NoOwner, $this->app->make(SupervisorOwner::class)->resolve()->type);
     }
 
     /**

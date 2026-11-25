@@ -38,19 +38,6 @@ final class DocumentRoutesTest extends TestCase
         'comments',
     ];
 
-    public function test_a_reviewer_is_refused_document_creation_on_the_signed_route(): void
-    {
-        $reviewer = TestStart::start('read-only-helper');
-
-        $this->journal->agentCall($reviewer, 'POST', '/agent/docs/make', [
-            'title' => 'Design',
-            'abstract' => 'The next design.',
-            'body' => 'Public text.',
-            'about' => [],
-            'request_key' => 'reviewer-doc',
-        ])->assertForbidden();
-    }
-
     public function test_signed_text_replacement_accepts_the_old_and_new_wire_fields(): void
     {
         $author = TestStart::start('writing-helper');

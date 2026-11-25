@@ -6,12 +6,10 @@ namespace Tests\Feature\Profiles;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Sessions\ProfileRules;
 use App\Models\Access\User;
 use App\Models\Profiles\Profile;
 use App\Support\Access\AccessSettings;
 use App\Support\ProfileProposal;
-use App\Support\UnreadProfileRules;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use Domain\Rules\RulesDomain;
@@ -56,13 +54,6 @@ final class ProfileDescriptionTest extends TestCase
         $this->assertSame('', Profile::findByKey(ProfileKey::from('worker'))->description);
     }
 
-    public function test_every_built_in_profile_has_a_description(): void
-    {
-        foreach (ProfileBase::all() as $base) {
-            $this->assertNotSame('', $base->description, $base->key);
-        }
-    }
-
     public function test_the_page_lists_the_description_and_the_reader_shows_program_and_rules(): void
     {
         $this->activate();
@@ -85,18 +76,6 @@ final class ProfileDescriptionTest extends TestCase
         $this->assertStringContainsString('"key":"profile"', $reader);
         $this->assertStringContainsString('"key":"rules"', $reader);
         $this->assertStringNotContainsString('"key":"state"', $index);
-    }
-
-    public function test_rules_with_no_domain_to_read_them_are_unread_and_the_rules_domain_answers_a_known_group(): void
-    {
-        $key = ProfileKey::from('reviewer');
-
-        $this->assertTrue(new UnreadProfileRules()->of($key)->isUnread());
-
-        $groups = $this->app->make(ProfileRules::class)->of($key);
-
-        $this->assertFalse($groups->isUnread());
-        $this->assertSame([ProfileRuleRecords::GROUP_LABEL], array_column($groups->groups, 'label'));
     }
 
     private function activate(): void

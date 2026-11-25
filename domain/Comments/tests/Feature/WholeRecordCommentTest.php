@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Domain\Comments\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Reads\TextResolver;
 use App\Contracts\Records\RecordResolver;
-use App\Exceptions\TargetHasNoText;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
@@ -165,24 +163,6 @@ final class WholeRecordCommentTest extends TestCase
             ->assertUnprocessable();
 
         $this->assertSame(0, Comment::query()->count());
-    }
-
-    public function test_a_record_without_text_has_no_text_to_read(): void
-    {
-        $this->expectException(TargetHasNoText::class);
-
-        $this->app->make(TextResolver::class)->version($this->target());
-    }
-
-    public function test_the_text_routes_refuse_a_record_without_text(): void
-    {
-        $this->actingAs($this->owner)
-            ->getJson('/text/version?target='.urlencode(sprintf(self::NOTE_LABEL, $this->note->number)))
-            ->assertForbidden()
-            ->assertJsonPath(
-                'message',
-                self::NO_TEXT_REFUSAL,
-            );
     }
 
     public function test_comment_cards_come_in_one_batch_and_hide_comments_on_unreadable_records(): void

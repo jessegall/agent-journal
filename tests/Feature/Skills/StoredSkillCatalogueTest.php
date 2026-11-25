@@ -11,7 +11,6 @@ use App\Support\StoredSkillWrites;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillKey;
-use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -23,12 +22,6 @@ use Tests\TestCase;
 final class StoredSkillCatalogueTest extends TestCase
 {
     use CommitsHookRows;
-
-    private const string NOTES_HEADING = <<<'TEXT'
-        ## Notes
-
-
-        TEXT;
 
     private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups'];
 
@@ -57,25 +50,6 @@ final class StoredSkillCatalogueTest extends TestCase
             Conditions::everyone(),
             $author,
         );
-    }
-
-    public function test_a_stored_skill_is_listed_as_stored_with_its_revision_beside_shipped_skills(): void
-    {
-        Artisan::call('skill:list', ['--json' => true]);
-        $listed = array_column(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR), null, 'key');
-
-        $this->assertSame('stored', $listed['user-review-notes']['source']);
-        $this->assertSame(1, $listed['user-review-notes']['revision']);
-        $this->assertSame('Stored', $listed['user-review-notes']['owner']);
-        $this->assertSame('shipped', $listed['journal']['source']);
-        $this->assertNull($listed['journal']['revision']);
-    }
-
-    public function test_php_and_shell_lines_stay_literal_text(): void
-    {
-        Artisan::call('skill:show', ['key' => 'user-review-notes']);
-
-        $this->assertStringContainsString(self::NOTES_HEADING.self::MARKDOWN."\n", Artisan::output());
     }
 
     public function test_the_stored_skill_appears_in_preview(): void

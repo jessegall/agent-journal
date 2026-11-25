@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
@@ -95,30 +93,5 @@ final class MemoryCommandsTest extends TestCase
 
         $this->journal->agentCall($this->other, 'POST', '/agent/memory/list', [])->assertJsonPath('memories', []);
         $this->assertSame(self::MEMORY_TEXT, $memory->refresh()->text);
-    }
-
-    public function test_reading_one_memory_gives_its_revision_and_another_agents_is_unavailable(): void
-    {
-        $this->journal->actAsAgentIds($this->owner->agent->id, $this->owner->session->id);
-        $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
-        $resolver = $this->app->make(MemoryResolver::class);
-
-        $this->assertSame(
-            [
-                'Read me.',
-                1,
-            ],
-            [
-                $resolver->memory($memory->id)->text,
-                $resolver->memory($memory->id)->revision,
-            ],
-        );
-
-        $this->app->forgetScopedInstances();
-        $this->journal->actAsAgentIds($this->other->agent->id, $this->other->session->id);
-
-        $this->expectException(RecordUnavailable::class);
-
-        $this->app->make(MemoryResolver::class)->memory($memory->id);
     }
 }

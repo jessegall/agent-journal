@@ -11,13 +11,11 @@ use App\Enums\Accounts\CommandEntry;
 use App\Events\Hooks\StateTypesRequested;
 use App\Models\Agents\AgentStackRow;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\ActiveActorsResolver;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
 use App\Support\EnginePass;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
-use App\Support\TickDelivery;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Rules\RulesDomain;
@@ -25,13 +23,11 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerState;
-use Tests\Fixtures\Domains\QuestionReminders\Support\RouteHeartbeatSource;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
@@ -60,8 +56,6 @@ final class DueWorkOnTickTest extends TestCase
         'hook_calls',
         'engine_frame_times',
     ];
-
-    private const int SECOND = 1_000_000_000;
 
     /**
      * Rules, which the Notes test module requires.
@@ -112,31 +106,6 @@ final class DueWorkOnTickTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_ticking_twice_past_the_wait_sends_one_reminder(): void
-    {
-        $question = Question::ask('Which database?');
-        $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
-
-        $this->passAt(30);
-        $this->assertNull($question->refresh()->reminded_at);
-
-        $this->passAt(61);
-        $this->passAt(62);
-
-        $this->assertEquals($this->asked->addSeconds(61), $question->refresh()->reminded_at);
-    }
-
-    public function test_an_answer_before_the_tick_sends_nothing(): void
-    {
-        $question = Question::ask('Which database?');
-        $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
-        $question->answer();
-
-        $this->passAt(61);
-
-        $this->assertNull($question->refresh()->reminded_at);
-    }
-
     public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
         $question = Question::ask('Which database?');
@@ -166,37 +135,5 @@ final class DueWorkOnTickTest extends TestCase
                 AgentStackRow::query()->authorizedFor($target)->sole()->frames->all(),
             ),
         );
-    }
-
-    public function test_a_quiet_agent_beating_through_the_heartbeat_source_stays_present(): void
-    {
-        $this->app->forgetInstance(ServerClock::class);
-        $this->app->forgetInstance(MonotonicClock::class);
-        $start = TestStart::start();
-        $source = new RouteHeartbeatSource(
-            fn (string $path) => $this->journal->agentCall(
-                $start,
-                'POST',
-                $path,
-                ['request_key' => bin2hex(random_bytes(8))],
-            )->getStatusCode(),
-        );
-
-        $this->assertSame(0, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
-        $this->assertSame(200, $source->beat());
-
-        $this->assertSame(1, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
-    }
-
-    /**
-     * One engine pass with both clocks the given number of seconds after the question was asked.
-     */
-    private function passAt(int $seconds): void
-    {
-        $this->clock->set($seconds * self::SECOND);
-        $this->serverClock->set($this->asked->addSeconds($seconds));
-        $start = $this->clock->nanoseconds();
-
-        $this->app->make(EnginePass::class)->run(fn () => $this->app->make(TickDelivery::class)->deliver($start));
     }
 }

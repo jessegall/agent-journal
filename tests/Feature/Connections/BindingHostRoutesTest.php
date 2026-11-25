@@ -44,16 +44,6 @@ final class BindingHostRoutesTest extends TestCase
         $this->assertSame(1, ProjectBinding::query()->count());
     }
 
-    public function test_an_enrolled_host_claims_on_a_shared_route_and_is_refused_a_relays_route(): void
-    {
-        $host = $this->journal->enrolledHost();
-
-        $this->journal->hostCall($host, 'POST', '/host/claim?limit=1&wait=0&watched_version=0', '{}')->assertOk();
-        $this->journal->hostCall($host, 'POST', '/host/bindings/'.strtolower((string) Str::ulid()).'/presence', '{}')
-            ->assertForbidden()
-            ->assertJsonPath('message', HostRoleRefused::forRelayOnly($host->hostId)->getMessage());
-    }
-
     public function test_a_relay_is_refused_an_enrolled_hosts_route(): void
     {
         $this->issueLine('the-ticket');

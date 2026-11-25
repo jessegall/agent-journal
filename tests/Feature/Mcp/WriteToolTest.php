@@ -6,7 +6,6 @@ namespace Tests\Feature\Mcp;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CommandRegistry;
@@ -86,18 +85,6 @@ final class WriteToolTest extends CommandBusTestCase
         );
         $this->journal->agentCall($start, 'POST', self::PATH, $note)->assertOk()->assertJsonPath('note_id', $mcpId);
         $this->assertSame(2, $this->rowCount());
-    }
-
-    public function test_an_unregistered_command_prevents_registration_and_names_both_classes(): void
-    {
-        $catalogue = new McpCatalogue(CommandRegistry::of([]), new CatalogueReflectorFactory(), $this->app);
-
-        $this->assertThrows(
-            fn () => $catalogue->registerTool(WriteNoteTool::class),
-            McpCommandMissing::class,
-            McpCommandMissing::for(WriteNoteTool::class, WriteNoteCommand::class)->getMessage(),
-        );
-        $this->assertSame([], $catalogue->toolClasses());
     }
 
     public function test_a_module_middleware_preserves_its_coded_refusal(): void

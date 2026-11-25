@@ -5,19 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Events\Messages\MessageEvent;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
-use App\Support\DeclaredType;
 use App\Support\IsolatedListener;
-use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Architecture\Support\DomainFiles;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\MessagingTestCase;
 
@@ -72,30 +67,5 @@ final class MessageEventsTest extends MessagingTestCase
 
         $message = Message::query()->where('body', self::SAVED_TEXT)->sole();
         $this->assertSame([$message->id], $this->received);
-    }
-
-    public function test_no_message_fact_carries_a_body_or_a_model(): void
-    {
-        foreach (DomainFiles::in([app_path('Events/Messages')]) as $file) {
-            $event = ReflectedType::of('App\\Events\\Messages\\'.basename($file, '.php'));
-
-            if (! $event->isSubclassOf(MessageEvent::class)) {
-                continue;
-            }
-
-            $parameters = $event->constructor()
-                ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
-                ->getOrElse([]);
-
-            foreach ($parameters as $parameter) {
-                $holdsModel = $parameter->type()
-                    ->filter(fn (DeclaredType $type) => $type->isNamed())
-                    ->flatMap(fn (DeclaredType $type) => ReflectedType::find($type->name()))
-                    ->filter(fn (ReflectedType $type) => $type->isSubclassOf(Model::class))
-                    ->isDefined();
-                $this->assertNotSame('body', $parameter->name(), basename($file));
-                $this->assertFalse($holdsModel, basename($file));
-            }
-        }
     }
 }

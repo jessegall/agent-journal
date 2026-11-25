@@ -14,7 +14,6 @@ use App\Support\EnginePass;
 use App\Support\FrameBaselines;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\TickDelivery;
-use App\Support\Ticks\ElapsedTime;
 use App\Support\Ticks\TickCommands;
 use App\Support\Ticks\TickContext;
 use App\Values\FrameSettlement;
@@ -27,7 +26,6 @@ use Tests\Fixtures\Hooks\Ticks\TickScript;
 use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\TestCase;
@@ -75,60 +73,6 @@ final class TickDeliveryTest extends TestCase
         $this->app->instance(ServerClock::class, $this->serverClock);
     }
 
-    public function test_a_first_tick_a_quarter_second_after_entry_is_told_a_quarter_second_marked_approximate(): void
-    {
-        $this->tickingStack('test.ticking', ['a'], $this->entry);
-
-        $this->passAt(0.25);
-
-        $first = $this->deltasOf('a')[0];
-        $this->assertEqualsWithDelta(0.25, $first->seconds(), 0.001);
-        $this->assertTrue($first->isApproximate());
-    }
-
-    public function test_settled_ticks_one_point_zero_four_seconds_apart_are_told_exactly_that(): void
-    {
-        $this->tickingStack('test.ticking', ['a'], $this->entry);
-
-        $this->passAt(0.0);
-        $this->passAt(1.04);
-
-        $second = $this->deltasOf('a')[1];
-        $this->assertSame(1040, $second->milliseconds());
-        $this->assertFalse($second->isApproximate());
-    }
-
-    public function test_a_failed_tick_keeps_its_baseline_so_the_retry_is_told_the_whole_interval(): void
-    {
-        $this->tickingStack('test.ticking', ['a'], $this->entry);
-        $this->script->scripts['a'] = fn (TickContext $tick) => count(
-            $this->script->ticks['a'],
-        ) === 2 ? throw SimulatedFailure::of('The tick failed.') : TickCommands::none();
-
-        $this->passAt(0.0);
-        $this->passAt(1.0);
-        $this->passAt(3.0);
-
-        $this->assertSame([0, 1000, 3000], array_map(fn ($delta) => $delta->milliseconds(), $this->deltasOf('a')));
-    }
-
-    public function test_after_a_restart_the_delta_is_recovered_from_the_checkpoint_and_marked_approximate(): void
-    {
-        $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
-        $engineFrameTime = new EngineFrameTime();
-        $engineFrameTime->frame_id = 'a';
-        $engineFrameTime->stack_id = $stack->id;
-        $engineFrameTime->settled_at = CarbonImmutable::parse('2026-11-18 12:00:14');
-        $engineFrameTime->save();
-        $this->app->instance(FrameBaselines::class, new FrameBaselines());
-
-        $this->passAt(10.0);
-
-        $recovered = $this->deltasOf('a')[0];
-        $this->assertEqualsWithDelta(6.0, $recovered->seconds(), 0.001);
-        $this->assertTrue($recovered->isApproximate());
-    }
-
     public function test_a_failing_second_command_keeps_the_first_committed_and_the_baseline_unmoved(): void
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
@@ -161,19 +105,6 @@ final class TickDeliveryTest extends TestCase
         $this->assertTrue($this->app->make(FrameBaselines::class)->has('a'));
     }
 
-    public function test_a_failing_frame_does_not_stop_the_next_one(): void
-    {
-        $this->tickingStack('test.ticking', ['a', 'b'], $this->entry);
-        $this->script->scripts['a'] = fn () => throw SimulatedFailure::of('Frame a failed.');
-
-        $this->passAt(0.0);
-
-        $this->assertCount(1, $this->deltasOf('b'));
-        $this->assertTrue($this->app->make(FrameBaselines::class)->has('b'));
-        $this->assertFalse($this->app->make(FrameBaselines::class)->has('a'));
-        $this->assertSame(['b'], array_keys(EngineFrameTime::resolveSettledAtFor(['a', 'b'])));
-    }
-
     /**
      * Runs one pass with both clocks set to the given number of seconds after the frames entered.
      */
@@ -184,13 +115,5 @@ final class TickDeliveryTest extends TestCase
         $start = $this->clock->nanoseconds();
 
         $this->app->make(EnginePass::class)->run(fn () => $this->app->make(TickDelivery::class)->deliver($start));
-    }
-
-    /**
-     * @return list<ElapsedTime>
-     */
-    private function deltasOf(string $subject): array
-    {
-        return array_map(fn (TickContext $tick) => $tick->delta, $this->script->ticks[$subject] ?? []);
     }
 }

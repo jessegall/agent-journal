@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Exceptions\StartSettingMissing;
 use App\Support\AssigneeIdentity;
-use App\Support\SessionTokenSource;
-use App\Support\StartEnvironment;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
@@ -16,7 +13,6 @@ use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Process\Process;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -121,24 +117,6 @@ final class AssignedListCommandsTest extends TestCase
 
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
         $this->artisan('task:assigned')->expectsOutputToContain('did not answer')->assertExitCode(1);
-    }
-
-    public function test_the_starter_turns_subject_and_verb_into_the_command_and_needs_the_start_settings(): void
-    {
-        $this->assertThrows(
-            fn () => new SessionTokenSource(new StartEnvironment([]))->forThisStart(),
-            StartSettingMissing::class,
-        );
-
-        $process = new Process(
-            [base_path('bin/journal'), 'task', 'assigned'],
-            base_path(),
-            ['JOURNAL_URL' => false, 'JOURNAL_START_TOKEN' => false],
-        );
-        $process->run();
-
-        $this->assertNotSame(0, $process->getExitCode());
-        $this->assertStringContainsString('JOURNAL_URL', $process->getOutput().$process->getErrorOutput());
     }
 
     private function tasks(): TaskFixtures

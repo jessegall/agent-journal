@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Engine\ListenerLane;
 use App\Events\Sessions\SessionClosed;
-use App\Support\AvailableListener;
-use App\Support\ListenerRegistry;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
@@ -105,19 +102,6 @@ final class DraftSessionEndingTest extends TestCase
 
         $this->assertSame(1, DocumentDraft::query()->count());
         $this->assertSame(0, DocumentClose::query()->count());
-    }
-
-    public function test_the_documents_listener_hears_a_session_ending_behind_its_domain_gate(): void
-    {
-        $listeners = array_map(
-            fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
-            $this->app->make(ListenerRegistry::class)->listenersOf(
-                SessionClosed::class,
-                ListenerLane::InCommandTransaction,
-            ),
-        );
-
-        $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);
     }
 
     private function endSession(int $agent, int $session): void

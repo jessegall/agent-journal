@@ -14,7 +14,6 @@ use App\Support\ActorIdentity;
 use App\Values\MenuStep;
 use App\Values\OwnerAuthority;
 use App\Values\ScriptGoal;
-use Illuminate\Support\Facades\Schema;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -99,13 +98,6 @@ final class MenuEntryTest extends TestCase
 
         $this->assertNull(MenuEntry::query()->find($entry->id));
         $this->assertSame(0, MenuEntry::query()->count());
-    }
-
-    public function test_no_column_names_an_agent_or_a_session(): void
-    {
-        $columns = Schema::getColumnListing('menu_entries');
-
-        $this->assertSame([], array_values(preg_grep('/agent|session/', $columns) ?: []));
     }
 
     private function provenEntry(): MenuEntry

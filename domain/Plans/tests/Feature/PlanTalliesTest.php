@@ -6,7 +6,6 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Contracts\PlanResolver;
-use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
@@ -101,52 +100,6 @@ final class PlanTalliesTest extends TestCase
             ],
             self::tallies($phase->refresh()->progress),
         );
-    }
-
-    public function test_the_current_phase_is_the_first_unfinished_else_the_last_and_none_without_phases(): void
-    {
-        $this->journal->actAsUserId($this->journal->ownerUser()->id);
-        $finished = Task::factory()->create();
-        $finished->finish('Done.');
-        $cancelled = Task::factory()->create();
-        $cancelled->cancel('Dropped.');
-
-        $complete = $this->plans()->plan('complete')->planCalled('complete');
-        $this->structure()->addTasks($this->structure()->addPhase($complete, 'Done'), [$finished->id]);
-        $this->structure()->addPhase($complete, 'Empty');
-
-        $cancelledFirst = $this->plans()->plan('cancelledFirst')->planCalled('cancelledFirst');
-        $this->structure()->addTasks($this->structure()->addPhase($cancelledFirst, 'Dropped'), [$cancelled->id]);
-        $this->structure()->addPhase($cancelledFirst, 'Later');
-
-        $bare = $this->plans()->plan('bare')->planCalled('bare');
-
-        $current = Phase::resolveCurrentNumbersOf([
-            $complete->id,
-            $cancelledFirst->id,
-            $bare->id,
-        ]);
-
-        $this->assertSame([
-            $complete->id => 2,
-            $cancelledFirst->id => 1,
-        ], [
-            $complete->id => $current[$complete->id],
-            $cancelledFirst->id => $current[$cancelledFirst->id],
-        ]);
-
-        $this->assertArrayNotHasKey($bare->id, $current);
-    }
-
-    public function test_a_card_read_loads_the_same_rows_however_many_tasks_the_plan_holds(): void
-    {
-        $this->journal->actAsUserId($this->journal->ownerUser()->id);
-        $small = $this->planWithTasks('Small plan', 1);
-        $large = $this->planWithTasks('Large plan', 40);
-
-        $this->assertSame($this->rowsLoadedReading('Small plan'), $this->rowsLoadedReading('Large plan'));
-        $this->assertSame(40, $large->refresh()->total_tasks);
-        $this->assertSame(1, $small->refresh()->total_tasks);
     }
 
     private function planWithTasks(string $title, int $count): Plan

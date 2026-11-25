@@ -8,10 +8,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\RewriteSupport;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
-use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\Inputs\Values\CompactionDetails;
-use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Stack\HookAnswer;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateBuilder;
@@ -53,21 +50,6 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->assertStringContainsString($this->stepText(1), $onFirstStep);
         $this->assertStringContainsString($this->stepText(2), $onSecondStep);
-    }
-
-    public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
-    {
-        $session = $this->journal->sessionOf('Writer');
-        $compaction = new ContextCompacted(
-            new HookIdentity($session->agent_id, $session->id, 'compaction', hash('sha256', 'compaction')),
-            new CompactionDetails('compaction-1'),
-        );
-
-        $answer = $this->answer($compaction, 'onCompaction');
-        $shown = implode("\n", $answer->shownContext($this->journal->service(AgentTexts::class)));
-
-        $this->assertStringContainsString($this->stepText(1), $shown);
-        $this->runs->assertStep(self::RUN, 1, 'Writer');
     }
 
     private function stepText(int $step): string

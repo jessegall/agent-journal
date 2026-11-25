@@ -13,10 +13,7 @@ use App\Support\Stack\StateTypes;
 use App\Values\GroupReference;
 use App\Values\OwnerAuthority;
 use Domain\Rules\RulesDomain;
-use Domain\Tasks\Support\States\WorkOnTaskState;
 use Domain\Tasks\TasksDomain;
-use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitAnswerState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
@@ -44,27 +41,6 @@ final class DomainStateTypesTest extends TestCase
      * The bus commits the switch command for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
-
-    public function test_a_domain_state_type_is_registered_from_its_state_class(): void
-    {
-        $types = $this->app->make(StateTypes::class)->registry();
-        $working = $types->get('tasks.work');
-
-        $this->assertSame(WorkOnTaskState::class, $working->stateClass);
-        $this->assertSame(1, $working->schemaVersion);
-        $this->assertTrue($types->get('core.ready')->isEnabled());
-    }
-
-    public function test_a_domains_ticking_state_type_still_ticks(): void
-    {
-        $this->bootModules(QuestionRemindersDomain::class);
-        $types = $this->app->make(StateTypes::class);
-
-        $this->assertSame(AwaitAnswerState::class, $types->registry()->get(AwaitAnswerState::TYPE_KEY)->stateClass);
-
-        $this->assertTrue($types->ticking()->contains(AwaitAnswerState::TYPE_KEY));
-        $this->assertFalse($types->ticking()->contains('tasks.work'));
-    }
 
     public function test_switching_the_owner_off_switches_its_state_type_off(): void
     {

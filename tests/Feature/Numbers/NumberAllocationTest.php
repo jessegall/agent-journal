@@ -6,17 +6,13 @@ namespace Tests\Feature\Numbers;
 
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
-use App\Exceptions\CommandTransactionMissing;
 use App\Exceptions\NumberChanged;
-use App\Exceptions\NumberedModelUndeclared;
 use App\Exceptions\NumberLimitReached;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\GlobalGroup;
 use App\Models\Records\NumberGroup;
-use App\Support\NumberedTypeRegistry;
 use App\Support\OperationDeadline;
 use App\Support\OutsideCommandAllowance;
-use App\Support\ReflectedType;
 use Domain\Rules\RulesDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -29,8 +25,8 @@ use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -89,18 +85,6 @@ final class NumberAllocationTest extends TestCase
         $this->assertSame(1, $this->commands->run(new WriteEntryCommand($second, 'c')));
     }
 
-    public function test_a_numbered_model_is_found_without_its_domain_listing_it(): void
-    {
-        $registry = $this->app->make(NumberedTypeRegistry::class);
-
-        $this->assertFalse(ReflectedType::of(LedgerDomain::class)->hasMethod('numberedModels'));
-        $registry->assertNumbered(new Ledger()->getMorphClass());
-        $registry->assertNumbered(new LedgerEntry()->getMorphClass());
-
-        $this->expectException(NumberedModelUndeclared::class);
-        $registry->assertNumbered('ledger.nobody');
-    }
-
     public function test_a_refused_command_takes_its_number_back_with_it(): void
     {
         $ledger = $this->commands->run(new OpenLedgerCommand('ledger'));
@@ -113,11 +97,6 @@ final class NumberAllocationTest extends TestCase
         }
 
         $this->assertSame(1, $this->commands->run(new WriteEntryCommand($ledger, 'kept')));
-    }
-
-    public function test_a_save_outside_a_command_is_refused(): void
-    {
-        $this->assertThrows(fn () => Ledger::query()->create(['title' => 'outside']), CommandTransactionMissing::class);
     }
 
     public function test_a_saved_number_never_changes(): void

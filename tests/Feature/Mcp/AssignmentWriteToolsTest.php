@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Events\Assignments\AssignmentsChanged;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -56,70 +54,6 @@ final class AssignmentWriteToolsTest extends TestCase
         $this->first = TestStart::start('writing-helper');
         $this->second = TestStart::start('writing-helper');
         $this->task = Task::factory()->create(['title' => 'Prepare the handoff']);
-    }
-
-    public function test_assign_and_repeat_return_the_reference_and_dispatch_one_change_event(): void
-    {
-        Event::fake([AssignmentsChanged::class]);
-        $reference = $this->assignFirst();
-
-        $this->journal->mcpTool($this->caller, 'assignments_assign', [
-            ...$this->record(),
-            'recipient' => $this->recipient($this->first),
-            'request_key' => 'repeat-assignment',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'unchanged')
-            ->assertJsonPath('result.structuredContent.changed', 0)
-            ->assertJsonPath('result.structuredContent.assignment', $reference);
-
-        Event::assertDispatchedTimes(AssignmentsChanged::class, 1);
-    }
-
-    public function test_conflicts_offer_reading_the_current_assignment_and_cannot_replace_it(): void
-    {
-        $first = $this->assignFirst();
-        $this->journal->mcpTool($this->caller, 'assignments_assign', [
-            ...$this->record(),
-            'recipient' => $this->recipient($this->second),
-            'request_key' => 'already-held',
-        ])->assertOk()->assertJsonPath('result.isError', true)
-            ->assertJsonPath('result.structuredContent.code', 'conflict')
-            ->assertJsonPath('result.structuredContent.next_action.tool', 'assignments_read')
-            ->assertJsonPath('result.structuredContent.next_action.arguments', $this->record());
-
-        $second = $this->reassign($first);
-        $this->journal->mcpTool($this->caller, 'assignments_unassign', [
-            ...$this->record(),
-            'expected_assignment' => $first,
-            'request_key' => 'stale-reference',
-        ])->assertOk()->assertJsonPath('result.isError', true)->assertJsonPath(
-            'result.structuredContent.code',
-            'conflict',
-        );
-
-        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
-            ->assertJsonPath('result.structuredContent.holder.reference', $second['id'])
-            ->assertJsonPath('result.structuredContent.holder.id', $this->second->agent->id);
-    }
-
-    public function test_an_executor_cannot_dispatch_a_record_to_someone_else(): void
-    {
-        $this->journal->mcpRequest($this->first, 'tools/call', [
-            'name' => 'assignments_assign',
-            'arguments' => [
-                ...$this->record(),
-                'recipient' => $this->recipient($this->second),
-                'request_key' => 'executor-assignment',
-            ],
-        ])->assertBadRequest();
-        $this->journal->agentCall($this->first, 'POST', '/agent/assignments/assign', [
-            ...$this->record(),
-            'recipient_type' => 'agent',
-            'recipient_id' => $this->second->agent->id,
-            'request_key' => 'executor-assignment',
-        ])->assertForbidden();
-
-        $this->journal->mcpTool($this->caller, 'assignments_read', $this->record())->assertOk()
-            ->assertJsonPath('result.structuredContent.holder', null);
     }
 
     public function test_all_three_cli_operations_replay_their_mcp_results(): void

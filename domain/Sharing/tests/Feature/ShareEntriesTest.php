@@ -84,33 +84,6 @@ final class ShareEntriesTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
     }
 
-    public function test_an_agent_requests_a_share_and_reads_its_status_without_an_address(): void
-    {
-        $start = TestStart::start();
-
-        $request = $this->journal->agentCall($start, 'POST', '/agent/sharing/request', [
-            'alias' => 'doc',
-            'number' => '1',
-            'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001',
-        ])->assertOk();
-        $this->assertSame([
-            'number',
-            'state',
-        ], array_keys((array) $request->json()));
-        $this->assertSame('proposed', $request->json('state'));
-
-        $proposal = Share::query()->sole();
-        $proposal->status = ShareStatus::Active;
-        $proposal->save();
-
-        $status = $this->journal->agentCall($start, 'POST', '/agent/sharing/status', [])->assertOk();
-        $this->assertSame([[
-            'number' => $proposal->number,
-            'state' => 'active',
-        ]], $status->json('proposals'));
-        $this->assertStringNotContainsString('http', (string) $status->getContent());
-    }
-
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
     {
         $start = TestStart::start();

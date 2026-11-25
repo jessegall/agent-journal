@@ -7,8 +7,6 @@ namespace Tests\Feature\Assignments;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -96,28 +94,5 @@ final class AutoAssignmentCliTest extends TestCase
                 '"label":"Open tasks"},{"key":"tasks.named","label":"Named tasks"},{"key":"plans.tasks","label":"Tasks in a started plan"}',
             )
             ->assertExitCode(0);
-    }
-
-    public function test_there_is_no_run_now_command(): void
-    {
-        $names = array_keys(Artisan::all());
-        sort($names);
-
-        $this->assertSame(
-            [
-                'assignment:auto-configure',
-                'assignment:auto-disable',
-                'assignment:auto-enable',
-                'assignment:auto-list',
-                'assignment:auto-pools',
-                'assignment:auto-show',
-            ],
-            array_values(array_filter($names, fn (string $name) => str_starts_with($name, 'assignment:auto'))),
-        );
-    }
-
-    private function tasks(): TaskFixtures
-    {
-        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

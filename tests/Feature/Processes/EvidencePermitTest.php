@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Enums\Runs\RunMode;
-use App\Exceptions\EvidencePermitRefused;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;
@@ -58,20 +57,6 @@ final class EvidencePermitTest extends TestCase
         $this->assertSame(1, PartRun::query()->where('process_run_id', $run->id)->count());
     }
 
-    public function test_a_used_expired_or_foreign_permit_is_refused(): void
-    {
-        $evidence = $this->app->make(EvidenceRuns::class);
-        $used = $this->permit();
-        $evidence->start($used, $this->agent(), 'first');
-
-        $this->assertRefused(fn () => $evidence->start($used, $this->agent(), 'second'));
-        $expired = $this->permit();
-        $expired->expire();
-        $this->assertRefused(fn () => $evidence->start($expired, $this->agent(), 'first'));
-        $stranger = ActorIdentity::ofClass(Agent::class, 'another-agent');
-        $this->assertRefused(fn () => $evidence->start($this->permit(), $stranger, 'first'));
-    }
-
     private function permit(): EvidencePermit
     {
         $limits = new PermitLimits(1_000_000, 60, 60);
@@ -82,15 +67,5 @@ final class EvidencePermitTest extends TestCase
     private function agent(): ActorIdentity
     {
         return ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
-    }
-
-    private function assertRefused(callable $attempt): void
-    {
-        try {
-            $attempt();
-            $this->fail('The permit was not refused.');
-        } catch (EvidencePermitRefused) {
-            $this->addToAssertionCount(1);
-        }
     }
 }

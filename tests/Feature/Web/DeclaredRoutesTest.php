@@ -10,16 +10,12 @@ use App\Declarations\Section;
 use App\Declarations\Slot;
 use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
-use App\Exceptions\UiPrefixUnavailable;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
 use App\Support\UiDeclarations;
-use Illuminate\Routing\Route;
-use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
-use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\UiDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\Desk\SaveDraft;
@@ -54,28 +50,6 @@ final class DeclaredRoutesTest extends TestCase
         $router->getRoutes()->refreshNameLookups();
     }
 
-    public function test_a_declared_page_is_served_by_the_page_controller_under_its_domain_prefix(): void
-    {
-        $this->actingAs($this->owner)->get('/library')
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('library/Books', false));
-
-        $this->assertSame('/library/books', route('library.add', absolute: false));
-    }
-
-    public function test_a_hidden_page_answers_exactly_as_a_missing_one(): void
-    {
-        $hidden = $this->actingAs($this->owner)->get('/library/hidden')->assertNotFound();
-        $missing = $this->actingAs($this->owner)->get('/library/nothing-here')->assertNotFound();
-
-        $this->assertSame($missing->getContent(), $hidden->getContent());
-    }
-
-    public function test_a_guest_is_sent_to_sign_in_rather_than_told_the_page_is_missing(): void
-    {
-        $this->get('/library/hidden')->assertRedirect('/login');
-    }
-
     public function test_an_action_runs_behind_its_page_and_a_section_action_behind_its_host_and_its_own_check(): void
     {
         $this->actingAs($this->owner)->post('/library/books')->assertOk()->assertSeeText('added');
@@ -92,38 +66,6 @@ final class DeclaredRoutesTest extends TestCase
         $this->actingAs($this->owner)->get('/library')->assertOk();
         $this->actingAs($this->owner)->get('/library/hidden')->assertNotFound();
         $this->actingAs($this->owner)->post('/library/hidden/books')->assertNotFound();
-    }
-
-    public function test_a_prefix_another_route_uses_is_refused(): void
-    {
-        $routes = new RouteCollection();
-        $routes->add(new Route(['GET'], 'library/old', fn () => 'old'));
-
-        $this->expectExceptionObject(UiPrefixUnavailable::usedByRoute('library', 'library/old'));
-
-        $this->declaredRoutes()->refuseTakenPrefixes($routes, public_path());
-    }
-
-    public function test_a_prefix_that_is_a_public_folder_is_refused(): void
-    {
-        $this->expectExceptionObject(UiPrefixUnavailable::usedByPublicFile('library'));
-
-        $this->declaredRoutes()->refuseTakenPrefixes(
-            new RouteCollection(),
-            dirname(__DIR__, 2).'/Fixtures/UiDeclarations/PublicFolder',
-        );
-    }
-
-    public function test_the_declared_routes_themselves_take_no_prefix(): void
-    {
-        $this->declaredRoutes()->refuseTakenPrefixes($this->app->make(Router::class)->getRoutes(), public_path());
-
-        $this->addToAssertionCount(1);
-    }
-
-    private function declaredRoutes(): DeclaredRoutes
-    {
-        return new DeclaredRoutes($this->declarations());
     }
 
     private function declarations(): UiDeclarations

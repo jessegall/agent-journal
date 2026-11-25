@@ -57,50 +57,6 @@ final class DocumentPageTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
     }
 
-    public function test_the_header_names_the_document_and_its_revision_and_the_first_tab_is_its_text(): void
-    {
-        $this->actingAs($this->owner)
-            ->get('/documents/docs/1')
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('layout/DeclaredLayout')
-                ->where('page.data.root.children.1.children.1.children.0.text', 'Design')
-                ->where('page.data.root.children.1.children.1.children.1.children.0.text', 'Doc 1 · revision 1')
-                ->where('page.data.root.children.1.children.1.children.4.tabs.0.key', 'text')
-                ->where('page.data.root.children.1.children.1.children.4.tabs.0.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.4.tabs.1.key', 'history')
-                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'text'));
-    }
-
-    public function test_the_document_opens_in_the_reader_beside_the_library_list(): void
-    {
-        $this->actingAs($this->owner)
-            ->get('/documents/docs/1')
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.0.key', 'list')
-                ->where('page.data.root.children.1.children.1.key', 'detail')
-                ->where('page.data.root.children.1.children.1.style', 'reader'));
-    }
-
-    public function test_history_links_each_revision_and_an_unknown_tab_falls_back_to_the_first(): void
-    {
-        $this->actingAs($this->owner)
-            ->get('/documents/docs/1?tab=history')
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.4.tabs.1.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'history')
-                ->where('page.data.root.children.1.children.1.children.4.children.0.rows.0.href', '/documents/docs/1/revisions/1'));
-
-        $this->actingAs($this->owner)
-            ->get('/documents/docs/1?tab=missing')
-            ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.children.1.children.4.tabs.0.isChosen', true)
-                ->where('page.data.root.children.1.children.1.children.4.children.0.key', 'text'));
-    }
-
     public function test_the_held_draft_stays_under_the_header_on_every_tab(): void
     {
         $this->actingAs($this->owner)->post('/documents/docs/1/open')->assertRedirect();

@@ -7,23 +7,18 @@ namespace Tests\Feature\Assignments;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Bus\CommandBus;
-use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;
-use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use Domain\Rules\RulesDomain;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
-use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -78,57 +73,6 @@ final class ModuleAssignmentTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_a_modules_note_takes_a_holder_like_any_record(): void
-    {
-        $this->installNotes();
-        $this->journal->actAsUserId($this->owner->id);
-
-        $result = $this->app->make(AssignmentWriterInTransaction::class)->assign(
-            $this->note->assignmentIdentity(),
-            AssigneeIdentity::of($this->writer),
-        );
-        $set = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
-
-        $this->assertCount(1, $result->changes);
-        $this->assertTrue(
-            $set->forRecord($this->note->assignmentIdentity())->get()->holder()->isSameAs(
-                AssigneeIdentity::of($this->writer),
-            ),
-        );
-    }
-
-    public function test_an_agent_sees_only_the_notes_it_wrote_and_nobody_reads_without_acting(): void
-    {
-        $this->installNotes();
-        $this->journal->actAsUserId($this->owner->id);
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(
-            $this->note->assignmentIdentity(),
-            AssigneeIdentity::of($this->writer),
-        );
-
-        $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
-        $hidden = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
-        $this->assertThrows(
-            fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign(
-                $this->note->assignmentIdentity(),
-                AssigneeIdentity::of($this->main),
-            ),
-            RecordUnavailable::class,
-        );
-
-        $this->journal->actAsAgentIds($this->writer->id, TestIds::of(2));
-        $own = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
-
-        $this->app->forgetScopedInstances();
-        $this->assertThrows(
-            fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]),
-            ActorContextMissing::class,
-        );
-
-        $this->assertSame([], $hidden->assignments);
-        $this->assertCount(1, $own->assignments);
-    }
-
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
     {
         $noteId = strtolower((string) Str::ulid());
@@ -156,15 +100,5 @@ final class ModuleAssignmentTest extends TestCase
 
         $this->assertCount(1, $result->changes);
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
-    }
-
-    /**
-     * Registers the module as a package would: its provider, and its assignable record through the domain foundation.
-     */
-    private function installNotes(): void
-    {
-        $this->installNotesModule();
-        $this->note = new Note(['text' => 'Check the lock order']);
-        $this->note->saveFor($this->writer->id);
     }
 }

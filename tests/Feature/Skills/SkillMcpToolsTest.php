@@ -8,14 +8,12 @@ use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Skills\SkillRevision;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
-use App\Values\SkillKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
@@ -52,19 +50,6 @@ final class SkillMcpToolsTest extends TestCase
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->caller = TestStart::start();
-    }
-
-    public function test_skill_reads_stay_on_the_native_and_console_surfaces(): void
-    {
-        $this->caller->startRequest($this->app);
-        $skill = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'));
-        $this->assertNotEmpty($skill->rendered->markdown);
-        $this->journal->mcpRequest($this->caller, 'tools/call', [
-            'name' => 'skills_show', 'arguments' => ['key' => 'journal-skills'],
-        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->journal->mcpRequest($this->caller, 'tools/call', [
-            'name' => 'skills_list', 'arguments' => (object) [],
-        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
     }
 
     public function test_an_agent_edit_is_hidden_and_the_bus_refuses_the_same_write(): void

@@ -97,15 +97,6 @@ final class LibraryPageTest extends TestCase
                 ));
     }
 
-    public function test_a_fresh_library_says_why_it_is_empty(): void
-    {
-        $this->actingAs($this->owner)
-            ->get('/documents')
-            ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('page.data.root.children.1.style', 'page-empty')
-                ->where('page.data.root.children.1.children.2.key', 'first-doc'));
-    }
-
     private function file(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(

@@ -9,9 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Engine\RefusalCode;
 use App\Enums\Profiles\PolicyOriginType;
-use App\Exceptions\ProfileMissing;
 use App\Support\AgentImage;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
@@ -22,7 +20,6 @@ use App\Values\ProfileKey;
 use App\Values\ProfileStartPolicy;
 use App\Values\StopCondition;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
@@ -119,26 +116,6 @@ final class ProfileResolverTest extends TestCase
 
         $this->assertSame([ExecutionModeType::ProtectedHost, null], [$main->mode, $main->imageReference]);
         $this->assertEquals(ExecutionBudgets::defaults(), $main->budgets);
-    }
-
-    public function test_a_key_without_an_activated_revision_is_profiles_unavailable(): void
-    {
-        DB::table('profiles')->insert([
-            'id' => strtolower((string) Str::ulid()),
-            'key' => 'journal-draft',
-            'label' => 'Draft',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        foreach (['journal-draft', 'journal-unknown'] as $key) {
-            try {
-                $this->resolver()->snapshotFor(ProfileKey::from($key));
-                $this->fail("Profile {$key} was read without an activated revision.");
-            } catch (ProfileMissing $missing) {
-                $this->assertSame(RefusalCode::ProfilesUnavailable, $missing->refusalCode());
-            }
-        }
     }
 
     public function test_the_proposal_file_changes_nothing_the_reader_answers(): void

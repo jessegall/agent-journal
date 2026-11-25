@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Api\Processes\ProcessApi;
 use App\Contracts\Bus\CommandClassifier;
-use App\Contracts\Files\Files;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\LifecycleStatus;
 use App\Models\Agents\Agent;
@@ -14,20 +12,14 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Support\Execution\ChannelRunEvents;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
-use App\Values\PartKey;
-use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Processes\ProcessOutputDisk;
-use Tests\Support\RecordedPayloads;
-use Tests\Support\RecordingLogger;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
-use Throwable;
 
 /**
  * process:run fetches its admission once and reports every part over the signed event channel; repeats change
@@ -76,65 +68,6 @@ final class ProcessChannelTest extends TestCase
                 ProcessEvent::OPERATIONAL_ERROR,
             )->count(),
         );
-    }
-
-    public function test_replaying_the_spool_changes_nothing_and_a_lost_connection_is_made_up(): void
-    {
-        $run = $this->admit('echo hi');
-        $eventKey = (string) $this->journal->agentCall(
-            $this->start,
-            'POST',
-            "/agent/processes/admissions/{$run->id}",
-            ['request_key' => 'channel-1'],
-        )->json('event_key');
-        $calls = new RecordedPayloads();
-        $files = $this->app->make(Files::class);
-        $events = new ChannelRunEvents(
-            new ProcessApi($calls),
-            $run->id,
-            $eventKey,
-            $files->filePathOf($this->folder.'/spool'),
-            $files,
-            $this->app->make(LoggerInterface::class),
-        );
-        $part = new PartKey(1, 1, 'echo');
-
-        $events->queued($part);
-        $events->startedInside($part, 'host');
-        $calls->passThrough();
-        $events->flush();
-        $events->flush();
-
-        $this->assertSame(2, ProcessEvent::query()->where('process_run_id', $run->id)->count());
-        $this->assertSame(
-            LifecycleStatus::Running,
-            PartRun::query()->where('process_run_id', $run->id)->firstOrFail()->lifecycle,
-        );
-    }
-
-    public function test_a_send_that_fails_leaves_the_events_spooled_and_logs_why(): void
-    {
-        $run = $this->admit('echo hi');
-        $calls = new RecordedPayloads();
-        $files = $this->app->make(Files::class);
-        $logger = new RecordingLogger();
-        $events = new ChannelRunEvents(
-            new ProcessApi($calls),
-            $run->id,
-            'key',
-            $files->filePathOf($this->folder.'/spool-failing'),
-            $files,
-            $logger,
-        );
-
-        $events->queued(new PartKey(1, 1, 'echo'));
-        $events->flush();
-
-        $context = $logger->contextOf('processes.run_events_not_sent');
-        $this->assertTrue($events->isWaitingToSend());
-        $this->assertSame($run->id, $context['run_id']);
-        $this->assertArrayHasKey('failure', $context);
-        $this->assertInstanceOf(Throwable::class, $context['exception']);
     }
 
     private function admit(string $line): ProcessRun

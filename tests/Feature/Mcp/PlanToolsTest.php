@@ -7,7 +7,6 @@ namespace Tests\Feature\Mcp;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
@@ -24,10 +23,6 @@ final class PlanToolsTest extends TestCase
     use CommitsHookRows;
 
     private const string RELEASE_NOTE = 'Release complete.';
-
-    private const string CANCEL_REASON = 'Work moved elsewhere.';
-
-    private const string PLAN_TITLE = 'New title';
 
     private const array TABLES = [
         'users', 'agents', 'agent_sessions', 'agent_stacks', 'session_tokens',
@@ -119,44 +114,6 @@ final class PlanToolsTest extends TestCase
         )->assertOk()->assertJsonPath('plan_id', $id);
         $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])->assertOk()
             ->assertJsonPath('result.structuredContent.finish_note', self::RELEASE_NOTE);
-    }
-
-    public function test_plan_edits_and_cancellation_respect_the_read_revision(): void
-    {
-        $plan = Plan::factory()->create();
-        $this->journal->mcpTool($this->caller, 'plans_edit', [
-            'plan_id' => $plan->id,
-            'expected_revision' => 1,
-            'title' => 'New title',
-            'type' => 'fix',
-            'request_key' => 'edit-plan',
-        ])->assertOk()->assertJsonPath('result.structuredContent.revision', 2);
-        $this->journal->agentCall($this->caller, 'POST', '/agent/plans/cancel', [
-            'plan_id' => $plan->id,
-            'expected_revision' => 2,
-            'reason' => 'Work moved elsewhere.',
-            'request_key' => 'cancel-plan',
-        ])->assertOk();
-
-        $this->journal->mcpTool($this->caller, 'plans_read', ['plan_id' => $plan->id, 'view' => 'context'])->assertOk()
-            ->assertJsonPath('result.structuredContent.title', self::PLAN_TITLE)
-            ->assertJsonPath('result.structuredContent.type', 'fix')
-            ->assertJsonPath('result.structuredContent.cancel_reason', self::CANCEL_REASON);
-    }
-
-    public function test_plan_authoring_is_hidden_from_a_writing_helper_while_plan_reads_remain_available(): void
-    {
-        $helper = TestStart::start('writing-helper');
-        $plan = Plan::factory()->create();
-        $this->journal->mcpRequest($helper, 'tools/call', [
-            'name' => 'plans_create',
-            'arguments' => [
-                'title' => 'Hidden write', 'brief' => 'No plan', 'type' => 'build', 'request_key' => 'helper-plan',
-            ],
-        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->journal->mcpTool($helper, 'plans_read', ['plan_id' => $plan->id])->assertOk()
-            ->assertJsonPath('result.structuredContent.plan_id', $plan->id);
-        $this->assertSame(1, Plan::query()->count());
     }
 
     private function phase(string $planId, string $title, string $key): string

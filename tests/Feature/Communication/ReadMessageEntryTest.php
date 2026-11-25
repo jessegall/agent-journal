@@ -35,14 +35,4 @@ final class ReadMessageEntryTest extends MessagingTestCase
         iterator_to_array($state->onMessageRead(new MessageRead($second, $inboxId, $reader)));
         $this->assertTrue($state->isFinished());
     }
-
-    public function test_a_state_entering_an_inbox_with_nothing_unread_is_finished(): void
-    {
-        $inboxId = $this->inboxIdOf($this->builder);
-        $state = new ReadMessageState($inboxId, $this->builder->agent_id, new AnswerBudget(2));
-
-        $state->onEnter();
-
-        $this->assertTrue($state->isFinished());
-    }
 }

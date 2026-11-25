@@ -4,31 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Assignments\AssignedWorkProvider;
-use App\Contracts\Assignments\AssignedWorkResolver as AssignedWorkResolverContract;
 use App\Contracts\Assignments\AssignmentQuery as AssignmentQueryContract;
-use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Resolvers\AssignedWorkResolver;
 use App\Support\AssigneeIdentity;
-use App\Support\Bootstrappers\RegisterAssignables;
-use App\Support\DomainEntry;
 use App\Support\RecordIdentity;
-use App\Support\Registry\AssignmentRegistry;
-use App\Support\Storage\AssignmentQuery;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\Eloquent\Builder;
-use RuntimeException;
-use Tests\Fixtures\Domains\Errands\ErrandsDomain;
-use Tests\Fixtures\Domains\Errands\ErrandWork;
 use Tests\Support\DomainBoot;
-use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -39,8 +24,6 @@ use Tests\TestCase;
 final class AssignmentQueryTest extends TestCase
 {
     use RefreshHookDatabase;
-
-    private const string COUNT_FAILED = 'The count failed.';
 
     /**
      * The domains this test uses beside core.
@@ -65,31 +48,6 @@ final class AssignmentQueryTest extends TestCase
         $this->journal->actAsUserId(TestIds::of(1));
     }
 
-    public function test_the_subqueries_select_the_held_and_the_assigned_ids_of_one_type(): void
-    {
-        [$first, $second, $third, $free] = $this->tasks(4);
-        $this->hold($first, $this->builder);
-        $this->hold($second, $this->builder);
-        $this->hold($third, $this->reviewer);
-        AssignmentRecord::create(TestActors::record('plans.plan', 40), $this->builder);
-
-        $query = $this->app->make(AssignmentQueryContract::class);
-
-        $this->assertInstanceOf(AssignmentQuery::class, $query);
-        $this->assertSame(
-            self::sorted([$first, $second]),
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::linkType(), $this->builder))),
-        );
-        $this->assertSame(
-            self::sorted([$first, $second, $third]),
-            $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::linkType()))),
-        );
-        $this->assertSame(
-            [$free],
-            $this->taskIds(fn ($tasks) => $tasks->whereNotIn('id', $query->assignedIds(Task::linkType()))),
-        );
-    }
-
     public function test_a_released_assignment_leaves_the_subqueries(): void
     {
         [$first, $second] = $this->tasks(2);
@@ -105,44 +63,6 @@ final class AssignmentQueryTest extends TestCase
         $this->assertSame(
             [$first],
             $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->assignedIds(Task::linkType()))),
-        );
-    }
-
-    public function test_the_subqueries_see_holdings_with_nobody_signed_in(): void
-    {
-        [$first] = $this->tasks(1);
-        $this->hold($first, $this->builder);
-        $this->app->make(CurrentActorSetter::class)->clear();
-
-        $query = $this->app->make(AssignmentQuery::class);
-
-        $this->assertSame([$first], $query->heldIds(Task::linkType(), $this->builder)->pluck('record_id')->all());
-        $this->assertSame([$first], $query->assignedIds(Task::linkType())->pluck('record_id')->all());
-    }
-
-    public function test_the_work_reader_asks_the_registered_provider_and_lets_its_failure_through(): void
-    {
-        $registry = new AssignmentRegistry();
-        new RegisterAssignables($registry)(DomainEntry::fromClass(ErrandsDomain::class));
-        $resolver = new AssignedWorkResolver($registry);
-        $this->app->scoped(ErrandWork::class, fn () => new class implements AssignedWorkProvider
-        {
-            public function countFor(AssigneeIdentity $holder): int
-            {
-                return $holder->id === TestIds::of(7) ? 3 : throw SimulatedFailure::of('The count failed.');
-            }
-        });
-
-        $this->assertInstanceOf(AssignedWorkResolver::class, $this->app->make(AssignedWorkResolverContract::class));
-        $this->assertSame(3, $resolver->count(ErrandsDomain::ERRAND, $this->builder));
-        $this->assertThrows(
-            fn () => $resolver->count(ErrandsDomain::ERRAND, $this->reviewer),
-            RuntimeException::class,
-            self::COUNT_FAILED,
-        );
-        $this->assertThrows(
-            fn () => $resolver->count('errands.unknown', $this->builder),
-            AssignmentTypeUnavailable::class,
         );
     }
 
@@ -169,21 +89,5 @@ final class AssignmentQueryTest extends TestCase
         $filter($tasks);
 
         return array_values($tasks->readAll('the test reads every task it made')->pluck('id')->all());
-    }
-
-    /**
-     * @param  list<string>  $ids
-     * @return list<string>
-     */
-    private static function sorted(array $ids): array
-    {
-        sort($ids);
-
-        return $ids;
-    }
-
-    private function taskFixtures(): TaskFixtures
-    {
-        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

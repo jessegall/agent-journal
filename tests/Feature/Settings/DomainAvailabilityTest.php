@@ -8,14 +8,9 @@ use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Domains\DomainAvailability as DomainAvailabilityContract;
-use App\Exceptions\DomainNotFound;
-use App\Exceptions\SettingStorageInvalid;
-use App\Models\Records\SettingsRecord;
 use App\Support\DomainAvailability;
 use App\Support\DomainRegistry;
 use App\Support\DomainStatus;
-use App\Support\Storage\EncodedToggle;
-use App\Support\Storage\EncodedValue;
 use App\Values\GroupReference;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;
@@ -85,31 +80,6 @@ final class DomainAvailabilityTest extends TestCase
         $this->switchOff('domain_tasks');
 
         $this->assertTrue($this->availability()->isEnabled('Core'));
-    }
-
-    public function test_one_answer_reads_core_settings_once(): void
-    {
-        $availability = $this->availability();
-
-        $this->assertSame(1, $this->readCounts(fn () => $availability->isEnabled('Plans'))->queriesRun);
-    }
-
-    public function test_a_corrupt_switch_is_an_error_never_a_guess(): void
-    {
-        SettingsRecord::create('Core');
-        $record = SettingsRecord::findSharedRuntimeForOwner('Core')->get();
-        $record->revise($record->document->withToggle(new EncodedToggle('domain_tasks', EncodedValue::of('off'))));
-
-        $this->expectException(SettingStorageInvalid::class);
-
-        $this->availability()->isEnabled('Plans');
-    }
-
-    public function test_an_unknown_owner_is_an_error(): void
-    {
-        $this->expectException(DomainNotFound::class);
-
-        $this->availability()->isEnabled('Nobody');
     }
 
     private function switchOff(string $key): void

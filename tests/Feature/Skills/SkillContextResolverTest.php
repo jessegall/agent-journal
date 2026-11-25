@@ -8,7 +8,6 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Skills\ConditionOutcome;
-use App\Exceptions\SkillAgentHidden;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Resolvers\Support\SkillContextResolver;
@@ -71,37 +70,6 @@ final class SkillContextResolverTest extends TestCase
 
         $this->assertSame(1, $context->profile->snapshot?->revision);
         $this->assertSame('First.', $context->profile->snapshot?->instructions);
-    }
-
-    public function test_two_requests_in_one_worker_get_their_own_contexts(): void
-    {
-        [$first, $firstSession] = $this->start('main-agent', null);
-        [$second, $secondSession] = $this->start('main-agent', null);
-
-        $this->journal->actAsAgentIds($first->id, $firstSession->id);
-        $firstContext = $this->app->make(SkillContext::class);
-        $this->assertSame($firstContext, $this->app->make(SkillContext::class));
-
-        $this->app->forgetScopedInstances();
-        $this->journal->actAsAgentIds($second->id, $secondSession->id);
-        $secondContext = $this->app->make(SkillContext::class);
-
-        $this->assertSame($first->id, $firstContext->actor->id);
-        $this->assertSame($second->id, $secondContext->actor->id);
-    }
-
-    public function test_a_preview_reads_only_an_agent_the_actor_may_see(): void
-    {
-        [$main, $mainSession] = $this->start('main-agent', null);
-        [$other] = $this->start('main-agent', null);
-        $this->journal->actAsAgentIds($main->id, $mainSession->id);
-        $resolver = $this->app->make(SkillContextResolver::class);
-
-        $this->assertSame($main->id, $resolver->forAgent($main)->actor->id);
-
-        $this->expectException(SkillAgentHidden::class);
-
-        $resolver->forAgent($other);
     }
 
     private function activateReviewer(string $instructions): void

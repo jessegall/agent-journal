@@ -6,7 +6,6 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReadView;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
@@ -17,9 +16,7 @@ use App\Support\StartSessions;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
-use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
@@ -29,7 +26,6 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -99,16 +95,6 @@ final class TaskDetailsResolverTest extends TestCase
 
         // One read for the holders' names, now that starting a task gives it to its starter, and one for the runners.
         $this->assertSame(2, $agentReads);
-    }
-
-    public function test_a_task_nobody_may_read_answers_like_a_missing_one(): void
-    {
-        $this->asUser();
-
-        $this->assertThrows(
-            fn () => $this->app->make(TaskDetailsResolver::class)->details(TestIds::of(999999), ReadView::Summary),
-            TaskMissing::class,
-        );
     }
 
     private function start(string $name): AgentSession

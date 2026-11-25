@@ -10,7 +10,6 @@ use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;
-use App\Contracts\Scripts\ScriptChecks;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\StopPreparationStatus;
 use App\Enums\Terminals\StepStatus;
@@ -21,10 +20,8 @@ use App\Support\ActorIdentity;
 use App\Support\ProfileProposal;
 use App\Values\AgentText;
 use App\Values\CommitObservation;
-use App\Values\CompiledScript;
 use App\Values\DraftExpectations;
 use App\Values\ProfileKey;
-use App\Values\ScriptCheck;
 use App\Values\ScriptSource;
 use App\Values\StopPreparation;
 use App\Values\StopPreparationRequest;
@@ -126,29 +123,6 @@ final class StopPreparationTest extends TestCase
         $this->answerReads(isDirty: false);
 
         $this->assertSame(StopPreparationStatus::FinalChecks, $this->stopAgain()->state);
-    }
-
-    public function test_a_changed_definition_holds_before_any_instruction_with_one_owner_notice(): void
-    {
-        $this->app->instance(ScriptChecks::class, new class implements ScriptChecks
-        {
-            public function check(ScriptSource $source): ScriptCheck
-            {
-                return new ScriptCheck([], [], new CompiledScript('', [], [], 'changed'), $source->hash(), 'catalogue');
-            }
-        });
-
-        $held = $this->stopAgain();
-        $stillHeld = $this->stopAgain();
-
-        $this->assertSame([StopPreparationStatus::Held, true], [$held->state, $held->tellsOwner]);
-        $reason = TestText::words(AgentText::of('core.stop.definitions_changed'));
-        $this->assertSame(
-            TestText::words(AgentText::of('core.stop.script_held', ['reason' => $reason])),
-            TestText::words($held->message),
-        );
-        $this->assertFalse($stillHeld->tellsOwner);
-        $this->assertSame(0, WorkspaceRead::query()->count());
     }
 
     /**

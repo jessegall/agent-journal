@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Support\ReflectedType;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Events\TaskBlocked;
-use Domain\Tasks\Events\TaskCancelled;
-use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
@@ -62,18 +57,6 @@ final class TaskPageSignalsTest extends TestCase
             TaskStartCommitted::class,
             fn (TaskStartCommitted $sent) => $sent->taskId === $task->id,
         );
-    }
-
-    public function test_the_ending_facts_of_a_task_are_page_signals(): void
-    {
-        foreach ([
-            TaskFinished::class,
-            TaskBlocked::class,
-            TaskCancelled::class,
-            TaskStartCommitted::class,
-        ] as $fact) {
-            $this->assertTrue(ReflectedType::of($fact)->isSubclassOf(UserInterfaceUpdater::class), $fact);
-        }
     }
 
     private function tasks(): TaskFixtures

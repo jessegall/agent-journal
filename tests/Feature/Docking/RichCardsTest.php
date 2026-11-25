@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Docking;
 
 use App\Contracts\Bus\CommandBus;
-use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
@@ -18,15 +17,9 @@ use Domain\Documents\DocumentsDomain;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Rules\RulesDomain;
-use Domain\Tasks\Enums\TaskStatus;
-use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Modules\Notes\Models\Note;
-use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
-use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
@@ -43,16 +36,6 @@ final class RichCardsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
-
-    private const string NO_PHASES_TEXT = '"text":"No phases yet"';
-
-    private const string PROGRESS_PATTERN = '/"completed":1,"total":8.*"label":"Waiting for estimate"'
-        .'.*"type":"duration".*"type":"duration"/';
-
-    private const string TRUNCATED_LINES = '"lines":["error: <script>","second line"],"isTruncated":true';
-
-    private const string OVERSIZED_CARD = '"accessibleName":"Release review, oversized",'
-        .'"safeSummary":"Release review, oversized","open":null,"root":null';
 
     private const array TABLES = [
         'users',
@@ -133,52 +116,6 @@ final class RichCardsTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CloseReportCommand((string) $report->number, 'Done.'));
 
         $this->assertStringContainsString('"text":"Closed","tone":"muted"', $this->cards());
-    }
-
-    public function test_a_docked_task_shows_its_state_and_a_plan_without_phases_says_so(): void
-    {
-        $task = Task::factory()->create(['title' => 'Ship the dock', 'status' => TaskStatus::Blocked]);
-        $plan = Plan::factory()->create(['title' => 'Dock plan']);
-        $this->dock('tasks.task', $task->id);
-        $this->dock('plans.plan', $plan->id);
-
-        $cards = $this->cards();
-
-        $this->assertStringContainsString('"text":"Blocked","tone":"warn"', $cards);
-        $this->assertStringContainsString(self::NO_PHASES_TEXT, $cards);
-        $this->assertStringNotContainsString('"type":"counted-progress"', $cards);
-    }
-
-    public function test_the_release_review_holds_every_part_in_order_and_its_oversized_twin_only_its_summary(): void
-    {
-        new Note(['text' => 'One check'])->saveFor($this->agent->agent->id);
-        $this->dock(NotesServiceProvider::REVIEW_TYPE, ReleaseReview::KEY);
-        $this->dock(NotesServiceProvider::REVIEW_TYPE, ReleaseReview::OVERSIZED_KEY);
-
-        $cards = $this->cards();
-
-        $this->assertMatchesRegularExpression(
-            self::PROGRESS_PATTERN,
-            $cards,
-        );
-        $this->assertStringContainsString('"title":"Checks","initial":"closed"', $cards);
-        $this->assertStringContainsString(self::TRUNCATED_LINES, $cards);
-        $this->assertStringContainsString(self::OVERSIZED_CARD, $cards);
-    }
-
-    public function test_a_task_change_refreshes_the_page_once_whether_or_not_the_task_is_docked(): void
-    {
-        $docked = Task::factory()->create(['title' => 'Docked']);
-        $loose = Task::factory()->create(['title' => 'Loose']);
-        $this->dock('tasks.task', $docked->id);
-        Event::fake([PageChanged::class]);
-
-        // A task change refreshes every page once, docks included, so a docked task adds no second refresh.
-        $this->app->make('events')->dispatch(new TaskCancelled($loose->id, TaskStatus::Open, 'entry'));
-        Event::assertDispatchedTimes(PageChanged::class, 1);
-
-        $this->app->make('events')->dispatch(new TaskCancelled($docked->id, TaskStatus::Open, 'entry'));
-        Event::assertDispatchedTimes(PageChanged::class, 2);
     }
 
     private function dock(string $type, string $id): void

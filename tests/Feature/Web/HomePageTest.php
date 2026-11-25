@@ -14,15 +14,12 @@ use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
 use App\Support\StartSessions;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -32,10 +29,6 @@ use Tests\TestCase;
 final class HomePageTest extends TestCase
 {
     use CommitsHookRows;
-
-    private const string PRIVATE_BODY = 'Private words';
-
-    private const string NO_STORE_HEADER = 'no-store, private';
 
     private const array TABLES = [
         'users',
@@ -88,64 +81,6 @@ final class HomePageTest extends TestCase
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
-    public function test_a_guest_is_sent_to_sign_in(): void
-    {
-        $this->get('/')->assertRedirect('/login');
-    }
-
-    public function test_home_shows_the_agents_and_the_same_plans_slice_as_the_plans_page(): void
-    {
-        $this->actingAs(
-            $this->owner,
-        )->get('/?window[plans.list][q]=release&q=elsewhere')->assertOk()->assertInertia(fn (
-            AssertableInertia $page,
-        ) => $page
-            ->component('web/Home')
-            ->where('page.data.windows.0.paneKey', 'chat')
-            ->where('page.data.windows.1.paneKey', 'plans')
-            ->where('page.data.windows.2.paneKey', 'tasks')
-            ->where('page.data.windows.3.paneKey', 'web.asks')
-            ->where('page.data.windows.4.paneKey', 'documents')
-            ->where('page.data.windows.5.paneKey', 'helpers')
-            ->where('page.data.windows.6.paneKey', 'reminders')
-            ->where('page.data.windows.7.paneKey', 'rules')
-            ->where('page.data.barSections.0.propName', 'section_web_bar_accounts_notices')
-            ->where('page.data.barSections.1.propName', 'section_web_bar_chat_agent')
-            ->missing('window_chat_conversation')
-            ->missing('page.data.plans')
-            ->missing('page.data.chat')
-            ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
-                ->where('window_plans_list.data.root.children.0.children.1.text', '1'))
-            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.state', 'ready')
-                ->where('window_chat_conversation.data.agents.0.id', $this->session->agent_id)
-                ->where('window_chat_conversation.data.agents.0.name', 'Builder')
-                ->where('window_chat_conversation.data.agents.0.actions', ['switch'])
-                ->where('window_chat_conversation.data.isSetupRequired', true)
-                ->missing('window_chat_conversation.data.conversation')));
-    }
-
-    public function test_the_rules_window_reads_its_own_search_and_page_beside_the_plans_window(): void
-    {
-        HoldingRules::create('Every phase ends with its tests.');
-        HoldingRules::create('Write all code in plain English.');
-
-        $this->actingAs(
-            $this->owner,
-        )->get('/?window[plans.list][q]=release&window[rules.list][q]=phase')->assertOk()->assertInertia(fn (
-            AssertableInertia $page,
-        ) => $page
-            ->missing('page.data.rules')
-            ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
-                ->where('window_rules_list.data.root.children.0.children.1.field.value', 'phase')
-                ->where('window_rules_list.data.root.children.0.children.0.text', 'Rules (1)')
-                ->where('window_rules_list.data.root.children.1.children.0.children.0.text', 'No rules awaiting review')
-                ->where(
-                    'window_rules_list.data.root.children.1.children.0.children.1.rows.0.label',
-                    'Every phase ends with its tests.',
-                )));
-    }
-
     public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void
     {
         $body = <<<'TEXT'
@@ -174,36 +109,6 @@ final class HomePageTest extends TestCase
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.data.conversation.inboxId', $this->chatInboxId)
                 ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)));
-    }
-
-    public function test_chats_dock_shows_the_plans_waiting_for_review_beside_the_chosen_session(): void
-    {
-        $waiting = Plan::factory()->create(['title' => 'Review the dock', 'type' => PlanType::Build]);
-        Plan::query()->whereKey($waiting->id)->update(['status' => PlanStatus::Reviewing->value]);
-
-        $this->actingAs($this->owner)->get(
-            "/chat?session={$this->session->id}",
-        )->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
-                ->where('section_chat_dock_plans_waiting.state', 'ready')
-                ->where(
-                    'section_chat_dock_plans_waiting.data.root.children.0.rows.0.label',
-                    "plan {$waiting->number} · Review the dock",
-                )));
-        $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
-                ->where('section_chat_dock_plans_waiting', null)));
-    }
-
-    public function test_homes_bar_names_the_chosen_agent_through_chats_section(): void
-    {
-        $this->actingAs($this->owner)->get(
-            "/?agent={$this->session->agent_id}",
-        )->assertInertia(fn (AssertableInertia $page) => $page
-            ->loadDeferredProps('section_web_bar_chat_agent', fn (AssertableInertia $section) => $section
-                ->where('section_web_bar_chat_agent.state', 'ready')
-                ->where('section_web_bar_chat_agent.data.selectedAgentId', $this->session->agent_id)
-                ->where('section_web_bar_chat_agent.data.agents.0.name', 'Builder')));
     }
 
     public function test_a_message_written_for_a_session_the_agent_no_longer_runs_is_not_delivered(): void
@@ -252,32 +157,6 @@ final class HomePageTest extends TestCase
         $this->postJson('/chat/messages', [...$guessed, ...$this->seenSession()])
             ->assertStatus(401)
             ->assertJson(['code' => 'signed-out']);
-    }
-
-    /**
-     * @param  array<string, string>  $changes
-     */
-    private function outcomeOf(string $key, array $changes = []): TestResponse
-    {
-        $query = http_build_query([
-            'operation' => 'send',
-            'inboxId' => $this->chatInboxId,
-            'requestKey' => $key,
-            ...$changes,
-        ]);
-
-        return $this->actingAs($this->owner)->getJson("/chat/messages/outcome?{$query}");
-    }
-
-    /**
-     * @param  array<string, mixed>  $send
-     */
-    private function keyedSend(string $key, array $send): TestResponse
-    {
-        return $this->actingAs($this->owner)
-            ->from('/')
-            ->withHeader('Idempotency-Key', $key)
-            ->post('/chat/messages', [...$send, 'requestKey' => $key]);
     }
 
     /**

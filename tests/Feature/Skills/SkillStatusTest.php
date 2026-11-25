@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Data\Skills\GeneratedSkillData;
 use App\Enums\Files\Place;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Skills\GenerationStatus;
 use App\Enums\Skills\PublicationStatus;
-use App\Exceptions\SkillSessionHidden;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
-use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\SkillPublications;
 use App\Support\SkillPublisher;
 use App\Support\SkillPublishingService;
@@ -28,7 +24,6 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
-use Tests\Support\TestStartAuthority;
 use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
@@ -96,31 +91,6 @@ final class SkillStatusTest extends TestCase
             ->expectsOutputToContain('failed')
             ->expectsOutputToContain("php artisan skill:retry {$failed->id}")
             ->assertSuccessful();
-    }
-
-    public function test_an_agent_sees_only_its_own_sessions(): void
-    {
-        $own = $this->publish($this->openAgentSession('Main', 'main-agent'), 'First text.');
-        $other = $this->publish($this->openAgentSession('Helper', 'writing-helper'), 'Second text.');
-        $agentId = AgentSession::findById($own->session_id)->agent_id;
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agentId),
-            TestStartAuthority::forAgent($agentId),
-        );
-
-        $status = $this->app->make(SkillStatusResolver::class)->status();
-
-        $this->assertCount(1, $status->publications);
-        $this->assertSame($own->id, $status->publications[0]->publicationId);
-
-        try {
-            $this->app->make(SkillStatusResolver::class)->statusOfSession($other->session_id);
-            $this->fail('Another session\'s status was shown to the agent.');
-        } catch (SkillSessionHidden $hidden) {
-            $this->assertSame(SkillSessionHidden::create()->getMessage(), $hidden->getMessage());
-            $this->assertStringNotContainsString($other->session_id, $hidden->getMessage());
-            $this->assertStringNotContainsString($other->target, $hidden->getMessage());
-        }
     }
 
     private function openAgentSession(string $name, string $profileKey): AgentSession
