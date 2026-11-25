@@ -234,11 +234,13 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     }
 
     /**
+     * The name a tool is called by, read from its #[Name] without building it.
+     *
      * @param  class-string<JournalTool>  $className
      *
      * @throws McpToolNameInvalid
      */
-    private function toolName(string $className): string
+    public function toolName(string $className): string
     {
         $declaration = $this->reflectors->make($className);
 

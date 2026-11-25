@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
+use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Support\ReflectedType;
@@ -78,7 +79,7 @@ abstract class McpToolEntryTestCase extends TestCase
 
     private function toolName(): string
     {
-        return $this->app->make($this->tool())->name();
+        return $this->app->make(McpCatalogue::class)->toolName($this->tool());
     }
 
     private function isWriteTool(): bool
