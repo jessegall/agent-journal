@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Calls\Connections;
 
 use App\Enums\CommandRunState;
-use App\Values\CommandFrame;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -25,13 +24,13 @@ final class ProjectCommandStatus extends Data
     ) {}
 
     /**
-     * @param  list<CommandFrame>  $frames
+     * @param  list<ProjectCommandFrame>  $frames
      */
     public static function of(CommandRunState $state, array $frames): self
     {
         return self::from([
             'state' => $state,
-            'frames' => array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames),
+            'frames' => $frames,
         ]);
     }
 }

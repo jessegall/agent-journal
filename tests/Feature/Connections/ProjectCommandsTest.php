@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Calls\Connections\ProjectCommandFrame;
 use App\Enums\ArrangementType;
 use App\Enums\BindingReadiness;
 use App\Enums\CommandRunState;
@@ -16,7 +17,6 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
 use App\Values\BindingFolder;
 use App\Values\CommandFingerprint;
-use App\Values\CommandFrame;
 use App\Values\InstallTicket;
 use App\Values\PresenceReport;
 use Domain\Access\Models\User;
@@ -54,7 +54,7 @@ final class ProjectCommandsTest extends TestCase
     {
         [$start, $binding] = $this->connectedStart();
         $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
-        $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
+        $run->finish([ProjectCommandFrame::output(1, 'stdout', "Tasks\n"), ProjectCommandFrame::exit(2, 3)], 3);
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertOk();
 
@@ -68,7 +68,7 @@ final class ProjectCommandsTest extends TestCase
     {
         [$start, $binding] = $this->connectedStart();
         $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
-        $run->finish([CommandFrame::output(1, 'stdout', "Secret tasks\n"), CommandFrame::exit(2, 0)], 0);
+        $run->finish([ProjectCommandFrame::output(1, 'stdout', "Secret tasks\n"), ProjectCommandFrame::exit(2, 0)], 0);
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'], 'other input')->assertConflict();
 
@@ -100,7 +100,7 @@ final class ProjectCommandsTest extends TestCase
         [$start, $binding] = $this->connectedStart();
         [, $other] = $this->connectedStart();
         $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
-        $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
+        $run->finish([ProjectCommandFrame::output(1, 'stdout', "Tasks\n"), ProjectCommandFrame::exit(2, 3)], 3);
 
         $status = $this->readStatus($start, 'request-1', $binding->id)->assertOk();
 

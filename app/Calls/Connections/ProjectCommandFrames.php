@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Calls\Connections;
 
-use App\Values\CommandFrame;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -24,10 +23,10 @@ final class ProjectCommandFrames extends Data
     /**
      * The frames a run wrote, in order, as they go on the wire.
      *
-     * @param  list<CommandFrame>  $frames
+     * @param  list<ProjectCommandFrame>  $frames
      */
     public static function ofFrames(array $frames): self
     {
-        return self::from(['frames' => array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames)]);
+        return self::from(['frames' => $frames]);
     }
 }

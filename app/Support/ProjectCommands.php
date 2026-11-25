@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Calls\Connections\ProjectCommandFrame;
 use App\Calls\Connections\RunProjectCommandCall;
 use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
 use App\Commands\Projects\RecordProjectCommandProcess\RecordProjectCommandProcessCommand;
@@ -12,7 +13,6 @@ use App\Enums\CommandEntry;
 use App\Enums\CommandRunState;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
-use App\Values\CommandFrame;
 use App\Values\CommandRunStart;
 use Symfony\Component\Process\Process;
 
@@ -38,7 +38,7 @@ final readonly class ProjectCommands
      * a request key given for another operation, still running, interrupted or of unknown outcome is refused.
      *
      * @param  array<string, string>  $startEnvironment  the calling start's own credentials, without the journal's URL
-     * @return list<CommandFrame>
+     * @return list<ProjectCommandFrame>
      *
      * @throws VerbNotServed
      */
@@ -71,7 +71,7 @@ final readonly class ProjectCommands
     /**
      * The frames an earlier run of the request key kept, once it settled with an outcome.
      *
-     * @return list<CommandFrame>
+     * @return list<ProjectCommandFrame>
      *
      * @throws VerbNotServed
      */
@@ -125,7 +125,7 @@ final readonly class ProjectCommands
 
     /**
      * @param  array<string, string>  $environment
-     * @return list<CommandFrame>
+     * @return list<ProjectCommandFrame>
      */
     private function execute(RunProjectCommandCall $call, array $environment): array
     {
@@ -145,13 +145,13 @@ final readonly class ProjectCommands
         $frames = [];
 
         $process->start(function (string $type, string $bytes) use (&$frames): void {
-            $frames[] = CommandFrame::output(count($frames) + 1, $type === Process::ERR ? 'stderr' : 'stdout', $bytes);
+            $frames[] = ProjectCommandFrame::output(count($frames) + 1, $type === Process::ERR ? 'stderr' : 'stdout', $bytes);
         });
 
         $record = new RecordProjectCommandProcessCommand($call->requestKey->value, (int) $process->getPid());
         $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $record);
         $code = $process->wait();
-        $frames[] = CommandFrame::exit(count($frames) + 1, $code);
+        $frames[] = ProjectCommandFrame::exit(count($frames) + 1, $code);
 
         $finishRun = new FinishProjectCommandRunCommand($call->requestKey->value, $frames, $code);
         $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $finishRun);

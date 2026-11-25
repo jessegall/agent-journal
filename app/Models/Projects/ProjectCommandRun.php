@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Calls\Connections\ProjectCommandFrame;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -16,13 +17,13 @@ use App\Events\Connections\ProjectCommandFinished;
 use App\Events\Connections\ProjectCommandProcessRecorded;
 use App\Events\Connections\ProjectCommandReconciled;
 use App\Support\CommandRunEvidence;
-use App\Values\CommandFrame;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * One journal verb a connected machine ran on the server, by its request id: who ran it, for which binding, with
@@ -39,7 +40,7 @@ use Illuminate\Support\Carbon;
  * @property CommandRunState $state
  * @property int|null $pid
  * @property int|null $exit_code
- * @property list<array{sequence: int, stream: string, text: string, isBase64: bool, exitCode: int}> $frames
+ * @property DataCollection<int, ProjectCommandFrame> $frames
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -67,7 +68,7 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         return [
             'argv' => 'array',
             'state' => CommandRunState::class,
-            'frames' => 'array',
+            'frames' => DataCollection::class.':'.ProjectCommandFrame::class,
             'pid' => 'integer',
             'exit_code' => 'integer',
         ];
@@ -112,11 +113,11 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     }
 
     /**
-     * @param  list<CommandFrame>  $frames
+     * @param  list<ProjectCommandFrame>  $frames
      */
     public function finish(array $frames, int $exitCode): void
     {
-        $this->frames = array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames);
+        $this->frames = $frames;
         $this->exit_code = $exitCode;
         $this->state = $this->state->settledBy($exitCode);
         $this->assertSaved($this->save());
@@ -203,11 +204,11 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
     }
 
     /**
-     * @return list<CommandFrame>
+     * @return list<ProjectCommandFrame>
      */
     public function recordedFrames(): array
     {
-        return array_map(CommandFrame::fromRecord(...), $this->frames);
+        return array_values($this->frames->all());
     }
 
     // ----------[ Queries ]----------
