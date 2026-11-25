@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
+use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
+use Domain\Tasks\Values\TaskTransition;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -22,7 +25,21 @@ final class BlockTaskTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'task_runs', 'claim_authorizations'];
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'claim_authorizations',
+        'users',
+        'task_history',
+        'agents',
+        'agent_sessions',
+        'agent_stacks',
+        'assignments',
+        'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
+    ];
 
     private Task $task;
 
@@ -65,8 +82,64 @@ final class BlockTaskTest extends TestCase
         $this->assertSame(TaskStatus::Started, $this->task->refresh()->status);
     }
 
+    public function test_a_block_of_one_run_keeps_its_reason_after_the_next_run_starts(): void
+    {
+
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
+        $this->runCommand(new StartTaskCommand($task->id));
+        $this->runCommand(new BlockTaskCommand($task->id, 1, 'Waits for the schema.'));
+        $this->runCommand(new StartTaskCommand($task->id));
+
+        $history = $this->app->make(TaskHistoryResolver::class)->historyOf($task->id, null, 10);
+
+        $this->assertSame(
+            [
+                [
+                    2,
+                    TaskStatus::Blocked,
+                    TaskStatus::Started,
+                    null,
+                ],
+                [
+                    1,
+                    TaskStatus::Started,
+                    TaskStatus::Blocked,
+                    'Waits for the schema.',
+                ],
+                [
+                    1,
+                    TaskStatus::Open,
+                    TaskStatus::Started,
+                    null,
+                ],
+            ],
+            array_map(
+                fn (TaskTransition $entry) => [
+                    $entry->runNumber,
+                    $entry->fromState,
+                    $entry->toState,
+                    $entry->text,
+                ],
+                $history->entries,
+            ),
+        );
+
+        $this->assertSame([
+            3,
+            2,
+            1,
+        ], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
+    }
+
     private function tasks(): TaskFixtures
     {
         return $this->journal->fixtures(TaskFixtures::class);
+    }
+
+    private function runCommand(object $command): void
+    {
+        $this->app->make(CommandBus::class)->run($command);
     }
 }

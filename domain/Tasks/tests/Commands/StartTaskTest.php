@@ -4,13 +4,24 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
+use App\Contracts\Assignments\AssignmentQuery;
+use App\Contracts\Bus\CommandBus;
+use App\Support\PoolMembers;
+use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
+use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
+use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
+use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
+use Domain\Tasks\Exceptions\TaskWaitsUnmet;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\Fixtures\StartNamedTask;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
+use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -31,11 +42,24 @@ final class StartTaskTest extends TestCase
         'assignments',
         'agent_stacks',
         'command_receipts',
+        'users',
+        'agents',
+        'agent_sessions',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
+        'task_history',
+        'task_waits',
+        'task_wait_history',
     ];
 
     private const string START_KEY = '01JD8X0G9M3QZ6V4K2STARTKEY1';
 
     private TaskFixtures $tasks;
+
+    private Task $dependent;
+
+    private Task $prerequisite;
 
     protected function setUp(): void
     {
@@ -77,5 +101,100 @@ final class StartTaskTest extends TestCase
             TaskRestartRefused::class,
             fn () => $this->journal->run(new StartTaskCommand($work->task->id)),
         );
+    }
+
+    public function test_a_start_outside_the_browser_sends_one_page_signal_after_its_commit(): void
+    {
+
+        Event::fake([TaskStartCommitted::class]);
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
+        $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
+
+        Event::assertDispatchedTimes(TaskStartCommitted::class, 1);
+
+        Event::assertDispatched(
+            TaskStartCommitted::class,
+            fn (TaskStartCommitted $sent) => $sent->taskId === $task->id,
+        );
+    }
+
+    public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void
+    {
+        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
+
+        $this->assertThrows(
+            fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)),
+            TaskWaitsUnmet::class,
+        );
+
+        $this->assertNotContains($this->dependent->id, $this->pooled());
+
+        $this->runCommand(new StartTaskCommand($this->prerequisite->id));
+        $this->runCommand(new FinishTaskCommand($this->prerequisite->id, 1, 'Done.'));
+
+        $this->assertContains($this->dependent->id, $this->pooled());
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
+    }
+
+    public function test_a_waiver_makes_the_task_startable(): void
+    {
+        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
+
+        $this->runCommand(
+            new WaiveTaskWaitCommand($this->dependent->id, $this->prerequisite->id, 'Done by hand.'),
+        );
+
+        $this->assertContains($this->dependent->id, $this->pooled());
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
+    }
+
+    public function test_a_blocked_task_with_a_new_unmet_wait_cannot_restart_and_a_repeat_start_keeps_the_run(): void
+    {
+        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
+        $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
+
+        $this->runCommand(new BlockTaskCommand($this->dependent->id, 1, 'Waits for records.'));
+        $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
+
+        $this->assertThrows(
+            fn () => $this->runCommand(new StartTaskCommand($this->dependent->id)),
+            TaskWaitsUnmet::class,
+        );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
+    }
+
+    private function runCommand(object $command): mixed
+    {
+        return $this->journal->run($command);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function pooled(): array
+    {
+        return Task::resolveCandidates(
+            PoolMembers::all(),
+            $this->app->make(AssignmentQuery::class)->assignedIds(TaskType::linkType()),
+            50,
+        )->ids;
     }
 }
