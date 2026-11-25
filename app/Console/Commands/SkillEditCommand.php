@@ -41,7 +41,7 @@ final class SkillEditCommand extends Command
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $current->name),
                 (string) ($this->option('description') ?? $current->description),
-                $this->option('body') === null ? $current->sections : $console->sectionsOf(
+                $this->option('body') === null ? $current->sections->items() : $console->sectionsOf(
                     $console->bodyOf((string) $this->option('body')),
                 ),
                 $this->hasAudienceOptions() ? $console->conditionOf(

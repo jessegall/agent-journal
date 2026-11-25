@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use Spatie\LaravelData\Data;
 use App\Contracts\Reads\MarkdownParts;
 
 /**
  * One section of a skill: a stable key, its heading, and its Markdown written inline or taken from a Markdown part.
  */
-final readonly class SkillSection
+final class SkillSection extends Data
 {
-    private function __construct(
-        public string $key,
-        public string $heading,
-        public string|MarkdownPart $content,
+    public function __construct(
+        public readonly string $key,
+        public readonly string $heading,
+        public readonly string|MarkdownPart $content,
     ) {}
 
     public static function text(string $key, string $heading, string $markdown): self

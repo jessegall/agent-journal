@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use App\Casts\SkillSectionsCast;
+use Spatie\LaravelData\DataCollection;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int $revision
  * @property string $name
  * @property string $description
- * @property array $sections
+ * @property DataCollection<int, SkillSection> $sections
  * @property array $condition
  * @property int $condition_version
  * @property ActorType $author_type
@@ -61,7 +61,7 @@ final class SkillRevision extends Model implements ReadableModel
     {
         return [
             'revision' => 'integer',
-            'sections' => SkillSectionsCast::class,
+            'sections' => DataCollection::class.':'.SkillSection::class,
             'condition' => 'array',
             'condition_version' => 'integer',
             'author_type' => ActorType::class,
@@ -94,7 +94,8 @@ final class SkillRevision extends Model implements ReadableModel
         $skillRevision->revision = (is_numeric($latest) ? (int) $latest : 0) + 1;
         $skillRevision->name = $draft->name;
         $skillRevision->description = $draft->description;
-        $skillRevision->sections = array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections);
+        $sections = array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections);
+        $skillRevision->sections = SkillSection::collect($sections, DataCollection::class);
         $skillRevision->condition = $condition->toArray();
         $skillRevision->condition_version = self::CONDITION_VERSION;
         $skillRevision->author_type = $author->type;
@@ -135,7 +136,7 @@ final class SkillRevision extends Model implements ReadableModel
                     $section->heading,
                     $section->storedText(),
                 ),
-                $this->sections,
+                $this->sections->items(),
             ),
             json_encode($this->condition, JSON_THROW_ON_ERROR),
         ));

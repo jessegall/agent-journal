@@ -43,7 +43,7 @@ final class SkillRevisionCommand extends Command
 
                     {$section->storedText()}
                     TEXT,
-                    $revision->sections,
+                    $revision->sections->items(),
                 ),
             ];
         });

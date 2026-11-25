@@ -252,7 +252,7 @@ final readonly class SkillAuthoringService
                     'heading' => $section->heading,
                     'markdown' => $section->storedText(),
                 ],
-                $revision->sections,
+                $revision->sections->items(),
             ),
         ]);
     }
