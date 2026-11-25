@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Records\RecordVisibility;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -51,8 +50,7 @@ final class RecordVisibilityTest extends TestCase
 
         $this->createNotesTables();
         $this->installNotesModule();
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->writer = Agent::create('Writer', 'main-agent', $this->localProject());
         $this->resolver = Agent::create('Reader', 'main-agent', $this->localProject());
         $this->note = new Note(['text' => 'Check the lock order']);
@@ -68,7 +66,7 @@ final class RecordVisibilityTest extends TestCase
 
     public function test_a_visible_task_answers_yes_and_a_missing_one_no_under_two_actors(): void
     {
-        $task = Task::factory()->create(['title' => 'Write the reader']);
+        $task = $this->tasks()->task('Write the reader')->taskCalled('Write the reader');
 
         foreach ([$this->writer, $this->resolver] as $agent) {
             $this->journal->actAsAgentIds($agent->id, TestIds::of(50));
@@ -92,6 +90,13 @@ final class RecordVisibilityTest extends TestCase
     {
         $this->journal->actAsAgentIds($this->writer->id, TestIds::of(50));
 
-        $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.ledger-entry', 1)));
+        $this->assertFalse(
+            $this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.ledger-entry', 1)),
+        );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

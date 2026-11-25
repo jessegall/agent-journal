@@ -20,6 +20,7 @@ use App\Support\Registry\AssignmentRegistry;
 use App\Support\Storage\AssignmentQuery;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\Eloquent\Builder;
 use RuntimeException;
 use Tests\Fixtures\Domains\Errands\ErrandsDomain;
@@ -56,6 +57,8 @@ final class AssignmentQueryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         $this->builder = new AssigneeIdentity(Agent::storedType(), TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(Agent::storedType(), TestIds::of(8));
@@ -177,5 +180,10 @@ final class AssignmentQueryTest extends TestCase
         sort($ids);
 
         return $ids;
+    }
+
+    private function taskFixtures(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

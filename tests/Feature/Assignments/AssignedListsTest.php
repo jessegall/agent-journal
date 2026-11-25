@@ -19,6 +19,7 @@ use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Values\TaskFilters;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -56,6 +57,8 @@ final class AssignedListsTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->other = Agent::create('Other', 'read-only-helper', $this->localProject());
         $this->journal->actAsAgentIds($this->main->id, TestIds::of(1));
@@ -64,11 +67,11 @@ final class AssignedListsTest extends TestCase
     public function test_only_directly_held_tasks_are_listed_by_id_finished_ones_included(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $held = Task::factory()->create(['title' => 'Write the reader']);
-        $finished = Task::factory()->create(['title' => 'Write the store']);
+        $held = $this->tasks()->task('Write the reader')->taskCalled('Write the reader');
+        $finished = $this->tasks()->task('Write the store')->taskCalled('Write the store');
         $finished->finish('Done.');
-        $othersTask = Task::factory()->create(['title' => 'Not mine']);
-        Task::factory()->create(['title' => 'Nobody holds this']);
+        $othersTask = $this->tasks()->task('Not mine')->taskCalled('Not mine');
+        $this->tasks()->task('Nobody holds this');
         $writer->assign($finished->assignmentIdentity(), AssigneeIdentity::of($this->main));
         $writer->assign($held->assignmentIdentity(), AssigneeIdentity::of($this->main));
         $writer->assign($othersTask->assignmentIdentity(), AssigneeIdentity::of($this->other));
@@ -93,7 +96,7 @@ final class AssignedListsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $other = Plan::factory()->create(['title' => 'Research', 'type' => PlanType::Research]);
-        $task = Task::factory()->create(['title' => 'In the research plan']);
+        $task = $this->tasks()->task('In the research plan')->taskCalled('In the research plan');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($other, 'One'), [$task->id]);
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->main));
         $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->main));
@@ -106,7 +109,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_an_agent_holding_nothing_gets_an_empty_list_not_all_work(): void
     {
-        Task::factory()->create(['title' => 'Someone elses']);
+        $this->tasks()->task('Someone elses');
 
         $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
 
@@ -117,10 +120,10 @@ final class AssignedListsTest extends TestCase
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign(
-            Task::factory()->create(['title' => 'First'])->assignmentIdentity(),
+            $this->tasks()->task('First')->taskCalled('First')->assignmentIdentity(),
             AssigneeIdentity::of($this->main),
         );
-        $late = Task::factory()->create(['title' => 'Assigned meanwhile']);
+        $late = $this->tasks()->task('Assigned meanwhile')->taskCalled('Assigned meanwhile');
         $other = $this->otherConnection();
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
@@ -156,5 +159,10 @@ final class AssignedListsTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

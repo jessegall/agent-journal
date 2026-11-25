@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -39,6 +37,10 @@ final class PlanWorkCommandsTest extends TestCase
         'phases',
         'phase_tasks',
         'assignments',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -59,13 +61,12 @@ final class PlanWorkCommandsTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $open = Task::factory()->create(['title' => 'Open']);
-        $finished = Task::factory()->create(['title' => 'Finished']);
+        $open = $this->tasks()->task('Open')->taskCalled('Open');
+        $finished = $this->tasks()->task('Finished')->taskCalled('Finished');
         $finished->finish('Done.');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($this->plan, 'Working'), [$open->id]);
         $this->planStructure()->addTasks($this->planStructure()->addPhase($this->plan, 'Over'), [$finished->id]);
@@ -180,5 +181,10 @@ final class PlanWorkCommandsTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

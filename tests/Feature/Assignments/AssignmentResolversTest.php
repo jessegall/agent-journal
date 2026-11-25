@@ -16,6 +16,7 @@ use App\Support\AssigneeIdentity;
 use App\Support\IdListPage;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -49,6 +50,8 @@ final class AssignmentResolversTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper', $this->localProject()));
@@ -58,7 +61,9 @@ final class AssignmentResolversTest extends TestCase
     public function test_twenty_records_of_one_type_cost_one_visibility_query_and_one_assignment_query(): void
     {
         $tasks = array_map(
-            fn (int $number) => Task::factory()->create(['title' => "Task {$number}"])->assignmentIdentity(),
+            fn (int $number) => $this->tasks()->task(
+                "Task {$number}",
+            )->taskCalled("Task {$number}")->assignmentIdentity(),
             range(1, 20),
         );
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
@@ -79,7 +84,10 @@ final class AssignmentResolversTest extends TestCase
 
     public function test_a_holders_record_ids_come_page_by_page_and_skip_records_that_no_longer_exist(): void
     {
-        $tasks = array_map(fn (int $number) => Task::factory()->create(['title' => "Task {$number}"]), range(1, 5));
+        $tasks = array_map(
+            fn (int $number) => $this->tasks()->task("Task {$number}")->taskCalled("Task {$number}"),
+            range(1, 5),
+        );
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         foreach ($tasks as $task) {
@@ -131,5 +139,10 @@ final class AssignmentResolversTest extends TestCase
         $this->expectException(ActorContextMissing::class);
 
         $this->app->make(AssignmentResolver::class)->assignmentsFor([TestActors::record('tasks.task', 1)]);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

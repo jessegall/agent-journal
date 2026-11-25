@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -31,6 +30,9 @@ final class AgentRequestKeyTest extends TestCase
         'tasks',
         'assignments',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2CLIKEY001';
@@ -53,11 +55,10 @@ final class AgentRequestKeyTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = Task::factory()->create(['title' => 'Keyed work']);
+        $this->task = $this->tasks()->task('Keyed work')->taskCalled('Keyed work');
     }
 
     public function test_a_failed_cli_write_prints_its_request_key_to_retry_with(): void
@@ -80,7 +81,7 @@ final class AgentRequestKeyTest extends TestCase
     public function test_one_key_from_two_agents_keys_two_separate_writes(): void
     {
         $second = TestStart::start('main-agent');
-        $other = Task::factory()->create(['title' => 'Other work']);
+        $other = $this->tasks()->task('Other work')->taskCalled('Other work');
 
         $this->journal->agentCall($this->main, 'POST', '/agent/assignments/assign', [
             'record_type' => 'tasks.task',
@@ -114,5 +115,10 @@ final class AgentRequestKeyTest extends TestCase
             'request_key' => 'not a key!',
         ])
             ->assertUnprocessable();
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

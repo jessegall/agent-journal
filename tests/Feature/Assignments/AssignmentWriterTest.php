@@ -14,12 +14,11 @@ use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -62,11 +61,10 @@ final class AssignmentWriterTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
-        $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
+        $this->task = $this->tasks()->task('Write the reader')->taskCalled('Write the reader')->assignmentIdentity();
         $this->journal->actAsUserId($this->owner->id);
     }
 
@@ -92,7 +90,7 @@ final class AssignmentWriterTest extends TestCase
         $this->writer()->assign($this->task, AssigneeIdentity::of($this->helper));
 
         $this->journal->actAsAgentIds($this->helper->id, TestIds::of(2));
-        $other = Task::factory()->create(['title' => 'Other'])->assignmentIdentity();
+        $other = $this->tasks()->task('Other')->taskCalled('Other')->assignmentIdentity();
         $this->assertThrows(
             fn () => $this->writer()->assign($other, AssigneeIdentity::of($this->main)),
             ActorNotAllowed::class,
@@ -225,5 +223,10 @@ final class AssignmentWriterTest extends TestCase
     private function writer(): AssignmentWriter
     {
         return $this->app->make(AssignmentWriterInTransaction::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

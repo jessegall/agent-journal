@@ -10,10 +10,8 @@ use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\AssignmentRootFinished;
 use App\Exceptions\RecordUnavailable;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentGroup;
 use App\Support\AssignmentReference;
@@ -23,6 +21,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
@@ -64,15 +63,14 @@ final class AssignmentCascadeTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->journal->actAsUserId($owner->id);
         $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $this->other = AssigneeIdentity::of(Agent::create('Other', 'read-only-helper', $this->localProject()));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $this->open = Task::factory()->create(['title' => 'Open']);
-        $this->finished = Task::factory()->create(['title' => 'Finished']);
-        $this->unheld = Task::factory()->create(['title' => 'Unheld']);
+        $this->open = $this->tasks()->task('Open')->taskCalled('Open');
+        $this->finished = $this->tasks()->task('Finished')->taskCalled('Finished');
+        $this->unheld = $this->tasks()->task('Unheld')->taskCalled('Unheld');
         $this->writer()->assign($this->open->assignmentIdentity(), $this->other);
         $this->writer()->assign($this->finished->assignmentIdentity(), $this->other);
         $this->finished->finish('Done.');
@@ -185,5 +183,10 @@ final class AssignmentCascadeTest extends TestCase
     private function writer(): AssignmentWriter
     {
         return $this->app->make(AssignmentWriterInTransaction::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

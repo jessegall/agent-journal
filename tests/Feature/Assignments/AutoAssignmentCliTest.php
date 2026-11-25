@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -33,6 +32,9 @@ final class AutoAssignmentCliTest extends TestCase
         'assignments',
         'auto_assignments',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -51,8 +53,7 @@ final class AutoAssignmentCliTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->worker = TestStart::start('writing-helper');
         $this->journal->relayAgentCommands($this->main);
@@ -113,5 +114,10 @@ final class AutoAssignmentCliTest extends TestCase
             ],
             array_values(array_filter($names, fn (string $name) => str_starts_with($name, 'assignment:auto'))),
         );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

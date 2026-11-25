@@ -17,6 +17,7 @@ use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
@@ -47,13 +48,15 @@ final class AssignableRecordsTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->registry = $this->app->make(AssignmentRegistry::class);
         $this->journal->actAsUserId(TestIds::of(1));
     }
 
     public function test_a_task_resolves_under_its_alias_and_a_missing_one_is_unavailable(): void
     {
-        $task = Task::factory()->create(['title' => 'Write the reader']);
+        $task = $this->tasks()->task('Write the reader')->taskCalled('Write the reader');
 
         $resolved = $this->registry->recordProvider(Task::linkType())->requireAssignable($task->assignmentIdentity());
 
@@ -68,8 +71,8 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_visible_records_keep_the_input_order_and_leave_out_missing_ones(): void
     {
-        $first = Task::factory()->create(['title' => 'One']);
-        $second = Task::factory()->create(['title' => 'Two']);
+        $first = $this->tasks()->task('One')->taskCalled('One');
+        $second = $this->tasks()->task('Two')->taskCalled('Two');
 
         $visible = $this->registry->recordProvider(Task::linkType())->visibleRecords([
             $second->assignmentIdentity(),
@@ -82,10 +85,10 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_finished_and_cancelled_tasks_and_plans_are_over(): void
     {
-        $open = Task::factory()->create(['title' => 'Open']);
-        $finished = Task::factory()->create(['title' => 'Finished']);
+        $open = $this->tasks()->task('Open')->taskCalled('Open');
+        $finished = $this->tasks()->task('Finished')->taskCalled('Finished');
         $finished->finish('Done.');
-        $cancelled = Task::factory()->create(['title' => 'Cancelled']);
+        $cancelled = $this->tasks()->task('Cancelled')->taskCalled('Cancelled');
         $cancelled->cancel('Not needed.');
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
@@ -105,11 +108,11 @@ final class AssignableRecordsTest extends TestCase
         $empty = $this->planStructure()->addPhase($plan, 'Empty');
         $allEnded = $this->planStructure()->addPhase($plan, 'All ended');
         $mixed = $this->planStructure()->addPhase($plan, 'Mixed');
-        $done = Task::factory()->create(['title' => 'Done']);
+        $done = $this->tasks()->task('Done')->taskCalled('Done');
         $done->finish('Done.');
-        $dropped = Task::factory()->create(['title' => 'Dropped']);
+        $dropped = $this->tasks()->task('Dropped')->taskCalled('Dropped');
         $dropped->cancel('Not needed.');
-        $running = Task::factory()->create(['title' => 'Running']);
+        $running = $this->tasks()->task('Running')->taskCalled('Running');
         $this->planStructure()->addTasks($allEnded, [$done->id, $dropped->id]);
         $this->planStructure()->addTasks($mixed, [$running->id]);
 
@@ -120,7 +123,7 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_a_missing_task_in_a_group_refuses_the_whole_read(): void
     {
-        $task = Task::factory()->create(['title' => 'One']);
+        $task = $this->tasks()->task('One')->taskCalled('One');
 
         $this->expectException(TaskMissing::class);
 
@@ -141,5 +144,10 @@ final class AssignableRecordsTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

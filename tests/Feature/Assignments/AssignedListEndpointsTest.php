@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -37,6 +35,10 @@ final class AssignedListEndpointsTest extends TestCase
         'tasks',
         'plans',
         'assignments',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -55,8 +57,7 @@ final class AssignedListEndpointsTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->caller = TestStart::start('read-only-helper');
         $this->other = TestStart::start('read-only-helper');
         $this->journal->actAsUserId($owner->id);
@@ -65,8 +66,8 @@ final class AssignedListEndpointsTest extends TestCase
     public function test_the_caller_gets_only_the_tasks_and_plans_it_holds(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $held = Task::factory()->create(['title' => 'Write the endpoint']);
-        $others = Task::factory()->create(['title' => 'Not mine']);
+        $held = $this->tasks()->task('Write the endpoint')->taskCalled('Write the endpoint');
+        $others = $this->tasks()->task('Not mine')->taskCalled('Not mine');
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $writer->assign($held->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
         $writer->assign($others->assignmentIdentity(), AssigneeIdentity::of($this->other->agent));
@@ -127,5 +128,10 @@ final class AssignedListEndpointsTest extends TestCase
             server: $start->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path),
             content: $body,
         );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

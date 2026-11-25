@@ -11,13 +11,12 @@ use App\Events\Assignments\AssignmentsChanged;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use App\Support\ReflectedType;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Exception;
 use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Database\QueryException;
@@ -63,10 +62,9 @@ final class AssignmentFactsTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper', $this->localProject()));
-        $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
+        $this->task = $this->tasks()->task('Write the reader')->taskCalled('Write the reader')->assignmentIdentity();
         $this->journal->actAsUserId($this->owner->id);
         $this->useTheApplicationsTransactionManager();
         $this->app->make('events')->listen(AssignmentsChanged::class, function (AssignmentsChanged $fact): void {
@@ -142,5 +140,10 @@ final class AssignmentFactsTest extends TestCase
     private function writer(): AssignmentWriter
     {
         return $this->app->make(AssignmentWriterInTransaction::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

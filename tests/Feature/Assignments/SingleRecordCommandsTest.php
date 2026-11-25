@@ -8,9 +8,9 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
@@ -50,11 +50,10 @@ final class SingleRecordCommandsTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = Task::factory()->create(['title' => 'Write the commands']);
+        $this->task = $this->tasks()->task('Write the commands')->taskCalled('Write the commands');
     }
 
     public function test_a_main_agent_reads_the_reference_and_deliberately_changes_the_work(): void
@@ -133,7 +132,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_the_admitted_user_assigns_over_the_web_as_itself_without_an_agent_session(): void
     {
-        $other = Task::factory()->create(['title' => 'For an agent']);
+        $other = $this->tasks()->task('For an agent')->taskCalled('For an agent');
         $sessions = AgentSession::query()->withoutGlobalScopes()->count();
 
         $this->actingAs($this->owner)->postJson(
@@ -236,5 +235,10 @@ final class SingleRecordCommandsTest extends TestCase
         $key = $command === 'show' ? [] : ['request_key' => (string) Str::ulid()];
 
         return $this->journal->agentCall($start, 'POST', "/agent/assignments/{$command}", [...$body, ...$key]);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

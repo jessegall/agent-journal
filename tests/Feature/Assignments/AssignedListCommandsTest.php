@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Exceptions\StartSettingMissing;
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\SessionTokenSource;
 use App\Support\StartEnvironment;
@@ -15,6 +13,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
@@ -41,6 +40,10 @@ final class AssignedListCommandsTest extends TestCase
         'tasks',
         'plans',
         'assignments',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -57,8 +60,7 @@ final class AssignedListCommandsTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->caller = TestStart::start('read-only-helper');
         $this->journal->actAsUserId($owner->id);
     }
@@ -66,7 +68,7 @@ final class AssignedListCommandsTest extends TestCase
     public function test_the_commands_print_what_the_started_agent_holds(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $task = Task::factory()->create(['title' => 'Write the client']);
+        $task = $this->tasks()->task('Write the client')->taskCalled('Write the client');
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $held = $writer->assign(
             $task->assignmentIdentity(),
@@ -137,5 +139,10 @@ final class AssignedListCommandsTest extends TestCase
 
         $this->assertNotSame(0, $process->getExitCode());
         $this->assertStringContainsString('JOURNAL_URL', $process->getOutput().$process->getErrorOutput());
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

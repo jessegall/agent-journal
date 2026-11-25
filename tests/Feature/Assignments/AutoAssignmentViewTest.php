@@ -26,6 +26,7 @@ use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
@@ -59,6 +60,10 @@ final class AutoAssignmentViewTest extends TestCase
         'phase_tasks',
         'assignments',
         'auto_assignments',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     protected function setUp(): void
@@ -207,5 +212,10 @@ final class AutoAssignmentViewTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }
