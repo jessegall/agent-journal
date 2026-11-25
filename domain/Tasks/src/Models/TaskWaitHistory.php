@@ -7,7 +7,7 @@ namespace Domain\Tasks\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -55,7 +55,7 @@ final class TaskWaitHistory extends Model implements ReadableModel
     public static function create(
         TaskWait $wait,
         TaskWaitChange $change,
-        ActorIdentity $actor,
+        ActorReference $actor,
         string|null $reason,
         string|null $batchId,
     ): self {

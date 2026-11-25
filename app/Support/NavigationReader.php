@@ -28,7 +28,7 @@ final readonly class NavigationReader implements NavigationReaderContract
     ) {}
 
     public function menuEntries(
-        ActorIdentity $owner,
+        ActorReference $owner,
         string|null $driver,
         MenuEntryStatus|null $state,
         int $page,
@@ -57,12 +57,12 @@ final readonly class NavigationReader implements NavigationReaderContract
         ]])->all();
     }
 
-    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryStatus|null $state): int
+    public function menuEntryCount(ActorReference $owner, string|null $driver, MenuEntryStatus|null $state): int
     {
         return $this->menuQuery($owner, $driver, $state)->count();
     }
 
-    public function menuEntry(ActorIdentity $owner, string $id): array
+    public function menuEntry(ActorReference $owner, string $id): array
     {
         $entry = MenuEntry::query()->ownedBy($owner)->whereKey($id)->firstOr(
             MenuEntryRefused::throwing()->notFound($id),
@@ -161,7 +161,7 @@ final readonly class NavigationReader implements NavigationReaderContract
     /**
      * @return ReadBuilder<MenuEntry>
      */
-    private function menuQuery(ActorIdentity $owner, string|null $driver, MenuEntryStatus|null $state): ReadBuilder
+    private function menuQuery(ActorReference $owner, string|null $driver, MenuEntryStatus|null $state): ReadBuilder
     {
         return MenuEntry::query()
             ->ownedBy($owner)

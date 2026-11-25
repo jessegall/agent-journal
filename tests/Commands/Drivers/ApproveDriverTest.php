@@ -11,7 +11,7 @@ use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\DriverCatalogue;
 use App\Support\HostDescriptorEnrollment;
@@ -52,7 +52,7 @@ final class ApproveDriverTest extends TestCase
 
         $this->assertSame(HostDescriptorEnrollment::REGISTRATION_UNAPPROVED, $reasonFor('1.0.0'));
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ApproveDriverCommand(DriverKey::from('acme/reader'), ['1.0.0']));
 
         $this->assertSame([null, HostDescriptorEnrollment::BUILD_UNAPPROVED], [$reasonFor('1.0.0'), $reasonFor('2.0.0')]);

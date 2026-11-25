@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Enums\Drivers\DriverType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Helpers\Values\HelperWork;
 
 /**
@@ -15,7 +15,7 @@ use Domain\Helpers\Values\HelperWork;
 final readonly class DispatchRequest
 {
     public function __construct(
-        public ActorIdentity $parent,
+        public ActorReference $parent,
         public string $requestId,
         public string $profileKey,
         public string $model,

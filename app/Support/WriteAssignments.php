@@ -232,7 +232,7 @@ final readonly class WriteAssignments implements
 
     private function published(AssignmentReason $reason, AssignmentResult $change): AssignmentResult
     {
-        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $change);
+        $this->facts->publish(ActorReference::of($this->actors->actor()), $reason, $change);
 
         return $change;
     }
@@ -277,7 +277,7 @@ final readonly class WriteAssignments implements
             [new AssignmentChange($record, $before, $after)],
         );
 
-        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
+        $this->facts->publish(ActorReference::of($this->actors->actor()), $reason, $assignmentChange);
 
         return $assignmentChange;
     }

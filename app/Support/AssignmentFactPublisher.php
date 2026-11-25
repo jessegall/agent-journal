@@ -19,7 +19,7 @@ final readonly class AssignmentFactPublisher implements AssignmentFactPublisherC
 {
     public function __construct(private CommandFacts $facts) {}
 
-    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $change): void
+    public function publish(ActorReference $actor, AssignmentReason $reason, AssignmentResult $change): void
     {
         if (! $change->hasChanges()) {
             return;

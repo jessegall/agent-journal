@@ -86,7 +86,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
         return $this->preparer->prepare(new StopPreparationRequest(
-            new StackTarget($stop->agentId, $stop->sessionId)->actorIdentity(),
+            new StackTarget($stop->agentId, $stop->sessionId)->actorReference(),
             $work,
             $policy->profileKey,
             $policy->profileRevision,

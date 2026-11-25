@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitChange;
@@ -59,7 +59,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * The dependent now waits on the prerequisite, added by the actor.
      */
-    public static function create(Task $dependent, Task $prerequisite, ActorIdentity $actor): self
+    public static function create(Task $dependent, Task $prerequisite, ActorReference $actor): self
     {
         $wait = new self();
         $wait->dependent_task_id = $dependent->id;
@@ -84,7 +84,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     /**
      * Waives the wait for the actor with a reason; the dependent no longer waits on it.
      */
-    public function waive(ActorIdentity $actor, string $reason): void
+    public function waive(ActorReference $actor, string $reason): void
     {
         $this->waived_at = CarbonImmutable::now();
         $this->waived_by_type = $actor->type;

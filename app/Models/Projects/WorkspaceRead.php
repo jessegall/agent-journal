@@ -13,7 +13,7 @@ use App\Events\Connections\WorkspaceReadAnswered;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommitObservation;
 use App\Values\WorkReference;
 use App\Values\WorkspaceFacts;
@@ -78,7 +78,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     /**
      * Retains the read for its reference once; asking again finds the same read.
      */
-    public static function create(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
+    public static function create(WorkspaceReadReference $reference, ActorReference $actor, WorkReference $work): self
     {
         $read = new self();
         $read->read_reference = $reference->key;

@@ -15,7 +15,7 @@ use App\Data\Palette\PaletteSourcesData;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchWordsInvalid;
 use App\Mcp\Support\DeclaredSearch;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
 use App\Values\SearchAnswer;
@@ -187,7 +187,7 @@ final readonly class SearchProps
     {
         return new SearchOwner(
             $request->session()->getId(),
-            ActorIdentity::of($this->actors->actor()),
+            ActorReference::of($this->actors->actor()),
             implode(',', $this->environment->environmentIds()),
             DeclaredSearch::TOOL,
             SearchSurface::Palette,
@@ -196,7 +196,7 @@ final readonly class SearchProps
 
     private function reader(): SearchReader
     {
-        return new SearchReader(ActorIdentity::of($this->actors->actor()), SearchSurface::Palette);
+        return new SearchReader(ActorReference::of($this->actors->actor()), SearchSurface::Palette);
     }
 
     private static function textOf(Request $request, string $parameter): string|null

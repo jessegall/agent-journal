@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\ConfigureShareGateway;
 
 use App\Contracts\Sharing\SharePolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewaySettings;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
@@ -77,7 +77,7 @@ final readonly class ConfigureShareGatewayHandler extends SharingCommandHandler
             $configuration->makeDefault();
         }
 
-        ShareAudit::create(null, ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'configured');
+        ShareAudit::create(null, ShareAuditType::GatewayChanged, ActorReference::of($owner), 'configured');
 
         return $configuration->toConfiguration;
     }

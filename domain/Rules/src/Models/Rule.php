@@ -12,7 +12,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\TextSearch;
 use Carbon\CarbonImmutable;
 use Domain\Rules\Enums\RuleStatus;
@@ -87,7 +87,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
         string $text,
         string $reason,
         string|null $replacesRuleId,
-        ActorIdentity $proposer,
+        ActorReference $proposer,
     ): self {
         $rule = new self();
         $rule->text = $text;
@@ -116,7 +116,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws RuleSelfApproval
      */
-    public function approveBy(ActorIdentity $approver): void
+    public function approveBy(ActorReference $approver): void
     {
         $this->assertNotProposedBy($approver);
         $this->closeProposal(RuleStatus::Active);
@@ -162,13 +162,13 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws RuleSelfApproval
      */
-    private function assertNotProposedBy(ActorIdentity $approver): void
+    private function assertNotProposedBy(ActorReference $approver): void
     {
         if ($this->proposer_type === null) {
             return;
         }
 
-        $proposer = ActorIdentity::fromStored($this->proposer_type, (string) $this->proposer_id);
+        $proposer = ActorReference::fromStored($this->proposer_type, (string) $this->proposer_id);
 
         if ($proposer->isSameAs($approver)) {
             throw RuleSelfApproval::forRule();

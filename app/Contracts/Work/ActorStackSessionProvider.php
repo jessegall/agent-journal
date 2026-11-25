@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Work;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * What the owner of an actor type answers for stack admission: the session stacks the acting actor's operation must
@@ -22,5 +22,5 @@ interface ActorStackSessionProvider
      *
      * @return list<string> session ids
      */
-    public function sessionsOf(ActorIdentity $actor): array;
+    public function sessionsOf(ActorReference $actor): array;
 }

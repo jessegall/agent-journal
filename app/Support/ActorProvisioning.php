@@ -17,7 +17,7 @@ final readonly class ActorProvisioning implements ActorProvisioningContract
 {
     public function __construct(private ServerClock $clock) {}
 
-    public function provision(ActorIdentity $actor, string $label): void
+    public function provision(ActorReference $actor, string $label): void
     {
         $inbox = Inbox::create(Inbox::PERSONAL_PROVIDER, $actor->text(), $label);
 

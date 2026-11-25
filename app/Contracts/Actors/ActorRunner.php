@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Actors;
 
 use App\Contracts\Authorization\AuthoritySource;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Closure;
 
 /**
@@ -19,5 +19,5 @@ interface ActorRunner
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function within(ActorIdentity $actor, AuthoritySource $authority, Closure $work): mixed;
+    public function within(ActorReference $actor, AuthoritySource $authority, Closure $work): mixed;
 }

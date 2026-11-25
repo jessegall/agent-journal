@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Sessions;
 
 use App\Contracts\Sessions\AgentRuntimeEvent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * An operator moved a runtime to a new process generation: the audit record of the hosts, the proof that the old
@@ -18,7 +18,7 @@ final readonly class AgentRuntimeReassigned implements AgentRuntimeEvent, Sessio
         public string $fromHostId,
         public string $toHostId,
         public int $processGeneration,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $proof,
         public string $reason,
     ) {}

@@ -26,7 +26,7 @@ final class HeldStartRefusals
     public function hold(
         StartRequest $request,
         PinnedDriver $pin,
-        ActorIdentity $requester,
+        ActorReference $requester,
         StartRefusal $refusal,
     ): void {
         $this->refusals[] = fn () => SessionRequest::create($request, $pin, $requester)->refuse($refusal);

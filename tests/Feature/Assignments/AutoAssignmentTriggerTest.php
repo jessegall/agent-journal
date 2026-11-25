@@ -17,7 +17,7 @@ use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Processes\StopTime;
 use App\Contracts\Processes\StopTimes;
 use App\Exceptions\AssignmentConflict;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentBudget;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentKey;
@@ -60,7 +60,7 @@ final class AutoAssignmentTriggerTest extends TestCase
         $this->mock(DomainAvailability::class)->shouldReceive('isEnabled')->with('Tasks')->andReturn(true);
         $activity = $this->createStub(AutoAssignmentActivity::class);
         $activity->method('mayTakeWork')->willReturnCallback(
-            fn (ActorIdentity $actor): bool => $actor->id !== TestIds::of(25),
+            fn (ActorReference $actor): bool => $actor->id !== TestIds::of(25),
         );
         $providers = $this->mock(AssignmentProviders::class);
         $providers->shouldReceive('recordOwner', 'poolOwner')->andReturn('Tasks');

@@ -21,7 +21,7 @@ final readonly class OwnerStartRequest
 {
     public function __construct(
         public string $requestId,
-        public ActorIdentity $agent,
+        public ActorReference $agent,
         public RecordIdentity $work,
         public string $contextReference,
         public SelectedDriver $selection,

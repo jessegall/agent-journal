@@ -8,7 +8,7 @@ use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Database\Seeder;
 
 /**
@@ -25,7 +25,7 @@ final class OwnerSeeder extends Seeder
             $commands->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorInboxCommand(ActorIdentity::of($owner), $owner->name),
+                new ProvisionActorInboxCommand(ActorReference::of($owner), $owner->name),
             );
         }
     }

@@ -7,7 +7,7 @@ namespace Domain\Chat\Resolvers\Support;
 use App\Contracts\Actors\CurrentActor;
 use App\Data\Messages\MessageView;
 use App\Exceptions\MessageMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Support\PinnableMessages;
 
@@ -28,7 +28,7 @@ final readonly class MessagePinRecords
     public function pinned(int $limit = MessagePin::DEFAULT_LIMIT): array
     {
         $pins = MessagePin::query()
-            ->ownedBy(ActorIdentity::of($this->actors->actor()))
+            ->ownedBy(ActorReference::of($this->actors->actor()))
             ->newestPinnedFirst()
             ->readExactly(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
             ->get();

@@ -11,7 +11,7 @@ use App\Enums\Asks\CoreAskType;
 use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AskAttention;
 use App\Support\AskRecords;
 use App\Support\SupervisorOwner;
@@ -34,7 +34,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
         $ask = $this->asks->lock($command->ask);
 
         if ($ask->isUnanswered()) {
-            return $this->answerLate($ask, ActorIdentity::of($command->dispatchedBy()), $body);
+            return $this->answerLate($ask, ActorReference::of($command->dispatchedBy()), $body);
         }
 
         $this->admission->requireCurrent($command->ask, CoreAskType::Question->requiredCommand(), $ask->version);
@@ -50,7 +50,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
     /**
      * The owner's late text on an unanswered ask; its outcome stays, and nothing an expiry ended comes back.
      */
-    private function answerLate(Ask $ask, ActorIdentity $actor, string $body): AskReference
+    private function answerLate(Ask $ask, ActorReference $actor, string $body): AskReference
     {
         if (! $this->owner->resolve()->endsAt($actor)) {
             throw AskRefused::onlyOwnerAnswersLate();

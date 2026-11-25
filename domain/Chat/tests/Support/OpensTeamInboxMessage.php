@@ -9,7 +9,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 
 /**
@@ -43,8 +43,8 @@ trait OpensTeamInboxMessage
 
         $this->team = Inbox::create(Inbox::NAMED_PROVIDER, 'team', 'Team');
         $now = CarbonImmutable::now();
-        InboxMember::create($this->team->id, ActorIdentity::of($this->owner), $now);
-        InboxMember::create($this->team->id, ActorIdentity::ofClass(Agent::class, $this->builder[0]), $now);
+        InboxMember::create($this->team->id, ActorReference::of($this->owner), $now);
+        InboxMember::create($this->team->id, ActorReference::ofClass(Agent::class, $this->builder[0]), $now);
 
         $this->messageId = $this->journal->run(new SendMessageCommand($this->team->id, 'Pin me.'));
     }
@@ -55,11 +55,11 @@ trait OpensTeamInboxMessage
     private function replaceMember(string $leavingAgentId, string $joiningAgentId): void
     {
         $now = CarbonImmutable::now();
-        $leaving = ActorIdentity::ofClass(Agent::class, $leavingAgentId);
+        $leaving = ActorReference::ofClass(Agent::class, $leavingAgentId);
         $member = InboxMember::findActive($this->team->id, $leaving);
         $this->assertNotNull($member);
         $member->leave($now);
-        InboxMember::create($this->team->id, ActorIdentity::ofClass(Agent::class, $joiningAgentId), $now);
+        InboxMember::create($this->team->id, ActorReference::ofClass(Agent::class, $joiningAgentId), $now);
     }
 
     /**

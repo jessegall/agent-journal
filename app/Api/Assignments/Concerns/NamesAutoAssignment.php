@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Assignments\Concerns;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentKey;
 
 /**
@@ -15,7 +15,7 @@ trait NamesAutoAssignment
     public function key(): AutoAssignmentKey
     {
         return new AutoAssignmentKey(
-            ActorIdentity::fromStored($this->actorType, strtolower($this->actorId)),
+            ActorReference::fromStored($this->actorType, strtolower($this->actorId)),
             $this->assignableType,
         );
     }

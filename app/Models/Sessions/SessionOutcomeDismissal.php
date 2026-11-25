@@ -9,7 +9,7 @@ use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\StartDisposition;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SessionStartOutcome;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -42,7 +42,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
      * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there,
      * by the table's unique key.
      */
-    public static function create(ActorIdentity $viewer, SessionRequest $start, StartDisposition $version): void
+    public static function create(ActorReference $viewer, SessionRequest $start, StartDisposition $version): void
     {
         $dismissal = new self();
         $dismissal->viewer_type = $viewer->type;
@@ -63,7 +63,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
      * @param  list<string>  $requestIds
      * @return list<string>
      */
-    public static function resolveDismissedKeysOf(ActorIdentity $viewer, array $requestIds): array
+    public static function resolveDismissedKeysOf(ActorReference $viewer, array $requestIds): array
     {
         return array_values(self::query()
             ->dismissedBy($viewer)
@@ -82,7 +82,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function dismissedBy(Builder $query, ActorIdentity $viewer): void
+    protected function dismissedBy(Builder $query, ActorReference $viewer): void
     {
         $query->where('viewer_type', $viewer->type)->where('viewer_id', $viewer->id);
     }

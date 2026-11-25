@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
@@ -146,7 +146,7 @@ final class PlanGraphEditingTest extends TestCase
 
     private function wait(string $dependent, string $prerequisite): void
     {
-        TaskWait::create($this->tasks[$dependent], $this->tasks[$prerequisite], ActorIdentity::system());
+        TaskWait::create($this->tasks[$dependent], $this->tasks[$prerequisite], ActorReference::system());
     }
 
     /**

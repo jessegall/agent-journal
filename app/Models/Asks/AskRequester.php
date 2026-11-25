@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,7 +36,7 @@ final class AskRequester extends Model implements ReadableModel
     /**
      * Writes the requester row so a concurrent repeatable-read submission retries with a fresh snapshot.
      */
-    public static function create(ActorIdentity $actor): void
+    public static function create(ActorReference $actor): void
     {
         $requester = new self();
 
@@ -55,7 +55,7 @@ final class AskRequester extends Model implements ReadableModel
     /**
      * The actor's requester row, locked until the transaction ends.
      */
-    public static function findLockedOfActor(ActorIdentity $actor): self
+    public static function findLockedOfActor(ActorReference $actor): self
     {
         return self::query()->ofActor($actor)->lockForUpdate()->sole();
     }
@@ -68,7 +68,7 @@ final class AskRequester extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofActor(Builder $query, ActorIdentity $actor): void
+    protected function ofActor(Builder $query, ActorReference $actor): void
     {
         $query->where($actor->asColumns('actor'));
     }

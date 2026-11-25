@@ -6,7 +6,7 @@ namespace App\Commands\CommandRules\RevokeCommandPermissions;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Profiles\PermissionRevocation;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandClassSet;
 use App\Values\CommandPatternSet;
 
@@ -19,7 +19,7 @@ final readonly class RevokeCommandPermissionsHandler implements CommandHandler
             $command->source,
             CommandClassSet::of(...$command->classes),
             CommandPatternSet::of(...$command->patterns),
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
         )->id;
     }
 }

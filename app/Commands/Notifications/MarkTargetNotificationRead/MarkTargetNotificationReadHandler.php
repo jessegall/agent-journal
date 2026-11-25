@@ -7,7 +7,7 @@ namespace App\Commands\Notifications\MarkTargetNotificationRead;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\NotificationUnavailable;
 use App\Models\Notifications\NotificationReceipt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NotificationReceipts;
 use Carbon\CarbonImmutable;
 
@@ -21,7 +21,7 @@ final readonly class MarkTargetNotificationReadHandler implements CommandHandler
     public function handle(MarkTargetNotificationReadCommand $command): void
     {
         $receipt = $this->receipts->ownedBy(
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
             fn (string $scopeId) => NotificationReceipt::findForTarget(
                 $scopeId,
                 $command->targetKey,

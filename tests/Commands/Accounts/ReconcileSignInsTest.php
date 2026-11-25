@@ -12,7 +12,7 @@ use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\JournalCommands;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
@@ -62,7 +62,7 @@ final class ReconcileSignInsTest extends TestCase
     private function begin(string $driver, string $hostId): string
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $begin = new BeginSignInCommand($driver, SignInMethod::OAuth);

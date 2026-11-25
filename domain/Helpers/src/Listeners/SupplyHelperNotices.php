@@ -17,7 +17,7 @@ final readonly class SupplyHelperNotices implements Listener
 {
     public function handle(ContextStarted $event): void
     {
-        $actor = $event->target->actorIdentity();
+        $actor = $event->target->actorReference();
 
         foreach (HelperNotice::findUndeliveredFor($actor) as $notice) {
             $event->reminders->add(AgentText::of('helpers.notice', ['notice' => $notice->text]), true);

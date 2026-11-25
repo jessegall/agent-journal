@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Processes;
 
 use App\Exceptions\RunClaimRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RunClaim;
 use PhpOption\Option;
@@ -22,21 +22,21 @@ interface RunClaims
      *
      * @throws RunClaimRefused
      */
-    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): RunClaim;
+    public function take(RecordIdentity $run, RecordIdentity $work, ActorReference $actor): RunClaim;
 
     /**
      * The actor whose claim on each run is still valid, keyed by run id; a run with no valid claim is left out.
      * The runs are of one record type.
      *
      * @param  list<RecordIdentity>  $runs
-     * @return array<string, ActorIdentity>
+     * @return array<string, ActorReference>
      */
     public function holdersOf(array $runs): array;
 
     /**
      * The actor whose claim on the run still stands, when there is one.
      *
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public function holderOf(RecordIdentity $run): Option;
 

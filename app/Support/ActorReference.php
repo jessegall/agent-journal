@@ -12,9 +12,9 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 
 /**
- * Who an actor is, by type and id, apart from any request or session: user 3 and agent 3 are different actors.
+ * An actor pointed at by type and id, apart from any request or session: user 3 and agent 3 are different actors.
  */
-final readonly class ActorIdentity implements Actor
+final readonly class ActorReference implements Actor
 {
     use ComparesTypeAndId;
 
@@ -154,7 +154,7 @@ final readonly class ActorIdentity implements Actor
     }
 
     /**
-     * Whether this names the same actor as the other identity.
+     * Whether this names the same actor as the other reference.
      */
     public function isSameAs(self $other): bool
     {

@@ -4,7 +4,7 @@ Plan 3 builds the browser interface of doc 6. This file records the decisions it
 
 ## Who acts in a request (task 98)
 
-Every request has one actor, kept in `App\Actors\ActorIdentity` for that request only (a scoped binding, so an Octane worker forgets it between requests). Asking for it without one throws `ActorContextMissing`, so a read or a route binding fails before any row is read.
+Every request has one actor, kept in `App\Actors\ActorReference` for that request only (a scoped binding, so an Octane worker forgets it between requests). Asking for it without one throws `ActorContextMissing`, so a read or a route binding fails before any row is read.
 
 | Actor | Filled by | Reads |
 |---|---|---|
@@ -120,7 +120,7 @@ The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiv
 
 ## Interfaces at the seams (task 122, rule 15)
 
-- **Actor.** `App\Contracts\Actors\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorIdentity::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Actor.** `App\Contracts\Actors\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorReference::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
 - **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
 - **Task progress.** Plans reads progress through `Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 

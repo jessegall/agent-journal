@@ -6,7 +6,7 @@ namespace Domain\Documents\Listeners;
 
 use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Events\Listener;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Documents\Events\DraftKept;
 
 final readonly class NoticeDraftKept implements Listener
@@ -15,7 +15,7 @@ final readonly class NoticeDraftKept implements Listener
 
     public function handle(DraftKept $event): void
     {
-        if ($event->parent === null || ! ActorIdentity::of($event->parent)->isAgent()) {
+        if ($event->parent === null || ! ActorReference::of($event->parent)->isAgent()) {
             return;
         }
 

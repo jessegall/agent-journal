@@ -6,7 +6,7 @@ namespace Domain\Questions\Commands\AskQuestion;
 
 use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RetainedActorRequestKey;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use Domain\Questions\Enums\QuestionType;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -25,7 +25,7 @@ final readonly class AskQuestionCommand extends Command
      */
     public function __construct(
         public string $inboxId,
-        public ActorIdentity $target,
+        public ActorReference $target,
         #[Required]
         public string $text,
         public QuestionType $type,

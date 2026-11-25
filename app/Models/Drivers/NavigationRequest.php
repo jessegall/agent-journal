@@ -28,7 +28,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
@@ -121,7 +121,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
      */
     public static function create(
         DriverRequest $request,
-        ActorIdentity $owner,
+        ActorReference $owner,
         NavigationUncertainty $uncertainty,
         string $operationKey,
         CarbonImmutable $expiresAt,
@@ -357,7 +357,7 @@ final class NavigationRequest extends Model implements Assignable, EventSource, 
     }
 
     public static function isSameMenuOpenElsewhere(
-        ActorIdentity $owner,
+        ActorReference $owner,
         AgentRuntime $runtime,
         ScriptGoal $goal,
         string $fingerprint,

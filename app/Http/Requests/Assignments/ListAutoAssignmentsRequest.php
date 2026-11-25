@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Assignments;
 
 use App\Contracts\Actors\ActorTypes;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\IdListPage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,9 +27,9 @@ final class ListAutoAssignmentsRequest extends FormRequest
         ];
     }
 
-    public function actor(): ActorIdentity
+    public function actor(): ActorReference
     {
-        return ActorIdentity::fromStored(
+        return ActorReference::fromStored(
             $this->string('actorType')->toString(),
             $this->string('actorId')->lower()->toString(),
         );

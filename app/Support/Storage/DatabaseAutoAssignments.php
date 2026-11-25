@@ -13,7 +13,7 @@ use App\Contracts\Time\ServerClock;
 use App\Exceptions\AutoAssignmentMissing;
 use App\Exceptions\AutoAssignmentRevisionChanged;
 use App\Models\Records\AutoAssignment;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
@@ -69,7 +69,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         return AutoAssignment::resolveEnabledPage($page);
     }
 
-    public function listFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
+    public function listFor(ActorReference $actor, IdListPage $page): AutoAssignmentPage
     {
         return AutoAssignment::resolvePageFor($actor, $page);
     }

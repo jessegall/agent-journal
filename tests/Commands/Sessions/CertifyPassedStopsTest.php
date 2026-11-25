@@ -19,7 +19,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
 use App\Support\RecordIdentity;
@@ -120,7 +120,7 @@ final class CertifyPassedStopsTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::system(),
+            ActorReference::system(),
             None::create(),
         )->startedAs($session);
 

@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Events\HelperNoticeDelivered;
@@ -92,7 +92,7 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function findUndeliveredFor(ActorIdentity $parent): array
+    public static function findUndeliveredFor(ActorReference $parent): array
     {
         return array_values(self::query()
             ->ownedBy($parent)

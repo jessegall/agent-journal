@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\RequestKey;
 use Domain\Chat\ChatDomain;
@@ -111,8 +111,8 @@ final class DockSourceTest extends TestCase
             ->sessionCalled('Builder')->agent_id;
 
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->owner),
-            ActorIdentity::ofClass(Agent::class, $this->agentId),
+            ActorReference::of($this->owner),
+            ActorReference::ofClass(Agent::class, $this->agentId),
         );
 
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
@@ -151,8 +151,8 @@ final class DockSourceTest extends TestCase
     public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
     {
         $strangers = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::ofClass(Agent::class, 'agent-one'),
-            ActorIdentity::ofClass(Agent::class, 'agent-two'),
+            ActorReference::ofClass(Agent::class, 'agent-one'),
+            ActorReference::ofClass(Agent::class, 'agent-two'),
         );
 
         $this->expectException(ChatUnavailable::class);
@@ -229,8 +229,8 @@ final class DockSourceTest extends TestCase
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($owner),
-            ActorIdentity::of($this->start->agent),
+            ActorReference::of($owner),
+            ActorReference::of($this->start->agent),
         );
 
         $this->journal->relayAgentCommands($this->start);
@@ -266,13 +266,13 @@ final class DockSourceTest extends TestCase
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($owner),
-            ActorIdentity::of($this->start->agent),
+            ActorReference::of($owner),
+            ActorReference::of($this->start->agent),
         );
 
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->start->agent),
-            ActorIdentity::ofClass(Agent::class, 'another-agent'),
+            ActorReference::of($this->start->agent),
+            ActorReference::ofClass(Agent::class, 'another-agent'),
         );
 
         $this->journal->relayAgentCommands($this->start);
@@ -296,14 +296,14 @@ final class DockSourceTest extends TestCase
             ->sessionCalled('Dock builder');
 
         $message = $this->journal->inboxes()->post(
-            $this->journal->inboxes()->personal(ActorIdentity::of($owner)),
+            $this->journal->inboxes()->personal(ActorReference::of($owner)),
             $owner,
             "Build ready\nAll checks passed.",
         );
 
         $inboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($owner),
-            ActorIdentity::ofClass(Agent::class, $session->agent_id),
+            ActorReference::of($owner),
+            ActorReference::ofClass(Agent::class, $session->agent_id),
         )->id;
 
         $dock = ['inboxId' => $inboxId, 'type' => Message::linkType(), 'id' => $message->id];
@@ -324,12 +324,12 @@ final class DockSourceTest extends TestCase
         $this->agent = $this->journal->signedStart('Main agent', 'main-agent');
 
         $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->owner),
-            ActorIdentity::of($this->agent->agent),
+            ActorReference::of($this->owner),
+            ActorReference::of($this->agent->agent),
         )->id;
 
         $ownersNote = new Note(['text' => 'Water the plants']);
-        $ownersNote->belongTo(ActorIdentity::of($this->owner));
+        $ownersNote->belongTo(ActorReference::of($this->owner));
         $ownersNote->save();
         $agentsNote = new Note(['text' => 'Feed the cat']);
         $agentsNote->saveFor($this->agent->agent->id);
@@ -397,8 +397,8 @@ final class DockSourceTest extends TestCase
     {
         $start = $this->journal->signedStart("Started {$profile}", $profile);
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->owner),
-            ActorIdentity::of($start->agent),
+            ActorReference::of($this->owner),
+            ActorReference::of($start->agent),
         );
 
         return $start;

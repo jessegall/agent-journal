@@ -6,7 +6,7 @@ namespace App\Concerns;
 
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -35,7 +35,7 @@ trait TakesPartInMessages
 
     public function inbox(): Inbox
     {
-        $identity = ActorIdentity::of($this);
+        $identity = ActorReference::of($this);
 
         return Inbox::query()->forwarding()->attachedTo($identity)->oldestFirst()->first()
             ?? Inbox::findPersonalOf($identity);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Inboxes\LeaveInbox;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 
 /**
@@ -14,5 +14,5 @@ use App\Support\Command;
  */
 final readonly class LeaveInboxCommand extends Command
 {
-    public function __construct(public string $inboxId, public ActorIdentity $actor) {}
+    public function __construct(public string $inboxId, public ActorReference $actor) {}
 }

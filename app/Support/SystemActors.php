@@ -13,10 +13,10 @@ use App\Exceptions\ActorUnavailable;
  */
 final readonly class SystemActors implements ActorProvider
 {
-    public function actor(ActorIdentity $identity): Actor
+    public function actor(ActorReference $identity): Actor
     {
         if ($identity->isSameAs(
-            ActorIdentity::system(),
+            ActorReference::system(),
         )) {
             return new SystemActor();
         }

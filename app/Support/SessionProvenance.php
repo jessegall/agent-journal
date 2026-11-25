@@ -75,7 +75,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
         return $this->links->among($records, new RecordIdentity(AgentSession::linkType(), $sessionId));
     }
 
-    public function parentOf(Model $record): ActorIdentity|null
+    public function parentOf(Model $record): ActorReference|null
     {
         $parent = $this->parentSessionOf($record);
 
@@ -83,7 +83,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
             return null;
         }
 
-        return ActorIdentity::forAgent($parent->agent_id);
+        return ActorReference::forAgent($parent->agent_id);
     }
 
     public function doesParentHaveGrant(Model $record, Operation $operation): bool

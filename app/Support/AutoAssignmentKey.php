@@ -10,14 +10,14 @@ namespace App\Support;
 final readonly class AutoAssignmentKey
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $assignableType,
     ) {}
 
     /**
      * Whether the auto-assignment is this actor's.
      */
-    public function isOf(ActorIdentity $actor): bool
+    public function isOf(ActorReference $actor): bool
     {
         return $this->actor->isSameAs($actor);
     }

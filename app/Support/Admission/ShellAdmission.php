@@ -24,7 +24,7 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleRevision;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActiveRules;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ExecutionPlanner;
 use App\Support\OutputDiskCapacity;
 use App\Support\RunnerCapability;
@@ -75,7 +75,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         string $requestKey,
     ): Admission {
         $this->projects->assertFolderAllowed($context->workingFolder);
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorReference::of($this->actors->actor());
         $tree = $this->syntax->parse($line, $dialect);
         $earlier = ProcessRun::query()->acrossActors()->ofAdmission($requestKey)->first();
 
@@ -135,7 +135,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         }
 
         $refusal = $this->unknownRefusal($tree, $classification, $context)
-            ?? $this->deniedOrMistimed($tree, $classification, ActorIdentity::of($this->actors->actor()));
+            ?? $this->deniedOrMistimed($tree, $classification, ActorReference::of($this->actors->actor()));
 
         if ($refusal !== null) {
             return $refusal;
@@ -160,7 +160,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         ShellTree $tree,
         Classification $classification,
         ExecutionContext $context,
-        ActorIdentity $actor,
+        ActorReference $actor,
     ): AdmissionRefusal|null {
         $unknown = $this->unknownRefusal($tree, $classification, $context);
 
@@ -240,7 +240,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
     private function deniedOrMistimed(
         ShellTree $tree,
         Classification $classification,
-        ActorIdentity $actor,
+        ActorReference $actor,
     ): AdmissionRefusal|null {
         $permissions = $this->permissions->forActor($actor);
 
@@ -335,7 +335,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         ShellTree $tree,
         Classification $classification,
         ExecutionContext $context,
-        ActorIdentity $actor,
+        ActorReference $actor,
         string $requestKey,
     ): Admission {
         $plan = $this->planner->plan($tree, $classification);
@@ -366,7 +366,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         ProcessRun $earlier,
         ShellTree $tree,
         string $line,
-        ActorIdentity $actor,
+        ActorReference $actor,
     ): Admission {
         if (! hash_equals($earlier->source_digest, hash('sha256', $line))) {
             $reason = AgentText::of('core.shell.key_reused');
@@ -395,7 +395,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         ProcessRun $stored,
         ExecutionPlan $plan,
         ShellTree $tree,
-        ActorIdentity $actor,
+        ActorReference $actor,
         array $references,
     ): AdmittedRun {
         return AdmittedRun::admitted(

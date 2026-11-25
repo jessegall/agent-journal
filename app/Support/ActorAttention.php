@@ -17,7 +17,7 @@ final readonly class ActorAttention implements ActorAttentionContract
         private AgentWakes $wakes,
     ) {}
 
-    public function request(ActorIdentity $actor, AttentionOrigin $origin): AttentionOutcome
+    public function request(ActorReference $actor, AttentionOrigin $origin): AttentionOutcome
     {
         $runtime = $this->runtimes->currentFor($actor);
 

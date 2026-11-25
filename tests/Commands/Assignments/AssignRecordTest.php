@@ -13,7 +13,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
@@ -90,7 +90,7 @@ final class AssignRecordTest extends TestCase
     {
         $main = Inbox::findMain();
         $agent = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
-        InboxMember::create($main->id, ActorIdentity::of($agent), CarbonImmutable::now());
+        InboxMember::create($main->id, ActorReference::of($agent), CarbonImmutable::now());
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());

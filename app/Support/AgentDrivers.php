@@ -13,14 +13,14 @@ use App\Models\Agents\AgentSession;
 final readonly class AgentDrivers
 {
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<ActorReference>  $actors
      * @return array<string, string> the driver of each running agent, keyed by its actor key
      */
     public function driversOf(array $actors): array
     {
         $agentIds = array_values(array_map(
-            fn (ActorIdentity $actor) => $actor->id,
-            array_filter($actors, fn (ActorIdentity $actor) => $actor->isAgent()),
+            fn (ActorReference $actor) => $actor->id,
+            array_filter($actors, fn (ActorReference $actor) => $actor->isAgent()),
         ));
 
         $drivers = [];

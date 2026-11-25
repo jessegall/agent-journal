@@ -8,7 +8,7 @@ use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\RecordCard;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Docking\LinkCardDockable;
 use App\Support\Docking\LinkCardDockableProvider;
 use App\Support\DockRegistration;
@@ -72,7 +72,7 @@ final class DockDefinitionsTest extends TestCase
             'abstract' => null,
             'route' => null,
         ]);
-        $context = new OpenGate()->contextFor(ActorIdentity::forUser(TestIds::of(1)));
+        $context = new OpenGate()->contextFor(ActorReference::forUser(TestIds::of(1)));
 
         $card = new LinkCardDockable($record, null)->composeDockCard($context);
 

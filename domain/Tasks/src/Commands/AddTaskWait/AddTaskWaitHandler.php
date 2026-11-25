@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\AddTaskWait;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskWaitChange;
@@ -44,7 +44,7 @@ final readonly class AddTaskWaitHandler extends TaskCommandHandler
         $prerequisite = $this->rules->assertMayAdd($dependent, $locked, $command->prerequisiteTaskId);
 
         $this->graph->assertNoCycle($dependent, $prerequisite);
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $wait = TaskWait::create($dependent, $prerequisite, $actor);
         TaskWaitHistory::create($wait, TaskWaitChange::Added, $actor, null, null);
 

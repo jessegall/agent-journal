@@ -96,7 +96,7 @@ final class EventPayloads
                 'fields' => [
                     'runtimeId' => 'string',
                     'hold' => 'App\Enums\Drivers\HoldReason',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                     'reason' => 'string',
                 ],
             ],
@@ -106,7 +106,7 @@ final class EventPayloads
                     'fromHostId' => 'string',
                     'toHostId' => 'string',
                     'processGeneration' => 'int',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                     'proof' => 'string',
                     'reason' => 'string',
                 ],
@@ -115,7 +115,7 @@ final class EventPayloads
                 'fields' => [
                     'requestId' => 'string',
                     'action' => 'App\Enums\Drivers\RecoveryAction',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                     'reason' => 'string',
                 ],
             ],
@@ -164,7 +164,7 @@ final class EventPayloads
             AssignmentsChanged::class => [
                 'fields' => [
                     'operationId' => 'string',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                     'reason' => 'App\Enums\Assignments\AssignmentReason',
                     'changes' => 'array',
                     'occurredAt' => 'DateTimeImmutable',
@@ -180,7 +180,7 @@ final class EventPayloads
                 'fields' => [
                     'messageId' => 'string',
                     'inboxId' => 'string',
-                    'reader' => 'App\Support\ActorIdentity',
+                    'reader' => 'App\Support\ActorReference',
                 ],
             ],
             MessageSent::class => [
@@ -189,7 +189,7 @@ final class EventPayloads
                     'inboxId' => 'string',
                     'number' => 'int',
                     'targetMessageId' => '?string',
-                    'sender' => 'App\Support\ActorIdentity',
+                    'sender' => 'App\Support\ActorReference',
                 ],
             ],
             EngineTicked::class => [
@@ -344,7 +344,7 @@ final class EventPayloads
                 'fields' => [
                     'documentId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                 ],
             ],
             DocumentDraftSaved::class => [
@@ -370,7 +370,7 @@ final class EventPayloads
                 'fields' => [
                     'draftId' => 'string',
                     'documentId' => 'string',
-                    'parent' => '?App\Support\ActorIdentity',
+                    'parent' => '?App\Support\ActorReference',
                 ],
             ],
             RecordSettled::class => [
@@ -383,19 +383,19 @@ final class EventPayloads
                 'fields' => [
                     'reportId' => 'string',
                     'number' => 'int',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                 ],
             ],
             PlanCancelled::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'cancelledBy' => 'App\Support\ActorIdentity',
+                    'cancelledBy' => 'App\Support\ActorReference',
                 ],
             ],
             PlanFinished::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'finishedBy' => 'App\Support\ActorIdentity',
+                    'finishedBy' => 'App\Support\ActorReference',
                 ],
             ],
             PlanReviewDecided::class => [
@@ -422,7 +422,7 @@ final class EventPayloads
             PlanStarted::class => [
                 'fields' => [
                     'planId' => 'string',
-                    'startedBy' => 'App\Support\ActorIdentity',
+                    'startedBy' => 'App\Support\ActorReference',
                 ],
             ],
             RuleApproved::class => [
@@ -493,7 +493,7 @@ final class EventPayloads
             TaskStarted::class => [
                 'fields' => [
                     'taskId' => 'string',
-                    'actor' => 'App\Support\ActorIdentity',
+                    'actor' => 'App\Support\ActorReference',
                     'previousState' => 'Domain\Tasks\Enums\TaskStatus',
                     'historyEntryId' => 'string',
                 ],

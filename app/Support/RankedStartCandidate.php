@@ -13,7 +13,7 @@ use App\Enums\Sessions\StartCandidateRank;
 final readonly class RankedStartCandidate
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public StartCandidateRank $rank,
         public bool $hasSeenThisPurpose,
     ) {}

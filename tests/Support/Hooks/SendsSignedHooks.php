@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
@@ -76,7 +76,7 @@ trait SendsSignedHooks
             null,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($this->start->agent->id),
+            ActorReference::forAgent($this->start->agent->id),
             TestStartAuthority::forAgent($this->start->agent->id),
         );
         $work();

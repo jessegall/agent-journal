@@ -14,7 +14,7 @@ use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentSessions;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
@@ -138,7 +138,7 @@ final class ContinueStackTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::system(),
+            ActorReference::system(),
             None::create(),
         )->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);

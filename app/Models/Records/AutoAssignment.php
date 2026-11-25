@@ -12,7 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Assignments\AutoAssignmentConfigured;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
@@ -189,7 +189,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     /**
      * One page of the actor's auto-assignments, on or off, by id.
      */
-    public static function resolvePageFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage
+    public static function resolvePageFor(ActorReference $actor, IdListPage $page): AutoAssignmentPage
     {
         return self::pageOf(self::query()->ofActor($actor), $page);
     }
@@ -209,7 +209,7 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofActor(Builder $query, ActorIdentity $actor): void
+    protected function ofActor(Builder $query, ActorReference $actor): void
     {
         $query->where('actor_type', $actor->type)->where('actor_id', $actor->id);
     }

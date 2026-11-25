@@ -9,7 +9,7 @@ use App\Contracts\Navigation\ClientUpdate;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockSourceChanged;
@@ -35,7 +35,7 @@ final readonly class BroadcastDockedSourceChange implements Listener
         $source = new DockIdentity($fact->dockType(), $fact->dockId());
 
         $userIds = array_map(
-            fn (ActorIdentity $user) => $user->id,
+            fn (ActorReference $user) => $user->id,
             InboxMember::resolveAttachedTo($this->docked->inboxesDocking($source), User::class),
         );
 

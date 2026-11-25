@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Events;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Contracts\QuestionAnswerNoticeEvent;
 
 /**
@@ -15,6 +15,6 @@ final readonly class QuestionAnswerNoticeWritten implements QuestionAnswerNotice
     public function __construct(
         public string $noticeId,
         public string $questionId,
-        public ActorIdentity $recipient,
+        public ActorReference $recipient,
     ) {}
 }

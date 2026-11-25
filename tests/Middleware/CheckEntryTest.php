@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\CommandNotRegistered;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
@@ -93,7 +93,7 @@ final class CheckEntryTest extends TestCase
     private function actAsEngine(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::of(new SystemActor()),
+            ActorReference::of(new SystemActor()),
             new TrustedEntryAuthority('test'),
         );
     }

@@ -17,7 +17,7 @@ final readonly class ActorGuidance implements ActorGuidanceContract
 {
     public function __construct(private ActorAttention $attention, private AgentTexts $texts) {}
 
-    public function retain(ActorIdentity $actor, AgentText $guidance, string $key): void
+    public function retain(ActorReference $actor, AgentText $guidance, string $key): void
     {
         $origin = AttentionOrigin::guidance($key);
         $text = $this->texts->render($guidance);

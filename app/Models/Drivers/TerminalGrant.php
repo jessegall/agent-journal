@@ -20,7 +20,7 @@ use App\Events\Sessions\TerminalGrantSequenceTaken;
 use App\Events\Sessions\TerminalTakeSent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -83,7 +83,7 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
      * The viewer's take of the runtime's input through their read interest, waiting for the host.
      */
     public static function create(
-        ActorIdentity $writer,
+        ActorReference $writer,
         AgentRuntime $runtime,
         TerminalView $interest,
         string $takeId,

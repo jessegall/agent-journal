@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Support\PairChats;
@@ -32,18 +32,18 @@ final readonly class ChatCandidatesController
         $chats->assertManages($input->inboxId);
 
         $members = array_map(
-            fn (ActorIdentity $member) => $member->id,
+            fn (ActorReference $member) => $member->id,
             InboxMember::resolveAttachedTo([$input->inboxId], User::class),
         );
 
         $candidates = array_values(array_map(
-            fn (string $userId) => ActorIdentity::ofClass(User::class, $userId),
+            fn (string $userId) => ActorReference::ofClass(User::class, $userId),
             array_diff($eligibility->invitableUserIds(null, self::CANDIDATE_LIMIT), $members),
         ));
 
         $names = $labels->labelsFor($candidates);
 
-        return ['candidates' => array_map(fn (ActorIdentity $candidate) => ParticipantData::from([
+        return ['candidates' => array_map(fn (ActorReference $candidate) => ParticipantData::from([
             'actor' => $candidate->text(),
             'label' => $names->nameOf($candidate) ?? $candidate->id,
             'driver' => null,

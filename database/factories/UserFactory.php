@@ -7,7 +7,7 @@ namespace Database\Factories;
 use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\JournalCommands;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -73,7 +73,7 @@ class UserFactory extends Factory
             Container::getInstance()->make(JournalCommands::class)->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorInboxCommand(ActorIdentity::of($user), $user->name),
+                new ProvisionActorInboxCommand(ActorReference::of($user), $user->name),
             );
         });
     }

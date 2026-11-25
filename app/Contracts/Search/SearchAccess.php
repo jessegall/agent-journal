@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Search;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AdmittedConstraints;
 use App\Values\OpenAction;
 use App\Values\ReadRequest;
@@ -25,7 +25,7 @@ interface SearchAccess
     /**
      * Whether the user may search this source.
      */
-    public function canUserSearch(ActorIdentity $user): bool;
+    public function canUserSearch(ActorReference $user): bool;
 
     /**
      * What the reader's grant admits, compiled once for a batch from the real principal.

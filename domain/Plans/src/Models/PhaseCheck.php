@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\PublishedResult;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -52,7 +52,7 @@ final class PhaseCheck extends Model implements ReadableModel
     /**
      * The phase relies on this receipt's result; recording the same receipt again changes nothing.
      */
-    public static function create(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
+    public static function create(Phase $phase, PublishedResult $receipt, ActorReference $recorder): self
     {
         $check = new self();
         $check->phase_id = $phase->id;

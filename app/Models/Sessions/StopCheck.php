@@ -17,7 +17,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\RelationRead;
 use App\Values\StopCheckReference;
@@ -209,12 +209,12 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     /**
      * The agent whose session made the attempt, as the actor that asks for help when its stop is held.
      */
-    public static function resolveAgentOf(StopCheckReference $attempt): ActorIdentity
+    public static function resolveAgentOf(StopCheckReference $attempt): ActorReference
     {
         $sessionId = self::query()->withoutGlobalScope(AgentSessionScope::class)->findOrFail($attempt->attemptId)
             ->session_id;
 
-        return ActorIdentity::ofClass(Agent::class, AgentSession::findById($sessionId)->agent_id);
+        return ActorReference::ofClass(Agent::class, AgentSession::findById($sessionId)->agent_id);
     }
 
     /**

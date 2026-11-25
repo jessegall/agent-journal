@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\PruneShareAudit;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
@@ -46,7 +46,7 @@ final readonly class PruneShareAuditHandler extends SharingCommandHandler
         }
 
         $this->removeAll(array_map(fn (ShareAudit $audit) => $audit->id, $batch));
-        ShareAudit::create(null, ShareAuditType::AuditPruned, ActorIdentity::system(), (string) count($batch));
+        ShareAudit::create(null, ShareAuditType::AuditPruned, ActorReference::system(), (string) count($batch));
 
         return new AuditPruning(count($batch), count($due) > self::MOST_PER_RUN);
     }

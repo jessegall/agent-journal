@@ -11,7 +11,7 @@ use App\Exceptions\RunOutcomeAccessRefused;
 use App\Models\Access\User;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
 {
@@ -24,7 +24,7 @@ final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
     {
         $run = ProcessRun::findLockedForOutcome($command->runId);
 
-        if (! $run->isByActor(ActorIdentity::of($command->dispatchedBy()))) {
+        if (! $run->isByActor(ActorReference::of($command->dispatchedBy()))) {
             throw RunOutcomeAccessRefused::ofAnotherActor($run->id);
         }
 
@@ -32,7 +32,7 @@ final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
             return;
         }
 
-        $user = ActorIdentity::ofClass(User::class, $run->outcome_user_id);
+        $user = ActorReference::ofClass(User::class, $run->outcome_user_id);
         $run->revokeOutcomeUser();
         $this->notifications->withdraw(new NotificationTarget(RunNotificationTarget::KEY, $run->id), $user);
     }

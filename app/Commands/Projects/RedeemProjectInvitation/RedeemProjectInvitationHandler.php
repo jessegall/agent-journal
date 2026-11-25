@@ -19,7 +19,7 @@ use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\InstallLineAvailability;
 use App\Values\Redemption;
 use Illuminate\Support\Str;
@@ -64,7 +64,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         );
 
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE, $project);
-        $this->desks->provision(ActorIdentity::of($mainAgent), $mainAgent->name);
+        $this->desks->provision(ActorReference::of($mainAgent), $mainAgent->name);
         $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);
         $attempt->spendOn($binding);

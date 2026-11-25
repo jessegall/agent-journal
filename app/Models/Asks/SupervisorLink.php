@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\SupervisorLinks\SupervisorLinkChanged;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorRoutes;
 use Carbon\CarbonImmutable;
@@ -52,7 +52,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(ActorIdentity $actor, SupervisorRoutes $inherited): self
+    public static function create(ActorReference $actor, SupervisorRoutes $inherited): self
     {
         $link = self::findOwnedBy($actor);
 
@@ -112,7 +112,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     /**
      * The actor's supervisor link; none before its first.
      */
-    public static function findOwnedBy(ActorIdentity $actor): self|null
+    public static function findOwnedBy(ActorReference $actor): self|null
     {
         return self::query()->ownedBy($actor)->first();
     }

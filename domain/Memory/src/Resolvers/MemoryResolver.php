@@ -6,7 +6,7 @@ namespace Domain\Memory\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\RecordUnavailable;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Memory\Contracts\MemoryResolver as MemoryResolverContract;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Values\MemoryCard;
@@ -21,7 +21,7 @@ final readonly class MemoryResolver implements MemoryResolverContract
 
     public function own(int $page): MemoryPage
     {
-        $owner = ActorIdentity::of($this->actors->actor());
+        $owner = ActorReference::of($this->actors->actor());
         $query = Memory::query()->ownedBy($owner);
         $total = $query->clone()->count();
 
@@ -37,7 +37,7 @@ final readonly class MemoryResolver implements MemoryResolverContract
 
     public function memory(string $memoryId): MemoryCard
     {
-        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->actors->actor()))->whereKey($memoryId)->first();
+        $memory = Memory::query()->ownedBy(ActorReference::of($this->actors->actor()))->whereKey($memoryId)->first();
 
         if ($memory !== null) {
             return self::cardOf($memory);

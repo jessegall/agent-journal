@@ -8,7 +8,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Authorization\RecordPolicy as RecordPolicyContract;
 use App\Contracts\Processes\RunClaims;
 use App\Enums\Agents\AccessType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Models\Task;
 use Illuminate\Auth\Access\Response;
 
@@ -29,7 +29,7 @@ final readonly class RecordPolicy implements RecordPolicyContract
     {
         return match ($access) {
             AccessType::Create => Response::allow(),
-            AccessType::Edit => $this->holdsTheRun($task, ActorIdentity::of($actor))
+            AccessType::Edit => $this->holdsTheRun($task, ActorReference::of($actor))
                 ? Response::allow()
                 : Response::deny('The actor does not hold this run.'),
             default => Response::deny(),
@@ -39,7 +39,7 @@ final readonly class RecordPolicy implements RecordPolicyContract
     /**
      * Whether the actor's claim on the task's latest run still stands.
      */
-    private function holdsTheRun(Task $task, ActorIdentity $actor): bool
+    private function holdsTheRun(Task $task, ActorReference $actor): bool
     {
         $run = $task->currentRun();
         $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);

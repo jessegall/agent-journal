@@ -19,8 +19,8 @@ use App\Contracts\Work\Focusable;
 use App\Enums\Assignments\PoolMembersType;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
-use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
+use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
 use App\Support\PoolMembers;
@@ -174,7 +174,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      *
      * @throws TaskRestartRefused
      */
-    public function start(ActorIdentity $actor): void
+    public function start(ActorReference $actor): void
     {
         $this->assertNotEnded();
 
@@ -251,10 +251,10 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      * Who works on the task's latest run, with the runner's label when the caller may see it, and the agent whose focus
      * the task is in; it runs now while the task is started and a claim on that run is live.
      *
-     * @param  Option<ActorIdentity>  $focuser
+     * @param  Option<ActorReference>  $focuser
      */
     public function executionBy(
-        ActorIdentity $runner,
+        ActorReference $runner,
         ActorLabelSet $labels,
         bool $isClaimed,
         Option $focuser,
@@ -266,7 +266,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             $this->run_number,
             $this->status,
             $isClaimed && $this->status === TaskStatus::Started,
-            $focuser->map(fn (ActorIdentity $agent) => $labels->nameOf($agent) ?? "agent {$agent->id}"),
+            $focuser->map(fn (ActorReference $agent) => $labels->nameOf($agent) ?? "agent {$agent->id}"),
         );
     }
 

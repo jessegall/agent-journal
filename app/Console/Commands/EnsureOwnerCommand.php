@@ -8,7 +8,7 @@ use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Hashing\Hasher;
@@ -40,7 +40,7 @@ final class EnsureOwnerCommand extends Command
             $commands->runAsJournal(
                 CommandEntry::HostControl,
                 'desk install',
-                new ProvisionActorInboxCommand(ActorIdentity::of($owner), $owner->name),
+                new ProvisionActorInboxCommand(ActorReference::of($owner), $owner->name),
             );
 
             $this->info("Created the owner account {$email}.");

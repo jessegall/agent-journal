@@ -16,7 +16,7 @@ final readonly class HandOverWaitingMessages implements Pipe
 {
     public function handle(WalkedCall $walked): WalkedCall
     {
-        $agent = $walked->call->target->actorIdentity();
+        $agent = $walked->call->target->actorReference();
 
         $waiting = PendingAgentMessage::query()
             ->ownedBy($agent)

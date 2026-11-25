@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\PreventsRevisionUpdates;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ScriptSource;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -44,7 +44,7 @@ final class ProfileDraftRevision extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(ProfileDraft $draft, ScriptSource $script, ActorIdentity $author): self
+    public static function create(ProfileDraft $draft, ScriptSource $script, ActorReference $author): self
     {
         $profileDraftRevision = new self();
         $profileDraftRevision->profile_key = $draft->profile_key;

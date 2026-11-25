@@ -16,7 +16,7 @@ use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
@@ -164,7 +164,7 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $inboxId = $this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId));
+        $inboxId = $this->chats->pairWith(ActorReference::ofClass(Agent::class, $agent->agentId));
 
         $inbox = Inbox::query()->findOrFail($inboxId);
 

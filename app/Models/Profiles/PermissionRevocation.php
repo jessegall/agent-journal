@@ -10,7 +10,7 @@ use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Profiles\RevokedPatternData;
 use App\Enums\CommandRules\CommandClass;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;
 use App\Values\CommandPatternSet;
@@ -63,7 +63,7 @@ final class PermissionRevocation extends Model implements ReadableModel
         string $source,
         CommandClassSet $classes,
         CommandPatternSet $patterns,
-        ActorIdentity $by,
+        ActorReference $by,
     ): self {
         $permissionRevocation = new self();
         $permissionRevocation->permission_source = $source;

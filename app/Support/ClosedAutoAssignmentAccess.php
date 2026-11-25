@@ -13,17 +13,17 @@ use App\Exceptions\AutoAssignmentDenied;
  */
 final readonly class ClosedAutoAssignmentAccess implements AutoAssignmentAccess
 {
-    public function assertMayRead(Actor $actor, ActorIdentity $target): void
+    public function assertMayRead(Actor $actor, ActorReference $target): void
     {
         throw AutoAssignmentDenied::forRead($actor);
     }
 
-    public function assertMayWrite(Actor $actor, ActorIdentity $target): void
+    public function assertMayWrite(Actor $actor, ActorReference $target): void
     {
         throw AutoAssignmentDenied::forWrite($actor);
     }
 
-    public function mayReadTotals(Actor $actor, ActorIdentity $target): bool
+    public function mayReadTotals(Actor $actor, ActorReference $target): bool
     {
         return false;
     }

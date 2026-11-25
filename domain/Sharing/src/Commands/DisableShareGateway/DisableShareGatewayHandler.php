@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\DisableShareGateway;
 
 use App\Contracts\Sharing\SharePolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\GatewayConfiguration;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
@@ -38,7 +38,7 @@ final readonly class DisableShareGatewayHandler extends SharingCommandHandler
         ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::findLockedById($command->configurationId);
 
-        $actor = ActorIdentity::of($owner);
+        $actor = ActorReference::of($owner);
         $this->endings->revokeAll(Share::findLockedUnendedOf($configuration->id), $actor);
         $this->cancelOpensOf($configuration);
 

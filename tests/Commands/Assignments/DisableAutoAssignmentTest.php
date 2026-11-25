@@ -9,7 +9,7 @@ use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
@@ -52,7 +52,7 @@ final class DisableAutoAssignmentTest extends TestCase
 
         $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
         $this->worker = $this->journal->testStartCalled('Worker');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->key = new AutoAssignmentKey(ActorReference::of($this->worker->agent), TaskType::linkType());
         $this->journal->actAs('Owner');
     }
 

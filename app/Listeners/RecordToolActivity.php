@@ -25,6 +25,6 @@ final readonly class RecordToolActivity implements Listener
             return;
         }
 
-        $this->activity->record($fact->target->actorIdentity(), $activity->get()->type, $activity->get()->subject);
+        $this->activity->record($fact->target->actorReference(), $activity->get()->type, $activity->get()->subject);
     }
 }

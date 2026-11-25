@@ -7,7 +7,7 @@ namespace Domain\Rules\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Exceptions\CommandAdmissionRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\UserChannel;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
@@ -102,7 +102,7 @@ final class ApproveRuleTest extends TestCase
             'Every phase ends with its tests.',
             'Agents keep forgetting it.',
             null,
-            ActorIdentity::forUser(TestIds::of(7)),
+            ActorReference::forUser(TestIds::of(7)),
         );
 
         $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($rule->id));

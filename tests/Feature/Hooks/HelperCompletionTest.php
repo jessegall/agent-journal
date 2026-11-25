@@ -21,7 +21,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\StopCheck;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
@@ -185,7 +185,7 @@ final class HelperCompletionTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::system(),
+            ActorReference::system(),
             None::create(),
         )->startedAs($session);
 

@@ -17,7 +17,7 @@ final readonly class ActorLabelSet
     /**
      * The actor's name, or null when the actor was not read or the current actor may not see it.
      */
-    public function nameOf(ActorIdentity $actor): string|null
+    public function nameOf(ActorReference $actor): string|null
     {
         return $this->namesByType[$actor->type][$actor->id] ?? null;
     }

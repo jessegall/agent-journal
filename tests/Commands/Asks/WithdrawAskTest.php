@@ -14,7 +14,7 @@ use App\Exceptions\AskRefused;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
@@ -72,7 +72,7 @@ final class WithdrawAskTest extends TestCase
         $commands->run(new WithdrawAskCommand($second));
         $this->assertSame(self::INPUT_ADVICE, $inbox->card($first)->reply);
         $this->assertFalse($inbox->card($second)->isOpen);
-        $this->assertSame(3, Ask::resolveOpenSubmissions(ActorIdentity::of($requester)));
+        $this->assertSame(3, Ask::resolveOpenSubmissions(ActorReference::of($requester)));
         $this->assertSame(3, AssignmentRecord::query()->count());
         $this->assertSame(
             AskHop::PENDING_DELIVERY,

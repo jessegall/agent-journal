@@ -10,7 +10,7 @@ use App\Enums\CommandRules\CommandClass;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
@@ -37,7 +37,7 @@ final class RetireCommandRuleTest extends TestCase
     {
         config(['processes.runner' => true]);
         $start = $this->journal->signedStart('Test agent');
-        $queued = $this->admit(ActorIdentity::ofClass(Agent::class, $start->agent->id), 'printf queued');
+        $queued = $this->admit(ActorReference::ofClass(Agent::class, $start->agent->id), 'printf queued');
         $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
             new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
         );
@@ -56,7 +56,7 @@ final class RetireCommandRuleTest extends TestCase
         $this->assertStringContainsString(self::EXPLAIN_AGAIN, (string) $reply->json('message'));
     }
 
-    private function admit(ActorIdentity $actor, string $line): ProcessRun
+    private function admit(ActorReference $actor, string $line): ProcessRun
     {
         return ProcessRun::create(
             $actor,

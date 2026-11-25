@@ -10,7 +10,7 @@ use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
@@ -145,7 +145,7 @@ final class CancelPlanTest extends TestCase
         $task = Task::factory()->create();
 
         match ($state) {
-            TaskStatus::Started => $task->start(ActorIdentity::system()),
+            TaskStatus::Started => $task->start(ActorReference::system()),
             TaskStatus::Blocked => $task->block('Waits.'),
             TaskStatus::Finished => $task->finish('Done.'),
             TaskStatus::Cancelled => $task->cancel('Not needed.'),

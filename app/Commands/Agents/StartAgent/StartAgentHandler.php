@@ -26,7 +26,7 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
 use App\Support\AccountSharingService;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentSessions;
 use App\Support\AgentWakes;
 use App\Support\ContainerAdmission;
@@ -73,7 +73,7 @@ final readonly class StartAgentHandler implements CommandHandler
     public function handle(StartAgentCommand $command): StartReceipt
     {
         $request = $command->request;
-        $dispatcher = ActorIdentity::of($command->dispatchedBy());
+        $dispatcher = ActorReference::of($command->dispatchedBy());
 
         if ($request->previewRevision !== null && $request->previewRevision !== $this->drivers->revision()) {
             throw StartPreviewStale::since($request->previewRevision, $this->drivers->revision());

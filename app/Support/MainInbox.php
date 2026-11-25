@@ -39,13 +39,13 @@ final readonly class MainInbox implements MainInboxContract
         $this->responsibilities->assign($request->assignmentIdentity(), $this->main()->assigneeIdentity());
     }
 
-    public function openRequestsFor(ActorIdentity $actor): int
+    public function openRequestsFor(ActorReference $actor): int
     {
         if (! NavigationRequest::query()->acrossActors()->open()->exists()) {
             return 0;
         }
 
-        $seated = $this->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
+        $seated = $this->occupant()->map(fn (ActorReference $occupant) => $occupant->isSameAs($actor));
 
         if (! $seated->getOrElse(false)) {
             return 0;

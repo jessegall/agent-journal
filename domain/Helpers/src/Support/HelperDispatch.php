@@ -24,7 +24,7 @@ use App\Exceptions\ProfileMissing;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Project;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\OwnerStartRequest;
 use App\Support\RecordIdentity;
@@ -326,16 +326,16 @@ final readonly class HelperDispatch
      * Who holds a designated helper: the installation's owner, so a manual and an automatic request reach the same
      * helper; the requester only when no owner is configured.
      */
-    private function designatedHolder(DispatchRequest $request): ActorIdentity
+    private function designatedHolder(DispatchRequest $request): ActorReference
     {
         try {
-            return ActorIdentity::of($this->admission->owner());
+            return ActorReference::of($this->admission->owner());
         } catch (ConsoleOwnerMissing) {
             return $request->parent;
         }
     }
 
-    private function newActor(DispatchRequest $request, ProfileSelection $profile): ActorIdentity
+    private function newActor(DispatchRequest $request, ProfileSelection $profile): ActorReference
     {
         return $this->commands->run(new CreateAgentCommand(
             sprintf('%s helper', $profile->base->label),
@@ -395,7 +395,7 @@ final readonly class HelperDispatch
             ),
         );
 
-        $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($helper));
+        $this->responsibilities->assign($job->assignmentIdentity(), AssigneeIdentity::ofActorReference($helper));
 
         $purpose->subject_record->forAll(
             fn (RecordIdentity $subject) => $this->helperFacts->assigned($subject, $helper->id),

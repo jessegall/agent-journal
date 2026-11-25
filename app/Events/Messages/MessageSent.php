@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Messages;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * A message was sent into an inbox, as a reply to its target message when it has one.
@@ -18,6 +18,6 @@ final readonly class MessageSent implements MessageEvent
         public string $inboxId,
         public int $number,
         public string|null $targetMessageId,
-        public ActorIdentity $sender,
+        public ActorReference $sender,
     ) {}
 }

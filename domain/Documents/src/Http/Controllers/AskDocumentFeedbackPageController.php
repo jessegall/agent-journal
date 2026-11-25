@@ -10,7 +10,7 @@ use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Documents\Http\Requests\DocumentFeedbackRequest;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +31,7 @@ final readonly class AskDocumentFeedbackPageController
         Redirector $redirect,
     ): RedirectResponse {
         $agent = $agents->visibleAgent($request->agentId());
-        $inboxId = $chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId));
+        $inboxId = $chats->pairWith(ActorReference::ofClass(Agent::class, $agent->agentId));
         $commands->run(new SendMessageCommand($inboxId, "Please give me feedback on {$request->subject()}."));
 
         return $redirect->back(303);

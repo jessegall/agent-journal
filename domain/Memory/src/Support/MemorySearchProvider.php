@@ -7,7 +7,7 @@ namespace Domain\Memory\Support;
 use App\Contracts\Search\SearchProvider;
 use App\Contracts\Search\TieredSearch;
 use App\Enums\Search\ScoreTier;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\RefreshCandidates;
@@ -26,7 +26,7 @@ final readonly class MemorySearchProvider implements SearchProvider
 
     public function search(SearchQuery|RefreshCandidates $query): SearchBatch
     {
-        $owner = ActorIdentity::of($query->reader->actor);
+        $owner = ActorReference::of($query->reader->actor);
 
         return $this->texts->search($query, new TieredSearchSource(
             admitted: fn () => self::ownedBy($owner),
@@ -48,7 +48,7 @@ final readonly class MemorySearchProvider implements SearchProvider
     /**
      * @return ReadBuilder<Memory>
      */
-    private static function ownedBy(ActorIdentity $owner): ReadBuilder
+    private static function ownedBy(ActorReference $owner): ReadBuilder
     {
         return Memory::query()->ownedBy($owner);
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\Search\SearchSurface;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Whom a search belongs to: the authenticated session, the actor, the environment, the tool and the surface. A
@@ -15,7 +15,7 @@ final readonly class SearchOwner
 {
     public function __construct(
         public string $sessionId,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $environmentId,
         public string $tool,
         public SearchSurface $surface,

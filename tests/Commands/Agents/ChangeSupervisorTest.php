@@ -9,7 +9,7 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Asks\SupervisorChange;
 use App\Models\Asks\SupervisorLink;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileProposal;
 use App\Values\AskTypeKey;
 use App\Values\ProfileActivation;
@@ -28,7 +28,7 @@ final class ChangeSupervisorTest extends TestCase
     {
         $this->activate((array) config('profiles'));
         $agent = $this->journal->idleAgent('Worker', 'journal-worker')->agentCalled('Worker');
-        $actor = ActorIdentity::of(ActorIdentity::forAgent($agent->id));
+        $actor = ActorReference::of(ActorReference::forAgent($agent->id));
         $question = AskTypeKey::of('question');
         $receipt = $this->app->make(CommandBus::class)->run(
             new ChangeSupervisorCommand($actor, SupervisorTarget::parse('profile:journal-main'), 0, $question),

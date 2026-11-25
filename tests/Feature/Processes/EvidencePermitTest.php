@@ -9,7 +9,7 @@ use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EvidenceRuns;
 use App\Values\PermitLimits;
 use Tests\Fixtures\Agents\TestStart;
@@ -64,8 +64,8 @@ final class EvidencePermitTest extends TestCase
         return $this->app->make(EvidenceRuns::class)->issue('ls project', $this->folder, $this->agent(), $limits);
     }
 
-    private function agent(): ActorIdentity
+    private function agent(): ActorReference
     {
-        return ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
+        return ActorReference::ofClass(Agent::class, $this->start->agent->id);
     }
 }

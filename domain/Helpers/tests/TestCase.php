@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\OwnerAuthority;
 use Domain\Helpers\HelpersDomain;
 use Tests\Support\DomainBoot;
@@ -24,11 +24,11 @@ abstract class TestCase extends BaseTestCase
     /**
      * Acts as the user as the owner, the parent whose helper records the test reads and writes.
      */
-    protected function actAsUser(string $userId): ActorIdentity
+    protected function actAsUser(string $userId): ActorReference
     {
-        $actor = ActorIdentity::forUser($userId);
+        $actor = ActorReference::forUser($userId);
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
 
-        return ActorIdentity::of($actor);
+        return ActorReference::of($actor);
     }
 }

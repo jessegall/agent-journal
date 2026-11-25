@@ -10,7 +10,7 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Refusals\StartRefusal;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\CommandCall;
 use App\Support\HeldStartRefusals;
 use App\Support\StartRequestLock;
@@ -43,7 +43,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         }
 
         $request = $command->request;
-        $requester = ActorIdentity::of($command->dispatchedBy());
+        $requester = ActorReference::of($command->dispatchedBy());
         $start = fn () => $next($call);
 
         return $this->locks->hold(
@@ -62,7 +62,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
      */
     private function startInOwnTransaction(
         StartRequest $request,
-        ActorIdentity $requester,
+        ActorReference $requester,
         Closure $start,
     ): mixed {
         $intent = SessionRequest::create($request, $this->pinOf($request), $requester);
@@ -85,7 +85,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
      */
     private function startInOpenTransaction(
         StartRequest $request,
-        ActorIdentity $requester,
+        ActorReference $requester,
         Closure $start,
     ): mixed {
         try {

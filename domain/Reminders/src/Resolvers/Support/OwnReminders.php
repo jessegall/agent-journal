@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Policies\ReminderPolicy;
 use Domain\Reminders\Values\ReminderCard;
@@ -31,7 +31,7 @@ final readonly class OwnReminders
     {
         $this->authorizer->authorize(ReminderPolicy::class, Reminder::class, AccessType::Read);
 
-        $query = Reminder::query()->ownedBy(ActorIdentity::of($this->actors->actor()));
+        $query = Reminder::query()->ownedBy(ActorReference::of($this->actors->actor()));
         $total = $query->clone()->count();
 
         $cards = $query->inDueOrder()->forPage($page, self::PER_PAGE)->limit(self::PER_PAGE)->get()->map(

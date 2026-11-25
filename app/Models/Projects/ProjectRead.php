@@ -20,7 +20,7 @@ use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -115,7 +115,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         ProjectBinding $binding,
         ProjectReadType $type,
         string $path,
-        ActorIdentity $requester,
+        ActorReference $requester,
     ): self {
         $read = new self();
         $read->binding_id = $binding->id;
@@ -251,7 +251,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         ProjectBinding $binding,
         ProjectReadType $type,
         string $path,
-        ActorIdentity $requester,
+        ActorReference $requester,
         CarbonImmutable $now,
     ): Option {
         return self::query()

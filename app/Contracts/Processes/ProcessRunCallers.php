@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Processes;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use PhpOption\Option;
 
 /**
@@ -14,7 +14,7 @@ use PhpOption\Option;
 interface ProcessRunCallers
 {
     /**
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public function callerOf(string $runId): Option;
 }

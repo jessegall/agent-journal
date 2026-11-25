@@ -14,7 +14,7 @@ use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\Settings\SettingsOutcome;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\CoreSettings;
 use App\Support\DomainAvailability;
 use App\Support\DomainRegistry;
@@ -136,7 +136,7 @@ final class DisableSettingGroupTest extends TestCase
         $this->useSettingsBesideTestModules();
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser($ownerId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser($ownerId), new OwnerAuthority('test'));
         $working = $this->app->make(StateTypes::class)->registry()->get('tasks.work');
         $this->assertTrue($working->isEnabled());
 

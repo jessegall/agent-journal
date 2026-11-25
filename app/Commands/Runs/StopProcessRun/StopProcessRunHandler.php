@@ -9,7 +9,7 @@ use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunResultSource;
 use App\Exceptions\StopRefused;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProcessAdministration;
 use App\Support\RunOutcomes;
 
@@ -27,7 +27,7 @@ final readonly class StopProcessRunHandler implements CommandHandler
     public function handle(StopProcessRunCommand $command): string
     {
         $run = ProcessRun::query()->acrossActors()->whereKey($command->runId)->lockForUpdate()->sole();
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
 
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
             throw StopRefused::ofAnotherActor($run->id);

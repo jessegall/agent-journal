@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Project;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Creates the agent inside the command's transaction, so a nested run from an owner's command joins that transaction.
@@ -17,11 +17,11 @@ final readonly class CreateAgentHandler implements CommandHandler
 {
     public function __construct(private ActorProvisioning $desks) {}
 
-    public function handle(CreateAgentCommand $command): ActorIdentity
+    public function handle(CreateAgentCommand $command): ActorReference
     {
         $project = Project::findForId($command->projectId);
         $agent = Agent::create($command->name, $command->profileKey, $project);
-        $actor = ActorIdentity::of($agent);
+        $actor = ActorReference::of($agent);
         $this->desks->provision($actor, $agent->name);
 
         return $actor;

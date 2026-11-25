@@ -28,7 +28,7 @@ final class PendingWorkSources
         $this->sources[] = $class;
     }
 
-    public function hasWorkFor(ActorIdentity $actor): bool
+    public function hasWorkFor(ActorReference $actor): bool
     {
         foreach ($this->sources as $sourceClass) {
             if ($this->container->make($sourceClass)->pendingCount($actor) > 0) {

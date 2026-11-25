@@ -6,7 +6,7 @@ namespace Tests\Unit\Skills;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ActorStore;
 use App\Support\SystemActor;
 use Tests\TestCase;
@@ -33,7 +33,7 @@ final class SystemActorBoundaryTest extends TestCase
     {
         $this->expectException(InvalidActorText::class);
 
-        ActorIdentity::fromText('system:01jd8x0g9m3qz6v4k2t7r5w1ce');
+        ActorReference::fromText('system:01jd8x0g9m3qz6v4k2t7r5w1ce');
     }
 
     public function test_the_setup_script_refreshes_skills_right_after_migrating(): void

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Events\Listener;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
@@ -27,7 +27,7 @@ final readonly class RecordTaskHistory implements Listener
     public function handle(TaskStateEvent $event): void
     {
         $task = Task::query()->whereKey($event->taskId)->sole();
-        $actor = $event instanceof TaskStarted ? $event->actor : ActorIdentity::of($this->actors->actor());
+        $actor = $event instanceof TaskStarted ? $event->actor : ActorReference::of($this->actors->actor());
 
         TaskHistoryEntry::create(
             $event->historyEntryId,

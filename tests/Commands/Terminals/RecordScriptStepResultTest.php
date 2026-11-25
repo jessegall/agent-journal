@@ -18,7 +18,7 @@ use App\Exceptions\ProfileRunRefused;
 use App\Models\Agents\PendingAgentMessage;
 use App\Models\Profiles\ProfileRun;
 use App\Models\Projects\WorkspaceRead;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileProposal;
 use App\Values\AgentText;
 use App\Values\CommitObservation;
@@ -68,7 +68,7 @@ final class RecordScriptStepResultTest extends TestCase
 
     private const string GUIDANCE = 'Commit your work once the tests pass.';
 
-    private ActorIdentity $writer;
+    private ActorReference $writer;
 
     private int $stops = 0;
 
@@ -77,7 +77,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
     {
         $run = ProfileRun::create(
-            ActorIdentity::of($this->journal->signedStart('Test agent', 'writing-helper')->agent),
+            ActorReference::of($this->journal->signedStart('Test agent', 'writing-helper')->agent),
             WorkReference::free('ask'),
             'journal-worker',
             1,
@@ -100,7 +100,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_a_dirty_writer_runs_the_tests_before_the_guidance_reaches_it(): void
     {
         $this->activateScriptedWriter();
-        $this->writer = ActorIdentity::of(TestStart::start('writing-helper')->agent);
+        $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
 
         $outcome = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
 
@@ -115,7 +115,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_failed_tests_send_their_diagnostics_back_without_holding_the_work(): void
     {
         $this->activateScriptedWriter();
-        $this->writer = ActorIdentity::of(TestStart::start('writing-helper')->agent);
+        $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
 
         $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
@@ -129,7 +129,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_three_returns_on_an_unchanged_workspace_hold_the_work_and_tell_the_owner_once(): void
     {
         $this->activateScriptedWriter();
-        $this->writer = ActorIdentity::of(TestStart::start('writing-helper')->agent);
+        $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
 
         $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
         $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
@@ -148,7 +148,7 @@ final class RecordScriptStepResultTest extends TestCase
     public function test_a_clean_workspace_goes_straight_to_the_final_checks(): void
     {
         $this->activateScriptedWriter();
-        $this->writer = ActorIdentity::of(TestStart::start('writing-helper')->agent);
+        $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
 
         $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->state);
         $this->answerReads(isDirty: false);

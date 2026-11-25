@@ -19,7 +19,7 @@ use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Events\Messages\UserPresenceConfirmed;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -33,14 +33,14 @@ return [
         'owner' => 'MessageReadEntry::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageRead('message', 'inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new MessageRead('message', 'inbox', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     MessageSent::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Message::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageSent('message', 'inbox', 1, null, ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new MessageSent('message', 'inbox', 1, null, ActorReference::ofClass(Agent::class, 'agent')),
     ],
     NotificationsChanged::class => [
         'role' => EventRole::RowFact,
@@ -129,14 +129,14 @@ return [
         'owner' => 'InboxMember::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new InboxJoined('inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new InboxJoined('inbox', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     InboxLeft::class => [
         'role' => EventRole::RowFact,
         'owner' => 'InboxMember::leave',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new InboxLeft('inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new InboxLeft('inbox', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     ClosingWordsDelivered::class => [
         'role' => EventRole::RowFact,

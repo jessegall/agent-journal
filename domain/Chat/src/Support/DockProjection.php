@@ -9,7 +9,7 @@ use App\Exceptions\DockCardInvalid;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\PartMapInvalid;
 use App\Models\Inboxes\Inbox;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\CardContext;
@@ -63,7 +63,7 @@ final readonly class DockProjection
         int $limit = self::CARD_LIMIT,
     ): DockPageData {
         $actor = $this->actors->actor();
-        $identity = ActorIdentity::of($actor);
+        $identity = ActorReference::of($actor);
         $viewer = "{$identity->type}:{$identity->id}";
         $inboxKey = $inbox === null ? self::UNOPENED_CHAT : $inbox->id;
         $first = DockCursor::start($viewer, $inboxKey);

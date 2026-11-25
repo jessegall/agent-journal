@@ -18,7 +18,7 @@ use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AskRecords;
 use App\Support\AskTypeRegistry;
 use App\Support\ProfileProposal;
@@ -57,7 +57,7 @@ final class RouteAskTest extends TestCase
         $this->activateProfiles();
         $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
         $holder = $this->journal->idleAgent('Supervisor', 'journal-code-reviewer')->agentCalled('Supervisor');
-        $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
+        $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorReference::of($holder)));
         $record = $ask->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $keys = $this->app->make(RequestKey::class);
@@ -87,7 +87,7 @@ final class RouteAskTest extends TestCase
         $requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
         $holder = $this->journal->idleAgent('Supervisor', 'journal-code-reviewer')->agentCalled('Supervisor');
         $outsider = $this->journal->idleAgent('Other', 'journal-code-reviewer')->agentCalled('Other');
-        $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
+        $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorReference::of($holder)));
         $reference = new AskReference($ask->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new RouteAskCommand($reference, 0));
@@ -127,7 +127,7 @@ final class RouteAskTest extends TestCase
 
     private function retainFor(Agent $requester, SupervisorTarget $target, int $routeVersion = 0): Ask
     {
-        $actor = ActorIdentity::of($requester);
+        $actor = ActorReference::of($requester);
         $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
         $this->app->make(CommandBus::class)->run(
             new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()),

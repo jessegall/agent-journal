@@ -26,6 +26,6 @@ final readonly class UserChannel
     public function join(Actor $user, string $userId): bool
     {
         return (string) $user->actorId() === $userId
-            && ($this->admission->admits($user) || $this->inboxes->isAdmitted(ActorIdentity::of($user), null));
+            && ($this->admission->admits($user) || $this->inboxes->isAdmitted(ActorReference::of($user), null));
     }
 }

@@ -11,7 +11,7 @@ use App\Contracts\Authorization\AuthoritySource;
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Exceptions\JournalAccessDenied;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use Closure;
@@ -63,7 +63,7 @@ final readonly class AuthenticateUser
             return new OwnerAuthority('the web sign-in');
         }
 
-        if (! $this->inboxes->isAdmitted(ActorIdentity::of($user), null) || ! $this->isMemberRoute($request)) {
+        if (! $this->inboxes->isAdmitted(ActorReference::of($user), null) || ! $this->isMemberRoute($request)) {
             throw JournalAccessDenied::forUser();
         }
 

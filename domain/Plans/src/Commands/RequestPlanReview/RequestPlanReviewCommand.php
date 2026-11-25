@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands\RequestPlanReview;
 
 use App\Attributes\Commands\Authorize;
 use App\Enums\Agents\AccessType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use Domain\Plans\Policies\PlanPolicy;
 
@@ -20,7 +20,7 @@ use Domain\Plans\Policies\PlanPolicy;
 final readonly class RequestPlanReviewCommand extends Command
 {
     /**
-     * @param  non-empty-list<ActorIdentity>  $reviewers
+     * @param  non-empty-list<ActorReference>  $reviewers
      */
     public function __construct(public string $planId, public array $reviewers) {}
 }

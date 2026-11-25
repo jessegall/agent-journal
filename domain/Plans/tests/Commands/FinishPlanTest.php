@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Events\PlanCancelled;
@@ -123,7 +123,7 @@ final class FinishPlanTest extends TestCase
 
         $this->journal->assertEvent(
             PlanFinished::class,
-            fn (PlanFinished $finished) => $finished->finishedBy == ActorIdentity::forUser($this->owner->id),
+            fn (PlanFinished $finished) => $finished->finishedBy == ActorReference::forUser($this->owner->id),
         );
     }
 
@@ -259,7 +259,7 @@ final class FinishPlanTest extends TestCase
         $task = Task::factory()->create();
 
         match ($state) {
-            TaskStatus::Started => $task->start(ActorIdentity::system()),
+            TaskStatus::Started => $task->start(ActorReference::system()),
             TaskStatus::Blocked => $task->block('Waits.'),
             TaskStatus::Finished => $task->finish('Done.'),
             TaskStatus::Cancelled => $task->cancel('Not needed.'),

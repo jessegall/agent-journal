@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\EvidenceSource;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\EvidenceRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -64,7 +64,7 @@ final class EvidenceRead extends Model implements ReadableModel
      * @param  list<EvidenceRange>  $ranges
      * @return list<string> the ids of the rows written
      */
-    public static function createMany(ProcessRun $run, ActorIdentity $reader, array $ranges): array
+    public static function createMany(ProcessRun $run, ActorReference $reader, array $ranges): array
     {
         $reads = array_map(function (EvidenceRange $range) use ($run, $reader): self {
             $read = new self();
@@ -100,7 +100,7 @@ final class EvidenceRead extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofRunReadBy(Builder $query, ProcessRun $run, ActorIdentity $reader): void
+    protected function ofRunReadBy(Builder $query, ProcessRun $run, ActorReference $reader): void
     {
         $query->where('process_run_id', $run->id)
             ->where('actor_type', $reader->type)

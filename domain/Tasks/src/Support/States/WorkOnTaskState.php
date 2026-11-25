@@ -96,6 +96,11 @@ final class WorkOnTaskState extends AgentState
         ]));
     }
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
+    }
+
     // ----------[ Lifecycle ]----------
 
     public function onEnter(): FocusTaskCommand
@@ -142,11 +147,6 @@ final class WorkOnTaskState extends AgentState
     }
 
     // ----------[ Events ]----------
-
-    public function hears(Event $event): bool
-    {
-        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
-    }
 
     public function onTaskFinished(TaskFinished $event): void
     {

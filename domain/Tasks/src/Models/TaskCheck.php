@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\PublishedResult;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
@@ -70,7 +70,7 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     public static function create(
         TaskRun $run,
         string $operation,
-        ActorIdentity $caller,
+        ActorReference $caller,
         string $processRunId,
     ): self {
         $check = new self();

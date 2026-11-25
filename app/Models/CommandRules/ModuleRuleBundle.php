@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\RuleBundle;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -49,7 +49,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(string $projectKey, RuleBundle $bundle, ActorIdentity $approver): self
+    public static function create(string $projectKey, RuleBundle $bundle, ActorReference $approver): self
     {
         $approval = new self();
         $approval->project_key = $projectKey;

@@ -17,7 +17,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\MarkdownText;
@@ -113,7 +113,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         $report->filed_at = CarbonImmutable::now();
 
         $report->assertSaved($report->save());
-        $report->raise(new ReportFiled($report->id, $report->number, ActorIdentity::of($author)));
+        $report->raise(new ReportFiled($report->id, $report->number, ActorReference::of($author)));
 
         return $report;
     }

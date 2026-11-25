@@ -29,9 +29,9 @@ final readonly class StoredSkillWrites
         private CanonicalRenderer $renderer,
     ) {}
 
-    public function author(): ActorIdentity
+    public function author(): ActorReference
     {
-        return ActorIdentity::of($this->actors->actor());
+        return ActorReference::of($this->actors->actor());
     }
 
     /**
@@ -69,7 +69,7 @@ final readonly class StoredSkillWrites
         Skill $skill,
         SkillDraft $draft,
         SkillCondition $condition,
-        ActorIdentity $author,
+        ActorReference $author,
         string|null $sourceKey = null,
         string|null $sourceDigest = null,
     ): SkillRevision {
@@ -86,7 +86,7 @@ final readonly class StoredSkillWrites
         Skill $skill,
         SkillRevision $earlier,
         SkillCondition $condition,
-        ActorIdentity $author,
+        ActorReference $author,
     ): SkillRevision {
         return $this->appendRevision(
             $skill,

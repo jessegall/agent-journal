@@ -14,7 +14,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ConversationModeType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -99,7 +99,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     public static function create(
         HelperIdentity $helper,
         HelperPurpose $purpose,
-        ActorIdentity $parent,
+        ActorReference $parent,
         string $brief,
         array $sourceSubjects,
         SessionStartDetails $startDetails,
@@ -231,9 +231,9 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     /**
      * The actor whose helper this job is, the parent that started it.
      */
-    public function actor(): ActorIdentity
+    public function actor(): ActorReference
     {
-        return ActorIdentity::fromStored($this->actor_type, $this->actor_id);
+        return ActorReference::fromStored($this->actor_type, $this->actor_id);
     }
 
     /**

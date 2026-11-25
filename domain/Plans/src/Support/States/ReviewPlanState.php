@@ -61,6 +61,11 @@ final class ReviewPlanState extends AgentState
         return new Some($this->reviewText());
     }
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof PlanEvent || $event->planId === $this->planId;
+    }
+
     // ----------[ Hooks ]----------
 
     /**
@@ -76,11 +81,6 @@ final class ReviewPlanState extends AgentState
     }
 
     // ----------[ Events ]----------
-
-    public function hears(Event $event): bool
-    {
-        return ! $event instanceof PlanEvent || $event->planId === $this->planId;
-    }
 
     public function onPlanReviewDecided(PlanReviewDecided $event): void
     {

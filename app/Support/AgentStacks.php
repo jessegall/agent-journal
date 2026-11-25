@@ -68,14 +68,14 @@ final readonly class AgentStacks implements AgentStacksContract
         }
     }
 
-    public function pushFor(ActorIdentity $actor, StateReference $state): void
+    public function pushFor(ActorReference $actor, StateReference $state): void
     {
         foreach ($this->targets->lockedRowsOf($actor) as $row) {
             $this->addressed->push($row->target, $state);
         }
     }
 
-    public function offerFor(ActorIdentity $actor, StateReference $state): void
+    public function offerFor(ActorReference $actor, StateReference $state): void
     {
         $this->addressed->offer($this->targets->lockedRowsOf($actor), $state);
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * The agent and journal session one stack belongs to.
@@ -25,9 +25,9 @@ final readonly class StackTarget
     /**
      * The agent the stack belongs to, as an actor.
      */
-    public function actorIdentity(): ActorIdentity
+    public function actorReference(): ActorReference
     {
-        return ActorIdentity::ofClass(Agent::class, $this->agentId);
+        return ActorReference::ofClass(Agent::class, $this->agentId);
     }
 
     /**

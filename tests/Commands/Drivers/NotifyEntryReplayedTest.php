@@ -13,7 +13,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\MenuStep;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
@@ -118,7 +118,7 @@ final class NotifyEntryReplayedTest extends TestCase
     {
         $screen = new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7);
         $uncertainty = new NavigationUncertainty(NavigationReason::LabelMissing, 2, self::FINGERPRINT, $screen);
-        $owner = ActorIdentity::ofClass(User::class, 'owner');
+        $owner = ActorReference::ofClass(User::class, 'owner');
 
         return NavigationRequest::create($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
     }

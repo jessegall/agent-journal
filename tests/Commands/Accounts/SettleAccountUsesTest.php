@@ -17,7 +17,7 @@ use App\Exceptions\AccountInUse;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RegisterPendingStart;
 use App\Support\StartSessions;
@@ -141,7 +141,7 @@ final class SettleAccountUsesTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

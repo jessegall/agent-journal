@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Support\StartSessions;
 use Domain\Plans\Enums\PlanType;
@@ -66,8 +66,8 @@ final class HomePageTest extends TestCase
             TestSelections::requestId(),
         )->session;
         $this->chatInboxId = $this->journal->inboxes()->shared(
-            ActorIdentity::of($this->journal->ownerUser()),
-            ActorIdentity::of($agent),
+            ActorReference::of($this->journal->ownerUser()),
+            ActorReference::of($agent),
         )->id;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }

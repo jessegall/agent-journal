@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\Operation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -49,7 +49,7 @@ interface SessionProvenance
     /**
      * The actor that started the session the record came from; none when it had no parent.
      */
-    public function parentOf(Model $record): ActorIdentity|null;
+    public function parentOf(Model $record): ActorReference|null;
 
     /**
      * Whether the agent that started the record's session holds the grant for the operation.

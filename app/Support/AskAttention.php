@@ -34,7 +34,7 @@ final readonly class AskAttention
         $hop->answer($body, $this->wake($ask->actor(), AttentionOrigin::askReply($ask->id)));
     }
 
-    public function offerNext(ActorIdentity $holder): void
+    public function offerNext(ActorReference $holder): void
     {
         if (! $holder->isAgent()) {
             return;
@@ -75,7 +75,7 @@ final readonly class AskAttention
         }
     }
 
-    private function wake(ActorIdentity $actor, AttentionOrigin $origin): string
+    private function wake(ActorReference $actor, AttentionOrigin $origin): string
     {
         if (! $actor->isAgent()) {
             return self::CARD;

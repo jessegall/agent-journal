@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PlanReviewEditionApproved;
@@ -66,7 +66,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The plan's next review, asked for by the actor, at the plan's revision as it is now.
      */
-    public static function create(Plan $plan, ActorIdentity $actor): self
+    public static function create(Plan $plan, ActorReference $actor): self
     {
         $planReviewEdition = new self();
         $planReviewEdition->plan_id = $plan->id;
@@ -85,7 +85,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * The edition is withdrawn by the actor before any decision.
      */
-    public function withdraw(ActorIdentity $actor): void
+    public function withdraw(ActorReference $actor): void
     {
         $this->status = PlanReviewStatus::Withdrawn;
         $this->decided_by_type = $actor->type;
@@ -98,7 +98,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * Approves the review for the actor under the decision's request key; its decider and time are the receipt.
      */
-    public function approve(ActorIdentity $actor, string $requestKey): void
+    public function approve(ActorReference $actor, string $requestKey): void
     {
         $this->decide(PlanReviewStatus::Approved, $actor, $requestKey, null);
         $this->raise(new PlanReviewEditionApproved($this->plan_id, $this->id));
@@ -107,7 +107,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     /**
      * Sends the edition back with the changes the actor asks for.
      */
-    public function requestChanges(ActorIdentity $actor, string $requestKey, string $reason): void
+    public function requestChanges(ActorReference $actor, string $requestKey, string $reason): void
     {
         $this->decide(PlanReviewStatus::ChangesRequested, $actor, $requestKey, $reason);
         $this->raise(new PlanReviewEditionChangesRequested($this->plan_id, $this->id));
@@ -125,7 +125,7 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
 
     // ----------[ Internals ]----------
 
-    private function decide(PlanReviewStatus $state, ActorIdentity $actor, string $requestKey, string|null $reason): void
+    private function decide(PlanReviewStatus $state, ActorReference $actor, string $requestKey, string|null $reason): void
     {
         $this->status = $state;
         $this->decided_by_type = $actor->type;

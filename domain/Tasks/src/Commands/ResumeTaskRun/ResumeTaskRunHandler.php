@@ -9,7 +9,7 @@ use App\Contracts\Processes\RunClaims;
 use App\Contracts\Work\AgentStacks;
 use App\Contracts\Work\CurrentState;
 use App\Exceptions\RunClaimRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\References\SubjectReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskStatus;
@@ -54,7 +54,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 
         $this->assertNotCovered($task);
 
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $claim = $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
 
         $this->stacks->activateForCaller(WorkOnTaskStateReference::forTask($task));

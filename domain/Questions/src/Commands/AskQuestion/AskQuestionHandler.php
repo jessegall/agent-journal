@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Questions\QuestionRecipient;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Exceptions\QuestionRefused;
@@ -28,7 +28,7 @@ final readonly class AskQuestionHandler extends QuestionCommandHandler
      */
     public function handle(AskQuestionCommand $command): string
     {
-        $sender = ActorIdentity::of($command->dispatchedBy());
+        $sender = ActorReference::of($command->dispatchedBy());
 
         if (! InboxMember::isAttached($command->inboxId, $sender)) {
             throw InboxUnavailable::forActor($command->inboxId);

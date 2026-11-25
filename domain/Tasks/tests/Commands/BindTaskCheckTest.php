@@ -11,7 +11,7 @@ use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Runs\AssessmentOutcome;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\PublishedResult;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BindTaskCheck\BindTaskCheckCommand;
@@ -76,8 +76,8 @@ final class BindTaskCheckTest extends TestCase
         $other = (string) Str::ulid();
 
         $this->callersAre([
-            $own => ActorIdentity::of($this->journal->ownerUser()),
-            $other => ActorIdentity::ofClass(User::class, TestIds::of(9)),
+            $own => ActorReference::of($this->journal->ownerUser()),
+            $other => ActorReference::ofClass(User::class, TestIds::of(9)),
         ]);
 
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
@@ -161,14 +161,14 @@ final class BindTaskCheckTest extends TestCase
     }
 
     /**
-     * @param  array<string, ActorIdentity>  $callers
+     * @param  array<string, ActorReference>  $callers
      */
     private function callersAre(array $callers): void
     {
         $this->app->instance(ProcessRunCallers::class, new readonly class($callers) implements ProcessRunCallers
         {
             /**
-             * @param  array<string, ActorIdentity>  $callers
+             * @param  array<string, ActorReference>  $callers
              */
             public function __construct(private array $callers) {}
 

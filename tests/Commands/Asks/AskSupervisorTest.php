@@ -10,7 +10,7 @@ use App\Contracts\Asks\AskReader;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Asks\Ask;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
@@ -78,7 +78,7 @@ final class AskSupervisorTest extends TestCase
         $this->artisan('ask:make', ['text' => 'Why does this fail?'])->assertSuccessful();
         $this->artisan('ask:list')->assertSuccessful();
 
-        $ask = Ask::query()->ownedBy(ActorIdentity::of($start->agent))->firstOrFail();
+        $ask = Ask::query()->ownedBy(ActorReference::of($start->agent))->firstOrFail();
         $this->artisan('ask:show', ['ask' => $ask->id])->assertSuccessful();
         $this->assertSame('question', $ask->type_key->key);
         $this->assertStringStartsWith('free:', $ask->work);
@@ -95,7 +95,7 @@ final class AskSupervisorTest extends TestCase
         $this->assertFalse($ask->refresh()->open);
 
         $this->artisan('ask:make', ['text' => 'Please check another file.'])->assertSuccessful();
-        $ask = Ask::query()->ownedBy(ActorIdentity::of($start->agent))->where('open', true)->sole();
+        $ask = Ask::query()->ownedBy(ActorReference::of($start->agent))->where('open', true)->sole();
         $this->artisan('ask:withdraw', ['ask' => $ask->id])->assertSuccessful();
         $this->assertFalse($ask->refresh()->open);
     }

@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorProvider;
 use App\Contracts\Admission\JournalAdmission;
 use App\Exceptions\ActorUnavailable;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Users as actors: a user that exists and that the journal's admission lets in.
@@ -18,7 +18,7 @@ final readonly class UserActors implements ActorProvider
 {
     public function __construct(private JournalAdmission $admission) {}
 
-    public function actor(ActorIdentity $identity): Actor
+    public function actor(ActorReference $identity): Actor
     {
         $user = User::query()->whereKey($identity->id)->first();
 

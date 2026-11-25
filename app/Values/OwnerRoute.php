@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\Asks\OwnerRouteType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 final readonly class OwnerRoute
 {
-    private function __construct(public OwnerRouteType $type, public ActorIdentity|null $actor) {}
+    private function __construct(public OwnerRouteType $type, public ActorReference|null $actor) {}
 
-    public static function chainEnd(ActorIdentity $actor): self
+    public static function chainEnd(ActorReference $actor): self
     {
         return new self(OwnerRouteType::ChainEnd, $actor);
     }
@@ -24,7 +24,7 @@ final readonly class OwnerRoute
     /**
      * Whether the route ends at this actor; a route with no owner ends at nobody.
      */
-    public function endsAt(ActorIdentity $actor): bool
+    public function endsAt(ActorReference $actor): bool
     {
         return $this->actor?->isSameAs($actor) ?? false;
     }

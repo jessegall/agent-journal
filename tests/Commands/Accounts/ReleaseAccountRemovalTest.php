@@ -17,7 +17,7 @@ use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
 use App\Models\Accounts\AccountUsageWindow;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\JournalCommands;
 use App\Support\UsageReadings;
@@ -112,7 +112,7 @@ final class ReleaseAccountRemovalTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
 

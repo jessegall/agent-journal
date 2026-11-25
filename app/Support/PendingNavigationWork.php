@@ -14,7 +14,7 @@ final readonly class PendingNavigationWork implements PendingWorkSource
 {
     public function __construct(private MainInbox $main) {}
 
-    public function pendingCount(ActorIdentity $actor): int
+    public function pendingCount(ActorReference $actor): int
     {
         return $this->main->openRequestsFor($actor);
     }

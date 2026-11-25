@@ -9,7 +9,7 @@ use App\Contracts\Time\ServerClock;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ProjectFileAnswer;
 use App\Values\ProjectFileAnswers;
 
@@ -33,7 +33,7 @@ final readonly class RequestProjectReadHandler implements CommandHandler
         }
 
         $binding = ProjectBinding::findLockedById($command->bindingId);
-        $requester = ActorIdentity::of($command->dispatchedBy());
+        $requester = ActorReference::of($command->dispatchedBy());
         $now = $this->clock->now();
 
         return new ProjectFileAnswers(array_map(

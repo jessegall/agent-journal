@@ -12,7 +12,7 @@ use App\Contracts\Authorization\AuthorizerProvider;
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Exceptions\ActorNotAllowed;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\UnrestrictedAuthorizer;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
@@ -58,7 +58,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
             return new UnrestrictedAuthorizer();
         }
 
-        if ($this->inboxes->isAdmitted(ActorIdentity::of($target), null)) {
+        if ($this->inboxes->isAdmitted(ActorReference::of($target), null)) {
             return new InboxMemberAuthorizer($this->memberPolicies);
         }
 

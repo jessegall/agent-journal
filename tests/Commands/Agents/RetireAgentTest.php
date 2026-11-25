@@ -29,7 +29,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\Compatibility\DriverCompatibility;
@@ -512,7 +512,7 @@ final class RetireAgentTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
     }
 
     private function tasks(): TaskFixtures

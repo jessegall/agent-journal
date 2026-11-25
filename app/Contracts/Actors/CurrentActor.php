@@ -6,7 +6,7 @@ namespace App\Contracts\Actors;
 
 use App\Contracts\Authorization\AuthoritySource;
 use App\Exceptions\ActorContextMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Who acts in this request, for reading only: set by an authenticating middleware, never by the reader.
@@ -16,7 +16,7 @@ interface CurrentActor
     /**
      * @throws ActorContextMissing when no middleware set an actor for this request
      */
-    public function actor(): ActorIdentity;
+    public function actor(): ActorReference;
 
     /**
      * Whether the running request or job acts for an actor at all.

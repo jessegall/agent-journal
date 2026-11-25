@@ -13,7 +13,7 @@ use App\Contracts\Messages\MessageParticipant;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -63,7 +63,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     /**
      * Attaches the actor to the inbox; an actor already attached stays as it is.
      */
-    public static function create(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
+    public static function create(string $inboxId, ActorReference $actor, CarbonImmutable $at): void
     {
         if (self::isAttached($inboxId, $actor)) {
             return;
@@ -87,7 +87,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     {
         $this->left_at = $at;
         $this->save();
-        $this->raise(new InboxLeft($this->inbox_id, ActorIdentity::fromStored($this->actor_type, $this->actor_id)));
+        $this->raise(new InboxLeft($this->inbox_id, ActorReference::fromStored($this->actor_type, $this->actor_id)));
     }
 
     // ----------[ Queries ]----------
@@ -95,7 +95,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     /**
      * The actor's active membership of the inbox; none when it is not attached.
      */
-    public static function findActive(string $inboxId, ActorIdentity $actor): self|null
+    public static function findActive(string $inboxId, ActorReference $actor): self|null
     {
         return self::query()->active()->ofActor($actor)->ofInbox($inboxId)->first();
     }
@@ -103,7 +103,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
     /**
      * Whether the actor is attached to the inbox now.
      */
-    public static function isAttached(string $inboxId, ActorIdentity $actor): bool
+    public static function isAttached(string $inboxId, ActorReference $actor): bool
     {
         return self::query()->active()->ofActor($actor)->ofInbox($inboxId)->exists();
     }
@@ -128,7 +128,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      *
      * @return Option<self>
      */
-    public static function findActiveOf(string $inboxId, ActorIdentity $actor): Option
+    public static function findActiveOf(string $inboxId, ActorReference $actor): Option
     {
         $inboxMember = self::query()->active()->ofInbox($inboxId)->ofActor($actor)->first();
 
@@ -140,11 +140,11 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      *
      * @param  list<string>  $inboxIds
      * @param  class-string<StoredActor>  $actorClass
-     * @return list<ActorIdentity>
+     * @return list<ActorReference>
      */
     public static function resolveAttachedTo(array $inboxIds, string $actorClass): array
     {
-        $type = ActorIdentity::storedTypeOf($actorClass);
+        $type = ActorReference::storedTypeOf($actorClass);
 
         $actorIds = self::query()
             ->active()
@@ -154,7 +154,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
             ->unique()
             ->all();
 
-        $identities = array_map(fn (string $actorId) => ActorIdentity::fromStored($type, $actorId), $actorIds);
+        $identities = array_map(fn (string $actorId) => ActorReference::fromStored($type, $actorId), $actorIds);
 
         return array_values($identities);
     }
@@ -174,7 +174,7 @@ final class InboxMember extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofActor(Builder $query, ActorIdentity $actor): void
+    protected function ofActor(Builder $query, ActorReference $actor): void
     {
         $query->where($actor->asColumns('actor'));
     }

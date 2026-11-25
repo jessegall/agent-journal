@@ -11,7 +11,7 @@ use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Records\SettingsRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;
 use App\Support\CatalogueReflectorFactory;
@@ -75,7 +75,7 @@ final class ConditionalStatePushTest extends TestCase
 
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser($ownerId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = TestActors::stack(1, 10);
 
         $this->app->instance(

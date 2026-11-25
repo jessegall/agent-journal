@@ -6,7 +6,7 @@ namespace App\Contracts\Assignments;
 
 use App\Exceptions\AssignmentDenied;
 use App\Exceptions\AutoAssignmentDenied;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentPage;
@@ -43,5 +43,5 @@ interface AutoAssignmentResolver
     /**
      * One page of the actor's auto-assignments, on or off, by id.
      */
-    public function listFor(ActorIdentity $actor, IdListPage $page): AutoAssignmentPage;
+    public function listFor(ActorReference $actor, IdListPage $page): AutoAssignmentPage;
 }

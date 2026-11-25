@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Data\CreateGroupInput;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +30,7 @@ final readonly class CreateGroupChatController
 
         $inboxId = $chats->openGroup(
             $input->title,
-            array_map(fn (string $userId) => ActorIdentity::ofClass(User::class, $userId), $input->userIds),
+            array_map(fn (string $userId) => ActorReference::ofClass(User::class, $userId), $input->userIds),
         );
 
         return $inertia->flash(self::CREATED_CHAT, $inboxId)->back(303);

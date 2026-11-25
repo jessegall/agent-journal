@@ -19,7 +19,7 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectRead;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use App\Values\BindingFolder;
 use App\Values\InboxMemberAuthority;
@@ -130,9 +130,9 @@ final class RequestProjectReadTest extends TestCase
         return ProjectRead::create($this->binding, $type, $path, $this->requester());
     }
 
-    private function requester(): ActorIdentity
+    private function requester(): ActorReference
     {
-        return ActorIdentity::ofClass(User::class, '01jqzr0000000000000000user');
+        return ActorReference::ofClass(User::class, '01jqzr0000000000000000user');
     }
 
     private function reportText(ProjectRead $read): TestResponse

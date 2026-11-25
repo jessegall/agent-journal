@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Commands;
 
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Commands\ApprovePlanReview\ApprovePlanReviewCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
@@ -69,7 +69,7 @@ final class ApprovePlanReviewTest extends TestCase
         $this->runCommand(
             new RequestPlanReviewCommand(
                 $this->plan->id,
-                [ActorIdentity::ofClass(User::class, $this->journal->ownerUser()->id)],
+                [ActorReference::ofClass(User::class, $this->journal->ownerUser()->id)],
             ),
         );
 
@@ -93,7 +93,7 @@ final class ApprovePlanReviewTest extends TestCase
         $this->runCommand(
             new RequestPlanReviewCommand(
                 $this->plan->id,
-                [ActorIdentity::ofClass(User::class, $this->journal->ownerUser()->id)],
+                [ActorReference::ofClass(User::class, $this->journal->ownerUser()->id)],
             ),
         );
 

@@ -12,7 +12,7 @@ use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -175,7 +175,7 @@ final class ReadMessageState extends AgentState
 
     // ----------[ Internals ]----------
 
-    private function isOwnAgent(ActorIdentity $actor): bool
+    private function isOwnAgent(ActorReference $actor): bool
     {
         return $actor->isAgent() && $actor->id === $this->agentId;
     }

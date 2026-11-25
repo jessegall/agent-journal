@@ -9,7 +9,7 @@ use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\InboxReceiver;
 use App\Support\MessageParticipants;
 
@@ -28,7 +28,7 @@ final readonly class SendMessageHandler implements CommandHandler
     {
         $sender = $this->participants->sender($command->dispatchedBy());
 
-        if (! InboxMember::isAttached($command->inboxId, ActorIdentity::of($sender))) {
+        if (! InboxMember::isAttached($command->inboxId, ActorReference::of($sender))) {
             throw InboxUnavailable::forActor($command->inboxId);
         }
 

@@ -34,7 +34,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function assertMayRead(Actor $actor, ActorIdentity $target): void
+    public function assertMayRead(Actor $actor, ActorReference $target): void
     {
         if ($this->admission->admits($actor) || self::isSelf($actor, $target)) {
             return;
@@ -47,7 +47,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function assertMayWrite(Actor $actor, ActorIdentity $target): void
+    public function assertMayWrite(Actor $actor, ActorReference $target): void
     {
         if ($this->admission->admits($actor)) {
             return;
@@ -56,7 +56,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
         $this->requireDispatcherOfAnotherAgent($actor, $target, AutoAssignmentDenied::forWrite($actor));
     }
 
-    public function mayReadTotals(Actor $actor, ActorIdentity $target): bool
+    public function mayReadTotals(Actor $actor, ActorReference $target): bool
     {
         return $this->admission->admits($actor) || ! self::isSelf($actor, $target);
     }
@@ -67,7 +67,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      */
     private function requireDispatcherOfAnotherAgent(
         Actor $actor,
-        ActorIdentity $target,
+        ActorReference $target,
         AutoAssignmentDenied $denial,
     ): void {
         if (! $target->isAgent()) {
@@ -91,7 +91,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
     {
         try {
             $this->authorizer->filterActions(
-                ActorIdentity::of($actor),
+                ActorReference::of($actor),
                 AssignmentPolicy::class,
                 AssignmentRecord::class,
                 [],
@@ -101,8 +101,8 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
         }
     }
 
-    private static function isSelf(Actor $actor, ActorIdentity $target): bool
+    private static function isSelf(Actor $actor, ActorReference $target): bool
     {
-        return ActorIdentity::of($actor)->isSameAs($target);
+        return ActorReference::of($actor)->isSameAs($target);
     }
 }

@@ -11,7 +11,7 @@ use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\StateEventReentry;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Agents\PendingAgentMessage;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentStacks;
 use App\Support\AttentionOrigin;
 use App\Support\Drivers\DriverReplies;
@@ -213,7 +213,7 @@ final class StateEventDeliveryTest extends TestCase
     {
         $this->journal->pushState($this->target, new StateReference('notes.watching', NoSubject::None));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($this->target->agentId),
+            ActorReference::forAgent($this->target->agentId),
             TestStartAuthority::granting(ProfileBase::mainAgent(), []),
         );
 
@@ -281,7 +281,7 @@ final class StateEventDeliveryTest extends TestCase
         try {
             $transaction->run(function () use ($event): void {
                 PendingAgentMessage::createMany(
-                    $this->target->actorIdentity(),
+                    $this->target->actorReference(),
                     AttentionOrigin::agentMessages('producer-hook'),
                     ['Saved by the producer.'],
                 );
@@ -323,7 +323,7 @@ final class StateEventDeliveryTest extends TestCase
      */
     private function takeContext(): array
     {
-        $agent = $this->target->actorIdentity();
+        $agent = $this->target->actorReference();
         $waiting = PendingAgentMessage::query()->ownedBy($agent)->orderBy('created_at')->orderBy('id')->get();
         PendingAgentMessage::query()->ownedBy($agent)->whereKey($waiting->modelKeys())->delete();
 

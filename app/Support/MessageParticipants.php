@@ -22,7 +22,7 @@ final readonly class MessageParticipants
      */
     public function sender(Actor $actor): MessageSender
     {
-        $model = $this->actors->get(ActorIdentity::of($actor));
+        $model = $this->actors->get(ActorReference::of($actor));
 
         if ($model instanceof MessageSender) {
             return $model;
@@ -36,7 +36,7 @@ final readonly class MessageParticipants
      */
     public function reader(Actor $actor): MessageSender&MessageReceiver
     {
-        $model = $this->actors->get(ActorIdentity::of($actor));
+        $model = $this->actors->get(ActorReference::of($actor));
 
         if ($model instanceof MessageSender && $model instanceof MessageReceiver) {
             return $model;

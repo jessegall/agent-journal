@@ -13,7 +13,7 @@ use App\Contracts\Sharing\Shareable;
 use App\Enums\Records\TextAnchorType;
 use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\ShareRelationSet;
 use App\Values\TextAnchor;
@@ -91,7 +91,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     public static function create(
         Model $target,
-        ActorIdentity $author,
+        ActorReference $author,
         string $body,
         TextAnchor|null $anchor,
         string $key,
@@ -340,7 +340,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function submittedAs(Builder $query, ActorIdentity $author, string $key): void
+    protected function submittedAs(Builder $query, ActorReference $author, string $key): void
     {
         $query->where('author_type', $author->type)->where('author_id', $author->id)->where('submission_key', $key);
     }

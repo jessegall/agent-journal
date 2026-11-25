@@ -18,7 +18,7 @@ use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
 use App\Support\StartedAgent;
@@ -213,7 +213,7 @@ final class TestJournal
         $this->assertNameFree($name);
         $home = $project === null ? TestProjects::local() : $this->projectCalled($project);
         $agent = Agent::create($name, $profile, $home);
-        $this->inboxes->personal(ActorIdentity::of($agent));
+        $this->inboxes->personal(ActorReference::of($agent));
         $this->agents[$name] = $agent;
         $this->startNames[$name] = [];
 
@@ -601,9 +601,9 @@ final class TestJournal
     /**
      * The user or agent of this name as the journal names an actor.
      */
-    public function actorCalled(string $name): ActorIdentity
+    public function actorCalled(string $name): ActorReference
     {
-        return ActorIdentity::of($this->userOrAgentCalled($name));
+        return ActorReference::of($this->userOrAgentCalled($name));
     }
 
     public function userOrAgentCalled(string $name): User|Agent
@@ -634,7 +634,7 @@ final class TestJournal
         $this->assertNameFree($name);
         $user = User::factory()->create(['name' => $name]);
         $this->users[$name] = $user;
-        $this->inboxes->personal(ActorIdentity::of($user));
+        $this->inboxes->personal(ActorReference::of($user));
 
         return $user;
     }

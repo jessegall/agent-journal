@@ -9,7 +9,7 @@ use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\AnswerType;
 use App\Models\Agents\AgentSession;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
@@ -237,7 +237,7 @@ final class JournalStatesTest extends TestCase
     {
         $this->assertEquals(
             $this->journal->actorCalled('Owner'),
-            ActorIdentity::of($this->app->make(CurrentActor::class)->actor()),
+            ActorReference::of($this->app->make(CurrentActor::class)->actor()),
         );
     }
 }

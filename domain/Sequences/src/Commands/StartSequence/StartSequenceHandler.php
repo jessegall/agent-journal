@@ -21,6 +21,6 @@ final readonly class StartSequenceHandler extends SequenceCommandHandler
     {
         $target = $this->sessions->requireActive($command->sessionId);
 
-        SequenceRun::findLockedById($command->sequenceRunId)->startFor($target->actorIdentity(), $target->sessionId);
+        SequenceRun::findLockedById($command->sequenceRunId)->startFor($target->actorReference(), $target->sessionId);
     }
 }

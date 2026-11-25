@@ -32,6 +32,6 @@ final readonly class AskRecords
      */
     public function visible(): ReadBuilder
     {
-        return Ask::query()->visibleToParticipant(ActorIdentity::of($this->current->actor()), $this->owner->resolve());
+        return Ask::query()->visibleToParticipant(ActorReference::of($this->current->actor()), $this->owner->resolve());
     }
 }

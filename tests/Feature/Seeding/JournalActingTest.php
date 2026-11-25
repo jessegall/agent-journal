@@ -8,7 +8,7 @@ use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CommandRegistry;
 use App\Support\ShownMessage;
@@ -31,21 +31,21 @@ final class JournalActingTest extends TestCase
     {
         $this->journal->actAsUserId('user-1');
 
-        $this->assertActor(ActorIdentity::forUser('user-1'));
+        $this->assertActor(ActorReference::forUser('user-1'));
         $this->assertSame('user-1', $this->app->make(AccessSettings::class)->ownerId);
     }
 
     public function test_an_agent_known_by_id_acts_with_or_without_its_session(): void
     {
         $this->journal->actAsAgentId('agent-1');
-        $this->assertActor(ActorIdentity::forAgent('agent-1'));
+        $this->assertActor(ActorReference::forAgent('agent-1'));
 
         $this->journal->actAsAgentIds('agent-2', 'session-2');
-        $this->assertActor(ActorIdentity::forAgent('agent-2'));
+        $this->assertActor(ActorReference::forAgent('agent-2'));
         $this->assertSame('session-2', $this->app->make(AgentContext::class)->sessionId);
 
         $this->journal->actAsAgentOf(new StackTarget('agent-3', 'session-3'));
-        $this->assertActor(ActorIdentity::forAgent('agent-3'));
+        $this->assertActor(ActorReference::forAgent('agent-3'));
         $this->assertSame('session-3', $this->app->make(AgentContext::class)->sessionId);
     }
 
@@ -57,7 +57,7 @@ final class JournalActingTest extends TestCase
         $this->journal->runAs('Ada', new SendMessageCommand($inbox->id, 'From Ada.'));
 
         $this->journal->assertMessageSent($inbox, 'Ada', 'From Ada.');
-        $this->assertActor(ActorIdentity::of($this->journal->ownerUser()));
+        $this->assertActor(ActorReference::of($this->journal->ownerUser()));
     }
 
     public function test_a_command_run_as_the_owner_is_the_owners_and_the_agent_acts_again_after(): void
@@ -68,7 +68,7 @@ final class JournalActingTest extends TestCase
         $this->journal->asOwner(new SendMessageCommand($inbox->id, 'From the owner.'));
 
         $this->journal->assertMessageSent($inbox, 'Owner', 'From the owner.');
-        $this->assertActor(ActorIdentity::forAgent($this->journal->agentCalled('Ada')->id));
+        $this->assertActor(ActorReference::forAgent($this->journal->agentCalled('Ada')->id));
     }
 
     public function test_a_command_run_as_an_agent_id_or_a_start_is_that_agents_and_leaves_it_acting(): void
@@ -80,11 +80,11 @@ final class JournalActingTest extends TestCase
 
         $byId = $this->journal->runAsAgentId($ada, new ReadUnreadMessagesCommand());
         $this->assertSame(['For Ada.'], array_map(fn (ShownMessage $shown) => $shown->body, $byId->messages));
-        $this->assertActor(ActorIdentity::forAgent($ada));
+        $this->assertActor(ActorReference::forAgent($ada));
 
         $byStart = $this->journal->runAsStart($this->journal->testStartCalled('Bea'), new ReadUnreadMessagesCommand());
         $this->assertSame(['For Bea.'], array_map(fn (ShownMessage $shown) => $shown->body, $byStart->messages));
-        $this->assertActor(ActorIdentity::forAgent($this->journal->agentCalled('Bea')->id));
+        $this->assertActor(ActorReference::forAgent($this->journal->agentCalled('Bea')->id));
     }
 
     public function test_a_signed_start_is_a_new_agent_started_once_under_its_name(): void
@@ -113,7 +113,7 @@ final class JournalActingTest extends TestCase
         $this->assertSame($this->app->make(CommandRegistry::class), $this->journal->service(CommandRegistry::class));
     }
 
-    private function assertActor(ActorIdentity $expected): void
+    private function assertActor(ActorReference $expected): void
     {
         $this->assertEquals($expected, $this->app->make(CurrentActor::class)->actor());
     }

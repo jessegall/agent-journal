@@ -15,7 +15,7 @@ final readonly class SupervisorOwner
     public function resolve(): OwnerRoute
     {
         try {
-            return OwnerRoute::chainEnd(ActorIdentity::of($this->admission->owner()));
+            return OwnerRoute::chainEnd(ActorReference::of($this->admission->owner()));
         } catch (ConsoleOwnerMissing) {
             return OwnerRoute::noOwner();
         }

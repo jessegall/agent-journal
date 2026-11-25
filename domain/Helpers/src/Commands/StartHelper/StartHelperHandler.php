@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\StartHelper;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Support\DispatchRequest;
 use Domain\Helpers\Support\HelperDispatch;
@@ -20,7 +20,7 @@ final readonly class StartHelperHandler extends HelperCommandHandler
     public function handle(StartHelperCommand $command): HelperReceipt
     {
         return $this->dispatch->start(new DispatchRequest(
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
             $command->requestId,
             $command->profileKey,
             $command->model,

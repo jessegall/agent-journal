@@ -9,7 +9,7 @@ use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
 use Domain\Questions\Enums\QuestionType;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -58,10 +58,10 @@ final class QuestionAskTool extends MessageWriteTool
     /**
      * The actor the question is asked of, of one of the actor types a request may name.
      */
-    private function targetOf(ToolArguments $arguments): ActorIdentity
+    private function targetOf(ToolArguments $arguments): ActorReference
     {
         $type = $arguments->oneOf('target_type', $this->actorTypes->requestTypes());
 
-        return ActorIdentity::fromStored($type, $arguments->text('target_id'));
+        return ActorReference::fromStored($type, $arguments->text('target_id'));
     }
 }

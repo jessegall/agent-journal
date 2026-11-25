@@ -11,7 +11,7 @@ use App\Contracts\Skills\SkillCondition;
 use App\Data\Skills\Conditions\StoredConditionData;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ConditionTree;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
@@ -84,7 +84,7 @@ final class SkillRevision extends Model implements ReadableModel
         Skill $skill,
         SkillDraft $draft,
         SkillCondition $condition,
-        ActorIdentity $author,
+        ActorReference $author,
         string|null $sourceKey,
         string|null $sourceDigest,
     ): self {

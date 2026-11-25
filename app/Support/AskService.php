@@ -21,7 +21,7 @@ final readonly class AskService
     ) {}
 
     public function open(
-        ActorIdentity $requester,
+        ActorReference $requester,
         AskType $type,
         string $submissionKey,
         string $body,
@@ -51,7 +51,7 @@ final readonly class AskService
      */
     public function openOnProfile(
         ProfileKey $routeProfile,
-        ActorIdentity $requester,
+        ActorReference $requester,
         AskType $type,
         string $submissionKey,
         string $body,

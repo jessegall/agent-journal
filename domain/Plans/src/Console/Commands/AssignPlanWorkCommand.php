@@ -8,7 +8,7 @@ use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Api\AssignPlanWorkPayload;
 use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
@@ -39,7 +39,7 @@ final class AssignPlanWorkCommand extends Command
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
                 'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),
-                ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
+                ...ActorReference::fromText((string) $this->option('to'))->asFields('recipient'),
                 'requestKey' => $this->requestKey(),
             ]);
         } catch (InvalidActorText $invalid) {

@@ -13,7 +13,7 @@ use App\Events\Processes\EvidencePermitConsumed;
 use App\Events\Processes\EvidencePermitExpired;
 use App\Exceptions\EvidencePermitRefused;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\PermitLimits;
 use App\Values\PermittedLine;
@@ -82,7 +82,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     public static function create(
         string $projectKey,
         PermittedLine $line,
-        ActorIdentity $runner,
+        ActorReference $runner,
         PermitLimits $limits,
         CommandRequest|null $request,
         array $candidateRules,
@@ -142,7 +142,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
      *
      * @throws EvidencePermitRefused
      */
-    public function assertUsable(ActorIdentity $runner, string $requestId, string $classificationDigest): void
+    public function assertUsable(ActorReference $runner, string $requestId, string $classificationDigest): void
     {
         if ($this->runner_type !== $runner->type || $this->runner_id !== $runner->id) {
             throw EvidencePermitRefused::otherActor();

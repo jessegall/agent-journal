@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\CommandRules\IssueEvidencePermit;
 
 use App\Contracts\Bus\CommandHandler;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EvidenceRuns;
 use App\Values\PermitLimits;
 
@@ -15,7 +15,7 @@ final readonly class IssueEvidencePermitHandler implements CommandHandler
 
     public function handle(IssueEvidencePermitCommand $command): string
     {
-        $runner = ActorIdentity::fromStored($command->runnerType, $command->runnerId);
+        $runner = ActorReference::fromStored($command->runnerType, $command->runnerId);
 
         $limits = new PermitLimits($command->byteCap, $command->secondsCap, $command->minutesValid);
 

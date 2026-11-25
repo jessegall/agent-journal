@@ -9,7 +9,7 @@ use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -125,7 +125,7 @@ final class AnswerMessageState extends AgentState
 
     // ----------[ Internals ]----------
 
-    private function isOwnAgent(ActorIdentity $actor): bool
+    private function isOwnAgent(ActorReference $actor): bool
     {
         return $actor->isAgent() && $actor->id === $this->agentId;
     }

@@ -109,7 +109,7 @@ final readonly class AutoAssignmentTrigger implements AutoAssignmentTriggerContr
             return false;
         }
 
-        $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorIdentity($fact->key->actor));
+        $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorReference($fact->key->actor));
 
         return $this->room->available($fact, $held) > 0;
     }

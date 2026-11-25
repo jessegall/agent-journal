@@ -51,6 +51,11 @@ final class FollowSequenceState extends AgentState
         return new Some($this->stepText());
     }
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof SequenceRunEvent || $event->runId === $this->runId;
+    }
+
     // ----------[ Hooks ]----------
 
     public function onStop(StopRequested $input): Decision
@@ -59,11 +64,6 @@ final class FollowSequenceState extends AgentState
     }
 
     // ----------[ Events ]----------
-
-    public function hears(Event $event): bool
-    {
-        return ! $event instanceof SequenceRunEvent || $event->runId === $this->runId;
-    }
 
     public function onSequenceStepReached(SequenceStepReached $event): void
     {

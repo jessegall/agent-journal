@@ -16,7 +16,7 @@ final readonly class SupervisorRecipients
     /**
      * The actor the target names when one exists and the target resolves uniquely.
      *
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public function resolve(SupervisorTarget $target): Option
     {
@@ -28,6 +28,6 @@ final readonly class SupervisorRecipients
             return Option::fromValue($this->owner->resolve()->actor);
         }
 
-        return new Some(ActorIdentity::fromText($target->key));
+        return new Some(ActorReference::fromText($target->key));
     }
 }

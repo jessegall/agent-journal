@@ -27,10 +27,10 @@ final readonly class NavigationDispatch
      */
     public function answererFor(AgentRuntime $runtime): NavigationAnswerer
     {
-        $owner = ActorIdentity::of($runtime->session->agent);
+        $owner = ActorReference::of($runtime->session->agent);
 
         $ownRuntime = $this->main->occupant()
-            ->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($owner))
+            ->map(fn (ActorReference $occupant) => $occupant->isSameAs($owner))
             ->getOrElse(false);
 
         if ($ownRuntime) {

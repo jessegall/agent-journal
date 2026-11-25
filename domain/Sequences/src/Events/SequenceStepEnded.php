@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Domain\Sequences\Contracts\ChatLineSource;
 use Domain\Sequences\Contracts\SequenceStepEvent;
@@ -17,7 +17,7 @@ final readonly class SequenceStepEnded implements ChatLineSource, SequenceEvent,
 {
     public function __construct(
         public string $runId,
-        public ActorIdentity $follower,
+        public ActorReference $follower,
         public int $step,
     ) {}
 
@@ -26,7 +26,7 @@ final readonly class SequenceStepEnded implements ChatLineSource, SequenceEvent,
         return new RecordIdentity(SequenceRun::linkType(), $this->runId);
     }
 
-    public function follower(): ActorIdentity
+    public function follower(): ActorReference
     {
         return $this->follower;
     }

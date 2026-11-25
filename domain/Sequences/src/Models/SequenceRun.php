@@ -16,7 +16,7 @@ use App\Enums\Runs\Tone;
 use App\Enums\Web\Alignment;
 use App\Exceptions\CrossOwnerReadRefused;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Duration;
@@ -100,13 +100,13 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     /**
      * The actor the run was started for, or the system actor for a run nobody follows.
      */
-    public function author(): ActorIdentity
+    public function author(): ActorReference
     {
         if ($this->actor_type === null || $this->actor_id === null) {
-            return ActorIdentity::system();
+            return ActorReference::system();
         }
 
-        return ActorIdentity::fromStored($this->actor_type, $this->actor_id);
+        return ActorReference::fromStored($this->actor_type, $this->actor_id);
     }
 
     /**
@@ -115,7 +115,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function followedBy(Builder $query, ActorIdentity $actor): void
+    protected function followedBy(Builder $query, ActorReference $actor): void
     {
         $query->where($query->qualifyColumn('actor_type'), $actor->type)
             ->where($query->qualifyColumn('actor_id'), $actor->id);
@@ -138,7 +138,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
 
     // ----------[ Mutations ]----------
 
-    public function startFor(ActorIdentity $follower, string $sessionId): void
+    public function startFor(ActorReference $follower, string $sessionId): void
     {
         $this->current_step = 1;
         $this->status = SequenceRunStatus::Running;
@@ -239,7 +239,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     /**
      * The actors that follow runs, each once, for a caller that may read every owner's runs.
      *
-     * @return list<ActorIdentity>
+     * @return list<ActorReference>
      *
      * @throws CrossOwnerReadRefused
      */

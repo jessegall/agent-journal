@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RecordGatewayOutcome;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Concerns\RefusesStaleGatewayRuns;
 use Domain\Sharing\Enums\GatewayEndpointStatus;
@@ -81,7 +81,7 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
 
         foreach ($shares as $share) {
             $share->activate();
-            ShareAudit::create($share, ShareAuditType::Activated, ActorIdentity::system(), null);
+            ShareAudit::create($share, ShareAuditType::Activated, ActorReference::system(), null);
         }
 
         if (! Share::hasAnyLiveOn($configuration->id)) {
@@ -108,7 +108,7 @@ final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
             ShareAudit::create(
                 $share,
                 ShareAuditType::ActivationFailed,
-                ActorIdentity::system(),
+                ActorReference::system(),
                 'gateway_open_failed',
             );
         }

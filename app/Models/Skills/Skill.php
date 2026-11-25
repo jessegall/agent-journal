@@ -16,7 +16,7 @@ use App\Exceptions\SkillOwnerRequired;
 use App\Exceptions\SkillRetired;
 use App\Exceptions\SkillRevisionConflict;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\SkillKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -65,7 +65,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     /**
      * A new stored skill under its key, owned by the actor that creates it; it has no revision yet.
      */
-    public static function create(SkillKey $key, ActorIdentity $owner, string|null $environment): self
+    public static function create(SkillKey $key, ActorReference $owner, string|null $environment): self
     {
         $skill = new self();
         $skill->key = $key->key;
@@ -95,7 +95,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws SkillOwnerRequired
      */
-    public function retireBy(ActorIdentity $actor): SkillRevision
+    public function retireBy(ActorReference $actor): SkillRevision
     {
         $this->assertOwnedBy($actor);
 
@@ -150,7 +150,7 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
      *
      * @throws SkillOwnerRequired
      */
-    private function assertOwnedBy(ActorIdentity $actor): void
+    private function assertOwnedBy(ActorReference $actor): void
     {
         if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
             throw SkillOwnerRequired::toRetire($this->key);

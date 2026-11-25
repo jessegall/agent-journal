@@ -6,7 +6,7 @@ namespace App\Events\Assignments;
 
 use App\Contracts\Navigation\ClientUpdate;
 use App\Enums\Assignments\AssignmentReason;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssignmentChange;
 use DateTimeImmutable;
 
@@ -22,7 +22,7 @@ final readonly class AssignmentsChanged implements AssignmentEvent, ClientUpdate
      */
     public function __construct(
         public string $operationId,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public AssignmentReason $reason,
         public array $changes,
         public DateTimeImmutable $occurredAt,

@@ -10,7 +10,7 @@ use App\Enums\Navigation\NavigationCompletion;
 use App\Models\Access\User;
 use App\Models\Drivers\MenuEntry;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\MenuStep;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
@@ -65,7 +65,7 @@ final class RetireMenuEntryTest extends TestCase
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
         $this->asOwner(new RetireMenuEntryCommand($entry->id, MenuEntryStatus::Current));
 
-        $owner = ActorIdentity::ofClass(User::class, 'owner');
+        $owner = ActorReference::ofClass(User::class, 'owner');
         $this->assertSame(MenuEntryStatus::Retired, $entry->fresh()?->status);
         $this->assertSame(0, MenuEntry::query()->ownedBy($owner)->current()->count());
     }
@@ -77,7 +77,7 @@ final class RetireMenuEntryTest extends TestCase
         $steps = [new MenuStep('fp1:first', 'GPT-6', null, null)];
 
         return MenuEntry::create(
-            ActorIdentity::ofClass(User::class, $owner),
+            ActorReference::ofClass(User::class, $owner),
             $source,
             $steps,
             NavigationCompletion::Goal,

@@ -25,6 +25,6 @@ final readonly class ProcessRunCallers implements ProcessRunCallersContract
             return None::create();
         }
 
-        return Some::create(ActorIdentity::fromStored($run->actor_type, $run->actor_id));
+        return Some::create(ActorReference::fromStored($run->actor_type, $run->actor_id));
     }
 }

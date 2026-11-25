@@ -47,7 +47,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
         return $coverage;
     }
 
-    public function change(ChangeSupervisorCommand $command, ActorIdentity $author): SupervisorChangeReceipt
+    public function change(ChangeSupervisorCommand $command, ActorReference $author): SupervisorChangeReceipt
     {
         $this->lock->acquire();
         $actor = $this->workingActor($command->actor);
@@ -86,7 +86,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
         return new SupervisorChangeReceipt($link->versionFor($type), $this->coverage->forRoutes($routes, $profiles));
     }
 
-    public function routeFor(ActorIdentity $requester, AskTypeKey $type): SupervisorRoute
+    public function routeFor(ActorReference $requester, AskTypeKey $type): SupervisorRoute
     {
         $this->types->get($type);
         $actor = $this->workingActor($requester);
@@ -119,7 +119,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
         return new SupervisorRoute($this->profiles->snapshotFor($key)->supervisorTargetFor($type), 0);
     }
 
-    private function workingActor(ActorIdentity $actor): Agent
+    private function workingActor(ActorReference $actor): Agent
     {
         if (! $actor->isAgent()) {
             throw SupervisorRouteRefused::actorUnavailable();

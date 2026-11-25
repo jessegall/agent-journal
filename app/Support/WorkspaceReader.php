@@ -20,7 +20,7 @@ final readonly class WorkspaceReader implements WorkspaceReaderContract
     /**
      * @throws WorkspaceReadPending
      */
-    public function read(ActorIdentity $actor, WorkReference $work, WorkspaceReadReference $reference): WorkspaceFacts
+    public function read(ActorReference $actor, WorkReference $work, WorkspaceReadReference $reference): WorkspaceFacts
     {
         return WorkspaceRead::create($reference, $actor, $work)->facts
             ->getOrThrow(WorkspaceReadPending::for($reference));

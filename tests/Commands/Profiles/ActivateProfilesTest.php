@@ -34,7 +34,7 @@ use App\Models\Agents\Agent;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentImage;
 use App\Support\ArrangementSetting;
 use App\Support\DefaultDrivers;
@@ -547,7 +547,7 @@ final class ActivateProfilesTest extends TestCase
         $agent = Agent::create('Helper', $profileKey, $this->localProject());
         $this->app->forgetScopedInstances();
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($agent->id),
+            ActorReference::forAgent($agent->id),
             new StartProfileAuthority($this->snapshot($profileKey, $revision)),
         );
     }

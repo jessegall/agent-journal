@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\Link;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\GatewaySettings;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
@@ -82,7 +82,7 @@ final class ReadShareTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::of($this->journal->ownerUser()), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::of($this->journal->ownerUser()), new OwnerAuthority('test'));
 
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
@@ -202,7 +202,7 @@ final class ReadShareTest extends TestCase
 
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::of($this->journal->ownerUser()), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::of($this->journal->ownerUser()), new OwnerAuthority('test'));
 
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
         # Notes

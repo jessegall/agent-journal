@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskStatus;
@@ -71,7 +71,7 @@ final class TaskHistoryEntry extends Model implements ReadableModel
         string $id,
         Task $task,
         TaskRun|null $run,
-        ActorIdentity $actor,
+        ActorReference $actor,
         TaskStatus $fromState,
         string|null $text,
     ): self {

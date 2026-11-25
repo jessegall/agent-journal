@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\ApprovePlanReview;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
@@ -22,7 +22,7 @@ final readonly class ApprovePlanReviewHandler extends PlanCommandHandler
     public function handle(ApprovePlanReviewCommand $command): string
     {
         [$plan, $edition] = $this->decision->certified($command->planId, $command->editionNumber);
-        $edition->approve(ActorIdentity::of($command->dispatchedBy()), $command->requestKey);
+        $edition->approve(ActorReference::of($command->dispatchedBy()), $command->requestKey);
         $plan->settleReview($edition->id, PlanReviewStatus::Approved);
 
         return $edition->id;

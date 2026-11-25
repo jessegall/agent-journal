@@ -8,7 +8,7 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use RuntimeException;
 use Throwable;
 
@@ -16,7 +16,7 @@ final class AssignmentDenied extends RuntimeException implements CodedRefusal, C
 {
     use RendersRefusal;
 
-    public static function forCaller(ActorIdentity $caller, Throwable|null $previous = null): self
+    public static function forCaller(ActorReference $caller, Throwable|null $previous = null): self
     {
         return new self(
             "Only the owner or a main agent may give out work; {$caller->type} {$caller->id} may not.",

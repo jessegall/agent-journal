@@ -41,7 +41,7 @@ abstract readonly class ReadToolSearchAccess implements SearchAccess
         return ReadRequest::forDiscovery($this->readName());
     }
 
-    public function canUserSearch(ActorIdentity $user): bool
+    public function canUserSearch(ActorReference $user): bool
     {
         return true;
     }

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Commands\FocusTask;
 use App\Contracts\Work\AgentFocuses;
 use App\Contracts\Work\AgentStacks;
 use App\Exceptions\FrameNotHeld;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskChangedSinceRead;
 use Domain\Tasks\Models\Task;
@@ -26,7 +26,7 @@ final readonly class FocusTaskHandler extends TaskCommandHandler
      */
     public function handle(FocusTaskCommand $command, Task $task): void
     {
-        $this->focuses->focus(ActorIdentity::of($command->dispatchedBy()), $task);
+        $this->focuses->focus(ActorReference::of($command->dispatchedBy()), $task);
         $this->stacks->liftForCaller(WorkOnTaskStateReference::forTask($task));
     }
 }

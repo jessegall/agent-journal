@@ -22,7 +22,7 @@ final readonly class NotificationDelivery
     public function __construct(private NotificationScopes $scopes) {}
 
     /**
-     * @param  list<ActorIdentity>  $recipients
+     * @param  list<ActorReference>  $recipients
      */
     public function deliver(
         string $occurrenceKey,
@@ -51,8 +51,8 @@ final readonly class NotificationDelivery
     /**
      * Each distinct recipient with its scope key, ordered by scope key, recipient type and recipient id.
      *
-     * @param  list<ActorIdentity>  $recipients
-     * @return list<array{string, ActorIdentity}>
+     * @param  list<ActorReference>  $recipients
+     * @return list<array{string, ActorReference}>
      */
     private function inLockOrder(array $recipients): array
     {

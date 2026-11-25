@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support\Assignments;
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Enums\Assignments\PoolInputType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\PoolDescription;
 use App\Support\PoolMembers;
 use App\Support\PoolReference;
@@ -31,7 +31,7 @@ final readonly class NamedTaskPoolFactory implements AssignmentPoolFactory
      * @throws TaskPoolRefused
      * @throws TaskMissing
      */
-    public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool
+    public function open(PoolReference $pool, ActorReference $assignee): AssignmentPool
     {
         $this->validate($pool, $assignee);
 
@@ -42,7 +42,7 @@ final readonly class NamedTaskPoolFactory implements AssignmentPoolFactory
      * @throws TaskPoolRefused
      * @throws TaskMissing
      */
-    public function validate(PoolReference $pool, ActorIdentity $assignee): void
+    public function validate(PoolReference $pool, ActorReference $assignee): void
     {
         if ($pool->type !== self::KEY) {
             throw TaskPoolRefused::otherPool(self::KEY);
@@ -59,7 +59,7 @@ final readonly class NamedTaskPoolFactory implements AssignmentPoolFactory
         $this->tasks->records($pool->recordIds);
     }
 
-    public function describe(PoolReference $pool, ActorIdentity $assignee): PoolDescription
+    public function describe(PoolReference $pool, ActorReference $assignee): PoolDescription
     {
         return new PoolDescription('Named tasks', 'The listed tasks, in the order listed.', PoolInputType::RecordIds);
     }

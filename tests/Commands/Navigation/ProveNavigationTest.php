@@ -24,7 +24,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DriverRequestEndings;
 use App\Support\EnrolledHost;
 use App\Support\MainInboxTakeover;
@@ -83,7 +83,7 @@ final class ProveNavigationTest extends TestCase
         $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
         );
@@ -288,7 +288,7 @@ final class ProveNavigationTest extends TestCase
     private function asAgent(Agent $agent, Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($agent->id),
+            ActorReference::forAgent($agent->id),
             TestStartAuthority::forAgent($agent->id),
         );
 

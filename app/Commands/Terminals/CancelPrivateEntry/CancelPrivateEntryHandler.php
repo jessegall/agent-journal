@@ -6,7 +6,7 @@ namespace App\Commands\Terminals\CancelPrivateEntry;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\TerminalControls;
 
 final readonly class CancelPrivateEntryHandler implements CommandHandler
@@ -18,7 +18,7 @@ final readonly class CancelPrivateEntryHandler implements CommandHandler
 
     public function handle(CancelPrivateEntryCommand $command): string
     {
-        $writer = ActorIdentity::of($command->dispatchedBy());
+        $writer = ActorReference::of($command->dispatchedBy());
 
         return $this->controls->cancelPrivate(
             $command->agentId,

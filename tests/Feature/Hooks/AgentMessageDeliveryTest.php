@@ -46,10 +46,10 @@ final class AgentMessageDeliveryTest extends TestCase
         $reply = $this->answerStop();
 
         $this->assertSame('{}', $reply);
-        $this->assertSame(1, PendingAgentMessage::countFor($this->target->actorIdentity()));
+        $this->assertSame(1, PendingAgentMessage::countFor($this->target->actorReference()));
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
         $this->assertTrue(
-            $this->app->make(PendingWorkSources::class)->hasWorkFor($this->target->actorIdentity()),
+            $this->app->make(PendingWorkSources::class)->hasWorkFor($this->target->actorReference()),
         );
     }
 
@@ -63,9 +63,9 @@ final class AgentMessageDeliveryTest extends TestCase
 
         $this->assertSame(MessageState::TEXT, $this->contextOf($first));
         $this->assertSame('{}', $second);
-        $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
+        $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorReference()));
         $this->assertFalse(
-            $this->app->make(PendingWorkSources::class)->hasWorkFor($this->target->actorIdentity()),
+            $this->app->make(PendingWorkSources::class)->hasWorkFor($this->target->actorReference()),
         );
     }
 
@@ -83,7 +83,7 @@ final class AgentMessageDeliveryTest extends TestCase
         $reply = DriverReplies::allowTool($answer->context)->stdout;
 
         $this->assertSame(MessageState::TEXT, $this->contextOf($reply));
-        $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
+        $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorReference()));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
     }
 

@@ -9,7 +9,7 @@ use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Console\Command;
 
 /**
@@ -31,7 +31,7 @@ final class ListAutoAssignmentsCommand extends Command
 
         try {
             $call = ListAutoAssignmentsPayload::from([
-                ...ActorIdentity::fromText((string) $this->argument('actor'))->asFields('actor'),
+                ...ActorReference::fromText((string) $this->argument('actor'))->asFields('actor'),
                 'after' => $after === '' ? null : $after,
             ]);
         } catch (InvalidActorText $invalid) {

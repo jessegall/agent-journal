@@ -34,7 +34,7 @@ final readonly class NotificationReceipts
      *
      * @throws NotificationUnavailable
      */
-    public function ownedBy(ActorIdentity $actor, Closure $find): NotificationReceipt
+    public function ownedBy(ActorReference $actor, Closure $find): NotificationReceipt
     {
         return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->flatMap(fn (NotificationScope $scope) => $find($scope->id))
@@ -56,7 +56,7 @@ final readonly class NotificationReceipts
      *
      * @throws NotificationUnavailable
      */
-    public function markAllThrough(ActorIdentity $actor, int $through, CarbonImmutable $at): bool
+    public function markAllThrough(ActorReference $actor, int $through, CarbonImmutable $at): bool
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $found) => NotificationScope::findLockedById($found->id))

@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskRunStatus;
@@ -66,7 +66,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      * The task's current run, opened by the starter the first time it is asked for and answering to the inbox the
      * starter replies at, fixed from then on.
      */
-    public static function create(Task $task, ActorIdentity $starter): self
+    public static function create(Task $task, ActorReference $starter): self
     {
         $current = self::findForTask($task, $task->run_number);
 
@@ -120,11 +120,11 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     /**
      * The actor that started the run.
      *
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function starter(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->started_by_type, $this->started_by_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->started_by_type, $this->started_by_id));
     }
 
     // ----------[ Asserts ]----------

@@ -18,7 +18,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ExitBranch;
 use App\Values\ExitPolicy;
 use App\Values\NextStep;
@@ -74,7 +74,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * A new request holding the actor's command line in the project, collecting its declaration first.
      */
-    public static function create(string $projectKey, ActorIdentity $actor, OpenCommandRequestCommand $command): self
+    public static function create(string $projectKey, ActorReference $actor, OpenCommandRequestCommand $command): self
     {
         $commandRequest = new self();
         $commandRequest->project_key = $projectKey;
@@ -216,7 +216,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * Whether the actor may propose for the request: the actor that opened it, or one that administers processes.
      */
-    public function acceptsProposalFrom(ActorIdentity $actor, bool $administers): bool
+    public function acceptsProposalFrom(ActorReference $actor, bool $administers): bool
     {
         return $administers || $this->isByActor($actor);
     }

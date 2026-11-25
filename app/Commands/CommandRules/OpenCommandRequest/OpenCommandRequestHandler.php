@@ -6,7 +6,7 @@ namespace App\Commands\CommandRules\OpenCommandRequest;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ServedEnvironment;
 
 final readonly class OpenCommandRequestHandler implements CommandHandler
@@ -15,7 +15,7 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
 
     public function handle(OpenCommandRequestCommand $command): string
     {
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
 
         $open = CommandRequest::query()

@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ReaderDefinition;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -71,7 +71,7 @@ final class ReaderRevision extends Model implements ReadableModel
         int $declarationRevision,
         string $contractLabel,
         ReaderDefinition $definition,
-        ActorIdentity $author,
+        ActorReference $author,
     ): self {
         $readerRevision = new self();
         $readerRevision->project_key = $request->project_key;

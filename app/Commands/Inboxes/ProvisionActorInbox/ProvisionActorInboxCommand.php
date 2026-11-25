@@ -6,7 +6,7 @@ namespace App\Commands\Inboxes\ProvisionActorInbox;
 
 use App\Attributes\Commands\Entry;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 
 /**
@@ -18,7 +18,7 @@ use App\Support\Command;
 final readonly class ProvisionActorInboxCommand extends Command
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $label,
     ) {}
 }

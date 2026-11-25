@@ -16,7 +16,7 @@ use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\Support\RunOutcomeSummaries;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RunOutcomes;
 use App\Values\OwnerAuthority;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -57,7 +57,7 @@ final class RevokeRunOutcomeAccessTest extends TestCase
 
         $this->actAs($atlas);
         $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
-            new RevokeRunOutcomeAccessCommand($run->id)->withDispatcher(ActorIdentity::forAgent($atlas->id)),
+            new RevokeRunOutcomeAccessCommand($run->id)->withDispatcher(ActorReference::forAgent($atlas->id)),
         );
 
         $this->assertFalse($run->refresh()->hasOutcomeFor($kim));
@@ -67,12 +67,12 @@ final class RevokeRunOutcomeAccessTest extends TestCase
         );
     }
 
-    private function actAs(ActorIdentity $actor): void
+    private function actAs(ActorReference $actor): void
     {
         $this->app->forgetScopedInstances();
         $context = $actor->type === User::storedType()
-            ? ActorIdentity::forUser($actor->id)
-            : ActorIdentity::forAgent($actor->id);
+            ? ActorReference::forUser($actor->id)
+            : ActorReference::forAgent($actor->id);
         $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));
     }
 }

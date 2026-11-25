@@ -14,7 +14,7 @@ use App\Contracts\Work\WorkProgress;
 use App\Enums\Engine\NoSubject;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Asks\AskHop;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AskAttention;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
@@ -59,14 +59,14 @@ final class OfferNextAskTest extends TestCase
         $this->activateProfiles();
         $requester = TestStart::start('journal-worker');
         $recipient = TestStart::start('journal-code-reviewer');
-        $holder = ActorIdentity::of($recipient->agent);
-        $author = ActorIdentity::of($requester->agent);
+        $holder = ActorReference::of($recipient->agent);
+        $author = ActorReference::of($requester->agent);
         $attention = $this->mock(ActorAttention::class);
         $attention->shouldReceive('request')->withArgs(
-            fn (ActorIdentity $actor, AttentionOrigin $origin) => $actor->isSameAs($holder),
+            fn (ActorReference $actor, AttentionOrigin $origin) => $actor->isSameAs($holder),
         )->twice()->andReturn(AttentionOutcome::accepted('holder-wake', 1));
         $attention->shouldReceive('request')->withArgs(
-            fn (ActorIdentity $actor, AttentionOrigin $origin) => $actor->isSameAs($author),
+            fn (ActorReference $actor, AttentionOrigin $origin) => $actor->isSameAs($author),
         )->twice()->andReturn(AttentionOutcome::noRuntime(), AttentionOutcome::accepted('reply-wake', 1));
         $now = CarbonImmutable::now();
         new AgentStackRow()->startFor(

@@ -12,7 +12,7 @@ use App\Data\Terminals\TerminalControlData;
 use App\Data\Terminals\TerminalInterestData;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentRuntime;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentRuntimes;
 use App\Support\StartSessions;
 use App\Support\TerminalControls;
@@ -66,7 +66,7 @@ trait OpensTerminalRuntimes
         };
     }
 
-    private function owner(): ActorIdentity
+    private function owner(): ActorReference
     {
         return $this->journal->actorCalled('Owner');
     }

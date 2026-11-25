@@ -10,7 +10,7 @@ use App\Exceptions\SessionRequestMissing;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
@@ -29,7 +29,7 @@ final readonly class StartReceipts implements StartReceiptsContract
 
         $record = SessionRequest::query()
             ->forOwnerReference($reference)
-            ->requestedBy(ActorIdentity::of($this->actors->actor()))
+            ->requestedBy(ActorReference::of($this->actors->actor()))
             ->withSession()
             ->newestCreatedFirst()
             ->firstOr(SessionRequestMissing::throwing()->forRequest($reference));

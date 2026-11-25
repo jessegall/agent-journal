@@ -13,7 +13,7 @@ use App\Exceptions\SessionRequestMissing;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionRequest;
 use App\Policies\AgentPolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SessionRequestDetails;
 use PhpOption\None;
 use PhpOption\Option;
@@ -47,7 +47,7 @@ final readonly class SessionRequestResolver implements SessionRequestResolverCon
             ->underRequest($requestId)
             ->firstOr(SessionRequestMissing::throwing()->forRequest($requestId));
 
-        if (! $record->wasRequestedBy(ActorIdentity::of($this->actors->actor())) && ! $this->maintainsAgents()) {
+        if (! $record->wasRequestedBy(ActorReference::of($this->actors->actor())) && ! $this->maintainsAgents()) {
             throw SessionRequestMissing::forRequest($requestId);
         }
 

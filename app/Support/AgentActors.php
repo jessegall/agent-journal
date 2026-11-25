@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
  */
 final readonly class AgentActors implements ActorProvider
 {
-    public function actor(ActorIdentity $identity): Actor
+    public function actor(ActorReference $identity): Actor
     {
         return Agent::query()->whereKey(
             $identity->id,

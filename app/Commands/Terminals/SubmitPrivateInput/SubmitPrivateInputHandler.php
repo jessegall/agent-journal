@@ -6,7 +6,7 @@ namespace App\Commands\Terminals\SubmitPrivateInput;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\TerminalControls;
 
 final readonly class SubmitPrivateInputHandler implements CommandHandler
@@ -18,7 +18,7 @@ final readonly class SubmitPrivateInputHandler implements CommandHandler
 
     public function handle(SubmitPrivateInputCommand $command): string
     {
-        $writer = ActorIdentity::of($command->dispatchedBy());
+        $writer = ActorReference::of($command->dispatchedBy());
 
         return $this->controls->submitPrivate(
             $command->agentId,

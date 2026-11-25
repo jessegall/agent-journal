@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Mcp;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
@@ -35,8 +35,8 @@ final class DockAddToolTest extends McpToolEntryTestCase
     {
         $start = $journal->owner()->signedStart('Builder');
         $journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($journal->ownerUser()),
-            ActorIdentity::of($start->agent),
+            ActorReference::of($journal->ownerUser()),
+            ActorReference::of($start->agent),
         );
         $task = Task::factory()->create(['title' => 'Ship the dock']);
 

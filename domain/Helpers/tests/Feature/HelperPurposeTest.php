@@ -6,7 +6,7 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Records\RecordVisibility;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\OwnerAuthority;
 use Domain\Helpers\Exceptions\PurposeConflict;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  */
 final class HelperPurposeTest extends TestCase
 {
-    private ActorIdentity $parent;
+    private ActorReference $parent;
 
     private RecordIdentity $visible;
 
@@ -32,9 +32,9 @@ final class HelperPurposeTest extends TestCase
     {
         parent::setUp();
 
-        $actor = ActorIdentity::forUser('parent');
+        $actor = ActorReference::forUser('parent');
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
-        $this->parent = ActorIdentity::of($actor);
+        $this->parent = ActorReference::of($actor);
         $this->visible = new RecordIdentity('plans.plan', (string) Str::ulid());
         $visible = $this->visible;
 

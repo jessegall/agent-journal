@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\ReadQuestion;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
@@ -20,7 +20,7 @@ final readonly class ReadQuestionHandler extends QuestionCommandHandler
      */
     public function handle(ReadQuestionCommand $command): ShownQuestion
     {
-        $reader = ActorIdentity::of($command->dispatchedBy());
+        $reader = ActorReference::of($command->dispatchedBy());
         $question = Question::query()->findOrFail($command->questionId);
 
         if (! $question->sender->isSameAs($reader) && ! $question->target->isSameAs($reader)) {

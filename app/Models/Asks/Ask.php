@@ -21,7 +21,7 @@ use App\Exceptions\AskRefused;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\AskReference;
 use App\Values\AskSubject;
@@ -92,7 +92,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
     public static function create(
         AskReference $reference,
-        ActorIdentity $requester,
+        ActorReference $requester,
         AskTypeKey $type,
         string $submissionKey,
         string $body,
@@ -283,14 +283,14 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     /**
      * @return Option<self>
      */
-    public static function findSubmission(ActorIdentity $actor, string $key): Option
+    public static function findSubmission(ActorReference $actor, string $key): Option
     {
         $ask = self::query()->ownedBy($actor)->underSubmissionKey($key)->first();
 
         return Option::fromValue($ask);
     }
 
-    public static function resolveOpenSubmissions(ActorIdentity $actor): int
+    public static function resolveOpenSubmissions(ActorReference $actor): int
     {
         return self::query()->ownedBy($actor)
             ->fromOrigin(AskOriginType::Supervisor)
@@ -348,7 +348,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function visibleToParticipant(Builder $query, ActorIdentity $actor, OwnerRoute $owner): void
+    protected function visibleToParticipant(Builder $query, ActorReference $actor, OwnerRoute $owner): void
     {
         $query->withoutGlobalScope(self::ownerScope());
 

@@ -9,7 +9,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 
 /**
@@ -73,7 +73,7 @@ trait MessagingFixtures
 
     protected function ownerInboxId(): string
     {
-        return $this->journal->inboxes()->personal(ActorIdentity::of($this->owner))->id;
+        return $this->journal->inboxes()->personal(ActorReference::of($this->owner))->id;
     }
 
     protected function inboxIdOf(AgentSession $session): string
@@ -86,17 +86,17 @@ trait MessagingFixtures
      */
     protected function pairInboxIdOf(AgentSession $session): string
     {
-        return $this->journal->inboxes()->shared(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
+        return $this->journal->inboxes()->shared(ActorReference::of($this->owner), $this->actorOf($session))->id;
     }
 
-    protected function actorOf(AgentSession $session): ActorIdentity
+    protected function actorOf(AgentSession $session): ActorReference
     {
-        return ActorIdentity::ofClass(Agent::class, $session->agent_id);
+        return ActorReference::ofClass(Agent::class, $session->agent_id);
     }
 
     protected function assigneeOf(AgentSession $session): AssigneeIdentity
     {
-        return AssigneeIdentity::ofActorIdentity($this->actorOf($session));
+        return AssigneeIdentity::ofActorReference($this->actorOf($session));
     }
 
     /**

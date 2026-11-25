@@ -44,7 +44,7 @@ final readonly class RuleApprovals
      * @throws ClassificationRuleRefused
      * @throws RequestTransitionRefused
      */
-    public function approve(RuleProposal $proposal, OwnerApproval $approval, ActorIdentity $approver): ApprovalReceipt
+    public function approve(RuleProposal $proposal, OwnerApproval $approval, ActorReference $approver): ApprovalReceipt
     {
         $proposal->assertReviewable($approval->expectedRevision);
         $declaration = $proposal->revisions()->numbered($proposal->current_revision)->sole();

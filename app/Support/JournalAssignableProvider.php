@@ -63,7 +63,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
         $recipient = $this->recipients->resolve($route->target);
 
         $isRecipient = $recipient
-            ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
+            ->map(fn (ActorReference $actor) => AssigneeIdentity::ofActorReference($actor))
             ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))
             ->getOrElse(false);
 
@@ -125,7 +125,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
         $pending = $ask->requirePending($assignment->expectedVersion);
 
         $isRecipient = $this->recipients->resolve($pending)
-            ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
+            ->map(fn (ActorReference $actor) => AssigneeIdentity::ofActorReference($actor))
             ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))
             ->getOrElse(false);
 
@@ -144,7 +144,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
 
     private function requireRouteEditor(Ask $ask): void
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorReference::of($this->actors->actor());
 
         if (! $ask->actor()->isSameAs($actor) && ! $this->owner->resolve()->endsAt($actor)) {
             throw AskRefused::routeChanged();

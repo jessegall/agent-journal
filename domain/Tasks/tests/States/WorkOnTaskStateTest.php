@@ -9,7 +9,7 @@ use App\Enums\Hooks\AnswerType;
 use App\Events\Assignments\AssignmentsEnded;
 use App\Models\Agents\AgentFocus;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
@@ -173,7 +173,7 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_a_claim_another_agent_took_lets_the_stop_through(): void
     {
         $this->startWork();
-        $other = ActorIdentity::fromText('agent:01jd8x0g9m3qz6v4k2t7r5w1cz');
+        $other = ActorReference::fromText('agent:01jd8x0g9m3qz6v4k2t7r5w1cz');
 
         $this->working()->given(
             [
@@ -384,12 +384,12 @@ final class WorkOnTaskStateTest extends TestCase
      *
      * @param  list<string>  $assignmentIds
      */
-    private function claimed(ActorIdentity $holder, array $assignmentIds): TaskRunClaimed
+    private function claimed(ActorReference $holder, array $assignmentIds): TaskRunClaimed
     {
         return new TaskRunClaimed($this->work->task->id, $this->work->task->run_number, $holder, $assignmentIds);
     }
 
-    private function agent(): ActorIdentity
+    private function agent(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
     }

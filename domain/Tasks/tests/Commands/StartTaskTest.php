@@ -10,7 +10,7 @@ use App\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ListenerRegistry;
 use App\Support\PoolMembers;
 use App\Support\StartSessions;
@@ -257,7 +257,7 @@ final class StartTaskTest extends TestCase
         $this->start($task);
         $this->start($task);
 
-        $actor = ActorIdentity::fromText("agent:{$this->session->agent_id}");
+        $actor = ActorReference::fromText("agent:{$this->session->agent_id}");
         $this->assertCount(2, $started());
         $this->assertTrue($started()[0]->actor->isSameAs($actor));
         $this->assertSame($task->id, $started()[1]->taskId);

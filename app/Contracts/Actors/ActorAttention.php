@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
 
@@ -18,5 +18,5 @@ interface ActorAttention
      * Asks the actor to look at something from the origin: wakes a stopped agent or tells a user, and says what came of
      * it.
      */
-    public function request(ActorIdentity $actor, AttentionOrigin $origin): AttentionOutcome;
+    public function request(ActorReference $actor, AttentionOrigin $origin): AttentionOutcome;
 }

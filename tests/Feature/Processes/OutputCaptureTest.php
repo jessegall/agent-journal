@@ -10,7 +10,7 @@ use App\Exceptions\OutputStorageFailed;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\ManifestCheck;
 use App\Support\OutputRecorder;
@@ -93,7 +93,7 @@ final class OutputCaptureTest extends TestCase
 
     private function part(): PartRun
     {
-        $run = ProcessRun::create(ActorIdentity::system(), TestRunAdmissions::of());
+        $run = ProcessRun::create(ActorReference::system(), TestRunAdmissions::of());
         $part = PartRun::create($run, new PartKey(1, 1, 'head'));
         $part->start('host', 1);
         $part->finishProcess(PartEnd::exited(0));

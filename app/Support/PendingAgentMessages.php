@@ -12,7 +12,7 @@ use App\Models\Agents\PendingAgentMessage;
  */
 final readonly class PendingAgentMessages implements PendingWorkSource
 {
-    public function pendingCount(ActorIdentity $actor): int
+    public function pendingCount(ActorReference $actor): int
     {
         return PendingAgentMessage::countAttentionFor($actor);
     }

@@ -10,7 +10,7 @@ use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\UnknownShareRecordType;
 use App\Exceptions\UnknownShareRelation;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RunningCommand;
 use App\Support\ShareContentRead;
@@ -82,7 +82,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
         }
 
         $page = $this->read($share, $path->target($root), $path, $command);
-        ShareAudit::create($share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
+        ShareAudit::create($share, ShareAuditType::ReadAllowed, ActorReference::system(), null);
 
         return $page;
     }
@@ -236,7 +236,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
 
     private function deny(Share $share, string $reason): SharedPage
     {
-        ShareAudit::create($share, ShareAuditType::ReadDenied, ActorIdentity::system(), $reason);
+        ShareAudit::create($share, ShareAuditType::ReadDenied, ActorReference::system(), $reason);
 
         return SharedPage::denied();
     }

@@ -20,7 +20,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentStatus;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -140,7 +140,7 @@ final class StopAgentTest extends TestCase
 
     private function statusOf(string $agentId): AgentStatus
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
 
         return $this->app->make(AgentDirectory::class)->visibleAgent($agentId)->status;
     }

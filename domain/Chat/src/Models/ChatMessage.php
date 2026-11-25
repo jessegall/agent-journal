@@ -13,7 +13,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Events\ChatMessageChanged;
@@ -122,11 +122,11 @@ final class ChatMessage extends Model implements EventSource, ReadableModel
     /**
      * The actor who made the entry's source.
      *
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function author(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->author_type, $this->author_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->author_type, $this->author_id));
     }
 
     // ----------[ Relations ]----------
@@ -158,7 +158,7 @@ final class ChatMessage extends Model implements EventSource, ReadableModel
     /**
      * The group of the next entry: the latest group while it is the same author's and within the window, else the next.
      */
-    private static function groupAfter(self|null $latest, ActorIdentity $author, CarbonImmutable $at): int
+    private static function groupAfter(self|null $latest, ActorReference $author, CarbonImmutable $at): int
     {
         if ($latest === null) {
             return 1;
@@ -174,7 +174,7 @@ final class ChatMessage extends Model implements EventSource, ReadableModel
     /**
      * Whether the entry was written by the author.
      */
-    private function isSameAuthor(ActorIdentity $author): bool
+    private function isSameAuthor(ActorReference $author): bool
     {
         return $this->author_type === $author->type && $this->author_id === $author->id;
     }

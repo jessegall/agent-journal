@@ -17,18 +17,18 @@ use PhpOption\Some;
  */
 final readonly class AgentFocuses implements AgentFocusesContract
 {
-    public function focus(ActorIdentity $agent, Focusable $focusable): void
+    public function focus(ActorReference $agent, Focusable $focusable): void
     {
         $focusable->assertFocusable();
         AgentFocus::create($agent->id)->moveTo($focusable->focusIdentity());
     }
 
-    public function unfocus(ActorIdentity $agent, Focusable $focusable): void
+    public function unfocus(ActorReference $agent, Focusable $focusable): void
     {
         AgentFocus::create($agent->id)->clear($focusable->focusIdentity());
     }
 
-    public function focusOf(ActorIdentity $agent): Option
+    public function focusOf(ActorReference $agent): Option
     {
         $focus = AgentFocus::query()->ofAgent($agent->id)->first();
 
@@ -48,7 +48,7 @@ final readonly class AgentFocuses implements AgentFocusesContract
         $focusers = [];
 
         foreach (AgentFocus::query()->onRecords($records)->limit(count($records))->get() as $focus) {
-            $focusers[$focus->record->reference()] = ActorIdentity::ofClass(Agent::class, $focus->agent_id);
+            $focusers[$focus->record->reference()] = ActorReference::ofClass(Agent::class, $focus->agent_id);
         }
 
         return $focusers;

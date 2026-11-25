@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support\Assignments;
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Assignments\AutoAssigner as AutoAssignerContract;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -25,7 +25,7 @@ final readonly class AutoAssigner implements AutoAssignerContract
 {
     public function __construct(private AssignmentQuery $assignments) {}
 
-    public function pick(ActorIdentity $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
+    public function pick(ActorReference $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
     {
         return Task::resolveCandidates($pool->members(), $this->assignments->assignedIds(TaskType::linkType()), $room);
     }

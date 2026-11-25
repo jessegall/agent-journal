@@ -81,7 +81,7 @@ final readonly class AttentionOrigin
         return new self(self::GUIDANCE, $key, $key);
     }
 
-    public function keyFor(ActorIdentity $actor): string
+    public function keyFor(ActorReference $actor): string
     {
         return hash('sha256', "attention:{$this->type}:{$this->id}:{$actor->type}:{$actor->id}");
     }

@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Declarations\RuleDeclarations;
 use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;
 use App\Support\ServedEnvironment;
@@ -35,7 +35,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
      */
     public function handle(ImportRuleProposalsCommand $command): ImportedProposals
     {
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
         $declared = $this->declarations->read($command->declarations);
 

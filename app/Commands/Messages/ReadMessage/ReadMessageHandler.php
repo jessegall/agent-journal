@@ -10,7 +10,7 @@ use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\MessageParticipants;
 use App\Support\ShownMessage;
 
@@ -29,7 +29,7 @@ final readonly class ReadMessageHandler implements CommandHandler
         $reader = $this->participants->reader($command->dispatchedBy());
         $message = Message::query()->findOrFail($command->messageId);
 
-        if (! InboxMember::isAttached($message->inbox_id, ActorIdentity::of($reader))) {
+        if (! InboxMember::isAttached($message->inbox_id, ActorReference::of($reader))) {
             throw InboxUnavailable::forActor($message->inbox_id);
         }
 

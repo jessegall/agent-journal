@@ -55,10 +55,10 @@ final readonly class TerminalFrames
     /**
      * @throws ActorNotAllowed
      */
-    private function inspectingViewer(): ActorIdentity
+    private function inspectingViewer(): ActorReference
     {
         $this->authorizer->authorize(AgentMaintenancePolicy::class, Agent::class, AccessType::Read);
 
-        return ActorIdentity::of($this->actor->actor());
+        return ActorReference::of($this->actor->actor());
     }
 }

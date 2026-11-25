@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Values\OwnerAuthority;
@@ -95,7 +95,7 @@ final class RequestShareTest extends TestCase
         $this->owner = $this->journal->owner()->ownerUser();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser($this->owner->id),
+            ActorReference::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
 
@@ -243,7 +243,7 @@ final class RequestShareTest extends TestCase
         $first = Share::create(
             $this->root,
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-            new ShareProposal(ActorIdentity::ofClass(Agent::class, $this->start->agent->id)),
+            new ShareProposal(ActorReference::ofClass(Agent::class, $this->start->agent->id)),
         );
 
         $now = CarbonImmutable::now();

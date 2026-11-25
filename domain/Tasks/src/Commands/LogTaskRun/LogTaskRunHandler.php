@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\LogTaskRun;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
@@ -27,6 +27,6 @@ final readonly class LogTaskRunHandler extends TaskCommandHandler
             throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
         }
 
-        return TaskLogEntry::create($task, $run, ActorIdentity::of($command->dispatchedBy()), $command->text)->id;
+        return TaskLogEntry::create($task, $run, ActorReference::of($command->dispatchedBy()), $command->text)->id;
     }
 }

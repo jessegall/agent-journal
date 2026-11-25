@@ -7,7 +7,7 @@ namespace App\Support\Access;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Admission\JournalAdmission as JournalAdmissionContract;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Only the configured owner joins the journal. With no owner configured, nobody gets in; signing up or being the first
@@ -23,13 +23,13 @@ final readonly class JournalAdmission implements JournalAdmissionContract
             return false;
         }
 
-        return ActorIdentity::of($actor)->isSameAs(ActorIdentity::of($this->owner()));
+        return ActorReference::of($actor)->isSameAs(ActorReference::of($this->owner()));
     }
 
-    public function owner(): ActorIdentity
+    public function owner(): ActorReference
     {
         $ownerId = $this->settings->ownerId ?? throw ConsoleOwnerMissing::forConsole();
 
-        return ActorIdentity::forUser($ownerId);
+        return ActorReference::forUser($ownerId);
     }
 }

@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands\StartTask;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\RunClaims;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;
 use Domain\Tasks\Enums\TaskStatus;
@@ -42,7 +42,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
      */
     public function handle(StartTaskCommand $command, Task $task): int
     {
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
 
         if ($task->status !== TaskStatus::Started) {
@@ -87,7 +87,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
     /**
      * @throws TaskRunTaken
      */
-    private function requireRunNotTaken(Task $task, ActorIdentity $actor): void
+    private function requireRunNotTaken(Task $task, ActorReference $actor): void
     {
         $run = $task->status === TaskStatus::Started ? $task->currentRun() : null;
         $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);

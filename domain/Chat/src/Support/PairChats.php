@@ -12,7 +12,7 @@ use App\Contracts\Inboxes\InboxEligibility;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Contracts\PairChats as PairChatsContract;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,12 +38,12 @@ final readonly class PairChats implements PairChatsContract
     /**
      * The pair chat of the current actor and the actor, opened the first time; returns its inbox id.
      */
-    public function pairWith(ActorIdentity $actor): string
+    public function pairWith(ActorReference $actor): string
     {
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
         $members = [$viewer, $actor];
-        $key = implode('|', array_map(fn (ActorIdentity $member) => $member->text(), $members));
-        $sorted = array_map(fn (ActorIdentity $member) => $member->text(), $members);
+        $key = implode('|', array_map(fn (ActorReference $member) => $member->text(), $members));
+        $sorted = array_map(fn (ActorReference $member) => $member->text(), $members);
         sort($sorted);
 
         return $this->commands->run(new OpenInboxCommand(
@@ -57,11 +57,11 @@ final readonly class PairChats implements PairChatsContract
     /**
      * A new group chat of the current actor and the users, under the title; returns its inbox id.
      *
-     * @param  list<ActorIdentity>  $users
+     * @param  list<ActorReference>  $users
      */
     public function openGroup(string $title, array $users): string
     {
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
 
         return $this->commands->run(new OpenInboxCommand(self::GROUP_PROVIDER, (string) Str::ulid(), $title, [
             $viewer,
@@ -78,7 +78,7 @@ final readonly class PairChats implements PairChatsContract
     {
         $inbox = Inbox::query()->whereKey($inboxId)->first();
 
-        if ($inbox === null || ! InboxMember::isAttached($inbox->id, ActorIdentity::of($this->actors->actor()))) {
+        if ($inbox === null || ! InboxMember::isAttached($inbox->id, ActorReference::of($this->actors->actor()))) {
             throw ChatUnavailable::notAttached($inboxId);
         }
 
@@ -93,7 +93,7 @@ final readonly class PairChats implements PairChatsContract
     public function assertManages(string $inboxId): void
     {
         $inbox = $this->attached($inboxId);
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
 
         if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds(
             $viewer,
@@ -111,7 +111,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function assertMayCreate(): void
     {
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
 
         if (! $this->eligibility->holds($viewer, InboxPermission::OpenInboxes, null)) {
             throw ChatUnavailable::none();
@@ -123,7 +123,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function mayCreate(): bool
     {
-        return $this->eligibility->holds(ActorIdentity::of($this->actors->actor()), InboxPermission::OpenInboxes, null);
+        return $this->eligibility->holds(ActorReference::of($this->actors->actor()), InboxPermission::OpenInboxes, null);
     }
 
     /**
@@ -138,7 +138,7 @@ final readonly class PairChats implements PairChatsContract
                 self::PAIR_PROVIDER,
                 self::GROUP_PROVIDER,
             ])
-            ->attachedTo(ActorIdentity::of($this->actors->actor()))
+            ->attachedTo(ActorReference::of($this->actors->actor()))
             ->oldestFirst();
     }
 }

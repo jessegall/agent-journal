@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * The facts every skill condition of one boundary reads: who acts, its session, environment, start profile with what
@@ -14,7 +14,7 @@ use App\Support\ActorIdentity;
 final readonly class SkillContext
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $sessionId,
         public string $environment,
         public StartProfile $profile,

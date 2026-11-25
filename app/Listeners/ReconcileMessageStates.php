@@ -10,7 +10,7 @@ use App\Contracts\Work\AgentStacks;
 use App\Events\Sessions\SessionOpened;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\States\Support\ReadMessageStateReference;
 
@@ -29,7 +29,7 @@ final readonly class ReconcileMessageStates implements Listener
     public function handle(SessionOpened $event): void
     {
         $model = Agent::query()->findOrFail($event->agentId);
-        $agent = ActorIdentity::of($model);
+        $agent = ActorReference::of($model);
 
         $inboxIds = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->pluck('inbox_id')->unique();
 

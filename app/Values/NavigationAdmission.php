@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NavigationDispatch;
 
 /**
@@ -19,7 +19,7 @@ final readonly class NavigationAdmission
         public RaiseNavigationCommand $command,
         public AgentRuntime $runtime,
         public DriverRequest $request,
-        public ActorIdentity $owner,
+        public ActorReference $owner,
         public NavigationDispatch $dispatch,
     ) {}
 

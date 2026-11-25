@@ -18,7 +18,7 @@ final readonly class SupplyMemories implements Listener
 
     public function handle(ContextStarted $event): void
     {
-        foreach ($this->memories->remindersFor($event->target->actorIdentity()) as $reminder) {
+        foreach ($this->memories->remindersFor($event->target->actorReference()) as $reminder) {
             $event->reminders->add($reminder, false);
         }
     }

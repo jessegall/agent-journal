@@ -10,7 +10,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SignedCall;
 use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
@@ -47,7 +47,7 @@ trait ConnectsProjects
             'agents.server_origin' => 'https://journal.example.com',
         ]);
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser($this->owner->id),
+            ActorReference::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(

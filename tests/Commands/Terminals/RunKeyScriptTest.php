@@ -12,7 +12,7 @@ use App\Exceptions\KeyScriptRefused;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
@@ -65,7 +65,7 @@ final class RunKeyScriptTest extends TestCase
     {
         [, $opened] = $this->openRuntime();
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($this->agentIdOf($opened)),
+            ActorReference::forAgent($this->agentIdOf($opened)),
             TestStartAuthority::forAgent($this->agentIdOf($opened)),
         );
 

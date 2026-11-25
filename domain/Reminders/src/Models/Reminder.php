@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Events\ReminderFinished;
@@ -63,7 +63,7 @@ final class Reminder extends Model implements EventSource, ReadableModel
     /**
      * A new open reminder for its owner, due at that moment.
      */
-    public static function create(ActorIdentity $owner, string $title, CarbonImmutable $dueAt): self
+    public static function create(ActorReference $owner, string $title, CarbonImmutable $dueAt): self
     {
         $reminder = new self();
         $reminder->title = $title;

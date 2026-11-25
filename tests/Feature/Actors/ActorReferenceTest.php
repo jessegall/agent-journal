@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Actors;
 
 use App\Exceptions\ActorContextMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\PlansDomain;
 use Tests\Support\DomainBoot;
 use Tests\TestCase;
 
-final class ActorIdentityTest extends TestCase
+final class ActorReferenceTest extends TestCase
 {
     /**
      * Plans, whose page the signed-in request opens.
@@ -24,6 +24,6 @@ final class ActorIdentityTest extends TestCase
     {
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(ActorIdentity::class);
+        $this->app->make(ActorReference::class);
     }
 }

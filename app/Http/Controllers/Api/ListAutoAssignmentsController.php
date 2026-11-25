@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Contracts\Assignments\AutoAssignmentResolver;
 use App\Data\Assignments\AutoAssignmentPageData;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\IdListPage;
 
 /**
@@ -23,7 +23,7 @@ final readonly class ListAutoAssignmentsController
         AutoAssignmentAccess $access,
         AutoAssignmentResolver $assignments,
     ): AutoAssignmentPageData {
-        $actor = ActorIdentity::fromStored($call->actorType, strtolower($call->actorId));
+        $actor = ActorReference::fromStored($call->actorType, strtolower($call->actorId));
         $access->assertMayRead($actors->actor(), $actor);
         $page = new IdListPage($call->after === null ? null : strtolower($call->after));
 

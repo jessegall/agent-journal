@@ -26,7 +26,7 @@ final readonly class ActorDestinationProvider implements DestinationProvider
     public function destinationsFor(AssigneeIdentity $requested): Destinations
     {
         $assignee = $this->providers->assigneeProvider($requested->type)->requireEligible($requested);
-        $identity = ActorIdentity::fromStored($requested->type, $requested->id);
+        $identity = ActorReference::fromStored($requested->type, $requested->id);
         $forwarding = Inbox::query()->forwarding()->attachedTo($identity)->oldestFirst()->first();
 
         if ($forwarding !== null) {

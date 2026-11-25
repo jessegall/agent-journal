@@ -11,7 +11,7 @@ use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\DockRegistration;
@@ -47,7 +47,7 @@ final readonly class DockRequests
         }
 
         return Inbox::query()->findOrFail(
-            $this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId)),
+            $this->chats->pairWith(ActorReference::ofClass(Agent::class, $agent->agentId)),
         );
     }
 

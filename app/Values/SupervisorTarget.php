@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Exceptions\InvalidActorText;
 use App\Exceptions\ProfileKeyInvalid;
 use App\Exceptions\SupervisorRouteInvalid;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Spatie\LaravelData\Data;
 
 final class SupervisorTarget extends Data
@@ -27,7 +27,7 @@ final class SupervisorTarget extends Data
                 return;
             }
 
-            ActorIdentity::fromText($key);
+            ActorReference::fromText($key);
         } catch (InvalidActorText|ProfileKeyInvalid $failure) {
             throw SupervisorRouteInvalid::target($key, $failure);
         }
@@ -43,7 +43,7 @@ final class SupervisorTarget extends Data
         return new self(self::PROFILE_PREFIX.$profile->key);
     }
 
-    public static function forActor(ActorIdentity $actor): self
+    public static function forActor(ActorReference $actor): self
     {
         return self::parse($actor->text());
     }

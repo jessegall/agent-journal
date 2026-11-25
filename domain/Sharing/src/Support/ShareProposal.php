@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * An agent's proposal to share a root, which the share holds until the owner approves it or it expires: the requester
@@ -12,5 +12,5 @@ use App\Support\ActorIdentity;
  */
 final readonly class ShareProposal
 {
-    public function __construct(public ActorIdentity $requester) {}
+    public function __construct(public ActorReference $requester) {}
 }

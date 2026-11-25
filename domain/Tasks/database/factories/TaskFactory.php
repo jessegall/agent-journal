@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Database\Factories;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,7 +26,7 @@ class TaskFactory extends Factory
      */
     public function definition(): array
     {
-        $creator = ActorIdentity::system();
+        $creator = ActorReference::system();
 
         return [
             'title' => fake()->sentence(4),

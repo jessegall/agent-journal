@@ -35,7 +35,7 @@ final readonly class DriverRequestRecovery
 
     public function record(DriverRequest $request, RecoveryAction $action, string $reason): int
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorReference::of($this->actors->actor());
         $this->facts->publishAfterCommit(new DriverRequestRecovered($request->id, $action, $actor, $reason));
 
         return $request->row_version;

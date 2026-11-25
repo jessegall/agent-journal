@@ -8,7 +8,7 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\MenuEntryRefused;
 use App\Models\Drivers\MenuEntry;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 final readonly class RetireMenuEntryHandler implements CommandHandler
 {
@@ -20,7 +20,7 @@ final readonly class RetireMenuEntryHandler implements CommandHandler
     public function handle(RetireMenuEntryCommand $command): string
     {
         $entry = MenuEntry::query()
-            ->ownedBy(ActorIdentity::of($this->admission->owner()))
+            ->ownedBy(ActorReference::of($this->admission->owner()))
             ->whereKey($command->entryId)
             ->lockForUpdate()
             ->firstOr(MenuEntryRefused::throwing()->notFound($command->entryId));

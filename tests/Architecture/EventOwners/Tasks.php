@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskBlocked;
@@ -86,7 +86,7 @@ return [
         'owner' => 'Task::start',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskStatus::Open, 'entry'),
+        'sample' => fn () => new TaskStarted('task', ActorReference::system(), TaskStatus::Open, 'entry'),
     ],
     TaskDescribed::class => [
         'role' => EventRole::RowFact,

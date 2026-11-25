@@ -22,7 +22,7 @@ final readonly class MainInboxTakeover implements MainInboxTakeoverContract
     public function takeOver(Agent $agent): void
     {
         $main = Inbox::findLockedById(Inbox::findMain()->id);
-        $starter = ActorIdentity::of($agent);
+        $starter = ActorReference::of($agent);
         $now = $this->clock->now();
 
         foreach (InboxMember::resolveAttachedTo([$main->id], Agent::class) as $previous) {

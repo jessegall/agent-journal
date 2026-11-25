@@ -12,7 +12,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Messages\InboxPermission;
 use App\Events\Access\EnvironmentUserGrantRevoked;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -70,7 +70,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
         User $user,
         string|null $environmentId,
         array $permissions,
-        ActorIdentity $grantedBy,
+        ActorReference $grantedBy,
         CarbonImmutable $at,
     ): self {
         $grant = new self();

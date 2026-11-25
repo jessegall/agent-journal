@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Contracts\TaskRunEvent;
 
 /**
@@ -19,7 +19,7 @@ final readonly class TaskRunClaimed implements TaskEvent, TaskRunEvent
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        public ActorIdentity $holder,
+        public ActorReference $holder,
         public array $assignmentIds,
     ) {}
 }

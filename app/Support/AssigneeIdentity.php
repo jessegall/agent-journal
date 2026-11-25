@@ -21,7 +21,7 @@ final readonly class AssigneeIdentity
         return new self($actor->actorType(), $actor->actorId());
     }
 
-    public static function ofActorIdentity(ActorIdentity $actor): self
+    public static function ofActorReference(ActorReference $actor): self
     {
         return new self($actor->type, $actor->id);
     }

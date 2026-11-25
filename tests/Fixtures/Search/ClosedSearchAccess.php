@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Search;
 
 use App\Contracts\Search\SearchAccess;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AdmittedConstraints;
 use App\Values\OpenAction;
 use App\Values\ReadRequest;
@@ -22,7 +22,7 @@ final class ClosedSearchAccess implements SearchAccess
         return ReadRequest::forDiscovery('logs_read');
     }
 
-    public function canUserSearch(ActorIdentity $user): bool
+    public function canUserSearch(ActorReference $user): bool
     {
         return false;
     }

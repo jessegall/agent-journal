@@ -8,7 +8,7 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Documents\Models\Report;
 
 /**
@@ -32,13 +32,13 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
         $reports = Report::query()->sharedPublished()->withAnyNumber($numbers)->readExactly(count($numbers))->get();
 
         $filers = $this->labels->labelsFor(array_values($reports->map(
-            fn (Report $report) => ActorIdentity::fromStored($report->creator_type, $report->creator_id),
+            fn (Report $report) => ActorReference::fromStored($report->creator_type, $report->creator_id),
         )->all()));
 
         $links = [];
 
         foreach ($reports as $report) {
-            $name = $filers->nameOf(ActorIdentity::fromStored($report->creator_type, $report->creator_id));
+            $name = $filers->nameOf(ActorReference::fromStored($report->creator_type, $report->creator_id));
 
             $links[(string) $report->number] = new NotificationLink(
                 $name === null ? $report->title : "{$report->title}, from {$name}",

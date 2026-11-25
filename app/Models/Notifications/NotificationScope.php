@@ -14,7 +14,7 @@ use App\Events\Messages\NotificationsMarkAllAdvanced;
 use App\Events\Messages\NotificationsMarkAllFinished;
 use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -67,7 +67,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     /**
      * The recipient's empty scope, inserted unless it already has one; read it with lockedFor afterwards.
      */
-    public static function create(string $key, ActorIdentity $recipient): self
+    public static function create(string $key, ActorReference $recipient): self
     {
         $scope = new self();
         $scope->scope_key = $key;
@@ -169,7 +169,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      *
      * @return Option<self>
      */
-    public static function findFor(string $key, ActorIdentity $recipient): Option
+    public static function findFor(string $key, ActorReference $recipient): Option
     {
         $notificationScope = self::query()->ofRecipient($key, $recipient)->first();
 
@@ -191,7 +191,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     /**
      * The recipient's scope under its row lock, for a change of its receipts or its count.
      */
-    public static function findLockedFor(string $key, ActorIdentity $recipient): self
+    public static function findLockedFor(string $key, ActorReference $recipient): self
     {
         return self::query()->ofRecipient($key, $recipient)->lockForUpdate()->firstOrFail();
     }
@@ -202,7 +202,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofRecipient(Builder $query, string $key, ActorIdentity $recipient): void
+    protected function ofRecipient(Builder $query, string $key, ActorReference $recipient): void
     {
         $query->where('scope_key', $key)
             ->where('recipient_type', $recipient->type)

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskStatus;
 
@@ -22,6 +22,6 @@ final readonly class TaskWaitLink
         public bool $isSatisfied,
         public string|null $waiveReason,
         public CarbonImmutable|null $waivedAt,
-        public ActorIdentity|null $waivedBy,
+        public ActorReference|null $waivedBy,
     ) {}
 }

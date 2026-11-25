@@ -23,7 +23,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Support\ReminderContribution;
 use App\Support\SkillPublisher;
@@ -306,7 +306,7 @@ final class PublishSkillsTest extends TestCase
      */
     private function activateReviewer(array $requiredSkills): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',

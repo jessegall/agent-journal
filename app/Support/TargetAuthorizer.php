@@ -16,13 +16,13 @@ final readonly class TargetAuthorizer implements TargetAuthorizerContract
 {
     public function __construct(private ActorResolver $actors, private ActorAuthorizers $authorizers) {}
 
-    public function authorize(ActorIdentity $target, string $policy, object|string $subject, AccessType $access): void
+    public function authorize(ActorReference $target, string $policy, object|string $subject, AccessType $access): void
     {
         $actor = $this->actors->get($target);
         $this->authorizers->assertAllowed($this->authorizers->forTarget($actor), $policy, $actor, $subject, $access);
     }
 
-    public function filterActions(ActorIdentity $target, string $policy, object|string $subject, array $accesses): array
+    public function filterActions(ActorReference $target, string $policy, object|string $subject, array $accesses): array
     {
         $actor = $this->actors->get($target);
         $authorizer = $this->authorizers->forTarget($actor);

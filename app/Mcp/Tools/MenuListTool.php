@@ -13,7 +13,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -63,7 +63,7 @@ final class MenuListTool extends JournalReadTool
 
     private function page(ToolArguments $filters): ListedPage
     {
-        $owner = ActorIdentity::of($this->admission->owner());
+        $owner = ActorReference::of($this->admission->owner());
         $driver = $filters->optionalText('driver');
         $state = $filters->optionalText('state');
         $state = $state === null ? null : MenuEntryStatus::from($state);

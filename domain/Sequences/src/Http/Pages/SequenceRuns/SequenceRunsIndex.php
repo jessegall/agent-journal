@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Http\Pages\SequenceRuns;
 
 use App\Contracts\Actors\ActorLabels;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutPartData;
@@ -29,12 +29,12 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     public function __construct(private ActorLabels $labels, private SequencePageViews $views) {}
 
     /**
-     * @param  list<ActorIdentity>  $followers
+     * @param  list<ActorReference>  $followers
      * @param  list<LayoutPartData>  $reader  the chosen run's reader, none for the list address
      */
     public function of(
         array $followers,
-        ActorIdentity $follower,
+        ActorReference $follower,
         SequenceRunPage $runs,
         string $chosenRunId = '',
         array $reader = [],
@@ -89,14 +89,14 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
     }
 
     /**
-     * @param  list<ActorIdentity>  $followers
+     * @param  list<ActorReference>  $followers
      */
-    private function choicesOf(array $followers, ActorIdentity $chosen): LayoutPartData
+    private function choicesOf(array $followers, ActorReference $chosen): LayoutPartData
     {
         $labels = $this->labels->labelsFor($followers);
 
         return LayoutPartData::collection('actors', 'choices', array_map(
-            fn (ActorIdentity $follower) => LayoutRowData::from([
+            fn (ActorReference $follower) => LayoutRowData::from([
                 'key' => $follower->text(),
                 'label' => $labels->nameOf($follower) ?? $follower->text(),
                 'query' => [

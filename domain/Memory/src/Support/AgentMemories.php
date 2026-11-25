@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AgentText;
 use Domain\Memory\Models\Memory;
 
@@ -16,7 +16,7 @@ final readonly class AgentMemories
     /**
      * @return list<AgentText>
      */
-    public function remindersFor(ActorIdentity $actor): array
+    public function remindersFor(ActorReference $actor): array
     {
         $texts = Memory::query()
             ->ownedBy($actor)

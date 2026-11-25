@@ -36,7 +36,7 @@ final readonly class AutoAssignmentAdmission
     {
         $this->providers->assertPublic($key->assignableType);
         $this->access->assertMayWrite($this->actors->actor(), $key->actor);
-        $assignee = AssigneeIdentity::ofActorIdentity($key->actor);
+        $assignee = AssigneeIdentity::ofActorReference($key->actor);
         $this->providers->assigneeProvider($assignee->type)->requireEligible($assignee);
     }
 

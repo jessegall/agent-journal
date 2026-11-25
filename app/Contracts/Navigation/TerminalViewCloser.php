@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Navigation;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 
 /**
@@ -15,5 +15,5 @@ interface TerminalViewCloser
     /**
      * Closes every terminal view the viewer has open on the agent.
      */
-    public function closeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void;
+    public function closeAllFor(string $agentId, ActorReference $viewer, CarbonImmutable $now): void;
 }

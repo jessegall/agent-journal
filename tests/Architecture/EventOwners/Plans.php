@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Enums\PlanReviewStatus;
 use Domain\Plans\Events\PhaseProgressRecorded;
 use Domain\Plans\Events\PhaseRevisionAdvanced;
@@ -31,14 +31,14 @@ return [
         'owner' => 'Plan::cancel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanCancelled('plan', ActorIdentity::forUser('user')),
+        'sample' => fn () => new PlanCancelled('plan', ActorReference::forUser('user')),
     ],
     PlanFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Plan::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanFinished('plan', ActorIdentity::forUser('user')),
+        'sample' => fn () => new PlanFinished('plan', ActorReference::forUser('user')),
     ],
     PlanProgressChanged::class => [
         'role' => EventRole::RowFact,
@@ -59,7 +59,7 @@ return [
         'owner' => 'Plan::requestReview',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorIdentity::system()], 7),
+        'sample' => fn () => new PlanReviewRequested('plan', 'edition', [ActorReference::system()], 7),
     ],
     PlanReviewWithdrawn::class => [
         'role' => EventRole::RowFact,
@@ -73,7 +73,7 @@ return [
         'owner' => 'Plan::startOnce',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new PlanStarted('plan', ActorIdentity::forUser('user')),
+        'sample' => fn () => new PlanStarted('plan', ActorReference::forUser('user')),
     ],
     PlanDescribed::class => [
         'role' => EventRole::RowFact,

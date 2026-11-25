@@ -11,9 +11,9 @@ use App\Contracts\Inboxes\InboxParticipationEnding;
  */
 final readonly class KeptInboxParticipation implements InboxParticipationEnding
 {
-    public function endInEnvironment(ActorIdentity $user, string|null $environmentId): void {}
+    public function endInEnvironment(ActorReference $user, string|null $environmentId): void {}
 
-    public function endEverywhere(ActorIdentity $user): void {}
+    public function endEverywhere(ActorReference $user): void {}
 
-    public function endForRetirement(ActorIdentity $agent): void {}
+    public function endForRetirement(ActorReference $agent): void {}
 }

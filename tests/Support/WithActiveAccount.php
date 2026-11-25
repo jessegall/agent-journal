@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
@@ -27,7 +27,7 @@ trait WithActiveAccount
     protected function chooseActiveAccounts(): array
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $chosen = [];

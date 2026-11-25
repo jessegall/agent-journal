@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Http\Requests\Concerns;
 
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Reads the runs list's address from a request: the actor whose runs it shows, when one was chosen, and the page.
@@ -20,9 +20,9 @@ trait ReadsRunsListAddress
     /**
      * @throws InvalidActorText
      */
-    public function follower(): ActorIdentity
+    public function follower(): ActorReference
     {
-        return ActorIdentity::fromText($this->string('actor')->toString());
+        return ActorReference::fromText($this->string('actor')->toString());
     }
 
     public function pageNumber(): int

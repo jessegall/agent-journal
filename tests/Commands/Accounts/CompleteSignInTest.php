@@ -23,7 +23,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\SignInIdentity;
@@ -249,7 +249,7 @@ final class CompleteSignInTest extends TestCase
     private function verifiedKey(string $requestKey, string $key): SignInAttempt
     {
         $attempt = SignInAttempt::create(
-            ActorIdentity::of(ActorIdentity::forUser($this->journal->ownerUser()->id)),
+            ActorReference::of(ActorReference::forUser($this->journal->ownerUser()->id)),
             DefaultDrivers::CLAUDE_CODE,
             SignInMethod::ApiKey,
             '/journal/accounts/'.$requestKey,

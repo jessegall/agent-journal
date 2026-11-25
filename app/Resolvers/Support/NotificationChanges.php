@@ -11,7 +11,7 @@ use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NotificationChangeCursor;
 use App\Support\NotificationScopes;
 use PhpOption\Option;
@@ -32,7 +32,7 @@ final readonly class NotificationChanges
     /**
      * @throws NotificationCursorInvalid
      */
-    public function since(ActorIdentity $actor, string $cursor): NotificationChangePage
+    public function since(ActorReference $actor, string $cursor): NotificationChangePage
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->getOrThrow(NotificationCursorInvalid::create());

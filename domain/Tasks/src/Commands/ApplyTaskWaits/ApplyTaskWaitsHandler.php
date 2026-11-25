@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ApplyTaskWaits;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskGraphChanged;
@@ -67,7 +67,7 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
             $command->removed,
         );
 
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $batchId = (string) str()->ulid();
 
         foreach ($removed as $wait) {

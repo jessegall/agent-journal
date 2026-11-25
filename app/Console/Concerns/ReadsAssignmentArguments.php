@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Concerns;
 
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * The record an assignment command names by its type and id arguments, and the assignment it read. The start
@@ -38,7 +38,7 @@ trait ReadsAssignmentArguments
 
         return [
             'assignmentId' => is_string($assignment) ? $assignment : '',
-            ...ActorIdentity::fromText(is_string($holder) ? $holder : '')->asFields('holder'),
+            ...ActorReference::fromText(is_string($holder) ? $holder : '')->asFields('holder'),
         ];
     }
 }

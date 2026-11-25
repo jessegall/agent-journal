@@ -34,7 +34,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
      */
     public function open(
         string $agentId,
-        ActorIdentity $viewer,
+        ActorReference $viewer,
         int $intervalMs,
         string $requestId,
         CarbonImmutable $now,
@@ -68,7 +68,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
      */
     public function renew(
         string $agentId,
-        ActorIdentity $viewer,
+        ActorReference $viewer,
         string $readInterestId,
         CarbonImmutable $now,
     ): string {
@@ -90,7 +90,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
      *
      * @throws TerminalViewRefused
      */
-    public function close(string $agentId, ActorIdentity $viewer, string $readInterestId, CarbonImmutable $now): void
+    public function close(string $agentId, ActorReference $viewer, string $readInterestId, CarbonImmutable $now): void
     {
         $this->runtimes->of($agentId);
         $view = $this->interestOf($agentId, $viewer, $readInterestId);
@@ -112,7 +112,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
      */
     public function frame(
         string $agentId,
-        ActorIdentity $viewer,
+        ActorReference $viewer,
         HeldFrame $held,
         CarbonImmutable $now,
     ): TerminalFrameData {
@@ -152,7 +152,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
     /**
      * Ends the viewer's live views of every runtime of the agent, as when the viewer may no longer inspect it.
      */
-    public function closeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
+    public function closeAllFor(string $agentId, ActorReference $viewer, CarbonImmutable $now): void
     {
         $views = TerminalView::query()->ownedBy($viewer)->live()->ofAgent($agentId)->get();
 
@@ -272,7 +272,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
      *
      * @throws TerminalViewRefused
      */
-    private function interestOf(string $agentId, ActorIdentity $viewer, string $readInterestId): TerminalView
+    private function interestOf(string $agentId, ActorReference $viewer, string $readInterestId): TerminalView
     {
         $view = TerminalView::query()->withRuntime()->ownedBy($viewer)->ofAgent($agentId)
             ->withReadInterest($readInterestId)->first();
@@ -287,7 +287,7 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
     /**
      * The viewer's read interest as it stands now, as an open or renewal left it.
      */
-    public function answerFor(ActorIdentity $viewer, string $viewId, CarbonImmutable $now): TerminalInterestData
+    public function answerFor(ActorReference $viewer, string $viewId, CarbonImmutable $now): TerminalInterestData
     {
         $terminalView = TerminalView::query()->ownedBy($viewer)->whereKey($viewId)->sole();
 

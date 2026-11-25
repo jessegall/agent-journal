@@ -24,7 +24,7 @@ use App\Events\Sessions\AgentRuntimesFenced;
 use App\Exceptions\AgentOfAnotherProject;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\Project;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
 use App\Values\StackTarget;
@@ -232,7 +232,7 @@ final class Agent extends Model implements
     }
 
     /**
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public static function resolveSoleActorForProfile(string $profile): Option
     {
@@ -246,7 +246,7 @@ final class Agent extends Model implements
             return None::create();
         }
 
-        return Some::create(ActorIdentity::of($matches->sole()));
+        return Some::create(ActorReference::of($matches->sole()));
     }
 
     /**

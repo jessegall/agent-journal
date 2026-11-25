@@ -14,7 +14,7 @@ use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -99,7 +99,7 @@ final class TerminalView extends Model implements EventSource, ReadableModel
      * Opens the viewer's lease on the runtime as it runs now, live for one lease from now.
      */
     public static function create(
-        ActorIdentity $viewer,
+        ActorReference $viewer,
         AgentRuntime $runtime,
         int $intervalMs,
         CarbonImmutable $now,

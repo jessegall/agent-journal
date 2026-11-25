@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\HostReportRefused;
 use App\Exceptions\NavigationRaiseRefused;
 use App\Models\Drivers\MenuEntry;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\HostRuntimes;
 
 /**
@@ -40,7 +40,7 @@ final readonly class MarkMenuEntryStaleHandler implements CommandHandler
         $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
 
         $entry = MenuEntry::query()
-            ->ownedBy(ActorIdentity::of($this->admission->owner()))
+            ->ownedBy(ActorReference::of($this->admission->owner()))
             ->whereKey($command->entryId)
             ->lockForUpdate()
             ->firstOr(NavigationRaiseRefused::throwing()->unknownEntry($command->entryId));

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Support\Assignments;
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Enums\Assignments\PoolInputType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\PoolDescription;
 use App\Support\PoolReference;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
@@ -24,7 +24,7 @@ final readonly class OpenTaskPoolFactory implements AssignmentPoolFactory
     /**
      * @throws TaskPoolRefused
      */
-    public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool
+    public function open(PoolReference $pool, ActorReference $assignee): AssignmentPool
     {
         $this->validate($pool, $assignee);
 
@@ -34,7 +34,7 @@ final readonly class OpenTaskPoolFactory implements AssignmentPoolFactory
     /**
      * @throws TaskPoolRefused
      */
-    public function validate(PoolReference $pool, ActorIdentity $assignee): void
+    public function validate(PoolReference $pool, ActorReference $assignee): void
     {
         if ($pool->type !== self::KEY) {
             throw TaskPoolRefused::otherPool(self::KEY);
@@ -49,7 +49,7 @@ final readonly class OpenTaskPoolFactory implements AssignmentPoolFactory
         }
     }
 
-    public function describe(PoolReference $pool, ActorIdentity $assignee): PoolDescription
+    public function describe(PoolReference $pool, ActorReference $assignee): PoolDescription
     {
         return new PoolDescription('Open tasks', 'Every open task nobody holds, oldest first.', PoolInputType::None);
     }

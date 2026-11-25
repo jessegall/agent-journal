@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SessionRequestDetails;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Domain\Helpers\Models\HelperIdentity;
@@ -20,7 +20,7 @@ use Domain\Helpers\Values\FiledReport;
  */
 final readonly class ReportJobLinkService
 {
-    public function link(FiledReport $report, ActorIdentity $filer, SessionRequestDetails $start): void
+    public function link(FiledReport $report, ActorReference $filer, SessionRequestDetails $start): void
     {
         $reportId = $report->id;
         $reference = (string) $start->ownerReference;
@@ -58,7 +58,7 @@ final readonly class ReportJobLinkService
     /**
      * Whether the filer is the helper the job was given to and the agent the session's start started.
      */
-    private function isFiledByJobHelper(HelperJob $job, ActorIdentity $filer, SessionRequestDetails $start): bool
+    private function isFiledByJobHelper(HelperJob $job, ActorReference $filer, SessionRequestDetails $start): bool
     {
         $helper = HelperIdentity::query()->acrossActors()->whereKey($job->helper_identity_id)->first();
 

@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,7 +47,7 @@ final class SkillRequest extends Model implements ReadableModel
     // ----------[ Constructors ]----------
 
     public static function create(
-        ActorIdentity $actor,
+        ActorReference $actor,
         string $requestId,
         string $inputDigest,
         SkillRevision $revision,
@@ -76,7 +76,7 @@ final class SkillRequest extends Model implements ReadableModel
     /**
      * The actor's earlier write under this request id, or null when it sent none.
      */
-    public static function findEarlier(ActorIdentity $actor, string $requestId): self|null
+    public static function findEarlier(ActorReference $actor, string $requestId): self|null
     {
         return self::query()->byActor($actor)->ofRequest($requestId)->first();
     }

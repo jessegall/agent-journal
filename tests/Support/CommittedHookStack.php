@@ -16,8 +16,8 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Inboxes\Inbox;
-use App\Support\ActorIdentity;
 use App\Support\ActorProvisioning;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\AgentRuntimes;
 use App\Support\Drivers\DriverCapabilities;
@@ -101,7 +101,7 @@ trait CommittedHookStack
         $agent->id = TestIds::of(1);
         $agent->save();
 
-        $actor = ActorIdentity::of($agent);
+        $actor = ActorReference::of($agent);
 
         if (! Inbox::query()->personalTo($actor)->exists()) {
             $this->app->make(ActorProvisioning::class)->provision($actor, $agent->name);
@@ -176,7 +176,7 @@ trait CommittedHookStack
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent(TestIds::of(1)),
+            ActorReference::forAgent(TestIds::of(1)),
             TestStartAuthority::forAgent(TestIds::of(1)),
         );
     }

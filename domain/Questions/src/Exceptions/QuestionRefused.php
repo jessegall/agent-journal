@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Questions\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use RuntimeException;
 
 /**
@@ -13,12 +13,12 @@ use RuntimeException;
  */
 final class QuestionRefused extends RuntimeException implements CommandRefusal
 {
-    public static function targetCannotAnswer(ActorIdentity $target): self
+    public static function targetCannotAnswer(ActorReference $target): self
     {
         return new self("The {$target->type} {$target->id} cannot be asked a question.");
     }
 
-    public static function targetNotInInbox(ActorIdentity $target): self
+    public static function targetNotInInbox(ActorReference $target): self
     {
         return new self("The {$target->type} {$target->id} is not attached to the inbox.");
     }

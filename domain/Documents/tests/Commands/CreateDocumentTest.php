@@ -16,7 +16,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Models\Records\Link;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
@@ -295,7 +295,7 @@ final class CreateDocumentTest extends TestCase
     private function actAsAgent(int $agent): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent(TestIds::of($agent)),
+            ActorReference::forAgent(TestIds::of($agent)),
             TestStartAuthority::forAgent(TestIds::of($agent)),
         );
 

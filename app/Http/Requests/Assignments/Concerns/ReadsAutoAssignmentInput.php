@@ -6,7 +6,7 @@ namespace App\Http\Requests\Assignments\Concerns;
 
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Records\RecordResolver;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;
@@ -93,7 +93,7 @@ trait ReadsAutoAssignmentInput
     public function key(): AutoAssignmentKey
     {
         return new AutoAssignmentKey(
-            ActorIdentity::fromStored(
+            ActorReference::fromStored(
                 $this->string('actorType')->toString(),
                 $this->string('actorId')->lower()->toString(),
             ),

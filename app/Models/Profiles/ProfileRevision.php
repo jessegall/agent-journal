@@ -14,7 +14,7 @@ use App\Enums\Profiles\ModelTier;
 use App\Exceptions\ProfileMissing;
 use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileSnapshots;
 use App\Values\CompiledScript;
 use App\Values\ProfileBase;
@@ -96,7 +96,7 @@ final class ProfileRevision extends Model implements ReadableModel
     public static function create(
         Profile $profile,
         ProfileDefinition $definition,
-        ActorIdentity $author,
+        ActorReference $author,
         ScriptSource $source,
         CompiledScript|null $compiled,
     ): self {

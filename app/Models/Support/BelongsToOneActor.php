@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -41,7 +41,7 @@ trait BelongsToOneActor
     /**
      * Gives the row to its actor.
      */
-    public function belongTo(ActorIdentity $actor): void
+    public function belongTo(ActorReference $actor): void
     {
         $this->setAttribute('actor_type', $actor->type);
         $this->setAttribute('actor_id', $actor->id);
@@ -50,9 +50,9 @@ trait BelongsToOneActor
     /**
      * The actor the row belongs to, once it was given to one.
      */
-    public function owningActor(): ActorIdentity
+    public function owningActor(): ActorReference
     {
-        return ActorIdentity::fromStored(
+        return ActorReference::fromStored(
             (string) $this->getAttribute('actor_type'),
             (string) $this->getAttribute('actor_id'),
         );
@@ -76,7 +76,7 @@ trait BelongsToOneActor
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function ownedBy(Builder $query, ActorIdentity $actor): void
+    protected function ownedBy(Builder $query, ActorReference $actor): void
     {
         $query->withoutGlobalScope(static::ownerScope())->where(
             $query->qualifyColumn('actor_type'),

@@ -20,7 +20,7 @@ use App\Exceptions\StackAlreadyClosed;
 use App\Exceptions\StackMissing;
 use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\FrameRecordsCast;
 use App\Support\Storage\StoredFrames;
@@ -283,7 +283,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      * @param  list<string>  $sessions
      * @return list<self>
      */
-    public static function findLockedActiveOf(ActorIdentity $actor, array $sessions): array
+    public static function findLockedActiveOf(ActorReference $actor, array $sessions): array
     {
         if ($sessions === []) {
             return [];
@@ -300,7 +300,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function historyOf(Builder $query, ActorIdentity $actor): void
+    protected function historyOf(Builder $query, ActorReference $actor): void
     {
         $query->withoutGlobalScope(AgentSessionScope::class)->where('agent_id', $actor->id);
     }

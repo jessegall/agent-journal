@@ -17,7 +17,7 @@ use App\Events\Accounts\ProfileRunSuspended;
 use App\Exceptions\ProfileRunRefused;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
@@ -87,7 +87,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      * the new trigger continues (there is never more than one), else a new run, numbered after the others.
      */
     public static function create(
-        ActorIdentity $actor,
+        ActorReference $actor,
         WorkReference $work,
         string $profileKey,
         int $revision,

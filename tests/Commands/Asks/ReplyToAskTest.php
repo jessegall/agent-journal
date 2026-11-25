@@ -16,7 +16,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Enums\Asks\UnansweredReason;
 use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AskTypeRegistry;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
@@ -66,7 +66,7 @@ final class ReplyToAskTest extends TestCase
         )));
         $this->requester = $this->journal->idleAgent('Requester', 'journal-worker')->agentCalled('Requester');
         $this->holder = $this->journal->idleAgent('Reviewer', 'journal-code-reviewer')->agentCalled('Reviewer');
-        $this->superviseWith($this->requester, SupervisorTarget::forActor(ActorIdentity::of($this->holder)));
+        $this->superviseWith($this->requester, SupervisorTarget::forActor(ActorReference::of($this->holder)));
     }
 
     public function test_two_days_close_an_ask_and_the_owners_late_text_keeps_its_outcome(): void
@@ -89,12 +89,12 @@ final class ReplyToAskTest extends TestCase
         $reference = Ask::resolveNewReference();
         $ask = Ask::create(
             $reference,
-            ActorIdentity::of($this->requester),
+            ActorReference::of($this->requester),
             $type->key(),
             "submission {$body}",
             $body,
             $type->resolver()->resolve($type->subject(), $reference, null),
-            SupervisorTarget::forActor(ActorIdentity::of($this->holder)),
+            SupervisorTarget::forActor(ActorReference::of($this->holder)),
         );
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(new RouteAskCommand($reference, 0));
@@ -122,7 +122,7 @@ final class ReplyToAskTest extends TestCase
     {
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $type = AskTypeKey::of('question');
-        $actor = ActorIdentity::of($agent);
+        $actor = ActorReference::of($agent);
         $version = $this->app->make(SupervisorDefinitions::class)->routeFor($actor, $type)->version;
         $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $version, $type));
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Work;
 
 use App\Exceptions\FrameNotHeld;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\References\Exceptions\ActivationDeclined;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
@@ -55,11 +55,11 @@ interface AgentStacks
      * Pushes onto the stacks of another actor's running sessions, such as the actor a message is addressed to;
      * nothing when it runs no session.
      */
-    public function pushFor(ActorIdentity $actor, StateReference $state): void;
+    public function pushFor(ActorReference $actor, StateReference $state): void;
 
     /**
      * Pushes onto one stack of another actor, and only while every stack it works in rests on its bottom state: work
      * offered to an actor that is busy is left for later.
      */
-    public function offerFor(ActorIdentity $actor, StateReference $state): void;
+    public function offerFor(ActorReference $actor, StateReference $state): void;
 }

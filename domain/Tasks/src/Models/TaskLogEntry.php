@@ -11,7 +11,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ReadOrder;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskLogged;
@@ -64,7 +64,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      * Writes the line against the run after the task's last line and tells it; the caller holds the task's row, so
      * two lines of one task never take the same place.
      */
-    public static function create(Task $task, TaskRun $run, ActorIdentity $actor, string $text): self
+    public static function create(Task $task, TaskRun $run, ActorReference $actor, string $text): self
     {
         $entry = new self();
         $entry->task_id = $task->id;

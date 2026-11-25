@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Models\Agents\Agent;
-use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Concerns\BoundedReads;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Records\Commentable;
+use App\Contracts\Records\Numbered;
+use App\Contracts\Records\ReadableModel;
+use App\Models\Agents\Agent;
+use App\Models\Support\BelongsToOneActor;
+use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
+use App\Support\RecordIdentity;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
-use App\Concerns\Linkable;
-use App\Contracts\Records\Numbered;
-use App\Concerns\HasNumber;
-use App\Contracts\Records\ReadableModel;
-use App\Concerns\BoundedReads;
-use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -45,21 +45,21 @@ use Illuminate\Support\Carbon;
 final class Note extends Model implements Assignable, Commentable, Dockable, Numbered, ReadableModel
 {
     use BelongsToOneActor;
+    use BoundedReads;
     use HasNumber;
     use HasUlids;
-    use BoundedReads;
     use Linkable;
 
     public function saveFor(string $agentId): void
     {
-        $this->belongTo(ActorIdentity::ofClass(Agent::class, $agentId));
+        $this->belongTo(ActorReference::ofClass(Agent::class, $agentId));
         $this->save();
     }
 
     /**
      * Whether the actor wrote this note.
      */
-    public function isWrittenBy(ActorIdentity $actor): bool
+    public function isWrittenBy(ActorReference $actor): bool
     {
         return $this->actor_type === $actor->type && $this->actor_id === $actor->id;
     }

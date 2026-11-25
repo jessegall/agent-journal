@@ -35,7 +35,7 @@ final readonly class CallerStackTargets
      *
      * @return list<AgentStackRow>
      */
-    public function lockedRowsOf(ActorIdentity $actor): array
+    public function lockedRowsOf(ActorReference $actor): array
     {
         return AgentStackRow::findLockedActiveOf($actor, $this->sessions->sessionsOf($actor));
     }

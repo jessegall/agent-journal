@@ -6,7 +6,7 @@ namespace App\Commands\Terminals\OpenTerminalView;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\TerminalViewCloser;
 
 final readonly class OpenTerminalViewHandler implements CommandHandler
@@ -18,7 +18,7 @@ final readonly class OpenTerminalViewHandler implements CommandHandler
 
     public function handle(OpenTerminalViewCommand $command): string
     {
-        $viewer = ActorIdentity::of($command->dispatchedBy());
+        $viewer = ActorReference::of($command->dispatchedBy());
 
         return $this->views->open(
             $command->agentId,

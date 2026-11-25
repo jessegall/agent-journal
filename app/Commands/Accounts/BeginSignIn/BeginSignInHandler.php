@@ -9,7 +9,7 @@ use App\Exceptions\SignInMethodMissing;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SignInProtocols;
 use App\Values\SignInStarted;
 use Carbon\CarbonImmutable;
@@ -47,7 +47,7 @@ final readonly class BeginSignInHandler implements CommandHandler
         $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
 
         $attempt = SignInAttempt::create(
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
             $driver,
             $command->method,
             $directory,

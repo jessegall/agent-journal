@@ -71,7 +71,7 @@ final readonly class AskRouter
 
         $assignment = new JournalAssignment(
             $ask->assignmentIdentity(),
-            AssigneeIdentity::ofActorIdentity($recipient),
+            AssigneeIdentity::ofActorReference($recipient),
             $ask->version,
         );
 

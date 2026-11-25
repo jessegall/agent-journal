@@ -41,7 +41,7 @@ final readonly class Notifications implements NotificationsContract
         $this->delivery->deliver($occurrenceKey, $source, $target, $recipients);
     }
 
-    public function withdraw(NotificationTarget $target, ActorIdentity $recipient): void
+    public function withdraw(NotificationTarget $target, ActorReference $recipient): void
     {
         $at = CarbonImmutable::now();
         $hidden = false;
@@ -55,7 +55,7 @@ final readonly class Notifications implements NotificationsContract
         }
     }
 
-    public function withdrawTargets(string $targetType, Builder $ids, ActorIdentity $recipient, int $limit): int
+    public function withdrawTargets(string $targetType, Builder $ids, ActorReference $recipient, int $limit): int
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient);
 
@@ -77,7 +77,7 @@ final readonly class Notifications implements NotificationsContract
         return count($receipts);
     }
 
-    public function settle(NotificationTarget $target, ActorIdentity $recipient): void
+    public function settle(NotificationTarget $target, ActorReference $recipient): void
     {
         $at = CarbonImmutable::now();
 
@@ -89,7 +89,7 @@ final readonly class Notifications implements NotificationsContract
     /**
      * @return list<NotificationReceipt>
      */
-    private function receiptsOf(NotificationTarget $target, ActorIdentity $recipient): array
+    private function receiptsOf(NotificationTarget $target, ActorReference $recipient): array
     {
         return NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient)
             ->map(fn (NotificationScope $scope) => NotificationReceipt::findAllForTarget(

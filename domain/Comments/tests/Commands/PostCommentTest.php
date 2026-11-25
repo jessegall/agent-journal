@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\SubmissionKeyConflict;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
@@ -81,7 +81,7 @@ final class PostCommentTest extends TestCase
 
         $comment = Comment::query()->findOrFail($commentId);
         $this->assertSame(self::QUESTION, $comment->body);
-        $this->assertSame(ActorIdentity::of($this->journal->ownerUser())->id, $comment->author_id);
+        $this->assertSame(ActorReference::of($this->journal->ownerUser())->id, $comment->author_id);
         $this->assertSame($this->note->id, $comment->target_id);
     }
 

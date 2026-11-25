@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AuditPruning;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -93,7 +93,7 @@ final class PruneShareAuditTest extends TestCase
         ShareAudit::create(
             $share,
             $type,
-            $type->isRead() ? ActorIdentity::system() : TestActors::userIdentity(9),
+            $type->isRead() ? ActorReference::system() : TestActors::userIdentity(9),
             null,
         );
     }

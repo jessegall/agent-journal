@@ -13,7 +13,7 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\MessageRead;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -74,7 +74,7 @@ final class MessageReadEntry extends Model implements EventSource, ReadableModel
         }
 
         if ($entry->wasRecentlyCreated) {
-            $entry->raise(new MessageRead($message->id, $message->inbox_id, ActorIdentity::of($reader)));
+            $entry->raise(new MessageRead($message->id, $message->inbox_id, ActorReference::of($reader)));
 
             return;
         }

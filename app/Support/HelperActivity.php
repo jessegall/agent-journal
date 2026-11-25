@@ -28,7 +28,7 @@ final readonly class HelperActivity
     private function record(string $actorAgentId, ActivityType $type, string $helperAgentId): void
     {
         $this->activity->record(
-            ActorIdentity::ofClass(Agent::class, $actorAgentId),
+            ActorReference::ofClass(Agent::class, $actorAgentId),
             $type,
             Agent::query()->findOrFail($helperAgentId)->name,
         );

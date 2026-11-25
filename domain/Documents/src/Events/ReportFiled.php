@@ -6,7 +6,7 @@ namespace Domain\Documents\Events;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Navigation\ClientUpdate;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * A report was filed. It carries ids and the number, never the text. Helpers ties it to the helper job it answers in
@@ -18,6 +18,6 @@ final readonly class ReportFiled implements ClientUpdate, DocumentEvent
     public function __construct(
         public string $reportId,
         public int $number,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
     ) {}
 }

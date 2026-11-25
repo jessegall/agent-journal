@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Sharing\Models\Share;
 
 /**
@@ -21,7 +21,7 @@ final readonly class ProposalStatusResolver
      */
     public function ownProposals(): array
     {
-        $proposer = ActorIdentity::of($this->actors->actor());
+        $proposer = ActorReference::of($this->actors->actor());
 
         return array_map(fn (Share $proposal) => $proposal->proposal_status, Share::findProposedBy($proposer));
     }

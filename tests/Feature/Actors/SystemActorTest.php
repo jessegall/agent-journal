@@ -6,7 +6,7 @@ namespace Tests\Feature\Actors;
 
 use App\Exceptions\InvalidActorText;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ActorStore;
 use App\Support\SystemActor;
 use App\Values\OwnerAuthority;
@@ -21,10 +21,10 @@ final class SystemActorTest extends TestCase
 {
     public function test_text_from_outside_never_names_the_system(): void
     {
-        $this->assertTrue(ActorIdentity::system()->isSameAs(ActorIdentity::of(new SystemActor())));
+        $this->assertTrue(ActorReference::system()->isSameAs(ActorReference::of(new SystemActor())));
         $this->expectException(InvalidActorText::class);
 
-        ActorIdentity::fromText('system:1');
+        ActorReference::fromText('system:1');
     }
 
     public function test_acting_as_the_system_lasts_only_for_its_work_even_when_it_throws(): void

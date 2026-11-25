@@ -11,7 +11,7 @@ use App\Contracts\Navigation\ClientUpdate;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 
@@ -31,7 +31,7 @@ final readonly class BroadcastPageChange implements Listener
     {
         $userIds = $fact instanceof InboxScopedFact
             ? array_map(
-                fn (ActorIdentity $user) => $user->id,
+                fn (ActorReference $user) => $user->id,
                 InboxMember::resolveAttachedTo([$fact->scopedInboxId()], User::class),
             )
             : $this->recipients->userIds();

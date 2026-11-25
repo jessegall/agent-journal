@@ -11,7 +11,7 @@ use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Resolvers\RunNotificationTarget;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NotificationDelivery;
 use App\Support\NotificationScopes;
 use PHPUnit\Framework\Assert;
@@ -129,7 +129,7 @@ trait AssertsMessages
         return $this;
     }
 
-    private function scopeOf(ActorIdentity $actor): NotificationScope
+    private function scopeOf(ActorReference $actor): NotificationScope
     {
         return NotificationScope::findFor($this->app->make(NotificationScopes::class)->keyFor($actor), $actor)->get();
     }

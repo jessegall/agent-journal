@@ -16,7 +16,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\HostCapacity;
 use PhpOption\None;
@@ -137,7 +137,7 @@ final class KeepStartReceiptTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::of(ActorIdentity::forUser($this->journal->ownerUser()->id)),
+            ActorReference::of(ActorReference::forUser($this->journal->ownerUser()->id)),
             None::create(),
         );
 

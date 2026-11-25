@@ -45,9 +45,9 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
             return None::create();
         }
 
-        $owner = ActorIdentity::of(new SystemActor());
+        $owner = ActorReference::of(new SystemActor());
 
-        if ($owner->isSameAs(ActorIdentity::of($actor))) {
+        if ($owner->isSameAs(ActorReference::of($actor))) {
             return new Some($this->grant);
         }
 

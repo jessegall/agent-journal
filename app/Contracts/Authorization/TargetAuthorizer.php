@@ -6,7 +6,7 @@ namespace App\Contracts\Authorization;
 
 use App\Enums\Agents\AccessType;
 use App\Exceptions\ActorNotAllowed;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Authorization of another actor than the caller, such as the agent a message asks to answer: the target's own
@@ -20,7 +20,7 @@ interface TargetAuthorizer
      *
      * @throws ActorNotAllowed
      */
-    public function authorize(ActorIdentity $target, string $policy, object|string $subject, AccessType $access): void;
+    public function authorize(ActorReference $target, string $policy, object|string $subject, AccessType $access): void;
 
     /**
      * @param  class-string<Policy>  $policy
@@ -29,7 +29,7 @@ interface TargetAuthorizer
      * @return list<AccessType>
      */
     public function filterActions(
-        ActorIdentity $target,
+        ActorReference $target,
         string $policy,
         object|string $subject,
         array $accesses,

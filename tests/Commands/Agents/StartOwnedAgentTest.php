@@ -16,7 +16,7 @@ use App\Enums\Sessions\StartOriginType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Projects\Host;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
 use App\Support\OwnerStartRequest;
@@ -59,7 +59,7 @@ final class StartOwnedAgentTest extends TestCase
     {
         $request = new OwnerStartRequest(
             TestSelections::requestId(),
-            ActorIdentity::of($this->researcher),
+            ActorReference::of($this->researcher),
             TestActors::record('binders.binder', 1),
             'purpose-1',
             TestSelections::of(),

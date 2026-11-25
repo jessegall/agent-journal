@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Bus;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandPermissions;
 
 /**
@@ -20,5 +20,5 @@ interface CommandPermissionResolver
     /**
      * The commands the actor may run.
      */
-    public function forActor(ActorIdentity $actor): CommandPermissions;
+    public function forActor(ActorReference $actor): CommandPermissions;
 }

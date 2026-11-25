@@ -10,7 +10,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -68,8 +68,8 @@ final class OpenHostMainRuntimeTest extends TestCase
             [$runtime->host_id, $runtime->agent_session_id],
         );
         $main = Inbox::findMain()->id;
-        $this->assertNotNull(InboxMember::findActive($main, ActorIdentity::of($after)));
-        $this->assertNull(InboxMember::findActive($main, ActorIdentity::of($before)));
+        $this->assertNotNull(InboxMember::findActive($main, ActorReference::of($after)));
+        $this->assertNull(InboxMember::findActive($main, ActorReference::of($before)));
     }
 
     public function test_the_agent_that_takes_the_main_inbox_over_fences_the_runtime_of_the_one_before(): void

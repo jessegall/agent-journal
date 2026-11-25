@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
@@ -47,7 +47,7 @@ final readonly class MessageLinkRecords implements RecordProvider
             return Message::query();
         }
 
-        $actor = ActorIdentity::fromStored($reader->actorType(), $reader->actorId());
+        $actor = ActorReference::fromStored($reader->actorType(), $reader->actorId());
 
         return Message::query()->inInboxesOf($actor);
     }

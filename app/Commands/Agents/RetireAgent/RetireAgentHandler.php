@@ -19,7 +19,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
 use App\Policies\AgentPolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentResult;
@@ -52,7 +52,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         // The exclusive lifecycle lock comes first, so a start of the same agent waits or is retried as a whole.
         $target = $this->lifecycle->lockExclusive($command->agentId);
-        $caller = ActorIdentity::of($command->dispatchedBy());
+        $caller = ActorReference::of($command->dispatchedBy());
         $this->assertRetirable($caller, $target);
 
         if ($target->isRetired()) {
@@ -62,7 +62,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
         // Under the lifecycle lock an enrollment of this agent either committed before and ends here, or is refused.
-        $this->inboxes->endForRetirement(ActorIdentity::of($target));
+        $this->inboxes->endForRetirement(ActorReference::of($target));
 
         foreach ($this->cancelPendingOfAgent($target->id) as $account) {
             $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));
@@ -79,9 +79,9 @@ final readonly class RetireAgentHandler implements CommandHandler
     /**
      * Nobody retires itself, whatever its grants; retiring another agent needs the grant, before anything ends.
      */
-    private function assertRetirable(ActorIdentity $caller, Agent $target): void
+    private function assertRetirable(ActorReference $caller, Agent $target): void
     {
-        if ($caller->isSameAs(ActorIdentity::of($target))) {
+        if ($caller->isSameAs(ActorReference::of($target))) {
             throw AgentRetirementDenied::forCaller($caller, $target->id);
         }
 

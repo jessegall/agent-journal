@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Contracts\TaskWaitResolver as TaskWaitResolverContract;
@@ -102,7 +102,7 @@ final readonly class TaskWaitResolver implements TaskWaitResolverContract
             $wait->waived_at === null ? null : CarbonImmutable::parse($wait->waived_at),
             $wait->waived_by_type === null || $wait->waived_by_id === null
                 ? null
-                : ActorIdentity::fromStored($wait->waived_by_type, $wait->waived_by_id),
+                : ActorReference::fromStored($wait->waived_by_type, $wait->waived_by_id),
         );
     }
 }

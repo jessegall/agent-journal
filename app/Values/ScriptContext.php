@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 final readonly class ScriptContext
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public WorkReference $work,
         public ProfileRevisionReference $profile,
         public string $trigger,

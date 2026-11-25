@@ -8,7 +8,7 @@ use App\Enums\Search\ScopeAnswer;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchRequestInvalid;
 use App\Exceptions\SearchWordsInvalid;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Support\Searchable;
 use App\Support\SearchablesRegistry;
@@ -153,7 +153,7 @@ final class SearchRequestTest extends TestCase
 
     private function scopeOf(SearchRequest $request): ScopeResolution
     {
-        $reader = new SearchReader(ActorIdentity::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
+        $reader = new SearchReader(ActorReference::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
 
         return $this->eligibility()->scopeOf($reader, $request);
     }

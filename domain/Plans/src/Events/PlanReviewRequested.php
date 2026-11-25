@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Events;
 
 use App\Contracts\Navigation\ClientUpdate;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Contracts\PlanReviewEvent;
 
 /**
@@ -14,7 +14,7 @@ use Domain\Plans\Contracts\PlanReviewEvent;
 final readonly class PlanReviewRequested implements ClientUpdate, PlanEvent, PlanReviewEvent
 {
     /**
-     * @param  list<ActorIdentity>  $reviewers
+     * @param  list<ActorReference>  $reviewers
      */
     public function __construct(
         public string $planId,

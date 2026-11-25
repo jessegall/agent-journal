@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Links;
 
+use App\Concerns\ProvidesModelRecords;
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorIdentity;
-use App\Support\ReadBuilder;
 use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
-use App\Concerns\ProvidesModelRecords;
+use App\Support\ActorReference;
+use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -60,6 +60,6 @@ final readonly class NoteLinkRecords implements RecordProvider
      */
     protected function mayChange(Model $record): bool
     {
-        return $record->isWrittenBy(ActorIdentity::of($this->actors->actor()));
+        return $record->isWrittenBy(ActorReference::of($this->actors->actor()));
     }
 }

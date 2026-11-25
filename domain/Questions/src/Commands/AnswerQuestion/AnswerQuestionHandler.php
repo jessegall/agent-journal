@@ -7,7 +7,7 @@ namespace Domain\Questions\Commands\AnswerQuestion;
 use App\Contracts\Time\ServerClock;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;
@@ -25,7 +25,7 @@ final readonly class AnswerQuestionHandler extends QuestionCommandHandler
      */
     public function handle(AnswerQuestionCommand $command): void
     {
-        $answerer = ActorIdentity::of($command->dispatchedBy());
+        $answerer = ActorReference::of($command->dispatchedBy());
         $question = Question::findLockedById($command->questionId);
 
         if (! InboxMember::isAttached($question->inbox_id, $answerer)) {

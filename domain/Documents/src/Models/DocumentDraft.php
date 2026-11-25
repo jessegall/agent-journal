@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\MarkdownText;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\DraftView;
@@ -70,7 +70,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
     /**
      * Opens the draft of a locked document for this editor, starting from its current revision.
      */
-    public static function create(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
+    public static function create(Document $document, DocumentRevision $baseRevision, ActorReference $editor): self
     {
         $draft = new self();
         $draft->document_id = $document->id;
@@ -106,7 +106,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
 
     // ----------[ Predicates ]----------
 
-    public function isEditedBy(ActorIdentity $editor): bool
+    public function isEditedBy(ActorReference $editor): bool
     {
         return $this->author_type === $editor->type && $this->author_id === $editor->id;
     }

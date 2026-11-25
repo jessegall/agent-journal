@@ -7,7 +7,7 @@ namespace Domain\Helpers\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -49,7 +49,7 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
     public static function create(
         string $reportId,
         string $ownerReference,
-        ActorIdentity $filer,
+        ActorReference $filer,
         ReportJobDiscrepancyReason $reason,
     ): self {
         $discrepancy = new self();

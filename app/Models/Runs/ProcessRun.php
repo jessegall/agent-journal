@@ -28,7 +28,7 @@ use App\Exceptions\RetryRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Duration;
@@ -146,7 +146,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * A run admitted for the actor, queued with its plan and nothing started yet.
      */
-    public static function create(ActorIdentity $actor, RunAdmission $admission): self
+    public static function create(ActorReference $actor, RunAdmission $admission): self
     {
         $run = new self();
         $run->admission_id = $admission->admissionId;
@@ -252,7 +252,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     private function outlastsAQuickCommand(): bool
     {
         return $this->shown_at === null
-            && ActorIdentity::fromStored($this->actor_type, $this->actor_id)->isAgent()
+            && ActorReference::fromStored($this->actor_type, $this->actor_id)->isAgent()
             && $this->started_at?->addSeconds(self::QUICK_COMMAND_SECOND_LIMIT)->isPast() === true;
     }
 
@@ -323,7 +323,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * Whether the actor is the run's responsible actor or the user its request entitled to the outcome.
      */
-    public function hasOutcomeFor(ActorIdentity $actor): bool
+    public function hasOutcomeFor(ActorReference $actor): bool
     {
         foreach ($this->outcomeAudience() as $member) {
             if ($member->type === $actor->type && $member->id === $actor->id) {
@@ -382,7 +382,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
      * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
      *
-     * @return list<ActorIdentity>
+     * @return list<ActorReference>
      */
     public function outcomeRecipients(RunLogicalResult $result): array
     {
@@ -474,18 +474,18 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * The responsible actor and the entitled user, when the run has them.
      *
-     * @return list<ActorIdentity>
+     * @return list<ActorReference>
      */
     private function outcomeAudience(): array
     {
         $audience = [];
 
         if ($this->responsible_type !== null && $this->responsible_id !== null) {
-            $audience[] = ActorIdentity::fromStored($this->responsible_type, $this->responsible_id);
+            $audience[] = ActorReference::fromStored($this->responsible_type, $this->responsible_id);
         }
 
         if ($audience !== [] && $this->outcome_user_id !== null) {
-            $audience[] = ActorIdentity::ofClass(User::class, $this->outcome_user_id);
+            $audience[] = ActorReference::ofClass(User::class, $this->outcome_user_id);
         }
 
         return $audience;

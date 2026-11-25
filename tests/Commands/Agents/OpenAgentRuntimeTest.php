@@ -34,7 +34,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ArrangementSetting;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
@@ -348,7 +348,7 @@ final class OpenAgentRuntimeTest extends TestCase
         $host = $this->journal->asSystem(
             new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER], $arrangement),
         );
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         [$build, $profile, $model] = $driver === 'codex'
             ? ['0.165.0', 'codex', 'gpt-5.5']
@@ -379,7 +379,7 @@ final class OpenAgentRuntimeTest extends TestCase
      */
     private function activateReviewer(array $requiredSkills): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',

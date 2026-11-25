@@ -6,13 +6,13 @@ namespace App\Support\Readers;
 
 use App\Contracts\Work\WorkProgress as WorkProgressContract;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
 
 final readonly class WorkProgress implements WorkProgressContract
 {
-    public function enteredAt(ActorIdentity $actor, WorkReference $work): CarbonImmutable|null
+    public function enteredAt(ActorReference $actor, WorkReference $work): CarbonImmutable|null
     {
         if (! $actor->isAgent()) {
             return null;

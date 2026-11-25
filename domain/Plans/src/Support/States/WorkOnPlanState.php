@@ -68,12 +68,12 @@ final class WorkOnPlanState extends AgentState
         ]));
     }
 
-    // ----------[ Events ]----------
-
     public function hears(Event $event): bool
     {
         return ! $event instanceof PlanEvent || $event->planId === $this->planId;
     }
+
+    // ----------[ Events ]----------
 
     public function onPlanFinished(PlanFinished $event): void
     {

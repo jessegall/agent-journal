@@ -14,7 +14,7 @@ use App\Models\Agents\AgentSession;
  */
 final readonly class AgentActivity implements AutoAssignmentActivity
 {
-    public function mayTakeWork(ActorIdentity $actor): bool
+    public function mayTakeWork(ActorReference $actor): bool
     {
         $agent = Agent::query()->find($actor->id);
 

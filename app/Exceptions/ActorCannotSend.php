@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use RuntimeException;
 
 /**
@@ -13,7 +13,7 @@ use RuntimeException;
  */
 final class ActorCannotSend extends RuntimeException implements CommandRefusal
 {
-    public static function forIdentity(ActorIdentity $identity): self
+    public static function forIdentity(ActorReference $identity): self
     {
         return new self("{$identity->type} {$identity->id} cannot send messages.");
     }

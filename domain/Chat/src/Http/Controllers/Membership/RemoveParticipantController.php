@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Data\ParticipantInput;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +26,7 @@ final readonly class RemoveParticipantController
         Redirector $redirect,
     ): RedirectResponse {
         $chats->assertManages($input->inboxId);
-        $commands->run(new LeaveInboxCommand($input->inboxId, ActorIdentity::fromText($input->participant)));
+        $commands->run(new LeaveInboxCommand($input->inboxId, ActorReference::fromText($input->participant)));
 
         return $redirect->back(303);
     }

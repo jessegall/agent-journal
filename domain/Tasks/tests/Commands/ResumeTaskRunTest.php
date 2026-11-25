@@ -9,7 +9,7 @@ use App\Contracts\Processes\RunClaims;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
 use App\Support\StartSessions;
@@ -79,7 +79,7 @@ final class ResumeTaskRunTest extends TestCase
 
         $this->assertNull($this->holderOf($run));
         $this->assertSame(1, $this->runAs($worker, new ResumeTaskRunCommand($run->id)));
-        $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($worker->agent()->firstOrFail())));
+        $this->assertTrue($this->holderOf($run)?->isSameAs(ActorReference::of($worker->agent()->firstOrFail())));
     }
 
     public function test_a_resume_under_another_current_task_is_refused_and_changes_nothing(): void
@@ -123,7 +123,7 @@ final class ResumeTaskRunTest extends TestCase
         return $this->app->make(CommandBus::class)->run($command);
     }
 
-    private function holderOf(TaskRun $run): ActorIdentity|null
+    private function holderOf(TaskRun $run): ActorReference|null
     {
         return $this->app->make(RunClaims::class)->holderOf($run->assignmentIdentity())->getOrElse(null);
     }

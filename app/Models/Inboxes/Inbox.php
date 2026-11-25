@@ -15,7 +15,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -138,7 +138,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      *
      * @throws InboxUnavailable
      */
-    public static function findPersonalOf(ActorIdentity $actor): self
+    public static function findPersonalOf(ActorReference $actor): self
     {
         return self::query()->personalTo($actor)->firstOr(InboxUnavailable::throwing()->forActor($actor->id));
     }
@@ -202,7 +202,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function attachedTo(Builder $query, ActorIdentity $actor): void
+    protected function attachedTo(Builder $query, ActorReference $actor): void
     {
         $query->whereIn('id', InboxMember::query()->active()->ofActor($actor)->inboxIds());
     }
@@ -224,7 +224,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function personalTo(Builder $query, ActorIdentity $actor): void
+    protected function personalTo(Builder $query, ActorReference $actor): void
     {
         $query->where('provider_key', self::PERSONAL_PROVIDER)->where('provider_id', $actor->text());
     }

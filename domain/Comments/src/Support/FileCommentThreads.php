@@ -9,8 +9,8 @@ use App\Contracts\Projects\FileComments;
 use App\Data\Connections\FileCommentData;
 use App\Data\Connections\FileThreadData;
 use App\Models\Projects\ProjectFile;
-use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
+use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use Domain\Comments\Contracts\CommentResolver;
@@ -85,8 +85,8 @@ final readonly class FileCommentThreads implements FileComments
         ]);
     }
 
-    private static function authorOf(TextCommentView $comment): ActorIdentity
+    private static function authorOf(TextCommentView $comment): ActorReference
     {
-        return ActorIdentity::fromStored($comment->comment->authorType, $comment->comment->authorId);
+        return ActorReference::fromStored($comment->comment->authorType, $comment->comment->authorId);
     }
 }

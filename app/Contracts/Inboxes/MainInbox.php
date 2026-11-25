@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Inboxes;
 
 use App\Models\Drivers\NavigationRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use PhpOption\Option;
 
 /**
@@ -17,7 +17,7 @@ interface MainInbox
     /**
      * The agent attached to main; none while nobody is.
      *
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public function occupant(): Option;
 
@@ -29,5 +29,5 @@ interface MainInbox
     /**
      * How many open navigation requests main holds, for the agent attached there; none for anyone else.
      */
-    public function openRequestsFor(ActorIdentity $actor): int;
+    public function openRequestsFor(ActorReference $actor): int;
 }

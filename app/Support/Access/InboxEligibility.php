@@ -8,7 +8,7 @@ use App\Contracts\Inboxes\InboxEligibility as InboxEligibilityContract;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Inbox eligibility from environment grants: the owner holds every permission without one, any other user what its
@@ -18,7 +18,7 @@ final readonly class InboxEligibility implements InboxEligibilityContract
 {
     public function __construct(private AccessSettings $settings) {}
 
-    public function lockAdmission(ActorIdentity $user, string|null $environmentId): void
+    public function lockAdmission(ActorReference $user, string|null $environmentId): void
     {
         if (! $user->isUser()) {
             return;
@@ -28,7 +28,7 @@ final readonly class InboxEligibility implements InboxEligibilityContract
         EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->lockForUpdate()->first();
     }
 
-    public function isAdmitted(ActorIdentity $user, string|null $environmentId): bool
+    public function isAdmitted(ActorReference $user, string|null $environmentId): bool
     {
         if (! $this->isActiveUser($user)) {
             return false;
@@ -38,7 +38,7 @@ final readonly class InboxEligibility implements InboxEligibilityContract
             || EnvironmentUserGrant::query()->activeFor($user->id, $environmentId)->exists();
     }
 
-    public function holds(ActorIdentity $user, InboxPermission $permission, string|null $environmentId): bool
+    public function holds(ActorReference $user, InboxPermission $permission, string|null $environmentId): bool
     {
         if (! $this->isActiveUser($user)) {
             return false;
@@ -69,13 +69,13 @@ final readonly class InboxEligibility implements InboxEligibilityContract
             ->all()));
     }
 
-    private function isActiveUser(ActorIdentity $user): bool
+    private function isActiveUser(ActorReference $user): bool
     {
         return $user->isUser()
             && User::query()->whereKey($user->id)->whereNull('disabled_at')->exists();
     }
 
-    private function isOwner(ActorIdentity $user): bool
+    private function isOwner(ActorReference $user): bool
     {
         return $this->settings->ownerId !== null && $user->id === $this->settings->ownerId;
     }

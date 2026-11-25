@@ -30,8 +30,8 @@ final readonly class AskAdmission implements AskAdmissionContract
     public function requireCurrent(AskReference $ask, string $command, int $expectedVersion): AdmittedAsk
     {
         $record = $this->asks->lock($ask);
-        $actor = ActorIdentity::of($this->actors->actor());
-        $holder = AssigneeIdentity::ofActorIdentity($actor);
+        $actor = ActorReference::of($this->actors->actor());
+        $holder = AssigneeIdentity::ofActorReference($actor);
         $assignment = $this->assignments->lockCurrent($record->assignmentIdentity());
 
         if (! $record->open || $record->version !== $expectedVersion

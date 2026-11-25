@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Questions\Events\QuestionAnswerNoticeDelivered;
 use Domain\Questions\Events\QuestionAnswerNoticeWritten;
@@ -51,7 +51,7 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
 
     // ----------[ Constructors ]----------
 
-    public static function create(Question $question, ActorIdentity $recipient): self
+    public static function create(Question $question, ActorReference $recipient): self
     {
         $existing = self::findOfQuestion($question);
 
@@ -126,7 +126,7 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function undeliveredFor(Builder $query, ActorIdentity $recipient): void
+    protected function undeliveredFor(Builder $query, ActorReference $recipient): void
     {
         $query->where(
             'recipient_type',

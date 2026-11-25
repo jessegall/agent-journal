@@ -16,13 +16,13 @@ final readonly class StartReservations implements StartReservationsContract
 {
     public function __construct(private AgentSessions $sessions) {}
 
-    public function reserve(ActorIdentity $agent): void
+    public function reserve(ActorReference $agent): void
     {
         $found = Agent::findWithId($agent->id)->getOrThrow(AgentNotAvailable::forAgent($agent->id));
         $this->sessions->reserveStart($found);
     }
 
-    public function hasRetired(ActorIdentity $agent): bool
+    public function hasRetired(ActorReference $agent): bool
     {
         return Agent::findWithId($agent->id)->map(fn (Agent $found) => $found->isRetired())->getOrElse(true);
     }

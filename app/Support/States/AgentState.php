@@ -69,6 +69,15 @@ abstract class AgentState implements HookAnswerer
         return None::create();
     }
 
+    /**
+     * Whether the state hears the event, asked before its listener for it is called; a state that follows one subject
+     * answers no for the events of any other, so its listeners need no check of their own.
+     */
+    public function hears(Event $event): bool
+    {
+        return true;
+    }
+
     // ----------[ Lifecycle ]----------
 
     /**
@@ -184,16 +193,5 @@ abstract class AgentState implements HookAnswerer
     public function onSessionEnd(SessionEnded $input)
     {
         return Decision::delegate();
-    }
-
-    // ----------[ Events ]----------
-
-    /**
-     * Whether the state hears the event, asked before its listener for it is called; a state that follows one subject
-     * answers no for the events of any other, so its listeners need no check of their own.
-     */
-    public function hears(Event $event): bool
-    {
-        return true;
     }
 }

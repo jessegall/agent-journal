@@ -9,7 +9,7 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\SubmissionKeyConflict;
 use App\Exceptions\TargetHasNoText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;
@@ -33,7 +33,7 @@ final readonly class CommentWriter
         string $text,
         WholeRecord|TextRange $subject,
         string $submissionKey,
-        ActorIdentity $actor,
+        ActorReference $actor,
     ): string {
         $target = $this->records->requireReadable($targetIdentity);
 
@@ -42,7 +42,7 @@ final readonly class CommentWriter
         }
 
         $body = MarkdownText::comment($text);
-        $author = ActorIdentity::of($actor);
+        $author = ActorReference::of($actor);
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $submissionKey)->first();
 

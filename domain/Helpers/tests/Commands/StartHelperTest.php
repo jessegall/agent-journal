@@ -21,7 +21,7 @@ use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
@@ -225,7 +225,7 @@ final class StartHelperTest extends TestCase
         $competing = $databases->connection('competing');
 
         $databases->connection()->transaction(function () use ($helper, $competing) {
-            $this->app->make(StartReservations::class)->reserve(ActorIdentity::of($helper));
+            $this->app->make(StartReservations::class)->reserve(ActorReference::of($helper));
 
             $taken = $competing->transaction(fn () => $competing->selectOne(
                 'select pg_try_advisory_xact_lock(?, hashtext(?)) as taken',

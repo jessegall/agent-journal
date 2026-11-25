@@ -13,7 +13,7 @@ use App\Data\Asks\AskInbox;
 use App\Enums\Asks\AskResult;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AskRecords as VisibleAsks;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
@@ -70,8 +70,8 @@ final readonly class AskReader implements AskReaderContract
             return [];
         }
 
-        $actor = ActorIdentity::of($this->actors->actor());
-        $holder = AssigneeIdentity::ofActorIdentity($actor);
+        $actor = ActorReference::of($this->actors->actor());
+        $holder = AssigneeIdentity::ofActorReference($actor);
         $records = array_map(fn (Ask $ask) => $ask->assignmentIdentity(), $asks);
         $assignments = $this->assignments->assignmentsFor($records);
         $replies = AskHop::resolveRepliesTo(array_map(fn (Ask $ask) => $ask->id, $asks));

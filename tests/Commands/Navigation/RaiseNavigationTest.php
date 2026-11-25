@@ -23,7 +23,7 @@ use App\Models\Drivers\MenuEntry;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Inboxes\Inbox;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\EnrolledHost;
 use App\Support\MainInboxTakeover;
@@ -147,9 +147,9 @@ final class RaiseNavigationTest extends TestCase
         $this->assertCount(3, $keys);
         $this->assertSame($keys[0], $keys[1]);
         $this->assertNotSame($keys[0], $keys[2]);
-        $this->assertTrue($this->attention->wakes[0][0]->isSameAs(ActorIdentity::of($main)));
+        $this->assertTrue($this->attention->wakes[0][0]->isSameAs(ActorReference::of($main)));
         $pending = $this->app->make(PendingWorkSources::class);
-        $this->assertTrue($this->inTransaction(fn () => $pending->hasWorkFor(ActorIdentity::of($main))));
+        $this->assertTrue($this->inTransaction(fn () => $pending->hasWorkFor(ActorReference::of($main))));
     }
 
     public function test_the_main_agents_own_runtime_is_held_for_the_user(): void
@@ -514,7 +514,7 @@ final class RaiseNavigationTest extends TestCase
 
     private function seat(Agent $agent): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $this->inTransaction(fn () => $this->app->make(MainInboxTakeover::class)->takeOver($agent));
     }
 
@@ -589,7 +589,7 @@ final class RaiseNavigationTest extends TestCase
     {
         $screen = new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7);
         $uncertainty = new NavigationUncertainty(NavigationReason::LabelMissing, 2, self::FINGERPRINT, $screen);
-        $owner = ActorIdentity::ofClass(User::class, 'owner');
+        $owner = ActorReference::ofClass(User::class, 'owner');
 
         return NavigationRequest::create($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
     }

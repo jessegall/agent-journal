@@ -17,7 +17,7 @@ use App\Enums\Assignments\AutoAssignmentClaimType;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\EngineAccessRefused;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
@@ -56,7 +56,7 @@ final class ClaimAutoAssignmentTest extends TestCase
 
         $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
         $this->worker = $this->journal->testStartCalled('Worker');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->key = new AutoAssignmentKey(ActorReference::of($this->worker->agent), TaskType::linkType());
         $this->journal->actAs('Owner');
     }
 
@@ -88,7 +88,7 @@ final class ClaimAutoAssignmentTest extends TestCase
     {
         $this->assertSame(AutoAssignmentClaimType::Off, $this->claim($this->key)->type);
         $this->journal->actAs('Owner');
-        $inactive = ActorIdentity::of($this->journal->idleAgent('Inactive', 'writing-helper')->agentCalled('Inactive'));
+        $inactive = ActorReference::of($this->journal->idleAgent('Inactive', 'writing-helper')->agentCalled('Inactive'));
         $key = new AutoAssignmentKey($inactive, $this->key->assignableType);
         $this->enable($key);
         $this->enable($this->key);

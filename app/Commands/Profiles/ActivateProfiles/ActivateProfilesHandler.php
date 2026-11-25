@@ -16,7 +16,7 @@ use App\Exceptions\ProfilePolicyRefused;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileDraft;
 use App\Models\Profiles\ProfileRevision;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ContainerAdmission;
 use App\Support\PolicyResolver;
 use App\Support\ProfileProposal;
@@ -63,7 +63,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     public function activate(
         ProfileProposal $proposal,
-        ActorIdentity $actor,
+        ActorReference $actor,
         DraftExpectations $expected = new DraftExpectations(),
     ): ProfileActivation {
         $hash = hash('sha256', json_encode($proposal, JSON_THROW_ON_ERROR));
@@ -90,7 +90,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         );
 
         $changes = array_map($this->changeOf(...), $definitions);
-        $author = ActorIdentity::of($actor);
+        $author = ActorReference::of($actor);
         $current = ProfileRevision::resolveCurrentSources($keys);
 
         $compiled = array_map(
@@ -144,7 +144,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     private function publish(
         ProfileDefinition $definition,
-        ActorIdentity $author,
+        ActorReference $author,
         ProfileChangeType $change,
         ScriptDiff $diff,
         CompiledScript $script,
@@ -187,7 +187,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     private function activateDefinition(
         ProfileDefinition $definition,
-        ActorIdentity $author,
+        ActorReference $author,
         ScriptSource $source = new ScriptSource(''),
         CompiledScript|null $compiled = null,
     ): ProfileRevision {

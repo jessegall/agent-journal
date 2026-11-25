@@ -8,7 +8,7 @@ use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Data\ParticipantInput;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
@@ -31,8 +31,8 @@ final readonly class TransferChatController
 
         $commands->run(new HandOverInboxCommand(
             $input->inboxId,
-            ActorIdentity::of($actors->actor()),
-            ActorIdentity::fromText($input->participant),
+            ActorReference::of($actors->actor()),
+            ActorReference::fromText($input->participant),
         ));
 
         return $redirect->back(303);

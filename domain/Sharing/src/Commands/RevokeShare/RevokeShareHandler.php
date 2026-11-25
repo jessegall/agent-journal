@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\RevokeShare;
 
 use App\Contracts\Sharing\SharePolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Support\ShareEndings;
@@ -23,7 +23,7 @@ final readonly class RevokeShareHandler extends SharingCommandHandler
         $owner = $command->dispatchedBy();
         $this->policy->assertManager($owner);
         $share = Share::ownForUpdate($command->shareId);
-        $this->endings->revoke($share, ActorIdentity::of($owner));
+        $this->endings->revoke($share, ActorReference::of($owner));
 
         return $share->summary;
     }

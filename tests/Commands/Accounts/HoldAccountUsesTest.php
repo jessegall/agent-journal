@@ -11,7 +11,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\OwnerAuthority;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -91,7 +91,7 @@ final class HoldAccountUsesTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }
@@ -99,7 +99,7 @@ final class HoldAccountUsesTest extends TestCase
     private function actAsAgent(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($this->agent->id),
+            ActorReference::forAgent($this->agent->id),
             TestStartAuthority::forAgent($this->agent->id),
         );
     }

@@ -49,7 +49,7 @@ final readonly class TerminalControls
      */
     public function take(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $readInterestId,
         string $takeId,
         CarbonImmutable $now,
@@ -95,7 +95,7 @@ final readonly class TerminalControls
      * @throws TerminalControlRefused
      * @throws TerminalViewRefused
      */
-    public function cancel(string $agentId, ActorIdentity $writer, string $takeId): string
+    public function cancel(string $agentId, ActorReference $writer, string $takeId): string
     {
         $runtime = $this->lockedRuntime($agentId);
         $grant = $this->takeOf($writer, $takeId);
@@ -115,7 +115,7 @@ final readonly class TerminalControls
      */
     public function renew(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         CarbonImmutable $now,
     ): string {
@@ -139,7 +139,7 @@ final readonly class TerminalControls
      */
     public function release(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
     ): string {
         $runtime = $this->lockedRuntime($agentId);
@@ -164,7 +164,7 @@ final readonly class TerminalControls
      */
     public function input(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         TerminalInput $input,
         CarbonImmutable $now,
@@ -200,7 +200,7 @@ final readonly class TerminalControls
      */
     public function choose(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         TerminalDraftChoice $choice,
         int $sequence,
@@ -227,7 +227,7 @@ final readonly class TerminalControls
      */
     public function openPrivate(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         int $sequence,
         CarbonImmutable $now,
@@ -253,7 +253,7 @@ final readonly class TerminalControls
      */
     public function submitPrivate(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         PrivateSubmission $submission,
         CarbonImmutable $now,
@@ -288,7 +288,7 @@ final readonly class TerminalControls
      */
     public function cancelPrivate(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         CarbonImmutable $now,
     ): string {
@@ -309,7 +309,7 @@ final readonly class TerminalControls
      */
     public function check(
         string $agentId,
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $grantId,
         CarbonImmutable $now,
     ): string {
@@ -326,7 +326,7 @@ final readonly class TerminalControls
      * @throws TerminalControlRefused
      */
     public function receipt(
-        ActorIdentity $writer,
+        ActorReference $writer,
         string $takeId,
         int $sequence,
         CarbonImmutable $now,
@@ -372,7 +372,7 @@ final readonly class TerminalControls
      * Retires every grant the viewer holds on the agent, as when they may no longer inspect it, and fences each at
      * its host.
      */
-    public function revokeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
+    public function revokeAllFor(string $agentId, ActorReference $viewer, CarbonImmutable $now): void
     {
         $grants = TerminalGrant::query()->withRuntimeSession()->ownedBy($viewer)->ofAgent($agentId)
             ->get()->filter(fn (TerminalGrant $grant) => $grant->holdsAt($now));
@@ -391,7 +391,7 @@ final readonly class TerminalControls
      * @throws TerminalControlRefused
      * @throws TerminalViewRefused
      */
-    private function writingGrant(string $agentId, ActorIdentity $writer, string $grantId, CarbonImmutable $now): array
+    private function writingGrant(string $agentId, ActorReference $writer, string $grantId, CarbonImmutable $now): array
     {
         $this->assertMayControl();
         $runtime = $this->lockedRuntime($agentId);
@@ -410,7 +410,7 @@ final readonly class TerminalControls
     /**
      * @throws TerminalControlRefused
      */
-    private function grantOf(ActorIdentity $writer, string $grantId): TerminalGrant
+    private function grantOf(ActorReference $writer, string $grantId): TerminalGrant
     {
         $grant = TerminalGrant::query()->ownedBy($writer)->withGrantId($grantId)->first();
 
@@ -460,7 +460,7 @@ final readonly class TerminalControls
     /**
      * @throws TerminalControlRefused
      */
-    private function takeOf(ActorIdentity $writer, string $takeId): TerminalGrant
+    private function takeOf(ActorReference $writer, string $takeId): TerminalGrant
     {
         $grant = TerminalGrant::query()->ownedBy($writer)->ofTake($takeId)->first();
 
@@ -518,7 +518,7 @@ final readonly class TerminalControls
     /**
      * The writer's control of one grant row as it stands now, as a control command left it.
      */
-    public function answerFor(ActorIdentity $writer, string $grantRowId, CarbonImmutable $now): TerminalControlData
+    public function answerFor(ActorReference $writer, string $grantRowId, CarbonImmutable $now): TerminalControlData
     {
         $terminalGrant = TerminalGrant::query()->ownedBy($writer)->whereKey($grantRowId)->sole();
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Inboxes\HandOverInbox;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 
 /**
@@ -14,5 +14,5 @@ use App\Support\Command;
  */
 final readonly class HandOverInboxCommand extends Command
 {
-    public function __construct(public string $inboxId, public ActorIdentity $from, public ActorIdentity $to) {}
+    public function __construct(public string $inboxId, public ActorReference $from, public ActorReference $to) {}
 }

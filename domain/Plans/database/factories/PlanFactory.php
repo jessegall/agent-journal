@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Database\Factories;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -28,7 +28,7 @@ class PlanFactory extends Factory
      */
     public function definition(): array
     {
-        $creator = ActorIdentity::system();
+        $creator = ActorReference::system();
 
         return [
             'title' => fake()->sentence(4),

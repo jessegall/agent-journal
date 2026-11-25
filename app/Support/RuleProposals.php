@@ -23,7 +23,7 @@ final readonly class RuleProposals
      */
     public function open(
         string $projectKey,
-        ActorIdentity $author,
+        ActorReference $author,
         string $requestId,
         ProposedRule $proposed,
         CommandRequest|null $answers,
@@ -46,7 +46,7 @@ final readonly class RuleProposals
         RuleProposal $proposal,
         int $expectedRevision,
         ProposedRule $proposed,
-        ActorIdentity $author,
+        ActorReference $author,
     ): RuleProposalRevision {
         $proposal->assertRevisableAt($expectedRevision, $author);
 
@@ -56,7 +56,7 @@ final readonly class RuleProposals
     /**
      * @throws RuleProposalRefused
      */
-    private function record(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
+    private function record(RuleProposal $proposal, ProposedRule $proposed, ActorReference $author): RuleProposalRevision
     {
         $proposal->assertAcceptsRevision();
         $revision = RuleProposalRevision::create($proposal, $proposed, $author);

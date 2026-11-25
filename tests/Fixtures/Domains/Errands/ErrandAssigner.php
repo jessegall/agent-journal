@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Support\ActorIdentity;
 use App\Contracts\Assignments\AssignmentPool;
 use App\Contracts\Assignments\AutoAssigner;
+use App\Support\ActorReference;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 
@@ -15,7 +15,7 @@ use App\Support\RecordIdentity;
  */
 final class ErrandAssigner implements AutoAssigner
 {
-    public function pick(ActorIdentity $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
+    public function pick(ActorReference $assignee, AssignmentPool $pool, int $room): OrderedRecordIds
     {
         return new OrderedRecordIds([]);
     }

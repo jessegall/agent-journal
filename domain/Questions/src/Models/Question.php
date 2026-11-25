@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Events\QuestionAnswered;
@@ -74,8 +74,8 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      */
     public static function create(
         string $inboxId,
-        ActorIdentity $sender,
-        ActorIdentity $target,
+        ActorReference $sender,
+        ActorReference $target,
         string $text,
         QuestionType $type,
         array $options,
@@ -103,7 +103,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      *
      * @throws QuestionRefused
      */
-    public function answer(ActorIdentity $answerer, string $answer, CarbonImmutable $at): void
+    public function answer(ActorReference $answerer, string $answer, CarbonImmutable $at): void
     {
         $this->assertAnswerable($answerer, $answer);
 
@@ -123,7 +123,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
     // ----------[ Transformers ]----------
 
-    public function author(): ActorIdentity
+    public function author(): ActorReference
     {
         return $this->sender;
     }
@@ -172,19 +172,19 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     }
 
     /**
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function sender(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->sender_type, $this->sender_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->sender_type, $this->sender_id));
     }
 
     /**
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function target(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->target_type, $this->target_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->target_type, $this->target_id));
     }
 
     // ----------[ Asserts ]----------
@@ -194,7 +194,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      *
      * @throws QuestionRefused
      */
-    private function assertAnswerable(ActorIdentity $answerer, string $answer): void
+    private function assertAnswerable(ActorReference $answerer, string $answer): void
     {
         if (! $this->target->isSameAs($answerer)) {
             throw QuestionRefused::notTheTarget($this->id);

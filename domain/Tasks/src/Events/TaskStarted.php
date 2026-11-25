@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Events;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Enums\TaskStatus;
 
@@ -19,7 +19,7 @@ final readonly class TaskStarted implements TaskEvent, TaskStateEvent
 {
     public function __construct(
         public string $taskId,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public TaskStatus $previousState,
         public string $historyEntryId,
     ) {}

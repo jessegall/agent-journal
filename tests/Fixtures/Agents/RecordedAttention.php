@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Agents;
 
 use App\Contracts\Actors\ActorAttention;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AttentionOrigin;
 use App\Support\AttentionOutcome;
 
@@ -15,11 +15,11 @@ use App\Support\AttentionOutcome;
 final class RecordedAttention implements ActorAttention
 {
     /**
-     * @var list<array{ActorIdentity, string}>
+     * @var list<array{ActorReference, string}>
      */
     public array $wakes = [];
 
-    public function request(ActorIdentity $actor, AttentionOrigin $origin): AttentionOutcome
+    public function request(ActorReference $actor, AttentionOrigin $origin): AttentionOutcome
     {
         $this->wakes[] = [$actor, $origin->keyFor($actor)];
 

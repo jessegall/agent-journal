@@ -19,7 +19,7 @@ final readonly class KeepMessagesAndWake implements Pipe
 
     public function handle(WalkedCall $walked): WalkedCall
     {
-        $agent = $walked->call->target->actorIdentity();
+        $agent = $walked->call->target->actorReference();
         $origin = AttentionOrigin::agentMessages($walked->call->input->identity()->hookId);
 
         PendingAgentMessage::createMany($agent, $origin, $walked->answer->messages);

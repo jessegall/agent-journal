@@ -8,7 +8,7 @@ use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
 use App\Enums\Terminals\StepStatus;
 use App\Models\Profiles\ProfileRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ObjectReader;
 use App\Values\CommitObservation;
 use App\Values\ProfileKey;
@@ -62,7 +62,7 @@ final class NotifyWorkspaceReadTest extends TestCase
         $start = $this->journal->signedStart('Test agent', 'writing-helper');
 
         return new ScriptContext(
-            ActorIdentity::of($start->agent),
+            ActorReference::of($start->agent),
             WorkReference::free('ask'),
             new ProfileRevisionReference(ProfileKey::from('journal-worker'), 1),
             'trigger-1',

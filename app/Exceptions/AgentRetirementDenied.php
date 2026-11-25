@@ -8,14 +8,14 @@ use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use RuntimeException;
 
 final class AgentRetirementDenied extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
-    public static function forCaller(ActorIdentity $caller, string $agentId): self
+    public static function forCaller(ActorReference $caller, string $agentId): self
     {
         return new self(
             sprintf(

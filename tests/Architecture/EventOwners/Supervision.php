@@ -12,7 +12,7 @@ use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
 use App\Events\SupervisorLinks\SupervisorLinkChanged;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -26,7 +26,7 @@ return [
         'owner' => 'AskHop::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AskHopAssigned('ask', 'hop', 'merge.ready', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new AskHopAssigned('ask', 'hop', 'merge.ready', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     AskClosed::class => [
         'role' => EventRole::RowFact,

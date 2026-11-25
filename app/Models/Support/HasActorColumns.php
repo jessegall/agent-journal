@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -19,7 +19,7 @@ trait HasActorColumns
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function byActor(Builder $query, ActorIdentity $actor): void
+    protected function byActor(Builder $query, ActorReference $actor): void
     {
         $type = $query->qualifyColumn('actor_type');
         $id = $query->qualifyColumn('actor_id');
@@ -30,17 +30,17 @@ trait HasActorColumns
     /**
      * The actor the row names, read from its stored columns whether or not the model casts them.
      */
-    public function actor(): ActorIdentity
+    public function actor(): ActorReference
     {
         $columns = $this->getAttributes();
 
-        return ActorIdentity::fromStored((string) $columns['actor_type'], (string) $columns['actor_id']);
+        return ActorReference::fromStored((string) $columns['actor_type'], (string) $columns['actor_id']);
     }
 
     /**
      * Whether the row names this actor.
      */
-    public function isByActor(ActorIdentity $actor): bool
+    public function isByActor(ActorReference $actor): bool
     {
         return $this->actor()->isSameAs($actor);
     }

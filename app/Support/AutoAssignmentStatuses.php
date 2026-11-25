@@ -80,7 +80,7 @@ final readonly class AutoAssignmentStatuses
             return $this->status($fact, AutoAssignmentStatus::TooLarge, $pool, None::create());
         }
 
-        $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorIdentity($actor));
+        $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorReference($actor));
         $room = min($fact->size, max(0, $this->room->available($fact, $held)));
 
         $totals = $this->access->mayReadTotals($this->actors->actor(), $actor)

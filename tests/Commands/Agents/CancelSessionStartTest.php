@@ -15,7 +15,7 @@ use App\Enums\Sessions\StartReadiness;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentWakes;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
@@ -98,7 +98,7 @@ final class CancelSessionStartTest extends TestCase
         $record = SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::system(),
+            ActorReference::system(),
             None::create(),
         );
         $record->startedAs($session);

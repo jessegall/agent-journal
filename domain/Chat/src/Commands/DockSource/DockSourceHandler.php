@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\DockSource;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Enums\DockOutcome;
@@ -35,7 +35,7 @@ final readonly class DockSourceHandler extends ChatCommandHandler
             $inbox,
             $source,
             $command->presentation,
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
         );
 
         return DockResult::of(DockOutcome::Added, $placement->id);

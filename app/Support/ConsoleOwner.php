@@ -25,7 +25,7 @@ final readonly class ConsoleOwner
     /**
      * @throws ConsoleOwnerMissing
      */
-    public function actAsOwner(): ActorIdentity
+    public function actAsOwner(): ActorReference
     {
         $owner = $this->admission->owner();
         $this->actors->set($owner, new OwnerAuthority('the console'));

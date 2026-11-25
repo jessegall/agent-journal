@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\EditPlan\EditPlanCommand;
@@ -203,7 +203,7 @@ final class RequestPlanReviewTest extends TestCase
         return $this->journal->fixtures(PlanFixtures::class)->plan('Release')->planCalled('Release');
     }
 
-    private function owner(): ActorIdentity
+    private function owner(): ActorReference
     {
         return $this->journal->actorCalled('Owner');
     }

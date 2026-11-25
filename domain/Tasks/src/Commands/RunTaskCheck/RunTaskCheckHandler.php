@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\RunTaskCheck;
 
 use App\Contracts\Processes\ProcessRunCallers;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
@@ -33,10 +33,10 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
             throw TaskRunOfAnotherActor::forRun($task->number, $command->runNumber);
         }
 
-        $caller = ActorIdentity::of($command->dispatchedBy());
+        $caller = ActorReference::of($command->dispatchedBy());
 
         $isOpener = $this->callers->callerOf($command->processRunId)
-            ->filter(fn (ActorIdentity $opener) => $opener->isSameAs($caller))
+            ->filter(fn (ActorReference $opener) => $opener->isSameAs($caller))
             ->isDefined();
 
         if (! $isOpener) {

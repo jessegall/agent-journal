@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\DockDefinition;
 use Carbon\CarbonImmutable;
@@ -65,7 +65,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         Inbox $inbox,
         DockIdentity $source,
         string $presentation,
-        ActorIdentity $assignedBy,
+        ActorReference $assignedBy,
     ): self {
         $placement = new self();
         $placement->inbox_id = $inbox->id;

@@ -52,7 +52,7 @@ final readonly class EvidenceRuns
     public function issue(
         string $line,
         string $workingFolder,
-        ActorIdentity $runner,
+        ActorReference $runner,
         PermitLimits $limits,
     ): EvidencePermit {
         $permitted = $this->permitted($line, $workingFolder, $runner, []);
@@ -87,7 +87,7 @@ final readonly class EvidenceRuns
      *
      * @throws EvidencePermitRefused
      */
-    public function start(EvidencePermit $permit, ActorIdentity $runner, string $requestId): ProcessRun
+    public function start(EvidencePermit $permit, ActorReference $runner, string $requestId): ProcessRun
     {
         $classification = $this->classify(
             $permit->source_line,
@@ -148,7 +148,7 @@ final readonly class EvidenceRuns
     private function checkedClassification(
         string $line,
         string $workingFolder,
-        ActorIdentity $runner,
+        ActorReference $runner,
         array $candidates,
     ): Classification {
         $classification = $this->classify($line, $workingFolder, $candidates);
@@ -176,7 +176,7 @@ final readonly class EvidenceRuns
     private function permitted(
         string $line,
         string $workingFolder,
-        ActorIdentity $runner,
+        ActorReference $runner,
         array $candidates,
     ): PermittedLine {
         $classification = $this->checkedClassification($line, $workingFolder, $runner, $candidates);

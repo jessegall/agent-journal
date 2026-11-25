@@ -8,8 +8,8 @@ use App\Contracts\Messages\MessageSender;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
 use App\Support\ActorProvisioning;
+use App\Support\ActorReference;
 use App\Support\InboxReceiver;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
@@ -25,7 +25,7 @@ final readonly class FixtureInboxes
     /**
      * The actor's own inbox, made and joined the first time it is asked for.
      */
-    public function personal(ActorIdentity $actor): Inbox
+    public function personal(ActorReference $actor): Inbox
     {
         $inbox = Inbox::query()->personalTo($actor)->first();
 
@@ -41,7 +41,7 @@ final readonly class FixtureInboxes
     /**
      * An inbox of the provider the two actors share, both attached, with the personal inbox of each made too.
      */
-    public function shared(ActorIdentity $first, ActorIdentity $second, string $provider = Inbox::NAMED_PROVIDER): Inbox
+    public function shared(ActorReference $first, ActorReference $second, string $provider = Inbox::NAMED_PROVIDER): Inbox
     {
         $this->personal($first);
         $this->personal($second);
@@ -67,7 +67,7 @@ final readonly class FixtureInboxes
     /**
      * The two actors in the order a shared inbox keys them, whichever comes first.
      */
-    public static function pairKey(ActorIdentity $first, ActorIdentity $second): string
+    public static function pairKey(ActorReference $first, ActorReference $second): string
     {
         $members = [$first->text(), $second->text()];
         sort($members);

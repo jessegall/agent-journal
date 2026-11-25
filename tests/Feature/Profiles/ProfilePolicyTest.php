@@ -18,7 +18,7 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ProfilePolicyRefused;
 use App\Exceptions\ProfileProposalRefused;
 use App\Models\Profiles\ProfileRevisionHold;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProfileProposal;
 use App\Values\Operation;
 use App\Values\ProfileActivation;
@@ -141,7 +141,7 @@ final class ProfilePolicyTest extends TestCase
     public function test_an_agent_cannot_activate(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent(TestIds::of(9)),
+            ActorReference::forAgent(TestIds::of(9)),
             TestStartAuthority::forAgent(TestIds::of(9)),
         );
 

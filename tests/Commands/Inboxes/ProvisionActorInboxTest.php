@@ -9,7 +9,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ final class ProvisionActorInboxTest extends TestCase
 
     public function test_the_actor_gets_its_personal_inbox_as_its_member(): void
     {
-        $actor = ActorIdentity::of(User::factory()->create(['name' => 'Ada']));
+        $actor = ActorReference::of(User::factory()->create(['name' => 'Ada']));
 
         $this->journal->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new ProvisionActorInboxCommand($actor, 'Ada'));
 

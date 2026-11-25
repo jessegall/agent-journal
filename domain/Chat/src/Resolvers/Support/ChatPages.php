@@ -15,7 +15,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Messages\MessageReadEntry;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentDrivers;
 use App\Support\AgentOption;
 use App\Support\Cards\DockIdentity;
@@ -55,7 +55,7 @@ final readonly class ChatPages
 
     public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
     {
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
 
         $members = [
             ...InboxMember::resolveAttachedTo([$inbox->id], User::class),
@@ -74,7 +74,7 @@ final readonly class ChatPages
             'sessionId' => $agent?->sessionId,
             'sessionGeneration' => $agent === null ? 0 : $agent->sessionGeneration,
             'viewer' => $viewer->text(),
-            'participants' => array_map(fn (ActorIdentity $member) => ParticipantData::from([
+            'participants' => array_map(fn (ActorReference $member) => ParticipantData::from([
                 'actor' => $member->text(),
                 'label' => $names->nameOf($member) ?? $member->text(),
                 'driver' => $drivers[$member->text()] ?? null,
@@ -140,7 +140,7 @@ final readonly class ChatPages
             ->mapWithKeys(fn (ChatMessage $row) => [$row->id => new DockIdentity($row->source_type, $row->source_id)])
             ->all());
 
-        $viewer = ActorIdentity::of($this->actors->actor());
+        $viewer = ActorReference::of($this->actors->actor());
         $readIds = $this->readIdsAmong($rows);
         $questions = $this->questionsAmong($rows);
         $rows->loadMorph('source', [Message::class => ['target']]);
@@ -173,7 +173,7 @@ final readonly class ChatPages
      * @param  array<string, ShownQuestion>  $questions
      * @return array<string, MessageEntryData|QuestionEntryData>
      */
-    private function sourceFieldsOf(ChatMessage $row, ActorIdentity $viewer, array $readIds, array $questions): array
+    private function sourceFieldsOf(ChatMessage $row, ActorReference $viewer, array $readIds, array $questions): array
     {
         if ($row->type === ChatMessageType::Question) {
             return ['question' => $this->questionEntryOf($questions[$row->source_id], $viewer)];
@@ -198,9 +198,9 @@ final readonly class ChatPages
     /**
      * A question's card: only its target may answer it, and only while it has no answer.
      */
-    private function questionEntryOf(ShownQuestion $question, ActorIdentity $viewer): QuestionEntryData
+    private function questionEntryOf(ShownQuestion $question, ActorReference $viewer): QuestionEntryData
     {
-        $target = ActorIdentity::fromStored($question->targetType, $question->targetId);
+        $target = ActorReference::fromStored($question->targetType, $question->targetId);
 
         return QuestionEntryData::from([
             'id' => $question->id,
@@ -255,7 +255,7 @@ final readonly class ChatPages
     /**
      * A group chat's members may be managed by a viewer holding the permission; a pair chat stays as it is.
      */
-    private function capabilitiesOf(ActorIdentity $viewer, Inbox $inbox, int $memberCount): ChatCapabilitiesData
+    private function capabilitiesOf(ActorReference $viewer, Inbox $inbox, int $memberCount): ChatCapabilitiesData
     {
         $isGroup = $inbox->provider_key === PairChats::GROUP_PROVIDER;
         $manages = $isGroup && $this->eligibility->holds($viewer, InboxPermission::ManageMembers, null);

@@ -8,7 +8,7 @@ use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Api\ReassignPlanWorkPayload;
 use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
@@ -42,8 +42,8 @@ final class ReassignPlanWorkCommand extends Command
                 'rootId' => (string) $this->argument('id'),
                 'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),
                 'assignmentId' => (string) $this->option('assignment'),
-                ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'),
-                ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
+                ...ActorReference::fromText((string) $this->option('holder'))->asFields('holder'),
+                ...ActorReference::fromText((string) $this->option('to'))->asFields('recipient'),
                 'requestKey' => $this->requestKey(),
             ]);
         } catch (InvalidActorText $invalid) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Commands;
 
 use App\Exceptions\CommandInputInvalid;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
@@ -68,7 +68,7 @@ final class SaveMemoryTest extends TestCase
 
         $this->assertSame(
             $memoryId,
-            Memory::query()->ownedBy(ActorIdentity::of($this->journal->agentCalled('Keeper')))->sole()->id,
+            Memory::query()->ownedBy(ActorReference::of($this->journal->agentCalled('Keeper')))->sole()->id,
         );
     }
 
@@ -129,7 +129,7 @@ final class SaveMemoryTest extends TestCase
             '--json' => true,
         ])->assertExitCode(0);
 
-        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
+        $memory = Memory::query()->ownedBy(ActorReference::of($this->owner->agent))->sole();
 
         $this->assertSame([
             'Run migrate:fresh after a create-migration edit.',
@@ -152,7 +152,7 @@ final class SaveMemoryTest extends TestCase
 
         $this->journal->relayAgentCommands($this->owner);
         $this->artisan('memory:save', ['text' => self::MEMORY_TEXT])->assertExitCode(0);
-        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
+        $memory = Memory::query()->ownedBy(ActorReference::of($this->owner->agent))->sole();
 
         $ofAnotherActor = "Memory {$memory->id} does not exist or is not available to you.";
         $edit = ['memory_id' => $memory->id, 'revision' => 1, 'text' => 'Taken.', 'weight' => null];

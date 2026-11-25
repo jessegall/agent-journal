@@ -48,6 +48,11 @@ final class AwaitSkillsState extends AgentState
         return new Some($this->reason());
     }
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof SkillPublicationEvent || $event->publicationId === $this->publicationId;
+    }
+
     // ----------[ Hooks ]----------
 
     public function onShellCommand(ShellCommandRequested $input): Decision
@@ -65,11 +70,6 @@ final class AwaitSkillsState extends AgentState
     }
 
     // ----------[ Events ]----------
-
-    public function hears(Event $event): bool
-    {
-        return ! $event instanceof SkillPublicationEvent || $event->publicationId === $this->publicationId;
-    }
 
     public function onSkillPublicationMoved(SkillPublicationMoved $event): void
     {

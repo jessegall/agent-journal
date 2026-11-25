@@ -6,7 +6,7 @@ namespace App\Contracts\Admission;
 
 use App\Contracts\Actors\Actor;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Who may join the journal, and the owner it admits for work no one signed in for. Core owns it; Access fills it.
@@ -23,5 +23,5 @@ interface JournalAdmission
      *
      * @throws ConsoleOwnerMissing
      */
-    public function owner(): ActorIdentity;
+    public function owner(): ActorReference;
 }

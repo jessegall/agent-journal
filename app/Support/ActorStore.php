@@ -25,11 +25,11 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
     /**
      * The acting actor with the source of its authority, installed and cleared together; empty when none acts.
      *
-     * @var list<array{ActorIdentity, AuthoritySource}>
+     * @var list<array{ActorReference, AuthoritySource}>
      */
     private array $installed = [];
 
-    public function actor(): ActorIdentity
+    public function actor(): ActorReference
     {
         return $this->current()[0];
     }
@@ -47,7 +47,7 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
     public function set(Actor $actor, AuthoritySource $authority): void
     {
         $this->installed = [[
-            ActorIdentity::of($actor),
+            ActorReference::of($actor),
             $authority,
         ]];
     }
@@ -69,7 +69,7 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
      */
     public function actAsSystem(string $entry, Closure $work): mixed
     {
-        return $this->within(ActorIdentity::of(new SystemActor()), new TrustedEntryAuthority($entry), $work);
+        return $this->within(ActorReference::of(new SystemActor()), new TrustedEntryAuthority($entry), $work);
     }
 
     /**
@@ -78,7 +78,7 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
      * @param  Closure(): TResult  $work
      * @return TResult
      */
-    public function within(ActorIdentity $actor, AuthoritySource $authority, Closure $work): mixed
+    public function within(ActorReference $actor, AuthoritySource $authority, Closure $work): mixed
     {
         $before = $this->installed;
         $this->set($actor, $authority);
@@ -91,7 +91,7 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
     }
 
     /**
-     * @return array{ActorIdentity, AuthoritySource}
+     * @return array{ActorReference, AuthoritySource}
      *
      * @throws ActorContextMissing
      */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\WaiveTaskWait;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
@@ -40,7 +40,7 @@ final readonly class WaiveTaskWaitHandler extends TaskCommandHandler
                 : TaskWaitRefused::alreadyWaived($dependent->number, $prerequisite);
         }
 
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $wait->waive($actor, $command->reason);
         TaskWaitHistory::create($wait, TaskWaitChange::Waived, $actor, $command->reason, null);
     }

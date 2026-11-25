@@ -12,7 +12,7 @@ use App\Exceptions\AssignmentDenied;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentRecipientPolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Lifecycle\AgentLifecycle;
 
 /**
@@ -24,7 +24,7 @@ final readonly class AgentAuthority implements AgentAuthorityContract
 
     public function requireDispatcher(string $agentId): void
     {
-        $caller = ActorIdentity::ofClass(Agent::class, $agentId);
+        $caller = ActorReference::ofClass(Agent::class, $agentId);
 
         try {
             $this->lifecycle->lockShared($agentId);

@@ -21,7 +21,7 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\OwnerApproval;
@@ -161,7 +161,7 @@ trait RunsAcmeRequests
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
     {
-        $actor = ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
+        $actor = ActorReference::ofClass(Agent::class, $this->start->agent->id);
         $projectKey = (string) config('processes.project_key');
         $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));

@@ -11,7 +11,7 @@ use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\States\ReadMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\States\Support\ReadMessageStateReference;
@@ -172,7 +172,7 @@ final class ReadMessageStateTest extends TestCase
         );
     }
 
-    private function agent(): ActorIdentity
+    private function agent(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
     }

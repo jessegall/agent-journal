@@ -17,7 +17,7 @@ use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\JournalCommands;
 use App\Support\StackTransaction;
 use App\Support\StartSessions;
@@ -483,7 +483,7 @@ final class BaselineTimelinesTest extends TestCase
     private function signInAgain(Account $account): SignInAttempt
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
         $begin = new BeginSignInAgainCommand($account->id);

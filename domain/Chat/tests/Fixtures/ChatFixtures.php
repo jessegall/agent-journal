@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Fixtures;
 
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Support\PairChats;
@@ -25,7 +25,7 @@ final readonly class ChatFixtures
     /**
      * The pair chat of the two actors, both attached, as the chat page opens it between them.
      */
-    public function pairChat(ActorIdentity $first, ActorIdentity $second): Inbox
+    public function pairChat(ActorReference $first, ActorReference $second): Inbox
     {
         return $this->journal->inboxes()->shared($first, $second, PairChats::PAIR_PROVIDER);
     }

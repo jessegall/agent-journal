@@ -8,7 +8,7 @@ use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchHandleRefused;
 use App\Exceptions\SearchRestartRequired;
 use App\Exceptions\SearchStateFull;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\SearchStates;
 use App\Values\SearchOwner;
 use Tests\TestCase;
@@ -69,7 +69,7 @@ final class SearchStatesTest extends TestCase
     {
         $states = $this->app->make(SearchStates::class);
         $handle = $states->start(self::owner(self::OWNER_ID), 'state');
-        $agent = ActorIdentity::forAgent(self::OWNER_ID);
+        $agent = ActorReference::forAgent(self::OWNER_ID);
         $palette = new SearchOwner('session', $agent, 'main', 'search', SearchSurface::Palette);
 
         $this->expectException(SearchHandleRefused::class);
@@ -136,6 +136,6 @@ final class SearchStatesTest extends TestCase
 
     private static function owner(string $agentId): SearchOwner
     {
-        return new SearchOwner('session', ActorIdentity::forAgent($agentId), 'main', 'search', SearchSurface::AgentTool);
+        return new SearchOwner('session', ActorReference::forAgent($agentId), 'main', 'search', SearchSurface::AgentTool);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Assignments;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 
@@ -18,7 +18,7 @@ interface AutoAssigner
      * At most room record ids from the pool, unheld and still open, in the pool's order.
      */
     public function pick(
-        ActorIdentity $assignee,
+        ActorReference $assignee,
         AssignmentPool $pool,
         int $room,
     ): OrderedRecordIds;

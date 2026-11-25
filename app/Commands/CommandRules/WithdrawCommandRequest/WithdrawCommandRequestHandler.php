@@ -7,7 +7,7 @@ namespace App\Commands\CommandRules\WithdrawCommandRequest;
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProcessAdministration;
 
 final readonly class WithdrawCommandRequestHandler implements CommandHandler
@@ -19,7 +19,7 @@ final readonly class WithdrawCommandRequestHandler implements CommandHandler
      */
     public function handle(WithdrawCommandRequestCommand $command): string
     {
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $request = CommandRequest::findLockedForChange($command->requestId);
 
         if (! $this->administration->isGrantedToCaller() && ! $request->isByActor($actor)) {

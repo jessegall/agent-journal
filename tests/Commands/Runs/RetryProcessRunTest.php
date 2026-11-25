@@ -14,7 +14,7 @@ use App\Enums\Runs\LifecycleStatus;
 use App\Exceptions\RetryRefused;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ExecutionContext;
 use App\Values\OwnerAuthority;
 use App\Values\PartKey;
@@ -79,7 +79,7 @@ final class RetryProcessRunTest extends TestCase
             ->update(['heartbeat_at' => now()->subMinutes(5)]);
     }
 
-    private function setActor(ActorIdentity $actor): void
+    private function setActor(ActorReference $actor): void
     {
         $this->app->forgetScopedInstances();
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));

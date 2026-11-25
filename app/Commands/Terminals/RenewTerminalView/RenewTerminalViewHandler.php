@@ -6,7 +6,7 @@ namespace App\Commands\Terminals\RenewTerminalView;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\TerminalViewCloser;
 
 final readonly class RenewTerminalViewHandler implements CommandHandler
@@ -18,7 +18,7 @@ final readonly class RenewTerminalViewHandler implements CommandHandler
 
     public function handle(RenewTerminalViewCommand $command): string
     {
-        $viewer = ActorIdentity::of($command->dispatchedBy());
+        $viewer = ActorReference::of($command->dispatchedBy());
 
         return $this->views->renew($command->agentId, $viewer, $command->readInterestId, $this->clock->now());
     }

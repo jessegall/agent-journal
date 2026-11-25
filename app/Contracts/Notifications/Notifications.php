@@ -6,7 +6,7 @@ namespace App\Contracts\Notifications;
 
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\Notifications\NotificationSourceType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 interface Notifications
 {
     /**
-     * @param  list<ActorIdentity>  $recipients
+     * @param  list<ActorReference>  $recipients
      */
     public function deliver(
         string $occurrenceKey,
@@ -30,7 +30,7 @@ interface Notifications
      * Hides the recipient's receipts that lead to the target, so they leave its list and count, and tells its open
      * views to drop what they show.
      */
-    public function withdraw(NotificationTarget $target, ActorIdentity $recipient): void;
+    public function withdraw(NotificationTarget $target, ActorReference $recipient): void;
 
     /**
      * Hides up to the limit of the recipient's visible receipts of one target type whose target id the query lists,
@@ -38,10 +38,10 @@ interface Notifications
      *
      * @param  Builder<*>  $ids
      */
-    public function withdrawTargets(string $targetType, Builder $ids, ActorIdentity $recipient, int $limit): int;
+    public function withdrawTargets(string $targetType, Builder $ids, ActorReference $recipient, int $limit): int;
 
     /**
      * Marks the recipient's receipts that lead to the target read, keeping them as history with no outstanding count.
      */
-    public function settle(NotificationTarget $target, ActorIdentity $recipient): void;
+    public function settle(NotificationTarget $target, ActorReference $recipient): void;
 }

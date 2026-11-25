@@ -12,7 +12,7 @@ use App\Exceptions\SignInMethodMissing;
 use App\Jobs\SignInDeadline;
 use App\Models\Access\User;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\OwnerAuthority;
 use App\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
@@ -121,7 +121,7 @@ final class BeginSignInTest extends TestCase
         $start('codex', 'password', 'request-3')->assertSessionHasErrors('method');
 
         $this->assertSame(SignInMethod::ApiKey, SignInAttempt::query()->withoutGlobalScopes()->sole()->method);
-        $owner = ActorIdentity::forUser($this->journal->ownerUser()->id);
+        $owner = ActorReference::forUser($this->journal->ownerUser()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
         $this->assertThrows(
             fn () => $this->journal->run(new BeginSignInCommand('codex', SignInMethod::ProviderToken), 'request-4'),

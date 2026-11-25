@@ -10,7 +10,7 @@ use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\SignInStarted;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
@@ -45,7 +45,7 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
         $directory = SignInAttempt::resolveNewFolderIn($this->config->string('accounts.root'));
 
         $attempt = SignInAttempt::create(
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
             $account,
             $account->method,
             $directory,

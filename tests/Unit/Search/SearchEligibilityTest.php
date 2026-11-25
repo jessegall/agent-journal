@@ -7,7 +7,7 @@ namespace Tests\Unit\Search;
 use App\Enums\Search\ScopeAnswer;
 use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchableMissing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Support\SearchablesRegistry;
 use App\Support\SearchSources;
@@ -128,11 +128,11 @@ final class SearchEligibilityTest extends TestCase
 
     private static function agent(): SearchReader
     {
-        return new SearchReader(ActorIdentity::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
+        return new SearchReader(ActorReference::forAgent(self::AGENT_ID), SearchSurface::AgentTool);
     }
 
     private static function user(): SearchReader
     {
-        return new SearchReader(ActorIdentity::forUser(self::USER_ID), SearchSurface::Palette);
+        return new SearchReader(ActorReference::forUser(self::USER_ID), SearchSurface::Palette);
     }
 }

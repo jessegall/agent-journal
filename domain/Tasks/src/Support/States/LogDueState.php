@@ -57,6 +57,11 @@ final class LogDueState extends AgentState
         return new Some($this->reason());
     }
 
+    public function hears(Event $event): bool
+    {
+        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
+    }
+
     // ----------[ Hooks ]----------
 
     public function onShellCommand(ShellCommandRequested $input): Decision
@@ -86,11 +91,6 @@ final class LogDueState extends AgentState
     }
 
     // ----------[ Events ]----------
-
-    public function hears(Event $event): bool
-    {
-        return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
-    }
 
     public function onTaskLogged(TaskLogged $event): void
     {

@@ -9,7 +9,7 @@ use App\Contracts\Assignments\AssignmentPoolFactory;
 use App\Enums\Assignments\PoolInputType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\PoolDescription;
 use App\Support\PoolMembers;
 use App\Support\PoolReference;
@@ -33,7 +33,7 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
      * @throws AssignmentPoolUnavailable
      * @throws AssignmentPoolTooLarge
      */
-    public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool
+    public function open(PoolReference $pool, ActorReference $assignee): AssignmentPool
     {
         return new PlanTaskPool(PoolMembers::ordered($this->plan($pool)->poolTaskIds()));
     }
@@ -42,7 +42,7 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
      * @throws PlanPoolRefused
      * @throws PlanMissing
      */
-    public function validate(PoolReference $pool, ActorIdentity $assignee): void
+    public function validate(PoolReference $pool, ActorReference $assignee): void
     {
         $this->plan($pool);
     }
@@ -51,7 +51,7 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
      * @throws PlanPoolRefused
      * @throws PlanMissing
      */
-    public function describe(PoolReference $pool, ActorIdentity $assignee): PoolDescription
+    public function describe(PoolReference $pool, ActorReference $assignee): PoolDescription
     {
         $plan = $this->plan($pool);
 

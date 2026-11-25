@@ -13,7 +13,7 @@ use Carbon\CarbonImmutable;
 final readonly class StartCandidateFacts
 {
     public function __construct(
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public bool $hasOpenWork,
         public bool $hasDoneThisPurpose,
         public CarbonImmutable|null $lastMatchingFinish,

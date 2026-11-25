@@ -7,13 +7,13 @@ namespace App\Commands\CommandRules\RecordEvidenceReads;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\EvidenceRead;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 final readonly class RecordEvidenceReadsHandler implements CommandHandler
 {
     public function handle(RecordEvidenceReadsCommand $command): int
     {
-        $reader = ActorIdentity::of($command->dispatchedBy());
+        $reader = ActorReference::of($command->dispatchedBy());
         $run = ProcessRun::query()->whereKey($command->processRunId)->sole();
 
         EvidenceRead::createMany($run, $reader, $command->ranges);

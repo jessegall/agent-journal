@@ -15,7 +15,7 @@ use App\Exceptions\StartRefusalReplayed;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OwnerStartRequest;
 use App\Values\StartPolicy;
 use Tests\Fixtures\Agents\TestSelections;
@@ -80,7 +80,7 @@ final class CommitHeldStartRefusalsTest extends TestCase
     {
         return new OwnerStartRequest(
             TestSelections::requestId(),
-            ActorIdentity::of($this->researcher),
+            ActorReference::of($this->researcher),
             TestActors::record('binders.binder', 1),
             'purpose-1',
             TestSelections::of(),

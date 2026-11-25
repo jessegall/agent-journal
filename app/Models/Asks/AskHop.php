@@ -17,7 +17,7 @@ use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -74,7 +74,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
     /**
      * The ask's new hop to its holder, at the ask's version and the routing configuration's version, kept apart.
      */
-    public static function create(Ask $ask, ActorIdentity $holder, int $routeVersion): self
+    public static function create(Ask $ask, ActorReference $holder, int $routeVersion): self
     {
         $hop = new self();
         $hop->ask_id = $ask->id;
@@ -146,7 +146,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
     /**
      * The holder of the ask's hop before this one, when the ask had one.
      *
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public static function resolveHolderBefore(string $askId, string $hopId): Option
     {
@@ -162,7 +162,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
     /**
      * The holder of the ask's newest hop, the final holder once the ask closed, when the ask was ever assigned.
      *
-     * @return Option<ActorIdentity>
+     * @return Option<ActorReference>
      */
     public static function resolveLatestHolderOf(string $askId): Option
     {
@@ -205,7 +205,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
             ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
-    public static function findNextFor(ActorIdentity $holder): self|null
+    public static function findNextFor(ActorReference $holder): self|null
     {
         return self::query()->currentHops()
             ->byActor($holder)
@@ -255,7 +255,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
     /**
      * Whether the actor already held a hop of the ask, which makes an escalation to it a cycle.
      */
-    public static function hasHeld(Ask $ask, ActorIdentity $actor): bool
+    public static function hasHeld(Ask $ask, ActorReference $actor): bool
     {
         return self::query()->ofAsks([$ask->id])->byActor($actor)->exists();
     }

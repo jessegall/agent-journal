@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartEnd;
@@ -103,7 +103,7 @@ final class RecordEvidenceReadsTest extends TestCase
     private function sampleRun(): ProcessRun
     {
         $run = ProcessRun::create(
-            ActorIdentity::ofClass(Agent::class, $this->start->agent->id),
+            ActorReference::ofClass(Agent::class, $this->start->agent->id),
             TestRunAdmissions::of(
                 admissionId: 'sample',
                 mode: RunMode::Evidence,

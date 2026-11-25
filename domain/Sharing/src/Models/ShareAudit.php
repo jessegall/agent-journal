@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -70,7 +70,7 @@ final class ShareAudit extends Model implements ReadableModel
     public static function create(
         Share|null $share,
         ShareAuditType $type,
-        ActorIdentity $actor,
+        ActorReference $actor,
         string|null $reasonCode,
     ): self {
         $audit = new self();

@@ -9,7 +9,7 @@ use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Enums\Messages\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 
 /**
@@ -42,7 +42,7 @@ final readonly class EnvironmentAccess
             $user,
             $environmentId,
             $permissions,
-            ActorIdentity::of($this->actors->actor()),
+            ActorReference::of($this->actors->actor()),
             $now,
         );
     }
@@ -58,13 +58,13 @@ final readonly class EnvironmentAccess
         $grant->revoke(CarbonImmutable::now());
         $user = User::query()->findOrFail($userId);
 
-        $this->inboxes->endInEnvironment(ActorIdentity::of($user), $environmentId);
+        $this->inboxes->endInEnvironment(ActorReference::of($user), $environmentId);
     }
 
     public function disable(string $userId): void
     {
         $user = User::findLockedById($userId);
         $user->disable(CarbonImmutable::now());
-        $this->inboxes->endEverywhere(ActorIdentity::of($user));
+        $this->inboxes->endEverywhere(ActorReference::of($user));
     }
 }

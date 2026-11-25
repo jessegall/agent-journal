@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Contracts;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 
 /**
@@ -20,5 +20,5 @@ interface ChatLineSource
     /**
      * The actor who follows the sequence run.
      */
-    public function follower(): ActorIdentity;
+    public function follower(): ActorReference;
 }

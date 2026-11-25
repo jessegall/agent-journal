@@ -12,7 +12,7 @@ use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
@@ -110,15 +110,15 @@ final class PageRequestContractTest extends TestCase
                 $invited,
                 null,
                 [InboxPermission::ReceiveInvitations],
-                ActorIdentity::of($owner),
+                ActorReference::of($owner),
                 CarbonImmutable::now(),
             );
         }
 
         $this->member = $member;
-        $this->journal->inboxes()->personal(ActorIdentity::of($member));
+        $this->journal->inboxes()->personal(ActorReference::of($member));
         $this->journal->actAsUserId($owner->id);
-        $inboxId = $this->app->make(PairChats::class)->openGroup('Design', [ActorIdentity::of($member)]);
+        $inboxId = $this->app->make(PairChats::class)->openGroup('Design', [ActorReference::of($member)]);
         $messageId = $this->journal->run(new SendMessageCommand($inboxId, 'Hello'));
         $account = Account::create(
             DefaultDrivers::CLAUDE_CODE,
@@ -128,14 +128,14 @@ final class PageRequestContractTest extends TestCase
         $question = $this->journal->fixtures(QuestionFixtures::class)
             ->question(
                 'Plan order',
-                $this->journal->inboxes()->personal(ActorIdentity::of($owner)),
+                $this->journal->inboxes()->personal(ActorReference::of($owner)),
                 'Owner',
                 'Owner',
                 'Which plan first?',
             )
             ->questionCalled('Plan order');
         $attempt = SignInAttempt::create(
-            ActorIdentity::of($owner),
+            ActorReference::of($owner),
             $account,
             SignInMethod::OAuth,
             '/journal/accounts/staging-recorded',

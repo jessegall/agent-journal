@@ -25,7 +25,7 @@ final readonly class SharedHolders implements SharedHoldersContract
         return [
             Inbox::ASSIGNEE_TYPE => InboxMember::query()
                 ->active()
-                ->ofActor(ActorIdentity::fromStored($member->type, $member->id))
+                ->ofActor(ActorReference::fromStored($member->type, $member->id))
                 ->inboxIds(),
         ];
     }

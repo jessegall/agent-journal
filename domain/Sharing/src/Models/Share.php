@@ -15,7 +15,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareStatus;
@@ -608,7 +608,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      *
      * @return list<self>
      */
-    public static function findProposedBy(ActorIdentity $requester): array
+    public static function findProposedBy(ActorReference $requester): array
     {
         return array_values(
             self::query()->requestedBy($requester)->newestFirst()->limit(self::PROPOSED_LIMIT)->get()->all(),
@@ -827,7 +827,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function requestedBy(Builder $query, ActorIdentity $requester): void
+    protected function requestedBy(Builder $query, ActorReference $requester): void
     {
         $query->where('requester_type', $requester->type)->where('requester_id', $requester->id);
     }

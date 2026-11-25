@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Inboxes\OpenInbox;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 
 /**
@@ -16,7 +16,7 @@ use App\Support\Command;
 final readonly class OpenInboxCommand extends Command
 {
     /**
-     * @param  list<ActorIdentity>  $members
+     * @param  list<ActorReference>  $members
      */
     public function __construct(
         public string $providerKey,

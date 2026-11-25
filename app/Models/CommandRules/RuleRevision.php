@@ -11,7 +11,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Exceptions\RuleRevisionInvalid;
 use App\Models\Support\NamedByRuleScope;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\ReaderApproval;
 use App\Values\RuleScope;
@@ -89,7 +89,7 @@ final class RuleRevision extends Model implements ReadableModel
     public static function create(
         RuleProposalRevision $proposed,
         string $projectKey,
-        ActorIdentity $approver,
+        ActorReference $approver,
         array $readers,
         array $scripts,
     ): self {

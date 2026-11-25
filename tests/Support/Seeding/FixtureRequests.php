@@ -9,7 +9,7 @@ use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
@@ -84,7 +84,7 @@ final class FixtureRequests
     public function asAgentId(string $agentId): void
     {
         $this->select(fn () => $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($agentId),
+            ActorReference::forAgent($agentId),
             TestStartAuthority::forAgent($agentId),
         ));
     }
@@ -216,14 +216,14 @@ final class FixtureRequests
             null,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent($target->agentId),
+            ActorReference::forAgent($target->agentId),
             TestStartAuthority::forAgent($target->agentId),
         );
     }
 
     private function actAsUser(string $userId, AuthoritySource $authority): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser($userId), $authority);
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser($userId), $authority);
     }
 
     /**

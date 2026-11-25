@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Processes\BundleActivated;
 use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\ModuleRuleBundle;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\CommandRuleRegistry;
 use App\Support\ServedEnvironment;
 use App\Values\RuleBundle;
@@ -42,7 +42,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
             throw ApprovalRefused::bundleChanged($command->module);
         }
 
-        $owner = ActorIdentity::of($command->dispatchedBy());
+        $owner = ActorReference::of($command->dispatchedBy());
         $approval = ModuleRuleBundle::create($this->projects->current(), $installed[0], $owner);
         $this->facts->publishAfterCommit(BundleActivated::forApproval($approval));
 

@@ -7,7 +7,7 @@ namespace Domain\Sharing\Support;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sharing\SharePolicy;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -151,7 +151,7 @@ final readonly class ShareGrants
     {
         ShareMember::createMany($share, $consumed);
 
-        ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
+        ShareAudit::create($share, $type, ActorReference::of($owner), null);
     }
 
     /**

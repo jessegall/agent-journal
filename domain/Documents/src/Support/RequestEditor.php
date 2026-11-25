@@ -6,7 +6,7 @@ namespace Domain\Documents\Support;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\SessionProvenance;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Documents\Models\DocumentDraft;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -18,9 +18,9 @@ final readonly class RequestEditor
 {
     public function __construct(private CurrentActor $actors, private SessionProvenance $provenance) {}
 
-    public function editor(): ActorIdentity
+    public function editor(): ActorReference
     {
-        return ActorIdentity::of($this->actors->actor());
+        return ActorReference::of($this->actors->actor());
     }
 
     public function isEditing(DocumentDraft $draft): bool

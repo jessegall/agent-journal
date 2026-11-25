@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\RemoveTaskWait;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Exceptions\TaskWaitRefused;
@@ -24,7 +24,7 @@ final readonly class RemoveTaskWaitHandler extends TaskCommandHandler
         [$dependent] = $this->lock->lock($command->dependentTaskId, $command->prerequisiteTaskId);
         $wait = $this->rules->existingToRemove($dependent, $command->prerequisiteTaskId);
 
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         TaskWaitHistory::create($wait, TaskWaitChange::Removed, $actor, null, null);
         $wait->remove();
     }

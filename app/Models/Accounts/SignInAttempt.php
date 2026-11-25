@@ -33,7 +33,7 @@ use App\Models\Support\Accessor;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\KeepsCleanupTries;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CleanupProgress;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -126,7 +126,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * again while a process may still run on the account's folder.
      */
     public static function create(
-        ActorIdentity $starter,
+        ActorReference $starter,
         Account|string $accountOrDriver,
         SignInMethod $method,
         string $directory,

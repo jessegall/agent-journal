@@ -16,7 +16,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -79,13 +79,13 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
         $message->assertSaved($message->save());
 
         $message->raise(
-            new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorIdentity::of($from)),
+            new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorReference::of($from)),
         );
 
         return $message;
     }
 
-    public function author(): ActorIdentity
+    public function author(): ActorReference
     {
         return $this->sender;
     }
@@ -95,11 +95,11 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     /**
      * Who sent the message.
      *
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function sender(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->sender_type, $this->sender_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->sender_type, $this->sender_id));
     }
 
     // ----------[ Relations ]----------
@@ -194,7 +194,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inInboxesOf(Builder $query, ActorIdentity $actor): void
+    protected function inInboxesOf(Builder $query, ActorReference $actor): void
     {
         $query->whereHas('inbox.members', fn (Builder $member) => $member->active()->ofActor($actor));
     }

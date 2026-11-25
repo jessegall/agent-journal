@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\States;
 
 use App\Enums\Hooks\AnswerType;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Inputs\StopRequested;
 use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
@@ -115,7 +115,7 @@ final class FollowSequenceStateTest extends TestCase
         );
     }
 
-    private function follower(): ActorIdentity
+    private function follower(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
     }

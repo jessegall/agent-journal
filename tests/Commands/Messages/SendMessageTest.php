@@ -16,7 +16,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Support\IsolatedListener;
 use App\Support\StartSessions;
@@ -108,7 +108,7 @@ final class SendMessageTest extends TestCase
         $message = Message::query()->findOrFail($messageId);
         $this->assertSame(self::BUILD_NOTICE, $message->body);
         $this->assertSame($this->ownInboxId, $message->inbox_id);
-        $this->assertSame(ActorIdentity::of($this->journal->ownerUser())->id, $message->sender_id);
+        $this->assertSame(ActorReference::of($this->journal->ownerUser())->id, $message->sender_id);
         $this->assertSame(Message::query()->findOrFail($firstId)->number + 1, $message->number);
         Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $messageId);
     }
@@ -174,8 +174,8 @@ final class SendMessageTest extends TestCase
             TestSelections::requestId(),
         )->session;
         $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->journal->ownerUser()),
-            ActorIdentity::of($agent),
+            ActorReference::of($this->journal->ownerUser()),
+            ActorReference::of($agent),
         )->id;
 
         $body = <<<'TEXT'
@@ -215,8 +215,8 @@ final class SendMessageTest extends TestCase
             TestSelections::requestId(),
         )->session;
         $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->journal->ownerUser()),
-            ActorIdentity::of($agent),
+            ActorReference::of($this->journal->ownerUser()),
+            ActorReference::of($agent),
         )->id;
 
         $outdated = [...$this->seenSession(), 'expectedSessionId' => strtolower((string) Str::ulid())];
@@ -238,8 +238,8 @@ final class SendMessageTest extends TestCase
             ->sessionCalled('Chat builder');
 
         $chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($owner),
-            ActorIdentity::ofClass(Agent::class, $session->agent_id),
+            ActorReference::of($owner),
+            ActorReference::ofClass(Agent::class, $session->agent_id),
         )->id;
 
         $window = ConversationRequest::queryFor($session->agent_id);
@@ -309,7 +309,7 @@ final class SendMessageTest extends TestCase
     public function test_an_agents_message_into_an_inbox_a_user_is_attached_to_is_a_post_of_that_agent(): void
     {
         $builder = $this->journal->agentCalled('Builder');
-        InboxMember::create($this->ownInboxId, ActorIdentity::of($builder), CarbonImmutable::now());
+        InboxMember::create($this->ownInboxId, ActorReference::of($builder), CarbonImmutable::now());
         $this->journal->actAsAgentId($builder->id);
 
         $this->journal->run(new SendMessageCommand($this->ownInboxId, 'The build is green.'));
@@ -324,7 +324,7 @@ final class SendMessageTest extends TestCase
         $this->journal->agent('Reviewer', 'read-only-helper');
         $builder = $this->journal->agentCalled('Builder');
         $inboxId = $this->journal->inboxCalled('Reviewer')->id;
-        InboxMember::create($inboxId, ActorIdentity::of($builder), CarbonImmutable::now());
+        InboxMember::create($inboxId, ActorReference::of($builder), CarbonImmutable::now());
         $this->journal->actAsAgentId($builder->id);
 
         $this->journal->run(new SendMessageCommand($inboxId, 'Over to you.'));
@@ -359,8 +359,8 @@ final class SendMessageTest extends TestCase
     private function pairInboxId(): string
     {
         return $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->journal->ownerUser()),
-            ActorIdentity::of($this->journal->agentCalled('Builder')),
+            ActorReference::of($this->journal->ownerUser()),
+            ActorReference::of($this->journal->agentCalled('Builder')),
         )->id;
     }
 }

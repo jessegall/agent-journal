@@ -11,7 +11,7 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\HelperDesignated;
 use Domain\Helpers\Events\HelperDesignationReleased;
@@ -72,8 +72,8 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      * agent with the same profile key.
      */
     public static function create(
-        ActorIdentity $parent,
-        ActorIdentity $helper,
+        ActorReference $parent,
+        ActorReference $helper,
         string $profileKey,
         string $profileBase,
     ): self {
@@ -123,11 +123,11 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     /**
      * The lasting actor this identity represents.
      *
-     * @return Attribute<ActorIdentity, never>
+     * @return Attribute<ActorReference, never>
      */
     protected function helperActor(): Attribute
     {
-        return Accessor::get(fn () => ActorIdentity::fromStored($this->helper_actor_type, $this->helper_actor_id));
+        return Accessor::get(fn () => ActorReference::fromStored($this->helper_actor_type, $this->helper_actor_id));
     }
 
     // ----------[ Asserts ]----------
@@ -177,7 +177,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function representing(Builder $query, ActorIdentity $helper): void
+    protected function representing(Builder $query, ActorReference $helper): void
     {
         $query->where('helper_actor_type', $helper->type)->where('helper_actor_id', $helper->id);
     }

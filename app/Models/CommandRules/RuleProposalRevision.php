@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\CommandRule;
 use App\Values\ProposedRule;
 use App\Values\RuleExample;
@@ -67,7 +67,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
     /**
      * The proposal's next revision of the proposed rule, by its author.
      */
-    public static function create(RuleProposal $proposal, ProposedRule $proposed, ActorIdentity $author): self
+    public static function create(RuleProposal $proposal, ProposedRule $proposed, ActorReference $author): self
     {
         $ruleProposalRevision = new self();
         $ruleProposalRevision->rule_proposal_id = $proposal->id;

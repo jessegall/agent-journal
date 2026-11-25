@@ -18,7 +18,7 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use App\Support\IdListPage;
 use App\Support\ProjectReadRetentionService;
@@ -300,7 +300,7 @@ final class PostTextCommentTest extends TestCase
             $this->binding,
             ProjectReadType::File,
             self::PATH,
-            ActorIdentity::ofClass(User::class, '01jqzr0000000000000000user'),
+            ActorReference::ofClass(User::class, '01jqzr0000000000000000user'),
         );
 
         $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", [

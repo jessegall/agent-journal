@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\PurposeType;
@@ -63,7 +63,7 @@ final class HelperPurpose extends Model implements ReadableModel
      * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
      * start reads the one that won. Its label is the record's alias and id, never a fetched title.
      */
-    public static function create(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
+    public static function create(ActorReference $parent, string $profileKey, RecordIdentity $subject): self
     {
         $purpose = new self();
         $purpose->profile_key = $profileKey;
@@ -106,7 +106,7 @@ final class HelperPurpose extends Model implements ReadableModel
     }
 
     private static function start(
-        ActorIdentity $parent,
+        ActorReference $parent,
         string $profileKey,
         PurposeType $type,
         RecordIdentity|null $subject,
@@ -129,12 +129,12 @@ final class HelperPurpose extends Model implements ReadableModel
     /**
      * The parent's own purpose with that id for the profile; none when it belongs to another parent or profile.
      */
-    public static function findForParent(ActorIdentity $parent, string $profileKey, string $purposeId): self|null
+    public static function findForParent(ActorReference $parent, string $profileKey, string $purposeId): self|null
     {
         return self::query()->ownedBy($parent)->ofProfile($profileKey)->whereKey($purposeId)->first();
     }
 
-    public static function findFree(ActorIdentity $parent, string $profileKey, string $label): self
+    public static function findFree(ActorReference $parent, string $profileKey, string $label): self
     {
         return self::start($parent, $profileKey, PurposeType::Free, null, $label);
     }
@@ -142,7 +142,7 @@ final class HelperPurpose extends Model implements ReadableModel
     /**
      * The parent's purpose for this profile about the subject.
      */
-    public static function findOfSubject(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
+    public static function findOfSubject(ActorReference $parent, string $profileKey, RecordIdentity $subject): self
     {
         return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
     }

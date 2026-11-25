@@ -21,7 +21,7 @@ final readonly class ActivityLog implements ActivityLogContract
         private Dispatcher $events,
     ) {}
 
-    public function record(ActorIdentity $agent, ActivityType $type, string $subject): void
+    public function record(ActorReference $agent, ActivityType $type, string $subject): void
     {
         $entry = ActivityEntry::create($agent, $type, $subject, $this->served->environmentId());
 

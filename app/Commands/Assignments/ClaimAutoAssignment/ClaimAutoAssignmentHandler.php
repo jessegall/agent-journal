@@ -45,7 +45,7 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
 
         $actor = $fact->key->actor;
         $type = $fact->key->assignableType;
-        $holder = AssigneeIdentity::ofActorIdentity($actor);
+        $holder = AssigneeIdentity::ofActorReference($actor);
         $this->providers->assigneeProvider($holder->type)->requireEligible($holder);
         $held = $this->work->count($type, $holder);
         $room = min(1, $this->room->available($fact, $held));

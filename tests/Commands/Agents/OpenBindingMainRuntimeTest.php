@@ -15,7 +15,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Support\MainInboxTakeover;
@@ -79,9 +79,9 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $this->start($binding, [])->assertCreated();
 
         $this->assertSame(
-            [ActorIdentity::of($serverMain)->text()],
+            [ActorReference::of($serverMain)->text()],
             array_map(
-                fn (ActorIdentity $member) => $member->text(),
+                fn (ActorReference $member) => $member->text(),
                 InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class),
             ),
         );

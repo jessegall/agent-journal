@@ -11,7 +11,7 @@ use App\Data\Notifications\NotificationPage;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NotificationCursor;
 use App\Support\NotificationScopes;
 use App\Support\NotificationTargets;
@@ -34,7 +34,7 @@ final readonly class NotificationFeed
     /**
      * @throws NotificationCursorInvalid
      */
-    public function page(ActorIdentity $actor, string|null $cursor): NotificationPage
+    public function page(ActorReference $actor, string|null $cursor): NotificationPage
     {
         return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $scope) => $this->pageOf($scope, $cursor))

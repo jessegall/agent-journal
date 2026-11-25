@@ -6,7 +6,7 @@ namespace App\Resolvers\Support;
 
 use App\Contracts\Actors\ActorResolver;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\RunningRuntime;
 use PhpOption\None;
 use PhpOption\Option;
@@ -22,7 +22,7 @@ final readonly class CurrentAgentRuntimes
     /**
      * @return Option<RunningRuntime>
      */
-    public function currentFor(ActorIdentity $actor): Option
+    public function currentFor(ActorReference $actor): Option
     {
         $resolved = $this->actors->get($actor);
 

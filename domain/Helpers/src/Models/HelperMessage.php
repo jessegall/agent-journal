@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -36,7 +36,7 @@ final class HelperMessage extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(ActorIdentity $parent, HelperIdentity $helper, string $text, string $command): self
+    public static function create(ActorReference $parent, HelperIdentity $helper, string $text, string $command): self
     {
         $message = new self();
         $message->helper_identity_id = $helper->id;

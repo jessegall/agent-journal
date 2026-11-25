@@ -120,7 +120,7 @@ final class ActorProviderRegistry implements
     /**
      * Asks each type's provider once, for that type's actors; a type with no provider has no labels.
      *
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<ActorReference>  $actors
      */
     public function labelsFor(array $actors): ActorLabelSet
     {
@@ -252,14 +252,14 @@ final class ActorProviderRegistry implements
         return $sessions;
     }
 
-    public function sessionsOf(ActorIdentity $actor): array
+    public function sessionsOf(ActorReference $actor): array
     {
         return $this->stackSessionsOf($actor->type)
             ->map(fn (ActorStackSessionProvider $provider) => $provider->sessionsOf($actor))
             ->getOrElse([]);
     }
 
-    public function get(ActorIdentity $identity): Actor
+    public function get(ActorReference $identity): Actor
     {
         $providerClass = $this->providers->find($identity->type)
             ->getOrThrow(ActorUnavailable::forIdentity($identity));

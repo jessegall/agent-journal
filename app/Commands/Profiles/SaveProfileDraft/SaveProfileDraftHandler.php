@@ -7,7 +7,7 @@ namespace App\Commands\Profiles\SaveProfileDraft;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Profiles\ProfileDraft;
 use App\Models\Profiles\ProfileDraftRevision;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 
@@ -19,11 +19,11 @@ final readonly class SaveProfileDraftHandler implements CommandHandler
             $command->profile,
             $command->expectedRevision,
             $command->source,
-            ActorIdentity::of($command->dispatchedBy()),
+            ActorReference::of($command->dispatchedBy()),
         );
     }
 
-    private function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
+    private function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorReference $author): int
     {
         $draft = ProfileDraft::createForProfiles([$profile->key])[$profile->key];
         $draft->sourceAt($expected);

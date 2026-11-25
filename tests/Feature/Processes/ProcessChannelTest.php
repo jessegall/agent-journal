@@ -11,7 +11,7 @@ use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
@@ -80,7 +80,7 @@ final class ProcessChannelTest extends TestCase
         );
 
         return ProcessRun::create(
-            ActorIdentity::ofClass(Agent::class, $this->start->agent->id),
+            ActorReference::ofClass(Agent::class, $this->start->agent->id),
             TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder),
         );
     }

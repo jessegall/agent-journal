@@ -9,7 +9,7 @@ use App\Enums\Hooks\AnswerType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\States\AnswerMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Values\AnswerBudget;
@@ -161,12 +161,12 @@ final class AnswerMessageStateTest extends TestCase
         );
     }
 
-    private function sent(ActorIdentity $sender): MessageSent
+    private function sent(ActorReference $sender): MessageSent
     {
         return new MessageSent('reply-1', self::INBOX, 2, self::MESSAGE, $sender);
     }
 
-    private function agent(): ActorIdentity
+    private function agent(): ActorReference
     {
         return $this->journal->actorCalled('Writer');
     }

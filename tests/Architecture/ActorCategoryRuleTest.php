@@ -26,7 +26,7 @@ final class ActorCategoryRuleTest extends TestCase
      */
     private const array ALLOWED = [
         'domain/Sharing/src/Enums/ShareAuditActor.php' => 'maps the kind of actor to the label an audit line shows',
-        'app/Support/ActorIdentity.php' => 'answers whether a reference points at an agent or a user, builds the actor of a request, and keeps the journal out of text from outside',
+        'app/Support/ActorReference.php' => 'answers whether a reference points at an agent or a user, builds the actor of a request, and keeps the journal out of text from outside',
     ];
 
     public function test_no_code_chooses_behaviour_by_the_type_of_actor(): void

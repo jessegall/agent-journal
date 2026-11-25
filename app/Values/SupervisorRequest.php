@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * An ask that needs a supervisor profile's helper started: the profile, the ask that causes it, what it asks and the
@@ -16,6 +16,6 @@ final readonly class SupervisorRequest
         public string $profileKey,
         public string $askId,
         public string $body,
-        public ActorIdentity $cause,
+        public ActorReference $cause,
     ) {}
 }

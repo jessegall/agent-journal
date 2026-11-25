@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Events;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Contracts\ChatLineSource;
@@ -26,8 +26,8 @@ final readonly class SequenceStarted implements ChatLineSource, SequenceEvent, S
         return new RecordIdentity(SequenceRun::linkType(), $this->runId);
     }
 
-    public function follower(): ActorIdentity
+    public function follower(): ActorReference
     {
-        return $this->target->actorIdentity();
+        return $this->target->actorReference();
     }
 }

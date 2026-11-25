@@ -19,7 +19,7 @@ use App\Events\Sessions\MenuEntryUsed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\EntryGoalAnswer;
 use App\Values\LibraryEntryAnswer;
 use App\Values\MenuEntryBuild;
@@ -100,7 +100,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      * @param  non-empty-list<MenuStep>  $steps
      */
     public static function create(
-        ActorIdentity $owner,
+        ActorReference $owner,
         NavigationRequest $source,
         array $steps,
         NavigationCompletion $completes,
@@ -275,7 +275,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
      * @param  list<string>  $declinedEntries
      */
     public static function findReplayFor(
-        ActorIdentity $owner,
+        ActorReference $owner,
         AgentRuntime $runtime,
         ScriptGoal $goal,
         string $fingerprint,

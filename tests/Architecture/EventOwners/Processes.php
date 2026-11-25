@@ -43,7 +43,7 @@ use App\Events\Processes\RuleRetired;
 use App\Events\Processes\RunChanged;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -57,7 +57,7 @@ return [
         'owner' => 'ProcessRun::recordHeartbeat',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessRunOutlasted('run', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new ProcessRunOutlasted('run', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     BundleActivated::class => [
         'role' => EventRole::CommandFact,

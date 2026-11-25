@@ -9,7 +9,7 @@ use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AttentionOrigin;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -64,7 +64,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
      * @param  list<string>  $texts
      * @return list<string> the ids of the rows written
      */
-    public static function createMany(ActorIdentity $agent, AttentionOrigin $origin, array $texts): array
+    public static function createMany(ActorReference $agent, AttentionOrigin $origin, array $texts): array
     {
         $messages = [];
 
@@ -83,12 +83,12 @@ final class PendingAgentMessage extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    public static function countFor(ActorIdentity $agent): int
+    public static function countFor(ActorReference $agent): int
     {
         return self::query()->ownedBy($agent)->count();
     }
 
-    public static function countAttentionFor(ActorIdentity $agent): int
+    public static function countAttentionFor(ActorReference $agent): int
     {
         return self::query()->ownedBy($agent)->askingAttention()->count();
     }

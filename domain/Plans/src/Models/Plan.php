@@ -19,7 +19,7 @@ use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
@@ -186,7 +186,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * Ends the plan as done, with the note of what it achieved.
      */
-    public function finish(string $note, ActorIdentity $actor): void
+    public function finish(string $note, ActorReference $actor): void
     {
         $this->status = PlanStatus::Done;
         $this->finish_note = $note;
@@ -198,7 +198,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * Ends the plan as cancelled with its reason; its tasks and their assignments stay as they are.
      */
-    public function cancel(string $reason, ActorIdentity $actor): void
+    public function cancel(string $reason, ActorReference $actor): void
     {
         $this->status = PlanStatus::Cancelled;
         $this->cancel_reason = $reason;
@@ -211,7 +211,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * Starts the plan for the actor; true when it changed, false when it was already started, which announces nothing.
      * Any other state refuses.
      */
-    public function startOnce(ActorIdentity $actor): bool
+    public function startOnce(ActorReference $actor): bool
     {
         if ($this->status === PlanStatus::Started) {
             return false;
@@ -231,7 +231,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      * Puts the planned plan up for review by its reviewers; any other state refuses. The plan holds still until the
      * review ends.
      *
-     * @param  list<ActorIdentity>  $reviewers
+     * @param  list<ActorReference>  $reviewers
      *
      * @throws PlanReviewRefused
      */

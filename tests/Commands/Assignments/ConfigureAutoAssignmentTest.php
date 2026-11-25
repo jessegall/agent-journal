@@ -11,7 +11,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AutoAssignmentPoolUnknown;
 use App\Exceptions\InvalidRecordIds;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
@@ -56,7 +56,7 @@ final class ConfigureAutoAssignmentTest extends TestCase
 
         $this->journal->owner()->idleAgent('Worker', 'writing-helper')->startSession('Worker', 'Worker');
         $this->worker = $this->journal->testStartCalled('Worker');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::linkType());
+        $this->key = new AutoAssignmentKey(ActorReference::of($this->worker->agent), TaskType::linkType());
         $this->journal->actAs('Owner');
     }
 

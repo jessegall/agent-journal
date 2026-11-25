@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Resolvers\Support;
 
 use App\Exceptions\CrossOwnerReadRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\NumberedPage;
 use App\Values\StackTarget;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
@@ -53,7 +53,7 @@ final readonly class SequenceRecords
     /**
      * The actors whose runs the caller may read: every follower, for a caller that may read across owners.
      *
-     * @return list<ActorIdentity>
+     * @return list<ActorReference>
      *
      * @throws CrossOwnerReadRefused
      */
@@ -67,7 +67,7 @@ final readonly class SequenceRecords
      *
      * @throws CrossOwnerReadRefused
      */
-    public function runsOf(ActorIdentity $follower, int $pageNumber): SequenceRunPage
+    public function runsOf(ActorReference $follower, int $pageNumber): SequenceRunPage
     {
         $page = new NumberedPage($pageNumber, self::RUN_PAGE_SIZE);
         $runs = SequenceRun::query()->acrossOwners()->followedBy($follower);
@@ -82,13 +82,13 @@ final readonly class SequenceRecords
      */
     public function followedBy(StackTarget $target, string $runId): SequenceRun
     {
-        return $this->heldBy($target->actorIdentity(), $runId);
+        return $this->heldBy($target->actorReference(), $runId);
     }
 
     /**
      * The journal's own read of a run the agent follows, by the agent alone.
      */
-    public function heldBy(ActorIdentity $follower, string $runId): SequenceRun
+    public function heldBy(ActorReference $follower, string $runId): SequenceRun
     {
         return SequenceRun::query()
             ->ownedBy($follower)

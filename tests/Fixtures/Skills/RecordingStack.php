@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Skills;
 
 use App\Contracts\Work\AgentStacks;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
 
@@ -49,12 +49,12 @@ final class RecordingStack implements AgentStacks
         $this->lifted[] = $state;
     }
 
-    public function pushFor(ActorIdentity $actor, StateReference $state): void
+    public function pushFor(ActorReference $actor, StateReference $state): void
     {
         $this->pushed[] = $state;
     }
 
-    public function offerFor(ActorIdentity $actor, StateReference $state): void
+    public function offerFor(ActorReference $actor, StateReference $state): void
     {
         $this->pushed[] = $state;
     }

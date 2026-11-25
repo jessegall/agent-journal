@@ -13,7 +13,7 @@ use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Memory\Events\MemoryRevised;
 use Domain\Memory\Events\MemorySaved;
@@ -66,7 +66,7 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
     /**
      * Keeps a new memory for its owner.
      */
-    public static function create(ActorIdentity $owner, string $text, int $weight): self
+    public static function create(ActorReference $owner, string $text, int $weight): self
     {
         $memory = new self();
         $memory->text = $text;
@@ -100,7 +100,7 @@ final class Memory extends Model implements EventSource, Numbered, ReadableModel
 
     // ----------[ Queries ]----------
 
-    public function saveFor(ActorIdentity $actor): void
+    public function saveFor(ActorReference $actor): void
     {
         $this->belongTo($actor);
         $this->assertSaved($this->save());

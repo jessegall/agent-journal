@@ -6,7 +6,7 @@ namespace App\Exceptions;
 
 use App\Contracts\Bus\CommandRefusal;
 use App\Exceptions\Concerns\ThrowsLater;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use RuntimeException;
 
 /**
@@ -19,7 +19,7 @@ final class ActorUnavailable extends RuntimeException implements CommandRefusal
      */
     use ThrowsLater;
 
-    public static function forIdentity(ActorIdentity $identity): self
+    public static function forIdentity(ActorReference $identity): self
     {
         return new self("{$identity->type} {$identity->id} is not available.");
     }

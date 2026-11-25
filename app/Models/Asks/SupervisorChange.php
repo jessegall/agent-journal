@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\SupervisorRouteRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;
 use Carbon\CarbonImmutable;
@@ -45,7 +45,7 @@ final class SupervisorChange extends Model implements ReadableModel
 
     public static function create(
         SupervisorLink $link,
-        ActorIdentity $author,
+        ActorReference $author,
         AskTypeKey|null $type,
         SupervisorTarget $previous,
         SupervisorTarget $target,

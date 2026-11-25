@@ -8,7 +8,7 @@ use App\Concerns\PasswordValidationRules;
 use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Access\User;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -48,7 +48,7 @@ final class CreateNewUser implements CreatesNewUsers
 
         return $this->assignments->run(function () use ($input): User {
             $user = User::create($input['name'], $input['email'], $input['password']);
-            $this->desks->provision(ActorIdentity::of($user), $user->name);
+            $this->desks->provision(ActorReference::of($user), $user->name);
 
             return $user;
         });

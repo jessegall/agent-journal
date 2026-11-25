@@ -12,7 +12,7 @@ final readonly class NotificationScopes
 {
     public const string JOURNAL = 'journal';
 
-    public function keyFor(ActorIdentity $actor): string
+    public function keyFor(ActorReference $actor): string
     {
         return self::JOURNAL;
     }

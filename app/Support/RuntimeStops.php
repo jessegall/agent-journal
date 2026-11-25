@@ -15,7 +15,7 @@ final readonly class RuntimeStops implements RuntimeStopsContract
 {
     public function __construct(private DriverRequests $requests) {}
 
-    public function stopAgent(ActorIdentity $agent, string $idempotencyKey): void
+    public function stopAgent(ActorReference $agent, string $idempotencyKey): void
     {
         $sessions = AgentSession::query()
             ->runningFor($agent->id)

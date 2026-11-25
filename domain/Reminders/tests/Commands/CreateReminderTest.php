@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Reminders\Tests\Commands;
 
 use App\Exceptions\CommandInputInvalid;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;
@@ -42,7 +42,7 @@ final class CreateReminderTest extends TestCase
             [
                 'Read the review',
                 ReminderStatus::Open,
-                ActorIdentity::of($this->journal->ownerUser())->id,
+                ActorReference::of($this->journal->ownerUser())->id,
             ],
             [
                 $reminder->title,

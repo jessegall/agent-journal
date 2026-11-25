@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 
 /**
@@ -14,7 +14,7 @@ use App\Support\RecordIdentity;
 final readonly class PurposeChoice
 {
     public function __construct(
-        public ActorIdentity $parent,
+        public ActorReference $parent,
         public string $profileKey,
         public RecordIdentity|null $subject,
         public string|null $purposeId,

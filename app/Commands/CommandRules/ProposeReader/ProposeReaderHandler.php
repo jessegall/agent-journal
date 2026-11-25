@@ -11,7 +11,7 @@ use App\Exceptions\ReaderProposalRefused;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\Runs\ReaderRevision;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ProcessAdministration;
 
 /**
@@ -28,7 +28,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
      */
     public function handle(ProposeReaderCommand $command): string
     {
-        $actor = ActorIdentity::of($command->dispatchedBy());
+        $actor = ActorReference::of($command->dispatchedBy());
         $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {

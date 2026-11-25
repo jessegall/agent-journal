@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Exceptions\AccountLabelInvalid;
 use App\Models\Accounts\Account;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\TestIds;
@@ -44,7 +44,7 @@ final class AccountStorageTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }

@@ -16,6 +16,6 @@ final readonly class ActorInboxResolver implements ActorInboxResolverContract
 {
     public function preferredFor(Actor $actor): LabeledInbox
     {
-        return Inbox::findPersonalOf(ActorIdentity::of($actor));
+        return Inbox::findPersonalOf(ActorReference::of($actor));
     }
 }

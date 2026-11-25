@@ -8,7 +8,7 @@ use App\Enums\Navigation\NavigationReason;
 use App\Models\Access\User;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
 use Carbon\CarbonImmutable;
@@ -43,7 +43,7 @@ trait RaisesNavigationRequests
 
         return NavigationRequest::create(
             $stalled,
-            ActorIdentity::ofClass(User::class, 'owner'),
+            ActorReference::ofClass(User::class, 'owner'),
             $uncertainty,
             $operationKey,
             CarbonImmutable::now()->addMinutes(30),

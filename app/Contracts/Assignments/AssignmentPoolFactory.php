@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Assignments;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\PoolDescription;
 use App\Support\PoolReference;
 
@@ -16,15 +16,15 @@ interface AssignmentPoolFactory
     /**
      * The pool, ready to hand work to the assignee's members.
      */
-    public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool;
+    public function open(PoolReference $pool, ActorReference $assignee): AssignmentPool;
 
     /**
      * Fails, with a named exception, when the reference does not fit this pool or the actor may not draw from it.
      */
-    public function validate(PoolReference $pool, ActorIdentity $assignee): void;
+    public function validate(PoolReference $pool, ActorReference $assignee): void;
 
     /**
      * The pool as the settings page shows it for the assignee.
      */
-    public function describe(PoolReference $pool, ActorIdentity $assignee): PoolDescription;
+    public function describe(PoolReference $pool, ActorReference $assignee): PoolDescription;
 }

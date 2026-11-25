@@ -16,7 +16,7 @@ use App\Data\Sharing\SharedData;
 use App\Http\Responses\NotificationProps;
 use App\Http\Responses\PageReadProps;
 use App\Http\Responses\SearchProps;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\CoreSettings;
 use App\Support\HostLinkAlarms;
 use App\Support\InstallationFaults;
@@ -95,7 +95,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $this->settings->string($this->core->displayName),
                     'version' => $this->version->label(),
                     'currentUser' => CurrentUserData::from($user->get()),
-                    'canShare' => $this->sharing->mayManage(ActorIdentity::forUser($user->get()->id)),
+                    'canShare' => $this->sharing->mayManage(ActorReference::forUser($user->get()->id)),
                     // An inbox member is a guest: what the installation could not heal is the operator's to see.
                     'installationFaults' => $this->isInboxMember() ? [] : [
                         ...$this->installationFaults->current(),

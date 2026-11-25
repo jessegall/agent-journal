@@ -49,12 +49,12 @@ final class AnswerAskState extends AgentState
         return new Some(AgentText::of('core.asks.waiting'));
     }
 
-    // ----------[ Events ]----------
-
     public function hears(Event $event): bool
     {
         return ! $event instanceof AskEvent || $event->askId === $this->askId;
     }
+
+    // ----------[ Events ]----------
 
     /**
      * Its ask closed: the frame settles and the holder is offered the next ask that waits for it.

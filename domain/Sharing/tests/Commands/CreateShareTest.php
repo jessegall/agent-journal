@@ -12,7 +12,7 @@ use App\Exceptions\StackLockTimedOut;
 use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\Link;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
@@ -155,7 +155,7 @@ final class CreateShareTest extends TestCase
         $links = $this->app->make(ShareLinkResolver::class);
 
         $this->assertTrue(
-            $links->linkFor(ActorIdentity::of($this->journal->ownerUser()), $share->id)->isEmpty(),
+            $links->linkFor(ActorReference::of($this->journal->ownerUser()), $share->id)->isEmpty(),
             self::PENDING_HAS_NO_ADDRESS,
         );
 
@@ -164,7 +164,7 @@ final class CreateShareTest extends TestCase
 
         $this->assertSame(
             FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext,
-            $links->linkFor(ActorIdentity::of($this->journal->ownerUser()), $share->id)->get(),
+            $links->linkFor(ActorReference::of($this->journal->ownerUser()), $share->id)->get(),
         );
 
         $this->assertTrue(
@@ -305,7 +305,7 @@ final class CreateShareTest extends TestCase
         $this->owner = $this->journal->ownerUser();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser($this->owner->id),
+            ActorReference::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
 
@@ -318,7 +318,7 @@ final class CreateShareTest extends TestCase
         $this->document = Document::query()->where('number', 1)->sole();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser($this->owner->id),
+            ActorReference::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
 

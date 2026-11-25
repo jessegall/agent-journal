@@ -13,7 +13,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
 use App\Support\AccountMaintenance;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
@@ -78,7 +78,7 @@ final class MaintainAccountTest extends TestCase
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
     {
         $attempt = SignInAttempt::create(
-            ActorIdentity::system(),
+            ActorReference::system(),
             $this->account,
             SignInMethod::OAuth,
             '/journal/accounts/staging-request-1',
@@ -101,6 +101,6 @@ final class MaintainAccountTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
     }
 }

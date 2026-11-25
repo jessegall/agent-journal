@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Support\ActorIdentity;
 use App\Support\ActorLabelSet;
+use App\Support\ActorReference;
 
 /**
  * The display names of any actors, read with one query per actor type, through the provider each type's owner
@@ -14,7 +14,7 @@ use App\Support\ActorLabelSet;
 interface ActorLabels
 {
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<ActorReference>  $actors
      */
     public function labelsFor(array $actors): ActorLabelSet;
 }

@@ -34,7 +34,7 @@ use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Values\PinnedDriver;
 use App\Values\StartRequest;
@@ -131,7 +131,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     public static function create(
         StartRequest $request,
         PinnedDriver $pin,
-        ActorIdentity $requester,
+        ActorReference $requester,
     ): self {
         $existing = self::findLockedUnderRequest($request->requestId);
 
@@ -292,9 +292,9 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
 
     // ----------[ Predicates ]----------
 
-    public function wasRequestedBy(ActorIdentity $actor): bool
+    public function wasRequestedBy(ActorReference $actor): bool
     {
-        return ActorIdentity::fromStored($this->actor_type, $this->actor_id)->isSameAs($actor);
+        return ActorReference::fromStored($this->actor_type, $this->actor_id)->isSameAs($actor);
     }
 
     // ----------[ Accessors ]----------
@@ -502,7 +502,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function requestedBy(Builder $query, ActorIdentity $requester): void
+    protected function requestedBy(Builder $query, ActorReference $requester): void
     {
         $query->where('actor_type', $requester->type)->where('actor_id', $requester->id);
     }

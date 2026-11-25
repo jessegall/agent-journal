@@ -12,7 +12,7 @@ use App\Enums\Accounts\SignInStatus;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInCodeInvalid;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DefaultDrivers;
 use App\Support\SignInChallenges;
 use App\Values\OwnerAuthority;
@@ -51,7 +51,7 @@ final class SubmitSignInCodeTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser(TestIds::of(1)),
+            ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
     }
@@ -155,7 +155,7 @@ final class SubmitSignInCodeTest extends TestCase
     private function signInAttempt(string $driver, SignInMethod $method, string $requestKey): SignInAttempt
     {
         return SignInAttempt::create(
-            ActorIdentity::system(),
+            ActorReference::system(),
             $driver,
             $method,
             '/journal/accounts/'.$requestKey,

@@ -10,7 +10,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ActivityLevel;
 use App\Enums\Agents\ActivityType;
 use App\Models\Support\HasActorColumns;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -90,7 +90,7 @@ final class ActivityEntry extends Model implements ReadableModel
      * @param  list<string>  $found
      */
     public static function create(
-        ActorIdentity $actor,
+        ActorReference $actor,
         ActivityType $type,
         string $subject,
         string|null $environmentId,

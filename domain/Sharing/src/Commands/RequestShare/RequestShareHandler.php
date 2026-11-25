@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\RequestShare;
 
 use App\Contracts\Records\RecordResolver;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
@@ -43,7 +43,7 @@ final readonly class RequestShareHandler extends SharingCommandHandler
         }
 
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
-        $actor = ActorIdentity::of($agent);
+        $actor = ActorReference::of($agent);
         $proposal = Share::create($root, $expiry, new ShareProposal($actor));
         ShareAudit::create($proposal, ShareAuditType::Created, $actor, null);
 

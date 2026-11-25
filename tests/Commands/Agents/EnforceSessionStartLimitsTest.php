@@ -13,7 +13,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Profiles\ProfileRevisionHold;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\SessionStartLimits;
 use App\Support\StartHeartbeats;
@@ -100,7 +100,7 @@ final class EnforceSessionStartLimitsTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorIdentity::system(),
+            ActorReference::system(),
             None::create(),
         )->startedAs($start->session);
         SessionPolicy::create($start->session, $request->policy);

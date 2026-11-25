@@ -9,7 +9,7 @@ use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Comments\Http\Requests\TellFileCommentRequest;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +26,7 @@ final readonly class TellFileCommentController
         PairChats $chats,
         CommandBus $commands,
     ): RedirectResponse {
-        $agent = ActorIdentity::ofClass(Agent::class, $request->agentId());
+        $agent = ActorReference::ofClass(Agent::class, $request->agentId());
         $inboxId = $chats->pairWith($agent);
         $commands->run($request->command($inboxId));
 

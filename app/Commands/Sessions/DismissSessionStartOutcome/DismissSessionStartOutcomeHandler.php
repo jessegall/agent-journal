@@ -9,7 +9,7 @@ use App\Contracts\Sessions\AgentDirectory;
 use App\Exceptions\SessionRequestMissing;
 use App\Models\Sessions\SessionOutcomeDismissal;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * Dismisses the outcome the viewer saw: the start must be of an agent the viewer sees, and the version is the one the
@@ -31,6 +31,6 @@ final readonly class DismissSessionStartOutcomeHandler implements CommandHandler
             ->underRequest($command->requestId)
             ->firstOr(SessionRequestMissing::throwing()->forRequest($command->requestId));
 
-        SessionOutcomeDismissal::create(ActorIdentity::of($command->dispatchedBy()), $record, $command->version);
+        SessionOutcomeDismissal::create(ActorReference::of($command->dispatchedBy()), $record, $command->version);
     }
 }

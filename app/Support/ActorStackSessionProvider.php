@@ -30,7 +30,7 @@ final readonly class ActorStackSessionProvider implements ActorStackSessionProvi
         return [];
     }
 
-    public function sessionsOf(ActorIdentity $actor): array
+    public function sessionsOf(ActorReference $actor): array
     {
         $sessions = AgentSession::query()->runningFor($actor->id)->oldestFirst()
             ->limit(self::RUNNING_SESSIONS_READ)

@@ -16,7 +16,7 @@ use App\Enums\Drivers\DriverFailure;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionProcess;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -122,7 +122,7 @@ final class NotifyFailureTest extends TestCase
         DriverType $driverType = DriverType::Headless,
     ): array {
         $host = $this->enrollHost();
-        $this->app->make(CurrentActorSetter::class)->set(ActorIdentity::forUser('owner'), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         $command = new OpenAgentRuntimeCommand(
             $agent->id,

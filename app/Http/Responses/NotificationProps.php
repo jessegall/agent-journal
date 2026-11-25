@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Resolvers\Support\NotificationChanges;
 use App\Resolvers\Support\NotificationFeed;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Http\Request;
 use Inertia\ResponseFactory;
 
@@ -50,9 +50,9 @@ final readonly class NotificationProps
         ];
     }
 
-    private function actor(): ActorIdentity
+    private function actor(): ActorReference
     {
-        return ActorIdentity::of($this->actors->actor());
+        return ActorReference::of($this->actors->actor());
     }
 
     /**

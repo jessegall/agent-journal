@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\RecordIdentity;
 use App\Values\StackTarget;
@@ -18,14 +18,14 @@ use App\Values\StackTarget;
  */
 final class TestActors
 {
-    public static function user(int $number): ActorIdentity
+    public static function user(int $number): ActorReference
     {
-        return ActorIdentity::forUser(TestIds::of($number));
+        return ActorReference::forUser(TestIds::of($number));
     }
 
-    public static function userIdentity(int $number): ActorIdentity
+    public static function userIdentity(int $number): ActorReference
     {
-        return ActorIdentity::ofClass(User::class, TestIds::of($number));
+        return ActorReference::ofClass(User::class, TestIds::of($number));
     }
 
     public static function record(string $alias, int $number): RecordIdentity
@@ -33,9 +33,9 @@ final class TestActors
         return new RecordIdentity($alias, TestIds::of($number));
     }
 
-    public static function agentIdentity(int $number): ActorIdentity
+    public static function agentIdentity(int $number): ActorReference
     {
-        return ActorIdentity::ofClass(Agent::class, TestIds::of($number));
+        return ActorReference::ofClass(Agent::class, TestIds::of($number));
     }
 
     /**

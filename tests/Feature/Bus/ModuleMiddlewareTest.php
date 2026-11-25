@@ -24,7 +24,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Records\AssignmentRecord;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\CommandCall;
 use App\Support\CommandEnd;
@@ -223,7 +223,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
                     'Every phase ends with its tests.',
                     'Phases ended untested.',
                     null,
-                    ActorIdentity::forAgent(TestIds::of(10)),
+                    ActorReference::forAgent(TestIds::of(10)),
                 )->id,
             ),
         );
@@ -296,7 +296,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
-            $this->journal->inboxes()->personal(ActorIdentity::of($user))->id,
+            $this->journal->inboxes()->personal(ActorReference::of($user))->id,
             "  Trim me  \n",
         ));
 
@@ -312,7 +312,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $user = $this->journal->owner()->ownerUser();
         $this->journal->actAsUserId($user->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $command = new SendMessageCommand($this->journal->inboxes()->personal(ActorIdentity::of($user))->id, 'Hello');
+        $command = new SendMessageCommand($this->journal->inboxes()->personal(ActorReference::of($user))->id, 'Hello');
 
         try {
             $this->app->make(CommandBus::class)->run($command);

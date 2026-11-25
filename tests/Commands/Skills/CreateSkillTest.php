@@ -17,7 +17,7 @@ use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\DomainRegistry;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
@@ -87,7 +87,7 @@ final class CreateSkillTest extends TestCase
     public function test_an_agent_is_refused_before_any_row_changes(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forAgent(TestIds::of(3)),
+            ActorReference::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
 

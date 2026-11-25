@@ -10,7 +10,7 @@ use App\Console\Concerns\ReadsAssignmentArguments;
 use App\Console\Concerns\RunsApiPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Illuminate\Console\Command;
 
 /**
@@ -32,7 +32,7 @@ final class ReassignRecordCommand extends Command
             $call = ReassignRecordPayload::from([
                 ...$this->recordFields(),
                 ...$this->heldFields(),
-                ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
+                ...ActorReference::fromText((string) $this->option('to'))->asFields('recipient'),
                 'requestKey' => $this->requestKey(),
             ]);
         } catch (InvalidActorText $invalid) {

@@ -7,7 +7,7 @@ namespace Domain\Chat\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\RequestKey;
 use Domain\Chat\ChatDomain;
@@ -77,8 +77,8 @@ final class UndockSourceTest extends TestCase
             ->sessionCalled('Builder')->agent_id;
 
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorIdentity::of($this->owner),
-            ActorIdentity::ofClass(Agent::class, $this->agentId),
+            ActorReference::of($this->owner),
+            ActorReference::ofClass(Agent::class, $this->agentId),
         );
 
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);

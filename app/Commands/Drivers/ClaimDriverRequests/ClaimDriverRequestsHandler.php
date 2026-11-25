@@ -14,7 +14,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\ClaimedRequests;
 use App\Support\PendingWorkSources;
 use App\Support\PrivateValues;
@@ -191,7 +191,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             return false;
         }
 
-        if ($this->pendingWork->hasWorkFor(ActorIdentity::of($runtime->session->agent))) {
+        if ($this->pendingWork->hasWorkFor(ActorReference::of($runtime->session->agent))) {
             return false;
         }
 

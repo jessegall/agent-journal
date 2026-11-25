@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ProvenBranch;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -61,7 +61,7 @@ final class ReaderProof extends Model implements ReadableModel
         ReaderRevision $reader,
         RuleProposalRevision $declaration,
         array $branches,
-        ActorIdentity $prover,
+        ActorReference $prover,
     ): self {
         $readerProof = new self();
         $readerProof->project_key = $reader->project_key;

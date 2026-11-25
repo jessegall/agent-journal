@@ -16,7 +16,7 @@ use App\Events\Processes\RuleProposalApproved;
 use App\Events\Processes\RuleProposalRejected;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Values\ProposedRule;
 use App\Values\RuleReference;
 use App\Values\RuleScope;
@@ -86,7 +86,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      */
     public static function create(
         string $projectKey,
-        ActorIdentity $author,
+        ActorReference $author,
         string $requestId,
         ProposedRule $proposed,
         CommandRequest|null $answers,
@@ -124,7 +124,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      *
      * @throws RuleProposalRefused
      */
-    public function withdraw(ActorIdentity $author): void
+    public function withdraw(ActorReference $author): void
     {
         $this->assertAuthor($author);
         $this->assertOpen();
@@ -171,7 +171,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
 
     // ----------[ Predicates ]----------
 
-    public function isAuthoredBy(ActorIdentity $actor): bool
+    public function isAuthoredBy(ActorReference $actor): bool
     {
         return $this->author_type === $actor->type && $this->author_id === $actor->id;
     }
@@ -201,7 +201,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      *
      * @throws RuleProposalRefused
      */
-    public function assertRevisableAt(int $expectedRevision, ActorIdentity $author): void
+    public function assertRevisableAt(int $expectedRevision, ActorReference $author): void
     {
         $this->assertAuthor($author);
 
@@ -263,7 +263,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     /**
      * @throws RuleProposalRefused
      */
-    private function assertAuthor(ActorIdentity $actor): void
+    private function assertAuthor(ActorReference $actor): void
     {
         if (! $this->isAuthoredBy($actor)) {
             throw RuleProposalRefused::notTheAuthor($this->id);
@@ -288,7 +288,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     /**
      * The proposal this author's request made in the project; none before it.
      */
-    public static function findRequestedBy(string $projectKey, ActorIdentity $author, string $requestId): self|null
+    public static function findRequestedBy(string $projectKey, ActorReference $author, string $requestId): self|null
     {
         return self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
     }
@@ -308,7 +308,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function requestedBy(Builder $query, ActorIdentity $author, string $requestId): void
+    protected function requestedBy(Builder $query, ActorReference $author, string $requestId): void
     {
         $query->where('author_type', $author->type)
             ->where('author_id', $author->id)

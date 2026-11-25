@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Contracts\Assignments;
 
 use App\Enums\Assignments\AssignmentReason;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AssignmentResult;
 
 /**
@@ -16,5 +16,5 @@ interface AssignmentFactPublisher
     /**
      * Tells the rest of the journal about an assignment change the actor made, for the reason given.
      */
-    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $assignmentChange): void;
+    public function publish(ActorReference $actor, AssignmentReason $reason, AssignmentResult $assignmentChange): void;
 }

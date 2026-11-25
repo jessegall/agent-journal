@@ -12,7 +12,7 @@ use App\Exceptions\SkillAgentHidden;
 use App\Exceptions\SkillContextUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\StartDriver;
 use App\Values\ProfileKey;
 use App\Values\SkillContext;
@@ -134,7 +134,7 @@ final readonly class SkillContextResolver
         $driver = StartDriver::of($session->driver_key, $this->drivers);
 
         return new SkillContext(
-            actor: ActorIdentity::ofClass(Agent::class, $agent->id),
+            actor: ActorReference::ofClass(Agent::class, $agent->id),
             sessionId: $session->id,
             environment: self::ENVIRONMENT,
             profile: $profile,

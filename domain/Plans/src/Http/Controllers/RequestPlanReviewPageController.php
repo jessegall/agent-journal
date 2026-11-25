@@ -7,7 +7,7 @@ namespace Domain\Plans\Http\Controllers;
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Http\Requests\PlanReviewRequest;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +25,7 @@ final readonly class RequestPlanReviewPageController
         CurrentActor $actors,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new RequestPlanReviewCommand($request->planId(), [ActorIdentity::of($actors->actor())]));
+        $commands->run(new RequestPlanReviewCommand($request->planId(), [ActorReference::of($actors->actor())]));
 
         return $redirect->back(303);
     }

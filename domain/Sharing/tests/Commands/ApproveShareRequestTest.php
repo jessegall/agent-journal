@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Values\OwnerAuthority;
@@ -90,7 +90,7 @@ final class ApproveShareRequestTest extends TestCase
         $this->owner = $this->journal->owner()->ownerUser();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorIdentity::forUser($this->owner->id),
+            ActorReference::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareStatus;
@@ -23,7 +23,7 @@ final readonly class ShareEndings
     /**
      * Revokes a live share or dismisses a proposal; returns whether anything changed.
      */
-    public function revoke(Share $share, ActorIdentity $owner): bool
+    public function revoke(Share $share, ActorReference $owner): bool
     {
         return $this->endAndRelease($share, ShareStatus::Revoked, ShareAuditType::Revoked, $owner);
     }
@@ -33,7 +33,7 @@ final readonly class ShareEndings
      */
     public function expire(Share $share): bool
     {
-        return $this->endAndRelease($share, ShareStatus::Expired, ShareAuditType::Expired, ActorIdentity::system());
+        return $this->endAndRelease($share, ShareStatus::Expired, ShareAuditType::Expired, ActorReference::system());
     }
 
     /**
@@ -42,14 +42,14 @@ final readonly class ShareEndings
      *
      * @param  list<Share>  $shares  locked, by id
      */
-    public function revokeAll(array $shares, ActorIdentity $owner): void
+    public function revokeAll(array $shares, ActorReference $owner): void
     {
         foreach ($shares as $share) {
             $this->end($share, ShareStatus::Revoked, ShareAuditType::Revoked, $owner);
         }
     }
 
-    private function endAndRelease(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorIdentity $actor): bool
+    private function endAndRelease(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorReference $actor): bool
     {
         $wasLive = $share->status->isLive();
 
@@ -65,7 +65,7 @@ final readonly class ShareEndings
         return true;
     }
 
-    private function end(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorIdentity $actor): bool
+    private function end(Share $share, ShareStatus $terminal, ShareAuditType $type, ActorReference $actor): bool
     {
         if (! $share->end($terminal)) {
             return false;

@@ -26,7 +26,7 @@ final readonly class CommandCall
         public string $owner,
         public bool $isExported,
         public bool $isRepeatableRead,
-        public ActorIdentity|null $actor,
+        public ActorReference|null $actor,
         public array $authorized = [],
         public array $trail = [],
     ) {}
@@ -39,7 +39,7 @@ final readonly class CommandCall
         string $owner,
         bool $isExported,
         bool $isRepeatableRead,
-        ActorIdentity|null $actor,
+        ActorReference|null $actor,
     ): self {
         return new self($command, $command, $owner, $isExported, $isRepeatableRead, $actor);
     }
@@ -88,7 +88,7 @@ final readonly class CommandCall
      *
      * @throws ActorContextMissing for a command run with no actor
      */
-    public function actor(): ActorIdentity
+    public function actor(): ActorReference
     {
         return $this->actor ?? throw ActorContextMissing::forRequest();
     }
@@ -102,7 +102,7 @@ final readonly class CommandCall
             return null;
         }
 
-        return ActorIdentity::of($this->actor)->text();
+        return ActorReference::of($this->actor)->text();
     }
 
     /**
@@ -131,7 +131,7 @@ final readonly class CommandCall
     /**
      * The same call bound to the given dispatcher, its command a copy carrying it; the original stays unbound.
      */
-    public function withDispatcher(ActorIdentity $dispatcher): self
+    public function withDispatcher(ActorReference $dispatcher): self
     {
         return clone ($this, [
             'command' => $this->command->withDispatcher($dispatcher),

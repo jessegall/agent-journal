@@ -25,9 +25,9 @@ final readonly class RunClaims implements RunClaimsContract
         private ProvedClaims $proved,
     ) {}
 
-    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): RunClaim
+    public function take(RecordIdentity $run, RecordIdentity $work, ActorReference $actor): RunClaim
     {
-        $claimant = AssigneeIdentity::ofActorIdentity($actor);
+        $claimant = AssigneeIdentity::ofActorReference($actor);
         $current = $this->store->lockCurrent($run);
 
         if ($current->isDefined()) {
@@ -104,7 +104,7 @@ final readonly class RunClaims implements RunClaimsContract
 
         $member = InboxMember::findActiveOf(
             $work->holder()->id,
-            ActorIdentity::fromStored($claimant->type, $claimant->id),
+            ActorReference::fromStored($claimant->type, $claimant->id),
         )->getOrThrow(RunClaimRefused::notTheHolder($run->id));
 
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
@@ -113,8 +113,8 @@ final readonly class RunClaims implements RunClaimsContract
         return new RunClaim($claim, $proof->sourceIds());
     }
 
-    private static function claimantOf(Assignment $claim): ActorIdentity
+    private static function claimantOf(Assignment $claim): ActorReference
     {
-        return ActorIdentity::fromStored($claim->holder()->type, $claim->holder()->id);
+        return ActorReference::fromStored($claim->holder()->type, $claim->holder()->id);
     }
 }

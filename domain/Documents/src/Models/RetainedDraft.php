@@ -10,7 +10,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\MarkdownText;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Events\DraftKept;
@@ -61,7 +61,7 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(DocumentDraft $draft, string $reason, ActorIdentity|null $parent): self
+    public static function create(DocumentDraft $draft, string $reason, ActorReference|null $parent): self
     {
         $kept = new self();
         $kept->document_id = $draft->document_id;

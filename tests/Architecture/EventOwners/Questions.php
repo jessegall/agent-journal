@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Agents\Agent;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Events\QuestionAnswered;
 use Domain\Questions\Events\QuestionAnswerNoticeDelivered;
 use Domain\Questions\Events\QuestionAnswerNoticeWritten;
@@ -21,21 +21,21 @@ return [
         'owner' => 'Question::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new QuestionAsked('question', 'inbox', ActorIdentity::ofClass(Agent::class, 'asker'), ActorIdentity::ofClass(Agent::class, 'target')),
+        'sample' => fn () => new QuestionAsked('question', 'inbox', ActorReference::ofClass(Agent::class, 'asker'), ActorReference::ofClass(Agent::class, 'target')),
     ],
     QuestionAnswered::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Question::answer',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new QuestionAnswered('question', 'inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new QuestionAnswered('question', 'inbox', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     QuestionAnswerNoticeWritten::class => [
         'role' => EventRole::RowFact,
         'owner' => 'QuestionAnswerNotice::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new QuestionAnswerNoticeWritten('notice', 'question', ActorIdentity::ofClass(Agent::class, 'agent')),
+        'sample' => fn () => new QuestionAnswerNoticeWritten('notice', 'question', ActorReference::ofClass(Agent::class, 'agent')),
     ],
     QuestionAnswerNoticeDelivered::class => [
         'role' => EventRole::RowFact,

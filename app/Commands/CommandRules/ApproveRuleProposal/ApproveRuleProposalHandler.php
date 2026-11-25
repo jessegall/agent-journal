@@ -6,7 +6,7 @@ namespace App\Commands\CommandRules\ApproveRuleProposal;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\RuleApprovals;
 use App\Support\ServedEnvironment;
 use App\Values\ApprovalReceipt;
@@ -26,6 +26,6 @@ final readonly class ApproveRuleProposalHandler implements CommandHandler
             ->lockForUpdate()
             ->sole();
 
-        return $this->approvals->approve($proposal, $command->approval, ActorIdentity::of($command->dispatchedBy()));
+        return $this->approvals->approve($proposal, $command->approval, ActorReference::of($command->dispatchedBy()));
     }
 }

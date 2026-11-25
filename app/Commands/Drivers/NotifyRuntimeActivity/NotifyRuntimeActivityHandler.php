@@ -15,7 +15,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RuntimeEvent;
 use App\Models\Messages\Message;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use App\Support\AttentionOrigin;
 use App\Support\HostRuntimes;
 use Carbon\CarbonImmutable;
@@ -82,7 +82,7 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
     private function presentBacklog(AgentRuntime $runtime, int $processGeneration): void
     {
         $runtime->loadMissing('session.agent');
-        $agent = ActorIdentity::of($runtime->session->agent);
+        $agent = ActorReference::of($runtime->session->agent);
 
         if (Message::query()->unreadBy($runtime->session->agent)->exists()) {
             $this->attention->request($agent, AttentionOrigin::sessionProcess($runtime->id, $processGeneration));

@@ -9,7 +9,7 @@ use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Values\QuestionSummary;
 
@@ -39,7 +39,7 @@ final readonly class QuestionNotificationTarget implements NotificationTargetRes
 
         $attached = InboxMember::query()
             ->active()
-            ->ofActor(ActorIdentity::of($this->actors->actor()))
+            ->ofActor(ActorReference::of($this->actors->actor()))
             ->ofInboxes($inboxIds)
             ->pluck('inbox_id')
             ->all();

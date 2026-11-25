@@ -8,7 +8,7 @@ use App\Commands\CommandRules\IssueEvidencePermit\IssueEvidencePermitCommand;
 use App\Exceptions\EvidencePermitRefused;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\ProcessOutputDisk;
@@ -67,8 +67,8 @@ final class IssueEvidencePermitTest extends TestCase
         return $this->journal->run(new IssueEvidencePermitCommand($line, $this->folder, $agent->type, $agent->id));
     }
 
-    private function agent(): ActorIdentity
+    private function agent(): ActorReference
     {
-        return ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
+        return ActorReference::ofClass(Agent::class, $this->start->agent->id);
     }
 }

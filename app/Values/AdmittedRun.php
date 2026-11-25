@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\Runs\RunMode;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 
 /**
  * A command line admitted to run: its single-use admission id, normal or evidence
@@ -27,7 +27,7 @@ final readonly class AdmittedRun
         public string $registryRevision,
         public string $policyRevision,
         public array $bindings,
-        public ActorIdentity $actor,
+        public ActorReference $actor,
         public string $eventKey,
         public string $source,
         public string $workingFolder,
@@ -46,7 +46,7 @@ final readonly class AdmittedRun
         string $registryRevision,
         string $policyRevision,
         array $bindings,
-        ActorIdentity $actor,
+        ActorReference $actor,
         string $eventKey,
         string $source,
         string $workingFolder,
@@ -80,7 +80,7 @@ final readonly class AdmittedRun
         string $registryRevision,
         string $policyRevision,
         array $bindings,
-        ActorIdentity $actor,
+        ActorReference $actor,
         string $eventKey,
         string $source,
         string $workingFolder,

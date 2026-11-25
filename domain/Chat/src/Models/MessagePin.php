@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
-use App\Support\ActorIdentity;
+use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,7 +52,7 @@ final class MessagePin extends Model implements ReadableModel
      * Pins the message in the conversation for the owner; pinning it again keeps the one pin.
      */
     public static function create(
-        ActorIdentity $owner,
+        ActorReference $owner,
         string $inboxId,
         string $messageId,
     ): self {
@@ -78,7 +78,7 @@ final class MessagePin extends Model implements ReadableModel
     /**
      * The owner's pin of the message; none before it.
      */
-    public static function findOwnedOfMessage(ActorIdentity $owner, string $inboxId, string $messageId): self|null
+    public static function findOwnedOfMessage(ActorReference $owner, string $inboxId, string $messageId): self|null
     {
         return self::query()->ownedBy($owner)->ofMessage($inboxId, $messageId)->first();
     }
