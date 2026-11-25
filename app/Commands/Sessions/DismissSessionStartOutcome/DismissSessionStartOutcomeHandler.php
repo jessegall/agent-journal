@@ -6,7 +6,7 @@ namespace App\Commands\Sessions\DismissSessionStartOutcome;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Sessions\AgentDirectory;
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use App\Models\Sessions\SessionOutcomeDismissal;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
@@ -20,7 +20,7 @@ final readonly class DismissSessionStartOutcomeHandler implements CommandHandler
     public function __construct(private AgentDirectory $agents) {}
 
     /**
-     * @throws StartRecordMissing
+     * @throws SessionRequestMissing
      */
     public function handle(DismissSessionStartOutcomeCommand $command): void
     {
@@ -29,7 +29,7 @@ final readonly class DismissSessionStartOutcomeHandler implements CommandHandler
         $record = SessionRequest::query()
             ->forAgent($command->agentId)
             ->underRequest($command->requestId)
-            ->firstOr(StartRecordMissing::throwing()->forRequest($command->requestId));
+            ->firstOr(SessionRequestMissing::throwing()->forRequest($command->requestId));
 
         SessionOutcomeDismissal::create(ActorIdentity::of($command->dispatchedBy()), $record, $command->version);
     }

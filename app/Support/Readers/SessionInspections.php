@@ -8,7 +8,7 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\StopCheck;
 use App\Models\Sessions\StopConditionResult;
 use App\Values\SessionInspection;
-use App\Values\StopResultLine;
+use App\Values\StopConditionResultLine;
 
 /**
  * Builds a session's inspection from its frozen policy and its last settled stop attempt.
@@ -24,7 +24,7 @@ final readonly class SessionInspections
 
     /**
      * @param  array<string, string>  $labels
-     * @return list<StopResultLine>
+     * @return list<StopConditionResultLine>
      */
     private function lastStop(string $sessionId, array $labels): array
     {

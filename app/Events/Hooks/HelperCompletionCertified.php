@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Hooks;
 
 use App\Support\RecordIdentity;
-use App\Values\StopAttemptReference;
+use App\Values\StopCheckReference;
 
 /**
  * A started agent's stop passed every final check of its policy, so the work it was started for is complete; the
@@ -15,6 +15,6 @@ final readonly class HelperCompletionCertified extends HookEvent
 {
     public function __construct(
         public RecordIdentity $work,
-        public StopAttemptReference $attempt,
+        public StopCheckReference $attempt,
     ) {}
 }

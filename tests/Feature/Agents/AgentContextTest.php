@@ -9,8 +9,8 @@ use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Models\Sessions\SessionToken;
 use App\Support\AgentContext;
 use App\Support\AgentSessions;
+use App\Support\SessionTokens;
 use App\Support\Stack\StateTypes;
-use App\Support\StartTokens;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
@@ -35,7 +35,7 @@ final class AgentContextTest extends TestCase
         ])->middleware(AuthenticateAgent::class);
     }
 
-    public function test_a_start_token_authenticates_its_own_agent_and_session(): void
+    public function test_a_session_token_authenticates_its_own_agent_and_session(): void
     {
         $start = TestStart::start('read-only-helper');
 
@@ -90,7 +90,7 @@ final class AgentContextTest extends TestCase
     public function test_a_revoked_credential_is_refused(): void
     {
         $start = TestStart::start();
-        new StartTokens()->revoke($start->session);
+        new SessionTokens()->revoke($start->session);
 
         $this->callAs($start)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
     }

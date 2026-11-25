@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Agents\StatusActionType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverSwitchStage;
@@ -208,7 +208,7 @@ final class AgentStatusRules
             StatusAction::of(StatusActionType::Interrupt),
         ] : $switch;
 
-        if ($evidence->processStart?->isStarting() === true) {
+        if ($evidence->sessionProcess?->isStarting() === true) {
             if (self::isWakeRefused($evidence->request)) {
                 return self::unknown($evidence);
             }
@@ -450,7 +450,7 @@ final class AgentStatusRules
                 ...$actions,
                 ...$dismiss,
             ],
-            $evidence->processStart === ProcessStartState::Running,
+            $evidence->sessionProcess === SessionProcessState::Running,
         );
     }
 

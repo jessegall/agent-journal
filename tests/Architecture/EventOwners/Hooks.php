@@ -51,7 +51,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StopAttemptGate.php',
+            'app/Support/StopCheckGate.php',
         ],
     ],
     StateCommandAnswered::class => [

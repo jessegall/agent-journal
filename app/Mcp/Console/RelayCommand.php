@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Contracts\Sessions\StartTokenSource;
+use App\Contracts\Sessions\SessionTokenSource;
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
+use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
-use App\Exceptions\StartTokenRefused;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\RelayFrames;
 use App\Support\AgentRequestClient;
@@ -22,11 +22,11 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'mcp:relay', description: "Pass a started driver's MCP frames to the journal, signed")]
 final class RelayCommand extends Command
 {
-    public function handle(StartTokenSource $credentials, AgentRequestClient $client): int
+    public function handle(SessionTokenSource $credentials, AgentRequestClient $client): int
     {
         try {
             $settings = $credentials->forThisStart();
-        } catch (StartSettingMissing|StartTokenRefused $refused) {
+        } catch (StartSettingMissing|SessionTokenRefused $refused) {
             fwrite(STDERR, $refused->getMessage()."\n");
 
             return self::FAILURE;

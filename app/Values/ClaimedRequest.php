@@ -34,7 +34,7 @@ final readonly class ClaimedRequest
         public string|null $navigationRequestId,
         public NavigationRound|null $navigationRound,
         public string $sessionId,
-        public string|null $processStartId,
+        public string|null $sessionProcessId,
         public int $processGeneration,
         // Whether this is the start's bootstrap: the initial wake of a start still proving its conversation, which
         // carries no message text and makes the driver prove its conversation without a turn.

@@ -12,7 +12,7 @@ use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
-use App\Support\StartRecordDetails;
+use App\Support\SessionRequestDetails;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -110,16 +110,16 @@ final class ReportJobLinkTest extends TestCase
         );
     }
 
-    private function startFor(HelperJob $job, ActorIdentity $agent): StartRecordDetails
+    private function startFor(HelperJob $job, ActorIdentity $agent): SessionRequestDetails
     {
         return $this->start(HelperJob::linkType().':'.$job->id, $agent);
     }
 
-    private function start(string $ownerReference, ActorIdentity $agent): StartRecordDetails
+    private function start(string $ownerReference, ActorIdentity $agent): SessionRequestDetails
     {
         $this->assertSame(ActorType::Agent, $agent->type);
 
-        return new StartRecordDetails(
+        return new SessionRequestDetails(
             (string) Str::ulid(),
             $agent->id,
             'claude-code',

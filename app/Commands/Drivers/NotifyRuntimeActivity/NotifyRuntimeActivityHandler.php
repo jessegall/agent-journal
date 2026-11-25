@@ -85,7 +85,7 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
         $agent = ActorIdentity::of($runtime->session->agent);
 
         if (Message::query()->unreadBy($runtime->session->agent)->exists()) {
-            $this->attention->request($agent, AttentionOrigin::processStart($runtime->id, $processGeneration));
+            $this->attention->request($agent, AttentionOrigin::sessionProcess($runtime->id, $processGeneration));
         }
     }
 }

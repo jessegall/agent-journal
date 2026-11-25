@@ -546,7 +546,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * session's supervised start, if it has one; a bootstrap is the initial wake of a start still proving its
      * conversation.
      */
-    public function claimed(AgentRuntime $runtime, string|null $processStartId, bool $isBootstrap): ClaimedRequest
+    public function claimed(AgentRuntime $runtime, string|null $sessionProcessId, bool $isBootstrap): ClaimedRequest
     {
         return new ClaimedRequest(
             $this->agent_runtime_id,
@@ -565,7 +565,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             $this->navigation_request_id,
             $this->navigation_round,
             $runtime->agent_session_id,
-            $processStartId,
+            $sessionProcessId,
             $runtime->process_generation,
             $isBootstrap,
         );

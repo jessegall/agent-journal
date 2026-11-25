@@ -14,9 +14,9 @@ use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
 use App\Support\DatabaseClock;
 use App\Support\HeartbeatService;
+use App\Support\SessionTokens;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
-use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -73,7 +73,7 @@ final class RecordHeartbeatTest extends TestCase
     public function test_a_beat_with_a_revoked_credential_is_refused_and_writes_nothing(): void
     {
         $started = $this->start();
-        $this->app->make(StartTokens::class)->revoke($started->session);
+        $this->app->make(SessionTokens::class)->revoke($started->session);
 
         $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
     }

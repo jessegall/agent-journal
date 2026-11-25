@@ -24,12 +24,12 @@ final readonly class AgentRuntimes
     /**
      * @return array{0: AgentRuntime, 1: DriverRequest|null}
      */
-    public function open(AgentSession $session, RuntimeIntent $intent, string $startToken): array
+    public function open(AgentSession $session, RuntimeIntent $intent, string $sessionToken): array
     {
         $pin = $this->drivers->pinned($intent->driver, $intent->driverType);
         $runtime = AgentRuntime::create($session, $intent, $pin);
         $runtime->begin();
-        $runtime->holdStartGrant($startToken);
+        $runtime->holdStartGrant($sessionToken);
 
         if ($intent->firstMessage === null) {
             return [

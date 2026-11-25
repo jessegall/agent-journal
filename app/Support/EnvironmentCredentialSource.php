@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Sessions\StartTokenSource;
+use App\Contracts\Sessions\SessionTokenSource;
+use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
-use App\Exceptions\StartTokenRefused;
 
 /**
  * The start token read from JOURNAL_URL and JOURNAL_START_TOKEN in the driver's environment, refused when a
  * value is missing or a placeholder, or when the address leaves this machine without HTTPS.
  */
-final readonly class EnvironmentCredentialSource implements StartTokenSource
+final readonly class EnvironmentCredentialSource implements SessionTokenSource
 {
     private const array LOOPBACK_HOSTS = [
         'localhost',
@@ -25,7 +25,7 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
 
     /**
      * @throws StartSettingMissing
-     * @throws StartTokenRefused
+     * @throws SessionTokenRefused
      */
     public function forThisStart(): AgentClientSettings
     {
@@ -34,7 +34,7 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
 
         if (parse_url($journalUrl, PHP_URL_SCHEME) !== 'https'
             && ! in_array(parse_url($journalUrl, PHP_URL_HOST), self::LOOPBACK_HOSTS, true)) {
-            throw StartTokenRefused::insecureUrl($journalUrl);
+            throw SessionTokenRefused::insecureUrl($journalUrl);
         }
 
         return new AgentClientSettings($journalUrl, $token, $this->profile());
@@ -44,7 +44,7 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
      * The profile the start was pinned to; a missing or malformed pin is refused like any other credential.
      *
      * @throws StartSettingMissing
-     * @throws StartTokenRefused
+     * @throws SessionTokenRefused
      */
     private function profile(): StartProfilePin
     {
@@ -52,7 +52,7 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
         $revision = $this->usable('JOURNAL_PROFILE_REVISION');
 
         if (preg_match('/^[1-9][0-9]{0,8}$/', $revision) !== 1) {
-            throw StartTokenRefused::placeholder('JOURNAL_PROFILE_REVISION');
+            throw SessionTokenRefused::placeholder('JOURNAL_PROFILE_REVISION');
         }
 
         return new StartProfilePin($key, (int) $revision);
@@ -63,7 +63,7 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
         $credential = $this->start->value($name);
 
         if (trim($credential) === '' || str_contains($credential, '${') || str_contains($credential, '<')) {
-            throw StartTokenRefused::placeholder($name);
+            throw SessionTokenRefused::placeholder($name);
         }
 
         return $credential;

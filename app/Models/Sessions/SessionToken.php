@@ -9,9 +9,9 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\Sessions\StartTokenIssued;
-use App\Events\Sessions\StartTokenRevoked;
-use App\Events\Sessions\StartTokenRotated;
+use App\Events\Sessions\SessionTokenIssued;
+use App\Events\Sessions\SessionTokenRevoked;
+use App\Events\Sessions\SessionTokenRotated;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -52,7 +52,7 @@ final class SessionToken extends Model implements EventSource, ReadableModel
         $this->agent_session_id = $session->id;
         $this->token_hash = $hash;
         $this->assertSaved($this->save());
-        $this->raise(new StartTokenIssued($this->id, $session->id));
+        $this->raise(new SessionTokenIssued($this->id, $session->id));
     }
 
     /**
@@ -63,14 +63,14 @@ final class SessionToken extends Model implements EventSource, ReadableModel
         $this->token_hash = $hash;
         $this->revoked_at = null;
         $this->assertSaved($this->save());
-        $this->raise(new StartTokenRotated($this->id));
+        $this->raise(new SessionTokenRotated($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
         $this->assertSaved($this->save());
-        $this->raise(new StartTokenRevoked($this->id));
+        $this->raise(new SessionTokenRevoked($this->id));
     }
 
     // ----------[ Predicates ]----------

@@ -6,7 +6,7 @@ namespace App\Commands\Agents\ClaimStart;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Drivers\UnstartableDriver;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\ChildCheckoutRequested;
 use App\Exceptions\StartClaimRefused;
@@ -99,7 +99,7 @@ final readonly class ClaimStartHandler implements CommandHandler
     {
         $start = SessionProcess::supervised()
             ->where('session_id', $sessionId)
-            ->where('state', ProcessStartState::Pending->value)
+            ->where('state', SessionProcessState::Pending->value)
             ->lockForUpdate()
             ->first();
 

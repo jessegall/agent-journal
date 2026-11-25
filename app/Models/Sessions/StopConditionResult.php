@@ -9,8 +9,8 @@ use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\StopConditionResultType;
-use App\Values\StopResultLine;
-use App\Values\StopResultReport;
+use App\Values\StopConditionResultLine;
+use App\Values\StopConditionResultReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -62,7 +62,7 @@ final class StopConditionResult extends Model implements ReadableModel
     /**
      * Writes the attempt's result of each report in one insert.
      *
-     * @param  list<StopResultReport>  $reports
+     * @param  list<StopConditionResultReport>  $reports
      * @return list<string> the ids of the rows written
      */
     public static function createMany(StopCheck $attempt, array $reports): array
@@ -103,13 +103,13 @@ final class StopConditionResult extends Model implements ReadableModel
     /**
      * This result as an inspection shows it, under its condition's label; its raw output stays out.
      */
-    public function line(string $label): StopResultLine
+    public function line(string $label): StopConditionResultLine
     {
         $duration = $this->ended_at === null
             ? null
             : (int) $this->started_at->diffInMilliseconds($this->ended_at);
 
-        return new StopResultLine(
+        return new StopConditionResultLine(
             $label,
             $this->status,
             $duration,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\Sessions\StartRecordResolver;
-use App\Support\StartRecordDetails;
+use App\Contracts\Sessions\SessionRequestResolver;
+use App\Support\SessionRequestDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;
@@ -17,10 +17,10 @@ use Domain\Helpers\Models\HelperJob;
  */
 final readonly class HelperStarts
 {
-    public function __construct(private StartRecordResolver $starts) {}
+    public function __construct(private SessionRequestResolver $starts) {}
 
     /**
-     * @return list<StartRecordDetails>
+     * @return list<SessionRequestDetails>
      */
     public function of(HelperJob $job): array
     {
@@ -29,7 +29,7 @@ final readonly class HelperStarts
 
     public function hasRequest(HelperJob $job, string $requestId): bool
     {
-        return array_any($this->of($job), fn (StartRecordDetails $start) => $start->requestId === $requestId);
+        return array_any($this->of($job), fn (SessionRequestDetails $start) => $start->requestId === $requestId);
     }
 
     /**

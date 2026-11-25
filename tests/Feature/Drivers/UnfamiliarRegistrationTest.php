@@ -88,7 +88,7 @@ final class UnfamiliarRegistrationTest extends TestCase
             'progress' => 'applied',
             'actual_binding' => null,
             'session_id' => $claimed['sessionId'],
-            'session_process_id' => $claimed['processStartId'],
+            'session_process_id' => $claimed['sessionProcessId'],
             'process_generation' => $claimed['processGeneration'],
         ])->assertSuccessful();
 

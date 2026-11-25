@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Sessions;
 
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
 
@@ -15,7 +15,7 @@ use App\Support\RecordIdentity;
 interface StartReceipts
 {
     /**
-     * @throws StartRecordMissing
+     * @throws SessionRequestMissing
      */
     public function receiptFor(RecordIdentity $work): OwnerStartReceipt;
 }

@@ -311,13 +311,13 @@ final class EventPayloads
             HelperCompletionCertified::class => [
                 'fields' => [
                     'work' => 'App\Support\RecordIdentity',
-                    'attempt' => 'App\Values\StopAttemptReference',
+                    'attempt' => 'App\Values\StopCheckReference',
                 ],
             ],
             HelperStopHeld::class => [
                 'fields' => [
                     'work' => 'App\Support\RecordIdentity',
-                    'attempt' => 'App\Values\StopAttemptReference',
+                    'attempt' => 'App\Values\StopCheckReference',
                 ],
             ],
             LinksRemoved::class => [

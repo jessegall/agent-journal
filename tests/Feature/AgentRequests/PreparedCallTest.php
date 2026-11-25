@@ -6,8 +6,8 @@ namespace Tests\Feature\AgentRequests;
 
 use App\Exceptions\CallDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
+use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
-use App\Exceptions\StartTokenRefused;
 use App\Support\AgentClientSettings;
 use App\Support\AgentRequestClient;
 use App\Support\EnvironmentCredentialSource;
@@ -135,7 +135,7 @@ final class PreparedCallTest extends TestCase
                 fn () => $this->credentials(
                     ['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_START_TOKEN' => $token],
                 ),
-                StartTokenRefused::class,
+                SessionTokenRefused::class,
             );
         }
 
@@ -148,7 +148,7 @@ final class PreparedCallTest extends TestCase
             fn () => $this->credentials(
                 ['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_START_TOKEN' => 'start-token'],
             ),
-            StartTokenRefused::class,
+            SessionTokenRefused::class,
         );
 
         $this->assertSame(

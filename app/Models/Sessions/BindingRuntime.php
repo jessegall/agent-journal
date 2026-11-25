@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\Connections\BindingStartRecorded;
+use App\Events\Connections\BindingRuntimeRecorded;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,7 +47,7 @@ final class BindingRuntime extends Model implements EventSource, ReadableModel
         $start->session_id = $sessionId;
         $start->runtime_id = $runtimeId;
         $start->assertSaved($start->save());
-        $start->raise(new BindingStartRecorded($bindingId, $startId, $runtimeId, CarbonImmutable::now()));
+        $start->raise(new BindingRuntimeRecorded($bindingId, $startId, $runtimeId, CarbonImmutable::now()));
 
         return $start;
     }

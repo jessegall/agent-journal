@@ -11,18 +11,18 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Sessions\TransportProfileType;
-use App\Events\Sessions\ProcessStartCancelled;
-use App\Events\Sessions\ProcessStartClaimed;
-use App\Events\Sessions\ProcessStartOutputAdvanced;
-use App\Events\Sessions\ProcessStartSeenRunning;
-use App\Events\Sessions\ProcessStartStopped;
+use App\Events\Sessions\SessionProcessCancelled;
+use App\Events\Sessions\SessionProcessClaimed;
+use App\Events\Sessions\SessionProcessOutputAdvanced;
+use App\Events\Sessions\SessionProcessSeenRunning;
+use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\StartRefused;
-use App\Exceptions\ProcessStartUnknown;
+use App\Exceptions\SessionProcessUnknown;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
-use App\Models\Support\ProcessStartScope;
+use App\Models\Support\SessionProcessScope;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Values\SelectedAccount;
@@ -46,7 +46,7 @@ use Illuminate\Support\Str;
  * @property string $account_id
  * @property int $account_generation
  * @property string $directory
- * @property ProcessStartState $state
+ * @property SessionProcessState $state
  * @property TransportProfileType $transport_profile
  * @property AccountProcessRole $role
  * @property ?string $owner_start_id
@@ -81,7 +81,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'state' => ProcessStartState::class,
+            'state' => SessionProcessState::class,
             'transport_profile' => TransportProfileType::class,
             'role' => AccountProcessRole::class,
             'account_generation' => 'integer',
@@ -108,7 +108,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
         $start->account_id = $account->record->id;
         $start->account_generation = $account->generation;
         $start->directory = $account->directory;
-        $start->state = ProcessStartState::Pending;
+        $start->state = SessionProcessState::Pending;
         $start->transport_profile = $transport;
         $start->role = AccountProcessRole::Execution;
         $start->save();
@@ -125,7 +125,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     {
         $this->output_generation++;
         $this->save();
-        $this->raise(new ProcessStartOutputAdvanced($this->id, $this->output_generation));
+        $this->raise(new SessionProcessOutputAdvanced($this->id, $this->output_generation));
     }
 
     /**
@@ -134,14 +134,14 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function recordRunning(string $executionId): bool
     {
-        if ($this->state !== ProcessStartState::Starting) {
+        if ($this->state !== SessionProcessState::Starting) {
             return false;
         }
 
-        $this->state = ProcessStartState::Running;
+        $this->state = SessionProcessState::Running;
         $this->execution_id = $executionId;
         $this->save();
-        $this->raise(new ProcessStartSeenRunning($this->id, $executionId));
+        $this->raise(new SessionProcessSeenRunning($this->id, $executionId));
 
         return true;
     }
@@ -151,14 +151,14 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function stopWithProof(): bool
     {
-        if (! in_array($this->state, ProcessStartState::unresolved(), true)) {
+        if (! in_array($this->state, SessionProcessState::unresolved(), true)) {
             return false;
         }
 
-        $this->state = ProcessStartState::Stopped;
+        $this->state = SessionProcessState::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
-        $this->raise(new ProcessStartStopped($this->id));
+        $this->raise(new SessionProcessStopped($this->id));
 
         return true;
     }
@@ -169,13 +169,13 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function claim(): bool
     {
-        if ($this->state !== ProcessStartState::Pending) {
+        if ($this->state !== SessionProcessState::Pending) {
             return false;
         }
 
-        $this->state = ProcessStartState::Starting;
+        $this->state = SessionProcessState::Starting;
         $this->save();
-        $this->raise(new ProcessStartClaimed($this->id));
+        $this->raise(new SessionProcessClaimed($this->id));
 
         return true;
     }
@@ -196,7 +196,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function refuse(string $refusal): void
     {
-        $this->state = ProcessStartState::Stopped;
+        $this->state = SessionProcessState::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->refusal = $refusal;
         $this->assertSaved($this->save());
@@ -208,10 +208,10 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public function cancelPending(): void
     {
-        $this->state = ProcessStartState::Cancelled;
+        $this->state = SessionProcessState::Cancelled;
         $this->ended_at = CarbonImmutable::now();
         $this->save();
-        $this->raise(new ProcessStartCancelled($this->id));
+        $this->raise(new SessionProcessCancelled($this->id));
     }
 
     // ----------[ Accessors ]----------
@@ -243,7 +243,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      */
     public static function supervised(): ReadBuilder
     {
-        return self::query()->withoutGlobalScope(ProcessStartScope::class);
+        return self::query()->withoutGlobalScope(SessionProcessScope::class);
     }
 
     /**
@@ -316,14 +316,14 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     /**
      * The start the host claimed, by its key, locked; another host's start is as unknown as a missing one.
      *
-     * @throws ProcessStartUnknown
+     * @throws SessionProcessUnknown
      */
     public static function claimedBy(string $hostId, string $startKey): self
     {
         return self::supervised()
             ->onHost($hostId)
             ->underStartKey($startKey)
-            ->lockForUpdate()->firstOr(ProcessStartUnknown::throwing()->for($startKey));
+            ->lockForUpdate()->firstOr(SessionProcessUnknown::throwing()->for($startKey));
     }
 
     /**
@@ -402,7 +402,7 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unresolved(Builder $query): void
     {
-        $states = array_map(fn (ProcessStartState $state) => $state->value, ProcessStartState::unresolved());
+        $states = array_map(fn (SessionProcessState $state) => $state->value, SessionProcessState::unresolved());
         $query->whereIn('state', $states);
     }
 

@@ -10,7 +10,7 @@ use App\Support\SignedCall;
 use App\Support\StartProfilePin;
 use App\Support\AgentRuntimes;
 use App\Support\AgentSessions;
-use App\Support\StartTokens;
+use App\Support\SessionTokens;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -41,7 +41,7 @@ final readonly class TestStart
         $sessions = Container::getInstance()->make(AgentSessions::class);
         $session = $sessions->start($agent, TestSelections::of(), TestSelections::requestId());
 
-        return new self($agent, $session, new StartTokens()->issue($session));
+        return new self($agent, $session, new SessionTokens()->issue($session));
     }
 
     /**

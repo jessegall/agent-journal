@@ -13,7 +13,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartUnavailableReason;
@@ -136,7 +136,7 @@ final class AccountMaintenanceTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($agentId));
 
-        $this->assertSame(ProcessStartState::Cancelled, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
+        $this->assertSame(SessionProcessState::Cancelled, SessionProcess::query()->withoutGlobalScopes()->sole()->state);
         $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support\Readers;
 
 use App\Contracts\Sessions\StartReceipts;
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -21,7 +21,7 @@ final readonly class HelperRecords
 
     /**
      * @throws HelperUnavailable
-     * @throws StartRecordMissing
+     * @throws SessionRequestMissing
      */
     public function receiptOf(string $jobId): HelperReceipt
     {

@@ -24,11 +24,11 @@ use App\Enums\Sessions\StartPreflightRefusal;
 use App\Enums\Sessions\StartReadiness;
 use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartUnavailableReason;
+use App\Events\Sessions\SessionRequestRefused;
 use App\Events\Sessions\StartIdentityBecameUncertain;
 use App\Events\Sessions\StartIdentityBound;
 use App\Events\Sessions\StartIdentityPrepared;
 use App\Events\Sessions\StartIntentForgotten;
-use App\Events\Sessions\StartRecordRefused;
 use App\Events\Sessions\StartSessionOpened;
 use App\Events\Sessions\StartVerificationCancelled;
 use App\Exceptions\StartRefusalReplayed;
@@ -146,35 +146,35 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
         $requested = $selection->requested;
         $source = $selection->source;
 
-        $startRecord = new self();
-        $startRecord->request_id = $request->requestId;
-        $startRecord->agent_id = $request->agentId;
-        $startRecord->actor_type = $requester->type->value;
-        $startRecord->actor_id = $requester->id;
-        $startRecord->driver_key = (string) $pin->registration->key;
-        $startRecord->family = $pin->registration->family;
-        $startRecord->driver_label = $pin->registration->label;
-        $startRecord->catalogue_revision = $pin->catalogueRevision;
-        $startRecord->model = $selection->model;
-        $startRecord->requested_model_type = $requested->type;
-        $startRecord->requested_model = $requested->model;
-        $startRecord->driver_source = $source->driverSource;
-        $startRecord->profile_key = $source->profileKey;
-        $startRecord->profile_revision = $source->profileRevision;
-        $startRecord->origin_type = $request->origin;
-        $startRecord->owner_reference = $request->ownerWork?->reference();
-        $startRecord->context_reference = $request->contextReference;
-        $startRecord->conversation_mode = $request->conversationMode;
-        $startRecord->conversation_target = $request->conversationTarget;
-        $startRecord->driver_type = $request->driverType;
-        $startRecord->account_chosen = $request->chosenAccount !== null;
-        $startRecord->remember = $request->savesDriverType;
-        $startRecord->payload_digest = $request->digest();
-        $startRecord->disposition = StartDisposition::Accepted;
-        $startRecord->readiness = StartReadiness::Accepted;
-        $startRecord->assertSaved($startRecord->save());
+        $sessionRequest = new self();
+        $sessionRequest->request_id = $request->requestId;
+        $sessionRequest->agent_id = $request->agentId;
+        $sessionRequest->actor_type = $requester->type->value;
+        $sessionRequest->actor_id = $requester->id;
+        $sessionRequest->driver_key = (string) $pin->registration->key;
+        $sessionRequest->family = $pin->registration->family;
+        $sessionRequest->driver_label = $pin->registration->label;
+        $sessionRequest->catalogue_revision = $pin->catalogueRevision;
+        $sessionRequest->model = $selection->model;
+        $sessionRequest->requested_model_type = $requested->type;
+        $sessionRequest->requested_model = $requested->model;
+        $sessionRequest->driver_source = $source->driverSource;
+        $sessionRequest->profile_key = $source->profileKey;
+        $sessionRequest->profile_revision = $source->profileRevision;
+        $sessionRequest->origin_type = $request->origin;
+        $sessionRequest->owner_reference = $request->ownerWork?->reference();
+        $sessionRequest->context_reference = $request->contextReference;
+        $sessionRequest->conversation_mode = $request->conversationMode;
+        $sessionRequest->conversation_target = $request->conversationTarget;
+        $sessionRequest->driver_type = $request->driverType;
+        $sessionRequest->account_chosen = $request->chosenAccount !== null;
+        $sessionRequest->remember = $request->savesDriverType;
+        $sessionRequest->payload_digest = $request->digest();
+        $sessionRequest->disposition = StartDisposition::Accepted;
+        $sessionRequest->readiness = StartReadiness::Accepted;
+        $sessionRequest->assertSaved($sessionRequest->save());
 
-        return $startRecord;
+        return $sessionRequest;
     }
 
     // ----------[ Mutations ]----------
@@ -274,7 +274,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
         $this->refusal_reason = $reason->value;
         $this->refused_at = CarbonImmutable::now();
         $this->assertSaved($this->save());
-        $this->raise(new StartRecordRefused($this->id, $reason->value));
+        $this->raise(new SessionRequestRefused($this->id, $reason->value));
     }
 
     /**

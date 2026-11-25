@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Events\Hooks;
 
 use App\Support\RecordIdentity;
-use App\Values\StopAttemptReference;
+use App\Values\StopCheckReference;
 
 /**
  * A started agent failed its final checks three times in a row with the same failures and no change in between, so
@@ -15,6 +15,6 @@ final readonly class HelperStopHeld extends HookEvent
 {
     public function __construct(
         public RecordIdentity $work,
-        public StopAttemptReference $attempt,
+        public StopCheckReference $attempt,
     ) {}
 }

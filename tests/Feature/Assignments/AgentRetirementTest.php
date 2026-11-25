@@ -19,8 +19,8 @@ use App\Support\Access\AccessSettings;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\CredentialLookup;
+use App\Support\SessionTokens;
 use App\Support\StartSessions;
-use App\Support\StartTokens;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -98,9 +98,9 @@ final class AgentRetirementTest extends TestCase
         $this->assertCount(2, $result->changes);
         $this->assertTrue($this->helper->refresh()->isRetired());
         $this->assertSame(0, AssignmentRecord::query()->count());
-        $ended = AgentSession::query()->with('startToken')->findOrFail($session->id);
+        $ended = AgentSession::query()->with('sessionToken')->findOrFail($session->id);
         $this->assertFalse($ended->isActive());
-        $this->assertNotNull($ended->startToken?->revoked_at);
+        $this->assertNotNull($ended->sessionToken?->revoked_at);
     }
 
     public function test_a_main_agent_retires_a_helper_but_not_itself_and_a_helper_retires_nobody(): void
@@ -209,9 +209,9 @@ final class AgentRetirementTest extends TestCase
         $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->helper->id));
         pcntl_waitpid($child, $status);
 
-        $session = AgentSession::query()->with('startToken')->where('agent_id', $this->helper->id)->sole();
+        $session = AgentSession::query()->with('sessionToken')->where('agent_id', $this->helper->id)->sole();
         $this->assertFalse($session->isActive());
-        $this->assertNotNull($session->startToken?->revoked_at);
+        $this->assertNotNull($session->sessionToken?->revoked_at);
     }
 
     /**
@@ -230,7 +230,7 @@ final class AgentRetirementTest extends TestCase
                 TestSelections::of(),
                 TestSelections::requestId(),
             );
-            $this->app->make(StartTokens::class)->issue($session);
+            $this->app->make(SessionTokens::class)->issue($session);
             $this->holdUntilTheRetirementWaits($parent);
         });
         DB::disconnect();

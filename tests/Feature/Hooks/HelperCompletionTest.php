@@ -41,8 +41,8 @@ use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use App\Values\StopCondition;
+use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
-use App\Values\StopResultReport;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
@@ -263,7 +263,7 @@ final class HelperCompletionTest extends TestCase
         $condition = StopCondition::cleanWorktree();
 
         $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopResultReport(
+            new StopConditionResultReport(
                 $condition->key,
                 $condition->definitionHash(),
                 $status,

@@ -14,12 +14,12 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Readers\SessionInspections;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Values\ProfileKey;
-use App\Values\SettledStopAttempts;
+use App\Values\SettledStopChecks;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
+use App\Values\StopConditionResultLine;
+use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
-use App\Values\StopResultLine;
-use App\Values\StopResultReport;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
@@ -63,7 +63,7 @@ final class SessionInspectionTest extends TestCase
         $this->assertSame(ExecutionModeType::ProtectedHost, $inspection->executionMode);
         $this->assertSame(6 * 3600, $inspection->wallSeconds);
         $this->assertSame([StopCondition::cleanWorktree()->label], $inspection->stopConditions);
-        $this->assertEquals([new StopResultLine(
+        $this->assertEquals([new StopConditionResultLine(
             StopCondition::cleanWorktree()->label,
             StopConditionResultType::Failed,
             1000,
@@ -86,12 +86,12 @@ final class SessionInspectionTest extends TestCase
     {
         $writer->startRequest($this->app);
         $hook = new HookIdentity($writer->agent->id, $writer->session->id, 'stop-1', 'digest');
-        $this->app->make(StopConditionGate::class)->answer($hook, new SettledStopAttempts([]));
+        $this->app->make(StopConditionGate::class)->answer($hook, new SettledStopChecks([]));
         $attempt = StopCheck::query()->withoutGlobalScopes()->where('stop_id', 'stop-1')->sole();
         $condition = StopCondition::cleanWorktree();
 
         $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopResultReport(
+            new StopConditionResultReport(
                 $condition->key,
                 $condition->definitionHash(),
                 StopConditionResultType::Failed,

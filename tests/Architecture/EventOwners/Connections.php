@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\CommandRunState;
 use App\Enums\Projects\ProjectReadFailure;
-use App\Events\Connections\BindingStartRecorded;
+use App\Events\Connections\BindingRuntimeRecorded;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;
 use App\Events\Connections\DeviceGrantPolled;
@@ -50,12 +50,12 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
-    BindingStartRecorded::class => [
+    BindingRuntimeRecorded::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'BindingStart::create',
+        'owner' => 'BindingRuntime::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new BindingStartRecorded('binding', 'start', 'runtime', new DateTimeImmutable('2026-01-01')),
+        'sample' => fn () => new BindingRuntimeRecorded('binding', 'start', 'runtime', new DateTimeImmutable('2026-01-01')),
     ],
     ProjectBindingEnvironmentAssigned::class => [
         'role' => EventRole::RowFact,

@@ -11,7 +11,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Enums\Agents\AccessType;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Assignments\AssignmentReason;
 use App\Events\Sessions\AccountUseChanged;
 use App\Exceptions\AgentRetirementDenied;
@@ -28,7 +28,7 @@ use App\Support\AssignmentResult;
 use App\Support\DriverRequests;
 use App\Support\Lifecycle\AgentLifecycle;
 use App\Support\RecordIdentity;
-use App\Support\StartTokens;
+use App\Support\SessionTokens;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 
@@ -42,7 +42,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private CurrentAuthorizer $authorizer,
         private AgentLifecycle $lifecycle,
         private AgentSessions $sessions,
-        private StartTokens $credentials,
+        private SessionTokens $credentials,
         private AssignmentStorage $store,
         private AssignmentFactPublisher $facts,
         private DriverRequests $requests,
@@ -98,7 +98,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $sessions = AgentSession::query()
             ->ofAgent($target->id)
-            ->withStartToken()
+            ->withSessionToken()
             ->readAll('every session of the retiring agent ends')
             ->get();
 
@@ -115,7 +115,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 
             $this->sessions->end($session);
 
-            if ($session->startToken !== null) {
+            if ($session->sessionToken !== null) {
                 $this->credentials->revoke($session);
             }
         }
@@ -131,7 +131,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $starts = SessionProcess::supervised()
             ->where('agent_id', $agentId)
-            ->where('state', ProcessStartState::Pending->value)
+            ->where('state', SessionProcessState::Pending->value)
             ->lockForUpdate()
             ->readAll('a retiring agent has few starts')
             ->get();

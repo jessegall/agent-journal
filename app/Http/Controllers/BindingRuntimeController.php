@@ -25,7 +25,7 @@ final readonly class BindingRuntimeController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $commands->run($request->asBindingStart($host->hostId, $binding));
+        $commands->run($request->asBindingRuntime($host->hostId, $binding));
 
         // A start asked again under its id, after a lost reply or a restart, answers the runtime it opened.
         foreach ($request->startId === '' ? [] : BindingRuntime::ofBinding($binding, $request->startId) as $earlier) {

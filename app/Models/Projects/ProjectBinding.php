@@ -18,7 +18,7 @@ use App\Events\Connections\ProjectBindingLeased;
 use App\Events\Connections\ProjectBindingLeaseEnded;
 use App\Events\Connections\ProjectBindingReadinessChanged;
 use App\Events\Connections\ProjectBindingRevoked;
-use App\Exceptions\BindingStartRefused;
+use App\Exceptions\BindingRuntimeRefused;
 use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\PresenceRefused;
 use App\Models\Agents\Agent;
@@ -240,7 +240,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Puts a binding with no environment into an environment of its own project, the owner's explicit choice.
      *
-     * @throws BindingStartRefused
+     * @throws BindingRuntimeRefused
      */
     public function assignEnvironment(Environment $environment): void
     {
@@ -431,12 +431,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Refuses an environment of another project.
      *
-     * @throws BindingStartRefused
+     * @throws BindingRuntimeRefused
      */
     private function assertOwnProjects(Environment $environment): void
     {
         if ($environment->project_id !== $this->project_id) {
-            throw BindingStartRefused::otherProjectsEnvironment($this->id);
+            throw BindingRuntimeRefused::otherProjectsEnvironment($this->id);
         }
     }
 

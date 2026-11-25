@@ -17,8 +17,8 @@ final readonly class CredentialLookup
 
     public function sessionFor(string $token): AgentSession
     {
-        $session = AgentSession::query()->withStartTokenAndAgent()
-            ->withStartTokenHash(StartTokens::hashOf($token))
+        $session = AgentSession::query()->withSessionTokenAndAgent()
+            ->withSessionTokenHash(SessionTokens::hashOf($token))
             ->first();
 
         if ($session === null) {

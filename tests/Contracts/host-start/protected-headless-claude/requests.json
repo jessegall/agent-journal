@@ -22,7 +22,7 @@
             "navigationRequestId": null,
             "navigationRound": null,
             "sessionId": "01contractsession000000000",
-            "processStartId": "01contractstart00000000000",
+            "sessionProcessId": "01contractstart00000000000",
             "processGeneration": 1,
             "shouldBootstrap": false
         }

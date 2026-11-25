@@ -6,7 +6,7 @@ namespace Tests\Unit\Agents;
 
 use App\Contracts\Hosts\HostOperatorAccess;
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Agents\StatusActionType;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverSwitchStage;
@@ -115,7 +115,7 @@ final class AgentStatusTest extends TestCase
             'generic refusal of the initial wake' => [
                 self::live(
                     self::runtime(RuntimeActivity::Starting),
-                    start: ProcessStartState::Pending,
+                    start: SessionProcessState::Pending,
                     request: self::refusedWake(),
                 ),
                 SessionState::Unknown,
@@ -222,7 +222,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            ProcessStartState::Running,
+            SessionProcessState::Running,
             self::runtime(RuntimeActivity::Idle),
             true,
             null,
@@ -301,7 +301,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            ProcessStartState::Starting,
+            SessionProcessState::Starting,
             self::runtime(RuntimeActivity::Idle),
             true,
             null,
@@ -331,7 +331,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            ProcessStartState::Running,
+            SessionProcessState::Running,
             self::runtime(RuntimeActivity::Idle, isStale: true),
             true,
             null,
@@ -358,7 +358,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            ProcessStartState::Running,
+            SessionProcessState::Running,
             self::runtime(RuntimeActivity::Running),
             true,
             null,
@@ -391,7 +391,7 @@ final class AgentStatusTest extends TestCase
             false,
             self::SESSION,
             SessionStatus::Active,
-            ProcessStartState::Running,
+            SessionProcessState::Running,
             self::runtime(RuntimeActivity::Running),
             true,
             new SwitchEvidence('01jd8x0g9m3qz6v4k2t7r5w1cg', DriverSwitchStage::StartUnconfirmed, 4),
@@ -437,7 +437,7 @@ final class AgentStatusTest extends TestCase
         SessionStatus $status = SessionStatus::Active,
         SwitchEvidence|null $switch = null,
         LaunchOutcome|null $launch = null,
-        ProcessStartState $start = ProcessStartState::Running,
+        SessionProcessState $start = SessionProcessState::Running,
         DriverRequestStatus|null $request = null,
         bool $isTerminal = false,
     ): AgentEvidence {

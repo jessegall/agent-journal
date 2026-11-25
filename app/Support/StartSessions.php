@@ -26,7 +26,7 @@ final readonly class StartSessions
     public function __construct(
         private StartTransaction $transaction,
         private AgentSessions $sessions,
-        private StartTokens $credentials,
+        private SessionTokens $credentials,
         private AgentRuntimes $runtimes,
         private Dispatcher $events,
         private CommandFacts $facts,

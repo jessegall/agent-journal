@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\DriverSwitchCancelled;
@@ -188,7 +188,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
      * the switch only when it was observed running after its stop was accepted; a replacement that runs is confirmed
      * and one that ended failed.
      */
-    public function recheck(ProcessStartState|null $reported, AgentRuntime|null $source): void
+    public function recheck(SessionProcessState|null $reported, AgentRuntime|null $source): void
     {
         if ($this->stage === DriverSwitchStage::Stopping) {
             $this->moveTo(DriverSwitchStage::StopUnconfirmed);
@@ -202,12 +202,12 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $waitsForStart = $this->stage === DriverSwitchStage::StartUnconfirmed;
 
         match (true) {
-            $waitsForStop && $reported === ProcessStartState::Stopped => $this->markStopped(),
+            $waitsForStop && $reported === SessionProcessState::Stopped => $this->markStopped(),
             $waitsForStop
-                && $reported === ProcessStartState::Running
+                && $reported === SessionProcessState::Running
                 && $this->isSourceSeenAfterStop($source) => $this->cancel('the old session still runs'),
-            $waitsForStart && $reported === ProcessStartState::Running => $this->confirm(),
-            $waitsForStart && $reported === ProcessStartState::Stopped => $this->failLaunch('the new session ended'),
+            $waitsForStart && $reported === SessionProcessState::Running => $this->confirm(),
+            $waitsForStart && $reported === SessionProcessState::Stopped => $this->failLaunch('the new session ended'),
             default => null,
         };
     }

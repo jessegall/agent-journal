@@ -12,7 +12,7 @@ final readonly class RequestReportBinding
 {
     public function __construct(
         public string $sessionId,
-        public string|null $processStartId,
+        public string|null $sessionProcessId,
         public int $processGeneration,
     ) {}
 }

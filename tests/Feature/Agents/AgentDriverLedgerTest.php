@@ -794,7 +794,7 @@ final class AgentDriverLedgerTest extends TestCase
             [],
         )->assertSuccessful();
         $fixedValues[(string) $claimed->json('requests.0.requestId')] = '01contractrequest000000000';
-        $fixedValues[(string) $claimed->json('requests.0.processStartId')] = '01contractstart00000000000';
+        $fixedValues[(string) $claimed->json('requests.0.sessionProcessId')] = '01contractstart00000000000';
 
         HostContract::of('host-start/protected-headless-claude/requests.json')->assertHolds((array) $claimed->json(), $fixedValues);
 
@@ -1119,10 +1119,10 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->notifyExit($host, $opened);
 
-        $session = AgentSession::query()->with('startToken')->findOrFail($opened->sessionId);
+        $session = AgentSession::query()->with('sessionToken')->findOrFail($opened->sessionId);
         $requests = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)->get();
         $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertTrue($session->startToken?->isRevoked());
+        $this->assertTrue($session->sessionToken?->isRevoked());
         $this->assertSame(RuntimeActivity::Stopped, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
         $this->assertTrue($requests->every(fn (DriverRequest $request) => $request->progress->isFinal()));
         $progress = $requests->mapWithKeys(
@@ -1353,7 +1353,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'refusal_reason' => $reason,
                 'has_created_no_process' => true,
                 'session_id' => $claimed['sessionId'],
-                'session_process_id' => $claimed['processStartId'],
+                'session_process_id' => $claimed['sessionProcessId'],
                 'process_generation' => $claimed['processGeneration'],
             ])->assertSuccessful();
         }
@@ -1802,7 +1802,7 @@ final class AgentDriverLedgerTest extends TestCase
             'refusal_reason' => $reason,
             'has_created_no_process' => $hasCreatedNoProcess,
             'session_id' => $claimed['sessionId'],
-            'session_process_id' => $claimed['processStartId'],
+            'session_process_id' => $claimed['sessionProcessId'],
             'process_generation' => $claimed['processGeneration'],
         ])->assertSuccessful();
     }

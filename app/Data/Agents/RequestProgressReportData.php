@@ -35,7 +35,7 @@ final class RequestProgressReportData extends Data
         public readonly string|null $refusalReason = null,
         public readonly bool $hasCreatedNoProcess = false,
         public readonly string|null $sessionId = null,
-        public readonly string|null $processStartId = null,
+        public readonly string|null $sessionProcessId = null,
         public readonly int|null $processGeneration = null,
         public readonly int|null $sequence = null,
     ) {}
@@ -96,7 +96,7 @@ final class RequestProgressReportData extends Data
             return null;
         }
 
-        return new RequestReportBinding($this->sessionId, $this->processStartId, $this->processGeneration);
+        return new RequestReportBinding($this->sessionId, $this->sessionProcessId, $this->processGeneration);
     }
 
     /**

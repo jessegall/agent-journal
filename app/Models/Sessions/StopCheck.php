@@ -12,15 +12,15 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Assignments\ActorType;
 use App\Enums\Sessions\StopCheckState;
-use App\Events\Sessions\StopAttemptCertified;
-use App\Events\Sessions\StopAttemptSettled;
+use App\Events\Sessions\StopCheckCertified;
+use App\Events\Sessions\StopCheckSettled;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\RelationRead;
-use App\Values\StopAttemptReference;
+use App\Values\StopCheckReference;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -82,7 +82,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         $this->state = $state;
         $this->submission_digest = $submissionDigest;
         $this->assertSaved($this->save());
-        $this->raise(new StopAttemptSettled($this->id, $state, $this->outcomeOf($failureSummary)));
+        $this->raise(new StopCheckSettled($this->id, $state, $this->outcomeOf($failureSummary)));
     }
 
     /**
@@ -92,7 +92,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     {
         $this->certified_at = Carbon::now();
         $this->assertSaved($this->save());
-        $this->raise(new StopAttemptCertified($this->id));
+        $this->raise(new StopCheckCertified($this->id));
     }
 
     // ----------[ Predicates ]----------
@@ -154,11 +154,11 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<StopAttemptReference, never>
+     * @return Attribute<StopCheckReference, never>
      */
     protected function reference(): Attribute
     {
-        return Accessor::get(fn () => new StopAttemptReference($this->id));
+        return Accessor::get(fn () => new StopCheckReference($this->id));
     }
 
     // ----------[ Relations ]----------
@@ -176,7 +176,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
     /**
      * The agent whose session made the attempt, as the actor that asks for help when its stop is held.
      */
-    public static function agentOf(StopAttemptReference $attempt): ActorIdentity
+    public static function agentOf(StopCheckReference $attempt): ActorIdentity
     {
         $sessionId = self::query()->withoutGlobalScope(AgentSessionScope::class)->findOrFail($attempt->attemptId)
             ->session_id;

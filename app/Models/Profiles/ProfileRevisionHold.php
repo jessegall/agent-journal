@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\Sessions\RevisionFenceReconciled;
+use App\Events\Sessions\ProfileRevisionHoldReconciled;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -51,7 +51,7 @@ final class ProfileRevisionHold extends Model implements EventSource, ReadableMo
     {
         $this->reconciled_at = $time;
         $this->assertSaved($this->save());
-        $this->raise(new RevisionFenceReconciled($this->id));
+        $this->raise(new ProfileRevisionHoldReconciled($this->id));
     }
 
     // ----------[ Queries ]----------

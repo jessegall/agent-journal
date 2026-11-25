@@ -16,8 +16,8 @@ use App\Values\AgentText;
 use App\Values\SelectedAccount;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
+use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
-use App\Values\StopResultReport;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AsksTheStopGate;
@@ -134,7 +134,7 @@ final class StopConditionRunnerTest extends TestCase
         $condition = StopCondition::cleanWorktree();
 
         $this->asSystem(new RecordStopConditionResultsCommand('host-1', $attempt->id, $attempt->policy_digest, 0, [
-            new StopResultReport(
+            new StopConditionResultReport(
                 $condition->key,
                 $condition->definitionHash(),
                 $status,

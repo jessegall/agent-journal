@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Sessions\StartTokenSource;
+use App\Contracts\Sessions\SessionTokenSource;
 use App\Support\OfflineReplySeal;
 use App\Support\Relay\HookRelay;
 use App\Support\Relay\RelaySettings;
@@ -22,7 +22,7 @@ final class RelayHookCommand extends Command
 
     public function handle(
         HookRelay $relay,
-        StartTokenSource $credentials,
+        SessionTokenSource $credentials,
         StartEnvironment $start,
         OfflineReplySeal $seal,
     ): int {

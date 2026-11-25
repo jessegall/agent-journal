@@ -16,7 +16,7 @@ final readonly class SessionInspection
 {
     /**
      * @param  list<string>  $stopConditions
-     * @param  list<StopResultLine>  $lastStop
+     * @param  list<StopConditionResultLine>  $lastStop
      */
     public function __construct(
         public string|null $profileKey,
@@ -32,7 +32,7 @@ final readonly class SessionInspection
     /**
      * The inspection of a session's frozen policy with the results of its last stop.
      *
-     * @param  list<StopResultLine>  $lastStop
+     * @param  list<StopConditionResultLine>  $lastStop
      */
     public static function of(SessionPolicy $policy, array $lastStop): self
     {

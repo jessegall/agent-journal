@@ -10,7 +10,7 @@ use App\Events\Sessions\LaunchCancelled;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
-use App\Values\StopAttemptReference;
+use App\Values\StopCheckReference;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Listeners\HoldFailingJob;
 use Domain\Helpers\Models\HelperIdentity;
@@ -34,7 +34,7 @@ final class HelperJobEndingTest extends TestCase
     {
         $job = $this->job();
 
-        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopAttemptReference('attempt-1')));
+        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopCheckReference('attempt-1')));
 
         $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
         $this->assertSame(JobState::Finished, $finished->state);
@@ -50,7 +50,7 @@ final class HelperJobEndingTest extends TestCase
         $this->actAsUser('another');
 
         $this->app->make(HoldFailingJob::class)->handle(
-            new HelperStopHeld($held->assignmentIdentity(), new StopAttemptReference('attempt-2')),
+            new HelperStopHeld($held->assignmentIdentity(), new StopCheckReference('attempt-2')),
         );
 
         $this->raise(new LaunchCancelled($cancelled->assignmentIdentity()));
@@ -64,7 +64,7 @@ final class HelperJobEndingTest extends TestCase
         $job = $this->job();
         $job->cancel();
 
-        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopAttemptReference('attempt-3')));
+        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopCheckReference('attempt-3')));
         $this->raise(new LaunchCancelled(new RecordIdentity('tasks.task', $job->id)));
 
         $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->state);

@@ -52,7 +52,7 @@ final readonly class InitialWakeSettlement
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $binding, $report): void {
             $start = SessionProcess::lockedCurrentOf($sessionId);
 
-            if ($start === null || $start->id !== $binding->processStartId) {
+            if ($start === null || $start->id !== $binding->sessionProcessId) {
                 return;
             }
 

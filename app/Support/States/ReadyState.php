@@ -8,7 +8,7 @@ use App\Attributes\StateType;
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
-use App\Events\Sessions\StopAttemptSettled;
+use App\Events\Sessions\StopCheckSettled;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\ContextCompacted;
@@ -23,7 +23,7 @@ use App\Support\Inputs\ToolRequested;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Values\AgentText;
 use App\Values\Operation;
-use App\Values\SettledStopAttempts;
+use App\Values\SettledStopChecks;
 
 /**
  * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. It allows a file
@@ -90,7 +90,7 @@ class ReadyState extends AgentState
 
     public function onStop(StopRequested $input): Decision|MessageLine
     {
-        $answer = $this->stops->answer($input->hook, new SettledStopAttempts($this->settledAttempts));
+        $answer = $this->stops->answer($input->hook, new SettledStopChecks($this->settledAttempts));
         $answer->attemptId->forAll($this->keepOpenedAttempt(...));
 
         return $answer->reply;
@@ -116,7 +116,7 @@ class ReadyState extends AgentState
     /**
      * Keeps the outcome of an attempt this stack opened, in the order the attempts were opened.
      */
-    public function onStopAttemptSettled(StopAttemptSettled $event): void
+    public function onStopCheckSettled(StopCheckSettled $event): void
     {
         if (! in_array($event->attemptId, $this->openAttempts, true)) {
             return;

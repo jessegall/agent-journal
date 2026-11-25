@@ -78,7 +78,7 @@ use Illuminate\Support\Carbon;
  * @property mixed $target attribute
  * @property Agent $agent
  * @property ?DriverConversation $currentConversation
- * @property SessionToken $startToken
+ * @property SessionToken $sessionToken
  * @property Collection<int, ConversationVisit>|ConversationVisit[] $visits
  */
 final class AgentSession extends Model implements EventSource, ReadableModel
@@ -294,7 +294,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     /**
      * @return HasOne<SessionToken, $this>
      */
-    public function startToken(): HasOne
+    public function sessionToken(): HasOne
     {
         return $this->hasOne(SessionToken::class, 'agent_session_id');
     }
@@ -470,7 +470,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     public static function lockedForHeartbeat(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->with([
-            'startToken',
+            'sessionToken',
             'agent',
         ])->lockForUpdate()->firstOrFail();
     }
@@ -539,7 +539,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $query->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
             ->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds))
-            ->whereHas('startToken', fn (Builder $startToken) => $startToken->whereNull('revoked_at'))
+            ->whereHas('sessionToken', fn (Builder $sessionToken) => $sessionToken->whereNull('revoked_at'))
             ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
     }
 
@@ -716,25 +716,25 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The rows with their startToken and agent loaded.
+     * The rows with their sessionToken and agent loaded.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withStartTokenAndAgent(Builder $query): void
+    protected function withSessionTokenAndAgent(Builder $query): void
     {
-        $query->with(['startToken', 'agent']);
+        $query->with(['sessionToken', 'agent']);
     }
 
     /**
-     * The rows with their startToken loaded.
+     * The rows with their sessionToken loaded.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withStartToken(Builder $query): void
+    protected function withSessionToken(Builder $query): void
     {
-        $query->with('startToken');
+        $query->with('sessionToken');
     }
 
     /**
@@ -823,9 +823,9 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withStartTokenHash(Builder $query, string $hash): void
+    protected function withSessionTokenHash(Builder $query, string $hash): void
     {
-        $query->whereHas('startToken', fn (Builder $startToken) => $startToken->where('token_hash', $hash));
+        $query->whereHas('sessionToken', fn (Builder $sessionToken) => $sessionToken->where('token_hash', $hash));
     }
 
     /**

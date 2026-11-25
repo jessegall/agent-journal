@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartReadiness;
@@ -21,7 +21,7 @@ final readonly class AgentEvidence
         public bool $isRetired,
         public string|null $sessionId,
         public SessionStatus|null $sessionStatus,
-        public ProcessStartState|null $processStart,
+        public SessionProcessState|null $sessionProcess,
         public RuntimeEvidence|null $runtime,
         public bool $expectsRuntime,
         public SwitchEvidence|null $switch,

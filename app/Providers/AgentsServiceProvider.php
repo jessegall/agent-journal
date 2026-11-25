@@ -43,14 +43,14 @@ use App\Contracts\Sessions\LaunchCandidates;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Contracts\Sessions\SessionProvenance as SessionProvenanceContract;
+use App\Contracts\Sessions\SessionRequestResolver;
 use App\Contracts\Sessions\SessionResolver;
+use App\Contracts\Sessions\SessionTokenSource;
 use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartPreflight;
 use App\Contracts\Sessions\StartReceipts;
-use App\Contracts\Sessions\StartRecordResolver;
 use App\Contracts\Sessions\StartReservations;
-use App\Contracts\Sessions\StartTokenSource;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Settings\SettingsResolver;
 use App\Contracts\Work\HelperCommitImport as HelperCommitImportContract;
@@ -62,7 +62,7 @@ use App\Exceptions\AgentContextMissing;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Sessions\SessionProcess;
-use App\Models\Support\ProcessStartScope;
+use App\Models\Support\SessionProcessScope;
 use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
 use App\Policies\AgentPolicy;
@@ -78,7 +78,7 @@ use App\Resolvers\OwnerStartReceipts;
 use App\Resolvers\RecordedHostCapabilities;
 use App\Resolvers\RuntimeRecords;
 use App\Resolvers\SessionRecords;
-use App\Resolvers\StartRecords;
+use App\Resolvers\SessionRequests;
 use App\Resolvers\Support\CurrentAgentRuntimes;
 use App\Resolvers\Support\PendingStartSecrets;
 use App\Resolvers\UnconfiguredAccounts;
@@ -209,7 +209,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
         $this->app->bind(CallSender::class, SignedCallSender::class);
         $this->app->bind(CallRegistrar::class, CallRoutes::class);
-        $this->app->bind(StartRecordResolver::class, StartRecords::class);
+        $this->app->bind(SessionRequestResolver::class, SessionRequests::class);
         $this->app->bind(DriverConversationResolver::class, DriverConversationRecords::class);
 
         $this->app->bind(
@@ -295,7 +295,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
-        $this->app->bind(StartTokenSource::class, EnvironmentCredentialSource::class);
+        $this->app->bind(SessionTokenSource::class, EnvironmentCredentialSource::class);
         $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
         $this->app->bind(StartPreflight::class, HostStartPreflight::class);
         $this->app->bind(AccountUses::class, LinkedAccountUses::class);
@@ -303,7 +303,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bind(
             AgentClientSettings::class,
-            fn ($app) => $app->make(StartTokenSource::class)->forThisStart(),
+            fn ($app) => $app->make(SessionTokenSource::class)->forThisStart(),
         );
 
         $this->app->singleton(PendingWorkSources::class);
@@ -335,7 +335,7 @@ final class AgentsServiceProvider extends ServiceProvider
                 ->hourly(),
         );
 
-        $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
+        $starts = new SessionProcessScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.SessionProcess::class, fn () => SessionProcess::addGlobalScope($starts));
 
         $policies->register('Core', new PolicyDefinition(ActivityPolicy::class, [AccessType::Read]));

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Enums\Hooks\AnswerType;
-use App\Events\Sessions\StopAttemptSettled;
+use App\Events\Sessions\StopCheckSettled;
 use App\Support\Decisions\ContextLine;
 use App\Support\Decisions\MessageLine;
 use App\Support\Inputs\StopRequested;
@@ -37,7 +37,7 @@ trait AsksTheStopGate
     {
         if (! isset($this->readyState)) {
             $this->readyState = $this->app->make(ReadyState::class);
-            Event::listen(StopAttemptSettled::class, $this->readyState->onStopAttemptSettled(...));
+            Event::listen(StopCheckSettled::class, $this->readyState->onStopCheckSettled(...));
         }
 
         return $this->readyState;

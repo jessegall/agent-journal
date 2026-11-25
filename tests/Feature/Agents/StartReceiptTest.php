@@ -8,7 +8,7 @@ use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
-use App\Contracts\Sessions\StartRecordResolver;
+use App\Contracts\Sessions\SessionRequestResolver;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
@@ -17,7 +17,7 @@ use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\CapacityUnavailable;
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRequestConflict;
 use App\Models\Access\User;
@@ -176,7 +176,7 @@ final class StartReceiptTest extends TestCase
         $request = $this->containerRequest(TestSelections::requestId());
         $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
 
-        $receipt = $this->app->make(StartRecordResolver::class)->receipt($request->requestId);
+        $receipt = $this->app->make(SessionRequestResolver::class)->receipt($request->requestId);
 
         $this->assertSame(
             [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
@@ -184,8 +184,8 @@ final class StartReceiptTest extends TestCase
         );
         $this->startRequestAs(Agent::create('Reader', 'writing-helper')->id, TestSelections::requestId());
         $this->assertThrows(
-            fn () => $this->app->make(StartRecordResolver::class)->receipt($request->requestId),
-            StartRecordMissing::class,
+            fn () => $this->app->make(SessionRequestResolver::class)->receipt($request->requestId),
+            SessionRequestMissing::class,
         );
     }
 

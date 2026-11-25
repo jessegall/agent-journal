@@ -23,7 +23,7 @@ final readonly class NotifyRuntimeExitHandler implements CommandHandler
     public function handle(NotifyRuntimeExitCommand $command): void
     {
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
-        $session = AgentSession::query()->withStartTokenAndAgent()->findOrFail($runtime->agent_session_id);
+        $session = AgentSession::query()->withSessionTokenAndAgent()->findOrFail($runtime->agent_session_id);
 
         $this->heartbeats->recordExit(
             $session,

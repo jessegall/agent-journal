@@ -8,7 +8,7 @@ use App\Attributes\Entry;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Sessions\StopCheckState;
 use App\Support\Command;
-use App\Values\StopResultReport;
+use App\Values\StopConditionResultReport;
 
 /**
  * The host ran a stop attempt's conditions and reports every result at once; the attempt settles as passed, failed
@@ -21,7 +21,7 @@ use App\Values\StopResultReport;
 final readonly class RecordStopConditionResultsCommand extends Command
 {
     /**
-     * @param  list<StopResultReport>  $stopReports
+     * @param  list<StopConditionResultReport>  $stopReports
      */
     public function __construct(
         public string $hostId,
@@ -37,7 +37,7 @@ final readonly class RecordStopConditionResultsCommand extends Command
     public function submissionDigest(): string
     {
         $fingerprints = array_map(
-            fn (StopResultReport $stopReport): array => $stopReport->fingerprint(),
+            fn (StopConditionResultReport $stopReport): array => $stopReport->fingerprint(),
             $this->stopReports,
         );
 

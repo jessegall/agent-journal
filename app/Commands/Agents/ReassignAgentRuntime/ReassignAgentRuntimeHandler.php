@@ -11,13 +11,13 @@ use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;
 use App\Support\DriverRequests;
-use App\Support\StartTokens;
+use App\Support\SessionTokens;
 
 final readonly class ReassignAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
-        private StartTokens $credentials,
+        private SessionTokens $credentials,
         private CommandFacts $facts,
     ) {}
 

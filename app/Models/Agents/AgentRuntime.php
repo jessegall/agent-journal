@@ -280,13 +280,13 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
      * rotated credential waiting for that host's start grant; reports of the old generation are refused after it.
      */
-    public function reassignTo(string $hostId, string $startToken): void
+    public function reassignTo(string $hostId, string $sessionToken): void
     {
         $this->host_id = $hostId;
         $this->process_generation++;
         $this->activity = RuntimeActivity::Starting;
         $this->hold_reason = HoldReason::None;
-        $this->start_grant = $startToken;
+        $this->start_grant = $sessionToken;
         $this->assertSaved($this->save());
         $this->raise(new AgentRuntimeHostChanged($this->id, $hostId, $this->process_generation));
     }

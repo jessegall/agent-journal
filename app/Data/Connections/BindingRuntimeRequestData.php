@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Connections;
 
-use App\Commands\Projects\AssertBindingStart\AssertBindingStartCommand;
 use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use Spatie\LaravelData\Data;
 
 /**
@@ -28,9 +28,9 @@ final class BindingRuntimeRequestData extends Data
     /**
      * The check that this host may start the binding's main runtime in this root, before any grant.
      */
-    public function asBindingStart(string $hostId, string $bindingId): AssertBindingStartCommand
+    public function asBindingRuntime(string $hostId, string $bindingId): AssertBindingRuntimeCommand
     {
-        return new AssertBindingStartCommand(
+        return new AssertBindingRuntimeCommand(
             $hostId,
             $bindingId,
             $this->rootId,

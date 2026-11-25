@@ -6,7 +6,7 @@ namespace App\Commands\Accounts\CancelAccountUses;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Events\Sessions\AccountUseChanged;
 use App\Models\Sessions\SessionProcess;
 use App\Support\RecordIdentity;
@@ -34,9 +34,9 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
     {
         return SessionProcess::supervised()
             ->onAccount($account)
-            ->where('state', ProcessStartState::Pending->value)
+            ->where('state', SessionProcessState::Pending->value)
             ->update([
-                'state' => ProcessStartState::Cancelled->value,
+                'state' => SessionProcessState::Cancelled->value,
                 'ended_at' => CarbonImmutable::now(),
             ]);
     }

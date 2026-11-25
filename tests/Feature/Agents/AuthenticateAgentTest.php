@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Exceptions\AgentContextMissing;
 use App\Support\AgentContext;
 use App\Support\AgentSessions;
-use App\Support\StartTokens;
+use App\Support\SessionTokens;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -47,7 +47,7 @@ final class AuthenticateAgentTest extends TestCase
     public function test_a_revoked_credential_gets_the_unauthenticated_body(): void
     {
         $start = TestStart::start();
-        new StartTokens()->revoke($start->session);
+        new SessionTokens()->revoke($start->session);
 
         $this->signed(
             $start,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hooks;
 
 use App\Support\AgentContext;
-use App\Support\StartBypasses;
+use App\Support\ReportedBypasses;
 use App\Values\BypassReport;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,7 +15,7 @@ use Illuminate\Http\Response;
  */
 final readonly class BypassReportController
 {
-    public function __construct(private StartBypasses $bypasses) {}
+    public function __construct(private ReportedBypasses $bypasses) {}
 
     public function __invoke(Request $request, AgentContext $context): Response
     {

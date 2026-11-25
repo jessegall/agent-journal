@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartReadiness;
 use App\Models\Agents\AgentRuntime;
@@ -42,7 +42,7 @@ final readonly class AgentFacts
         $isOwnerStart = $session?->parent_session_id !== null;
 
         $launchInProgress = $this->launch?->disposition === StartDisposition::Accepted
-            || in_array($this->start?->state, ProcessStartState::unresolved(), true);
+            || in_array($this->start?->state, SessionProcessState::unresolved(), true);
 
         return new AgentEvidence(
             $isRetired,

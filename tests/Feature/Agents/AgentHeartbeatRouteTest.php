@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Contracts\Time\ServerClock;
 use App\Models\Agents\AgentSession;
-use App\Support\StartTokens;
+use App\Support\SessionTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Response;
@@ -85,7 +85,7 @@ final class AgentHeartbeatRouteTest extends TestCase
 
     public function test_a_revoked_credential_gets_401_and_no_beat(): void
     {
-        new StartTokens()->revoke($this->start->session);
+        new SessionTokens()->revoke($this->start->session);
 
         $this->signed(
             $this->start,

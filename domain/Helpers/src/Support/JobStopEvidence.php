@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Values\StopAttemptReference;
+use App\Values\StopCheckReference;
 use Domain\Helpers\Models\HelperJob;
 use PhpOption\Option;
 
@@ -31,7 +31,7 @@ final class JobStopEvidence
             ->first());
     }
 
-    public static function referenceOf(StopAttemptReference $attempt): string
+    public static function referenceOf(StopCheckReference $attempt): string
     {
         return self::ATTEMPT_PREFIX.$attempt->attemptId;
     }

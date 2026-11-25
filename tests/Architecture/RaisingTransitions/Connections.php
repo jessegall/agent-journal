@@ -7,7 +7,7 @@ declare(strict_types=1);
  * listener or a model (ModelRaiseCallerTest).
  */
 return [
-    'BindingStart::create',
+    'BindingRuntime::create',
     'Environment::createForLabel',
     'Environment::createForDefault',
     'InstallAttempt::cancel',

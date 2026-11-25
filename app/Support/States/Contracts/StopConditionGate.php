@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\States\Contracts;
 
 use App\Support\Inputs\Values\HookIdentity;
-use App\Values\SettledStopAttempts;
+use App\Values\SettledStopChecks;
 use App\Values\StopAnswer;
 
 /**
@@ -23,5 +23,5 @@ interface StopConditionGate
      * The gate's answer to the stop, a decision or a line to show the agent, judged against the attempts the stack
      * saw settle, with the attempt it opened.
      */
-    public function answer(HookIdentity $stop, SettledStopAttempts $settled): StopAnswer;
+    public function answer(HookIdentity $stop, SettledStopChecks $settled): StopAnswer;
 }

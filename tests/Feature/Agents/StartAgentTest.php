@@ -13,7 +13,7 @@ use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\SessionStatus;
@@ -173,7 +173,7 @@ final class StartAgentTest extends TestCase
             [$receipt->sessionId, $account->id, 1],
             [$start->session_id, $start->account_id, $start->account_generation],
         );
-        $this->assertSame(ProcessStartState::Pending, $start->state);
+        $this->assertSame(SessionProcessState::Pending, $start->state);
         $this->assertTrue($session->isLinkedTo($account));
     }
 
@@ -224,7 +224,7 @@ final class StartAgentTest extends TestCase
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $start = SessionProcess::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
         $this->assertSame(
-            [SessionStatus::Ended, ProcessStartState::Cancelled, false],
+            [SessionStatus::Ended, SessionProcessState::Cancelled, false],
             [$session->status, $start->state, CapacityReservation::isHeldFor($session->start_request_id)],
         );
         $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);

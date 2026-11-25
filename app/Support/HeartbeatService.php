@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\SessionClosed;
 use App\Models\Agents\AgentRuntime;
@@ -47,7 +47,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
 
     public function __construct(
         private StartTransaction $transaction,
-        private StartTokens $credentials,
+        private SessionTokens $credentials,
         private PresenceWindow $window,
         private ServerClock $clock,
         private CommandFacts $facts,
@@ -125,7 +125,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
         $isAnyHostReachable = Host::query()->unrevoked()->excludingKeys($unreachableHosts)->exists();
 
         SessionProcess::supervised()
-            ->where('state', ProcessStartState::Pending->value)
+            ->where('state', SessionProcessState::Pending->value)
             ->where(fn ($starts) => $starts
                 ->where('created_at', '<=', $now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES))
                 ->orWhere(fn ($reachable) => $reachable
@@ -169,7 +169,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
         $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
             $start = SessionProcess::lockedCurrentOf($sessionId);
 
-            if ($start === null || $start->state !== ProcessStartState::Pending) {
+            if ($start === null || $start->state !== SessionProcessState::Pending) {
                 return;
             }
 

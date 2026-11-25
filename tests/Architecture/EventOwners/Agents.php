@@ -68,32 +68,32 @@ use App\Events\Sessions\MenuEntryRetired;
 use App\Events\Sessions\MenuEntrySuperseded;
 use App\Events\Sessions\MenuEntryUsed;
 use App\Events\Sessions\MergeOutcomeRecorded;
-use App\Events\Sessions\ProcessStartCancelled;
-use App\Events\Sessions\ProcessStartClaimed;
-use App\Events\Sessions\ProcessStartOutputAdvanced;
-use App\Events\Sessions\ProcessStartSeenRunning;
-use App\Events\Sessions\ProcessStartStopped;
-use App\Events\Sessions\RevisionFenceReconciled;
+use App\Events\Sessions\ProfileRevisionHoldReconciled;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
+use App\Events\Sessions\SessionProcessCancelled;
+use App\Events\Sessions\SessionProcessClaimed;
+use App\Events\Sessions\SessionProcessOutputAdvanced;
+use App\Events\Sessions\SessionProcessSeenRunning;
+use App\Events\Sessions\SessionProcessStopped;
+use App\Events\Sessions\SessionRequestRefused;
 use App\Events\Sessions\SessionStateChanged;
+use App\Events\Sessions\SessionTokenIssued;
+use App\Events\Sessions\SessionTokenRevoked;
+use App\Events\Sessions\SessionTokenRotated;
 use App\Events\Sessions\StartAccepted;
 use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartIdentityBecameUncertain;
 use App\Events\Sessions\StartIdentityBound;
 use App\Events\Sessions\StartIdentityPrepared;
 use App\Events\Sessions\StartIntentForgotten;
-use App\Events\Sessions\StartRecordRefused;
 use App\Events\Sessions\StartRefused;
 use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Events\Sessions\StartSessionOpened;
 use App\Events\Sessions\StartSettingsRequested;
-use App\Events\Sessions\StartTokenIssued;
-use App\Events\Sessions\StartTokenRevoked;
-use App\Events\Sessions\StartTokenRotated;
 use App\Events\Sessions\StartVerificationCancelled;
-use App\Events\Sessions\StopAttemptCertified;
-use App\Events\Sessions\StopAttemptSettled;
+use App\Events\Sessions\StopCheckCertified;
+use App\Events\Sessions\StopCheckSettled;
 use App\Events\Sessions\TerminalGrantGivenBack;
 use App\Events\Sessions\TerminalGrantIssued;
 use App\Events\Sessions\TerminalGrantRefused;
@@ -258,7 +258,7 @@ return [
     ],
     StartRefused::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::refuse',
+        'owner' => 'SessionProcess::refuse',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartRefused('agent', 'session', 'it cannot start here', new DateTimeImmutable('2026-01-01')),
@@ -319,40 +319,40 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverSwitchCancelled('switch', null),
     ],
-    ProcessStartOutputAdvanced::class => [
+    SessionProcessOutputAdvanced::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::advanceOutputGeneration',
+        'owner' => 'SessionProcess::advanceOutputGeneration',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartOutputAdvanced('start', 2),
+        'sample' => fn () => new SessionProcessOutputAdvanced('start', 2),
     ],
-    ProcessStartSeenRunning::class => [
+    SessionProcessSeenRunning::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::recordRunning',
+        'owner' => 'SessionProcess::recordRunning',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartSeenRunning('start', 'execution'),
+        'sample' => fn () => new SessionProcessSeenRunning('start', 'execution'),
     ],
-    ProcessStartStopped::class => [
+    SessionProcessStopped::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::stopWithProof',
+        'owner' => 'SessionProcess::stopWithProof',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartStopped('start'),
+        'sample' => fn () => new SessionProcessStopped('start'),
     ],
-    ProcessStartClaimed::class => [
+    SessionProcessClaimed::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::claim',
+        'owner' => 'SessionProcess::claim',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartClaimed('start'),
+        'sample' => fn () => new SessionProcessClaimed('start'),
     ],
-    ProcessStartCancelled::class => [
+    SessionProcessCancelled::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProcessStart::cancelPending',
+        'owner' => 'SessionProcess::cancelPending',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessStartCancelled('start'),
+        'sample' => fn () => new SessionProcessCancelled('start'),
     ],
     AgentDriverTypePreferred::class => [
         'role' => EventRole::RowFact,
@@ -473,40 +473,40 @@ return [
         'producers' => [],
         'sample' => fn () => new AgentRuntimeHostChanged('runtime', 'host', 2),
     ],
-    StartTokenIssued::class => [
+    SessionTokenIssued::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartToken::issueFor',
+        'owner' => 'SessionToken::issueFor',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartTokenIssued('token', 'session'),
+        'sample' => fn () => new SessionTokenIssued('token', 'session'),
     ],
-    StartTokenRotated::class => [
+    SessionTokenRotated::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartToken::rotateTo',
+        'owner' => 'SessionToken::rotateTo',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartTokenRotated('token'),
+        'sample' => fn () => new SessionTokenRotated('token'),
     ],
-    StartTokenRevoked::class => [
+    SessionTokenRevoked::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartToken::revokeAt',
+        'owner' => 'SessionToken::revokeAt',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartTokenRevoked('token'),
+        'sample' => fn () => new SessionTokenRevoked('token'),
     ],
     CleanupPassRecorded::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'CleanupOperation::recordPass',
+        'owner' => 'SessionCleanup::recordPass',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new CleanupPassRecorded('cleanup', CleanupState::Pending),
     ],
-    RevisionFenceReconciled::class => [
+    ProfileRevisionHoldReconciled::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'RevisionFence::markReconciledAt',
+        'owner' => 'ProfileRevisionHold::markReconciledAt',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new RevisionFenceReconciled('fence'),
+        'sample' => fn () => new ProfileRevisionHoldReconciled('fence'),
     ],
     DriverBuildsApproved::class => [
         'role' => EventRole::RowFact,
@@ -664,66 +664,66 @@ return [
     ],
     StartIdentityPrepared::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::prepareIdentity',
+        'owner' => 'SessionRequest::prepareIdentity',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartIdentityPrepared('start'),
     ],
     StartIdentityBound::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::bindIdentity',
+        'owner' => 'SessionRequest::bindIdentity',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartIdentityBound('start', 'native'),
     ],
     StartIdentityBecameUncertain::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::markIdentityUncertain',
+        'owner' => 'SessionRequest::markIdentityUncertain',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartIdentityBecameUncertain('start'),
     ],
     StartVerificationCancelled::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::cancelVerification',
+        'owner' => 'SessionRequest::cancelVerification',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartVerificationCancelled('start'),
     ],
     StartSessionOpened::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::startedAs',
+        'owner' => 'SessionRequest::startedAs',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartSessionOpened('start', 'agent', 'session', new RecordIdentity('helpers.helper-job', (string) Str::ulid())),
     ],
-    StartRecordRefused::class => [
+    SessionRequestRefused::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::refuseFor',
+        'owner' => 'SessionRequest::refuseFor',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StartRecordRefused('start', 'reason'),
+        'sample' => fn () => new SessionRequestRefused('start', 'reason'),
     ],
     StartIntentForgotten::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StartRecord::forgetIntent',
+        'owner' => 'SessionRequest::forgetIntent',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new StartIntentForgotten('start'),
     ],
-    StopAttemptSettled::class => [
+    StopCheckSettled::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StopAttempt::settle',
+        'owner' => 'StopCheck::settle',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopAttemptSettled('attempt', StopCheckState::cases()[0], 'outcome'),
+        'sample' => fn () => new StopCheckSettled('attempt', StopCheckState::cases()[0], 'outcome'),
     ],
-    StopAttemptCertified::class => [
+    StopCheckCertified::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'StopAttempt::certify',
+        'owner' => 'StopCheck::certify',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new StopAttemptCertified('attempt'),
+        'sample' => fn () => new StopCheckCertified('attempt'),
     ],
     DriverRequestAccepted::class => [
         'role' => EventRole::RowFact,

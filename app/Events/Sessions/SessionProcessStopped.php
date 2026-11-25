@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events\Sessions;
+
+use App\Contracts\Sessions\SessionProcessEvent;
+
+/**
+ * A process start was seen to stop.
+ */
+final readonly class SessionProcessStopped extends SessionEvent implements SessionProcessEvent
+{
+    public function __construct(public string $startId) {}
+}

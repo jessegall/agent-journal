@@ -19,7 +19,7 @@ use App\Enums\Accounts\AccountState;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInState;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Exceptions\AccountRecheckRefused;
 use App\Exceptions\AccountUnavailable;
 use App\Exceptions\SignInAttemptStale;
@@ -108,7 +108,7 @@ final class SignInAgainTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->claimSignIn('host', CarbonImmutable::now()));
 
-        DB::table('session_processes')->update(['state' => ProcessStartState::Stopped->value]);
+        DB::table('session_processes')->update(['state' => SessionProcessState::Stopped->value]);
         $this->reconcile();
 
         $this->assertSame($attemptId, $this->claimSignIn('host', CarbonImmutable::now())?->id);
@@ -388,7 +388,7 @@ final class SignInAgainTest extends TestCase
             'account_id' => $this->account->id,
             'account_generation' => $this->account->sign_in_generation,
             'directory' => (string) $this->account->directory,
-            'state' => ProcessStartState::Running->value,
+            'state' => SessionProcessState::Running->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

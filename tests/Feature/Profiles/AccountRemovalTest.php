@@ -25,7 +25,7 @@ use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInState;
 use App\Enums\Accounts\UsageWindowSlot;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountsWindowResolver;
 use App\Jobs\SignInDeadline;
@@ -140,7 +140,7 @@ final class AccountRemovalTest extends TestCase
         $this->reconcile();
         $this->assertNull($this->asHost(new ClaimCleanupCommand('host')));
 
-        DB::table('session_processes')->update(['state' => ProcessStartState::Stopped->value]);
+        DB::table('session_processes')->update(['state' => SessionProcessState::Stopped->value]);
         $this->reconcile();
         $claimed = $this->asHost(new ClaimCleanupCommand('host'));
         $this->assertInstanceOf(ClaimedCleanup::class, $claimed);
@@ -445,7 +445,7 @@ final class AccountRemovalTest extends TestCase
             'account_id' => $this->account->id,
             'account_generation' => $this->account->sign_in_generation,
             'directory' => (string) $this->account->directory,
-            'state' => ProcessStartState::Running->value,
+            'state' => SessionProcessState::Running->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

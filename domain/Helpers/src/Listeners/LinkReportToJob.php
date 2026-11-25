@@ -6,9 +6,9 @@ namespace Domain\Helpers\Listeners;
 
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Sessions\StartRecordResolver;
+use App\Contracts\Sessions\SessionRequestResolver;
 use App\Support\ActorIdentity;
-use App\Support\StartRecordDetails;
+use App\Support\SessionRequestDetails;
 use Domain\Documents\Events\ReportFiled;
 use Domain\Helpers\Support\ReportJobLinkService;
 use Domain\Helpers\Values\FiledReport;
@@ -21,7 +21,7 @@ use Domain\Helpers\Values\FiledReport;
 final readonly class LinkReportToJob implements Listener
 {
     public function __construct(
-        private StartRecordResolver $starts,
+        private SessionRequestResolver $starts,
         private ReportJobLinkService $linking,
     ) {}
 
@@ -30,7 +30,7 @@ final readonly class LinkReportToJob implements Listener
         $filer = ActorIdentity::of($fact->actor);
 
         $this->starts->currentOwnerStart()->forAll(
-            fn (StartRecordDetails $start) => $this->linking->link(
+            fn (SessionRequestDetails $start) => $this->linking->link(
                 new FiledReport($fact->reportId, $fact->number),
                 $filer,
                 $start,

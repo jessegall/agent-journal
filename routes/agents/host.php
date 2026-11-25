@@ -29,8 +29,8 @@ use App\Http\Controllers\Agents\Host\ToolDiscoveryController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
 use App\Http\Controllers\Agents\Host\UsageReportController;
 use App\Http\Controllers\Agents\Host\WorkspaceReadController;
-use App\Http\Controllers\Hooks\Host\PendingStopAttemptsController;
-use App\Http\Controllers\Hooks\Host\StopResultsController;
+use App\Http\Controllers\Hooks\Host\PendingStopChecksController;
+use App\Http\Controllers\Hooks\Host\StopConditionResultsController;
 use App\Http\Middleware\Agents\LimitUsageReport;
 use Illuminate\Support\Facades\Route;
 
@@ -62,8 +62,8 @@ Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)-
     Route::post('/reports/project-reads/{read}', ProjectReadReportController::class)->name('reports.project-reads');
     Route::post('/reports/protection', ProtectionReportController::class)->name('reports.protection');
     Route::post('/reports/descriptors', DescriptorsReportController::class)->name('reports.descriptors');
-    Route::get('/stop-attempts', PendingStopAttemptsController::class)->name('stop-attempts.pending');
-    Route::post('/stop-attempts/{attempt}/results', StopResultsController::class)->name('stop-attempts.results');
+    Route::get('/stop-attempts', PendingStopChecksController::class)->name('stop-attempts.pending');
+    Route::post('/stop-attempts/{attempt}/results', StopConditionResultsController::class)->name('stop-attempts.results');
     Route::post('/starts/claim', ClaimStartController::class)->name('starts.claim');
     Route::get('/starts', [ReconcileStartsController::class, 'index'])->name('starts.unresolved');
     Route::post('/starts/reconcile', ReconcileStartsController::class)->name('starts.reconcile');

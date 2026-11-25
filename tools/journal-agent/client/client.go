@@ -50,7 +50,7 @@ type ClaimedRequest struct {
 	// SessionID, ProcessStartID and ProcessGeneration bind the host's report of this request to the session, its
 	// supervised start (nil when the journal supervises none) and the process generation the claim was made for.
 	SessionID         string  `json:"sessionId"`
-	ProcessStartID    *string `json:"processStartId"`
+	SessionProcessID  *string `json:"sessionProcessId"`
 	ProcessGeneration int     `json:"processGeneration"`
 	// ShouldBootstrap marks the start's bootstrap: the initial wake of a start still proving its conversation, which carries
 	// no chat text; the driver proves its conversation without a turn.
@@ -157,7 +157,7 @@ type RequestReport struct {
 	Sequence uint64 `json:"sequence"`
 	// SessionID, ProcessStartID and ProcessGeneration are the claim's binding the report answers.
 	SessionID         string  `json:"session_id,omitempty"`
-	ProcessStartID    *string `json:"session_process_id,omitempty"`
+	SessionProcessID  *string `json:"session_process_id,omitempty"`
 	ProcessGeneration int     `json:"process_generation,omitempty"`
 }
 

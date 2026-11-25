@@ -24,8 +24,7 @@ final readonly class AttentionOrigin
 
     public const string GUIDANCE = 'guidance';
 
-
-    public const string PROCESS_START = 'process_start';
+    public const string SESSION_PROCESS = 'session_process';
 
     public function __construct(
         public string $type,
@@ -69,9 +68,9 @@ final readonly class AttentionOrigin
      * A runtime's new process that came up idle while the agent holds text it was not shown: the same report
      * sent twice asks for the same wake.
      */
-    public static function processStart(string $runtimeId, int $generation): self
+    public static function sessionProcess(string $runtimeId, int $generation): self
     {
-        return new self(self::PROCESS_START, "{$runtimeId}:{$generation}", $runtimeId);
+        return new self(self::SESSION_PROCESS, "{$runtimeId}:{$generation}", $runtimeId);
     }
 
     /**

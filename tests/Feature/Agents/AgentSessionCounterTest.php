@@ -9,8 +9,8 @@ use App\Models\Agents\AgentSession;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActiveActorsResolver;
 use App\Support\AgentSessionCounter;
+use App\Support\SessionTokens;
 use App\Support\StartSessions;
-use App\Support\StartTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +78,7 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_a_revoked_credential_counts_zero(): void
     {
-        $this->app->make(StartTokens::class)->revoke($this->beatingSession());
+        $this->app->make(SessionTokens::class)->revoke($this->beatingSession());
 
         $this->assertSame(0, $this->countAt('2026-11-18 12:01:00'));
     }

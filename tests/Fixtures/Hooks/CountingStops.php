@@ -8,16 +8,16 @@ use App\Support\Decisions\Decision;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\States\Contracts\StopConditionGate;
 use App\Values\StopAnswer;
-use App\Values\SettledStopAttempts;
+use App\Values\SettledStopChecks;
 
 /**
  * A stop gate that opens an attempt named after each stop callback and keeps the failures it was last asked with.
  */
 final class CountingStops implements StopConditionGate
 {
-    public SettledStopAttempts $lastSettled;
+    public SettledStopChecks $lastSettled;
 
-    public function answer(HookIdentity $stop, SettledStopAttempts $settled): StopAnswer
+    public function answer(HookIdentity $stop, SettledStopChecks $settled): StopAnswer
     {
         $this->lastSettled = $settled;
 

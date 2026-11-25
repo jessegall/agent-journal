@@ -15,7 +15,7 @@ func boundWake() client.ClaimedRequest {
 	request := claimed("wake-1", 1, "wake", "Check your work.")
 	request.Attempt = 3
 	request.SessionID = "session-1"
-	request.ProcessStartID = &start
+	request.SessionProcessID = &start
 	request.ProcessGeneration = 2
 
 	return request
@@ -35,7 +35,7 @@ func TestAContainerRefusalReportsItsReasonAndThatNoProcessWasMade(t *testing.T) 
 	if report.Progress != "failed" || report.Outcome == nil || *report.Outcome != "refused" {
 		t.Fatalf("the refusal was reported with progress %s", report.Progress)
 	}
-	if report.SessionID != "session-1" || report.ProcessStartID == nil || *report.ProcessStartID != "start-1" ||
+	if report.SessionID != "session-1" || report.SessionProcessID == nil || *report.SessionProcessID != "start-1" ||
 		report.ProcessGeneration != 2 || report.Attempt != 3 {
 		t.Fatalf("the report was not bound to its claim: %+v", report)
 	}

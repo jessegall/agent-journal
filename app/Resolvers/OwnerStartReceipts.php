@@ -6,7 +6,7 @@ namespace App\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Sessions\StartReceipts;
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
@@ -32,7 +32,7 @@ final readonly class OwnerStartReceipts implements StartReceipts
             ->requestedBy(ActorIdentity::of($this->actors->actor()))
             ->withSession()
             ->newestCreatedFirst()
-            ->firstOr(StartRecordMissing::throwing()->forRequest($reference));
+            ->firstOr(SessionRequestMissing::throwing()->forRequest($reference));
 
         $session = AgentSession::query()->findOrFail($record->session_id);
         $policy = SessionPolicy::query()->ofSession($session->id)->sole()->policy;

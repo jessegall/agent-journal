@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Exceptions\AccountMissing;
-use App\Exceptions\ProcessStartUnknown;
+use App\Exceptions\SessionProcessUnknown;
 use App\Exceptions\UsageReportRefused;
 use App\Models\Accounts\Account;
 use App\Models\Sessions\SessionProcess;
@@ -20,7 +20,7 @@ final readonly class UsageReportAccounts
     /**
      * The start's saved account, locked.
      *
-     * @throws ProcessStartUnknown
+     * @throws SessionProcessUnknown
      * @throws UsageReportRefused when the report names another sign-in generation than the start ran in
      * @throws AccountMissing when the account is removed or being removed
      */

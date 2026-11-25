@@ -14,7 +14,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\Agents\AgentPresence;
-use App\Enums\Agents\ProcessStartState;
+use App\Enums\Agents\SessionProcessState;
 use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Runs\RuntimeActivity;
@@ -151,7 +151,7 @@ final class ContainerAccountTest extends TestCase
         $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $launch->sessionId)));
 
         $start = $this->startOf($launch);
-        $this->assertSame(ProcessStartState::Stopped, $start->state);
+        $this->assertSame(SessionProcessState::Stopped, $start->state);
         $this->assertStringContainsString(
             self::REPORT_MISSING,
             (string) $start->refusal,

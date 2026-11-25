@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Contracts\Sessions\StartRecordResolver;
+use App\Contracts\Sessions\SessionRequestResolver;
 use App\Enums\Sessions\StartDisposition;
-use App\Exceptions\StartRecordMissing;
+use App\Exceptions\SessionRequestMissing;
 use App\Models\Agents\AgentRuntime;
-use App\Support\StartRecordDetails;
+use App\Support\SessionRequestDetails;
 use App\Support\StartRefusalCodes;
 use App\Support\StartRemedyWords;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -25,11 +25,11 @@ final readonly class StartReceiptController
     /**
      * @return array<string, string|int|null>
      */
-    public function __invoke(string $request, StartRecordResolver $records, StartRemedyWords $words): array
+    public function __invoke(string $request, SessionRequestResolver $records, StartRemedyWords $words): array
     {
         try {
             $receipt = $records->receipt(strtolower($request));
-        } catch (StartRecordMissing $missing) {
+        } catch (SessionRequestMissing $missing) {
             throw new NotFoundHttpException(self::UNAVAILABLE, $missing);
         }
 
@@ -46,7 +46,7 @@ final readonly class StartReceiptController
     /**
      * @return array{requestId: string, state: string, sessionId: string|null, generation: int|null}
      */
-    private static function accepted(StartRecordDetails $receipt): array
+    private static function accepted(SessionRequestDetails $receipt): array
     {
         return [
             'requestId' => $receipt->requestId,
@@ -61,7 +61,7 @@ final readonly class StartReceiptController
     /**
      * @return array{requestId: string, state: string, reasonCode: string, explanation: string, remedy: string}
      */
-    private static function refused(StartRecordDetails $receipt, StartRemedyWords $words): array
+    private static function refused(SessionRequestDetails $receipt, StartRemedyWords $words): array
     {
         $code = (string) $receipt->refusalReason;
         $reason = StartRefusalCodes::reasonOf($code);
