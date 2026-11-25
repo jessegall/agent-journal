@@ -2389,7 +2389,45 @@ WIRE_EXTRA.push(on=>{
   on('[data-createmenu]',b=>b.onclick=()=>{const kind=b.dataset.createmenu,k=CREATE[kind];openMenu([{head:k.title},{label:k.plain,ic:'plus',run:()=>{createPlain(kind);return false}},{label:k.agent,sub:'Agent 1 asks three short questions and drafts it',ic:'chat',run:()=>{startGuide(kind);return false}}],b)})});
 PAL_EXTRA.push(C=>Object.entries(CREATE).forEach(([kind,k])=>{C(k.title,'plus',()=>{createPlain(kind);return false});C(`${k.title} with an agent`,'chat',()=>{startGuide(kind);return false})}));
 LOADERS.push(()=>{FORM=null;GUIDE=null});
-const SECTION_NOTES=[['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
+/* Projects: the journal is one, its projects are a scope. The ProjectMenu takes the EnvironmentMenu's place in the
+   topbar: All projects first, then each project by label, with its key beside a label two projects share. Under All
+   projects a row names its project and a Global row says Global; within a project only its rows and Global rows show,
+   and a project with no work says so. A create dialog under All projects asks for the Project; documents, rules and
+   sequences add Global. Within a project the dialog asks nothing: the work goes to that project. */
+const PROJECTS=[{id:'journal',label:'Journal',key:'journal'},{id:'shop',label:'Shop',key:'shop'},{id:'site-a',label:'Site',key:'site-a'},{id:'site-b',label:'Site',key:'site-b'}];
+let SELPROJ='all';
+LOADERS.push(()=>{SELPROJ='all'});
+const MAY_BE_GLOBAL=['document','rule','sequence'];
+const projLabel=p=>PROJECTS.filter(x=>x.label===p.label).length>1?`${p.label} · ${p.key}`:p.label;
+const projById=id=>PROJECTS.find(p=>p.id===id);
+const PROJ_OF=ref=>{const [k,n]=ref.split(':'),v=+n;
+  if(k==='ptask')return G54.some(t=>t[0]===v)?'shop':'journal';
+  if(k==='pplan')return v===54?'shop':'journal';
+  if(k==='pdoc')return v===101||v===100?'global':v===96?'shop':'journal';
+  return null};
+const projChip=id=>id==='global'?`<span class="chip">Global</span>`:`<span class="chip">${esc(projLabel(projById(id)))}</span>`;
+const selName=()=>SELPROJ==='all'?'All projects':projLabel(projById(SELPROJ));
+const baseTopbarHtml=topbarHtml;
+topbarHtml=function(){return baseTopbarHtml().replace('</nav>',`</nav><button class="pill" data-projmenu data-fk="projmenu" aria-haspopup="menu" aria-label="Project: ${esc(selName())}" title="Choose the project you see">${I('docs','s14')}${esc(selName())}${I('caret','s14')}</button>`)};
+const basePageHtml=pageHtml;
+pageHtml=function(){const h=basePageHtml();if(!['tasks','plans','docs'].includes(page)||showEmpty)return h;let shown=0;
+  const out=h.replace(/<button class="lrow" data-item="((?:ptask|pplan|pdoc):\d+)"([^>]*)>([\s\S]*?)<\/button>/g,(all,ref,attrs,inner)=>{const p=PROJ_OF(ref);
+    if(SELPROJ!=='all'&&p!==SELPROJ&&p!=='global')return '';shown++;
+    const label=SELPROJ==='all'||p==='global'?projChip(p):'';
+    return `<button class="lrow" data-item="${ref}"${attrs}>${inner}${label}</button>`});
+  const noun={tasks:'tasks',plans:'plans',docs:'documents'}[page];
+  const counted=out.replace(/<span class="sub">\d+<\/span>/,`<span class="sub">${shown}</span>`);
+  if(shown)return counted;
+  return counted.replace(/<div class="pglist"([^>]*)>[\s\S]*?<\/div><div class="pgread">/,`<div class="pglist"$1><div class="empty"><b>No ${noun} in ${esc(selName())} yet</b>Work an agent of ${esc(selName())} starts shows here.</div></div><div class="pgread">`)};
+WIRE_EXTRA.push(on=>on('[data-projmenu]',b=>b.onclick=()=>openMenu([{head:'Projects'},
+  {label:'All projects',sub:'every project and Global',tick:SELPROJ==='all',run:()=>{SELPROJ='all';render();return false}},{sep:true},
+  ...PROJECTS.map(p=>({label:projLabel(p),tick:SELPROJ===p.id,run:()=>{SELPROJ=p.id;render();return false}}))],b,'projmenu')));
+/* The Project field: a choice of the projects, and Global where the record may be Global; none within a project. */
+AFTER_RENDER.push(()=>{const dlg=$('#cdlg');if(!dlg||!FORM||SELPROJ!=='all'||$('[data-ffproj]',dlg))return;const body=$('.cbody',dlg);if(!body)return;
+  const opts=[...PROJECTS.map(p=>[p.id,projLabel(p)]),...(MAY_BE_GLOBAL.includes(FORM.kind)?[['global','Global']]:[])],cur=FORM.values.project||'journal';
+  body.insertAdjacentHTML('beforeend',`<label class="fld"><span>Project</span><select class="field" data-ffproj data-fk="ff:project">${opts.map(([v,l])=>`<option value="${v}" ${cur===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`);
+  $('[data-ffproj]',dlg).onchange=e=>{FORM.values.project=e.target.value}});
+const SECTION_NOTES=[['Projects','The topbar\'s project menu chooses what you see: All projects, or one project, each by its label with its key beside a label two projects share. Under All projects every row names its project and a Global row says Global; within a project only its rows and Global rows show, and a project with no work says so. A create dialog asks for the Project only under All projects, and offers Global for documents, rules and sequences.'],['Creating anything','Every create action is a split button. The main part is the plain way (a form, or the sequence editor); the chevron offers the agent way: a short guided chat where Agent 1 asks three questions with ready answers and drafts the same form for you to accept or change.'],['Panels inside the chat','An agent\'s memories and a sequence open in a panel that slides over the chat from its right edge: click through them, then close it. They belong to the chat; windows are for what you keep on Home.'],['Sequences','The chat says, one plain line each, when a sequence starts, which step runs, when a step waits or ends, and when it finishes. The viewer shows the steps and where each run is; the editor adds, reorders and changes steps with their guards and checks.'],
   ['Docked cards and commands','A task, plan, report or question docks under the conversation (folded into a stack) or beside the composer. A command runs as a process card: its state, its time, its last lines, and its full output when opened.'],
   ['The terminal is a modal','The program\'s own terminal (Claude Code or Codex, for an agent that runs in a terminal) opens as a centred modal over the page (880 × 560 px at most, centred both ways, on the usual scrim), never as a tab, a window or a dock: it is for looking in on an agent, not part of Home. A headless agent has none. This is not a terminal window: a window on Home that shows a terminal or a running process, as in version 5, stays a window you dock, float and keep. The modal is a quick look at what the agent\'s program shows, and it goes away when you close it. Type to send keys, Ctrl+C to interrupt; its columns and rows follow the modal\'s size; connecting, restarting and ended each say so plainly. It closes with ×, a click on the scrim, or Esc pressed outside the screen; Esc inside the screen goes to the agent, since its program uses Esc. Closing puts the focus back where it was opened from. ⌘K offers it too, with the same words as the dropdown.'],
   ['The terminal opens from the chat\'s dropdown','There is no Terminal button in the agent bar. The dropdown under the chat\'s name has “Open Claude Code terminal” or “Open Codex terminal”, by the program the agent runs, in its lower group right under the agent\'s memories. It is absent for a headless agent. A group chat has no such item, because it has no single agent; each agent\'s terminal opens from that agent\'s own chat. When the program waits for a user, the agent bar\'s state says so in words, such as “Claude Code waits for you in its terminal”, after a hollow dot, and those words are a link that opens the same modal.'],
