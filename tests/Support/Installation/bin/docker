@@ -157,8 +157,10 @@ inspect_daemon_images() {
 
 # Loading an archive holds the image its manifest names.
 load_archive() {
-    tar -xOf "$(read_option --input "$@")" manifest.json \
-        | sed -n 's#.*"Config": *"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p' >> "$STAND_IN/daemon-images"
+    local image
+    image=$(tar -xOf "$(read_option --input "$@")" manifest.json \
+        | sed -n 's#.*"Config": *"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p')
+    echo "$image" >> "$STAND_IN/daemon-images"
 }
 
 # A container runs on each image $STAND_IN/images-in-use lists.

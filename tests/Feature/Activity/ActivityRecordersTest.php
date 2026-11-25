@@ -54,7 +54,7 @@ final class ActivityRecordersTest extends MessagingTestCase
     public function test_a_helper_start_and_its_report_are_entries_of_the_agent_that_started_it(): void
     {
         $events = $this->app->make(Dispatcher::class);
-        $events->dispatch(new StartAccepted('request', $this->reviewer->agent_id, $this->reviewer->id, null, $this->builder->agent_id));
+        $events->dispatch(new StartAccepted('request', $this->reviewer->agent_id, $this->reviewer->id, $this->builder->agent_id));
         $events->dispatch(new StartAccepted('request', $this->builder->agent_id, $this->builder->id));
         $events->dispatch(new HelperReportedOnRecord(new RecordIdentity('tasks.task-run', (string) Str::ulid()), $this->reviewer->agent_id));
 

@@ -60,6 +60,7 @@ final class AgentImagesTest extends TestCase
 
     public function test_a_missing_pin_loads_every_archive(): void
     {
+        $this->daemonHolds();
         $this->archive('agent', 'aaaa');
         $this->archive('runner', 'bbbb');
 
@@ -71,6 +72,7 @@ final class AgentImagesTest extends TestCase
 
     public function test_an_archive_without_the_pinned_image_fails_with_a_plain_line(): void
     {
+        $this->daemonHolds();
         $this->archive('agent', 'aaaa');
         $this->archive('runner', 'cccc');
 

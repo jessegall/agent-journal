@@ -186,9 +186,10 @@ final class EventPayloads
             MessageSent::class => [
                 'fields' => [
                     'messageId' => 'string',
-                    'author' => 'App\Support\ActorIdentity',
-                    'sourceInboxId' => 'string',
-                    'destinationInboxId' => 'string',
+                    'inboxId' => 'string',
+                    'number' => 'int',
+                    'targetMessageId' => '?string',
+                    'sender' => 'App\Support\ActorIdentity',
                 ],
             ],
             EngineTicked::class => [
