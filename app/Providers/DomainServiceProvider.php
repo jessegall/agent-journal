@@ -195,7 +195,7 @@ class DomainServiceProvider extends ServiceProvider
      */
     private function mcpCatalogue(DomainRegistry $registry, CommandRegistry $commands): McpCatalogue
     {
-        $catalogue = new McpCatalogue($commands, $this->app->make(ReflectorFactory::class));
+        $catalogue = new McpCatalogue($commands, $this->app->make(ReflectorFactory::class), $this->app);
         CoreMcpTools::registerIn($catalogue);
         $registry->registerMcpToolsIn($catalogue);
 

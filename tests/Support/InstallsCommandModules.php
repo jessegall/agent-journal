@@ -45,15 +45,29 @@ trait InstallsCommandModules
         MiddlewareDeclaration ...$extraNotesMiddleware,
     ): CommandTrail {
         $this->installCommandRegistry($alsoRequired, ...$extraNotesMiddleware);
-
-        if (! Schema::hasTable('module_command_rows')) {
-            Schema::create('module_command_rows', function (Blueprint $table): void {
-                $table->id();
-                $table->string('text');
-            });
-        }
+        $this->createModuleRows();
 
         return $this->app->make(CommandTrail::class);
+    }
+
+    /**
+     * Makes the table the test modules' commands write to as a test sets up, so a test that empties it finds it.
+     */
+    protected function setUpInstallsCommandModules(): void
+    {
+        $this->createModuleRows();
+    }
+
+    private function createModuleRows(): void
+    {
+        if (Schema::hasTable('module_command_rows')) {
+            return;
+        }
+
+        Schema::create('module_command_rows', function (Blueprint $table): void {
+            $table->id();
+            $table->string('text');
+        });
     }
 
     /**
@@ -148,10 +162,11 @@ trait InstallsCommandModules
     /**
      * @param  class-string  ...$moduleClasses
      */
+    /**
+     * The domains the test boots, beside the test modules.
+     */
     private function domainsWith(string ...$moduleClasses): DomainRegistry
     {
-        $domains = DomainRegistry::installedClasses(base_path());
-
-        return DomainRegistry::from([...$domains, ...$moduleClasses]);
+        return DomainRegistry::from([...static::bootedDomains(), ...$moduleClasses]);
     }
 }

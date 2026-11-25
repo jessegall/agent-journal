@@ -23,7 +23,6 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\CommandScope;
 use App\Support\MiddlewareDeclaration;
@@ -256,14 +255,12 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $session = $this->startedSession();
         $this->startTestUserRequest(1);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
             $this->inboxOf(TestActors::userIdentity(1))->id,
-            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->id,
             "  Trim me  \n",
         ));
 
@@ -276,14 +273,9 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessageCommand::class)),
         );
-        $session = $this->startedSession();
         $this->startTestUserRequest(1);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
-        $command = new SendMessageCommand(
-            $this->inboxOf(TestActors::userIdentity(1))->id,
-            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->id,
-            'Hello',
-        );
+        $command = new SendMessageCommand($this->inboxOf(TestActors::userIdentity(1))->id, 'Hello');
 
         try {
             $this->app->make(CommandBus::class)->run($command);

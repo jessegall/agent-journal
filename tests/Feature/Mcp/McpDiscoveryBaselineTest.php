@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Support\McpCatalogue;
+use App\Support\DomainRegistry;
 use App\Support\Reflector;
 use Tests\TestCase;
 
@@ -14,6 +15,14 @@ use Tests\TestCase;
  */
 final class McpDiscoveryBaselineTest extends TestCase
 {
+    /**
+     * Every installed domain, since the tools of them all are what this test reads.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     public function test_the_discovered_tools_and_resources_equal_the_baseline(): void
     {
         $catalogue = $this->app->make(McpCatalogue::class);

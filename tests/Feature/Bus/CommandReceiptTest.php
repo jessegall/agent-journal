@@ -16,6 +16,7 @@ use App\Exceptions\RequestKeyConflict;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\ConnectionInterface;
@@ -39,7 +40,7 @@ final class CommandReceiptTest extends CommandBusTestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
     }
 
     private TestStart $start;

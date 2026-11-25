@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -24,6 +26,14 @@ final class RuleToolsTest extends TestCase
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'rules', 'command_receipts',
     ];
+
+    /**
+     * The domains whose tools this test calls.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     public function test_an_agent_proposes_a_rule_and_reads_both_rule_states(): void
     {

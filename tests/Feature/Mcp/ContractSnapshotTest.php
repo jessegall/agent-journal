@@ -5,12 +5,21 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Support\ContractSnapshot;
+use App\Support\DomainRegistry;
 use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
 
 final class ContractSnapshotTest extends TestCase
 {
     private const string CHANGED = 'MCP contract changes: %s. Regenerate with mcp:contract.';
+
+    /**
+     * Every installed domain, since the tools of them all are what this test reads.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_published_contract_matches_the_catalogue(): void
     {

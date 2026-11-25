@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use Domain\Memory\MemoryDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -21,6 +23,14 @@ final class MemoryToolsTest extends TestCase
     private const array TABLES = [
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'memories', 'command_receipts',
     ];
+
+    /**
+     * The domains whose tools this test calls.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(MemoryDomain::class);
+    }
 
     public function test_the_owner_can_read_edit_and_remove_a_saved_memory_after_reconnect(): void
     {

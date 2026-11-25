@@ -487,6 +487,28 @@ final class Reflector implements ReflectedType
     }
 
     /**
+     * A new lazy ghost whose initializer runs only when a property its constructor promotes is first read; every other
+     * property keeps its default without initializing it.
+     *
+     * @param  callable(T): void  $initializer
+     * @return T
+     */
+    public function newLazilyConstructed(callable $initializer): object
+    {
+        $ghost = $this->type->newLazyGhost($initializer);
+
+        foreach ($this->properties() as $property) {
+            if ($property->isPromoted() || $property->isStatic()) {
+                continue;
+            }
+
+            $property->skipLazyInitialization($ghost);
+        }
+
+        return $ghost;
+    }
+
+    /**
      * Every property, its own and inherited, in the order PHP lists them.
      *
      * @return list<ReflectedProperty>

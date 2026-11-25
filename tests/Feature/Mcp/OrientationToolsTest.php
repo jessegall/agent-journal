@@ -8,6 +8,8 @@ use App\Mcp\Servers\JournalServer;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
+use Domain\Documents\DocumentsDomain;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Http\Response;
@@ -41,11 +43,11 @@ final class OrientationToolsTest extends TestCase
     ];
 
     /**
-     * The domains this test uses beside core.
+     * The domains whose tools this test calls.
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
     }
 
     private TestStart $caller;

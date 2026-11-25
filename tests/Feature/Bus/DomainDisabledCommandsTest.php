@@ -13,6 +13,7 @@ use App\Support\MiddlewareDeclaration;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanHandler;
 use Domain\Plans\PlansDomain;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Support\DomainBoot;
@@ -33,7 +34,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(PlansDomain::class);
+        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class);
     }
 
     public function test_a_switched_off_domains_command_is_refused_for_everyone_without_building_its_handler(): void

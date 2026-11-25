@@ -6,6 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
+use Domain\Documents\DocumentsDomain;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Rules\Models\Rule;
@@ -40,11 +41,11 @@ final class SearchToolTest extends TestCase
     ];
 
     /**
-     * The domains this test uses beside core.
+     * The domains whose tools this test calls.
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(PlansDomain::class, RulesDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, RulesDomain::class, TasksDomain::class);
     }
 
     public function test_the_six_scoped_searches_return_their_records(): void

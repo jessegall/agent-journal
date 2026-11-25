@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Support\ActorIdentity;
+use Domain\Chat\ChatDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WritesInboxMessages;
@@ -27,6 +29,14 @@ final class DeclaredMessageSearchTest extends TestCase
         'agents', 'agent_sessions', 'session_tokens', 'agent_stacks', 'command_receipts', 'number_groups', 'links',
         'inboxes', 'inbox_members', 'assignments', 'messages',
     ];
+
+    /**
+     * The domains whose tools this test calls.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     public function test_only_visible_messages_match_and_opening_rechecks_visibility(): void
     {

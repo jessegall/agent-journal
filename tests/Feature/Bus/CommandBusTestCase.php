@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Domain\Rules\RulesDomain;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -22,6 +24,14 @@ abstract class CommandBusTestCase extends TestCase
     use StartsAgentRequests;
 
     protected const array TABLES = ['module_command_rows'];
+
+    /**
+     * Rules, which the Notes test module requires.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(RulesDomain::class);
+    }
 
     protected function rowText(int $id): string
     {

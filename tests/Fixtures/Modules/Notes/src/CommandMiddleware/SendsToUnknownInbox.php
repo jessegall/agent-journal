@@ -17,7 +17,7 @@ final readonly class SendsToUnknownInbox implements CommandMiddleware
     {
         // A module that may not import the command changes it by its fields, as a module installed later would.
         $fields = get_object_vars($call->command());
-        $fields['destinationInboxId'] = '01jd8x0g9m3qz6v4k2t7r99999';
+        $fields['inboxId'] = '01jd8x0g9m3qz6v4k2t7r99999';
         $class = $call->name();
 
         return $next($call->replacedBy(new $class(...$fields)));

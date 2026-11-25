@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use Domain\Documents\DocumentsDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -25,6 +27,14 @@ final class DocumentToolsTest extends TestCase
         'documents', 'document_revisions', 'document_drafts', 'document_closes', 'retained_drafts', 'reports',
         'record_settlements', 'text_uploads', 'text_upload_chunks', 'comments',
     ];
+
+    /**
+     * The domains whose tools this test calls.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class);
+    }
 
     public function test_a_designer_creates_and_edits_over_mcp_and_the_resource_matches_the_read_tool(): void
     {

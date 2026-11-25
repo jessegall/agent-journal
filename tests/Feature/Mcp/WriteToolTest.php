@@ -87,7 +87,7 @@ final class WriteToolTest extends CommandBusTestCase
 
     public function test_an_unregistered_command_prevents_registration_and_names_both_classes(): void
     {
-        $catalogue = new McpCatalogue(CommandRegistry::of([]), new CatalogueReflectorFactory());
+        $catalogue = new McpCatalogue(CommandRegistry::of([]), new CatalogueReflectorFactory(), $this->app);
 
         $this->assertThrows(
             fn () => $catalogue->registerTool(WriteNoteTool::class),
@@ -148,7 +148,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
         )));
-        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class), new CatalogueReflectorFactory());
+        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class), new CatalogueReflectorFactory(), $this->app);
         $catalogue->registerTool(WriteNoteTool::class);
         $this->app->instance(McpCatalogue::class, $catalogue);
 

@@ -19,6 +19,7 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Support\CommandRegistry;
+use Illuminate\Contracts\Container\Container;
 use Laravel\Mcp\Server\Attributes\Name;
 
 /**
@@ -48,6 +49,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function __construct(
         private readonly CommandRegistry $commands,
         private readonly ReflectorFactory $reflectors,
+        private readonly Container $container,
     ) {}
 
     /**
@@ -185,7 +187,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $definitions = [];
 
         foreach ($this->tools as $name => $className) {
-            $tool = $this->definitionOf($className);
+            $tool = $this->schemaToolOf($className);
 
             if (! $tool->isVisibleTo($profile)) {
                 continue;
@@ -252,5 +254,35 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     private function definitionOf(string $className): JournalTool|JournalResource
     {
         return $this->reflectors->make($className)->newInstanceWithoutConstructor();
+    }
+
+    /**
+     * The tool whose constructor runs only once its schema reads what it takes, such as the registered actor types;
+     * each class it takes is built on its first use too, so nothing reads the request's agent outside a request.
+     *
+     * @param  class-string<JournalTool>  $className
+     */
+    private function schemaToolOf(string $className): JournalTool
+    {
+        return $this->reflectors->make($className)->newLazilyConstructed($this->constructLazily(...));
+    }
+
+    /**
+     * Runs the object's constructor with its interfaces from the container and each class it takes as a lazy object.
+     */
+    private function constructLazily(object $object): void
+    {
+        $arguments = [];
+        $constructor = $this->reflectors->make($object)->constructor()->get();
+
+        foreach ($constructor->parameters() as $parameter) {
+            $type = $parameter->type()->get()->name();
+            $reflector = $this->reflectors->make($type);
+            $arguments[] = $reflector->isInstantiable()
+                ? $reflector->newLazilyConstructed($this->constructLazily(...))
+                : $this->container->make($type);
+        }
+
+        $object->__construct(...$arguments);
     }
 }
