@@ -21,6 +21,7 @@ use App\Contracts\Navigation\UiOwnerAvailability as UiOwnerAvailabilityContract;
 use App\Contracts\Navigation\WindowResults as WindowResultsContract;
 use App\Contracts\Reads\ReaderRequests as ReaderRequestsContract;
 use App\Contracts\Refusals\CodedRefusal;
+use App\Contracts\Refusals\FieldRefusal;
 use App\Contracts\Refusals\StartRefusal;
 use App\Contracts\Settings\SettingsAccessPolicy;
 use App\Contracts\Web\ProtectedViews as ProtectedViewsContract;
@@ -179,6 +180,18 @@ final class WebServiceProvider extends ServiceProvider
      * The form field a refusal is shown under: a start refusal's own next step names it, every other refusal is the
      * whole command's.
      */
+    /**
+     * @return array<string, string>
+     */
+    private static function fieldErrorOf(CommandRefusal $refusal): array
+    {
+        if ($refusal instanceof FieldRefusal) {
+            return [$refusal->field() => $refusal->fieldError()];
+        }
+
+        return [self::fieldOf($refusal) => $refusal->getMessage()];
+    }
+
     private static function fieldOf(CommandRefusal $refusal): string
     {
         if ($refusal instanceof StartRefusal) {
@@ -212,7 +225,7 @@ final class WebServiceProvider extends ServiceProvider
 
             return $this->app->make(Redirector::class)
                 ->back(303)
-                ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
+                ->withErrors(self::fieldErrorOf($failure))
                 ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
 

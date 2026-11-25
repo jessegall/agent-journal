@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
@@ -22,6 +20,7 @@ use App\Support\Storage\FrameRecord;
 use App\Support\TickDelivery;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
+use Domain\Rules\RulesDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
@@ -36,6 +35,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Support\RouteHeartbeatSource;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\Support\InstallsCommandModules;
@@ -116,7 +116,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_ticking_twice_past_the_wait_sends_one_reminder(): void
     {
-        $question = Question::create('Which database?');
+        $question = Question::ask('Which database?');
         $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
 
         $this->passAt(30);
@@ -130,7 +130,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_an_answer_before_the_tick_sends_nothing(): void
     {
-        $question = Question::create('Which database?');
+        $question = Question::ask('Which database?');
         $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
         $question->answer();
 
@@ -141,7 +141,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
-        $question = Question::create('Which database?');
+        $question = Question::ask('Which database?');
         $stack = $this->tickingStack(AwaitAnswerState::TYPE_KEY, [$question->id], $this->asked, subjectValue: 'questionId');
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $question->answer();

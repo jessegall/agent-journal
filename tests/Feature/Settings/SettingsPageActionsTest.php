@@ -7,6 +7,7 @@ namespace Tests\Feature\Settings;
 use App\Http\Responses\PageActionAnswers;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
+use App\Support\DomainRegistry;
 use Inertia\Support\SessionKey;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -19,6 +20,14 @@ use Tests\TestCase;
 final class SettingsPageActionsTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_a_save_goes_back_quietly_and_a_reset_goes_back_with_a_notice(): void
     {

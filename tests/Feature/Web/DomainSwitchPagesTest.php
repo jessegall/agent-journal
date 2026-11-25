@@ -6,16 +6,15 @@ namespace Tests\Feature\Web;
 
 use App\Declarations\RegisteredSection;
 use App\Http\Middleware\Web\HandleInertiaRequests;
+use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Http\Pages\Resolvers\WaitingPlansSection;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\PlansDomain;
 use Domain\Plans\Resolvers\OpenPlansCount;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\ActsAsOwner;
-use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
@@ -39,7 +38,7 @@ final class DomainSwitchPagesTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(PlansDomain::class);
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void

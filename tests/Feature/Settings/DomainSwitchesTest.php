@@ -13,6 +13,7 @@ use App\Enums\Settings\SettingsOutcome;
 use App\Exceptions\SettingUnavailable;
 use App\Support\CoreSettings;
 use App\Support\DisabledSettingsGroup;
+use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\SettingRegistry;
 use App\Values\GroupReference;
@@ -31,6 +32,14 @@ final class DomainSwitchesTest extends TestCase
     use CommitsHookRows;
 
     private const string JOURNAL_NAME = 'My journal';
+
+    /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.

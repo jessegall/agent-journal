@@ -11,6 +11,7 @@ use App\Contracts\Domains\DomainAvailability;
 use App\Exceptions\DomainNotFound;
 use App\Exceptions\SettingStorageInvalid;
 use App\Models\Records\SettingsRecord;
+use App\Support\DomainRegistry;
 use App\Support\DomainStatus;
 use App\Support\SettingsDomainAvailability;
 use App\Support\Storage\EncodedToggle;
@@ -33,6 +34,14 @@ final class DomainAvailabilityTest extends TestCase
     use ActsAsTestOwner;
     use CommitsHookRows;
     use CountsReads;
+
+    /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     /**
      * The bus commits the switch commands for real, so this table is emptied around each test.

@@ -11,19 +11,17 @@ use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use App\Support\DomainRegistry;
 use App\Support\StartSessions;
-use Domain\Chat\ChatDomain;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\PlansDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
 use Tests\Support\OpensPairChats;
 use Tests\Support\TestIds;
@@ -64,7 +62,7 @@ final class HomePageTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(ChatDomain::class, PlansDomain::class);
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
     private string $chatInboxId;

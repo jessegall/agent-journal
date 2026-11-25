@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace Domain\Chat\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Inboxes\InboxRegistration;
 use App\Contracts\Notifications\NotificationTargets;
-use App\Exceptions\SessionOutdated;
-use App\Exceptions\StackTargetRefused;
 use App\Support\CoreInboxes;
 use App\Support\FolderClasses;
-use App\Support\RefusalReason;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockOffers;
 use App\Values\ReadEntitlement;
@@ -28,11 +24,6 @@ use Domain\Chat\Support\ChatInboxes;
 use Domain\Chat\Support\PlacedSources;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Debug\ExceptionHandler;
-use Illuminate\Foundation\Exceptions\Handler;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -50,7 +41,6 @@ final class ChatServiceProvider extends ServiceProvider
     }
 
     public function boot(
-        ExceptionHandler $exceptions,
         ReadEntitlements $reads,
         InboxRegistration $inboxes,
         InboxMemberPolicies $members,
@@ -66,37 +56,5 @@ final class ChatServiceProvider extends ServiceProvider
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console/Commands', Command::class));
-
-        // A session that can no longer take a message is a form error on the composer, not a failure, with the
-        // refusal's stable code flashed beside it; a JSON caller is answered by the shared refusal rendering.
-        if ($exceptions instanceof Handler) {
-            $exceptions->renderable(
-                fn (StackTargetRefused $refused, Request $request) => $this->composerError(
-                    $refused,
-                    $request,
-                    'This agent session cannot take a message now.',
-                ),
-            );
-
-            $exceptions->renderable(
-                fn (SessionOutdated $outdated, Request $request) => $this->composerError(
-                    $outdated,
-                    $request,
-                    'The agent now runs another session. Send the message again to reach it.',
-                ),
-            );
-        }
-    }
-
-    private function composerError(CommandRefusal $refusal, Request $request, string $error): RedirectResponse|null
-    {
-        if ($request->expectsJson()) {
-            return null;
-        }
-
-        return $this->app->make(Redirector::class)
-            ->back(303)
-            ->withErrors(['session' => $error])
-            ->with(CommandRefusal::CODE_FLASH_KEY, RefusalReason::of($refusal)->code);
     }
 }

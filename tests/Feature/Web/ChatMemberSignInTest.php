@@ -9,6 +9,7 @@ use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
+use App\Support\DomainRegistry;
 use Carbon\CarbonImmutable;
 use Tests\Support\MessagingTestCase;
 
@@ -18,6 +19,14 @@ use Tests\Support\MessagingTestCase;
  */
 final class ChatMemberSignInTest extends MessagingTestCase
 {
+    /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     private User $bea;
 
     protected function setUp(): void

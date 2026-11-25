@@ -11,6 +11,7 @@ use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingsOwnerUnknown;
 use App\Models\Records\SettingsRecord;
 use App\Support\ActorContext;
+use App\Support\DomainRegistry;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
@@ -39,6 +40,14 @@ final class SettingsCatalogueTest extends TestCase
     private const string NOT_REFUSED = 'The catalogue was not refused.';
 
     /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
+    /**
      * The reset runs through the bus, which commits for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
@@ -53,7 +62,7 @@ final class SettingsCatalogueTest extends TestCase
         );
 
         $this->assertSame(['general', 'review'], array_column(array_column($catalogue['groups'], 'identity'), 'key'));
-        $this->assertSame(['state' => 'enabled', 'defaultEnabled' => true], $catalogue['groups'][1]['availability']);
+        $this->assertSame(['state' => 'enabled', 'isDefaultEnabled' => true], $catalogue['groups'][1]['availability']);
         $this->assertSame(['state' => 'always'], $catalogue['groups'][0]['availability']);
 
         $this->assertSame(
@@ -153,7 +162,7 @@ final class SettingsCatalogueTest extends TestCase
         );
 
         $review = $this->catalogue('Reviews')['groups'][1];
-        $this->assertSame(['state' => 'invalid', 'defaultEnabled' => true], $review['availability']);
+        $this->assertSame(['state' => 'invalid', 'isDefaultEnabled' => true], $review['availability']);
 
         $this->assertSame(
             ['group_invalid', ['value' => 6, 'type' => 'integer']],

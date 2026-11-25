@@ -8,6 +8,7 @@ use App\Data\Pages\UnavailableWindow;
 use App\Declarations\RegisteredPage;
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\ActorStore;
+use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
 use App\Support\Web\PageProps;
 use Tests\Support\ActsAsOwner;
@@ -22,6 +23,14 @@ final class UnavailableRecordTest extends TestCase
 {
     use ActsAsOwner;
     use RefreshHookDatabase;
+
+    /**
+     * Every installed domain, since this test reads the switches, pages and settings of the domains as a whole.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
 
     public function test_a_missing_report_answers_404_at_its_own_address(): void
     {
