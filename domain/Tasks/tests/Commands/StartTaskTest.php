@@ -7,22 +7,34 @@ namespace Domain\Tasks\Tests\Commands;
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Bus\CommandBus;
 use App\Support\PoolMembers;
+use Closure;
+use Domain\Plans\Events\PlanCancelled;
+use Domain\Plans\Events\PlanFinished;
+use Domain\Plans\Events\PlanStarted;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
+use Domain\Tasks\Events\TaskBlocked;
+use Domain\Tasks\Events\TaskCancelled;
+use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStartCommitted;
+use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\StartNamedTask;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 
 /**
  * An agent starts a task: it opens the task's first run, claimed by the agent, and a retry under the same key gets
@@ -51,6 +63,7 @@ final class StartTaskTest extends TestCase
         'task_history',
         'task_waits',
         'task_wait_history',
+        'plans',
     ];
 
     private const string START_KEY = '01JD8X0G9M3QZ6V4K2STARTKEY1';
@@ -176,6 +189,21 @@ final class StartTaskTest extends TestCase
         );
     }
 
+    public function test_starting_a_task_sends_task_started_with_the_starter_each_time_it_is_started(): void
+    {
+        $task = Task::factory()->create();
+        $sent = $this->recordedSends();
+
+        $this->runAsOwner(new StartTaskCommand($task->id));
+        $this->runAsOwner(new StartTaskCommand($task->id));
+
+        $classes = array_map(fn (object $event) => $event::class, $sent());
+
+        $this->assertSame([TaskStarted::class, TaskStarted::class], $classes);
+        $this->assertSame($this->journal->ownerUser()->id, $sent()[0]->actor->id);
+        $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
+    }
+
     private function tasks(): TaskFixtures
     {
         return $this->journal->fixtures(TaskFixtures::class);
@@ -196,5 +224,48 @@ final class StartTaskTest extends TestCase
             $this->app->make(AssignmentQuery::class)->assignedIds(TaskType::linkType()),
             50,
         )->ids;
+    }
+
+    private function runAsOwner(object $command): void
+    {
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+        $this->app->make(CommandBus::class)->run($command);
+    }
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
+
+    /**
+     * The facts of Tasks and Plans the commands send from now on, in the order they reach their listeners.
+     *
+     * @return Closure(): list<object>
+     */
+    private function recordedSends(): Closure
+    {
+        $sent = [];
+        $events = [
+            TaskStarted::class,
+            TaskFinished::class,
+            TaskBlocked::class,
+            TaskCancelled::class,
+            PlanStarted::class,
+            PlanFinished::class,
+            PlanCancelled::class,
+        ];
+
+        foreach ($events as $event) {
+            $this->app->make(Dispatcher::class)->listen($event, function (object $fact) use (&$sent): void {
+                $sent[] = $fact;
+            });
+        }
+
+        return function () use (&$sent): array {
+            return $sent;
+        };
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Events;
+namespace Tests\Feature\Bus;
 
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;

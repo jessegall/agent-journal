@@ -6,7 +6,9 @@ namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
 use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
+use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Enums\CommandRules\ClassificationStatus;
+use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RequestStatus;
 use App\Events\Processes\RuleActivated;
@@ -15,9 +17,16 @@ use App\Exceptions\CommandAdmissionRefused;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleRevision;
+use App\Values\ArgumentGrammar;
+use App\Values\CommandClassSet;
+use App\Values\CommandRule;
 use App\Values\OwnerApproval;
+use App\Values\ProgramSpellings;
 use App\Values\ReaderApproval;
+use App\Values\RuleScope;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -79,9 +88,33 @@ final class ApproveRuleProposalTest extends TestCase
         $without = new ApproveRuleProposalCommand($this->proposalId(), new OwnerApproval(1, 0, [], 'looks right'));
         $mismatched = new ApproveRuleProposalCommand($this->proposalId(), $this->approval($other, $proof, 0));
 
-        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($without), ApprovalRefused::class);
-        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($mismatched), ApprovalRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($without),
+            ApprovalRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($mismatched),
+            ApprovalRefused::class,
+        );
         $this->assertSame(0, ClassificationRule::query()->count());
+    }
+
+    public function test_another_projects_proposal_is_not_found_by_its_owner(): void
+    {
+        config(['processes.project_key' => 'project-a']);
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+            new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
+        );
+        $proposal = RuleProposal::query()->latest('id')->firstOrFail();
+
+        config(['processes.project_key' => 'project-b']);
+
+        $this->assertThrows(
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+                new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b')),
+            ),
+            ModelNotFoundException::class,
+        );
     }
 
     /**
@@ -110,5 +143,16 @@ final class ApproveRuleProposalTest extends TestCase
     private function proposalId(): string
     {
         return RuleProposal::query()->where('command_request_id', $this->requestId)->sole()->id;
+    }
+
+    private function tidyRule(): CommandRule
+    {
+        return CommandRule::forProgram(
+            'project.tidy.list',
+            new ProgramSpellings('tidy'),
+            ['list'],
+            ArgumentGrammar::none(),
+            CommandClassSet::of(CommandClass::Read),
+        )->ownedBy(RuleScope::project(), 1);
     }
 }

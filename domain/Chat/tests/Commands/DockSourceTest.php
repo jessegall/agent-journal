@@ -7,6 +7,7 @@ namespace Domain\Chat\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\RequestKey;
@@ -21,6 +22,7 @@ use Domain\Chat\Values\DockResult;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 
@@ -46,6 +48,7 @@ final class DockSourceTest extends TestCase
         'links',
         'tasks',
         'dock_placements',
+        'number_groups',
     ];
 
     private User $owner;
@@ -59,6 +62,8 @@ final class DockSourceTest extends TestCase
     /**
      * Chat with Tasks beside it, since a task is what these tests dock.
      */
+    private const string PLACEMENT_TITLE = 'Ship the dock';
+
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(ChatDomain::class, TasksDomain::class);
@@ -123,6 +128,57 @@ final class DockSourceTest extends TestCase
         );
     }
 
+    public function test_mcp_docks_lists_and_undocks_with_the_receipts_and_safe_facts_of_journal_dock(): void
+    {
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+
+        $caller = $this->startInConversation('main-agent');
+        $add = ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'dock-add'];
+
+        $placementId = $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
+            ->assertJsonPath('result.structuredContent.outcome', 'added')
+            ->json('result.structuredContent.placementId');
+        $listed = $this->journal->mcpTool($caller, 'dock_list')->assertOk()
+            ->assertJsonPath('result.structuredContent.placements.0.placementId', $placementId)
+            ->assertJsonPath('result.structuredContent.placements.0.title', self::PLACEMENT_TITLE)
+            ->assertJsonPath('result.structuredContent.placements.0.state', 'shown')
+            ->json('result.structuredContent.placements.0');
+        $this->journal->relayAgentCommands($caller);
+        $this->artisan('dock:list', ['--json' => true])
+            ->expectsOutputToContain((string) json_encode($listed, JSON_UNESCAPED_SLASHES))
+            ->assertExitCode(0);
+
+        $this->journal->mcpTool($caller, 'dock_remove', [
+            'placement_id' => $placementId,
+            'type' => 'tasks.task',
+            'source_id' => $this->task->id,
+            'request_key' => 'dock-remove',
+        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
+        $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
+            ->assertJsonPath('result.structuredContent.outcome', 'added')
+            ->assertJsonPath('result.structuredContent.placementId', $placementId);
+
+        $this->assertSame(0, DockPlacement::query()->count());
+    }
+
+    public function test_a_helper_without_the_dock_grant_is_refused_on_mcp_and_on_the_journal(): void
+    {
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+
+        $helper = $this->startInConversation('read-only-helper');
+
+        $this->journal->mcpRequest($helper, 'tools/call', [
+            'name' => 'dock_add',
+            'arguments' => ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'forged-dock'],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
+        $this->journal->relayAgentCommands($helper);
+        $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])->assertFailed();
+
+        $this->assertSame(0, DockPlacement::query()->count());
+    }
+
     private function dockTask(): DockSourceCommand
     {
         return new DockSourceCommand($this->conversationId, 'tasks.task', $this->task->id);
@@ -141,5 +197,13 @@ final class DockSourceTest extends TestCase
         } finally {
             $this->app->make(RequestKey::class)->forget();
         }
+    }
+
+    private function startInConversation(string $profile): TestStart
+    {
+        $start = TestStart::start($profile);
+        $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
+
+        return $start;
     }
 }
