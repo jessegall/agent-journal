@@ -8,8 +8,10 @@ use App\Declarations\SlotContext;
 use Domain\Plans\Http\Pages\Resolvers\TaskPlanSection;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Spatie\LaravelData\Optional;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
@@ -27,16 +29,20 @@ final class TaskPlanSectionTest extends TestCase
         'phases',
         'phase_tasks',
         'tasks',
+        'users',
+        'number_groups',
+        'command_receipts',
     ];
 
     public function test_a_task_in_phase_two_names_its_plan_and_phase_and_a_loose_task_names_none(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $this->structure()->addPhase($plan, 'Read');
-        $second = $this->structure()->addPhase($plan, 'Write');
-        $placed = Task::factory()->create();
-        $this->structure()->addTasks($second, [$placed->id]);
-        $loose = Task::factory()->create();
+        $tasks = $this->journal->owner()->fixtures(TaskFixtures::class)->task('Placed')->task('Loose');
+        [$placed, $loose] = [$tasks->taskCalled('Placed'), $tasks->taskCalled('Loose')];
+        $plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', title: 'Build the release page')
+            ->phase('Release', 'Read')
+            ->phaseWithTask('Release', 'Write', $placed->assignmentIdentity())
+            ->planCalled('Release');
 
         $inPlan = $this->section()->read(SlotContext::record($placed->id));
         $outside = $this->section()->read(SlotContext::record($loose->id));

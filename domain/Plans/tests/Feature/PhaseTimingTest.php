@@ -9,12 +9,13 @@ use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\OpenTiming;
 use App\Values\TimingVerdict;
-use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -35,6 +36,9 @@ final class PhaseTimingTest extends TestCase
         'phases',
         'phase_tasks',
         'assignments',
+        'users',
+        'number_groups',
+        'command_receipts',
     ];
 
     private Agent $agent;
@@ -51,19 +55,13 @@ final class PhaseTimingTest extends TestCase
         parent::setUp();
 
         $this->agent = Agent::create('Worker', 'writing-helper', $this->localProject());
-        $this->plan = Plan::factory()->create([
-            'title' => 'Phase timing',
-            'status' => PlanStatus::Started,
-        ]);
-        $this->tasks = [
-            Task::factory()->create(['title' => 'First']),
-            Task::factory()->create(['title' => 'Second']),
-        ];
-
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($this->plan, 'Build'),
-            array_map(fn (Task $task): string => $task->id, $this->tasks),
-        );
+        $made = $this->journal->owner()->fixtures(TaskFixtures::class)->task('First')->task('Second');
+        $this->tasks = [$made->taskCalled('First'), $made->taskCalled('Second')];
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->startedPlan('Phase timing')
+            ->phase('Phase timing', 'Build')
+            ->placeTasks('Build', ...array_map(fn (Task $task) => $task->assignmentIdentity(), $this->tasks))
+            ->planCalled('Phase timing');
 
         $this->journal->actAsUserId(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);

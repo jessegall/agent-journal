@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -33,16 +33,15 @@ final class PlanReviewPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $this->task = Task::factory()->create([
-            'title' => 'Write',
-            'brief' => 'Write the page.',
-        ]);
-        $this->journal->actAsUserId($this->owner->id);
-        $structure = $this->app->make(PlanStructure::class);
-        $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->task = $this->journal->fixtures(TaskFixtures::class)->task(
+            'Write',
+            'Write the page.',
+        )->taskCalled('Write');
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Build the release page')
+            ->phaseWithTask('Build the release page', 'Writing', $this->task->assignmentIdentity())
+            ->planCalled('Build the release page');
     }
 
     public function test_a_review_is_asked_for_and_approved_from_the_page_and_start_stays_its_own_action(): void

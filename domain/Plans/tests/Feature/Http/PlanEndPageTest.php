@@ -6,10 +6,10 @@ namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -31,9 +31,10 @@ final class PlanEndPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::factory()->create(['title' => 'Build the release page']);
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Build the release page')
+            ->planCalled('Build the release page');
         $this->journal->actAsUserId($this->owner->id);
     }
 

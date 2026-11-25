@@ -14,6 +14,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
 use Domain\Tasks\Models\Task;
@@ -35,10 +36,9 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_a_task_sits_in_one_phase_at_most(): void
     {
-        $plan = Plan::factory()->create([
-            'title' => 'Fix the login redirect',
-            'type' => PlanType::Fix,
-        ]);
+        $plan = $this->journal->owner()->fixtures(PlanFixtures::class)
+            ->plan('Fix the login redirect', type: PlanType::Fix)
+            ->planCalled('Fix the login redirect');
         $task = $this->task('Write a failing test');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Reproduce'), [$task->id]);
 
@@ -84,10 +84,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_every_agent_reads_every_plan(): void
     {
-        Plan::factory()->create([
-            'title' => 'Compare chat layouts',
-            'type' => PlanType::Research,
-        ]);
+        $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Compare chat layouts', type: PlanType::Research);
 
         $this->journal->actAsAgentIds(TestIds::of(2), TestIds::of(20));
 

@@ -7,6 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestStart;
@@ -44,7 +45,8 @@ final class PlanAuthoringTest extends TestCase
 
     public function test_a_stale_phase_revision_adds_nothing(): void
     {
-        $phase = $this->planStructure()->addPhase(Plan::factory()->create(), 'Build');
+        $phase = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release')->phase('Release', 'Build')
+            ->phaseCalled('Build');
 
         $this->journal->agentCall($this->start, 'POST', '/agent/plans/phases/add-tasks', [
             'phase_id' => $phase->id,

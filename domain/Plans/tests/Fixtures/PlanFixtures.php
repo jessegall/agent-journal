@@ -57,12 +57,26 @@ final class PlanFixtures
         PlanType $type = PlanType::Build,
         string|null $title = null,
     ): self {
+        return $this->planIn($name, PlanStatus::Paused, $brief, $type, $title);
+    }
+
+    /**
+     * A plan already in this state, as a test that reads plans of every state needs one.
+     */
+    public function planIn(
+        string $name,
+        PlanStatus $status,
+        string $brief = self::BRIEF,
+        PlanType $type = PlanType::Build,
+        string|null $title = null,
+    ): self {
         $this->aliases->claim($name);
         $owner = $this->journal->ownerUser();
-        $plan = Plan::factory()->paused()->create([
+        $plan = Plan::factory()->create([
             'title' => $title ?? $name,
             'brief' => $brief,
             'type' => $type,
+            'status' => $status,
             'creator_type' => $owner->actorType(),
             'creator_id' => $owner->actorId(),
         ]);

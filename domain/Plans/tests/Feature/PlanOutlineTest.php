@@ -8,6 +8,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\OutlinePageAsk;
 use Domain\Plans\Support\PlanOutline;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
@@ -30,20 +31,32 @@ final class PlanOutlineTest extends TestCase
         'phases',
         'phase_tasks',
         'tasks',
+        'users',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     #[TimeLimit(seconds: 30, reason: 'It builds a phase of 1,500 tasks and a plan of 300 one-task phases.')]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_first_and_second_pages_read_the_same_rows_whatever_the_totals(): void
     {
-        $small = Plan::factory()->create();
+        $small = $this->plans()->plan('small')->planCalled('small');
         $smallPhase = $this->structure()->addPhase($small, 'Small');
         $this->structure()->addTasks($smallPhase, $this->taskIds(3));
 
-        $giant = Plan::factory()->create();
+        $giant = $this->plans()->plan('giant')->planCalled('giant');
         $giantPhase = $this->structure()->addPhase($giant, 'Giant');
         $this->structure()->addTasks($giantPhase, $this->taskIds(1500));
 
-        $wide = Plan::factory()->create();
+        $wide = $this->plans()->plan('wide')->planCalled('wide');
 
         foreach (range(1, 300) as $position) {
             $this->structure()->addTasks($this->structure()->addPhase($wide, "Phase {$position}"), $this->taskIds(1));
@@ -84,7 +97,7 @@ final class PlanOutlineTest extends TestCase
 
     public function test_a_phase_whose_revision_moved_answers_its_first_page_again(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
         $phase = $this->structure()->addPhase($plan, 'Work');
         $this->structure()->addTasks($phase, $this->taskIds(60));
         $heldRevision = (int) $phase->fresh()?->revision;
@@ -144,5 +157,10 @@ final class PlanOutlineTest extends TestCase
     private function structure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function plans(): PlanFixtures
+    {
+        return $this->journal->fixtures(PlanFixtures::class);
     }
 }

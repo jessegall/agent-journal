@@ -9,6 +9,7 @@ use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
 use Domain\Plans\Values\PlanProgress;
@@ -18,7 +19,6 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -27,7 +27,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class PlanTalliesTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -43,14 +42,24 @@ final class PlanTalliesTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_placing_starting_finishing_and_cancelling_moves_the_phase_and_plan_tallies(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
         $phase = $this->structure()->addPhase($plan, 'Work');
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->structure()->addTasks($phase, [
             $first->id,
             $second->id,
@@ -96,21 +105,21 @@ final class PlanTalliesTest extends TestCase
 
     public function test_the_current_phase_is_the_first_unfinished_else_the_last_and_none_without_phases(): void
     {
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $finished = Task::factory()->create();
         $finished->finish('Done.');
         $cancelled = Task::factory()->create();
         $cancelled->cancel('Dropped.');
 
-        $complete = Plan::factory()->create();
+        $complete = $this->plans()->plan('complete')->planCalled('complete');
         $this->structure()->addTasks($this->structure()->addPhase($complete, 'Done'), [$finished->id]);
         $this->structure()->addPhase($complete, 'Empty');
 
-        $cancelledFirst = Plan::factory()->create();
+        $cancelledFirst = $this->plans()->plan('cancelledFirst')->planCalled('cancelledFirst');
         $this->structure()->addTasks($this->structure()->addPhase($cancelledFirst, 'Dropped'), [$cancelled->id]);
         $this->structure()->addPhase($cancelledFirst, 'Later');
 
-        $bare = Plan::factory()->create();
+        $bare = $this->plans()->plan('bare')->planCalled('bare');
 
         $current = Phase::resolveCurrentNumbersOf([
             $complete->id,
@@ -131,7 +140,7 @@ final class PlanTalliesTest extends TestCase
 
     public function test_a_card_read_loads_the_same_rows_however_many_tasks_the_plan_holds(): void
     {
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $small = $this->planWithTasks('Small plan', 1);
         $large = $this->planWithTasks('Large plan', 40);
 
@@ -142,7 +151,7 @@ final class PlanTalliesTest extends TestCase
 
     private function planWithTasks(string $title, int $count): Plan
     {
-        $plan = Plan::factory()->create(['title' => $title]);
+        $plan = $this->plans()->plan($title)->planCalled($title);
 
         $this->structure()->addTasks(
             $this->structure()->addPhase($plan, 'Work'),
@@ -208,5 +217,10 @@ final class PlanTalliesTest extends TestCase
     private function structure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function plans(): PlanFixtures
+    {
+        return $this->journal->fixtures(PlanFixtures::class);
     }
 }

@@ -17,6 +17,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanCard;
 use Domain\Plans\Values\PlanFilters;
@@ -54,10 +55,10 @@ final class PlanRecordsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->build = Plan::factory()->create([
-            'title' => 'Build the release page',
-            'type' => PlanType::Build,
-        ]);
+        $plans = $this->journal->owner()->fixtures(PlanFixtures::class)
+            ->plan('Build the release page')
+            ->plan('Compare chat layouts', type: PlanType::Research);
+        $this->build = $plans->planCalled('Build the release page');
         $read = $this->planStructure()->addPhase($this->build, 'Read');
         $done = Task::factory()->create(['title' => 'Done']);
         $done->finish('Done.');
@@ -68,10 +69,7 @@ final class PlanRecordsTest extends TestCase
             [Task::factory()->create(['title' => 'Open'])->id],
         );
 
-        $this->empty = Plan::factory()->create([
-            'title' => 'Compare chat layouts',
-            'type' => PlanType::Research,
-        ]);
+        $this->empty = $plans->planCalled('Compare chat layouts');
     }
 
     public function test_cards_carry_real_progress_the_current_phase_and_an_absent_agent(): void

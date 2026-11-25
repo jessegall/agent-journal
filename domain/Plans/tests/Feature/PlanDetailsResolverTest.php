@@ -9,6 +9,7 @@ use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
 use Domain\Plans\Values\PlanPhaseTasks;
@@ -40,14 +41,22 @@ final class PlanDetailsResolverTest extends TestCase
         'agent_stacks',
         'claim_authorizations',
         'command_receipts',
+        'users',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
     {
-        $plan = Plan::factory()->create([
-            'title' => 'Counted plan',
-            'brief' => self::BRIEF,
-        ]);
+        $plan = $this->plans()->plan('plan', brief: self::BRIEF, title: 'Counted plan')->planCalled('plan');
         $tasks = Task::factory()->count(3)->create();
         $tasks[0]->finish('Done.');
 
@@ -81,7 +90,7 @@ final class PlanDetailsResolverTest extends TestCase
     #[TimeLimit(seconds: 5, reason: 'It builds 120 tasks in one plan and reads them in three pages.')]
     public function test_a_plan_with_120_tasks_pages_them_50_at_a_time(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'First'),
@@ -114,7 +123,7 @@ final class PlanDetailsResolverTest extends TestCase
 
     public function test_a_phase_read_lists_its_task_references_in_order(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
 
         [$first, $second] = [
             Task::factory()->create(['title' => 'First']),
@@ -147,5 +156,10 @@ final class PlanDetailsResolverTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function plans(): PlanFixtures
+    {
+        return $this->journal->fixtures(PlanFixtures::class);
     }
 }

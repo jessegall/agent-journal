@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskWait;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
@@ -37,26 +37,26 @@ final class PlanGraphEditingTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::factory()->create(['title' => 'Ship the graph']);
-
+        $this->owner = $this->journal->owner()->ownerUser();
+        $made = $this->journal->fixtures(TaskFixtures::class)
+            ->task('Design the graph')
+            ->task('Build the graph')
+            ->task('Ship the graph');
         $this->tasks = [
-            'design' => Task::factory()->create(['title' => 'Design the graph']),
-            'build' => Task::factory()->create(['title' => 'Build the graph']),
-            'ship' => Task::factory()->create(['title' => 'Ship the graph']),
+            'design' => $made->taskCalled('Design the graph'),
+            'build' => $made->taskCalled('Build the graph'),
+            'ship' => $made->taskCalled('Ship the graph'),
         ];
-
-        $structure = $this->app->make(PlanStructure::class);
-        $structure->addTasks($structure->addPhase($this->plan, 'Design'), [$this->tasks['design']->id]);
-
-        $structure->addTasks(
-            $structure->addPhase($this->plan, 'Build'),
-            [
-                $this->tasks['build']->id,
-                $this->tasks['ship']->id,
-            ],
-        );
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Ship', title: 'Ship the graph')
+            ->phaseWithTask('Ship', 'Design', $this->tasks['design']->assignmentIdentity())
+            ->phase('Ship', 'Build')
+            ->placeTasks(
+                'Build',
+                $this->tasks['build']->assignmentIdentity(),
+                $this->tasks['ship']->assignmentIdentity(),
+            )
+            ->planCalled('Ship');
 
         $this->wait('ship', 'design');
         $this->wait('ship', 'build');

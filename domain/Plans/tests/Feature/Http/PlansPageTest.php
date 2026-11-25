@@ -6,15 +6,16 @@ namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\DomainBoot;
@@ -47,27 +48,19 @@ final class PlansPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->release = Plan::factory()->create([
-            'title' => 'Build the release page',
-            'type' => PlanType::Build,
-        ]);
-
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($this->release, 'Read'),
-            [Task::factory()->create(['title' => 'List the plans'])->id],
-        );
-
-        $this->paused = Plan::factory()->create([
-            'title' => 'Compare chat layouts',
-            'type' => PlanType::Research,
-        ]);
-        Plan::query()->whereKey($this->paused->id)->update(['status' => PlanStatus::Paused->value]);
+        $this->owner = $this->journal->owner()->ownerUser();
+        $task = $this->journal->fixtures(TaskFixtures::class)->task('List the plans')->taskCalled('List the plans');
+        $plans = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Build the release page')
+            ->phaseWithTask('Build the release page', 'Read', $task->assignmentIdentity())
+            ->pausedPlan('Compare chat layouts', type: PlanType::Research);
+        $this->release = $plans->planCalled('Build the release page');
+        $this->paused = $plans->planCalled('Compare chat layouts');
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void
     {
+        $this->journal->asGuest();
         $this->get('/plans')->assertRedirect('/login');
     }
 

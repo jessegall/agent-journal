@@ -21,6 +21,7 @@ use Domain\Plans\Exceptions\PlanPoolRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
@@ -47,6 +48,8 @@ final class PlanTaskPoolTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->journal->actAsUserId(TestIds::of(1));
     }
@@ -66,7 +69,7 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_a_started_plan_opens_to_its_tasks_phase_by_phase(): void
     {
-        $plan = Plan::factory()->create(['status' => PlanStatus::Started]);
+        $plan = $this->plans()->startedPlan('plan')->planCalled('plan');
         $build = $this->planStructure()->addPhase($plan, 'Build');
         $review = $this->planStructure()->addPhase($plan, 'Review');
         [$first, $second, $third, $fourth] = array_map(fn () => Task::factory()->create()->id, range(1, 4));
@@ -111,7 +114,7 @@ final class PlanTaskPoolTest extends TestCase
     public function test_a_plan_that_is_not_started_gives_no_tasks(PlanStatus $state): void
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
-        $plan = Plan::factory()->create(['status' => $state]);
+        $plan = $this->plans()->planIn('plan', $state)->planCalled('plan');
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),
@@ -129,7 +132,7 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_a_plan_of_more_than_a_thousand_tasks_gives_none(): void
     {
-        $plan = Plan::factory()->create(['status' => PlanStatus::Started]);
+        $plan = $this->plans()->startedPlan('plan')->planCalled('plan');
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($plan, 'Build'),
@@ -148,7 +151,7 @@ final class PlanTaskPoolTest extends TestCase
     public function test_a_reference_that_does_not_name_one_existing_plan_is_refused(): void
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
-        $plan = Plan::factory()->create();
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
         $task = Task::factory()->create()->id;
 
         $this->assertThrows(
@@ -183,7 +186,7 @@ final class PlanTaskPoolTest extends TestCase
 
     public function test_the_description_names_the_plan_once_it_is_found(): void
     {
-        $plan = Plan::factory()->create(['title' => self::PLAN_TITLE]);
+        $plan = $this->plans()->plan('plan', title: self::PLAN_TITLE)->planCalled('plan');
 
         $factory = $this->app->make(PlanTaskPoolFactory::class);
 
@@ -207,5 +210,10 @@ final class PlanTaskPoolTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function plans(): PlanFixtures
+    {
+        return $this->journal->fixtures(PlanFixtures::class);
     }
 }

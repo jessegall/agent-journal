@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Domain\Plans\Enums\PlanStatus;
-use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
@@ -38,12 +37,10 @@ final class StartPlanTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::factory()->create([
-            'title' => 'Build the release page',
-            'type' => PlanType::Build,
-        ]);
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Build the release page')
+            ->planCalled('Build the release page');
     }
 
     public function test_a_start_returns_to_the_page_it_came_from(): void
@@ -114,6 +111,7 @@ final class StartPlanTest extends TestCase
 
     public function test_a_guest_and_a_guessed_plan_get_no_start(): void
     {
+        $this->journal->asGuest();
         $this->post("/plans/{$this->plan->number}/start")->assertRedirect('/login');
         $this->actingAs($this->owner)->post('/plans/'.TestIds::of(999999).'/start')->assertNotFound();
 
