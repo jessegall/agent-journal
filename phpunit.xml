@@ -13,11 +13,23 @@
             <directory>tests/Unit</directory>
             <directory>domain/*/tests/Unit</directory>
         </testsuite>
+        <testsuite name="Entry">
+            <directory>tests/Commands</directory>
+            <directory>tests/States</directory>
+            <directory>tests/Routes</directory>
+            <directory>tests/Mcp</directory>
+            <directory>tests/Hooks</directory>
+            <directory>tests/Middleware</directory>
+            <directory>tests/StandIn</directory>
+            <directory>domain/*/tests/Commands</directory>
+            <directory>domain/*/tests/States</directory>
+            <directory>domain/*/tests/Routes</directory>
+            <directory>domain/*/tests/Mcp</directory>
+            <directory>domain/*/tests/Middleware</directory>
+        </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
             <directory>domain/*/tests/Feature</directory>
-            <directory>tests/Commands</directory>
-            <directory>domain/*/tests/Commands</directory>
         </testsuite>
         <testsuite name="Architecture">
             <directory>tests/Architecture</directory>

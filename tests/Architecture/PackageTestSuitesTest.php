@@ -8,8 +8,8 @@ use PHPUnit\Framework\TestCase;
 use SimpleXMLElement;
 
 /**
- * Every package's Unit and Feature tests sit in a suite of phpunit.xml, so the full run reaches a new package's tests
- * without anyone editing the file.
+ * Every package's Unit, Feature and entry tests (Commands, States, Routes, Mcp, Middleware) sit in a suite of
+ * phpunit.xml, so the full run reaches a new package's tests without anyone editing the file.
  */
 final class PackageTestSuitesTest extends TestCase
 {
@@ -23,10 +23,11 @@ final class PackageTestSuitesTest extends TestCase
             $covered = [...$covered, ...(glob($root.'/'.$directory, GLOB_ONLYDIR) ?: [])];
         }
 
-        $folders = [
-            ...(glob($root.'/domain/*/tests/Unit', GLOB_ONLYDIR) ?: []),
-            ...(glob($root.'/domain/*/tests/Feature', GLOB_ONLYDIR) ?: []),
-        ];
+        $folders = [];
+
+        foreach (['Unit', 'Feature', 'Commands', 'States', 'Routes', 'Mcp', 'Middleware'] as $kind) {
+            $folders = [...$folders, ...(glob($root."/domain/*/tests/{$kind}", GLOB_ONLYDIR) ?: [])];
+        }
 
         $this->assertNotSame([], $folders);
         $this->assertSame([], array_values(array_diff($folders, $covered)));
