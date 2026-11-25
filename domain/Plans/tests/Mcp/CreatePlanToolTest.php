@@ -8,6 +8,7 @@ use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Mcp\Tools\CreatePlanTool;
 use Domain\Plans\PlansDomain;
+use Illuminate\Support\Str;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
@@ -32,7 +33,7 @@ final class CreatePlanToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => 'build', 'request_key' => 'plans-1'])
-            ->reply(CreatePlanCommand::class, '01kd0000000000000000000003')
+            ->reply(CreatePlanCommand::class, (string) Str::ulid())
             ->expects(ExpectedCommand::of(CreatePlanCommand::class, ['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => PlanType::Build]));
     }
 }

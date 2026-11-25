@@ -6,6 +6,7 @@ namespace Tests\Mcp;
 
 use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Mcp\Tools\CommandRequestSampleTool;
+use Illuminate\Support\Str;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -28,7 +29,7 @@ final class CommandRequestSampleToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['request' => $request, 'permit' => 'permit-1', 'request_key' => 'sample-1'])
-            ->reply(StartSampleCommand::class, '01jd8x0g9m3qz6v4k2t7r5w1cf')
+            ->reply(StartSampleCommand::class, (string) Str::ulid())
             ->expects(ExpectedCommand::of(StartSampleCommand::class, [
                 'commandRequestId' => $request,
                 'permitId' => 'permit-1',

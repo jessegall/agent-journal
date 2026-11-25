@@ -6,18 +6,16 @@ namespace Domain\Rules\Tests\Mcp;
 
 use Domain\Rules\Mcp\Tools\RuleReadTool;
 use Domain\Rules\RulesDomain;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool RuleReadTool, as the generator wrote it.
+ * An agent reads one rule with what it replaces.
  */
-#[Generated]
 #[TestsMcpTool(RuleReadTool::class)]
 final class RuleReadToolTest extends McpToolEntryTestCase
 {
@@ -28,8 +26,9 @@ final class RuleReadToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('RuleReadTool', [
-            'the argument rule_id',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $rule = $journal->fixtures(RuleFixtures::class)->proposedRule('Tests', 'Run the phase tests once.', 'Builder')->ruleCalled('Tests');
+
+        return ToolCall::by($start)->arguments(['rule_id' => $rule->id]);
     }
 }

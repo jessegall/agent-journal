@@ -14,6 +14,7 @@ use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
+use Illuminate\Support\Str;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
@@ -45,7 +46,7 @@ final class ReassignRecordToolTest extends McpToolEntryTestCase
             ->forModel($task)
             ->arguments([
                 'expected_assignment' => [
-                    'id' => '01jd8x0g9m3qz6v4k2t7r5w1ce',
+                    'id' => (string) Str::ulid(),
                     'holder' => ['type' => 'agent', 'id' => $first->agent->id],
                 ],
                 'recipient' => ['type' => 'agent', 'id' => $second->agent->id],

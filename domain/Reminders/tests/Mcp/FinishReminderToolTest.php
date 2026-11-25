@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Tests\Mcp;
 
+use Carbon\CarbonImmutable;
+use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Mcp\Tools\FinishReminderTool;
 use Domain\Reminders\RemindersDomain;
+use Domain\Reminders\Tests\Fixtures\ReminderFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool FinishReminderTool, as the generator wrote it.
+ * An agent finishes one of its reminders.
  */
-#[Generated]
 #[TestsMcpTool(FinishReminderTool::class)]
 final class FinishReminderToolTest extends McpToolEntryTestCase
 {
@@ -28,11 +29,13 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('FinishReminderTool', [
-            'the argument reminder_id',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $reminder = $journal->fixtures(ReminderFixtures::class)
+            ->reminder('Check', 'Builder', CarbonImmutable::now()->addHour())
+            ->reminderCalled('Check');
+
+        return ToolCall::by($start)
+            ->arguments(['reminder_id' => $reminder->id, 'request_key' => 'write-1'])
+            ->expects(ExpectedCommand::of(FinishReminderCommand::class, ['reminderId' => $reminder->id]));
     }
 }

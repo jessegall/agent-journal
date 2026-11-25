@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Mcp;
 
+use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Mcp\Tools\SaveMemoryTool;
 use Domain\Memory\MemoryDomain;
+use Illuminate\Support\Str;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool SaveMemoryTool, as the generator wrote it.
+ * An agent saves a memory with its weight.
  */
-#[Generated]
 #[TestsMcpTool(SaveMemoryTool::class)]
 final class SaveMemoryToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +28,11 @@ final class SaveMemoryToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('SaveMemoryTool', [
-            'the argument text',
-            'the argument weight',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+
+        return ToolCall::by($start)
+            ->arguments(['text' => 'Run the phase tests once.', 'weight' => 7, 'request_key' => 'write-1'])
+            ->reply(SaveMemoryCommand::class, (string) Str::ulid())
+            ->expects(ExpectedCommand::of(SaveMemoryCommand::class, ['text' => 'Run the phase tests once.', 'weight' => 7]));
     }
 }

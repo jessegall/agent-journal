@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\ReadQuestion;
 
+use App\Attributes\Commands\Authorize;
+use App\Enums\Agents\AccessType;
+use App\Policies\MessagePolicy;
 use App\Support\Command;
 use Domain\Questions\Support\ShownQuestion;
 
@@ -12,6 +15,7 @@ use Domain\Questions\Support\ShownQuestion;
  *
  * @extends Command<ShownQuestion>
  */
+#[Authorize(MessagePolicy::class, AccessType::Read)]
 final readonly class ReadQuestionCommand extends Command
 {
     public function __construct(public string $questionId) {}

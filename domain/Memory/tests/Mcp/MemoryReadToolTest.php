@@ -6,18 +6,16 @@ namespace Domain\Memory\Tests\Mcp;
 
 use Domain\Memory\Mcp\Tools\MemoryReadTool;
 use Domain\Memory\MemoryDomain;
+use Domain\Memory\Tests\Fixtures\MemoryFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool MemoryReadTool, as the generator wrote it.
+ * An agent reads one of its memories whole.
  */
-#[Generated]
 #[TestsMcpTool(MemoryReadTool::class)]
 final class MemoryReadToolTest extends McpToolEntryTestCase
 {
@@ -28,8 +26,9 @@ final class MemoryReadToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('MemoryReadTool', [
-            'the argument memory_id',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $memory = $journal->fixtures(MemoryFixtures::class)->memory('Rule', 'Builder', 'Run the phase tests once.')->memoryCalled('Rule');
+
+        return ToolCall::by($start)->arguments(['memory_id' => $memory->id]);
     }
 }

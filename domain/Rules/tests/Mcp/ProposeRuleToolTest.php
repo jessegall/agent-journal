@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Mcp;
 
+use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Mcp\Tools\ProposeRuleTool;
 use Domain\Rules\RulesDomain;
+use Illuminate\Support\Str;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool ProposeRuleTool, as the generator wrote it.
+ * A main agent proposes a rule with its reason and is given the proposal.
  */
-#[Generated]
 #[TestsMcpTool(ProposeRuleTool::class)]
 final class ProposeRuleToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +28,11 @@ final class ProposeRuleToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('ProposeRuleTool', [
-            'the argument text',
-            'the argument reason',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+
+        return ToolCall::by($start)
+            ->arguments(['text' => 'Run the phase tests once.', 'reason' => 'User 24714.', 'request_key' => 'write-1'])
+            ->reply(ProposeRuleCommand::class, (string) Str::ulid())
+            ->expects(ExpectedCommand::of(ProposeRuleCommand::class, ['text' => 'Run the phase tests once.', 'reason' => 'User 24714.']));
     }
 }
