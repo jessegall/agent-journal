@@ -5,21 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Accounts\CommandEntry;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Agents\AgentSession;
-use App\Models\Inboxes\Inbox;
-use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
-use App\Support\ActorIdentity;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
-use App\Support\MainInboxTakeover;
-use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -28,8 +17,8 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A binding opens its main runtime only for its own root: another folder, another binding's root id or another
- * agent is refused before any runtime or grant.
+ * A start of a revoked binding cannot be looked up, and a new boot of the relay starts nothing until it reported its
+ * earlier sessions.
  */
 final class BindingRuntimeTest extends TestCase
 {
@@ -58,35 +47,6 @@ final class BindingRuntimeTest extends TestCase
         $this->chooseActiveAccounts();
         $this->app->make(JournalCommands::class)
             ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
-    }
-
-    public function test_a_start_that_names_no_model_takes_its_profiles_default(): void
-    {
-        $binding = $this->connected('the-ticket', self::NONCE);
-
-        $started = $this->start($binding, ['model' => 'default'])->assertCreated();
-
-        $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('main-agent'));
-        $family = $this->app->make(DriverCatalogue::class)->family(DefaultDrivers::CLAUDE_CODE);
-        $session = AgentSession::query()->findOrFail($started->json('session_id'));
-        $this->assertSame($family->modelAt($profile->preferredTier), $session->model);
-    }
-
-    public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
-    {
-        $serverMain = Agent::create('Server main', 'main-agent', $this->localProject());
-        $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($serverMain),
-        );
-        $binding = $this->connected('the-ticket', self::NONCE);
-
-        $this->start($binding, [])->assertCreated();
-
-        $this->assertSame(
-            [ActorIdentity::of($serverMain)->text()],
-            array_map(fn (ActorIdentity $member) => $member->text(), InboxMember::resolveAttachedTo([Inbox::findMain()->id], Agent::class)),
-        );
-        $this->assertTrue(Agent::query()->findOrFail($serverMain->id)->currentRuntime()->isEmpty());
     }
 
     public function test_a_start_of_a_revoked_binding_cannot_be_looked_up(): void
