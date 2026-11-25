@@ -63,7 +63,7 @@ final readonly class SkillAuthoringService
         }
 
         $key = SkillKey::from($numberOrKey);
-        $stored = Skill::query()->where('key', $key->key)->first();
+        $stored = Skill::query()->withKey($key)->first();
 
         if ($stored !== null) {
             return $stored;

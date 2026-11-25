@@ -30,7 +30,7 @@ final readonly class OwnerStartReceipts implements StartReceipts
         $record = StartRecord::query()
             ->forOwnerReference($reference)
             ->requestedBy(ActorIdentity::of($this->actors->actor()))
-            ->whereNotNull('session_id')
+            ->withSession()
             ->newestCreatedFirst()
             ->firstOr(StartRecordMissing::throwing()->forRequest($reference));
 

@@ -13,14 +13,6 @@ final readonly class ActivityRetentionService
 {
     public function prune(): void
     {
-        $ranked = ActivityEntry::query()->selectRaw(
-            'id, row_number() over (partition by environment_id order by occurred_at desc, id desc) as place',
-        );
-
-        ActivityEntry::query()
-            ->withAnyId(fn ($pruned) => $pruned->fromSub($ranked, 'ranked')
-                ->where('place', '>', ActivityEntry::KEPT_ENTRY_LIMIT)
-                ->select('id'))
-            ->delete();
+        ActivityEntry::query()->pastKeptLimit()->delete();
     }
 }

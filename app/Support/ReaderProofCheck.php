@@ -78,7 +78,7 @@ final readonly class ReaderProofCheck
 
     private function samplePart(CommandRequest $request, ProcessRun $run): PartRun|null
     {
-        return $run->parts()->where('operation', $request->operation)->orderByDesc('attempt')->first();
+        return $run->parts()->ofOperation($request->operation)->lastAttemptFirst()->first();
     }
 
     /**

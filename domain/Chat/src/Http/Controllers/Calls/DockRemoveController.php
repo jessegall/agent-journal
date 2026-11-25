@@ -21,7 +21,7 @@ final readonly class DockRemoveController
     public function __invoke(DockRemoveCall $call, CommandBus $commands, DockRequests $requests): DockAnswerData
     {
         $inbox = $requests->chosenInbox($call->chat);
-        $placement = DockPlacement::query()->inConversation($inbox)->whereKey($call->placement)->first();
+        $placement = DockPlacement::query()->inInbox($inbox)->whereKey($call->placement)->first();
 
         if ($placement === null) {
             return DockAnswerData::fromDockResult(DockResult::unavailable());

@@ -59,13 +59,11 @@ final readonly class AssignmentRecords implements AssignmentResolver
             return new AssignmentSet([]);
         }
 
-        $rows = AssignmentRecord::query()->where(function (Builder $query) use ($visibleIdsByType): void {
-            foreach ($visibleIdsByType as $type => $ids) {
-                $query->orWhere(
-                    fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids),
-                );
-            }
-        })->readExactly(array_sum(array_map(count(...), $visibleIdsByType)))->orderBy('id')->get();
+        $rows = AssignmentRecord::query()
+            ->ofAnyRecords($visibleIdsByType)
+            ->readExactly(array_sum(array_map(count(...), $visibleIdsByType)))
+            ->oldestFirst()
+            ->get();
 
         return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment)->all()));
     }
@@ -79,9 +77,9 @@ final readonly class AssignmentRecords implements AssignmentResolver
         while (true) {
             $candidates = AssignmentRecord::query()
                 ->heldOrShared($holder, $this->shared->sharedWith($holder))
-                ->where('record_type', $type)
-                ->when($examinedUpTo !== null, fn (Builder $query) => $query->where('record_id', '>', $examinedUpTo))
-                ->orderBy('record_id')
+                ->withRecordType($type)
+                ->when($examinedUpTo !== null, fn (Builder $query) => $query->recordAfter($examinedUpTo))
+                ->byRecordId()
                 ->limit(self::LARGEST_BATCH)
                 ->pluck('record_id')
                 ->map(fn (mixed $id) => (string) $id)

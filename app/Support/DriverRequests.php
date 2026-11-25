@@ -59,7 +59,7 @@ final readonly class DriverRequests
         DriverRequest::query()
             ->ofAgentRuntime($request->agent_runtime_id)
             ->withOperation($request->operation)
-            ->where('sequence', '<', $request->sequence)
+            ->before($request->sequence)
             ->withAnyProgress([
                 RequestProgress::Accepted,
                 RequestProgress::Staged,

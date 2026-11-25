@@ -142,4 +142,26 @@ final class RuleProposalRevision extends Model implements ReadableModel
     {
         $query->whereRelation('proposal', 'project_key', $projectKey);
     }
+
+    /**
+     * The revision of the given number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function numbered(Builder $query, int $revision): void
+    {
+        $query->where('revision', $revision);
+    }
+
+    /**
+     * The revisions, the newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function newestRevisionFirst(Builder $query): void
+    {
+        $query->orderByDesc('revision');
+    }
 }

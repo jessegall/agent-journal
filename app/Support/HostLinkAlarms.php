@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\ArrangementType;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 
@@ -31,11 +30,7 @@ final readonly class HostLinkAlarms
 
         return array_values(Host::query()
             ->unrevoked()
-            ->where(fn ($hosts) => $hosts
-                ->where('failing_since', '<', $failingSince)
-                ->orWhere(fn ($quiet) => $quiet
-                    ->where('arrangement', ArrangementType::Contained)
-                    ->where('last_answered_at', '<', $quietSince)))
+            ->failingOrQuiet($failingSince, $quietSince)
             ->byFailingSince()
             ->limit(self::HOST_LIMIT)
             ->get()

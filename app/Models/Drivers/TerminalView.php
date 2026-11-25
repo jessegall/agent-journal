@@ -9,6 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Enums\RuntimeActivity;
 use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
 use App\Models\Agents\AgentRuntime;
@@ -294,5 +295,27 @@ final class TerminalView extends Model implements EventSource, ReadableModel
     protected function withRuntime(Builder $query): void
     {
         $query->with('runtime');
+    }
+
+    /**
+     * The views of a runtime that stopped.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofStoppedRuntime(Builder $query): void
+    {
+        $query->whereHas('runtime', fn (Builder $runtime) => $runtime->where('activity', RuntimeActivity::Stopped));
+    }
+
+    /**
+     * The views that closed or lapsed before the cutoff.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endedBefore(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->where(fn (Builder $ended) => $ended->where('closed_at', '<', $cutoff)->orWhere('expires_at', '<', $cutoff));
     }
 }

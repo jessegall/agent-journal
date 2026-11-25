@@ -295,7 +295,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function unmet(Builder $query): void
     {
-        $finished = Task::query()->select('id')->finished();
+        $finished = Task::query()->keys()->finished();
 
         $query->whereNull('waived_at')->whereNotIn('prerequisite_task_id', $finished);
     }

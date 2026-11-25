@@ -11,7 +11,6 @@ use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Support\States\Support\AnswerAskStateReference;
 use Closure;
-use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AskAttention
 {
@@ -90,9 +89,7 @@ final readonly class AskAttention
      */
     private function recoverEach(Closure $recover): void
     {
-        AskHop::query()->where(fn (Builder $waiting) => $waiting
-            ->where('attention', AskHop::PENDING_DELIVERY)
-            ->orWhereIn('id', AskHop::query()->currentHops()->select('ask_hops.id')))
+        AskHop::query()->awaitingDeliveryOrCurrent()
             ->readInChunks(50, function ($hops) use ($recover): void {
                 foreach ($hops as $hop) {
                     $recover($hop);

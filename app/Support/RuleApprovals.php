@@ -47,7 +47,7 @@ final readonly class RuleApprovals
     public function approve(RuleProposal $proposal, OwnerApproval $approval, ActorIdentity $approver): ApprovalReceipt
     {
         $proposal->assertReviewable($approval->expectedRevision);
-        $declaration = $proposal->revisions()->where('revision', $proposal->current_revision)->sole();
+        $declaration = $proposal->revisions()->numbered($proposal->current_revision)->sole();
         $rule = $declaration->payload;
         $this->checkConflicts($rule);
         $this->checkReaders($rule, $declaration, $approval->readers);

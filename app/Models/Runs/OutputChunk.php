@@ -156,4 +156,15 @@ final class OutputChunk extends Model implements ReadableModel
     {
         $query->orderBy('offset');
     }
+
+    /**
+     * The chunks at or past the offset.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromOffset(Builder $query, int $offset): void
+    {
+        $query->where('offset', '>=', $offset);
+    }
 }

@@ -57,8 +57,8 @@ final readonly class EnvironmentChatEligibility implements InboxEligibility
     {
         $granted = EnvironmentUserGrant::query()
             ->inEnvironment($environmentId)
-            ->where(InboxPermission::ReceiveInvitations->column(), true)
-            ->select('user_id');
+            ->allowing(InboxPermission::ReceiveInvitations)
+            ->userIds();
 
         return array_values(array_map(strval(...), User::query()
             ->whereNull('disabled_at')

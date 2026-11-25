@@ -27,7 +27,7 @@ final readonly class CaptureJobMessageSource implements Listener
 
     private function captureJobSourceMessage(string $sessionId, string $messageId): void
     {
-        AgentSession::query()->whereKey($sessionId)->whereNull('job_source_message_id')->update([
+        AgentSession::query()->whereKey($sessionId)->withoutJobSource()->update([
             'job_source_message_id' => $messageId,
         ]);
     }

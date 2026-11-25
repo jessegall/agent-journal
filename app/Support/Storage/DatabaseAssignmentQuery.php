@@ -7,7 +7,6 @@ namespace App\Support\Storage;
 use App\Contracts\Assignments\AssignmentQuery;
 use App\Contracts\Sharing\SharedHolders;
 use App\Models\Records\AssignmentRecord;
-use App\Models\Support\SignedInScope;
 use App\Support\AssigneeIdentity;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -22,9 +21,9 @@ final readonly class DatabaseAssignmentQuery implements AssignmentQuery
     public function heldIds(string $type, AssigneeIdentity $holder): Builder
     {
         return AssignmentRecord::query()
-            ->withoutGlobalScope(SignedInScope::class)
-            ->select('record_id')
-            ->where('record_type', $type)
+            ->acrossSignIns()
+            ->recordIds()
+            ->withRecordType($type)
             ->heldOrShared($holder, $this->shared->sharedWith($holder));
     }
 

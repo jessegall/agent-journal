@@ -83,4 +83,34 @@ final class ProjectFileVersion extends Model implements ReadableModel
     {
         $query->when($digest !== null, fn (Builder $named) => $named->where('digest', $digest));
     }
+
+    /**
+     * The versions no comment names.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function uncommented(Builder $query): void
+    {
+        $query->whereNotExists(fn ($comments) => $comments->from('comments')
+            ->where('comments.target_type', ProjectFile::linkType())
+            ->whereColumn('comments.target_id', 'project_file_versions.project_file_id')
+            ->whereColumn('comments.version_id', 'project_file_versions.digest'));
+    }
+
+    /**
+     * The versions of each file older than the newest ones it keeps.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pastKeptLimit(Builder $query): void
+    {
+        $newest = self::query()
+            ->selectRaw('id, row_number() over (partition by project_file_id order by created_at desc, id desc) as place');
+
+        $query->whereNotIn('id', fn ($kept) => $kept->fromSub($newest, 'ranked')
+            ->where('place', '<=', self::KEPT_UNNAMED_VERSION_LIMIT)
+            ->select('id'));
+    }
 }

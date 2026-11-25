@@ -339,7 +339,7 @@ final readonly class TerminalControls
         }
 
         $sent = DriverRequest::query()->ofAgentRuntime($grant->agent_runtime_id)
-            ->where('idempotency_key', "input:{$grant->grant_id}:{$sequence}")->first();
+            ->withIdempotencyKey("input:{$grant->grant_id}:{$sequence}")->first();
 
         $outcome = $sent === null
             ? TerminalReceiptOutcome::Unknown

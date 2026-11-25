@@ -104,4 +104,15 @@ final class RetainedPage extends Model implements ReadableModel
     {
         $query->where('expires_at', '<', CarbonImmutable::now());
     }
+
+    /**
+     * The pages that have not expired at the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unexpiredAt(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('expires_at', '>=', $moment);
+    }
 }

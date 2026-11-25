@@ -107,7 +107,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         $rows = AssignmentRecord::query()
             ->heldForRetirement($holder)
             ->readAll('every assignment the retiring holder holds is released')
-            ->orderBy('id')
+            ->oldestFirst()
             ->lockForUpdate()
             ->get();
 

@@ -242,4 +242,15 @@ final class PhaseTask extends Pivot implements ReadableModel
     {
         $query->orderBy('position');
     }
+
+    /**
+     * Only the phase of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function phaseIds(Builder $query): void
+    {
+        $query->select('phase_id');
+    }
 }

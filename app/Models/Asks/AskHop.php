@@ -377,4 +377,28 @@ final class AskHop extends Model implements EventSource, ReadableModel
     {
         $query->groupBy('actor_type', 'actor_id')->selectRaw('actor_type, actor_id, max(updated_at) as answered_at');
     }
+
+    /**
+     * Only the ask of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function askIds(Builder $query): void
+    {
+        $query->select('ask_id');
+    }
+
+    /**
+     * The hops whose attention still waits on delivery, and the current hop of every ask.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingDeliveryOrCurrent(Builder $query): void
+    {
+        $query->where(fn (Builder $waiting) => $waiting
+            ->where('attention', self::PENDING_DELIVERY)
+            ->orWhereIn('id', self::query()->currentHops()->keys()));
+    }
 }

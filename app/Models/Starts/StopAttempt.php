@@ -19,6 +19,7 @@ use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
 use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
+use App\Values\RelationRead;
 use App\Values\StopAttemptReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -333,5 +334,27 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
     protected function uncertified(Builder $query): void
     {
         $query->whereNull('certified_at');
+    }
+
+    /**
+     * The attempts of every session, not only the current one: a host reports results for any.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acrossSessions(Builder $query): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class);
+    }
+
+    /**
+     * The attempts with their results loaded, at most fifty of each, which is all a host reports.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withResults(Builder $query): void
+    {
+        $query->with(['results' => RelationRead::complete(max: 50)->constraint()]);
     }
 }

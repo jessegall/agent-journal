@@ -944,4 +944,26 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $query->with('runtime.session');
     }
+
+    /**
+     * The requests of any operation but a control one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function excludingControl(Builder $query): void
+    {
+        $query->whereNotIn('operation', DriverOperation::control());
+    }
+
+    /**
+     * The requests placed before the given sequence number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function before(Builder $query, int $sequence): void
+    {
+        $query->where('sequence', '<', $sequence);
+    }
 }

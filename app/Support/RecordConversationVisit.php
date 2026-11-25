@@ -88,7 +88,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
      */
     private function confirmConversation(string $sessionId, string $nativeId): void
     {
-        $start = StartRecord::query()->ofSession($sessionId)->whereNull('conversation_resumed')->first();
+        $start = StartRecord::query()->ofSession($sessionId)->resumeUnsettled()->first();
 
         if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
             return;

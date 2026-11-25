@@ -157,4 +157,21 @@ final class ActivityEntry extends Model implements ReadableModel
     {
         $query->whereIn('id', $ids);
     }
+
+    /**
+     * The entries of each environment older than the newest ones it keeps.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pastKeptLimit(Builder $query): void
+    {
+        $ranked = self::query()->selectRaw(
+            'id, row_number() over (partition by environment_id order by occurred_at desc, id desc) as place',
+        );
+
+        $query->whereIn('id', fn ($pruned) => $pruned->fromSub($ranked, 'ranked')
+            ->where('place', '>', self::KEPT_ENTRY_LIMIT)
+            ->select('id'));
+    }
 }

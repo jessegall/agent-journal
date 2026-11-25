@@ -13,6 +13,7 @@ use App\Data\Processes\RuntimeStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverType;
 use App\Enums\HoldReason;
+use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
@@ -736,5 +737,38 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     protected function withSessionAgent(Builder $query): void
     {
         $query->with('session.agent');
+    }
+
+    /**
+     * Only the hosts of the runtimes, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function hostIds(Builder $query): void
+    {
+        $query->select('host_id');
+    }
+
+    /**
+     * Only the sessions of the runtimes, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sessionIds(Builder $query): void
+    {
+        $query->select('agent_session_id');
+    }
+
+    /**
+     * The runtimes with a request accepted and waiting.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAcceptedRequest(Builder $query): void
+    {
+        $query->whereHas('requests', fn (Builder $requests) => $requests->where('progress', RequestProgress::Accepted));
     }
 }

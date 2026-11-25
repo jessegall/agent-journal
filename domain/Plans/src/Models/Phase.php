@@ -299,7 +299,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     #[Scope]
     protected function holdingTask(Builder $query, string $taskId): void
     {
-        $query->whereIn('id', PhaseTask::query()->select('phase_id')->ofTask($taskId));
+        $query->whereIn('id', PhaseTask::query()->phaseIds()->ofTask($taskId));
     }
 
     /**
@@ -389,5 +389,16 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     protected function withPlan(Builder $query): void
     {
         $query->with('plan');
+    }
+
+    /**
+     * The phases numbered after the given number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function afterNumber(Builder $query, int $number): void
+    {
+        $query->where('number', '>', $number);
     }
 }

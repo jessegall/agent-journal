@@ -303,7 +303,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function ofBindingsOnHost(Builder $query, string $hostId): void
     {
-        $query->whereIn('binding_id', ProjectBinding::query()->onHost($hostId)->select('id'));
+        $query->whereIn('binding_id', ProjectBinding::query()->onHost($hostId)->keys());
     }
 
     /**
@@ -345,5 +345,38 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     protected function withState(Builder $query, ProjectReadState $state): void
     {
         $query->where('state', $state);
+    }
+
+    /**
+     * The reads whose time ran out before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiredAt(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('expires_at', '<', $moment);
+    }
+
+    /**
+     * The reads no longer pending.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function settled(Builder $query): void
+    {
+        $query->where('state', '!=', ProjectReadState::Pending->value);
+    }
+
+    /**
+     * The reads last changed before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function updatedBefore(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('updated_at', '<', $moment);
     }
 }

@@ -38,7 +38,7 @@ final readonly class DriverRequestEndings
         $runtime->closeAfterExit();
 
         $open = $runtime->requests()
-            ->whereIn('progress', RequestProgress::open())
+            ->open()
             ->readAll('every open request of a runtime that exited gets its final outcome')
             ->get();
 

@@ -358,7 +358,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
         $query->where(fn (Builder $participants) => $participants->where(
             fn (Builder $requester) => $requester->byActor($actor),
-        )->orWhereIn('id', AskHop::query()->byActor($actor)->select('ask_id')));
+        )->orWhereIn('id', AskHop::query()->byActor($actor)->askIds()));
     }
 
     /**

@@ -259,7 +259,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function byAgentsOnHost(Builder $query, string $hostId): void
     {
-        $agents = AgentSession::query()->runningOnHost($hostId)->select('agent_id');
+        $agents = AgentSession::query()->runningOnHost($hostId)->agentIds();
 
         $query->where('actor_type', 'agent')->whereIn('actor_id', $agents);
     }

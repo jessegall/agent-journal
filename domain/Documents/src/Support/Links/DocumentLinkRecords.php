@@ -14,7 +14,6 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordChanges;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Documents as linkable records: published to every signed-in actor, and changed by a user or the agent that
@@ -44,9 +43,7 @@ final readonly class DocumentLinkRecords implements RecordProvider
     {
         $this->actors->actor();
 
-        return Document::query()->sharedPublished()->with(
-            ['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()],
-        );
+        return Document::query()->sharedPublished()->withCurrentRevisionCard();
     }
 
     protected function cardOf(Model $record): RecordCard

@@ -17,7 +17,6 @@ use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
 use App\Models\Starts\ProcessStart;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Follows a start by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
@@ -122,11 +121,8 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
-        $unreachableHosts = Host::query()
-            ->whereNotNull('failing_since')
-            ->orWhere('last_answered_at', '<', $cutoff)
-            ->select('id');
-        $isAnyHostReachable = Host::query()->unrevoked()->whereNotIn('id', $unreachableHosts)->exists();
+        $unreachableHosts = Host::query()->unreachableSince($cutoff)->keys();
+        $isAnyHostReachable = Host::query()->unrevoked()->excludingKeys($unreachableHosts)->exists();
 
         ProcessStart::supervised()
             ->where('state', ProcessStartState::Pending->value)
@@ -139,8 +135,8 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                         : $hosted->whereNotIn('host_id', $unreachableHosts))))
             ->whereIn('session_id', AgentSession::query()
                 ->withAnyStatus(SessionStatus::running())
-                ->whereNull('last_heartbeat_at')
-                ->select('id'))
+                ->neverBeat()
+                ->keys())
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
             ->each(fn (ProcessStart $start) => $this->endUnclaimed($start->session_id, $now));
@@ -153,15 +149,14 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     private function endUnservedSince(CarbonImmutable $cutoff, CarbonImmutable $presenceCutoff): void
     {
         $liveHosts = AgentRuntime::query()
-            ->ofSessions(AgentSession::query()
-                ->where('last_heartbeat_at', '>', $presenceCutoff)
-                ->select('id'))
-            ->select('host_id');
+            ->ofSessions(AgentSession::query()->beatAfter($presenceCutoff)->keys())
+            ->hostIds();
 
         AgentSession::query()
             ->withStatus(SessionStatus::Silent)
-            ->where('silent_since', '<=', $cutoff)
-            ->withAnyId(AgentRuntime::query()->whereIn('host_id', $liveHosts)->select('agent_session_id'))->limit(self::UNSERVED_ENDED_LIMIT)
+            ->silentSince($cutoff)
+            ->withAnyId(AgentRuntime::query()->ofHosts($liveHosts)->sessionIds())
+            ->limit(self::UNSERVED_ENDED_LIMIT)
             ->get()
             ->each(fn (AgentSession $session) => $this->endSession(
                 $session,
@@ -202,10 +197,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     private function markSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
         AgentSession::query()->withStatus(SessionStatus::Active)
-            ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
-                ->orWhere(fn (Builder $neverBeat) => $neverBeat
-                    ->whereNull('last_heartbeat_at')
-                    ->where('created_at', '<=', $cutoff)))
+            ->showedNoLifeSince($cutoff)
             ->update([
                 'status' => SessionStatus::Silent->value,
                 'silent_since' => $now,

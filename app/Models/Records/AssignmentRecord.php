@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\CountsPivotLoads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Records\ReadableModel;
@@ -52,6 +53,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     use HasUlids;
     use InsertsAbsentRows;
     use Linkable;
+    use OrdersById;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.
@@ -329,5 +331,76 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected function ofRecordIds(Builder $query, string $type, array $ids): void
     {
         $query->where('record_type', $type)->whereIn('record_id', $ids);
+    }
+
+    /**
+     * The assignments of any of the records, their ids listed by record type.
+     *
+     * @param  Builder<self>  $query
+     * @param  array<string, list<string>>  $idsByType
+     */
+    #[Scope]
+    protected function ofAnyRecords(Builder $query, array $idsByType): void
+    {
+        $query->where(function (Builder $records) use ($idsByType): void {
+            foreach ($idsByType as $type => $ids) {
+                $records->orWhere(fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids));
+            }
+        });
+    }
+
+    /**
+     * The assignments of records whose id comes after the given one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function recordAfter(Builder $query, string $recordId): void
+    {
+        $query->where('record_id', '>', $recordId);
+    }
+
+    /**
+     * The assignments by their record id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byRecordId(Builder $query): void
+    {
+        $query->orderBy('record_id');
+    }
+
+    /**
+     * The assignments of records of the given type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRecordType(Builder $query, string $recordType): void
+    {
+        $query->where('record_type', $recordType);
+    }
+
+    /**
+     * The assignments seen by no signed-in user in particular.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acrossSignIns(Builder $query): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class);
+    }
+
+    /**
+     * Only the record of each assignment, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function recordIds(Builder $query): void
+    {
+        $query->select('record_id');
     }
 }

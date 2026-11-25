@@ -40,19 +40,22 @@ const ALLOWED_READS = [
     'exists', 'doesntExist', 'count', 'max', 'min', 'sum', 'avg', 'pluck', 'value', 'cursor', 'paginate',
     'simplePaginate', 'cursorPaginate', 'chunk', 'chunkById', 'each', 'lazy', 'lazyById', 'readLimit', 'readUpTo',
     'readExactly', 'readAll', 'readInChunks', 'readRelationCompletely', 'lockForUpdate', 'sharedLock', 'getModels',
-    'whereKey', 'whereKeyNot', 'limit', 'lock', 'when',
+    'whereKey', 'whereKeyNot', 'limit', 'lock', 'when', 'keys', 'excludingKeys',
 ];
 
-/** The reads that hand back rows or a value: the chain past one of them works on what it read, not on the query. */
+/**
+ * The reads that hand back rows or a value, and the writes to the rows the scopes chose: the chain past one of them
+ * works on what it read, not on the query.
+ */
 const ENDING_READS = [
     'first', 'firstOr', 'firstOrFail', 'firstOption', 'sole', 'find', 'findOr', 'findOrFail', 'findMany', 'get',
     'exists', 'doesntExist', 'count', 'max', 'min', 'sum', 'avg', 'pluck', 'value', 'paginate', 'simplePaginate',
-    'cursorPaginate', 'getModels', 'cursor',
+    'cursorPaginate', 'getModels', 'cursor', 'update', 'delete', 'insert', 'upsert', 'increment', 'decrement',
 ];
 
 /** The builder calls that filter, order, join or shape a query, which a relation read from outside never makes. */
 const BUILDER_FILTER = '/^(where|orWhere|orderBy|latest|oldest|select|limit|take|skip|offset|join|leftJoin|rightJoin'
-    .'|crossJoin|groupBy|having|with|has|doesntHave|distinct|inRandomOrder|reorder|update|delete|increment|decrement)/';
+    .'|crossJoin|groupBy|having|with|has|doesntHave|distinct|inRandomOrder|reorder)/';
 
 /** The relation types a model method returns, which make a chain from it a query of the related model. */
 const RELATION_TYPES = [

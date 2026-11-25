@@ -25,7 +25,7 @@ final readonly class UploadStore
 
     public function begin(UploadType $type, int $bytes, string $digest): string
     {
-        if (TextUpload::query()->unexpired()->whereNull('consumed_at')->count() >= self::ACTIVE_UPLOADS) {
+        if (TextUpload::query()->unexpired()->unconsumed()->count() >= self::ACTIVE_UPLOADS) {
             throw UploadLimitReached::forSession();
         }
 
@@ -52,8 +52,8 @@ final readonly class UploadStore
      */
     public function pruneExpired(): void
     {
-        TextUpload::query()->withoutGlobalScope(TextUpload::SESSION_SCOPE)
-            ->where('expires_at', '<=', CarbonImmutable::now())
+        TextUpload::query()->acrossSessions()
+            ->expiredAt(CarbonImmutable::now())
             ->readInChunks(100, function ($uploads): void {
                 $uploads->each(fn (TextUpload $upload) => $upload->delete());
             });

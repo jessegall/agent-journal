@@ -7,6 +7,7 @@ namespace App\Models\Records;
 use App\Concerns\BoundedReads;
 use App\Concerns\CountsPivotLoads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -45,6 +46,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     use CountsPivotLoads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -265,5 +267,27 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     protected function fromSourceType(Builder $query, string $type): void
     {
         $query->where('source_type', $type);
+    }
+
+    /**
+     * Only the target of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function targetIds(Builder $query): void
+    {
+        $query->select('target_id');
+    }
+
+    /**
+     * Only the source of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sourceIds(Builder $query): void
+    {
+        $query->select('source_id');
     }
 }

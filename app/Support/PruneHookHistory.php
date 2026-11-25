@@ -63,8 +63,8 @@ final readonly class PruneHookHistory
     private function forgetOutputBefore(CarbonImmutable $before): int
     {
         return StopResult::query()
-            ->whereNotNull('output')
-            ->where('created_at', '<', $before)
+            ->withOutput()
+            ->createdBefore($before)
             ->update(['output' => null]);
     }
 }

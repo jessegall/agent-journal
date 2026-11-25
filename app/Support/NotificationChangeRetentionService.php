@@ -26,10 +26,10 @@ final readonly class NotificationChangeRetentionService
         do {
             $batch = NotificationChange::query()
                 ->withAnyId(NotificationChange::query()
-                    ->where('created_at', '<', $before)
+                    ->createdBefore($before)
                     ->byCreatedAt()
                     ->limit(self::BATCH_LIMIT)
-                    ->select('id'))
+                    ->keys())
                 ->delete();
 
             $deleted += $batch;

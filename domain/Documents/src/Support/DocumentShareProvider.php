@@ -17,7 +17,6 @@ use App\Support\SharedContent;
 use Domain\Documents\Concerns\SharesPublishedRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Documents for a public share: a document discloses only its last closed revision, never a draft, and its body is
@@ -81,8 +80,6 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      */
     private function cardQuery(array $ids): ReadBuilder
     {
-        return Document::query()->sharedPublished()->with(
-            ['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()],
-        )->whereKey($ids)->readExactly(count($ids));
+        return Document::query()->sharedPublished()->withCurrentRevisionCard()->whereKey($ids)->readExactly(count($ids));
     }
 }

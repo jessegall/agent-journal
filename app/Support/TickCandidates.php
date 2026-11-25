@@ -99,7 +99,7 @@ final class TickCandidates
     {
         $ticking = $this->types->ticking();
 
-        $rows = AgentStackRow::query()->tickingOpen()->where('id', '>=', $progress->stackId)->oldestFirst()
+        $rows = AgentStackRow::query()->tickingOpen()->fromKey($progress->stackId)->oldestFirst()
             ->readExactly($limit)->get();
 
         $selected = [];

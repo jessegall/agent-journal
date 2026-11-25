@@ -140,7 +140,7 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
     protected function ofJournal(Builder $query, string $recordType): void
     {
         $query->where('holder_type', new GlobalGroup()->getMorphClass())
-            ->whereIn('holder_id', GlobalGroup::query()->named(GlobalGroup::JOURNAL)->select('id'))
+            ->whereIn('holder_id', GlobalGroup::query()->named(GlobalGroup::JOURNAL)->keys())
             ->where('record_type', $recordType);
     }
 

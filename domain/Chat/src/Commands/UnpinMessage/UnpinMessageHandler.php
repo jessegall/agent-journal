@@ -40,8 +40,7 @@ final readonly class UnpinMessageHandler extends ChatCommandHandler
     ): void {
         MessagePin::query()
             ->ownedBy($owner)
-            ->inConversation($inboxId)
-            ->where('message_id', $messageId)
+            ->ofMessage($inboxId, $messageId)
             ->delete();
     }
 }

@@ -8,7 +8,6 @@ use App\Contracts\Drivers\ToolDiscovery;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Tool discovery kept on the agent session as the signed time of its latest tool discovery.
@@ -38,7 +37,7 @@ final readonly class SessionToolDiscovery implements ToolDiscovery
     private function recordDiscoveryAt(string $sessionId, CarbonImmutable $signedAt): void
     {
         AgentSession::query()->whereKey($sessionId)
-            ->where(fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $signedAt))
+            ->undiscoveredSince($signedAt)
             ->update(['discovered_at' => $signedAt]);
     }
 }

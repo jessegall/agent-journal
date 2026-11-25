@@ -9,7 +9,6 @@ use App\Enums\StopAttemptState;
 use App\Exceptions\StopResultsRefused;
 use App\Models\Starts\StopAttempt;
 use App\Models\Starts\StopResult;
-use App\Models\Support\AgentSessionScope;
 use App\Values\StopAttemptResult;
 use App\Values\StopResultReport;
 
@@ -18,7 +17,7 @@ final readonly class RecordStopResultsHandler implements CommandHandler
     public function handle(RecordStopResultsCommand $command): StopAttemptState
     {
         $attempt = StopAttempt::query()
-            ->withoutGlobalScope(AgentSessionScope::class)
+            ->acrossSessions()
             ->lockForUpdate()
             ->findOr($command->attemptId, StopResultsRefused::throwing()->unknownAttempt($command->attemptId));
 

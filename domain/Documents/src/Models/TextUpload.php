@@ -310,4 +310,37 @@ final class TextUpload extends Model implements EventSource, ReadableModel
     {
         $query->whereNotNull('sealed_at');
     }
+
+    /**
+     * The uploads no read has taken yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unconsumed(Builder $query): void
+    {
+        $query->whereNull('consumed_at');
+    }
+
+    /**
+     * The uploads of every session, not only the current one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acrossSessions(Builder $query): void
+    {
+        $query->withoutGlobalScope(self::SESSION_SCOPE);
+    }
+
+    /**
+     * The uploads expired at the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiredAt(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('expires_at', '<=', $moment);
+    }
 }

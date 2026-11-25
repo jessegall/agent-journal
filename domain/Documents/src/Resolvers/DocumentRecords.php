@@ -21,7 +21,6 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Support\RecordReading;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 
 /**
@@ -39,13 +38,10 @@ final readonly class DocumentRecords implements DocumentResolver
         $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $filters->query);
 
         $documents = Document::query()->sharedPublished()->inAttention($filters->attention->state())
-            ->with(
-                [
-                    'currentRevision' => fn (BelongsTo $revision) => $revision->when(
-                        ! $filters->searches(),
-                        fn (Builder $card) => $card->forCards(),
-                    ),
-                ],
+            ->when(
+                $filters->searches(),
+                fn (Builder $query) => $query->withCurrentRevision(),
+                fn (Builder $query) => $query->withCurrentRevisionCard(),
             )
             ->when(
                 $filters->searches() && $filters->revisions,
@@ -55,7 +51,7 @@ final readonly class DocumentRecords implements DocumentResolver
                 $filters->searches() && ! $filters->revisions,
                 fn (Builder $query) => $query->whereIn(
                     'current_revision_id',
-                    DocumentRevision::query()->closed()->matchingText($filters->query)->select('id'),
+                    DocumentRevision::query()->closed()->matchingText($filters->query)->keys(),
                 ),
             )
             ->when(
@@ -87,7 +83,7 @@ final readonly class DocumentRecords implements DocumentResolver
     {
         $document = self::published($number);
 
-        return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage(
+        return array_values($document->revisions()->closed()->byNumber()->forPage(
             $page,
             50,
         )->get()
@@ -98,10 +94,7 @@ final readonly class DocumentRecords implements DocumentResolver
     {
         $document = self::published($documentNumber);
 
-        $revision = $document->revisions()->whereNotNull('closed_at')->where(
-            'number',
-            $revisionNumber,
-        )->firstOr(DocumentMissing::throwing()->numbered($documentNumber));
+        $revision = $document->revisions()->closed()->numbered($revisionNumber)->firstOr(DocumentMissing::throwing()->numbered($documentNumber));
 
         return $revision->view($document);
     }
@@ -119,10 +112,7 @@ final readonly class DocumentRecords implements DocumentResolver
             throw StaleRead::revision($expectedRevision, $current);
         }
 
-        $publishedRevision = $document->revisions()->whereNotNull('closed_at')->where(
-            'number',
-            $revision ?? $current,
-        )->firstOr(DocumentMissing::throwing()->numbered($number));
+        $publishedRevision = $document->revisions()->closed()->numbered($revision ?? $current)->firstOr(DocumentMissing::throwing()->numbered($number));
 
         return RecordReading::read("doc {$number}", $publishedRevision, $selection);
     }

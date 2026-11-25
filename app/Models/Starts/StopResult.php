@@ -13,6 +13,8 @@ use App\Values\StopResultLine;
 use App\Values\StopResultReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -129,5 +131,27 @@ final class StopResult extends Model implements ReadableModel
             $this->truncated,
             $this->summary,
         );
+    }
+
+    /**
+     * The results that still keep their raw output.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withOutput(Builder $query): void
+    {
+        $query->whereNotNull('output');
+    }
+
+    /**
+     * The results recorded before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function createdBefore(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('created_at', '<', $moment);
     }
 }

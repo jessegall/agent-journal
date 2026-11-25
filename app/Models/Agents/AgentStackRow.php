@@ -362,7 +362,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
             ->where('status', StackStatus::Active->value)
             ->whereIn(
                 'session_id',
-                AgentSession::query()->select('id')->withAnyStatus(SessionStatus::running()),
+                AgentSession::query()->keys()->withAnyStatus(SessionStatus::running()),
             );
     }
 
@@ -457,5 +457,16 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
     protected function inSessionOrder(Builder $query): void
     {
         $query->orderBy('session_id');
+    }
+
+    /**
+     * The rows whose key is the given one or comes after it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromKey(Builder $query, string $id): void
+    {
+        $query->where('id', '>=', $id);
     }
 }

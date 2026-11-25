@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\NotificationMutationType;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -169,5 +170,16 @@ final class NotificationChange extends Model implements ReadableModel
     protected function byCreatedAt(Builder $query): void
     {
         $query->orderBy('created_at');
+    }
+
+    /**
+     * The changes made before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function createdBefore(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('created_at', '<', $moment);
     }
 }

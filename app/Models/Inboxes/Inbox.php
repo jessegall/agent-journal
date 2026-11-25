@@ -212,7 +212,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     #[Scope]
     protected function attachedTo(Builder $query, ActorIdentity $actor): void
     {
-        $query->whereIn('id', InboxMember::query()->active()->ofActor($actor)->select('inbox_id'));
+        $query->whereIn('id', InboxMember::query()->active()->ofActor($actor)->inboxIds());
     }
 
     /**

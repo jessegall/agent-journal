@@ -379,7 +379,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             ->whereIn('helper_purpose_id', HelperPurpose::query()
                 ->withSubjectType($subject->type)
                 ->ofSubject($subject->id)
-                ->select('id'))
+                ->keys())
             ->orWhereJsonContains('source_subjects', sprintf('%s:%s', $subject->type, $subject->id)));
     }
 

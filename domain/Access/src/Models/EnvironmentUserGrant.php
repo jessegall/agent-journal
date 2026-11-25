@@ -140,4 +140,26 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     {
         $query->where('user_id', $userId)->inEnvironment($environmentId);
     }
+
+    /**
+     * The grants that allow the permission.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function allowing(Builder $query, InboxPermission $permission): void
+    {
+        $query->where($permission->column(), true);
+    }
+
+    /**
+     * Only the user of each grant, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function userIds(Builder $query): void
+    {
+        $query->select('user_id');
+    }
 }

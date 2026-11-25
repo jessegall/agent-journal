@@ -26,7 +26,7 @@ final readonly class AttachedInboxes implements SharedHolders
             Inbox::ASSIGNEE_TYPE => InboxMember::query()
                 ->active()
                 ->ofActor(new ActorIdentity($type, $member->id))
-                ->select('inbox_id'),
+                ->inboxIds(),
         ];
     }
 }

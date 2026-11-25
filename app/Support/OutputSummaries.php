@@ -26,7 +26,7 @@ final readonly class OutputSummaries
 
     public function of(ProcessRun $run): OutputSummary
     {
-        $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
+        $parts = $run->parts()->bySyntaxNodeThenAttempt()->readLimit(500)->get();
         $envelopes = $parts->map(fn (PartRun $part) => EvidenceRange::envelope($part->id))->all();
         $this->commands->run(new RecordEvidenceReadsCommand($run->id, array_values($envelopes)));
 

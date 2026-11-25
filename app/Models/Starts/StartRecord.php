@@ -667,4 +667,37 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     {
         $query->orderByDesc('created_at');
     }
+
+    /**
+     * Only the session of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sessionIds(Builder $query): void
+    {
+        $query->select('session_id');
+    }
+
+    /**
+     * The starts that have a session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSession(Builder $query): void
+    {
+        $query->whereNotNull('session_id');
+    }
+
+    /**
+     * The starts whose resume of a conversation is not settled yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function resumeUnsettled(Builder $query): void
+    {
+        $query->whereNull('conversation_resumed');
+    }
 }

@@ -6,11 +6,9 @@ namespace App\Commands\Terminals\EndTerminalViews;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Enums\RuntimeActivity;
 use App\Models\Drivers\TerminalView;
 use App\Support\EngineAccess;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Ends lapsed views and views of stopped runtimes, one bulk update each, only under the engine's grant, and deletes
@@ -46,10 +44,7 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
      */
     private function endForStoppedRuntimes(CarbonImmutable $now): void
     {
-        TerminalView::query()->acrossActors()->live()->whereHas(
-            'runtime',
-            fn (Builder $runtime) => $runtime->where('activity', RuntimeActivity::Stopped),
-        )->update(['closed_at' => $now]);
+        TerminalView::query()->acrossActors()->live()->ofStoppedRuntime()->update(['closed_at' => $now]);
     }
 
     /**
@@ -59,9 +54,7 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
     {
         TerminalView::query()
             ->acrossActors()
-            ->where(fn (Builder $ended) => $ended
-                ->where('closed_at', '<', $cutoff)
-                ->orWhere('expires_at', '<', $cutoff))
+            ->endedBefore($cutoff)
             ->delete();
     }
 }

@@ -207,4 +207,15 @@ final class InboxMember extends Model implements EventSource
     {
         $query->where('actor_type', $type->value);
     }
+
+    /**
+     * Only the inbox of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inboxIds(Builder $query): void
+    {
+        $query->select('inbox_id');
+    }
 }

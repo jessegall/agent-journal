@@ -400,4 +400,15 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     {
         $query->with('draft');
     }
+
+    /**
+     * The documents with their current revision loaded as much as a card shows.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withCurrentRevisionCard(Builder $query): void
+    {
+        $query->with(['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()]);
+    }
 }

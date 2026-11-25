@@ -148,6 +148,28 @@ class ReadBuilder extends Builder
     }
 
     /**
+     * Only the keys of the rows, as a subquery another query matches its column against.
+     */
+    public function keys(): static
+    {
+        $key = $this->model->getQualifiedKeyName();
+
+        return $this->select($key);
+    }
+
+    /**
+     * The rows whose key is none of those the subquery gives.
+     *
+     * @param  Builder<covariant Model>  $keys
+     */
+    public function excludingKeys(Builder $keys): static
+    {
+        $key = $this->model->getQualifiedKeyName();
+
+        return $this->whereNotIn($key, $keys);
+    }
+
+    /**
      * @param  array<int, string>|string  $columns
      * @return array<int, TModel>
      */

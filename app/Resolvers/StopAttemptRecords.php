@@ -7,7 +7,6 @@ namespace App\Resolvers;
 use App\Contracts\Processes\StopEvidence;
 use App\Exceptions\StopAttemptMissing;
 use App\Models\Starts\StopAttempt;
-use App\Values\RelationRead;
 use App\Values\StopAttemptReference;
 use App\Values\StopAttemptResult;
 
@@ -19,7 +18,7 @@ final readonly class StopAttemptRecords implements StopEvidence
     public function result(StopAttemptReference $attempt): StopAttemptResult
     {
         $record = StopAttempt::query()
-            ->with(['results' => RelationRead::complete(max: 50)->constraint()])
+            ->withResults()
             ->findOr($attempt->attemptId, StopAttemptMissing::throwing()->for($attempt->attemptId));
 
         $statuses = [];

@@ -107,7 +107,7 @@ final readonly class ShareScope
             fn () => Link::query()->touchingKey(
                 $source->type,
                 $source->id,
-            )->orderBy('id')->readExactly($budget->mostLinks + 1)->get(),
+            )->oldestFirst()->readExactly($budget->mostLinks + 1)->get(),
         );
 
         $budget->chargeLinks($links->count());

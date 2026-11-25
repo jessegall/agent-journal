@@ -280,4 +280,15 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     {
         $query->where('title', $title);
     }
+
+    /**
+     * The revisions by their number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function byNumber(Builder $query): void
+    {
+        $query->orderBy('number');
+    }
 }

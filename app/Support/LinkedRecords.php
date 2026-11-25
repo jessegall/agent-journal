@@ -23,8 +23,8 @@ final readonly class LinkedRecords
         $other = $records->getModel();
         $key = $other->getQualifiedKeyName();
         $otherType = $other->getMorphClass();
-        $asTargets = Link::query()->withSourceKey($type, $id)->toTargetType($otherType)->select('target_id');
-        $asSources = Link::query()->withTargetKey($type, $id)->fromSourceType($otherType)->select('source_id');
+        $asTargets = Link::query()->withSourceKey($type, $id)->toTargetType($otherType)->targetIds();
+        $asSources = Link::query()->withTargetKey($type, $id)->fromSourceType($otherType)->sourceIds();
 
         return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
     }

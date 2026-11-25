@@ -599,4 +599,30 @@ final class Host extends Model implements EventSource, ReadableModel
     {
         $query->orderBy('failing_since');
     }
+
+    /**
+     * The hosts whose calls fail, or that answered nothing since the cutoff.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unreachableSince(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->where(fn (Builder $hosts) => $hosts->whereNotNull('failing_since')->orWhere('last_answered_at', '<', $cutoff));
+    }
+
+    /**
+     * The hosts failing since before the first moment, and the contained hosts that answered nothing since the second.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function failingOrQuiet(Builder $query, CarbonImmutable $failingSince, CarbonImmutable $quietSince): void
+    {
+        $query->where(fn (Builder $hosts) => $hosts
+            ->where('failing_since', '<', $failingSince)
+            ->orWhere(fn (Builder $quiet) => $quiet
+                ->where('arrangement', ArrangementType::Contained)
+                ->where('last_answered_at', '<', $quietSince)));
+    }
 }

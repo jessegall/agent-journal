@@ -21,7 +21,6 @@ use App\Support\PrivateValues;
 use App\Values\AgentText;
 use App\Values\ClaimedRequest;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
@@ -48,7 +47,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         $runtimes = AgentRuntime::query()
             ->withSessionAgent()
             ->onHost($command->hostId)
-            ->whereHas('requests', fn (Builder $requests) => $requests->where('progress', RequestProgress::Accepted))
+            ->withAcceptedRequest()
             ->readAll('every runtime of one host with a request waiting is offered its work')
             ->get()
             ->keyBy('id');
@@ -68,7 +67,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->ofAgentRuntimes($runtimeIds)
             ->withProgress(RequestProgress::Accepted)
             ->offerable(CarbonImmutable::now())
-            ->whereNotIn('operation', DriverOperation::control())
+            ->excludingControl()
             ->bySequence()
             ->lockForUpdate()
             ->readUpTo($command->limit * max(1, $runtimes->count()))

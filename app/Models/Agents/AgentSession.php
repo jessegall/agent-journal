@@ -565,7 +565,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function runningOnHost(Builder $query, string $hostId): void
     {
-        $query->whereIn('id', AgentRuntime::query()->onHost($hostId)->select('agent_session_id'));
+        $query->whereIn('id', AgentRuntime::query()->onHost($hostId)->sessionIds());
     }
 
     /**
@@ -602,7 +602,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function launched(Builder $query): void
     {
-        $query->whereIn('id', StartRecord::query()->withOwner()->select('session_id'));
+        $query->whereIn('id', StartRecord::query()->withOwner()->sessionIds());
     }
 
     /**
@@ -658,7 +658,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function withLiveRuntime(Builder $query): void
     {
-        $query->whereIn('id', AgentRuntime::query()->notStopped()->select('agent_session_id'));
+        $query->whereIn('id', AgentRuntime::query()->notStopped()->sessionIds());
     }
 
     /**
@@ -760,5 +760,96 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     protected function withAgent(Builder $query): void
     {
         $query->with('agent');
+    }
+
+    /**
+     * The sessions that never sent a heartbeat.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function neverBeat(Builder $query): void
+    {
+        $query->whereNull('last_heartbeat_at');
+    }
+
+    /**
+     * The sessions whose last heartbeat came after the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function beatAfter(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('last_heartbeat_at', '>', $moment);
+    }
+
+    /**
+     * The sessions silent since the cutoff or before it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function silentSince(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->where('silent_since', '<=', $cutoff);
+    }
+
+    /**
+     * The sessions whose last heartbeat is no later than the cutoff, or that never beat and were made by then.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function showedNoLifeSince(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
+            ->orWhere(fn (Builder $neverBeat) => $neverBeat
+                ->whereNull('last_heartbeat_at')
+                ->where('created_at', '<=', $cutoff)));
+    }
+
+    /**
+     * Only the agent of each row, as a subquery.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function agentIds(Builder $query): void
+    {
+        $query->select('agent_id');
+    }
+
+    /**
+     * The sessions that keep no job source message yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withoutJobSource(Builder $query): void
+    {
+        $query->whereNull('job_source_message_id');
+    }
+
+    /**
+     * The session whose start token hashes to the given hash.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStartTokenHash(Builder $query, string $hash): void
+    {
+        $query->whereHas('startToken', fn (Builder $startToken) => $startToken->where('token_hash', $hash));
+    }
+
+    /**
+     * The sessions whose tools were never discovered, or last discovered before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function undiscoveredSince(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where(fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $moment));
     }
 }

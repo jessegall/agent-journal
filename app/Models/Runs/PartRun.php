@@ -437,4 +437,27 @@ final class PartRun extends Model implements EventSource, ReadableModel
     {
         $query->where('process_run_id', $processRunId);
     }
+
+    /**
+     * The part runs by their syntax node, then their attempt.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function bySyntaxNodeThenAttempt(Builder $query): void
+    {
+        $query->orderBy('syntax_node');
+        $query->orderBy('attempt');
+    }
+
+    /**
+     * The part runs, the latest attempt first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function lastAttemptFirst(Builder $query): void
+    {
+        $query->orderByDesc('attempt');
+    }
 }

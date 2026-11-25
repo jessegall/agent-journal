@@ -46,7 +46,7 @@ final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
             $scope->id,
             QuestionNotificationKeys::target(),
             Question::query()->ofInbox($inboxId)->withTargetType($recipient->type->value)
-                ->ofTarget($recipient->id)->select('id'),
+                ->ofTarget($recipient->id)->keys(),
             HideLeftInboxNotificationsCommand::BATCH,
         );
 
