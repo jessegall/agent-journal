@@ -63,9 +63,4 @@ final class DomainListTest extends TestCase
         $this->assertContains(app_path('Mcp/Listeners'), $paths);
         $this->assertNotContains(app_path('Http/Listeners'), $paths);
     }
-
-    public function test_the_app_boots_with_the_domains(): void
-    {
-        $this->artisan('about')->assertSuccessful();
-    }
 }

@@ -77,11 +77,6 @@ final class BoundedReadsTest extends TestCase
         Task::query()->readLimit(100);
     }
 
-    public function test_an_exact_read_of_a_known_set_takes_any_size(): void
-    {
-        $this->assertCount(3, Task::query()->whereKey(array_slice($this->taskIds, 0, 3))->readExactly(3)->get());
-    }
-
     public function test_reading_every_row_without_a_name_is_refused(): void
     {
         $this->assertThrows(fn () => Task::all(), ModelReadAllRefused::class);

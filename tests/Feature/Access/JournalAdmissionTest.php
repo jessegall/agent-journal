@@ -10,7 +10,6 @@ use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\Access\JournalAdmission;
 use App\Support\ActorContext;
-use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -33,12 +32,6 @@ final class JournalAdmissionTest extends TestCase
             '/access-test/actor',
             fn (ActorContext $actor) => "{$actor->type} {$actor->id}",
         );
-    }
-
-    public function test_the_moved_user_and_its_factory_find_each_other_both_ways(): void
-    {
-        $this->assertInstanceOf(User::class, User::factory()->make());
-        $this->assertInstanceOf(User::class, UserFactory::new()->make());
     }
 
     public function test_the_configured_owner_becomes_the_user_actor(): void

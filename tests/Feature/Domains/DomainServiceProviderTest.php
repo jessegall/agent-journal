@@ -83,17 +83,6 @@ final class DomainServiceProviderTest extends TestCase
         );
     }
 
-    public function test_the_discovery_paths_are_the_domain_listener_folders(): void
-    {
-        $this->registerDomains(DomainBoot::withRequirements(ShelvesDomain::class, CommentsDomain::class, BooksDomain::class));
-
-        $paths = new DomainEventServiceProvider($this->app)->discoverEventsWithin();
-        $folders = $this->app->make(DomainRegistry::class)->listenerFolders();
-
-        $this->assertSame($folders, array_values(array_intersect($paths, $folders)));
-        $this->assertNotContains(app_path('Http/Listeners'), $paths);
-    }
-
     public function test_a_list_holding_a_class_that_is_no_domain_stops_the_app(): void
     {
         $this->expectExceptionObject(NotADomain::for(TaskList::class));

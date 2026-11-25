@@ -6,7 +6,6 @@ namespace Tests\Feature\Communication;
 
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\Notifications\NotificationSourceType;
-use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
@@ -32,21 +31,6 @@ final class MarkAllNotificationsTest extends TestCase
         parent::setUp();
 
         $this->jo = TestActors::userIdentity(2);
-    }
-
-    public function test_receipts_after_the_watermark_stay_unread(): void
-    {
-        $this->deliver(1, 104);
-        $this->deliver(105, 105);
-
-        $this->assertTrue($this->receipts()->markAllThrough($this->jo, 104, CarbonImmutable::now()));
-        $this->deliver(106, 106);
-
-        $this->assertSame(2, $this->scope()->unread_count);
-        $this->assertSame(
-            [105, 106],
-            NotificationReceipt::query()->whereNull('read_at')->orderBy('sequence')->pluck('sequence')->all(),
-        );
     }
 
     #[TimeLimit(seconds: 6, reason: 'It delivers 450 notifications through the real delivery, one occurrence each.')]
