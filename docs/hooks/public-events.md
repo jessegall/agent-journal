@@ -40,7 +40,7 @@ sent anywhere else. `AssignmentsChanged` is staged once per command, never per r
 committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises
 one fact for all its changes.
 
-A fact that changes what users see also implements `App\Contracts\Navigation\UserInterfaceUpdater`. Web's `BroadcastPageChange`
+A fact that changes what users see also implements `App\Contracts\Navigation\ClientUpdate`. Web's `BroadcastPageChange`
 listens for that marker, and the checked provider turns it into one listener for each exported event that implements
 it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact
 nobody exports refreshes nothing; Core owns the marker and names no domain.
