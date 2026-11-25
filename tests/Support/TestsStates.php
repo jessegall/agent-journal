@@ -31,6 +31,15 @@ trait TestsStates
     }
 
     /**
+     * The state a command already put on the agent's stack, such as the work state a started task pushes, followed
+     * from there without pushing it again.
+     */
+    protected function scenarioOn(StateReference $state): StateScenario
+    {
+        return new StateScenario($this->app, $this->target, $state, $this->answerHook(...));
+    }
+
+    /**
      * Sends the hook input through the agent's state machine under a call id of its own, so it is answered rather than
      * replayed, and returns the answer the stack gave it.
      */

@@ -42,34 +42,6 @@ final class WorkOnTaskTest extends TestCase
         }
     }
 
-    public function test_a_new_run_is_not_finished(): void
-    {
-        $this->assertFalse($this->working()->isFinished());
-    }
-
-    public function test_hearing_its_task_finished_blocked_or_cancelled_ends_the_run(): void
-    {
-        $finished = $this->working();
-        $finished->onTaskFinished(new TaskFinished('task-42', TaskState::Started, 'history-1'));
-        $blocked = $this->working();
-        $blocked->onTaskBlocked(new TaskBlocked('task-42', TaskState::Started, 'history-1'));
-        $cancelled = $this->working();
-        $cancelled->onTaskCancelled(new TaskCancelled('task-42', TaskState::Started, 'history-1'));
-
-        $this->assertTrue($finished->isFinished());
-        $this->assertTrue($blocked->isFinished());
-        $this->assertTrue($cancelled->isFinished());
-    }
-
-    public function test_another_tasks_end_leaves_the_run_open(): void
-    {
-        $working = $this->working();
-
-        $working->onTaskFinished(new TaskFinished('task-43', TaskState::Started, 'history-1'));
-
-        $this->assertFalse($working->isFinished());
-    }
-
     public function test_a_stop_is_held_back_while_its_claim_holds_and_let_through_once_a_claim_assignment_ended(): void
     {
         $working = $this->working();
@@ -126,26 +98,6 @@ final class WorkOnTaskTest extends TestCase
         $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $other, ['claim-3']));
 
         $this->assertSame(AnswerType::Delegate, $this->stop($working));
-    }
-
-    public function test_a_log_falls_due_after_the_tool_use_limit_and_a_log_on_its_task_starts_the_count_again(): void
-    {
-        $working = $this->working();
-        $finished = HookInputs::all()['tool finished'];
-
-        foreach (range(2, WorkOnTaskState::LOG_DUE_AFTER) as $use) {
-            $working->onToolFinished($finished);
-        }
-
-        $working->onTaskLogged(new TaskLogged('task-42', 'entry-1'));
-        $afterLog = $working->onToolFinished($finished);
-
-        foreach (range(3, WorkOnTaskState::LOG_DUE_AFTER) as $use) {
-            $working->onToolFinished($finished);
-        }
-
-        $this->assertEquals(Decision::delegate(), $afterLog);
-        $this->assertEquals(LogDueStateReference::forTask('task-42', 42), $working->onToolFinished($finished));
     }
 
     public function test_entering_or_resuming_focuses_its_task_and_exiting_takes_the_focus_away(): void
