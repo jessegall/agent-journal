@@ -402,9 +402,9 @@ function assertFaultsOf(Class_ $class): array
 }
 
 /**
- * A constructor is named create, or createFor and what it is made from when the model has several (user message
- * 22052); one that writes a batch through insertRows is createMany or createManyFor and returns the ids it wrote
- *. None for any other method.
+ * A constructor is named create, or createFor and what it is made from beside the create that makes the row when the
+ * model has several; one that writes a batch through insertRows is createMany or createManyFor and returns the ids it
+ * wrote. None for any other method.
  */
 function constructorNameFault(ClassMethod $method, string|null $section, int $constructorCount): string|null
 {
@@ -430,7 +430,7 @@ function constructorNameFault(ClassMethod $method, string|null $section, int $co
         return "constructor {$name} is the model's only one, so it is named {$prefix}";
     }
 
-    if ($constructorCount > 1 && preg_match('/^'.$prefix.'For[A-Z]/', $name) !== 1) {
+    if ($constructorCount > 1 && $name !== $prefix && preg_match('/^'.$prefix.'For[A-Z]/', $name) !== 1) {
         return "constructor {$name} is one of {$constructorCount}, so it is named {$prefix}For and what it is made from";
     }
 

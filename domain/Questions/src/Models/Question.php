@@ -124,6 +124,8 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
         return $this->sender;
     }
 
+    // ----------[ Accessors ]----------
+
     /**
      * The question as another domain shows it: its first line and its inbox.
      *
@@ -141,8 +143,6 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
             return new QuestionSummary($this->id, $firstLine, $this->inbox_id);
         });
     }
-
-    // ----------[ Accessors ]----------
 
     /**
      * @return Attribute<ActorIdentity, never>

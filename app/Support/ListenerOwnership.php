@@ -172,8 +172,10 @@ final readonly class ListenerOwnership
      */
     public function eventClasses(): array
     {
+        // Core keeps its events in one folder per area, a domain in its one Events folder.
         $folders = [
             "{$this->corePath}/Events",
+            "{$this->corePath}/Events/*",
             ...array_map(fn (DomainEntry $entry) => "{$entry->folder}/Events", $this->registry->all()),
         ];
 

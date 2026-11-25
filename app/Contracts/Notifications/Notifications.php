@@ -36,9 +36,9 @@ interface Notifications
      * Hides up to the limit of the recipient's visible receipts of one target type whose target id the query lists,
      * tells its open views when any went, and gives how many it hid.
      *
-     * @param  Builder<*>  $targetIds
+     * @param  Builder<*>  $ids
      */
-    public function withdrawTargets(string $targetType, Builder $targetIds, ActorIdentity $recipient, int $limit): int;
+    public function withdrawTargets(string $targetType, Builder $ids, ActorIdentity $recipient, int $limit): int;
 
     /**
      * Marks the recipient's receipts that lead to the target read, keeping them as history with no outstanding count.

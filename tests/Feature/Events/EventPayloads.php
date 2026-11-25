@@ -19,11 +19,8 @@ use App\Events\Messages\ChatMemberLeft;
 use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatReceiptPresented;
 use App\Events\Messages\ChatRoleChanged;
-use App\Events\Messages\MessageAnswered;
-use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageClaimed;
 use App\Events\Messages\MessageClaimReleased;
-use App\Events\Messages\MessageDismissed;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Events\Messages\ReceiptDeliveriesScheduled;
@@ -189,30 +186,10 @@ final class EventPayloads
                     'target' => 'App\Support\RecordIdentity',
                 ],
             ],
-            MessageAnswerRequired::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'destinationInboxId' => 'string',
-                ],
-            ],
-            MessageAnswered::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'replyId' => 'string',
-                    'answeredBy' => 'App\Support\ActorIdentity',
-                ],
-            ],
             MessageClaimReleased::class => [
                 'fields' => [
                     'messageId' => 'string',
                     'claim' => 'App\Support\AssignmentReference',
-                ],
-            ],
-            MessageDismissed::class => [
-                'fields' => [
-                    'messageId' => 'string',
-                    'dismissedBy' => 'App\Support\ActorIdentity',
-                    'type' => 'App\Enums\Messages\DismissalType',
                 ],
             ],
             MessageRead::class => [

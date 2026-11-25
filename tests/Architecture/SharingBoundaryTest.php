@@ -10,7 +10,6 @@ use App\Contracts\Sharing\ShareGatewayProvider;
 use App\Contracts\Sharing\SharePolicy;
 use App\Contracts\Sharing\ShareRecordContributor;
 use App\Contracts\Sharing\ShareRecordProvider;
-use App\CoreCommands;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
@@ -75,11 +74,6 @@ final class SharingBoundaryTest extends TestCase
         PruneShareAuditCommand::class,
     ];
 
-    /**
-     * The name of a sharing command: one about shares or their gateways.
-     */
-    private const string SHARING_COMMAND = '/Shares?|Gateway/';
-
     private const array MODELS = [
         Share::class,
         ShareAudit::class,
@@ -121,8 +115,8 @@ final class SharingBoundaryTest extends TestCase
         $registry = $this->app->make(CommandRegistry::class);
         $sharing = array_values(
             array_filter(
-                CoreCommands::commands(),
-                fn (string $command) => preg_match(self::SHARING_COMMAND, class_basename($command)) === 1,
+                array_keys($registry->handlerMap()),
+                fn (string $command) => str_starts_with($command, 'Domain\\Sharing\\'),
             ),
         );
 

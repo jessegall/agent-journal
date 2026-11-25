@@ -66,7 +66,7 @@ return [
     ],
     EnvironmentOpened::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Environment::createForLabel',
+        'owner' => 'Environment::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new EnvironmentOpened('environment', 'project', new DateTimeImmutable('2026-01-01')),

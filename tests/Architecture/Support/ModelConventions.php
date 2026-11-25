@@ -7,6 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
+use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -146,7 +147,7 @@ final class ModelConventions
         $model = new $class();
         $violations = [];
 
-        if (self::declaresFillable($class, $model)) {
+        if (self::declaresFillable($class)) {
             $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::FillableDeclared);
         }
 
@@ -185,19 +186,29 @@ final class ModelConventions
     }
 
     /**
-     * Whether the model or a parent declares fillable columns, by a #[Fillable] attribute or a $fillable list: a model
-     * writes its columns as properties, so it needs none.
+     * Whether the model or a project parent declares fillable columns, by a #[Fillable] attribute or a $fillable list:
+     * a model writes its columns as properties, so it needs none. A package's own model, such as the passkey, keeps the
+     * list its package writes through.
      *
      * @param  class-string<Model>  $class
      */
-    private static function declaresFillable(string $class, Model $model): bool
+    private static function declaresFillable(string $class): bool
     {
         foreach (Reflector::of($class)->lineage() as $declaration) {
-            if ($declaration->hasAttribute(Fillable::class)) {
+            if (preg_match('/^(App|Domain|Tests)\\\\/', $declaration->name()) !== 1) {
+                continue;
+            }
+
+            $listsFillable = array_any(
+                $declaration->ownProperties(),
+                fn (ReflectedProperty $property) => $property->name() === 'fillable',
+            );
+
+            if ($declaration->hasAttribute(Fillable::class) || $listsFillable) {
                 return true;
             }
         }
 
-        return $model->getFillable() !== [];
+        return false;
     }
 }

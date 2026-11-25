@@ -35,6 +35,7 @@ use Tests\Architecture\Support\NamesUsed;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Fixtures\Mcp\DuplicateCommandTool;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -47,6 +48,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class McpToolRulesTest extends TestCase
 {
+    use RefreshHookDatabase;
     use StartsAgentRequests;
 
     /**

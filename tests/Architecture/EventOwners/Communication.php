@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Enums\Messages\DismissalType;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Events\Messages\ClosingWordsDelivered;
-use App\Events\Messages\MessageAnswered;
-use App\Events\Messages\MessageAnswerRequired;
-use App\Events\Messages\MessageDismissed;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Events\Messages\NotificationReceiptHidden;
@@ -32,27 +28,6 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
-    MessageAnswerRequired::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Message::requireAnswer',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MessageAnswerRequired('message', 'inbox'),
-    ],
-    MessageAnswered::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Message::answerWith',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MessageAnswered('message', 'reply', ActorIdentity::ofClass(Agent::class, 'agent')),
-    ],
-    MessageDismissed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Message::dismissBy',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MessageDismissed('message', ActorIdentity::ofClass(Agent::class, 'agent'), DismissalType::Declined),
-    ],
     MessageRead::class => [
         'role' => EventRole::RowFact,
         'owner' => 'MessageReadEntry::create',

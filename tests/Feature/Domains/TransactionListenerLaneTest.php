@@ -12,7 +12,6 @@ use App\Events\Asks\AskHopAssigned;
 use App\Events\Links\LinksRemoved;
 use App\Events\Messages\ChatMessageAccepted;
 use App\Events\Messages\ChatMessageOffered;
-use App\Events\Messages\MessageAnswerRequired;
 use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\ProcessRunOutlasted;
@@ -103,7 +102,6 @@ final class TransactionListenerLaneTest extends TestCase
                 SessionOpened::class,
                 SessionClosed::class,
                 OutputChunkCommitted::class,
-                MessageAnswerRequired::class,
                 MessageSent::class,
                 ChatMessageAccepted::class,
                 ChatMessageOffered::class,

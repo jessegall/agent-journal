@@ -55,7 +55,7 @@ final readonly class RecipientNotifications implements Notifications
         }
     }
 
-    public function withdrawTargets(string $targetType, Builder $targetIds, ActorIdentity $recipient, int $limit): int
+    public function withdrawTargets(string $targetType, Builder $ids, ActorIdentity $recipient, int $limit): int
     {
         $scope = NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient);
 
@@ -63,7 +63,7 @@ final readonly class RecipientNotifications implements Notifications
             return 0;
         }
 
-        $receipts = NotificationReceipt::visibleWithTargetIn($scope->get()->id, $targetType, $targetIds, $limit);
+        $receipts = NotificationReceipt::visibleWithTargetIn($scope->get()->id, $targetType, $ids, $limit);
         $at = CarbonImmutable::now();
 
         foreach ($receipts as $receipt) {

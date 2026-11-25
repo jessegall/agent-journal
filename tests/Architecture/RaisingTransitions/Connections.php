@@ -8,7 +8,7 @@ declare(strict_types=1);
  */
 return [
     'BindingRuntime::create',
-    'Environment::createForLabel',
+    'Environment::create',
     'Environment::createForDefault',
     'InstallAttempt::cancel',
     'InstallAttempt::create',
