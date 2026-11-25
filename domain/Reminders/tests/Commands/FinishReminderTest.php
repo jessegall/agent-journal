@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Reminders\Tests\Commands;
 
 use App\Exceptions\RecordUnavailable;
-use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Enums\ReminderStatus;
 use Domain\Reminders\Exceptions\ReminderEnded;
 use Domain\Reminders\Models\Reminder;
+use Domain\Reminders\Tests\Fixtures\ReminderFixtures;
 use Domain\Reminders\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -29,11 +29,9 @@ final class FinishReminderTest extends TestCase
         parent::setUp();
 
         $this->journal->user('Colleague')->owner();
-        $this->reminder = Reminder::create(
-            ActorIdentity::of($this->journal->ownerUser()),
-            'Book the room',
-            CarbonImmutable::parse('2026-11-30 09:00'),
-        );
+        $this->reminder = $this->journal->fixtures(ReminderFixtures::class)
+            ->reminder('Book the room', 'Owner', CarbonImmutable::parse('2026-11-30 09:00'))
+            ->reminderCalled('Book the room');
     }
 
     public function test_its_owner_finishes_an_open_reminder_and_it_is_done(): void
