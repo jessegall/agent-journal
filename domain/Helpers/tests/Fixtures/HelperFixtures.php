@@ -35,7 +35,7 @@ final class HelperFixtures
     }
 
     /**
-     * An accepted job of the named parent for a new writing helper, the agent "<name> helper", started for a new request.
+     * An accepted job of the named parent for a new writing helper, the agent "<name> helper", for a new request.
      */
     public function openJob(string $name, string $parent, string $brief = 'Fix the test'): self
     {
