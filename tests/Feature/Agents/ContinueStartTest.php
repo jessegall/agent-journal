@@ -54,7 +54,7 @@ final class ContinueStartTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
-        $this->agent = Agent::create('Researcher', 'read-only-helper');
+        $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
     }
 
     public function test_continuing_twice_gives_one_successor_on_the_account_chosen_now(): void
@@ -94,7 +94,7 @@ final class ContinueStartTest extends TestCase
     public function test_a_session_of_another_agent_cannot_be_continued(): void
     {
         $first = $this->startFirst();
-        $other = Agent::create('Other', 'read-only-helper');
+        $other = Agent::create('Other', 'read-only-helper', $this->localProject());
 
         $this->expectException(StartRefused::class);
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
@@ -23,6 +22,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Support\ActorContext;
+use App\Support\DomainRegistry;
 use App\Support\HostSkillPublisher;
 use App\Support\OpenedRuntime;
 use App\Support\StartGrant;
@@ -126,7 +126,7 @@ final class StartSkillsTest extends TestCase
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
     {
-        $session = $this->sessionRow(Agent::create('Other driver', 'main-agent'), 'gemini-cli', null);
+        $session = $this->sessionRow(Agent::create('Other driver', 'main-agent', $this->localProject()), 'gemini-cli', null);
 
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage('gemini-cli');
@@ -137,7 +137,7 @@ final class StartSkillsTest extends TestCase
     public function test_a_required_skill_outside_the_selection_refuses_the_start_with_its_key(): void
     {
         $this->activateReviewer(['journal-plans']);
-        $session = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper'), 'claude-code', 1);
+        $session = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper', $this->localProject()), 'claude-code', 1);
 
         $this->expectException(SkillSelectionConflict::class);
         $this->expectExceptionMessage('journal-plans');
@@ -149,8 +149,8 @@ final class StartSkillsTest extends TestCase
     public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
     {
         $this->activateReviewer([]);
-        $main = $this->sessionRow(Agent::create('Main', 'main-agent'), 'claude-code', null);
-        $reviewer = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper'), 'claude-code', 1);
+        $main = $this->sessionRow(Agent::create('Main', 'main-agent', $this->localProject()), 'claude-code', null);
+        $reviewer = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper', $this->localProject()), 'claude-code', 1);
 
         $this->started($main);
         $this->started($reviewer);
@@ -189,7 +189,7 @@ final class StartSkillsTest extends TestCase
     private function openCodexRuntime(): array
     {
         $host = $this->asSystem(new EnrollHostCommand('test host', [self::FOLDER]));
-        $agent = Agent::create('Codex agent', 'main-agent');
+        $agent = Agent::create('Codex agent', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,

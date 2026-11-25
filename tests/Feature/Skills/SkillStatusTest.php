@@ -125,7 +125,7 @@ final class SkillStatusTest extends TestCase
 
     private function openAgentSession(string $name, string $profileKey): AgentSession
     {
-        $agent = Agent::create($name, $profileKey);
+        $agent = Agent::create($name, $profileKey, $this->localProject());
         $session = new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

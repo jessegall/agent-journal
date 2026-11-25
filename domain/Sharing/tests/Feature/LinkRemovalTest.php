@@ -49,8 +49,8 @@ final class LinkRemovalTest extends TestCase
     {
         parent::setUp();
 
-        $this->source = Agent::create('Source', 'read-only-helper');
-        $this->target = Agent::create('Target', 'read-only-helper');
+        $this->source = Agent::create('Source', 'read-only-helper', $this->localProject());
+        $this->target = Agent::create('Target', 'read-only-helper', $this->localProject());
         Link::createForModels($this->source, $this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
         $configuration = ShareGatewayConfiguration::create(

@@ -28,12 +28,12 @@ final class ReportReadyNotificationTest extends TestCase
 
     public function test_each_report_reaches_the_parent_of_its_own_job_once(): void
     {
-        $atlas = ActorIdentity::of(Agent::create('Atlas '.Str::random(6), 'main-agent'));
+        $atlas = ActorIdentity::of(Agent::create('Atlas '.Str::random(6), 'main-agent', $this->localProject()));
         $jo = $this->actAsUser('jo');
 
         $birch = HelperIdentity::create(
             $atlas,
-            ActorIdentity::of(Agent::create('Birch '.Str::random(6), 'writing-helper')),
+            ActorIdentity::of(Agent::create('Birch '.Str::random(6), 'writing-helper', $this->localProject())),
             'writing-helper',
             'writing-helper',
         );

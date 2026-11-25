@@ -118,7 +118,7 @@ trait MessagingFixtures
 
     private function start(string $name): AgentSession
     {
-        $agent = Agent::create($name, 'main-agent');
+        $agent = Agent::create($name, 'main-agent', $this->localProject());
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

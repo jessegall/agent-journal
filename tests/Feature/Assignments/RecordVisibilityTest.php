@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use Domain\Rules\RulesDomain;
 use App\Contracts\Records\RecordVisibility;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -55,8 +55,8 @@ final class RecordVisibilityTest extends TestCase
         $this->installNotesModule();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->writer = Agent::create('Writer', 'main-agent');
-        $this->resolver = Agent::create('Reader', 'main-agent');
+        $this->writer = Agent::create('Writer', 'main-agent', $this->localProject());
+        $this->resolver = Agent::create('Reader', 'main-agent', $this->localProject());
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($this->writer->id);
     }

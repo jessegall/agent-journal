@@ -35,7 +35,7 @@ final class StartPreviewsTest extends TestCase
 
     public function test_a_child_inherits_its_parents_family_and_a_named_family_wins_over_an_unpinned_profile(): void
     {
-        $agent = Agent::create('Helper', 'read-only-helper');
+        $agent = Agent::create('Helper', 'read-only-helper', $this->localProject());
 
         $inherited = $this->previewOf($agent, null, null, $this->profile(null), DefaultDrivers::CODEX);
         $claude = $this->profile(DefaultDrivers::CLAUDE_CODE);
@@ -49,7 +49,7 @@ final class StartPreviewsTest extends TestCase
     public function test_a_profile_preferring_claude_still_lets_a_start_choose_codex(): void
     {
         $preview = $this->previews()->preview(
-            Agent::create('Helper', 'read-only-helper'),
+            Agent::create('Helper', 'read-only-helper', $this->localProject()),
             DefaultDrivers::CODEX,
             null,
             ModelSelection::fromInput('opus'),
@@ -62,7 +62,7 @@ final class StartPreviewsTest extends TestCase
 
     public function test_the_mode_is_named_else_saved_else_the_profiles(): void
     {
-        $agent = Agent::create('Helper', 'read-only-helper');
+        $agent = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $profile = $this->profile(DefaultDrivers::CLAUDE_CODE);
 
         $fromProfile = $this->previewOf($agent, null, null, $profile, null);
@@ -80,7 +80,7 @@ final class StartPreviewsTest extends TestCase
 
     public function test_a_saved_terminal_that_cannot_run_here_stays_terminal_and_says_why(): void
     {
-        $agent = Agent::create('Helper', 'read-only-helper');
+        $agent = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $agent->preferDriverType(DriverType::Terminal);
 
         $preview = $this->previewOf($agent, DefaultDrivers::CODEX, null, $this->profile(null), null);
@@ -111,7 +111,7 @@ final class StartPreviewsTest extends TestCase
             $headless->capabilities,
             [],
         ));
-        $agent = Agent::create('Helper', 'read-only-helper');
+        $agent = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $agent->preferDriverType(DriverType::Terminal);
 
         $preview = $this->previewOf($agent, 'acme', null, $this->profile(null), null);

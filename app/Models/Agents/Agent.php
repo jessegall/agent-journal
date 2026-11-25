@@ -21,7 +21,9 @@ use App\Events\Sessions\AgentDriverTypePreferred;
 use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimesFenced;
+use App\Exceptions\AgentOfAnotherProject;
 use App\Models\Inboxes\InboxMember;
+use App\Models\Projects\Project;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
@@ -40,6 +42,7 @@ use PhpOption\Some;
 /**
  * @property string $id
  * @property string $name
+ * @property string $project_id
  * @property string $profile_key
  * @property ?Carbon $retired_at
  * @property ?string $current_session_id
@@ -79,12 +82,14 @@ final class Agent extends Model implements
     // ----------[ Constructors ]----------
 
     /**
-     * A new agent that starts with the profile of this key unless a start names another.
+     * A new agent of the project that starts with the profile of this key unless a start names another; its project
+     * never changes.
      */
-    public static function create(string $name, string $profileKey): self
+    public static function create(string $name, string $profileKey, Project $project): self
     {
         $agent = new self();
         $agent->name = $name;
+        $agent->project_id = $project->id;
         $agent->profile_key = $profileKey;
         $agent->assertSaved($agent->save());
 
@@ -186,6 +191,22 @@ final class Agent extends Model implements
     public function actorId(): string
     {
         return $this->id;
+    }
+
+    // ----------[ Asserts ]----------
+
+    /**
+     * Refuses an agent that belongs to another project than the one given.
+     *
+     * @throws AgentOfAnotherProject
+     */
+    public function assertOfProject(Project $project): void
+    {
+        if ($this->project_id === $project->id) {
+            return;
+        }
+
+        throw AgentOfAnotherProject::for($this->id, $project->id);
     }
 
     // ----------[ Queries ]----------

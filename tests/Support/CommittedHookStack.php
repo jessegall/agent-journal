@@ -98,7 +98,7 @@ trait CommittedHookStack
     private function startedTarget(): StackTarget
     {
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent()->forceFill(
-            ['name' => 'Hook agent', 'profile_key' => 'main-agent'],
+            ['name' => 'Hook agent', 'profile_key' => 'main-agent', 'project_id' => TestProjects::local()->id],
         );
         $agent->id = TestIds::of(1);
         $agent->save();

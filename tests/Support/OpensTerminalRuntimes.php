@@ -34,7 +34,7 @@ trait OpensTerminalRuntimes
 {
     private function runtimeOn(string $hostId, DriverType $driver = DriverType::Terminal): AgentRuntime
     {
-        $agent = Agent::create('Watched agent '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Watched agent '.Str::random(6), 'main-agent', $this->localProject());
         $started = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),

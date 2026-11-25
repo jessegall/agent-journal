@@ -13,7 +13,6 @@ use App\Models\Access\User;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
-use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
 use App\Support\Access\AccessSettings;
@@ -181,7 +180,7 @@ final class ProjectCommandsTest extends TestCase
     {
         $start = TestStart::start();
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-        $project = Project::create('shop-'.bin2hex(random_bytes(3)), 'Shop');
+        $project = $this->localProject();
         $binding = ProjectBinding::create(
             $host,
             $project,

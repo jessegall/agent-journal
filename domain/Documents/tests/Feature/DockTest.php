@@ -63,13 +63,13 @@ final class DockTest extends TestCase
         $start = $this->app->make(StartSessions::class);
 
         $this->builderSession = $start->start(
-            Agent::create('Builder', 'main-agent'),
+            Agent::create('Builder', 'main-agent', $this->localProject()),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
 
         $this->reviewerSession = $start->start(
-            Agent::create('Reviewer', 'main-agent'),
+            Agent::create('Reviewer', 'main-agent', $this->localProject()),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;

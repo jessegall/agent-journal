@@ -47,7 +47,7 @@ final class ActivityWindowTest extends TestCase
 
     public function test_the_newest_page_is_sent_oldest_first_and_before_reads_the_page_older_than_it(): void
     {
-        $agent = Agent::create('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent', $this->localProject());
         $actor = ActorIdentity::ofClass(Agent::class, $agent->id);
         $entries = [];
 

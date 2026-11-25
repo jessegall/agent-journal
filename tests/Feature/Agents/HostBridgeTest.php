@@ -50,7 +50,7 @@ final class HostBridgeTest extends TestCase
             ),
         );
         $commands = $this->app->make(CommandBus::class);
-        $actor = Agent::create('Builder', 'writing-helper');
+        $actor = Agent::create('Builder', 'writing-helper', $this->localProject());
 
         foreach (DefaultDrivers::familyKeys() as $driver) {
             $this->assertThrows(

@@ -77,7 +77,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     public function test_an_agent_without_a_running_session_is_inactive(): void
     {
-        $idle = Agent::create('Idle', 'writing-helper');
+        $idle = Agent::create('Idle', 'writing-helper', $this->localProject());
         $this->key = new AutoAssignmentKey(ActorIdentity::of($idle), TaskType::linkType());
         $this->enable(self::open(), 2);
 

@@ -76,7 +76,7 @@ final class HelperJobEndingTest extends TestCase
 
         $helper = HelperIdentity::create(
             $parent,
-            ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper')),
+            ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper', $this->localProject())),
             'writing-helper',
             'writing-helper',
         );

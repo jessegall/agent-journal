@@ -34,7 +34,7 @@ trait BuildsTickingStacks
         string $plainType = 'test.plain',
         string $subjectValue = 'subject',
     ): AgentStackRow {
-        $agent = Agent::create('Ticking agent', 'main-agent');
+        $agent = Agent::create('Ticking agent', 'main-agent', $this->localProject());
         $session = $this->app->make(AgentSessions::class)->start(
             $agent,
             TestSelections::of(),

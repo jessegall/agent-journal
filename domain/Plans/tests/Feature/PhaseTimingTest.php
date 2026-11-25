@@ -52,7 +52,7 @@ final class PhaseTimingTest extends TestCase
     {
         parent::setUp();
 
-        $this->agent = Agent::create('Worker', 'writing-helper');
+        $this->agent = Agent::create('Worker', 'writing-helper', $this->localProject());
         $this->plan = Plan::factory()->create([
             'title' => 'Phase timing',
             'state' => PlanState::Started,

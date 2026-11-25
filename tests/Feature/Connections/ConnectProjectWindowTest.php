@@ -121,7 +121,7 @@ final class ConnectProjectWindowTest extends TestCase
                 $host,
                 $project,
                 $environment,
-                Agent::create("Shop agent {$number}", 'main-agent'),
+                Agent::create("Shop agent {$number}", 'main-agent', $project),
                 new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}")
             );
         }
@@ -156,7 +156,7 @@ final class ConnectProjectWindowTest extends TestCase
                 $host,
                 $project,
                 Environment::createForDefault($project),
-                Agent::create("{$key} main agent", 'main-agent'),
+                Agent::create("{$key} main agent", 'main-agent', $project),
                 new BindingFolder("root-{$key}", "/Users/owner/{$key}", 'Owner laptop', "nonce-{$key}"),
             );
         }

@@ -63,7 +63,7 @@ final class SendMessageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->id;
-        $builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $this->builderInboxId = $this->inboxOf($builder)->id;
     }
 

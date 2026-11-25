@@ -9,9 +9,13 @@ use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**
- * Creates the installation's main agent and designates it once; running it again changes nothing.
+ * Creates the installation's main agent in its local project and designates it once; running it again changes
+ * nothing.
  *
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-final readonly class InstallMainAgentCommand extends Command {}
+final readonly class InstallMainAgentCommand extends Command
+{
+    public function __construct(public string $projectId) {}
+}

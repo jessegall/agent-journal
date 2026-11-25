@@ -51,6 +51,11 @@ final class Project extends Model implements EventSource, ReadableModel
         return self::query()->whereKey($id)->firstOrFail();
     }
 
+    public static function forKey(string $key): self
+    {
+        return self::query()->withKey($key)->firstOrFail();
+    }
+
     /**
      * Every connected project, by label; an installation connects a handful.
      *

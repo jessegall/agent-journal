@@ -83,7 +83,7 @@ final class AccountUsesTest extends TestCase
         parent::setUp();
 
         Relation::morphMap([self::ACCOUNT_TYPE => Note::class]);
-        $this->agent = Agent::create('Test agent', 'main-agent');
+        $this->agent = Agent::create('Test agent', 'main-agent', $this->localProject());
         $this->actAsOwner();
     }
 

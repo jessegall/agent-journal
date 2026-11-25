@@ -64,7 +64,7 @@ final class SettingsAccessTest extends TestCase
     public function test_only_the_configured_owner_user_is_let_in(): void
     {
         $owner = User::factory()->create();
-        $agent = Agent::create('Planner', 'main-agent');
+        $agent = Agent::create('Planner', 'main-agent', $this->localProject());
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $policy = $this->app->make(SettingsAccessPolicy::class);
 

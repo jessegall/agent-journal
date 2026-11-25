@@ -22,6 +22,7 @@ use App\Support\StartStacks;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
+use Tests\Support\TestProjects;
 use Tests\Support\TestStartAuthority;
 
 /**
@@ -37,7 +38,8 @@ final readonly class TestStart
 
     public static function start(string $profileKey = 'main-agent'): self
     {
-        $agent = Agent::create('Test agent', $profileKey);
+        $project = TestProjects::local();
+        $agent = Agent::create('Test agent', $profileKey, $project);
         $sessions = Container::getInstance()->make(AgentSessions::class);
         $session = $sessions->start($agent, TestSelections::of(), TestSelections::requestId());
 

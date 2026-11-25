@@ -120,6 +120,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         Agent $mainAgent,
         BindingFolder $folder,
     ): self {
+        $mainAgent->assertOfProject($project);
         $binding = new self();
         $binding->host_id = $host->id;
         $binding->project_id = $project->id;

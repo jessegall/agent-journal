@@ -72,7 +72,7 @@ final class StartAccountPageTest extends TestCase
 
     private function start(): string
     {
-        $agent = Agent::create('Researcher', 'read-only-helper');
+        $agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
         $request = new StartRequest(
             TestSelections::requestId(),
             $agent->id,

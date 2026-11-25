@@ -12,8 +12,8 @@ use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Creates an agent with a name and the profile it starts with, and answers its actor; its owner, such as Helpers,
- * decides who it serves.
+ * Creates an agent of a project with a name and the profile it starts with, and answers its actor; its owner, such as
+ * Helpers, decides who it serves.
  *
  * @extends Command<ActorIdentity>
  */
@@ -24,5 +24,6 @@ final readonly class CreateAgentCommand extends Command
         #[Required]
         public string $name,
         public string $profileKey,
+        public string $projectId,
     ) {}
 }

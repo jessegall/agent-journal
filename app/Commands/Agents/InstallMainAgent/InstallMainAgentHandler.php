@@ -22,7 +22,7 @@ final readonly class InstallMainAgentHandler implements CommandHandler
         }
 
         $main = ProfileBase::mainAgent();
-        $actor = $this->commands->run(new CreateAgentCommand($main->label, $main->key));
+        $actor = $this->commands->run(new CreateAgentCommand($main->label, $main->key, $command->projectId));
         $agent = Agent::query()->findOrFail($actor->id);
 
         MainAgentDesignation::create($agent);

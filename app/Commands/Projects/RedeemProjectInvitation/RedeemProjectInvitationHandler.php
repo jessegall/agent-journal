@@ -63,7 +63,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             ArrangementType::Local,
         );
 
-        $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE);
+        $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE, $project);
         $this->desks->provision(ActorIdentity::of($mainAgent), $mainAgent->name);
         $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);

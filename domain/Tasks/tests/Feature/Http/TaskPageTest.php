@@ -212,7 +212,7 @@ final class TaskPageTest extends TestCase
      */
     private function focusedTask(string $agentName): Task
     {
-        $agent = Agent::create($agentName, 'main-agent');
+        $agent = Agent::create($agentName, 'main-agent', $this->localProject());
         $task = Task::factory()->create([
             'state' => TaskState::Started,
             'run_number' => 1,

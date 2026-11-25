@@ -61,7 +61,7 @@ final class ChatWindowTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::create('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent', $this->localProject());
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -73,7 +73,7 @@ final class ChatWindowTest extends TestCase
 
     public function test_home_selects_the_idle_main_agent_and_offers_a_headless_helper_no_terminal(): void
     {
-        $main = Agent::create('Main agent', 'main-agent');
+        $main = Agent::create('Main agent', 'main-agent', $this->localProject());
         MainAgentDesignation::create($main);
 
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page

@@ -66,7 +66,7 @@ final class AccountNoticesTest extends TestCase
 
     public function test_a_start_refused_for_want_of_an_account_leaves_one_counted_notice(): void
     {
-        $agent = Agent::create('Waiting agent', 'read-only-helper');
+        $agent = Agent::create('Waiting agent', 'read-only-helper', $this->localProject());
 
         $this->refusedStart($agent);
         $this->refusedStart($agent);

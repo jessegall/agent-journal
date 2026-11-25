@@ -54,8 +54,8 @@ final class AgentResolversTest extends TestCase
     {
         parent::setUp();
 
-        $this->builder = Agent::create('Builder', 'main-agent');
-        $this->reviewer = Agent::create('Reviewer', 'main-agent');
+        $this->builder = Agent::create('Builder', 'main-agent', $this->localProject());
+        $this->reviewer = Agent::create('Reviewer', 'main-agent', $this->localProject());
         $start = $this->app->make(StartSessions::class);
         $this->running = $start->start(
             $this->builder,

@@ -87,7 +87,7 @@ final class ReportJobLinkTest extends TestCase
      */
     private function helper(): array
     {
-        $actor = ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper'));
+        $actor = ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper', $this->localProject()));
 
         return [
             $actor,

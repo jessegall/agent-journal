@@ -72,7 +72,7 @@ final class PlanCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);

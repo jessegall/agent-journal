@@ -16,7 +16,7 @@ trait StartsMainAgents
 {
     private function startedMainAgentSession(string $name = 'Builder'): AgentSession
     {
-        $agent = Agent::create($name, 'main-agent');
+        $agent = Agent::create($name, 'main-agent', $this->localProject());
 
         return $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())

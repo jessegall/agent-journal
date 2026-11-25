@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Contracts\Sessions\StartTransaction;
-use Throwable;
-use Closure;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Sessions\StartTransaction;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentRetirementDenied;
 use App\Exceptions\CommandTransactionMismatch;
@@ -24,6 +22,7 @@ use App\Support\AssigneeIdentity;
 use App\Support\CredentialLookup;
 use App\Support\SessionTokens;
 use App\Support\StartSessions;
+use Closure;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +35,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Retiring an agent: it releases every record the agent held, ends its usable sessions and credentials, and only the
@@ -84,8 +84,8 @@ final class AgentRetirementTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::create('Main', 'main-agent');
-        $this->helper = Agent::create('Helper', 'read-only-helper');
+        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $this->startUserRequestAs($this->owner->id);
     }
 

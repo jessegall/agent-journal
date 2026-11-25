@@ -100,7 +100,7 @@ final class HelperRecordsTest extends TestCase
         return [
             HelperIdentity::create(
                 $parent,
-                ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'read-only-helper')),
+                ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'read-only-helper', $this->localProject())),
                 'read-only-helper',
                 'read-only-helper',
             ),

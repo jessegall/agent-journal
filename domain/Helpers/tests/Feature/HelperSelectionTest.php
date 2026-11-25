@@ -214,7 +214,7 @@ final class HelperSelectionTest extends TestCase
 
     private function declareHelper(string $profileKey): HelperIdentity
     {
-        $agent = Agent::create('Helper '.Str::random(6), $profileKey);
+        $agent = Agent::create('Helper '.Str::random(6), $profileKey, $this->localProject());
 
         return HelperIdentity::create($this->parent, ActorIdentity::of($agent), $profileKey, $profileKey);
     }

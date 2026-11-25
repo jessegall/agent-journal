@@ -60,7 +60,7 @@ final class RuntimeLeaseTest extends TestCase
     public function test_another_agents_runtime_in_the_binding_root_is_refused_its_lease(): void
     {
         $binding = $this->connected();
-        $runtime = $this->runtimeOf(Agent::create('Stranger '.Str::random(6), 'main-agent'), $binding);
+        $runtime = $this->runtimeOf(Agent::create('Stranger '.Str::random(6), 'main-agent', $this->localProject()), $binding);
 
         $this->renew($binding, $runtime)->assertForbidden();
     }

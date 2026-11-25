@@ -56,7 +56,7 @@ final class ForwardedAssignmentTest extends TestCase
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {
         $main = Inbox::main();
-        $agent = $this->withInbox(Agent::create('Main', 'main-agent'));
+        $agent = $this->withInbox(Agent::create('Main', 'main-agent', $this->localProject()));
         InboxMember::create($main->id, ActorIdentity::of($agent), CarbonImmutable::now());
         $task = Task::factory()->create()->assignmentIdentity();
 
@@ -71,7 +71,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_an_actor_in_no_forwarding_inbox_keeps_the_task(): void
     {
-        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper'));
+        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -83,7 +83,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_a_retry_with_the_same_key_returns_the_first_result_after_the_assignment_was_removed(): void
     {
-        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper'));
+        $agent = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-the-builder');
@@ -100,8 +100,8 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_a_changed_recipient_under_the_same_key_conflicts(): void
     {
-        $builder = $this->withInbox(Agent::create('Builder', 'read-only-helper'));
-        $reviewer = $this->withInbox(Agent::create('Reviewer', 'read-only-helper'));
+        $builder = $this->withInbox(Agent::create('Builder', 'read-only-helper', $this->localProject()));
+        $reviewer = $this->withInbox(Agent::create('Reviewer', 'read-only-helper', $this->localProject()));
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-once');

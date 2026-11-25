@@ -136,7 +136,7 @@ final class RefreshSkillsTest extends TestCase
 
     private function start(): AgentSession
     {
-        $agent = Agent::create('Main', 'main-agent');
+        $agent = Agent::create('Main', 'main-agent', $this->localProject());
         $session = new AgentSession()->forceFill(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

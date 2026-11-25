@@ -153,7 +153,7 @@ final class AccountMaintenanceTest extends TestCase
     private function open(EnrolledHost $host): OpenedRuntime
     {
         $this->actAsOwner();
-        $agent = Agent::create('Held agent '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Held agent '.Str::random(6), 'main-agent', $this->localProject());
         $command = new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,

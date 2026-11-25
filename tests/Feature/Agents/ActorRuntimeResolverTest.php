@@ -26,7 +26,7 @@ final class ActorRuntimeResolverTest extends TestCase
 
     public function test_restarting_fences_the_older_runtime_and_only_the_current_one_resolves(): void
     {
-        $agent = Agent::create('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent', $this->localProject());
         $starts = $this->app->make(StartSessions::class);
         $older = $starts->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $this->openDriverRuntime($older->session);

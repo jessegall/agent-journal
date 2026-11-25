@@ -79,7 +79,7 @@ final class IssueChildClaimTest extends TestCase
             $host,
             $project,
             Environment::createForDefault($project),
-            Agent::create('Shop main agent', 'main-agent'),
+            Agent::create('Shop main agent', 'main-agent', $project),
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );
     }

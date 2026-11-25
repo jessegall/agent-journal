@@ -87,7 +87,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_raise_opens_one_request_holds_the_runtime_and_wakes_once_when_sent_twice(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [$host, $opened, $request] = $this->stalledScript();
 
         $first = $this->raise($host, $opened, $request)->assertOk();
@@ -106,7 +106,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_second_runtime_raising_the_same_menu_waits_and_opens_nothing(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [$host, $opened, $request] = $this->stalledScript();
         [$otherHost, $other, $otherRequest] = $this->stalledScript();
         $this->raise($host, $opened, $request)->assertOk();
@@ -120,7 +120,7 @@ final class NavigationRaiseRouteTest extends TestCase
     #[TimeLimit(seconds: 30, reason: 'It opens fifty runtimes with different goals before the matching raise.')]
     public function test_an_exact_open_goal_is_found_behind_fifty_different_goals(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [, , $matching] = $this->stalledScript();
         $this->navigationFor($matching);
         $this->travel(1)->seconds();
@@ -151,7 +151,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_raise_for_another_hosts_runtime_or_with_an_oversized_screen_is_refused(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         [$host, $opened, $request] = $this->stalledScript();
         [$otherHost] = $this->stalledScript();
 
@@ -163,7 +163,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_an_entry_current_on_the_build_is_answered_and_opens_nothing(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.323');
         [$host, $opened, $request] = $this->stalledScript();
         $before = NavigationRequest::query()->acrossActors()->count();
@@ -183,7 +183,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_an_entry_proven_on_another_build_only_is_answered_guarded(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.300');
         [$host, $opened, $request] = $this->stalledScript();
 
@@ -198,7 +198,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_build_proof_wins_over_twenty_newer_guarded_entries(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.323');
         $this->travel(1)->seconds();
         $this->addPaths($this->librarySource('2.1.300'));
@@ -212,7 +212,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_guarded_entry_is_found_behind_twenty_newer_stale_entries(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.300');
         $this->travel(1)->seconds();
         $this->addPaths($this->librarySource('2.1.323'), ['2.1.323']);
@@ -242,7 +242,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_stale_or_retired_entry_is_not_answered(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $this->libraryEntry('2.1.323')->markStaleOn('2.1.323', 'label-missing', []);
         $this->libraryEntry('2.1.323')->retire();
         [$host, $opened, $request] = $this->stalledScript();
@@ -252,7 +252,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_an_entry_the_host_declined_is_not_answered_again(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $entry = $this->libraryEntry('2.1.323');
         [$host, $opened, $request] = $this->stalledScript();
 
@@ -287,7 +287,7 @@ final class NavigationRaiseRouteTest extends TestCase
 
     public function test_a_stale_entry_raise_keeps_its_hint_and_the_proven_path_supersedes_it(): void
     {
-        $this->seat(Agent::create('Main', 'main-agent'));
+        $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $stale = $this->libraryEntry('2.1.323');
         $stale->markStaleOn('2.1.323', 'label-missing at step 1', []);
         [$host, $opened, $request] = $this->stalledScript();

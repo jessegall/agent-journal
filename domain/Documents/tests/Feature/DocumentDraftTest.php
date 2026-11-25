@@ -67,7 +67,7 @@ final class DocumentDraftTest extends TestCase
         $parent = TestStart::start();
         $this->openDriverRuntime($parent->session);
         $other = TestStart::start();
-        $child = Agent::create('Document editor', 'writing-helper');
+        $child = Agent::create('Document editor', 'writing-helper', $this->localProject());
 
         $session = $this->app->make(AgentSessions::class)->start(
             $child,

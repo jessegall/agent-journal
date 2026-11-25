@@ -34,7 +34,7 @@ final class MainStartTest extends TestCase
 
     public function test_a_named_program_and_model_start_the_agent(): void
     {
-        $agent = Agent::create('Started by hand', 'read-only-helper');
+        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
 
         $response = $this->actingAs($this->owner)->postJson(route('agents.start', $agent->id), [
             'requestId' => (string) Str::ulid(),
@@ -50,7 +50,7 @@ final class MainStartTest extends TestCase
 
     public function test_a_missing_program_or_model_or_the_default_model_is_refused_without_a_session(): void
     {
-        $agent = Agent::create('Started by hand', 'read-only-helper');
+        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
         $inputs = [['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']];
 
         foreach ($inputs as $input) {

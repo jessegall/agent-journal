@@ -79,7 +79,7 @@ final class HomePageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::create('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent', $this->localProject());
         $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),

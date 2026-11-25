@@ -124,7 +124,7 @@ final class ResumeTaskRunTest extends TestCase
     private function started(string $name): AgentSession
     {
         return $this->app->make(StartSessions::class)
-            ->start(Agent::create($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->start(Agent::create($name, 'main-agent', $this->localProject()), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

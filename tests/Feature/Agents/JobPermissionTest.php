@@ -113,7 +113,7 @@ final class JobPermissionTest extends TestCase
 
     private function actUnder(string $profileKey, int $revision): void
     {
-        $agent = Agent::create('Helper', $profileKey);
+        $agent = Agent::create('Helper', $profileKey, $this->localProject());
         $this->app->forgetScopedInstances();
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),

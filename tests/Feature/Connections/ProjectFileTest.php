@@ -82,7 +82,7 @@ final class ProjectFileTest extends TestCase
             Host::query()->findOrFail($this->host->hostId),
             $project,
             Environment::createForDefault($project),
-            Agent::create('Shop main agent', 'main-agent'),
+            Agent::create('Shop main agent', 'main-agent', $project),
             new BindingFolder('root-'.Str::random(6), '/Users/owner/shop', 'Owner laptop', Str::random(16)),
         );
     }

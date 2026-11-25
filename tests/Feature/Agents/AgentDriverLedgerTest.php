@@ -1932,7 +1932,7 @@ final class AgentDriverLedgerTest extends TestCase
     private function secondRuntimeOn(EnrolledHost $host): OpenedRuntime
     {
         return $this->asOwner(new OpenAgentRuntimeCommand(
-            Agent::create('Second agent', 'main-agent')->id,
+            Agent::create('Second agent', 'main-agent', $this->localProject())->id,
             $host->hostId,
             self::FOLDER,
             'claude-code',

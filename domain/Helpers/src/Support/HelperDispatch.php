@@ -22,9 +22,12 @@ use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\StartRefused;
+use App\Models\Agents\Agent;
+use App\Models\Projects\Project;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\OwnerStartRequest;
+use App\Support\ProjectKey;
 use App\Support\RecordIdentity;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;
@@ -77,6 +80,7 @@ final readonly class HelperDispatch
         private CommandBus $commands,
         private JournalAdmission $admission,
         private HelperRecordFacts $helperFacts,
+        private ProjectKey $projectKey,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt
@@ -336,7 +340,20 @@ final readonly class HelperDispatch
         return $this->commands->run(new CreateAgentCommand(
             sprintf('%s helper', $profile->base->label),
             $request->profileKey,
+            $this->projectIdOf($request),
         ));
+    }
+
+    /**
+     * The project a new helper belongs to: its parent agent's, or the served project when a person dispatches it.
+     */
+    private function projectIdOf(DispatchRequest $request): string
+    {
+        if ($request->parent->isAgent()) {
+            return Agent::query()->findOrFail($request->parent->id)->project_id;
+        }
+
+        return Project::forKey($this->projectKey->current())->id;
     }
 
     private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity

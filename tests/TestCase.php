@@ -6,6 +6,7 @@ namespace Tests;
 
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
+use App\Models\Projects\Project;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
 use App\Support\OuterTransactionOwner;
@@ -27,6 +28,7 @@ use Laravel\Fortify\Features;
 use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
 use Throwable;
@@ -171,6 +173,14 @@ abstract class TestCase extends BaseTestCase
         if (! in_array(RefreshHookDatabase::class, class_uses_recursive(static::class), true)) {
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
+    }
+
+    /**
+     * The installation's own project, which an agent a test makes belongs to.
+     */
+    protected function localProject(): Project
+    {
+        return TestProjects::local();
     }
 
     protected function skipUnlessFortifyHas(string $feature, string|null $message = null): void

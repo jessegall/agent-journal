@@ -161,7 +161,7 @@ final class HostArrangementTest extends TestCase
     {
         $host = $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [self::FOLDER], $arrangement));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         [$build, $profile, $model] = $driver === 'codex'
             ? ['0.165.0', 'codex', 'gpt-5.5']
             : ['2.1.323', 'claude', 'claude-opus-5-5'];

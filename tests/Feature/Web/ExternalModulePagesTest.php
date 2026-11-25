@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Pages\WebPages;
@@ -13,11 +11,13 @@ use App\Support\Access\AccessSettings;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\UiDeclarations;
+use Domain\Rules\RulesDomain;
 use Illuminate\Routing\Router;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -62,7 +62,7 @@ final class ExternalModulePagesTest extends TestCase
     public function test_the_modules_page_and_record_page_are_served_and_listed_like_any_domains(): void
     {
         $this->installNotes();
-        $writer = Agent::create('Writer', 'read-only-helper');
+        $writer = Agent::create('Writer', 'read-only-helper', $this->localProject());
         $note = new Note(['text' => 'Check the lock order']);
         $note->saveFor($writer->id);
         $month = $note->created_at?->format('Y-m');

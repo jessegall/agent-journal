@@ -50,7 +50,7 @@ final class ProfileDraftTest extends TestCase
         $this->startTestUserRequest(1);
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
-        $actor = Agent::create('Editor', 'writing-helper');
+        $actor = Agent::create('Editor', 'writing-helper', $this->localProject());
 
         $this->assertSame(1, $commands->run(new SaveProfileDraftCommand($profile, 0, new ScriptSource('syntax error'))));
         $this->startRequestAs($actor->id, TestIds::of(87));

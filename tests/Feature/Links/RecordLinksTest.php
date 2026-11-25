@@ -189,7 +189,7 @@ final class RecordLinksTest extends TestCase
     {
         $inbox = $this->inboxOf(TestActors::agentIdentity($agent));
 
-        return $this->postTo($inbox, Agent::create('Sender', 'main-agent'), "Private plan\nDetails.");
+        return $this->postTo($inbox, Agent::create('Sender', 'main-agent', $this->localProject()), "Private plan\nDetails.");
     }
 
     /**

@@ -69,7 +69,7 @@ final class AnswerNavigationTest extends TestCase
     {
         parent::setUp();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
-        $this->main = Agent::create('Main', 'main-agent');
+        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->main),
@@ -95,7 +95,7 @@ final class AnswerNavigationTest extends TestCase
     public function test_a_stale_round_another_actors_round_or_a_parameter_the_goal_lacks_stores_nothing(): void
     {
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
-        $stranger = Agent::create('Helper', 'main-agent');
+        $stranger = Agent::create('Helper', 'main-agent', $this->localProject());
         $choose = NavigationAnswer::choose('GPT-6');
         $refused = [
             'stale version' => [$this->main, new AnswerNavigationCommand($navigation->id, 9, 7, $choose)],

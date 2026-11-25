@@ -49,7 +49,7 @@ final class AgentInstructionsTest extends TestCase
 
     private function sessionOn(string $profile): AgentSession
     {
-        $agent = Agent::create(ucfirst($profile), 'read-only-helper');
+        $agent = Agent::create(ucfirst($profile), 'read-only-helper', $this->localProject());
         $session = new AgentSession()->forceFill([
             ...TestSelections::sessionColumns(),
             'profile_key' => $profile,

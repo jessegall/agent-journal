@@ -175,7 +175,7 @@ final class HookRecoveryTest extends TestCase
     private function start(): StartedAgent
     {
         return $this->app->make(StartSessions::class)->start(
-            Agent::create('Test agent', 'main-agent'),
+            Agent::create('Test agent', 'main-agent', $this->localProject()),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );

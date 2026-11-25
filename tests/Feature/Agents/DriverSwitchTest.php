@@ -58,7 +58,7 @@ final class DriverSwitchTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $agent = Agent::create('Main agent', 'main-agent');
+        $agent = Agent::create('Main agent', 'main-agent', $this->localProject());
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

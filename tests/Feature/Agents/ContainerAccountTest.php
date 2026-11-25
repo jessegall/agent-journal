@@ -171,7 +171,7 @@ final class ContainerAccountTest extends TestCase
     private function open(EnrolledHost $host): OpenedRuntime
     {
         $this->actAsOwner();
-        $agent = Agent::create('Helper '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Helper '.Str::random(6), 'main-agent', $this->localProject());
         $command = new OpenAgentRuntimeCommand(
             $agent->id,
             $host->hostId,

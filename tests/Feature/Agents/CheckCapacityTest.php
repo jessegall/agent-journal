@@ -35,7 +35,7 @@ final class CheckCapacityTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
-        $this->agent = Agent::create('Builder', 'writing-helper');
+        $this->agent = Agent::create('Builder', 'writing-helper', $this->localProject());
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
         $this->app->instance(HostCapacity::class, $room);

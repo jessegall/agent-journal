@@ -29,7 +29,7 @@ final class AgentListReadTest extends TestCase
         $this->startUserRequestAs($owner->id);
 
         foreach (range(1, 12) as $number) {
-            Agent::create("Agent {$number}", 'main-agent');
+            Agent::create("Agent {$number}", 'main-agent', $this->localProject());
         }
 
         $listed = $this->app->make(ReadMeter::class)->measure(

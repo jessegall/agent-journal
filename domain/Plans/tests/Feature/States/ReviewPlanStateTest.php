@@ -96,6 +96,7 @@ final class ReviewPlanStateTest extends TestCase
         $agent = new Agent()->forceFill([
             'name' => "Reviewer {$number}",
             'profile_key' => 'journal-plan-reviewer',
+            'project_id' => $this->localProject()->id,
         ]);
         $agent->id = TestIds::of($number);
         $agent->save();

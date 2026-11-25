@@ -95,7 +95,7 @@ final class SupervisorRoutesTest extends TestCase
     public function test_changing_a_route_keeps_other_versions_and_records_the_author(): void
     {
         $this->activate((array) config('profiles'));
-        $agent = Agent::create('Worker', 'journal-worker');
+        $agent = Agent::create('Worker', 'journal-worker', $this->localProject());
         $actor = ActorIdentity::of(ActorContext::forAgent($agent->id));
         $question = AskTypeKey::of('question');
         $receipt = $this->app->make(CommandBus::class)->run(

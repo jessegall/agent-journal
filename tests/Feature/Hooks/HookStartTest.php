@@ -159,7 +159,7 @@ final class HookStartTest extends TestCase
         $parent = $this->start('main-agent');
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id)));
-        $childAgent = Agent::create('Helper', 'read-only-helper');
+        $childAgent = Agent::create('Helper', 'read-only-helper', $this->localProject());
 
         $child = $this->app->make(StartSessions::class)->start(
             $childAgent,
@@ -191,7 +191,7 @@ final class HookStartTest extends TestCase
 
     private function start(string $profileKey, string $driver = 'claude-code'): StartedAgent
     {
-        $agent = Agent::create('Test agent', $profileKey);
+        $agent = Agent::create('Test agent', $profileKey, $this->localProject());
 
         return $this->app->make(StartSessions::class)->start(
             $agent,

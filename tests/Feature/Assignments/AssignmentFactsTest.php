@@ -67,7 +67,7 @@ final class AssignmentFactsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper'));
+        $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper', $this->localProject()));
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
         $this->useTheApplicationsTransactionManager();

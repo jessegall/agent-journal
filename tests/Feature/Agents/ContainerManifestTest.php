@@ -698,7 +698,7 @@ final class ContainerManifestTest extends TestCase
 
     private function containerRequest(): StartRequest
     {
-        $agent = Agent::create('Builder', 'writing-helper');
+        $agent = Agent::create('Builder', 'writing-helper', $this->localProject());
 
         return new StartRequest(
             TestSelections::requestId(),

@@ -15,6 +15,6 @@ trait HasResearcherAgent
 
     protected function setUpHasResearcherAgent(): void
     {
-        $this->agent = Agent::create('Researcher', 'read-only-helper');
+        $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
     }
 }

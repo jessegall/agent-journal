@@ -27,8 +27,8 @@ final class AgentCreationTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $resolver = $bus->run(new CreateAgentCommand('Researcher', 'read-only-helper'))->id;
-        $writer = $bus->run(new CreateAgentCommand('Builder', 'writing-helper'))->id;
+        $resolver = $bus->run(new CreateAgentCommand('Researcher', 'read-only-helper', $this->localProject()->id))->id;
+        $writer = $bus->run(new CreateAgentCommand('Builder', 'writing-helper', $this->localProject()->id))->id;
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
         $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);
@@ -43,7 +43,7 @@ final class AgentCreationTest extends TestCase
         $agents = Agent::query()->count();
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CreateAgentCommand('   ', 'writing-helper')),
+            fn () => $this->app->make(CommandBus::class)->run(new CreateAgentCommand('   ', 'writing-helper', $this->localProject()->id)),
             CommandInputInvalid::class,
             self::NAME_REQUIRED,
         );

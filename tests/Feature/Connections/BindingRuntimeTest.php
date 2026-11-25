@@ -100,7 +100,7 @@ final class BindingRuntimeTest extends TestCase
 
     public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
     {
-        $serverMain = Agent::create('Server main', 'main-agent');
+        $serverMain = Agent::create('Server main', 'main-agent', $this->localProject());
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainInboxHandover::class)->takeOver($serverMain),
         );

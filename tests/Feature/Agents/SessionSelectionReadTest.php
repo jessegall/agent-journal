@@ -40,7 +40,7 @@ final class SessionSelectionReadTest extends TestCase
     {
         parent::setUp();
 
-        $agent = Agent::create('Researcher', 'read-only-helper');
+        $agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),

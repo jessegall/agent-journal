@@ -60,7 +60,7 @@ final class SessionStartOutcomeTest extends TestCase
         $this->chooseActiveAccounts();
         $this->ownerId = User::factory()->create()->id;
         $this->startUserRequestAs($this->ownerId);
-        $this->agentId = Agent::create('Builder', 'writing-helper')->id;
+        $this->agentId = Agent::create('Builder', 'writing-helper', $this->localProject())->id;
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
         {
             public function capability(HostCapabilityQuery $query): HostCapability

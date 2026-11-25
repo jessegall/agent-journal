@@ -194,7 +194,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
 
         return $this->app->make(StartSessions::class)->start(
-            Agent::create($name, $profileKey),
+            Agent::create($name, $profileKey, $this->localProject()),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;

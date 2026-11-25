@@ -7,6 +7,7 @@ namespace Tests\Feature\Connections;
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Projects\InvitationMode;
+use App\Exceptions\AgentOfAnotherProject;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
@@ -99,6 +100,27 @@ final class ProjectRecordsTest extends TestCase
         $this->assertSame(BindingReadiness::Pending, $binding->readinessAt(CarbonImmutable::now()));
     }
 
+    public function test_a_binding_refuses_a_main_agent_of_another_project(): void
+    {
+        $project = Project::create('shop', 'Shop');
+        $environment = Environment::createForDefault($project);
+        $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
+        $blog = Project::create('blog', 'Blog');
+        $stranger = Agent::create('Blog main agent', 'main-agent', $blog);
+
+        $this->assertThrows(
+            fn () => ProjectBinding::create(
+                $host,
+                $project,
+                $environment,
+                $stranger,
+                new BindingFolder('root-shop', '/Users/owner/shop', 'Owner laptop', 'nonce-shop'),
+            ),
+            AgentOfAnotherProject::class,
+        );
+        $this->assertSame(0, ProjectBinding::query()->count());
+    }
+
     public function test_revoking_a_binding_raises_its_authority_generation(): void
     {
         $project = Project::create('shop', 'Shop');
@@ -118,7 +140,7 @@ final class ProjectRecordsTest extends TestCase
     private function binding(Project $project, Environment $environment): ProjectBinding
     {
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-        $agent = Agent::create('Shop main agent', 'main-agent');
+        $agent = Agent::create('Shop main agent', 'main-agent', $project);
 
         return ProjectBinding::create(
             $host,

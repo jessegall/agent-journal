@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use Domain\Rules\RulesDomain;
-use Tests\Support\DomainBoot;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Bus\CommandBus;
@@ -18,10 +16,12 @@ use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -69,8 +69,8 @@ final class ModuleAssignmentTest extends TestCase
         $this->createNotesTables();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::create('Main', 'main-agent');
-        $this->writer = Agent::create('Writer', 'read-only-helper');
+        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->writer = Agent::create('Writer', 'read-only-helper', $this->localProject());
     }
 
     protected function tearDown(): void

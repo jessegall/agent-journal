@@ -7,6 +7,7 @@ namespace App\Commands\Agents\CreateAgent;
 use App\Contracts\Actors\ActorProvisioning;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Agents\Agent;
+use App\Models\Projects\Project;
 use App\Support\ActorIdentity;
 
 /**
@@ -18,7 +19,8 @@ final readonly class CreateAgentHandler implements CommandHandler
 
     public function handle(CreateAgentCommand $command): ActorIdentity
     {
-        $agent = Agent::create($command->name, $command->profileKey);
+        $project = Project::forId($command->projectId);
+        $agent = Agent::create($command->name, $command->profileKey, $project);
         $actor = ActorIdentity::of($agent);
         $this->desks->provision($actor, $agent->name);
 

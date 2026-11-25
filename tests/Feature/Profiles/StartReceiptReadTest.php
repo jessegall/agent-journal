@@ -46,7 +46,7 @@ final class StartReceiptReadTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
-        $this->agent = Agent::create('Builder', 'writing-helper');
+        $this->agent = Agent::create('Builder', 'writing-helper', $this->localProject());
     }
 
     public function test_a_refused_start_without_a_session_answers_its_reason_by_key(): void

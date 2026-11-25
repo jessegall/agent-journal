@@ -96,7 +96,7 @@ final class RequiredSkillReadsTest extends TestCase
                 requiredSkills: ['user-guide'],
             ),
         )));
-        $agent = Agent::create('Reviewer', 'read-only-helper');
+        $agent = Agent::create('Reviewer', 'read-only-helper', $this->localProject());
         $session = new AgentSession()->forceFill([
             ...TestSelections::sessionColumns(),
             'profile_key' => 'journal-reviewer',

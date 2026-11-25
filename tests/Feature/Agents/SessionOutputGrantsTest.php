@@ -60,7 +60,7 @@ final class SessionOutputGrantsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->agent = Agent::create('Researcher', 'read-only-helper');
+        $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
         $this->visits = $this->app->make(RecordConversationVisit::class);
         $this->access = $this->app->make(SessionOutputAccess::class);
     }
@@ -84,7 +84,7 @@ final class SessionOutputGrantsTest extends TestCase
 
     public function test_sibling_fork_parent_and_unverified_paths_stay_denied(): void
     {
-        $sibling = $this->start('helpers.helper-job 1', Agent::create('Reviewer', 'read-only-helper'));
+        $sibling = $this->start('helpers.helper-job 1', Agent::create('Reviewer', 'read-only-helper', $this->localProject()));
         $session = $this->start('helpers.helper-job 2');
         $this->enter($sibling, 'native-parent', 'call-1');
 
@@ -120,7 +120,7 @@ final class SessionOutputGrantsTest extends TestCase
     {
         $predecessor = $this->start('helpers.helper-job 1');
         $this->enter($predecessor, 'native-a', 'call-1');
-        $other = Agent::create('Reviewer', 'read-only-helper');
+        $other = Agent::create('Reviewer', 'read-only-helper', $this->localProject());
         $this->app->make(StartSessions::class)->end($predecessor);
 
         $successor = $this->start($predecessor->id);

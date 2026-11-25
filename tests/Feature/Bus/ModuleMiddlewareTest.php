@@ -224,7 +224,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     private function startedSession(): AgentSession
     {
         return $this->app->make(StartSessions::class)->start(
-            Agent::create('Reader', 'main-agent'),
+            Agent::create('Reader', 'main-agent', $this->localProject()),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
@@ -305,7 +305,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->installCommandModules(
             MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgentCommand::class)),
         );
-        $helper = Agent::create('Helper', 'read-only-helper');
+        $helper = Agent::create('Helper', 'read-only-helper', $this->localProject());
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startTestUserRequest(1);
         $bus = $this->app->make(CommandBus::class);

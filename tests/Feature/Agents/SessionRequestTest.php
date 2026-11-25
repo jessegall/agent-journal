@@ -180,7 +180,7 @@ final class SessionRequestTest extends TestCase
 
     private function agent(string $name): Agent
     {
-        return Agent::create($name, 'main-agent');
+        return Agent::create($name, 'main-agent', $this->localProject());
     }
 
     private function request(

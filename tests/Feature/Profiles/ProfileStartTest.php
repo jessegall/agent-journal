@@ -89,7 +89,7 @@ final class ProfileStartTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
-        $this->main = Agent::create('Main', 'main-agent');
+        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
     }
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
@@ -149,7 +149,7 @@ final class ProfileStartTest extends TestCase
 
         $explicit = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
         $repeated = $this->start('default', 'codex', $requestId, DriverType::Headless, $chosen);
-        $this->main = Agent::create('Second main', 'main-agent');
+        $this->main = Agent::create('Second main', 'main-agent', $this->localProject());
         $automatic = $this->start('default', 'claude-code');
 
         $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->isNewSession]);
@@ -372,7 +372,7 @@ final class ProfileStartTest extends TestCase
      */
     private function stoppedSwitch(ChosenAccount $account): DriverSwitch
     {
-        $this->main = Agent::create('Switched main '.Str::random(4), 'journal-main');
+        $this->main = Agent::create('Switched main '.Str::random(4), 'journal-main', $this->localProject());
         $session = AgentSession::query()->findOrFail($this->start('default', null)->sessionId);
         $this->endSession($session);
         $switch = DriverSwitch::create(
