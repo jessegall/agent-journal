@@ -138,7 +138,7 @@ final class CommandRequest extends Model implements ReadableModel
 
     private function refusal(RequestState $next): RequestTransitionRefused
     {
-        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep->steps));
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->next_step->steps));
     }
 
     // ----------[ Queries ]----------

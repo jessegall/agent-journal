@@ -17,8 +17,8 @@ final readonly class EligibleAccountFactory
         return new EligibleAccountData(
             $account->id,
             $account->label,
-            $account->startUnavailableReason,
-            $account->startUnavailableReason?->sentence(),
+            $account->start_unavailable_reason,
+            $account->start_unavailable_reason?->sentence(),
             $account->expires_at?->toIso8601String(),
             $account->sign_in_generation,
             $isDefault,

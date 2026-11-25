@@ -28,7 +28,7 @@ final readonly class QuestionAnswerNotices
         $this->commands->run(DeliverAgentCommand::text(
             $notice->agent_id,
             $sessionId,
-            $notice->deliveryKey,
+            $notice->delivery_key,
             $this->texts->render(AgentText::of('core.questions.answered', ['question' => $notice->question_id])),
         ));
 

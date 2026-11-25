@@ -67,7 +67,7 @@ final class ShareGatewayRegistry
      */
     public function setupCheckOf(ShareGatewayConfiguration $configuration): GatewaySetupCheck
     {
-        return $this->get($configuration->gateway_key)->setupCheck($configuration->toConfiguration);
+        return $this->get($configuration->gateway_key)->setupCheck($configuration->to_configuration);
     }
 
     /**
@@ -102,7 +102,7 @@ final class ShareGatewayRegistry
      */
     public function healthOf(ShareGatewayEndpoint $endpoint): GatewayHealth
     {
-        return $this->get($endpoint->gatewayKey())->health($endpoint->toGatewayEndpoint);
+        return $this->get($endpoint->gatewayKey())->health($endpoint->to_gateway_endpoint);
     }
 
     /**

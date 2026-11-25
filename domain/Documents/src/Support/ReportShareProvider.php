@@ -71,6 +71,6 @@ final readonly class ReportShareProvider implements ShareRecordProvider
         return array_values(Report::query()->sharedPublished()->whereKey($ids)->readExactly(count($ids))->get(
             self::CARD_COLUMNS,
         )
-            ->map(fn (Report $report) => $report->shareCard)->all());
+            ->map(fn (Report $report) => $report->share_card)->all());
     }
 }

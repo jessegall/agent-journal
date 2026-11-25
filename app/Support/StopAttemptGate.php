@@ -82,7 +82,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         $work = StartRecord::ownerStartOf($stop->sessionId)
-            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork))
+            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->owner_work))
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
         return $this->preparer->prepare(new StopPreparationRequest(
@@ -187,7 +187,7 @@ final readonly class StopAttemptGate implements StopConditionGate
     {
         StartRecord::ownerStartOf($attempt->session_id)->forAll(
             fn (StartRecord $start) => $this->facts->publishAfterCommit(
-                new HelperStopHeld($start->ownerWork, $attempt->reference),
+                new HelperStopHeld($start->owner_work, $attempt->reference),
             ),
         );
     }

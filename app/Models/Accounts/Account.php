@@ -503,7 +503,7 @@ final class Account extends Model implements EventSource, ReadableModel
     protected function selectedForStart(): Attribute
     {
         return Accessor::get(fn () => new SelectedAccount(
-            $this->recordIdentity,
+            $this->record_identity,
             $this->account_protocol,
             $this->directoryForStart(),
             $this->sign_in_generation,
@@ -543,7 +543,7 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function assertAvailable(): void
     {
-        $reason = $this->startUnavailableReason;
+        $reason = $this->start_unavailable_reason;
 
         if ($reason !== null) {
             throw AccountUnavailable::forStart($this->account_protocol, $reason);

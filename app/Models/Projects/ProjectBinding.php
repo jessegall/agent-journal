@@ -156,12 +156,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $isSameBoot = $this->boot_id === $report->bootId;
 
         if ($isSameBoot && $report->sequence <= $this->report_sequence) {
-            return $this->presenceReceipt;
+            return $this->presence_receipt;
         }
 
         // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
         if ($report->setupGeneration < $this->setup_generation) {
-            return $this->presenceReceipt;
+            return $this->presence_receipt;
         }
 
         $this->assertNoOtherLiveBoot($isSameBoot, $now, $report);
@@ -189,7 +189,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
         }
 
-        return $this->presenceReceipt;
+        return $this->presence_receipt;
     }
 
     /**

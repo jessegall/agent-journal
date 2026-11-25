@@ -50,7 +50,7 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     public static function create(StartRecord $start, string $certificate): self
     {
-        $work = $start->ownerWork;
+        $work = $start->owner_work;
         $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();
 
         $certified = new self();

@@ -35,8 +35,8 @@ final readonly class DocumentDockResolver implements SectionResolver
             ->get();
 
         return DockData::from(['suggestions' => array_slice([
-            ...$documents->map(fn (Document $document) => $document->dockCard)->all(),
-            ...$reports->map(fn (Report $report) => $report->dockCard)->all(),
+            ...$documents->map(fn (Document $document) => $document->dock_card)->all(),
+            ...$reports->map(fn (Report $report) => $report->dock_card)->all(),
         ], 0, self::SUGGESTIONS_SHOWN)]);
     }
 }

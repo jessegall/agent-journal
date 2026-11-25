@@ -98,7 +98,7 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
      */
     private function import(CertifiedWork $work): array
     {
-        $ref = $work->importRef;
+        $ref = $work->import_ref;
 
         if (! $this->git([
             'rev-parse',

@@ -62,8 +62,8 @@ final readonly class SkillPublications
             ->newestCreatedFirst()
             ->readExactly($limit)
             ->get()
-            ->unique(fn (SkillPublication $publication) => $publication->targetKey)
-            ->keyBy(fn (SkillPublication $publication) => $publication->targetKey);
+            ->unique(fn (SkillPublication $publication) => $publication->target_key)
+            ->keyBy(fn (SkillPublication $publication) => $publication->target_key);
 
         return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): SkillPublication {
             $openKey = SkillPublication::openKeyOf($intent->sessionId, $intent->target);

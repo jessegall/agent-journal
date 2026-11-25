@@ -75,7 +75,7 @@ final class DeclarationData extends Data
             $contract,
             $examples,
             $revision->evidence,
-            $revision->proposedRule->missingFields(),
+            $revision->proposed_rule->missingFields(),
         );
     }
 }

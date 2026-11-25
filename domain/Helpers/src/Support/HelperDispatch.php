@@ -305,7 +305,7 @@ final readonly class HelperDispatch
      */
     private function hasRetired(HelperIdentity $identity): bool
     {
-        return $this->reservations->hasRetired($identity->helperActor);
+        return $this->reservations->hasRetired($identity->helper_actor);
     }
 
     /**
@@ -357,7 +357,7 @@ final readonly class HelperDispatch
         HelperIdentity $identity,
         ConversationChoice $conversation,
     ): HelperReceipt {
-        $helper = $identity->helperActor;
+        $helper = $identity->helper_actor;
         $this->reserve($identity);
         $this->assertNoOpenJob($identity);
 
@@ -401,7 +401,7 @@ final readonly class HelperDispatch
     private function reserve(HelperIdentity $identity): void
     {
         try {
-            $this->reservations->reserve($identity->helperActor);
+            $this->reservations->reserve($identity->helper_actor);
         } catch (AgentBusy $busyAgent) {
             throw HelperBusy::running($identity->id, $busyAgent);
         } catch (AgentNotAvailable|StartRefused $retired) {

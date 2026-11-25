@@ -65,7 +65,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
             ->oldestFirst()
             ->get();
 
-        return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment)->all()));
+        return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->to_assignment)->all()));
     }
 
     public function recordIdsFor(string $type, AssigneeIdentity $holder, IdListPage $page): RecordIds

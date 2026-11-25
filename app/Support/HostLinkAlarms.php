@@ -34,7 +34,7 @@ final readonly class HostLinkAlarms
             ->byFailingSince()
             ->limit(self::HOST_LIMIT)
             ->get()
-            ->map(fn (Host $host): string => $host->linkAlarm)
+            ->map(fn (Host $host): string => $host->link_alarm)
             ->all());
     }
 }

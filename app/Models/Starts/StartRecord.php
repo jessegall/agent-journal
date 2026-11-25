@@ -250,7 +250,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
         $this->assertSaved($this->save());
-        $ownerWork = $this->owner_reference === null ? null : $this->ownerWork;
+        $ownerWork = $this->owner_reference === null ? null : $this->owner_work;
         $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
     }
 

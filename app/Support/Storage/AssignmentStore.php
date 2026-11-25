@@ -112,7 +112,7 @@ final readonly class AssignmentStore implements AssignmentStorage
             ->get();
 
         AssignmentRecord::query()->heldForRetirement($holder)->whereKey($rows->modelKeys())->delete();
-        $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment)->all());
+        $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->to_assignment)->all());
 
         if ($released !== []) {
             $endedIds = array_values(array_map('strval', $rows->modelKeys()));

@@ -105,7 +105,7 @@ final readonly class CommentLinkRecords implements RecordProvider
             'id' => $comment->id,
             'number' => '',
             'label' => "comment on {$target->label}",
-            'title' => "{$comment->author_type->value} {$comment->author_id} · {$comment->placeLabel}",
+            'title' => "{$comment->author_type->value} {$comment->author_id} · {$comment->place_label}",
             'abstract' => Str::limit($comment->body, self::EXCERPT_CHARACTERS),
             'route' => $target->route,
         ]);

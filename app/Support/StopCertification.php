@@ -44,6 +44,6 @@ final readonly class StopCertification
             WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference), $attempt->workspace_generation);
         }
 
-        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork, $attempt->reference));
+        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->owner_work, $attempt->reference));
     }
 }
