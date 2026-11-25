@@ -111,7 +111,7 @@ final class ProfileStartTest extends TestCase
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
 
-        $receipt = $this->start('default', 'codex');
+        $receipt = $this->start('default', 'codex', driverType: DriverType::Headless);
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $this->assertSame([DefaultDrivers::CODEX, 'gpt-6.2-sol'], [$session->driver_key, $session->model]);

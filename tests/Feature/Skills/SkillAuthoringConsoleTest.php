@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Models\Skills\Skill;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
+use App\Support\DomainRegistry;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
@@ -143,10 +143,11 @@ final class SkillAuthoringConsoleTest extends TestCase
         )->assertSuccessful();
 
         Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);
-        $this->assertStringContainsString(json_encode(['type' => 'all', 'version' => 1, 'children' => [
+        preg_match('/^Condition: (.+)$/m', Artisan::output(), $condition);
+        $this->assertEquals(['type' => 'all', 'version' => 1, 'children' => [
             ['type' => 'drivers', 'version' => 1, 'keys' => ['codex']],
             ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
-        ]], JSON_THROW_ON_ERROR), Artisan::output());
+        ]], json_decode($condition[1], true, flags: JSON_THROW_ON_ERROR));
     }
 
     public function test_editing_a_shipped_skill_offers_a_copy(): void

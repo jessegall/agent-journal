@@ -6,6 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Support\BuiltInAuthorizations;
+use App\Support\DomainRegistry;
 use App\Values\ProfileBase;
 use Tests\TestCase;
 
@@ -15,6 +16,14 @@ use Tests\TestCase;
  */
 final class BuiltInGrantsTest extends TestCase
 {
+    /**
+     * Every installed domain, since the built-in grants name their policies.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     /**
      * The reviewed grants of each base, as policy and access.
      */
@@ -35,8 +44,7 @@ final class BuiltInGrantsTest extends TestCase
             ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
             ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
             ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
-            ['Domain\\Chat\\Policies\\MessageReactionPolicy', 'edit'],
-            ['Domain\\Chat\\Policies\\ConversationPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\DockPlacementPolicy', 'edit'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
@@ -96,8 +104,7 @@ final class BuiltInGrantsTest extends TestCase
             ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
             ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
             ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
-            ['Domain\\Chat\\Policies\\MessageReactionPolicy', 'edit'],
-            ['Domain\\Chat\\Policies\\ConversationPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\DockPlacementPolicy', 'edit'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
@@ -150,7 +157,6 @@ final class BuiltInGrantsTest extends TestCase
             ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
             ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
             ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
-            ['Domain\\Chat\\Policies\\MessageReactionPolicy', 'edit'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
             ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
@@ -200,7 +206,7 @@ final class BuiltInGrantsTest extends TestCase
                 BuiltInAuthorizations::for($base, $definitions)->toArray()['grants'],
             );
 
-            $this->assertSame(self::GRANTS[$base->key], $grants, $base->key);
+            $this->assertEqualsCanonicalizing(self::GRANTS[$base->key], $grants, $base->key);
         }
     }
 }

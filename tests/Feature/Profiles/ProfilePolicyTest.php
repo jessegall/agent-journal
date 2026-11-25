@@ -10,6 +10,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\ModelTier;
 use App\Enums\Profiles\PolicyOriginType;
 use App\Enums\Profiles\ProfileChangeType;
 use App\Events\Accounts\ProfileRevisionRevoked;
@@ -127,8 +128,8 @@ final class ProfilePolicyTest extends TestCase
         $this->assertSame(ProfileChangeType::Added, $first->profiles[0]->change);
         $this->assertSame(ProfileChangeType::Changed, $second->profiles[0]->change);
         $this->assertSame(ProfileChangeType::Unchanged, $third->profiles[0]->change);
-        $this->assertSame('opus', $this->resolver()->snapshotAt($key, 1)->model);
-        $this->assertSame('sonnet', $this->resolver()->snapshotFor($key)->model);
+        $this->assertSame(ModelTier::Inventive, $this->resolver()->snapshotAt($key, 1)->preferredTier);
+        $this->assertSame(ModelTier::General, $this->resolver()->snapshotFor($key)->preferredTier);
         $this->assertSame(3, $this->resolver()->snapshotFor($key)->revision);
     }
 

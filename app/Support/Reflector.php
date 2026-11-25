@@ -20,6 +20,7 @@ use ReflectionEnumUnitCase;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionProperty;
+use Traversable;
 use UnitEnum;
 
 /**
@@ -713,15 +714,42 @@ final class Reflector implements ReflectedType
      */
     private static function valuesMatch(mixed $first, mixed $second, array $leftOut): bool
     {
-        if (is_object($first) && is_object($second) && ! $first instanceof UnitEnum) {
-            if ($leftOut === []) {
-                return $first == $second;
-            }
-
-            return self::propertiesMatch($first, $second, $leftOut);
+        if (is_array($first) && is_array($second)) {
+            return self::listsMatch($first, $second, $leftOut);
         }
 
-        return $first === $second;
+        if (! is_object($first) || ! is_object($second) || $first instanceof UnitEnum) {
+            return $first === $second;
+        }
+
+        if ($first instanceof Traversable && $second instanceof Traversable) {
+            return $first::class === $second::class
+                && self::listsMatch(iterator_to_array($first), iterator_to_array($second), $leftOut);
+        }
+
+        // Public properties only, so state an object keeps for itself, such as a Data class's transform context, is
+        // never part of the comparison.
+        return $first::class === $second::class && self::propertiesMatch($first, $second, $leftOut);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $first
+     * @param  array<array-key, mixed>  $second
+     * @param  list<string>  $leftOut
+     */
+    private static function listsMatch(array $first, array $second, array $leftOut): bool
+    {
+        if (array_keys($first) !== array_keys($second)) {
+            return false;
+        }
+
+        foreach ($first as $key => $value) {
+            if (! self::valuesMatch($value, $second[$key], $leftOut)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

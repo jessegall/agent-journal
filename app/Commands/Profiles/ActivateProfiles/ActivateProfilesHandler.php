@@ -153,7 +153,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     ): ActivatedProfile {
         $revision = $this->activateDefinition($definition, $author, $diff->after, $script)->revision;
 
-        $publishedChange = $change === ProfileChangeType::Unchanged && $diff->before != $diff->after
+        $publishedChange = $change === ProfileChangeType::Unchanged && $diff->isChange()
             ? ProfileChangeType::Changed
             : $change;
 

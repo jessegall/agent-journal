@@ -67,7 +67,7 @@ final class ProfileDraftTest extends TestCase
         $this->assertSame(2, ProfileDraftRevision::query()->count());
         $latest = ProfileDraftRevision::query()->where('revision', 2)->sole();
         $this->assertSame($actor->id, $latest->getAttribute('author_id'));
-        $this->assertEquals($draft, $latest->script_source);
+        $this->assertSame($draft->toArray(), $latest->script_source->toArray());
         $this->assertSame(CommandDirectory::Workspace, $latest->script_source->definitions()['tests']->directory);
         $this->assertThrows(
             fn () => $commands->run(new ActivateProfilesCommand($this->proposal())),

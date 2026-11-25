@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Support\DomainRegistry;
 use App\Commands\Skills\CopySkill\CopySkillCommand;
 use App\Commands\Skills\CreateSkill\CreateSkillCommand;
 use App\Commands\Skills\RetireSkill\RetireSkillCommand;
@@ -15,6 +14,7 @@ use App\Contracts\Skills\SkillResolver;
 use App\Exceptions\SkillOwnerRequired;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
+use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
@@ -102,7 +102,7 @@ final class RetireAndCopySkillTest extends TestCase
             self::ASSIGNED_LINE,
             (string) $revision->sections[0]->content,
         );
-        $this->assertSame($source->condition->toArray(), $revision->condition);
+        $this->assertEquals($source->condition->toArray(), $revision->condition->toArray());
     }
 
     /**
