@@ -13,14 +13,17 @@ namespace Tests\Support;
 final readonly class AffectedTestSelection
 {
     /**
-     * The taken test files, relative to the project root and in rank order, each with its class and taken methods.
+     * The taken test files, relative to the project root and in rank order, each with its class and taken methods, and
+     * the test files every run takes whole, by their class.
      *
      * @param  array<string, array{class: string, methods: list<string>}>  $testsByFile
+     * @param  array<string, string>  $wholeTests
      */
     public function __construct(
         public array $testsByFile,
         public int $leftOut,
         public int $reach,
+        public array $wholeTests = [],
     ) {}
 
     /**
@@ -54,6 +57,16 @@ final readonly class AffectedTestSelection
     }
 
     /**
+     * The selection that also takes these test files whole, outside the count of its nearest tests.
+     *
+     * @param  array<string, string>  $classesByFile
+     */
+    public function withEveryTestOf(array $classesByFile): self
+    {
+        return new self($this->testsByFile, $this->leftOut, $this->reach, $classesByFile);
+    }
+
+    /**
      * @return list<string>
      */
     public function testFiles(): array
@@ -62,7 +75,18 @@ final readonly class AffectedTestSelection
     }
 
     /**
-     * A PHPUnit filter that runs exactly the taken methods, each as Class::method with any of its data sets.
+     * The files the run takes: the nearest tests, then the tests taken whole.
+     *
+     * @return list<string>
+     */
+    public function runFiles(): array
+    {
+        return array_values(array_unique([...$this->testFiles(), ...array_keys($this->wholeTests)]));
+    }
+
+    /**
+     * A PHPUnit filter that runs exactly the taken methods, each as Class::method with any of its data sets, and every
+     * method of the tests taken whole.
      */
     public function filter(): string
     {
@@ -72,6 +96,10 @@ final readonly class AffectedTestSelection
             foreach ($test['methods'] as $method) {
                 $names[] = preg_quote("{$test['class']}::{$method}", '/');
             }
+        }
+
+        foreach ($this->wholeTests as $class) {
+            $names[] = preg_quote($class, '/').'::\\w+';
         }
 
         return '/^(?:'.implode('|', $names).')(?: with data set .*)?$/';

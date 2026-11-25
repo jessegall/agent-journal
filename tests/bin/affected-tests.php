@@ -73,21 +73,23 @@ if ($files === []) {
 
 $selection = new AffectedTests($root)->for($files);
 
-if ($selection->testsByFile === []) {
+if ($selection->runFiles() === []) {
     fwrite(STDOUT, "No test reaches the changed code.\n");
     exit(0);
 }
 
 fwrite(STDOUT, sprintf(
-    "Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out.\n",
+    "Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out."
+    ." Every architecture test runs beside them: %d files.\n",
     $selection->methodCount(),
     count($selection->testsByFile),
     $selection->reach,
     $selection->leftOut,
+    count($selection->wholeTests),
 ));
 
-$configuration = configurationFor($root, $selection->testFiles());
-$processes = processesFor($root, [], $selection->testFiles());
+$configuration = configurationFor($root, $selection->runFiles());
+$processes = processesFor($root, [], $selection->runFiles());
 $heldDatabases = prepareWorkerDatabases($root, $environment, $processes);
 $exitCode = (int) run(
     [

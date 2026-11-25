@@ -28,6 +28,9 @@ final readonly class AffectedTests
 {
     public const int MOST_TEST_METHODS = 100;
 
+    /** The folder whose tests every affected run takes whole, beside the nearest tests and outside their count. */
+    private const string ARCHITECTURE_FOLDER = 'tests/Architecture';
+
     /**
      * The most steps out from the changed classes the reach goes: their users, the users of those, and one more.
      */
@@ -57,6 +60,8 @@ final readonly class AffectedTests
     {
         $findings = $this->findingsByFile();
         $index = $this->indexOf($findings);
+        $architecture = $this->architectureTestsOf($index['tests']);
+        $index['tests'] = array_diff_key($index['tests'], $architecture);
         $reached = array_values(array_filter(
             array_map(fn (string $file) => "{$this->root}/{$file}", $changedFiles),
             fn (string $path) => isset($findings[$path]),
@@ -76,7 +81,40 @@ final readonly class AffectedTests
             $classes = $this->classesDeclaredIn($users, $findings, $index['links']);
         }
 
-        return AffectedTestSelection::nearestOf($ranked, self::MOST_TEST_METHODS, $step);
+        $selection = AffectedTestSelection::nearestOf($ranked, self::MOST_TEST_METHODS, $step);
+
+        return $selection->withEveryTestOf($this->classesByFile($architecture));
+    }
+
+    /**
+     * The architecture tests among the test files: an affected run takes each of them whole, outside its count (user
+     * message 22087).
+     *
+     * @param  array<string, array{class: string, methods: list<string>}>  $tests
+     * @return array<string, array{class: string, methods: list<string>}>
+     */
+    private function architectureTestsOf(array $tests): array
+    {
+        $folder = "{$this->root}/".self::ARCHITECTURE_FOLDER.'/';
+
+        return array_filter($tests, fn (string $path) => str_starts_with($path, $folder), ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * The class of each test file, by the file's path from the project root.
+     *
+     * @param  array<string, array{class: string, methods: list<string>}>  $tests
+     * @return array<string, string>
+     */
+    private function classesByFile(array $tests): array
+    {
+        $classes = [];
+
+        foreach ($tests as $path => $test) {
+            $classes[substr($path, strlen($this->root) + 1)] = $test['class'];
+        }
+
+        return $classes;
     }
 
     /**
