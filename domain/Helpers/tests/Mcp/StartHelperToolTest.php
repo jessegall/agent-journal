@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Mcp;
 
+use Domain\Helpers\Commands\StartHelper\StartHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\StartHelperTool;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool StartHelperTool, as the generator wrote it.
+ * A main agent starts a helper of a profile on a model with a brief, and is given its receipt.
  */
-#[Generated]
 #[TestsMcpTool(StartHelperTool::class)]
 final class StartHelperToolTest extends McpToolEntryTestCase
 {
@@ -28,13 +28,20 @@ final class StartHelperToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('StartHelperTool', [
-            'the argument profile_key',
-            'the argument model',
-            'the argument brief',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $helpers = $journal->fixtures(HelperFixtures::class)->openJob('Review', 'Planner', 'Review the change.');
+
+        return ToolCall::by($start)
+            ->arguments([
+                'profile_key' => 'writing-helper',
+                'model' => 'claude-sonnet-5-5',
+                'brief' => 'Review the change.',
+                'request_key' => 'helper-1',
+            ])
+            ->reply(StartHelperCommand::class, $helpers->receiptOf('Review'))
+            ->expects(ExpectedCommand::of(StartHelperCommand::class, [
+                'profileKey' => 'writing-helper',
+                'model' => 'claude-sonnet-5-5',
+            ]));
     }
 }
