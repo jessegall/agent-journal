@@ -62,14 +62,14 @@ final class EntryPointTestsTest extends TestCase
             fn (NamedEntry $named) => array_filter($entries, $named->isFor(...)) === [],
         );
 
-        $this->assertSame([], array_values([
+        $this->assertSame([], [
             ...array_map(
                 fn (NamedEntry $named) => "{$named->file} names the {$named->type->value} {$named->name}, which does "
                     .'not exist: delete the test, or name what it tests.',
                 $missing,
             ),
             ...$this->attributes()->unloadable(),
-        ]));
+        ]);
     }
 
     public function test_a_command_state_tool_or_middleware_test_names_one_of_its_kind(): void
