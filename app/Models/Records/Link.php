@@ -22,15 +22,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One link between two models of any type. A link has no direction for lookups: A to B is the same link as B to A.
- *
  * @property string $id
- * @property string $source_type
  * @property string $source_id
- * @property string $target_type
+ * @property string $source_type
  * @property string $target_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property string $target_type
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Model $source
+ * @property Model $target
  */
 #[Table('links')]
 #[Fillable([

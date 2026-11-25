@@ -8,21 +8,19 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\RunLogicalResult;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A second authoritative result for a run attempt that disagreed with the first, refused and kept for investigation.
- *
  * @property string $id
  * @property string $run_id
  * @property string $attempt_id
  * @property RunLogicalResult $kept_result
  * @property RunLogicalResult $offered_result
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Table('run_result_conflicts')]
 #[Fillable([

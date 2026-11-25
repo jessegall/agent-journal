@@ -22,12 +22,10 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One recipient's notifications in one scope: the sequence its next receipt gets, the version every change raises
- * and the exact count of its unread visible receipts. Every change of its receipts happens under this row's lock.
- *
  * @property string $id
  * @property string $scope_key
  * @property string $recipient_type
@@ -35,11 +33,11 @@ use PhpOption\Option;
  * @property int $next_sequence
  * @property int $mutation_version
  * @property int $unread_count
- * @property CarbonImmutable|null $fenced_at
- * @property int|null $mark_all_through the watermark of a Mark all still under way
- * @property int $mark_all_after the last sequence a Mark all under way has reached
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property ?CarbonImmutable $fenced_at
+ * @property ?int $mark_all_through
+ * @property int $mark_all_after
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('notification_scopes')]
 #[Fillable([

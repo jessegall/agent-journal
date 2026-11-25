@@ -25,22 +25,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The newest reading of one limit window of a saved account in one sign-in generation, such as Claude's seven-day
- * window: how much of it is used, how long it lasts, when it resets, and the observation that said so.
- *
  * @property string $id
  * @property string $account_id
  * @property int $sign_in_generation
  * @property string $limit_id
  * @property UsageWindowSlot $slot
- * @property float|null $used_percent
- * @property int|null $duration_minutes
- * @property CarbonImmutable|null $resets_at
+ * @property ?float $used_percent
+ * @property ?int $duration_minutes
+ * @property ?CarbonImmutable $resets_at
  * @property CarbonImmutable $observed_at
  * @property string $source_id
  * @property int $source_order
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'account_id',

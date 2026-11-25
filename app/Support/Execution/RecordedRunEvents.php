@@ -172,9 +172,9 @@ final class RecordedRunEvents implements RunEvents
     private function part(PartKey $part): PartRun
     {
         return $this->parts[$part->name()] ??= PartRun::query()
-            ->where('process_run_id', $this->run->id)
-            ->where('syntax_node', $part->node)
-            ->where('attempt', $part->attempt)
+            ->ofProcessRun($this->run->id)
+            ->atNode($part->node)
+            ->withAttempt($part->attempt)
             ->firstOrFail();
     }
 

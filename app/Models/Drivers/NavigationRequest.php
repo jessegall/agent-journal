@@ -427,4 +427,39 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $query->where('fingerprint', $fingerprint)->where('goal_key', $goal->key());
     }
+
+    /**
+     * The rows of any of the given states.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<NavigationState>  $states
+     */
+    #[Scope]
+    protected function withAnyState(Builder $query, array $states): void
+    {
+        $query->whereIn('state', $states);
+    }
+
+    /**
+     * The rows of the given driver request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDriverRequest(Builder $query, string $driverRequestId): void
+    {
+        $query->where('driver_request_id', $driverRequestId);
+    }
+
+    /**
+     * The rows of any of the given ids.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function withAnyId(Builder $query, array $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
 }

@@ -29,20 +29,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A skill a user stored: its fixed key, its owner, the environment it is visible in (null for the whole installation),
- * its current revision and when it was retired. Its text is in its revisions.
- *
  * @property string $id
  * @property string $number_group_id
  * @property int $number
  * @property string $key
  * @property ActorType $owner_type
  * @property string $owner_id
- * @property string|null $environment
- * @property string|null $current_revision_id
- * @property CarbonImmutable|null $retired_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $environment
+ * @property ?string $current_revision_id
+ * @property ?CarbonImmutable $retired_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $skill_key attribute
  */
 #[Fillable([
     'key',

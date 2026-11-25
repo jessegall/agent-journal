@@ -24,7 +24,7 @@ final readonly class ReceiptPublisher
 
         $earlier = ResultReceipt::query()
             ->current()
-            ->where('part_run_id', $checked->part->id)
+            ->ofPartRun($checked->part->id)
             ->lockForUpdate()
             ->first();
 

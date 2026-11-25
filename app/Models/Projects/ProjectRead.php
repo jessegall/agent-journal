@@ -339,4 +339,15 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
                 ->where('state', ProjectReadState::Failed->value)
                 ->where('created_at', '>=', $failedSince)));
     }
+
+    /**
+     * The rows of the given state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withState(Builder $query, ProjectReadState $state): void
+    {
+        $query->where('state', $state);
+    }
 }

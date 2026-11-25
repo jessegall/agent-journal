@@ -157,4 +157,26 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
             ->where('reader_revision_id', $revision->id)
             ->where('purpose', $purpose);
     }
+
+    /**
+     * The rows of the given purpose.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withPurpose(Builder $query, PositionPurpose $purpose): void
+    {
+        $query->where('purpose', $purpose);
+    }
+
+    /**
+     * The rows of the given part run.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPartRun(Builder $query, string $partRunId): void
+    {
+        $query->where('part_run_id', $partRunId);
+    }
 }

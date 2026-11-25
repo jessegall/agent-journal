@@ -31,20 +31,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A standing instruction every agent gets once the owner approved it, until it is removed. Its text stays as proposed.
- * Every agent reads every rule, so it has no agent limit.
- *
  * @property string $id
  * @property string $number_group_id
  * @property int $number
  * @property string $text
  * @property RuleState $state
- * @property string|null $reason
- * @property string|null $replaces_rule_id
- * @property ActorType|null $proposer_type
- * @property string|null $proposer_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $reason
+ * @property ?string $replaces_rule_id
+ * @property ?ActorType $proposer_type
+ * @property ?string $proposer_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'text',

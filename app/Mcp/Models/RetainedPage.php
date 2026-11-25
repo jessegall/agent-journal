@@ -21,16 +21,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The ordered references a byte-shortened numbered page still owes its caller, kept for the continuation's lifetime.
- * Every query sees only the calling agent session's pages.
- *
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
- * @property list<string> $references
+ * @property array $references
  * @property CarbonImmutable $expires_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'agent_id',

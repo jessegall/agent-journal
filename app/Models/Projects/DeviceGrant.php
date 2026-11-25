@@ -28,28 +28,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A shell user's grant to run journal verbs for one binding: started by the shell with a device code, approved by
- * the signed-in owner who checked its user code, binding and scopes, then handed to the shell once as a short-lived
- * grant. Its revocation leaves the binding connected.
- *
  * @property string $id
  * @property string $binding_id
  * @property string $device_code_digest
  * @property string $user_code
- * @property list<string> $scopes
+ * @property array $scopes
  * @property DeviceGrantState $state
- * @property string|null $approved_by_user_id
- * @property string|null $reference
- * @property int $generation
- * @property string|null $start_key
- * @property string|null $environment_id
+ * @property ?string $approved_by_user_id
  * @property CarbonImmutable $code_expires_at
- * @property string|null $grant_digest
- * @property CarbonImmutable|null $grant_expires_at
- * @property CarbonImmutable|null $last_polled_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read ProjectBinding $binding
+ * @property ?string $grant_digest
+ * @property ?CarbonImmutable $grant_expires_at
+ * @property ?CarbonImmutable $last_polled_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $reference
+ * @property int $generation
+ * @property ?string $start_key
+ * @property ?string $environment_id
+ * @property ProjectBinding $binding
+ * @property ?Environment $environment
  */
 #[Fillable([
     'binding_id',

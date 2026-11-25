@@ -17,15 +17,13 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One environment of a connected project, such as Main or Research: a binding works in one, and its commands and the
- * device overview are scoped to it. A label is unique within its project.
- *
  * @property string $id
  * @property string $project_id
  * @property string $label
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Fillable([
     'project_id',

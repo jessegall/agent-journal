@@ -20,15 +20,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The one row of the installation's sharing: whose supervisor run holds the gateways and until when. Every admission
- * and state change of a share locks it first, so the share limits are counted one writer at a time.
- *
  * @property string $id
  * @property string $name
- * @property string|null $run_id
- * @property CarbonImmutable|null $run_lease_ends_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $run_id
+ * @property ?CarbonImmutable $run_lease_ends_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'name',

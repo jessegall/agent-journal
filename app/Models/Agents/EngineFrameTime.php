@@ -16,15 +16,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One frame's timing checkpoint: the server time its last settled tick started. It is timing state, not a receipt;
- * the rows go with their stack.
- *
  * @property string $id
  * @property string $frame_id
  * @property string $stack_id
  * @property CarbonImmutable $settled_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'frame_id',

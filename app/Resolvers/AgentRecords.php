@@ -71,17 +71,17 @@ final readonly class AgentRecords implements AgentDirectory
 
         $ids = $agents->modelKeys();
 
-        $sessions = AgentSession::query()->whereIn('agent_id', $ids)->running()
+        $sessions = AgentSession::query()->ofAgents($ids)->running()
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_id');
 
-        $runtimes = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
+        $runtimes = AgentRuntime::query()->ofSessions($sessions->pluck('id')->all())
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
 
         $starts = ProcessStart::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
             ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
             ->keyBy('session_id');
 
-        $requests = DriverRequest::query()->whereIn('agent_runtime_id', $runtimes->pluck('id')->all())
+        $requests = DriverRequest::query()->ofAgentRuntimes($runtimes->pluck('id')->all())
             ->orderByDesc('sequence')->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
             ->keyBy('agent_runtime_id');
 
@@ -97,14 +97,14 @@ final readonly class AgentRecords implements AgentDirectory
 
         $canStop = $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Edit]) !== [];
 
-        $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
+        $switches = DriverSwitch::query()->ofAgents($ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
         $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $ids)));
 
         $launches = $this->launchOutcomesOf(array_values(array_map(strval(...), $ids)));
 
-        $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
+        $conversations = DriverConversation::query()->ofAgents($ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
         $now = $this->clock->now();

@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -32,8 +33,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $digest
  * @property int $received_bytes
  * @property int $next_index
- * @property CarbonImmutable|null $sealed_at
- * @property CarbonImmutable|null $consumed_at
+ * @property Carbon $expires_at
+ * @property ?CarbonImmutable $sealed_at
+ * @property ?CarbonImmutable $consumed_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'type',

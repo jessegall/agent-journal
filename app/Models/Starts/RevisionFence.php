@@ -17,15 +17,15 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * The retained intent to fence every session started from one revoked profile revision. Launch reconciliation stops
- * those sessions and marks the fence reconciled once none of them runs; until then it stays pending.
- *
  * @property string $id
  * @property string $profile_key
  * @property int $profile_revision
- * @property CarbonImmutable|null $reconciled_at
+ * @property ?CarbonImmutable $reconciled_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('revision_fences')]
 #[Fillable([

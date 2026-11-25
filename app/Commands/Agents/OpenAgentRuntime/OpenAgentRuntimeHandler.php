@@ -132,7 +132,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         }
 
         $parent = AgentSession::query()->findOrFail($sessionId);
-        $parentRuntime = AgentRuntime::query()->where('agent_session_id', $parent->id)->first();
+        $parentRuntime = AgentRuntime::query()->ofAgentSession($parent->id)->first();
 
         if ($parentRuntime === null
             || $parentRuntime->host_id !== $command->hostId

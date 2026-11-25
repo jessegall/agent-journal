@@ -49,9 +49,9 @@ final readonly class NativeTurns implements NativeTurnRecords
 
         // The hook is answered after this, in a transaction of its own, so the acknowledgement takes one too.
         $this->transaction->run(fn () => DriverRequest::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->where('operation', DriverOperation::Wake)
-            ->whereIn('progress', [
+            ->ofAgentRuntime($runtime->id)
+            ->withOperation(DriverOperation::Wake)
+            ->withAnyProgress([
                 RequestProgress::Staged,
                 RequestProgress::Applying,
             ])

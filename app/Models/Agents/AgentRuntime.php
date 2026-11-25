@@ -688,4 +688,27 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     {
         $query->whereHas('session', fn (Builder $helpers) => $helpers->helpersOfAny([$sessionId])->running());
     }
+
+    /**
+     * The rows of the given agent session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgentSession(Builder $query, string $agentSessionId): void
+    {
+        $query->where('agent_session_id', $agentSessionId);
+    }
+
+    /**
+     * The rows of any of the given hosts.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $hostIds
+     */
+    #[Scope]
+    protected function ofHosts(Builder $query, array $hostIds): void
+    {
+        $query->whereIn('host_id', $hostIds);
+    }
 }

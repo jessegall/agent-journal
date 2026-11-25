@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One change of a wait between two tasks, kept for good: who added, removed or waived it, when, and why.
- *
  * @property string $id
  * @property string $task_wait_id
  * @property string $dependent_task_id
@@ -26,8 +24,8 @@ use Illuminate\Support\Carbon;
  * @property TaskWaitChange $change
  * @property ActorType $actor_type
  * @property string $actor_id
- * @property string|null $reason
- * @property string|null $batch_id
+ * @property ?string $reason
+ * @property ?string $batch_id
  * @property Carbon $created_at
  */
 #[Table('task_wait_history')]

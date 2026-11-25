@@ -20,16 +20,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The one recorded outcome of a step of a profile run: how it ended, the port it leaves by and its evidence.
- *
  * @property string $id
  * @property string $profile_run_id
  * @property string $step_reference
  * @property StepStatus $status
- * @property string|null $port
- * @property string|null $evidence
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $port
+ * @property ?string $evidence
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $outcome attribute
  */
 #[Table('profile_step_results')]
 #[Fillable([

@@ -74,7 +74,7 @@ final readonly class SessionRecords implements SessionResolver
      */
     public function lockEligibleSessionOf(string $agentId, string $sessionId): AgentSession
     {
-        $session = AgentSession::query()->whereKey($sessionId)->where('agent_id', $agentId)->lockForUpdate()->first();
+        $session = AgentSession::query()->whereKey($sessionId)->ofAgent($agentId)->lockForUpdate()->first();
 
         if ($session !== null && $session->isActive()) {
             return $session;

@@ -18,9 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A project owner's activation of one module's rule bundle at one version and digest:
- * only a bundle with this record classifies; a changed digest waits for a new one.
- *
  * @property string $id
  * @property string $project_key
  * @property string $module

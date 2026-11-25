@@ -51,13 +51,13 @@ final readonly class MergeSettlement
 
         if ($attempt->state === MergeAttemptState::Merged) {
             $this->chains->end(
-                CodeReview::query()->where('certificate', $attempt->certificate)->sole(),
+                CodeReview::query()->withCertificate($attempt->certificate)->sole(),
                 WorkChainEnding::Merged,
             );
         }
 
         if ($attempt->refusal?->needsRepair() === true) {
-            $review = CodeReview::query()->where('certificate', $attempt->certificate)->sole();
+            $review = CodeReview::query()->withCertificate($attempt->certificate)->sole();
 
             $this->repairs->send(
                 "merge:{$attempt->id}",

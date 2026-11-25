@@ -130,7 +130,7 @@ final readonly class ChatInboxes implements PairChats
     public function joined(): Builder
     {
         return Inbox::query()
-            ->whereIn('provider_key', [
+            ->withAnyProviderKey([
                 self::PAIR_PROVIDER,
                 self::GROUP_PROVIDER,
             ])

@@ -23,7 +23,7 @@ final readonly class PinnableMessages
      */
     public function requireIn(string $inboxId, string $messageId): MessageView
     {
-        $message = Message::query()->where('inbox_id', $inboxId)->whereKey($messageId)->first();
+        $message = Message::query()->inInbox($inboxId)->whereKey($messageId)->first();
 
         if ($message === null || ! InboxMember::isAttached($inboxId, ActorIdentity::of($this->actors->actor()))) {
             throw MessageMissing::forId($messageId);

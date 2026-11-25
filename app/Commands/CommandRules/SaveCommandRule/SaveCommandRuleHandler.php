@@ -44,7 +44,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
         if ($proposal->state === ProposalState::Approved) {
             $declaration = $proposal->revisions()->where('revision', $proposal->current_revision)->sole();
 
-            $approved = RuleRevision::query()->where('rule_proposal_revision_id', $declaration->id)->sole();
+            $approved = RuleRevision::query()->ofRuleProposalRevision($declaration->id)->sole();
 
             return ApprovalReceipt::of($approved);
         }

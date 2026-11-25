@@ -90,4 +90,38 @@ final class OutputChunk extends Model implements ReadableModel
     {
         $query->orderBy('stream')->orderBy('offset');
     }
+
+    /**
+     * The rows of the given part run.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPartRun(Builder $query, string $partRunId): void
+    {
+        $query->where('part_run_id', $partRunId);
+    }
+
+    /**
+     * The rows of the given stream.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStream(Builder $query, OutputStream $stream): void
+    {
+        $query->where('stream', $stream);
+    }
+
+    /**
+     * The rows of any of the given part runs.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $partRunIds
+     */
+    #[Scope]
+    protected function ofPartRuns(Builder $query, array $partRunIds): void
+    {
+        $query->whereIn('part_run_id', $partRunIds);
+    }
 }

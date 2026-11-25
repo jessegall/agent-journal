@@ -17,32 +17,30 @@ use App\Support\ConditionTree;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillSection;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One numbered, immutable revision of a stored skill: its name, description, literal sections and condition in the
- * wire format, who wrote it, where a copied section came from, and the digest of the submitted input.
- *
  * @property string $id
  * @property string $skill_id
  * @property int $revision
  * @property string $name
  * @property string $description
- * @property list<SkillSection> $sections
- * @property array<string, mixed> $condition
+ * @property array $sections
+ * @property array $condition
  * @property int $condition_version
  * @property ActorType $author_type
  * @property string $author_id
- * @property string|null $source_key
- * @property string|null $source_digest
+ * @property ?string $source_key
+ * @property ?string $source_digest
  * @property string $input_digest
- * @property CarbonImmutable $created_at
+ * @property Carbon $created_at
+ * @property mixed $draft attribute
  */
 #[Fillable(
     [

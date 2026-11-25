@@ -25,18 +25,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One revision of a rule proposal: the validated rule with its contract, the evidence and the examples, and who wrote
- * it. It is never updated after insert; a change is the proposal's next revision.
- *
  * @property string $id
  * @property string $rule_proposal_id
  * @property int $revision
- * @property CommandRule $payload
+ * @property StoredValueCast<array-key, CommandRule>|CommandRule[] $payload
  * @property string $evidence
- * @property list<RuleExample> $examples
+ * @property StoredValuesCast<array-key, RuleExample>|RuleExample[] $examples
  * @property string $author_type
  * @property string $author_id
  * @property Carbon $created_at
+ * @property mixed $proposed_rule attribute
+ * @property RuleProposal $proposal
  */
 #[Fillable([
     'rule_proposal_id',

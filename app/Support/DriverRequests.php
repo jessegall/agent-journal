@@ -30,10 +30,7 @@ final readonly class DriverRequests
         $runtime = $this->lockedRuntime($target);
         $digest = $envelope->digestFor($operation->value);
 
-        $existing = DriverRequest::query()->where('agent_runtime_id', $runtime->id)->where(
-            'idempotency_key',
-            $idempotencyKey,
-        )->first();
+        $existing = DriverRequest::query()->ofAgentRuntime($runtime->id)->withIdempotencyKey($idempotencyKey)->first();
 
         if ($existing !== null) {
             if ($existing->payload_digest === $digest) {
@@ -60,10 +57,10 @@ final readonly class DriverRequests
     public function supersedeEarlier(DriverRequest $request): void
     {
         DriverRequest::query()
-            ->where('agent_runtime_id', $request->agent_runtime_id)
-            ->where('operation', $request->operation)
+            ->ofAgentRuntime($request->agent_runtime_id)
+            ->withOperation($request->operation)
             ->where('sequence', '<', $request->sequence)
-            ->whereIn('progress', [
+            ->withAnyProgress([
                 RequestProgress::Accepted,
                 RequestProgress::Staged,
             ])
@@ -95,9 +92,9 @@ final readonly class DriverRequests
     public function openOf(StackTarget $target, DriverOperation $operation): DriverRequest|null
     {
         return DriverRequest::query()
-            ->where('agent_runtime_id', $this->lockedRuntime($target)->id)
-            ->where('operation', $operation)
-            ->whereIn('progress', RequestProgress::open())
+            ->ofAgentRuntime($this->lockedRuntime($target)->id)
+            ->withOperation($operation)
+            ->withAnyProgress(RequestProgress::open())
             ->lockForUpdate()
             ->first();
     }
@@ -135,7 +132,7 @@ final readonly class DriverRequests
     {
         $session = AgentSession::query()
             ->whereKey($target->sessionId)
-            ->where('agent_id', $target->agentId)
+            ->ofAgent($target->agentId)
             ->lockForUpdate()
             ->firstOr(DriverRequestRefused::throwing()->noRuntime($target));
 
@@ -143,7 +140,7 @@ final readonly class DriverRequests
             throw DriverRequestRefused::sessionEnded($target);
         }
 
-        return AgentRuntime::query()->where('agent_session_id', $target->sessionId)->lockForUpdate()->firstOr(
+        return AgentRuntime::query()->ofAgentSession($target->sessionId)->lockForUpdate()->firstOr(
             DriverRequestRefused::throwing()->noRuntime($target),
         );
     }

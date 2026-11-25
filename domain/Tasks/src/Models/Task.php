@@ -622,4 +622,15 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     {
         $query->where('state', TaskState::Finished);
     }
+
+    /**
+     * The rows of the given title.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTitle(Builder $query, string $title): void
+    {
+        $query->where('title', $title);
+    }
 }

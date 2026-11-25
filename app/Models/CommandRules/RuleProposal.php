@@ -309,4 +309,27 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
             ->where('author_id', $author->id)
             ->where('request_id', $requestId);
     }
+
+    /**
+     * The rows of the given command request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofCommandRequest(Builder $query, string $commandRequestId): void
+    {
+        $query->where('command_request_id', $commandRequestId);
+    }
+
+    /**
+     * The rows of any of the given states.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<ProposalState>  $states
+     */
+    #[Scope]
+    protected function withAnyState(Builder $query, array $states): void
+    {
+        $query->whereIn('state', $states);
+    }
 }

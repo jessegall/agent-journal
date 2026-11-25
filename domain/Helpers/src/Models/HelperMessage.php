@@ -13,15 +13,17 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * Steering a parent gave a helper with no live job, kept with the exact command that would carry it: nothing is
- * launched for it.
- *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $helper_identity_id
  * @property string $text
  * @property string $suggested_command
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('helper_messages')]
 #[Fillable([

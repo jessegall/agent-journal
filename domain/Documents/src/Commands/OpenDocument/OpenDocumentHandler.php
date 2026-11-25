@@ -32,7 +32,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
         $baseRevision = DocumentRevision::findCurrentOf($document);
 
         $editor = $this->editors->editor();
-        $held = DocumentDraft::query()->where('document_id', $document->id)->first();
+        $held = DocumentDraft::query()->ofDocument($document->id)->first();
 
         if ($held !== null) {
             if (! $this->editors->isEditing($held)) {
@@ -42,10 +42,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
             return $held->reference($document);
         }
 
-        $otherDocumentDraft = DocumentDraft::query()->with('document')->where(
-            'author_type',
-            $editor->type->value,
-        )->where('author_id', $editor->id)->first();
+        $otherDocumentDraft = DocumentDraft::query()->with('document')->withAuthorType($editor->type->value)->ofAuthor($editor->id)->first();
 
         if ($otherDocumentDraft !== null) {
             throw DraftHeld::elsewhere($otherDocumentDraft->document->number);

@@ -15,7 +15,6 @@ use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
-use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,19 +24,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One command rule of an owner in a project and the pointer to its active approved revision. Activating, retiring and restoring each name the revision the caller
- * expects to be active, so a change made in between is refused rather than overwritten.
- *
  * @property string $id
  * @property string $project_key
- * @property RuleScope $scope
+ * @property string $scope_type
+ * @property string $scope_owner
+ * @property string $scope_version
  * @property string $rule_id
  * @property string $active_revision_id
  * @property int $active_revision
  * @property ClassificationState $state
  * @property string $state_reason
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property RuleRevision $activeRevision
  */
 #[Fillable([
     'project_key',

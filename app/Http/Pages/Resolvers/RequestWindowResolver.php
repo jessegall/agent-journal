@@ -44,7 +44,7 @@ final readonly class RequestWindowResolver implements PageResolver
             ->whereKey($this->page->requestId())
             ->firstOr(fn () => throw new NotFoundHttpException());
 
-        $proposals = RuleProposal::query()->where('command_request_id', $request->id)->limit(20)->get();
+        $proposals = RuleProposal::query()->ofCommandRequest($request->id)->limit(20)->get();
         $latest = $proposals->first()?->revisions()->orderByDesc('revision')->first()?->payload;
         $active = $this->activeRule($request, $latest);
 
@@ -107,7 +107,7 @@ final readonly class RequestWindowResolver implements PageResolver
      */
     private function samplesOf(CommandRequest $request): array
     {
-        $permits = EvidencePermit::query()->where('command_request_id', $request->id)->limit(20)->get();
+        $permits = EvidencePermit::query()->ofCommandRequest($request->id)->limit(20)->get();
 
         return array_values($permits->map(fn (EvidencePermit $permit) => SampleData::fromPermit(
             $permit,
@@ -120,7 +120,7 @@ final readonly class RequestWindowResolver implements PageResolver
      */
     private function partsOf(string $runId): array
     {
-        return array_values(PartRun::query()->where('process_run_id', $runId)->limit(50)->get()->map(
+        return array_values(PartRun::query()->ofProcessRun($runId)->limit(50)->get()->map(
             fn (PartRun $part) => "{$part->operation}: {$part->lifecycle->value}, end {$part->end_type->value}"
                 .($part->end->hasStatus() ? " {$part->end_code}" : '').", capture {$part->capture_state->value}",
         )->all());
@@ -131,12 +131,12 @@ final readonly class RequestWindowResolver implements PageResolver
      */
     private function readersOf(CommandRequest $request): array
     {
-        $readers = ReaderRevision::query()->where('command_request_id', $request->id)->limit(20)->get();
+        $readers = ReaderRevision::query()->ofCommandRequest($request->id)->limit(20)->get();
 
         return array_values($readers->map(fn (ReaderRevision $reader) => new ReaderProofData(
             $reader->id,
             $reader->declaration_revision,
-            array_values(ReaderProof::query()->where('reader_revision_id', $reader->id)->limit(10)->get()->map(
+            array_values(ReaderProof::query()->ofReaderRevision($reader->id)->limit(10)->get()->map(
                 fn (ReaderProof $proof) => "{$proof->id}: ".implode(', ', array_map(
                     fn (ProvenBranch $branch) => "exit {$branch->status} {$branch->outcome->value}",
                     $proof->proven_branches,

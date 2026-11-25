@@ -117,4 +117,16 @@ final class MessageReadEntry extends Model implements EventSource
     {
         $query->where('reader_type', $reader->participantType())->where('reader_id', $reader->participantId());
     }
+
+    /**
+     * The rows of any of the given messages.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $messageIds
+     */
+    #[Scope]
+    protected function ofMessages(Builder $query, array $messageIds): void
+    {
+        $query->whereIn('message_id', $messageIds);
+    }
 }

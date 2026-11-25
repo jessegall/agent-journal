@@ -18,6 +18,6 @@ final readonly class AgentActors implements ActorProvider
     {
         return Agent::query()->whereKey(
             $identity->id,
-        )->whereNull('retired_at')->firstOr(ActorUnavailable::throwing()->forIdentity($identity));
+        )->unretired()->firstOr(ActorUnavailable::throwing()->forIdentity($identity));
     }
 }

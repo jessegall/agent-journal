@@ -39,7 +39,7 @@ final class DocumentsSeeder extends Seeder
 
     public function run(Actor $author): void
     {
-        if (DocumentRevision::query()->where('title', self::TITLE)->exists()) {
+        if (DocumentRevision::query()->withTitle(self::TITLE)->exists()) {
             return;
         }
 

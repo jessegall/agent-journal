@@ -23,19 +23,21 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * A helper of one parent actor, declared from a profile for the lasting agent actor it represents; its parent, profile
- * key, base and actor never change, idle or retired. Only its parent reads it; the helper's own responsibility for a
- * job is a Core assignment.
- *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $profile_key
  * @property string $profile_base
  * @property string $helper_actor_type
  * @property string $helper_actor_id
- * @property string|null $designated_profile
+ * @property ?string $designated_profile
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $helper_actor attribute
  */
 #[Table('helper_identities')]
 #[Fillable([

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -19,14 +17,13 @@ use Domain\Plans\Events\PlanReviewEditionChangesRequested;
 use Domain\Plans\Events\PlanReviewEditionOutdated;
 use Domain\Plans\Events\PlanReviewEditionWithdrawn;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One review of a plan: who asked for it, the plan's revision then, and its decision once made. The
- * plan cannot change while it is under review; an edit after an approval makes that approval historical.
- *
  * @property string $id
  * @property string $plan_id
  * @property int $number
@@ -34,14 +31,14 @@ use Illuminate\Support\Carbon;
  * @property string $requested_by_id
  * @property int $plan_revision
  * @property PlanReviewState $state
- * @property ActorType|null $decided_by_type
- * @property string|null $decided_by_id
- * @property Carbon|null $decided_at
- * @property string|null $decision_reason
- * @property string|null $decision_request_key
+ * @property ?ActorType $decided_by_type
+ * @property ?string $decided_by_id
+ * @property ?Carbon $decided_at
+ * @property ?string $decision_reason
+ * @property ?string $decision_request_key
  * @property bool $is_historical
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'plan_id',

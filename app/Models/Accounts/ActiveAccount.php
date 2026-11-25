@@ -25,16 +25,13 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * Which saved account new starts of one driver use: one row per driver, made the first time it is needed, with a
- * change number that only grows so a page can tell a newer choice from an older one.
- *
  * @property string $id
- * @property string $account_protocol the account provider's protocol, which every driver of one family shares
- * @property string|null $account_id
+ * @property string $account_protocol
+ * @property ?string $account_id
  * @property bool $has_selected
  * @property int $change_number
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable(['account_protocol'])]
 final class ActiveAccount extends Model implements EventSource, ReadableModel

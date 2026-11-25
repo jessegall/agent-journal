@@ -61,7 +61,7 @@ final readonly class InitialWakeSettlement
             $start->refuse($reason->explanation());
 
             StartRecord::query()
-                ->where('request_id', $session->start_request_id)
+                ->underRequest($session->start_request_id)
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()

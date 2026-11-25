@@ -27,7 +27,7 @@ final readonly class RecoverDraftHandler extends DocumentCommandHandler
     {
         $draft = $this->drafts->requireReadable($command->draftId);
         $document = Document::lockedForEditing($draft->document_id);
-        $open = DocumentDraft::query()->where('document_id', $document->id)->first();
+        $open = DocumentDraft::query()->ofDocument($document->id)->first();
 
         if ($open !== null) {
             throw DraftHeld::byOther($open->holderLabel);

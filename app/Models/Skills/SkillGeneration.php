@@ -26,17 +26,15 @@ use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
- * One checked rendering of the whole catalogue: the digests it was made from and every entry's rendered bytes. The
- * files on disk are written from it, and a ready generation's entries never change.
- *
  * @property string $id
  * @property string $catalogue_digest
  * @property string $registration_digest
- * @property DataCollection<int, GeneratedSkillData> $entries
+ * @property GeneratedSkillData[]|DataCollection<array-key, GeneratedSkillData> $entries
  * @property GenerationState $state
- * @property string|null $error_reason
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $error_reason
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $status attribute
  */
 #[Fillable([
     'catalogue_digest',

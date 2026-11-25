@@ -19,23 +19,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * How one condition of a stop attempt ended on the host, with a short summary that stays and the raw output, which
- * is kept for a week. It holds no secret.
- *
  * @property string $id
  * @property string $stop_attempt_id
  * @property string $condition_key
  * @property string $definition_hash
  * @property StopResultType $status
  * @property CarbonImmutable $started_at
- * @property CarbonImmutable|null $ended_at
- * @property int|null $exit_code
- * @property string|null $signal
+ * @property ?CarbonImmutable $ended_at
+ * @property ?int $exit_code
+ * @property ?string $signal
  * @property string $summary
- * @property string|null $output
+ * @property ?string $output
  * @property bool $truncated
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property StopAttempt $attempt
  */
 #[Fillable([
     'condition_key',

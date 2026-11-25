@@ -116,4 +116,15 @@ final class CommandAlias extends Model implements ReadableModel
     {
         $query->where('project_key', $projectKey)->where('name', $name);
     }
+
+    /**
+     * The rows of the given name.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withName(Builder $query, string $name): void
+    {
+        $query->where('name', $name);
+    }
 }

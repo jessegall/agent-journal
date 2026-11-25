@@ -57,7 +57,7 @@ final readonly class RunSnapshotResolver
      */
     private function visibleRuns(): Builder
     {
-        return ProcessRun::query()->forActor()->where('project_key', $this->projects->current());
+        return ProcessRun::query()->forActor()->withProjectKey($this->projects->current());
     }
 
     private function partOf(PartRun $part): PartSnapshotData
@@ -65,8 +65,8 @@ final readonly class RunSnapshotResolver
         $activity = $this->activity->ofPart($part);
 
         $position = ReaderPosition::query()
-            ->where('part_run_id', $part->id)
-            ->where('purpose', PositionPurpose::Live->value)
+            ->ofPartRun($part->id)
+            ->withPurpose(PositionPurpose::Live->value)
             ->first();
 
         $assessment = OutputAssessment::latestOf($part);

@@ -24,21 +24,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Certified work that must be reviewed, holding its actor and checkout until the review chain releases it: no other
- * job may take that actor or checkout, and cleanup keeps the checkout. It is retained with the certificate, in the
- * same transaction, so a handoff that is lost later can never leave the work unreserved; it is handed off once its
- * review is open.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property int $generation
  * @property string $certificate
- * @property Carbon|null $handed_off_at
- * @property Carbon|null $released_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read CertifiedWork $certifiedWork
+ * @property ?Carbon $handed_off_at
+ * @property ?Carbon $released_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property CertifiedWork $certifiedWork
  */
 #[Table('work_reservations')]
 #[Fillable([

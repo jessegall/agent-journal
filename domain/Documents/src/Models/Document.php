@@ -357,4 +357,15 @@ final class Document extends Model implements Commentable, Dockable, EventSource
                     .'where closed.document_id = documents.id and closed.closed_at is not null)');
         });
     }
+
+    /**
+     * The rows of the given number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withNumber(Builder $query, int $number): void
+    {
+        $query->where('number', $number);
+    }
 }

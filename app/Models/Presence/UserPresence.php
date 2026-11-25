@@ -101,4 +101,16 @@ final class UserPresence extends Model implements EventSource, ReadableModel
     {
         $query->where('user_id', $userId);
     }
+
+    /**
+     * The rows of any of the given users.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $userIds
+     */
+    #[Scope]
+    protected function ofUsers(Builder $query, array $userIds): void
+    {
+        $query->whereIn('user_id', $userIds);
+    }
 }

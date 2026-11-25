@@ -234,4 +234,16 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     {
         $query->whereNotNull('filed_at');
     }
+
+    /**
+     * The rows of any of the given numbers.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<int>  $numbers
+     */
+    #[Scope]
+    protected function withAnyNumber(Builder $query, array $numbers): void
+    {
+        $query->whereIn('number', $numbers);
+    }
 }

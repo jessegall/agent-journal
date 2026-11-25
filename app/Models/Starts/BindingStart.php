@@ -16,17 +16,15 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One start of a binding's main runtime, by the durable id its device chose before launching anything, and the
- * session and runtime it opened: a start asked again under the same id answers them, never a second runtime.
- *
  * @property string $id
  * @property string $binding_id
  * @property string $start_id
  * @property string $session_id
  * @property string $runtime_id
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Fillable([
     'binding_id',

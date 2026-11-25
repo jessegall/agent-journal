@@ -23,17 +23,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One worker's reservation: the unit of work it holds, if any. Every unit assignment and every retirement takes the
- * reservations of the workers it touches first, locked in their holder order, so two dispatchers giving one idle
- * worker two units commit at most one.
- *
  * @property string $id
  * @property string $holder_type
  * @property string $holder_id
- * @property string|null $root_type
- * @property string|null $root_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $root_type
+ * @property ?string $root_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'holder_type',

@@ -356,4 +356,26 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
             ->where('contract_major', self::CONTRACT_MAJOR)
             ->where('request_key', $requestKey);
     }
+
+    /**
+     * The rows of the given request key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRequestKey(Builder $query, string $requestKey): void
+    {
+        $query->where('request_key', $requestKey);
+    }
+
+    /**
+     * The rows of the given contract major.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withContractMajor(Builder $query, int $contractMajor): void
+    {
+        $query->where('contract_major', $contractMajor);
+    }
 }

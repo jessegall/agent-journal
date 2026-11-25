@@ -19,17 +19,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A hook message or an ordered event contribution waiting to be handed over in an agent's next hook.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $origin_type
  * @property string $origin_id
- * @property list<string> $lines
+ * @property array $lines
  * @property bool $requests_attention
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'origin_type',

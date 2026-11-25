@@ -150,4 +150,15 @@ final class ReaderRevision extends Model implements ReadableModel
     {
         $query->where('project_key', $projectKey);
     }
+
+    /**
+     * The rows of the given command request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofCommandRequest(Builder $query, string $commandRequestId): void
+    {
+        $query->where('command_request_id', $commandRequestId);
+    }
 }

@@ -37,7 +37,7 @@ final readonly class ProjectReceipts implements ResultReceipts
         $receipt = ResultReceipt::query()
             ->ofProject($this->projects->current())
             ->current()
-            ->where('part_run_id', $runId)
+            ->ofPartRun($runId)
             ->first();
 
         if ($receipt === null) {

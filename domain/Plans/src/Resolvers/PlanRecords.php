@@ -123,7 +123,7 @@ final readonly class PlanRecords implements PlanResolver
 
         $plan = $filters->selectedPlanId !== null
             ? Plan::query()->find($filters->selectedPlanId)
-            : Plan::query()->where('number', $filters->selectedPlanNumber)->first();
+            : Plan::query()->withNumber($filters->selectedPlanNumber)->first();
 
         if ($plan === null) {
             return PlanSelection::missing();

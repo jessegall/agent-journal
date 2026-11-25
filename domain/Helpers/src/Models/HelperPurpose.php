@@ -194,4 +194,26 @@ final class HelperPurpose extends Model implements ReadableModel
 
         $query->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
+
+    /**
+     * The rows of the given subject.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSubject(Builder $query, string $subjectId): void
+    {
+        $query->where('subject_id', $subjectId);
+    }
+
+    /**
+     * The rows of the given subject type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSubjectType(Builder $query, string $subjectType): void
+    {
+        $query->where('subject_type', $subjectType);
+    }
 }

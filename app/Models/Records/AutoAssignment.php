@@ -30,12 +30,10 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One actor's standing wish to be given records of one type automatically: whether it is on, the pool it draws from,
- * how many it keeps in hand, the revision of that configuration, and when it was last given one. A missing row is off.
- *
  * @property string $id
  * @property ActorType $actor_type
  * @property string $actor_id
@@ -44,7 +42,9 @@ use PhpOption\Option;
  * @property PoolReference $pool
  * @property int $size
  * @property int $configuration_revision
- * @property CarbonImmutable|null $last_served_at
+ * @property ?CarbonImmutable $last_served_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('auto_assignments')]
 #[Fillable([

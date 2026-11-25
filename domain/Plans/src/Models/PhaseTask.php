@@ -196,4 +196,27 @@ final class PhaseTask extends Pivot implements ReadableModel
     {
         $query->where('position', '>', $position);
     }
+
+    /**
+     * The rows of the given task.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTask(Builder $query, string $taskId): void
+    {
+        $query->where('task_id', $taskId);
+    }
+
+    /**
+     * The rows of any of the given tasks.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $taskIds
+     */
+    #[Scope]
+    protected function ofTasks(Builder $query, array $taskIds): void
+    {
+        $query->whereIn('task_id', $taskIds);
+    }
 }

@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
-use App\Models\Support\Accessor;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Questions\QuestionAnswerNoticeDelivered;
 use App\Events\Questions\QuestionAnswerNoticeWritten;
+use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * The asking agent's notice that its question was answered, kept until it reached one of the agent's sessions.
- *
  * @property string $id
  * @property string $question_id
  * @property string $agent_id
- * @property CarbonImmutable|null $delivered_at
+ * @property ?CarbonImmutable $delivered_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $delivery_key attribute
  * @property Question $question
  */
 #[Fillable([

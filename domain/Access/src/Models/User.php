@@ -14,6 +14,7 @@ use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Access\Database\Factories\UserFactory;
@@ -23,30 +24,36 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Passkeys\Passkey;
 
 /**
- * A user who can sign in. Only the configured owner gets into the journal (OwnerAdmission).
- *
- * @property string $id
+ * @property int $id
  * @property string $name
  * @property string $email
- * @property Carbon|null $email_verified_at
- * @property string $password
- * @property string|null $two_factor_secret
- * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
- * @property CarbonImmutable|null $disabled_at
- * @property string|null $remember_token
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $email_verified_at
+ * @property mixed $password
+ * @property ?string $two_factor_secret
+ * @property ?string $two_factor_recovery_codes
+ * @property ?Carbon $two_factor_confirmed_at
+ * @property ?CarbonImmutable $disabled_at
+ * @property ?string $remember_token
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
+ * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $notifications
+ * @property Collection<int, Passkey>|Passkey[] $passkeys
+ * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $readNotifications
+ * @property Collection<int, DatabaseNotification>|DatabaseNotification[] $unreadNotifications
  */
 #[UseFactory(UserFactory::class)]
 #[Fillable([

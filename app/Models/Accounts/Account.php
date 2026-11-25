@@ -51,38 +51,36 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One saved Claude Code or Codex account: its driver, the name its owner gave it, its state and the private folder
- * its driver keeps the sign-in in. Exactly one sign-in process may write that folder at a time; each new writer,
- * replacement and removal starts a new sign-in generation, and anything that reports on the account carries the
- * generation it saw. A removed account keeps its row and label for the starts that used it.
- *
  * @property string $id
- * @property string $account_protocol the account provider's protocol, which every driver of one family shares
+ * @property string $account_protocol
+ * @property SignInMethod $method
  * @property string $label
  * @property string $label_key
- * @property int $name_revision
  * @property AccountState $state
- * @property string|null $directory
- * @property string|null $identity
- * @property string|null $subject
- * @property string|null $workspace
- * @property SignInMethod $method
- * @property string|null $fingerprint
- * @property CarbonImmutable|null $expires_at
+ * @property ?string $directory
+ * @property ?string $identity
+ * @property ?string $subject
+ * @property ?string $workspace
+ * @property ?string $fingerprint
+ * @property ?CarbonImmutable $expires_at
  * @property bool $maintenance
  * @property int $sign_in_generation
- * @property string|null $live_writer_attempt_id
- * @property string|null $operation_id
+ * @property ?string $live_writer_attempt_id
+ * @property ?string $operation_id
  * @property bool $cleanup_pending
  * @property bool $cleanup_released
  * @property bool $store_removed
  * @property int $cleanup_tries
- * @property CleanupProblem|null $cleanup_problem
- * @property int|null $check_requested_generation
- * @property CarbonImmutable|null $checked_at
- * @property CarbonImmutable|null $check_inconclusive_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CleanupProblem $cleanup_problem
+ * @property ?int $check_requested_generation
+ * @property ?CarbonImmutable $checked_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?CarbonImmutable $check_inconclusive_at
+ * @property int $name_revision
+ * @property mixed $record_identity attribute
+ * @property mixed $selected_for_start attribute
+ * @property mixed $start_unavailable_reason attribute
  */
 #[Fillable([
     'account_protocol',

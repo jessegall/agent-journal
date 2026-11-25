@@ -32,7 +32,7 @@ final readonly class StartRecords implements StartRecordResolver
 
     public function own(string $requestId): StartRecordDetails
     {
-        $record = StartRecord::query()->forAgent($this->actors->actor()->id)->where('request_id', $requestId)->first();
+        $record = StartRecord::query()->forAgent($this->actors->actor()->id)->underRequest($requestId)->first();
 
         if ($record !== null) {
             return self::detailsOf($record);
@@ -44,7 +44,7 @@ final readonly class StartRecords implements StartRecordResolver
     public function receipt(string $requestId): StartRecordDetails
     {
         $record = StartRecord::query()
-            ->where('request_id', $requestId)
+            ->underRequest($requestId)
             ->firstOr(StartRecordMissing::throwing()->forRequest($requestId));
 
         if (! $record->wasRequestedBy(ActorIdentity::of($this->actors->actor())) && ! $this->maintainsAgents()) {

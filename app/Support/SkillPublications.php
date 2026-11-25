@@ -50,14 +50,14 @@ final readonly class SkillPublications
         $limit = max(1, count($intents));
 
         $open = SkillPublication::query()
-            ->whereIn('open_key', $openKeys)
+            ->withAnyOpenKey($openKeys)
             ->lockForUpdate()
             ->readExactly($limit)
             ->get()
             ->keyBy('open_key');
 
         $delivered = SkillPublication::query()
-            ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
+            ->ofSessions(array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
             ->inState(PublicationState::Delivered)
             ->orderByDesc('created_at')
             ->readExactly($limit)

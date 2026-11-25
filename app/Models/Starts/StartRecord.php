@@ -643,4 +643,15 @@ final class StartRecord extends Model implements EventSource, ReadableModel
     {
         $query->where('conversation_mode', $mode->value);
     }
+
+    /**
+     * The rows of the given session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->where('session_id', $sessionId);
+    }
 }

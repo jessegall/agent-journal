@@ -246,4 +246,15 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
     {
         $query->whereDoesntHave('replies', fn (Builder $reply) => $reply->whereSender($sender));
     }
+
+    /**
+     * The rows of the given number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withNumber(Builder $query, int $number): void
+    {
+        $query->where('number', $number);
+    }
 }

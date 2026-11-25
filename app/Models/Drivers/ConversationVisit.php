@@ -106,4 +106,16 @@ final class ConversationVisit extends Model implements ReadableModel
     {
         $query->where('event_id', $eventId);
     }
+
+    /**
+     * The rows of any of the given conversations.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $conversationIds
+     */
+    #[Scope]
+    protected function ofConversations(Builder $query, array $conversationIds): void
+    {
+        $query->whereIn('conversation_id', $conversationIds);
+    }
 }

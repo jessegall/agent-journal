@@ -34,10 +34,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * The review of one piece of certified work: the worker that did it, the ref its commits were imported under, the
- * base and head that were reviewed as the journal read them from git, the route its review ask first took, and the
- * ask a reviewer answers with a typed decision. An import that fails keeps the review waiting with its reason.
- *
  * @property string $id
  * @property string $certificate
  * @property string $work_type
@@ -45,16 +41,17 @@ use Illuminate\Support\Carbon;
  * @property string $worker_type
  * @property string $worker_id
  * @property CodeReviewState $state
- * @property string|null $import_ref
- * @property string|null $base
- * @property string|null $head
+ * @property ?string $import_ref
+ * @property ?string $base
+ * @property ?string $head
  * @property int $import_attempts
- * @property string|null $import_failure
- * @property string|null $origin_target
- * @property string|null $ask_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read ReviewDecision|null $decision
+ * @property ?string $import_failure
+ * @property ?string $origin_target
+ * @property ?string $ask_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $worker attribute
+ * @property ReviewDecision $decision
  */
 #[Table('code_reviews')]
 #[Fillable([

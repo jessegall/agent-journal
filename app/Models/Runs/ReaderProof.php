@@ -107,4 +107,15 @@ final class ReaderProof extends Model implements ReadableModel
     {
         $query->where('project_key', $projectKey);
     }
+
+    /**
+     * The rows of the given reader revision.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofReaderRevision(Builder $query, string $readerRevisionId): void
+    {
+        $query->where('reader_revision_id', $readerRevisionId);
+    }
 }

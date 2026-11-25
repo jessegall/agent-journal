@@ -14,15 +14,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One hook call the host answered on its own while the journal was unreachable, reported after recovery.
- *
  * @property string $id
  * @property string $agent_session_id
  * @property string $native_event
  * @property string $failure
  * @property CarbonImmutable $occurred_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'native_event',

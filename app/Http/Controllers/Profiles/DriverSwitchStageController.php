@@ -15,7 +15,7 @@ final readonly class DriverSwitchStageController
 {
     public function __invoke(string $requestId): JsonResponse
     {
-        $switch = DriverSwitch::query()->where('request_id', strtolower($requestId))->firstOrFail();
+        $switch = DriverSwitch::query()->underRequest(strtolower($requestId))->firstOrFail();
 
         return SwitchAgentDriverController::answer(DriverSwitchReceipt::of($switch));
     }

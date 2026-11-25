@@ -114,7 +114,7 @@ final readonly class HelperCandidates
         if ($subject === null) {
             return array_values(HelperJob::query()
                 ->ofIdentities($identityIds)
-                ->where('helper_purpose_id', $query->purpose->id)
+                ->ofHelperPurpose($query->purpose->id)
                 ->readAll('the jobs of the parent\'s helpers for this free purpose')
                 ->get()
                 ->map(fn (HelperJob $job): string => $job->helper_identity_id)

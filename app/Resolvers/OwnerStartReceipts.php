@@ -35,7 +35,7 @@ final readonly class OwnerStartReceipts implements StartReceipts
             ->firstOr(StartRecordMissing::throwing()->forRequest($reference));
 
         $session = AgentSession::query()->findOrFail($record->session_id);
-        $policy = SessionPolicy::query()->where('session_id', $session->id)->sole()->policy;
+        $policy = SessionPolicy::query()->ofSession($session->id)->sole()->policy;
 
         return new OwnerStartReceipt(
             $record->request_id,

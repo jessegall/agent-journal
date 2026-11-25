@@ -177,7 +177,7 @@ final readonly class HelperDispatch
 
     private function isRepeat(DispatchRequest $request): bool
     {
-        return HelperJob::query()->where('request_id', $request->requestId)->exists();
+        return HelperJob::query()->ofRequest($request->requestId)->exists();
     }
 
     /**
@@ -185,7 +185,7 @@ final readonly class HelperDispatch
      */
     private function repeated(DispatchRequest $request): HelperReceipt
     {
-        $job = HelperJob::query()->where('request_id', $request->requestId)->sole();
+        $job = HelperJob::query()->ofRequest($request->requestId)->sole();
 
         if (! $job->wasDispatchedAs($request->digest())) {
             throw HelperRequestConflict::forRequest($request->requestId);

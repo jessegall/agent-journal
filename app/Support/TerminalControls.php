@@ -63,7 +63,7 @@ final readonly class TerminalControls
         }
 
         $interest = TerminalView::query()->ownedBy($writer)->live()->withReadInterest($readInterestId)
-            ->where('agent_runtime_id', $runtime->id)->first();
+            ->ofAgentRuntime($runtime->id)->first();
 
         if ($interest === null || $interest->hasEndedAt($now)) {
             throw TerminalViewRefused::unknownInterest();
@@ -338,7 +338,7 @@ final readonly class TerminalControls
             return $this->answerOf($grant, $now);
         }
 
-        $sent = DriverRequest::query()->where('agent_runtime_id', $grant->agent_runtime_id)
+        $sent = DriverRequest::query()->ofAgentRuntime($grant->agent_runtime_id)
             ->where('idempotency_key', "input:{$grant->grant_id}:{$sequence}")->first();
 
         $outcome = $sent === null
@@ -374,7 +374,7 @@ final readonly class TerminalControls
      */
     public function revokeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
     {
-        $grants = TerminalGrant::query()->with('runtime.session')->ownedBy($viewer)->where('agent_id', $agentId)
+        $grants = TerminalGrant::query()->with('runtime.session')->ownedBy($viewer)->ofAgent($agentId)
             ->get()->filter(fn (TerminalGrant $grant): bool => $grant->holdsAt($now));
 
         foreach ($grants as $grant) {

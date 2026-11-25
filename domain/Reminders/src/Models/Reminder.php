@@ -24,16 +24,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * Something its actor means to do at one time: a title, the moment it is due and whether it still waits.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $title
  * @property CarbonImmutable $due_at
  * @property ReminderStatus $status
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'title',

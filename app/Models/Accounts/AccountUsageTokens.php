@@ -24,24 +24,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The latest token count a driver reported for one thread on a saved account in one sign-in generation: the
- * thread's total so far, the reported parts of it and the last turn's total. A newer count replaces it, never adds.
- *
  * @property string $id
  * @property string $account_id
  * @property int $sign_in_generation
  * @property string $thread_id
  * @property int $total
- * @property int|null $input
- * @property int|null $cached_input
- * @property int|null $output
- * @property int|null $reasoning_output
- * @property int|null $last_turn_total
+ * @property ?int $input
+ * @property ?int $cached_input
+ * @property ?int $output
+ * @property ?int $reasoning_output
+ * @property ?int $last_turn_total
  * @property CarbonImmutable $observed_at
  * @property string $source_id
  * @property int $source_order
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'account_id',

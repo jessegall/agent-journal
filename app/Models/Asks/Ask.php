@@ -45,17 +45,23 @@ use PhpOption\Option;
  * @property string $actor_type
  * @property string $actor_id
  * @property AskTypeKey $type_key
- * @property string $body
+ * @property string $origin
+ * @property string $submission_key
  * @property string $submission_hash
+ * @property string $body
+ * @property string $subject_type
  * @property string $work
- * @property string|null $head
- * @property string|null $pending_target
- * @property string|null $route_profile
+ * @property ?string $head
+ * @property ?string $pending_target
+ * @property ?string $route_profile
  * @property int $version
  * @property bool $open
- * @property UnansweredReason|null $outcome
- * @property string|null $late_answer
- * @property Carbon $created_at
+ * @property ?UnansweredReason $outcome
+ * @property ?string $late_answer
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $reference attribute
+ * @property mixed $work_reference attribute
  */
 #[Fillable([
     'version',

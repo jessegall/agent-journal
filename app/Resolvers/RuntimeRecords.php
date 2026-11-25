@@ -46,7 +46,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
     public function requestsOf(string $sessionId, int $limit): array
     {
         return array_values(DriverRequest::query()
-            ->where('agent_runtime_id', $this->visibleRuntimeOf($sessionId)->id)
+            ->ofAgentRuntime($this->visibleRuntimeOf($sessionId)->id)
             ->orderByDesc('sequence')
             ->readExactly($limit)
             ->get()

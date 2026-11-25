@@ -37,7 +37,7 @@ final readonly class TaskLogReadResult
     public function read(string $taskId, string $entryId): ToolResult
     {
         $task = $this->tasks->details($taskId, ReadView::Summary);
-        $entry = TaskLogEntry::query()->where('task_id', $taskId)->whereKey($entryId)->first();
+        $entry = TaskLogEntry::query()->ofTask($taskId)->whereKey($entryId)->first();
 
         if (! $entry instanceof TaskLogEntry) {
             throw TaskPassageUnavailable::make();

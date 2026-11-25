@@ -28,22 +28,18 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One request to open or close the endpoint of a gateway configuration version, claimed by a supervisor run under a
- * lease, bound to the endpoint it opened or closes, and finished with an outcome code; the program itself runs outside
- * every transaction.
- *
  * @property string $id
  * @property string $share_gateway_configuration_id
  * @property int $configuration_version
- * @property string|null $share_gateway_endpoint_id
- * @property int|null $endpoint_version
+ * @property ?string $share_gateway_endpoint_id
+ * @property ?int $endpoint_version
  * @property GatewayOperationType $type
- * @property string|null $run_id
- * @property string|null $lease_token
- * @property CarbonImmutable|null $lease_ends_at
- * @property GatewayOutcome|null $outcome_code
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $run_id
+ * @property ?string $lease_token
+ * @property ?CarbonImmutable $lease_ends_at
+ * @property ?GatewayOutcome $outcome_code
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'type',

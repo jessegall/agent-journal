@@ -555,4 +555,16 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $query->whereIn('state', array_map(fn (PublicationState $state) => $state->value, $states));
     }
+
+    /**
+     * The rows of any of the given open keys.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $openKeys
+     */
+    #[Scope]
+    protected function withAnyOpenKey(Builder $query, array $openKeys): void
+    {
+        $query->whereIn('open_key', $openKeys);
+    }
 }

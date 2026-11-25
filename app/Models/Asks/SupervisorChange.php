@@ -14,7 +14,19 @@ use App\Values\SupervisorTarget;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property string $id
+ * @property string $supervisor_link_id
+ * @property string $actor_type
+ * @property string $actor_id
+ * @property string $route
+ * @property string $previous_target
+ * @property string $target
+ * @property int $version
+ * @property Carbon $created_at
+ */
 #[Fillable([
     'supervisor_link_id',
     'actor_type',

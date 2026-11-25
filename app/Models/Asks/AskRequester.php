@@ -14,7 +14,15 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ */
 #[Fillable([
     'actor_type',
     'actor_id',

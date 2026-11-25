@@ -23,21 +23,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The durable removal of an ended container launch's transient resources on its host. It stays pending, and the host
- * retries it, until every resource is removed or found gone; only then is the launch's capacity released. A dirty
- * workspace is never removed: its place is kept as the recovery location.
- *
  * @property string $id
  * @property string $start_request_id
  * @property string $agent_session_id
  * @property string $host_id
- * @property list<string> $removed_steps
- * @property string|null $recovery_location
- * @property string|null $last_error
+ * @property array $removed_steps
+ * @property ?string $recovery_location
+ * @property ?string $last_error
  * @property CleanupState $state
  * @property int $attempts
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('cleanup_operations')]
 #[Fillable([

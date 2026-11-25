@@ -23,9 +23,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One linked record the owner approved for a share at one scope version, with the exact link it was reached by. It
- * stops counting once invalidated, and a removed link never comes back by itself.
- *
  * @property string $id
  * @property string $share_id
  * @property int $scope_version
@@ -34,9 +31,10 @@ use Illuminate\Support\Carbon;
  * @property string $source_id
  * @property string $target_type
  * @property string $target_id
- * @property CarbonImmutable|null $invalidated_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $invalidated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $target attribute
  */
 #[Fillable([
     'scope_version',

@@ -19,14 +19,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A project connected to this journal from another machine, under a unique key. The installation's own project is
- * not a row: it stays the configured key.
- *
  * @property string $id
  * @property string $key
  * @property string $label
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'key',

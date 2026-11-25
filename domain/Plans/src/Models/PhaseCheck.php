@@ -18,9 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A check result a phase relies on (story 197): the operation, the validated result receipt it was read from, its
- * outcome, and who recorded it.
- *
  * @property string $id
  * @property string $phase_id
  * @property string $operation

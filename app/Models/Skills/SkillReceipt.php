@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Proof that a session read one skill's delivered text whole in one context. It never changes which skills apply.
- *
  * @property string $id
  * @property string $session_id
  * @property int $context_epoch

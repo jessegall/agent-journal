@@ -72,7 +72,7 @@ final readonly class ChatPages
             ]), $members),
             'canManageParticipants' => $capabilities->canAdd || $capabilities->canRemove,
             'capabilities' => $capabilities,
-            'unreadCount' => Message::query()->where('inbox_id', $inbox->id)->unreadBy($this->viewerModel())->count(),
+            'unreadCount' => Message::query()->inInbox($inbox->id)->unreadBy($this->viewerModel())->count(),
             'hasOlder' => $page->hasOlder,
             'entries' => $page->entries,
             'dock' => $this->dock->page($inbox, $dockToken),
@@ -84,7 +84,7 @@ final readonly class ChatPages
      */
     public function entriesBefore(string $inboxId, string|null $beforeId): ChatRowsPageData
     {
-        $cursor = $beforeId === null ? null : ChatMessage::query()->where('inbox_id', $inboxId)->findOrFail($beforeId);
+        $cursor = $beforeId === null ? null : ChatMessage::query()->ofInbox($inboxId)->findOrFail($beforeId);
         $rows = ChatMessage::query()
             ->pageBefore($inboxId, $cursor)
             ->with('source')
@@ -111,7 +111,7 @@ final readonly class ChatPages
         return array_values($chats->map(fn (Inbox $inbox) => ChatSummaryData::from([
             'inboxId' => $inbox->id,
             'label' => $inbox->label,
-            'unread' => Message::query()->where('inbox_id', $inbox->id)->unreadBy($viewer)->count(),
+            'unread' => Message::query()->inInbox($inbox->id)->unreadBy($viewer)->count(),
         ]))->all());
     }
 
@@ -158,7 +158,7 @@ final readonly class ChatPages
 
         return array_values(array_map(strval(...), MessageReadEntry::query()
             ->whereReader($this->viewerModel())
-            ->whereIn('message_id', $messageIds)
+            ->ofMessages($messageIds)
             ->pluck('message_id')
             ->all()));
     }

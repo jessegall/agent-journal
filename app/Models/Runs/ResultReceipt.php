@@ -158,4 +158,15 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
     {
         $query->whereNull('superseded_by_id');
     }
+
+    /**
+     * The rows of the given part run.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPartRun(Builder $query, string $partRunId): void
+    {
+        $query->where('part_run_id', $partRunId);
+    }
 }

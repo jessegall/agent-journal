@@ -16,12 +16,18 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
+ * @property string $profile_key
  * @property int $revision
  * @property string $source
- * @property array<string, mixed> $commands
+ * @property array $commands
+ * @property ActorType $author_type
+ * @property string $author_id
+ * @property Carbon $created_at
+ * @property mixed $script_source attribute
  */
 #[Fillable([
     'profile_key',

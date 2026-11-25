@@ -20,6 +20,7 @@ use App\Events\Sessions\AgentDriverTypePreferred;
 use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimesFenced;
+use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Values\RunningRuntime;
@@ -28,6 +29,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -36,18 +38,16 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent the journal starts, with the profile it starts with and the work assigned to it. A retired agent
- * holds no work and cannot be started again.
- *
  * @property string $id
- * @property string|null $current_session_id
- * @property int $runtime_generation
- * @property DriverType|null $driver_type_preference
  * @property string $name
  * @property string $profile_key
- * @property Carbon|null $retired_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $retired_at
+ * @property ?string $current_session_id
+ * @property int $runtime_generation
+ * @property ?DriverType $driver_type_preference
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, InboxMember>|InboxMember[] $inboxMemberships
  */
 #[Fillable([
     'name',

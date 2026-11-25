@@ -165,4 +165,38 @@ final class DriverConversation extends Model implements ReadableModel
             ->where('context_reference', $contextReference)
             ->where('resume_protocol', $driver);
     }
+
+    /**
+     * The rows of any of the given agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentIds
+     */
+    #[Scope]
+    protected function ofAgents(Builder $query, array $agentIds): void
+    {
+        $query->whereIn('agent_id', $agentIds);
+    }
+
+    /**
+     * The rows of the given context reference.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withContextReference(Builder $query, string $contextReference): void
+    {
+        $query->where('context_reference', $contextReference);
+    }
+
+    /**
+     * The rows of the given resume protocol.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withResumeProtocol(Builder $query, string $resumeProtocol): void
+    {
+        $query->where('resume_protocol', $resumeProtocol);
+    }
 }

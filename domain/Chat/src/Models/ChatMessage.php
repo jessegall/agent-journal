@@ -294,4 +294,15 @@ final class ChatMessage extends Model implements EventSource
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
+
+    /**
+     * The rows of the given inbox.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofInbox(Builder $query, string $inboxId): void
+    {
+        $query->where('inbox_id', $inboxId);
+    }
 }

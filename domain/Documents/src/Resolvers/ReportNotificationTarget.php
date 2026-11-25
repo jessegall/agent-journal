@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Contracts\Navigation\DeclaredPages;
+use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Support\ActorIdentity;
 use Domain\Documents\Models\Report;
@@ -29,7 +29,7 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
     public function linksFor(array $ids): array
     {
         $numbers = array_map(intval(...), array_values(array_filter($ids, ctype_digit(...))));
-        $reports = Report::query()->sharedPublished()->whereIn('number', $numbers)->readExactly(count($numbers))->get();
+        $reports = Report::query()->sharedPublished()->withAnyNumber($numbers)->readExactly(count($numbers))->get();
 
         $filers = $this->labels->labelsFor(array_values($reports->map(
             fn (Report $report) => new ActorIdentity($report->creator_type, $report->creator_id),

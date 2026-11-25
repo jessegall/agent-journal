@@ -17,16 +17,16 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * Why one claim was allowed: the exact assignments it stands on, kept as their ids. The ids are history, not live
- * references, so a claim stays valid only while those exact assignments still exist and are held as proved.
- *
  * @property string $id
  * @property string $claim_assignment_id
  * @property ClaimBasis $basis_type
- * @property string|null $inbox_member_id
+ * @property ?string $inbox_member_id
  * @property string $work_assignment_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('claim_authorizations')]
 #[Fillable([

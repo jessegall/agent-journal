@@ -26,18 +26,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The estimated cost of one result a driver reported on a saved account, kept once and never changed: the
- * generation it ran in, the source that identifies the result, the amount in US dollars and when it was observed.
- *
  * @property string $id
  * @property string $account_id
  * @property int $sign_in_generation
  * @property string $source_id
- * @property string $usd
+ * @property string|float $usd
  * @property CarbonImmutable $observed_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read int $observations how many costs a month total sums, read only by monthTotals()
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'account_id',

@@ -22,23 +22,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
- * One native turn of a runtime's driver: keyed by its process generation and the driver's own prompt id
- * (Claude Code prompt_id, Codex turn_id), with the settings it ran with and how it ended.
- *
  * @property string $id
  * @property string $agent_runtime_id
  * @property int $process_generation
  * @property string $native_prompt_id
- * @property string|null $observed_model
- * @property string|null $observed_effort
- * @property string|null $outcome
+ * @property ?string $observed_model
+ * @property ?string $observed_effort
+ * @property ?string $outcome
  * @property CarbonImmutable $started_at
- * @property CarbonImmutable|null $finished_at
- * @property string|null $closing_words
- * @property string|null $closing_words_digest
- * @property string|null $delivered_message_id
+ * @property ?CarbonImmutable $finished_at
+ * @property ?string $closing_words
+ * @property ?string $closing_words_digest
+ * @property ?string $delivered_message_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property AgentRuntime $runtime
  */
 #[Fillable(
     [

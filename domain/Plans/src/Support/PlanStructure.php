@@ -44,13 +44,13 @@ final readonly class PlanStructure
         $plan = Plan::lockForChange($phase->plan_id);
         $phase->refresh();
         $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
-        $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $ids)->value('task_id');
+        $alreadyPlacedTaskId = PhaseTask::query()->ofTasks($ids)->value('task_id');
 
         if ($duplicateTaskIds !== [] || $alreadyPlacedTaskId !== null) {
             throw TaskAlreadyInAPhase::forTask((string) ($duplicateTaskIds[0] ?? $alreadyPlacedTaskId));
         }
 
-        $next = PhaseTask::query()->where('phase_id', $phase->id)->count() + 1;
+        $next = PhaseTask::query()->ofPhase($phase->id)->count() + 1;
 
         foreach ($ids as $offset => $taskId) {
             PhaseTask::create($phase, $taskId, $next + $offset);

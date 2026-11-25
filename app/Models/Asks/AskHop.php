@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -16,6 +15,7 @@ use App\Events\Asks\AskHopAnswered;
 use App\Events\Asks\AskHopAssigned;
 use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
+use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -25,19 +25,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * @property string|null $result
- * @property string|null $attention
- * @property string|null $wake
  * @property string $id
  * @property string $ask_id
- * @property int $version
  * @property string $actor_type
  * @property string $actor_id
  * @property string $type_key
+ * @property int $version
+ * @property int $route_version
  * @property CarbonImmutable $accepted_at
+ * @property ?string $result
+ * @property ?string $wake
+ * @property ?string $attention
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $holder_key attribute
  */
 #[Fillable([
     'ask_id',

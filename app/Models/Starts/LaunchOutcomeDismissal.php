@@ -19,17 +19,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One viewer dismissed one version of an agent's launch outcome; a newer outcome of the same start, or a newer start,
- * shows again.
- *
  * @property string $id
  * @property string $viewer_type
  * @property string $viewer_id
  * @property string $agent_id
  * @property string $request_id
  * @property string $outcome_version
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'viewer_type',

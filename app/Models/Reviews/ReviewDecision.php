@@ -23,10 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A reviewer's one typed decision on a code review: who decided, on which exact base and head, what they found, and
- * the merge ask an approval opened or the repair a return asks for. Only this decision approves work; no test result
- * or text does.
- *
  * @property string $id
  * @property string $code_review_id
  * @property ReviewDecisionType $decision
@@ -35,11 +31,11 @@ use Illuminate\Support\Carbon;
  * @property string $base
  * @property string $head
  * @property string $findings
- * @property string|null $merge_ask_id
- * @property Carbon|null $repaired_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read CodeReview $review
+ * @property ?string $merge_ask_id
+ * @property ?Carbon $repaired_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property CodeReview $review
  */
 #[Table('review_decisions')]
 #[Fillable([

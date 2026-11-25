@@ -146,4 +146,16 @@ final class ActivityEntry extends Model implements ReadableModel
     {
         $query->where('environment_id', $environmentId)->where('id', '>', $entryId)->orderBy('id');
     }
+
+    /**
+     * The rows of any of the given ids.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function withAnyId(Builder $query, array $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
 }

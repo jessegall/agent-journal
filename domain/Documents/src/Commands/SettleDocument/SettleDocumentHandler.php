@@ -20,7 +20,7 @@ final readonly class SettleDocumentHandler extends DocumentCommandHandler
         $document = Document::lockedForEditing($command->documentNumber);
         $this->assertDocumentRevision($document, $command->expectedRevision);
 
-        if (DocumentDraft::query()->where('document_id', $document->id)->exists()) {
+        if (DocumentDraft::query()->ofDocument($document->id)->exists()) {
             throw SettlementDenied::beingEdited($document->number);
         }
 

@@ -414,4 +414,26 @@ final class PartRun extends Model implements EventSource, ReadableModel
     {
         $query->orderByDesc('attempt');
     }
+
+    /**
+     * The rows of the given attempt.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAttempt(Builder $query, int $attempt): void
+    {
+        $query->where('attempt', $attempt);
+    }
+
+    /**
+     * The rows of the given process run.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProcessRun(Builder $query, string $processRunId): void
+    {
+        $query->where('process_run_id', $processRunId);
+    }
 }

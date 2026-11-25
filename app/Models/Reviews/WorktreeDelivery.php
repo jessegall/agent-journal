@@ -22,9 +22,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One child's broker-verified commit submitted for integration, apart from any message, and the merger's separate
- * result.
- *
  * @property string $id
  * @property string $delivery_id
  * @property string $binding_id
@@ -36,8 +33,9 @@ use Illuminate\Support\Carbon;
  * @property string $target_ref
  * @property string $expected_target_oid
  * @property DeliveryOutcome $outcome
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $receipt attribute
  */
 #[Fillable([
     'delivery_id',

@@ -55,7 +55,7 @@ final readonly class DocumentRecords implements DocumentResolver
                 $filters->searches() && ! $filters->revisions,
                 fn (Builder $query) => $query->whereIn(
                     'current_revision_id',
-                    DocumentRevision::query()->whereNotNull('closed_at')->matchingText($filters->query)->select('id'),
+                    DocumentRevision::query()->closed()->matchingText($filters->query)->select('id'),
                 ),
             )
             ->when(

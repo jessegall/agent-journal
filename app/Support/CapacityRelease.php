@@ -18,8 +18,8 @@ final readonly class CapacityRelease
     public function releaseFor(string $startRequestId): void
     {
         CapacityReservation::query()
-            ->where('start_request_id', $startRequestId)
-            ->where('state', ReservationState::Reserved)
+            ->ofStartRequest($startRequestId)
+            ->withState(ReservationState::Reserved)
             ->update(['state' => ReservationState::Released]);
     }
 }

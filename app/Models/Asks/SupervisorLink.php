@@ -18,13 +18,16 @@ use App\Values\SupervisorRoutes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property SupervisorRoutes $routes
- * @property array<string, int> $versions
+ * @property array $versions
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'routes',

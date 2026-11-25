@@ -187,4 +187,15 @@ final class SessionPolicy extends Model implements ReadableModel
     {
         $query->whereIn('session_id', $sessionIds);
     }
+
+    /**
+     * The rows of the given session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofSession(Builder $query, string $sessionId): void
+    {
+        $query->where('session_id', $sessionId);
+    }
 }

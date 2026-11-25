@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
+use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\MarkdownText;
 use Carbon\CarbonImmutable;
@@ -189,5 +189,49 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
     protected function heldByAgent(Builder $query, string $agentId): void
     {
         $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId);
+    }
+
+    /**
+     * The rows of the given token.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withToken(Builder $query, string $token): void
+    {
+        $query->where('token', $token);
+    }
+
+    /**
+     * The rows of the given document.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDocument(Builder $query, string $documentId): void
+    {
+        $query->where('document_id', $documentId);
+    }
+
+    /**
+     * The rows of the given author.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAuthor(Builder $query, string $authorId): void
+    {
+        $query->where('author_id', $authorId);
+    }
+
+    /**
+     * The rows of the given author type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withAuthorType(Builder $query, ActorType $authorType): void
+    {
+        $query->where('author_type', $authorType);
     }
 }

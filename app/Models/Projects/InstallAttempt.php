@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -18,6 +17,7 @@ use App\Events\Connections\InstallAttemptOpened;
 use App\Events\Connections\InstallAttemptReplaced;
 use App\Events\Connections\InstallAttemptSpent;
 use App\Exceptions\InstallAttemptRefused;
+use App\Models\Support\Accessor;
 use App\Support\ShortReference;
 use App\Values\RelationRead;
 use Carbon\CarbonImmutable;
@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,26 +34,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One owner's attempt to install a line for one target, a new project or one to join, made before any ticket is
- * issued. Its public reference names it in the window and in Settings, never a secret. Every change locks the row
- * and checks the version the owner saw, so two tabs each keep their own attempt and a repeated change cannot leave
- * two live lines.
- *
  * @property string $id
  * @property string $reference
  * @property string $owner_user_id
  * @property string $idempotency_key
  * @property InvitationMode $mode
- * @property string|null $project_id
- * @property string|null $environment_id
+ * @property ?string $project_id
+ * @property ?string $environment_id
  * @property InstallAttemptState $state
- * @property string|null $binding_id
+ * @property ?string $binding_id
  * @property int $version
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read string $target_label
- * @property-read Project|null $project
- * @property-read Environment|null $environment
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $target_label attribute
+ * @property ?Environment $environment
+ * @property Collection<int, ProjectInvitation>|ProjectInvitation[] $invitations
+ * @property ?Project $project
  */
 #[Fillable([
     'reference',

@@ -29,16 +29,14 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Support\Carbon;
 
 /**
- * The one current holder of a record: a row is inserted to assign, deleted to unassign and replaced by a new row to
- * reassign, so a reference names one holding exactly. Only Core's store writes it.
- *
  * @property string $id
  * @property string $record_type
  * @property string $record_id
  * @property string $holder_type
  * @property string $holder_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $to_assignment attribute
  */
 #[Table('assignments')]
 #[Fillable([

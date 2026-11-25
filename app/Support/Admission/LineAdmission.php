@@ -77,7 +77,7 @@ final readonly class LineAdmission implements ShellAdmission
         $this->projects->assertFolderAllowed($context->workingFolder);
         $actor = ActorIdentity::of($this->actors->actor());
         $tree = $this->syntax->parse($line, $dialect);
-        $earlier = ProcessRun::query()->acrossActors()->where('admission_id', $requestKey)->first();
+        $earlier = ProcessRun::query()->acrossActors()->ofAdmission($requestKey)->first();
 
         if ($earlier !== null) {
             return $this->repeated($earlier, $tree, $line, $actor);

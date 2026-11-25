@@ -24,20 +24,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One task waiting on another: the dependent cannot be ready until the prerequisite is finished or the wait is waived.
- * The prerequisite's id stays when that task is gone, so the wait stays unresolved rather than vanish.
- *
  * @property string $id
  * @property string $dependent_task_id
  * @property string $prerequisite_task_id
  * @property ActorType $created_by_type
  * @property string $created_by_id
- * @property Carbon|null $waived_at
- * @property ActorType|null $waived_by_type
- * @property string|null $waived_by_id
- * @property string|null $waive_reason
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $waived_at
+ * @property ?ActorType $waived_by_type
+ * @property ?string $waived_by_id
+ * @property ?string $waive_reason
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'dependent_task_id',

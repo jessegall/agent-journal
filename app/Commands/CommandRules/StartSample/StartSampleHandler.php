@@ -33,7 +33,7 @@ final readonly class StartSampleHandler implements CommandHandler
 
         $permit = EvidencePermit::query()
             ->whereKey($command->permitId)
-            ->where('command_request_id', $request->id)
+            ->ofCommandRequest($request->id)
             ->lockForUpdate()
             ->first();
 

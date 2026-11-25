@@ -19,15 +19,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A pane layout a user saved under a name of their own, to restore on Home later: the pane tree and the detached
- * windows as the browser keeps them. Each user sees only their own layouts, and a name is used once per user.
- *
  * @property string $id
  * @property string $user_id
  * @property string $name
  * @property LayoutShape $shape
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'user_id',

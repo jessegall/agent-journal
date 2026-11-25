@@ -27,9 +27,6 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 
 /**
- * One answered hook call, kept so a retry of the same call gets the same answer. The agent and session are set only
- * through recordFor.
- *
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
@@ -37,8 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string $input_digest
  * @property RecordedAnswer $answer
  * @property RecordedSteps $steps
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'event_id',

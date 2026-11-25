@@ -13,16 +13,15 @@ use Illuminate\Support\Carbon;
 use Laravel\Passkeys\Passkey as PackagePasskey;
 
 /**
- * One passkey a user signs in with, the package's model made linkable like every other journal model.
- *
  * @property string $id
  * @property string $user_id
  * @property string $name
  * @property string $credential_id
- * @property array<string, mixed> $credential
- * @property Carbon|null $last_used_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array $credential
+ * @property ?Carbon $last_used_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property-read null|string $authenticator attribute
  */
 #[Fillable([
     'name',

@@ -113,7 +113,7 @@ final readonly class RuleApprovals
 
         $proof = ReaderProof::query()
             ->whereKey($readers[0]->proofId)
-            ->where('reader_revision_id', $readers[0]->readerRevisionId)
+            ->ofReaderRevision($readers[0]->readerRevisionId)
             ->first();
 
         if ($proof === null || ! $this->provesSameDeclaration($proof, $declaration)) {

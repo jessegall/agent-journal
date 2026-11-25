@@ -588,4 +588,26 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
 
         $query->orderByDesc('id');
     }
+
+    /**
+     * The rows of the given title.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTitle(Builder $query, string $title): void
+    {
+        $query->where('title', $title);
+    }
+
+    /**
+     * The rows of the given number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withNumber(Builder $query, mixed $number): void
+    {
+        $query->where('number', $number);
+    }
 }

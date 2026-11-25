@@ -39,7 +39,7 @@ final readonly class WatchedRuntimes
         return TerminalView::query()
             ->acrossActors()
             ->watchedOnHost($hostId)
-            ->where('agent_runtime_id', $runtimeId)
+            ->ofAgentRuntime($runtimeId)
             ->exists();
     }
 

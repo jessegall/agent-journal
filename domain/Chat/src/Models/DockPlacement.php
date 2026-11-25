@@ -21,11 +21,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A source docked in one chat, shared by both sides of it: which source, in which presentation, and who
- * docked it when. Removing it never touches the source.
- *
  * @property string $id
  * @property string $inbox_id
  * @property string $dockable_type
@@ -34,6 +32,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $assigned_by_type
  * @property string $assigned_by_id
  * @property CarbonImmutable $assigned_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $source attribute
  */
 #[Fillable([
     'inbox_id',

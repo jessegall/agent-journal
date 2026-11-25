@@ -27,18 +27,16 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One numbered attempt of a gateway configuration to serve its public origin, owned by one supervisor run; it serves
- * every share made under that configuration.
- *
  * @property string $id
  * @property string $share_gateway_configuration_id
  * @property int $endpoint_version
  * @property string $run_id
  * @property string $public_origin
  * @property GatewayEndpointState $state
- * @property CarbonImmutable|null $last_health_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $last_health_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $to_gateway_endpoint attribute
  */
 #[Fillable([
     'endpoint_version',

@@ -44,7 +44,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
         $session = AgentSession::lockedForUpdate($sessionId);
         $start = ProcessStart::lockedCurrentOf($session->id);
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity;
-        $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
+        $context = StartRecord::query()->underRequest($session->start_request_id)->value('context_reference');
 
         $conversation = DriverConversation::query()->native(
             (string) $session->driver_key,
@@ -88,7 +88,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
      */
     private function confirmConversation(string $sessionId, string $nativeId): void
     {
-        $start = StartRecord::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
+        $start = StartRecord::query()->ofSession($sessionId)->whereNull('conversation_resumed')->first();
 
         if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
             return;

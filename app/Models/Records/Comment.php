@@ -31,30 +31,31 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A comment any actor left on a record: about the whole record, or about an exact place in one version of its text.
- * It is written once and never changed.
- *
  * @property string $id
  * @property string $target_type
  * @property string $target_id
  * @property ActorType $author_type
  * @property string $author_id
- * @property string|null $author_session_id
+ * @property ?string $author_session_id
  * @property string $body
- * @property string|null $version_id
- * @property string|null $version_label
- * @property string|null $anchor_type
- * @property int|null $section_number
- * @property int|null $first_line
- * @property int|null $last_line
- * @property string|null $quote
- * @property int|null $start_offset
- * @property int|null $end_offset
+ * @property ?string $version_id
+ * @property ?string $version_label
+ * @property ?string $anchor_type
+ * @property ?int $section_number
+ * @property ?int $first_line
+ * @property ?int $last_line
+ * @property ?string $quote
+ * @property ?int $start_offset
+ * @property ?int $end_offset
  * @property string $submission_key
  * @property string $submission_hash
- * @property CarbonImmutable|null $created_at
+ * @property Carbon $created_at
+ * @property mixed $details attribute
+ * @property mixed $place_label attribute
+ * @property mixed $target attribute
  */
 #[Fillable([
     'body',

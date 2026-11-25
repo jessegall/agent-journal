@@ -19,7 +19,7 @@ final readonly class ProjectReadRetentionService
     public function prune(CarbonImmutable $now): void
     {
         ProjectRead::query()
-            ->where('state', ProjectReadState::Pending->value)
+            ->withState(ProjectReadState::Pending->value)
             ->where('expires_at', '<', $now)
             ->update(['state' => ProjectReadState::Expired->value]);
 

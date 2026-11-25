@@ -21,50 +21,51 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\ProfileSnapshots;
 use App\Values\CompiledScript;
-use App\Values\ProfileAuthorization;
 use App\Values\ProfileBase;
 use App\Values\ProfileDefinition;
 use App\Values\ProfileKey;
 use App\Values\ProfileScript;
 use App\Values\ProfileSnapshot;
-use App\Values\ProfileStartPolicy;
 use App\Values\ScriptSource;
 use App\Values\SupervisorProfile;
 use App\Values\SupervisorRoutes;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use PhpOption\None;
+use Illuminate\Support\Carbon;
 
 /**
- * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model,
- * skill lists, start policy
- * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The start policy
- * is kept in its own columns and read back through ProfileStartPolicyCast.
- *
  * @property string $id
  * @property string $profile_id
  * @property int $revision
  * @property ProfileBase $base
  * @property string $instructions
  * @property ModelTier $preferred_tier
- * @property list<string>|null $skill_allowlist
- * @property list<string> $required_skills
- * @property ProfileStartPolicy $start_policy
- * @property ProfileAuthorization $authorization
+ * @property ?array $skill_allowlist
+ * @property array $required_skills
+ * @property ?string $preferred_driver
+ * @property array $access_policy
+ * @property array $stop_conditions
+ * @property array $execution_policy
+ * @property string $configuration_hash
+ * @property array $provenance
+ * @property string $authorization_type
+ * @property array $policy_grants
+ * @property array $denied_commands
+ * @property array $read_grants
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
  * @property ScriptSource $script_source
- * @property array<string, mixed> $script_commands
- * @property array<string, mixed>|null $compiled_script
- * @property string|null $script_definition_digest
+ * @property array $script_commands
+ * @property ?array $compiled_script
+ * @property ?string $script_definition_digest
  * @property ActorType $author_type
  * @property string $author_id
- * @property CarbonImmutable $created_at
+ * @property Carbon $created_at
+ * @property mixed $script attribute
  */
 #[Fillable([
     'profile_id',

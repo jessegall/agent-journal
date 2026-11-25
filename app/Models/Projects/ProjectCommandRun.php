@@ -26,23 +26,19 @@ use Illuminate\Support\Carbon;
 use Spatie\LaravelData\DataCollection;
 
 /**
- * One journal verb a connected machine ran on the server, by its request id: who ran it, for which binding, with
- * which arguments, the fingerprint that binds the request id to that operation, the worker that runs it, its process
- * while it runs, and its frames and exit code once it ended. Its intent is kept before the process starts.
- *
  * @property string $id
  * @property string $request_key
  * @property string $agent_id
  * @property string $binding_id
- * @property list<string> $argv
+ * @property array $argv
+ * @property CommandRunState $state
+ * @property ?int $pid
+ * @property ?int $exit_code
+ * @property ProjectCommandFrame[]|DataCollection<array-key, ProjectCommandFrame> $frames
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  * @property string $fingerprint
  * @property string $worker
- * @property CommandRunState $state
- * @property int|null $pid
- * @property int|null $exit_code
- * @property DataCollection<int, ProjectCommandFrame> $frames
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
  */
 #[Fillable([
     'request_key',

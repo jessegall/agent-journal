@@ -654,4 +654,50 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $query->whereIn('id', AgentRuntime::query()->notStopped()->select('agent_session_id'));
     }
+
+    /**
+     * The rows of any of the given statuss.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<SessionStatus>  $statuss
+     */
+    #[Scope]
+    protected function withAnyStatus(Builder $query, array $statuss): void
+    {
+        $query->whereIn('status', $statuss);
+    }
+
+    /**
+     * The rows of the given agent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgent(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId);
+    }
+
+    /**
+     * The rows of any of the given ids.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function withAnyId(Builder $query, array $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
+
+    /**
+     * The rows of the given status.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withStatus(Builder $query, SessionStatus $status): void
+    {
+        $query->where('status', $status);
+    }
 }

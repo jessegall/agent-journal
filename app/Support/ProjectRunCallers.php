@@ -20,7 +20,7 @@ final readonly class ProjectRunCallers implements ProcessRunCallers
 
     public function callerOf(string $runId): Option
     {
-        $run = ProcessRun::query()->where('project_key', $this->projects->current())->whereKey($runId)->first();
+        $run = ProcessRun::query()->withProjectKey($this->projects->current())->whereKey($runId)->first();
 
         if ($run === null || $run->actor_type === null || $run->actor_id === null) {
             return None::create();

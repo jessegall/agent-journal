@@ -18,7 +18,7 @@ final readonly class ActivityRetentionService
         );
 
         ActivityEntry::query()
-            ->whereIn('id', fn ($pruned) => $pruned->fromSub($ranked, 'ranked')
+            ->withAnyId(fn ($pruned) => $pruned->fromSub($ranked, 'ranked')
                 ->where('place', '>', ActivityEntry::KEPT_ENTRY_LIMIT)
                 ->select('id'))
             ->delete();

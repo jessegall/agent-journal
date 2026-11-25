@@ -10,24 +10,21 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\NotificationSourceType;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One committed business event that notifies its recipients, once per occurrence key: what it came from and the
- * work it opens. Each recipient holds its own receipt of it.
- *
  * @property string $id
  * @property string $occurrence_key
  * @property NotificationSourceType $source_type
  * @property string $target_key
  * @property string $target_id
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Table('notification_occurrences')]
 #[Fillable([

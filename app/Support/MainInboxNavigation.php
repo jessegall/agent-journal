@@ -56,7 +56,7 @@ final readonly class MainInboxNavigation implements MainInbox
             $this->main()->assigneeIdentity(),
         );
 
-        return NavigationRequest::query()->acrossActors()->open()->whereIn('id', $held)->count();
+        return NavigationRequest::query()->acrossActors()->open()->withAnyId($held)->count();
     }
 
     private function main(): Inbox

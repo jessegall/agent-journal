@@ -12,14 +12,15 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * Which agent is the installation's main agent: one row at most, which Home and admission read the main agent through.
- *
  * @property string $id
  * @property string $agent_id
- * @property-read Agent $agent
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Agent $agent
  */
 #[Fillable(['agent_id'])]
 final class MainAgentDesignation extends Model implements ReadableModel

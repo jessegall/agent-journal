@@ -31,7 +31,7 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
     {
         $job = HelperJob::query()
             ->whereKey($command->jobId)
-            ->where('helper_identity_id', $command->identityId)
+            ->ofHelperIdentity($command->identityId)
             ->lockForUpdate()
             ->firstOr(HelperUnavailable::throwing()->toYou());
 

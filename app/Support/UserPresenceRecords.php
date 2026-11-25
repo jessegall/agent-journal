@@ -21,6 +21,6 @@ final readonly class UserPresenceRecords implements UserPresences
             return 0;
         }
 
-        return UserPresence::query()->freshAt($observedAt, $this->window)->whereIn('user_id', $ids)->count();
+        return UserPresence::query()->freshAt($observedAt, $this->window)->ofUsers($ids)->count();
     }
 }

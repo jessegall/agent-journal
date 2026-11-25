@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,11 +34,6 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * One run of a profile's activated script for an actor's work, started by one trigger: the revision and digest it
- * runs, the line its cursor stands on, the step it waits on while suspended, the workspace generation it started on,
- * how many returns in a row found that generation unchanged, what it told the actor when it ended, and its place
- * among the actor's runs on that work.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
@@ -48,13 +44,14 @@ use PhpOption\Some;
  * @property string $trigger_reference
  * @property ProfileRunState $state
  * @property int $cursor
- * @property string|null $awaited_step
- * @property int|null $generation
+ * @property ?string $awaited_step
+ * @property ?int $generation
  * @property int $unchanged_returns
- * @property string|null $message
+ * @property ?string $message
  * @property int $sequence
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, ProfileStepResult>|ProfileStepResult[] $results
  */
 #[Table('profile_runs')]
 #[Fillable([

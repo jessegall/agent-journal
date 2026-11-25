@@ -19,14 +19,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The owner approved a third-party driver registration, and the builds of it a host may run; a host enrolls such a
- * driver only once it is approved and runs one of these builds.
- *
  * @property string $id
  * @property string $driver_key
- * @property list<string> $build_pins
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array $build_pins
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'driver_key',

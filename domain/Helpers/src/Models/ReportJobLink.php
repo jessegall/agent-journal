@@ -18,19 +18,17 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * That one filed report answers one helper job, verified at filing against the start of the session that filed it.
- * It is never changed: a report is tied once.
- *
  * @property string $id
  * @property string $report_id
  * @property int $report_number
  * @property string $helper_job_id
  * @property string $dispatch_request_id
  * @property CarbonImmutable $verified_at
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Table('report_job_links')]
 #[Fillable([

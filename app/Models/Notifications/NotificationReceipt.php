@@ -20,21 +20,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One recipient's copy of one notification occurrence: its place in the scope's sequence, and when the recipient
- * read it or it was hidden. Only an unread receipt that is not hidden counts. Change it only through
- * NotificationReceipts, which holds the scope's lock so the count follows.
- *
  * @property string $id
  * @property string $occurrence_id
  * @property string $scope_id
  * @property int $sequence
- * @property CarbonImmutable|null $read_at
- * @property CarbonImmutable|null $hidden_at
- * @property CarbonImmutable|null $created_at
- * @property-read NotificationOccurrence $occurrence
+ * @property ?CarbonImmutable $read_at
+ * @property ?CarbonImmutable $hidden_at
+ * @property ?Carbon $created_at
+ * @property NotificationOccurrence $occurrence
  */
 #[Table('notification_receipts')]
 #[Fillable([

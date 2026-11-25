@@ -52,13 +52,13 @@ final readonly class MapSessionOutputs
      */
     private function continuedFrom(AgentSession $session): array
     {
-        $predecessorId = StartRecord::query()->where('request_id', $session->start_request_id)->value(
+        $predecessorId = StartRecord::query()->underRequest($session->start_request_id)->value(
             'context_reference',
         );
 
         $isSameAgent = is_string($predecessorId) && AgentSession::query()
             ->whereKey($predecessorId)
-            ->where('agent_id', $session->agent_id)
+            ->ofAgent($session->agent_id)
             ->exists();
 
         if ($isSameAgent) {
@@ -75,7 +75,7 @@ final readonly class MapSessionOutputs
      */
     private function replaceFor(ProcessStart $start, array $pathsByConversation): void
     {
-        SessionOutputGrant::query()->where('session_id', $start->session_id)->delete();
+        SessionOutputGrant::query()->ofSession($start->session_id)->delete();
 
         SessionOutputGrant::createMany($start, $pathsByConversation);
     }

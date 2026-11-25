@@ -571,4 +571,26 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
                 ->where('heartbeat_at', '<', $moment)
                 ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));
     }
+
+    /**
+     * The rows of the given project key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withProjectKey(Builder $query, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * The rows of the given admission.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAdmission(Builder $query, string $admissionId): void
+    {
+        $query->where('admission_id', $admissionId);
+    }
 }

@@ -17,7 +17,7 @@ final readonly class SessionInspections
 {
     public function of(string $sessionId): SessionInspection
     {
-        $policy = SessionPolicy::query()->where('session_id', $sessionId)->sole();
+        $policy = SessionPolicy::query()->ofSession($sessionId)->sole();
 
         return SessionInspection::of($policy, $this->lastStop($sessionId, $policy->stopConditionLabels()));
     }

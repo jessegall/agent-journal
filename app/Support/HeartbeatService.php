@@ -103,7 +103,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
             $this->credentials->revoke($session);
 
             AgentRuntime::query()
-                ->where('agent_session_id', $session->id)
+                ->ofAgentSession($session->id)
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()
@@ -126,7 +126,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
             ->whereNotNull('failing_since')
             ->orWhere('last_answered_at', '<', $cutoff)
             ->select('id');
-        $isAnyHostReachable = Host::query()->whereNull('revoked_at')->whereNotIn('id', $unreachableHosts)->exists();
+        $isAnyHostReachable = Host::query()->unrevoked()->whereNotIn('id', $unreachableHosts)->exists();
 
         ProcessStart::supervised()
             ->where('state', ProcessStartState::Pending->value)
@@ -138,7 +138,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                         ? $hosted->whereNull('host_id')->orWhereNotIn('host_id', $unreachableHosts)
                         : $hosted->whereNotIn('host_id', $unreachableHosts))))
             ->whereIn('session_id', AgentSession::query()
-                ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+                ->withAnyStatus(array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
                 ->whereNull('last_heartbeat_at')
                 ->select('id'))
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
@@ -153,16 +153,15 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
     private function endUnservedSince(CarbonImmutable $cutoff, CarbonImmutable $presenceCutoff): void
     {
         $liveHosts = AgentRuntime::query()
-            ->whereIn('agent_session_id', AgentSession::query()
+            ->ofSessions(AgentSession::query()
                 ->where('last_heartbeat_at', '>', $presenceCutoff)
                 ->select('id'))
             ->select('host_id');
 
         AgentSession::query()
-            ->where('status', SessionStatus::Silent->value)
+            ->withStatus(SessionStatus::Silent->value)
             ->where('silent_since', '<=', $cutoff)
-            ->whereIn('id', AgentRuntime::query()->whereIn('host_id', $liveHosts)->select('agent_session_id'))
-            ->limit(self::UNSERVED_ENDED_LIMIT)
+            ->withAnyId(AgentRuntime::query()->whereIn('host_id', $liveHosts)->select('agent_session_id'))->limit(self::UNSERVED_ENDED_LIMIT)
             ->get()
             ->each(fn (AgentSession $session) => $this->endSession(
                 $session,
@@ -186,7 +185,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
             $this->credentials->revoke($session);
 
             AgentRuntime::query()
-                ->where('agent_session_id', $session->id)
+                ->ofAgentSession($session->id)
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()
@@ -202,7 +201,7 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
      */
     private function markSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
-        AgentSession::query()->where('status', SessionStatus::Active->value)
+        AgentSession::query()->withStatus(SessionStatus::Active->value)
             ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
                 ->orWhere(fn (Builder $neverBeat) => $neverBeat
                     ->whereNull('last_heartbeat_at')

@@ -25,19 +25,26 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * How a draft ended: the revision it started from and the one it left, why it closed, who closed it, and whether
- * it published a new revision. It is written once.
- *
+ * @property string $id
  * @property string $token
+ * @property string $document_id
  * @property int $base_revision_number
  * @property int $result_revision_number
+ * @property ActorType $author_type
+ * @property string $author_id
  * @property CloseCause $cause
+ * @property ?ActorType $closer_type
+ * @property ?string $closer_id
+ * @property ?string $reason
  * @property bool $published
- * @property string|null $closer_id
- * @property string|null $reason
- * @property CarbonImmutable|null $closed_at
+ * @property CarbonImmutable $closed_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $card attribute
+ * @property mixed $result attribute
  */
 #[Fillable([
     'token',

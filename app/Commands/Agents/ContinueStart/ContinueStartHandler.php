@@ -37,7 +37,7 @@ final readonly class ContinueStartHandler implements CommandHandler
     {
         $predecessor = AgentSession::query()
             ->whereKey($command->sessionId)
-            ->where('agent_id', $command->agentId)
+            ->ofAgent($command->agentId)
             ->first();
 
         if ($predecessor === null) {

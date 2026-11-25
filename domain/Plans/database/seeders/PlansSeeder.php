@@ -28,7 +28,7 @@ final class PlansSeeder extends Seeder
         array $startingTaskIds = [],
         array $reproducingTaskIds = [],
     ): void {
-        if (Plan::query()->where('title', self::BUILD_TITLE)->exists()) {
+        if (Plan::query()->withTitle(self::BUILD_TITLE)->exists()) {
             return;
         }
 

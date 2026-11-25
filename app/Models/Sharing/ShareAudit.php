@@ -21,18 +21,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One appended fact about sharing: a step of a share's life, a public read allowed or denied, a gateway change or a
- * pruning, with who caused it and a reason code. It holds no content, secret or address and is never changed.
- *
  * @property string $id
- * @property string|null $share_id
+ * @property ?string $share_id
  * @property ShareAuditType $type
  * @property ActorType $actor_type
  * @property string $actor_id
- * @property string|null $reason_code
- * @property CarbonImmutable $created_at
+ * @property ?string $reason_code
+ * @property Carbon $created_at
+ * @property mixed $entry attribute
  */
 #[Fillable([
     'type',

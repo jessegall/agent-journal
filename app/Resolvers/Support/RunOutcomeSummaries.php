@@ -31,7 +31,7 @@ final readonly class RunOutcomeSummaries
     {
         $run = ProcessRun::query()
             ->acrossActors()
-            ->where('project_key', $this->projects->current())
+            ->withProjectKey($this->projects->current())
             ->whereKey($runId)
             ->firstOption();
 
@@ -48,7 +48,7 @@ final readonly class RunOutcomeSummaries
     {
         return ProcessRun::query()
             ->forActor()
-            ->where('project_key', $this->projects->current())
+            ->withProjectKey($this->projects->current())
             ->whereKey($runId)
             ->exists();
     }

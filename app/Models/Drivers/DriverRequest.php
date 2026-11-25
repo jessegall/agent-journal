@@ -785,4 +785,95 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $query->orderBy('sequence');
     }
+
+    /**
+     * The rows of any of the given agent runtimes.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentRuntimeIds
+     */
+    #[Scope]
+    protected function ofAgentRuntimes(Builder $query, array $agentRuntimeIds): void
+    {
+        $query->whereIn('agent_runtime_id', $agentRuntimeIds);
+    }
+
+    /**
+     * The rows of the given agent runtime.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgentRuntime(Builder $query, string $agentRuntimeId): void
+    {
+        $query->where('agent_runtime_id', $agentRuntimeId);
+    }
+
+    /**
+     * The rows of the given idempotency key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withIdempotencyKey(Builder $query, string $idempotencyKey): void
+    {
+        $query->where('idempotency_key', $idempotencyKey);
+    }
+
+    /**
+     * The rows of any of the given progresss.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<RequestProgress>  $progresss
+     */
+    #[Scope]
+    protected function withAnyProgress(Builder $query, array $progresss): void
+    {
+        $query->whereIn('progress', $progresss);
+    }
+
+    /**
+     * The rows of the given operation.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withOperation(Builder $query, DriverOperation $operation): void
+    {
+        $query->where('operation', $operation);
+    }
+
+    /**
+     * The rows of the given navigation request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofNavigationRequest(Builder $query, string $navigationRequestId): void
+    {
+        $query->where('navigation_request_id', $navigationRequestId);
+    }
+
+    /**
+     * The rows of any of the given operations.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<DriverOperation>  $operations
+     */
+    #[Scope]
+    protected function withAnyOperation(Builder $query, array $operations): void
+    {
+        $query->whereIn('operation', $operations);
+    }
+
+    /**
+     * The rows of the given progress.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withProgress(Builder $query, RequestProgress $progress): void
+    {
+        $query->where('progress', $progress);
+    }
 }

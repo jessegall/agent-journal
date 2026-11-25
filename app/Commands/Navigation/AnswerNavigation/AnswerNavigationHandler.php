@@ -36,8 +36,8 @@ final readonly class AnswerNavigationHandler implements CommandHandler
         $navigation = $this->answering->lockedForAnswerer($command->navigationId);
 
         $sent = DriverRequest::query()
-            ->where('navigation_request_id', $navigation->id)
-            ->where('idempotency_key', NavigationRounds::keyOf($navigation, $command->expectedRowVersion))
+            ->ofNavigationRequest($navigation->id)
+            ->withIdempotencyKey(NavigationRounds::keyOf($navigation, $command->expectedRowVersion))
             ->first();
 
         if ($sent !== null) {

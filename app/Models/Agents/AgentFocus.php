@@ -18,15 +18,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * The one record an agent focuses on, named by its type and id; an agent focused on nothing has no row.
- *
  * @property string $id
  * @property string $agent_id
  * @property string $focused_type
  * @property string $focused_id
  * @property CarbonImmutable $focused_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $record attribute
  */
 final class AgentFocus extends Model implements EventSource, ReadableModel
 {

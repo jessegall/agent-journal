@@ -22,10 +22,7 @@ final readonly class SendDriverRequestAgainHandler implements CommandHandler
         $key = self::KEY_PREFIX.$original->id;
 
         // A second press answers the request the first one made.
-        $sent = DriverRequest::query()->where(
-            'agent_runtime_id',
-            $runtime->id,
-        )->where('idempotency_key', $key)->first();
+        $sent = DriverRequest::query()->ofAgentRuntime($runtime->id)->withIdempotencyKey($key)->first();
 
         if ($sent !== null) {
             return $sent->id;

@@ -35,8 +35,8 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
         $busy = [...$this->busyAgents($agentIds), ...WorkReservation::reservedAgentIds($agentIds)];
 
         $purposeConversations = DriverConversation::query()
-            ->whereIn('agent_id', $agentIds)
-            ->where('context_reference', $query->purposeReference)
+            ->ofAgents($agentIds)
+            ->withContextReference($query->purposeReference)
             ->readAll('every conversation the offered helpers kept under one purpose, to prove exposure')
             ->get();
 
@@ -98,14 +98,14 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
     private function busyAgents(array $ids): array
     {
         $running = AgentSession::query()
-            ->whereIn('agent_id', $ids)
+            ->ofAgents($ids)
             ->running()
             ->readAll('the running sessions of the offered helpers')
             ->pluck('agent_id')
             ->all();
 
         $starting = ProcessStart::query()
-            ->whereIn('agent_id', $ids)
+            ->ofAgents($ids)
             ->unresolved()
             ->readAll('the unresolved starts of the offered helpers')
             ->pluck('agent_id')
@@ -132,14 +132,14 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
         }
 
         $lastVisits = ConversationVisit::query()
-            ->whereIn('conversation_id', array_keys($owners))
+            ->ofConversations(array_keys($owners))
             ->orderByDesc('observed_at')
             ->readAll('the visits of the offered helpers\' conversations under one purpose, to find each last one')
             ->get()
             ->unique('conversation_id');
 
         $models = AgentSession::query()
-            ->whereIn('id', $lastVisits->pluck('session_id')->all())
+            ->withAnyId($lastVisits->pluck('session_id')->all())
             ->readAll('the sessions of those last visits')
             ->pluck('model', 'id');
 

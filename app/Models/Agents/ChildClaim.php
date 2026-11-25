@@ -24,10 +24,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One child dispatched for a connected parent: the parent runtime and its generation, the child and its role, the
- * binding, the verified commit it starts from and whether the parent was dirty then, and its ancestry: the claim
- * above it and the root runtime of the chain.
- *
  * @property string $id
  * @property string $parent_runtime_id
  * @property int $parent_generation
@@ -36,11 +32,11 @@ use Illuminate\Support\Carbon;
  * @property string $binding_id
  * @property string $base_oid
  * @property bool $parent_was_dirty
- * @property string|null $parent_claim_id
+ * @property ?string $parent_claim_id
  * @property string $root_runtime_id
- * @property-read ChildCheckout $checkout
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $checkout attribute
  */
 #[Fillable([
     'parent_runtime_id',

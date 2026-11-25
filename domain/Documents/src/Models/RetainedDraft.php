@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -33,6 +34,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $reason
  * @property ActorType $author_type
  * @property string $author_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $view attribute
+ * @property mixed $working_text attribute
  */
 #[Fillable([
     'document_id',

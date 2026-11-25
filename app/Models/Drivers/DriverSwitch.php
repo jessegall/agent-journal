@@ -390,4 +390,16 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $finals = array_filter(DriverSwitchStage::cases(), fn (DriverSwitchStage $stage) => $stage->isFinal());
         $query->whereNotIn('stage', array_map(fn (DriverSwitchStage $stage) => $stage->value, $finals));
     }
+
+    /**
+     * The rows of any of the given agents.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $agentIds
+     */
+    #[Scope]
+    protected function ofAgents(Builder $query, array $agentIds): void
+    {
+        $query->whereIn('agent_id', $agentIds);
+    }
 }

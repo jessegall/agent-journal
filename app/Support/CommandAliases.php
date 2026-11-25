@@ -15,7 +15,7 @@ final readonly class CommandAliases implements AliasResolver
 {
     public function exists(string $name): bool
     {
-        return CommandAlias::query()->where('name', $name)->exists();
+        return CommandAlias::query()->withName($name)->exists();
     }
 
     public function find(string $name, string $projectKey): AliasLookup

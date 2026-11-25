@@ -52,32 +52,32 @@ use PhpOption\None;
 use PhpOption\Option;
 
 /**
- * A public share of one root record: an agent's proposal, or the owner's grant with its bearer token kept as a
- * digest and as ciphertext for the owner alone, its gateway configuration version, its approved scope version and
- * its deadline. Neither token column is ever serialized.
- *
  * @property string $id
  * @property string $number_group_id
  * @property int $number
  * @property ShareState $state
  * @property string $root_type
  * @property string $root_id
- * @property string|null $owner_user_id
- * @property ActorType|null $requester_type
- * @property string|null $requester_id
- * @property string|null $share_gateway_configuration_id
- * @property int|null $configuration_version
+ * @property ?string $owner_user_id
+ * @property ?ActorType $requester_type
+ * @property ?string $requester_id
+ * @property ?string $share_gateway_configuration_id
+ * @property ?int $configuration_version
  * @property int $scope_version
- * @property string|null $token_digest
- * @property string|null $token_ciphertext
+ * @property ?string $token_digest
+ * @property ?mixed $token_ciphertext
  * @property CarbonImmutable $expires_at
- * @property CarbonImmutable|null $terminal_at
+ * @property ?CarbonImmutable $terminal_at
  * @property int $pruned_allowed_reads
  * @property int $pruned_denied_reads
  * @property int $pruned_lifecycle_rows
- * @property CarbonImmutable|null $last_pruned_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $last_pruned_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $fact attribute
+ * @property mixed $proposal_status attribute
+ * @property mixed $root attribute
+ * @property mixed $summary attribute
  */
 #[Hidden([
     'token_digest',

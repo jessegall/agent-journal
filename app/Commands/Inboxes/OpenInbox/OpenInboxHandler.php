@@ -16,8 +16,8 @@ final readonly class OpenInboxHandler implements CommandHandler
     public function handle(OpenInboxCommand $command): string
     {
         $inbox = Inbox::query()
-            ->where('provider_key', $command->providerKey)
-            ->where('provider_id', $command->providerId)
+            ->withProviderKey($command->providerKey)
+            ->ofProvider($command->providerId)
             ->lockForUpdate()
             ->first() ?? Inbox::create($command->providerKey, $command->providerId, $command->label);
 

@@ -41,14 +41,9 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * One project folder on one machine, joined to a project through that machine's host, with the main agent that works
- * in it. The relay names the folder by an opaque root id; its canonical path never reaches a label or a log. Every
- * credential it holds belongs to one authority generation, which a revocation raises.
- *
  * @property string $id
  * @property string $host_id
  * @property string $project_id
- * @property string|null $environment_id
  * @property string $main_agent_id
  * @property string $root_id
  * @property string $canonical_root
@@ -57,22 +52,25 @@ use PhpOption\Option;
  * @property string $installation_nonce
  * @property int $authority_generation
  * @property BindingReadiness $readiness
- * @property CarbonImmutable|null $last_contact_at
- * @property CarbonImmutable|null $presence_expires_at
- * @property string|null $boot_id
+ * @property ?CarbonImmutable $last_contact_at
+ * @property ?CarbonImmutable $presence_expires_at
+ * @property ?string $boot_id
  * @property int $report_sequence
  * @property int $boot_generation
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $environment_id
  * @property int $setup_generation
- * @property string|null $reconciled_boot_id
- * @property string|null $leased_runtime_id
- * @property CarbonImmutable|null $lease_expires_at
- * @property CarbonImmutable|null $revoked_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read Agent $mainAgent
- * @property-read Host $host
- * @property-read Project $project
- * @property-read Environment|null $environment
+ * @property ?string $reconciled_boot_id
+ * @property ?string $leased_runtime_id
+ * @property ?CarbonImmutable $lease_expires_at
+ * @property ?CarbonImmutable $revoked_at
+ * @property mixed $presence_receipt attribute
+ * @property mixed $revoked_at_text attribute
+ * @property ?Environment $environment
+ * @property Host $host
+ * @property Agent $mainAgent
+ * @property Project $project
  */
 #[Fillable([
     'host_id',

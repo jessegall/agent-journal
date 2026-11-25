@@ -17,12 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The installation-wide holder of the journal's global numbers, such as task 12 or plan 3; one row named journal.
- *
  * @property string $id
  * @property string $name
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable(['name'])]
 final class GlobalGroup extends Model implements ReadableModel

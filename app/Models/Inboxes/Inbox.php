@@ -232,4 +232,38 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     {
         $query->where('provider_key', self::PERSONAL_PROVIDER)->where('provider_id', $actor->text());
     }
+
+    /**
+     * The rows of the given provider.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProvider(Builder $query, string $providerId): void
+    {
+        $query->where('provider_id', $providerId);
+    }
+
+    /**
+     * The rows of the given provider key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withProviderKey(Builder $query, string $providerKey): void
+    {
+        $query->where('provider_key', $providerKey);
+    }
+
+    /**
+     * The rows of any of the given provider keys.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $providerKeys
+     */
+    #[Scope]
+    protected function withAnyProviderKey(Builder $query, array $providerKeys): void
+    {
+        $query->whereIn('provider_key', $providerKeys);
+    }
 }

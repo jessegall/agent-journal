@@ -26,21 +26,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One committed change of a task, kept for good: written once in the change's transaction and never changed, so a
- * later run never rewrites what an earlier run's block or finish said.
- *
  * @property string $id
  * @property string $task_id
- * @property string|null $task_run_id
- * @property int|null $run_number
+ * @property ?string $task_run_id
+ * @property ?int $run_number
  * @property ActorType $actor_type
  * @property string $actor_id
  * @property TaskState $from_state
  * @property TaskState $to_state
- * @property string|null $text
+ * @property ?string $text
  * @property int $sequence
  * @property Carbon $created_at
- * @property-read TaskTransition $transition
+ * @property mixed $transition attribute
  */
 #[Table('task_history')]
 #[Fillable([

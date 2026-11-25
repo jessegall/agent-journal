@@ -26,18 +26,19 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One numbered run of a task: who started it, whether it is still worked on and how it ended. Who works on it now is
- * the holder of its Core claim, never a column here.
- *
  * @property string $id
  * @property string $task_id
  * @property int $run_number
  * @property string $started_by_type
  * @property string $started_by_id
  * @property TaskRunState $state
- * @property string|null $outcome
+ * @property ?string $outcome
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $starter attribute
  */
 #[Table('task_runs')]
 #[Fillable([

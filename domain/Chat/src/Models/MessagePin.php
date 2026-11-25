@@ -15,16 +15,17 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One message a user or agent pinned in one chat, its own and nobody else's: leaving and rejoining never moves it.
- *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $inbox_id
  * @property string $message_id
  * @property CarbonImmutable $pinned_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'inbox_id',

@@ -22,15 +22,12 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * The stored overrides of one settings owner, shared by the whole installation: one row per owner, whose revision
- * rises by one with each change. No row means revision 0 and every setting at its default.
- *
  * @property string $id
  * @property string $owner
  * @property int $revision
  * @property SettingsDocument $document
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('settings_records')]
 #[Fillable([

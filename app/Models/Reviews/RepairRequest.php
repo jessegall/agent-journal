@@ -25,9 +25,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One request to repair reviewed work on the actor and checkout that did it: from a returned review or a merge that
- * conflicted, once per decision or attempt, with the findings and, for a conflict, the target commit to repair onto.
- *
  * @property string $id
  * @property string $source
  * @property string $certificate
@@ -36,10 +33,11 @@ use Illuminate\Support\Carbon;
  * @property string $worker_type
  * @property string $worker_id
  * @property string $findings
- * @property string|null $target_commit
+ * @property ?string $target_commit
  * @property RepairRequestState $state
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $worker attribute
  */
 #[Table('repair_requests')]
 #[Fillable([

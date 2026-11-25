@@ -25,8 +25,8 @@ final readonly class CommandRequestViews
             ->firstOrFail();
 
         $next = $request->nextStep;
-        $proposals = RuleProposal::query()->where('command_request_id', $request->id)->limit(50)->get();
-        $readers = ReaderRevision::query()->where('command_request_id', $request->id)->limit(50)->get();
+        $proposals = RuleProposal::query()->ofCommandRequest($request->id)->limit(50)->get();
+        $readers = ReaderRevision::query()->ofCommandRequest($request->id)->limit(50)->get();
 
         return CommandRequestShown::from([
             'requestId' => $request->id,

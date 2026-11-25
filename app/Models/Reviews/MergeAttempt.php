@@ -32,10 +32,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The one merge of an approval: the actor, ask and version that admitted it, the exact reviewed base and head under
- * their imported ref, the target branch and the head it had before, and how it ended, with the result commit or the
- * reason the target was left as it was. A replay of the approval finds this attempt and runs no second git effect.
- *
  * @property string $id
  * @property string $decision_id
  * @property string $work_type
@@ -50,14 +46,16 @@ use Illuminate\Support\Carbon;
  * @property string $head
  * @property string $import_ref
  * @property MergeAttemptState $state
- * @property string|null $target_before
- * @property string|null $result
- * @property MergeRefusalReason|null $refusal
- * @property string|null $evidence
+ * @property ?string $target_before
+ * @property ?string $result
+ * @property ?MergeRefusalReason $refusal
+ * @property ?string $evidence
  * @property bool $owner_attested
- * @property Carbon|null $acknowledged_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $acknowledged_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $outcome attribute
+ * @property mixed $result_ref attribute
  */
 #[Table('merge_attempts')]
 #[Fillable([

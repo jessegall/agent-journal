@@ -8,24 +8,21 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
-use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A report's claim to answer a helper job that was refused, kept for reconciliation: the report, the job its
- * session's start named, who filed it and why the claim failed.
- *
  * @property string $id
  * @property string $report_id
  * @property string $owner_reference
  * @property string $filer_type
  * @property string $filer_id
  * @property ReportJobDiscrepancyReason $reason
- * @property CarbonImmutable|null $created_at
+ * @property ?Carbon $created_at
  */
 #[Table('report_job_discrepancies')]
 #[Fillable([

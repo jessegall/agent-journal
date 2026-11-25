@@ -25,7 +25,7 @@ final class GrantEnvironmentCommand extends Command
 
     public function handle(OwnerCommands $commands): int
     {
-        $user = User::query()->where('email', (string) $this->argument('email'))->firstOrFail();
+        $user = User::query()->withEmail((string) $this->argument('email'))->firstOrFail();
         $environmentId = $this->option('environment');
         $environment = is_string($environmentId) && $environmentId !== '' ? $environmentId : null;
 

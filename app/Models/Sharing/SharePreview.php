@@ -29,22 +29,19 @@ use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * What the owner saw and selected before sharing a root: the linked records with their links and publication
- * versions, under one gateway configuration version, sealed by a checksum over all of it. It lasts ten minutes and is
- * consumed once.
- *
  * @property string $id
  * @property string $owner_user_id
  * @property string $root_type
  * @property string $root_id
- * @property list<ShareSelectedTarget> $selection
+ * @property array $selection
  * @property string $share_gateway_configuration_id
  * @property int $configuration_version
  * @property string $checksum
  * @property CarbonImmutable $expires_at
- * @property CarbonImmutable|null $consumed_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $consumed_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $root attribute
  */
 #[Fillable(
     [

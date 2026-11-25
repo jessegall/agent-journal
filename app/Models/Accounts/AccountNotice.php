@@ -23,16 +23,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * Something the owner should look at on a driver's accounts, kept even when no account or session exists: the
- * driver, the safe reason and how often it happened, until the owner dismisses it or a later success resolves it.
- *
  * @property string $id
  * @property string $driver
  * @property AccountNoticeReason $reason
  * @property int $times
- * @property CarbonImmutable|null $resolved_at
- * @property Carbon $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $resolved_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'driver',

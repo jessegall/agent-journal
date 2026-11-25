@@ -12,27 +12,24 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\RunLogicalResult;
 use App\Enums\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * The one logical result of one run attempt: what the root plan ended with, where that came from, and a version
- * that rises when a genuine signed result corrects a provisional one in place.
- *
  * @property string $id
  * @property string $run_id
  * @property string $attempt_id
  * @property RunLogicalResult $result
  * @property RunResultSource $source
  * @property int $version
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('run_outcomes')]
 #[Fillable([

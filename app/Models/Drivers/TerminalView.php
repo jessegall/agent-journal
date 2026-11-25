@@ -276,4 +276,15 @@ final class TerminalView extends Model implements EventSource, ReadableModel
     {
         $query->whereNull('closed_at')->where('expires_at', '<', $now);
     }
+
+    /**
+     * The rows of the given agent runtime.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgentRuntime(Builder $query, string $agentRuntimeId): void
+    {
+        $query->where('agent_runtime_id', $agentRuntimeId);
+    }
 }

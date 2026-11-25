@@ -44,7 +44,7 @@ final class PlanTasksSeeder extends Seeder
     private function tasks(string ...$titles): array
     {
         return array_map(
-            fn (string $title) => Task::query()->where('title', $title)->firstOr(
+            fn (string $title) => Task::query()->withTitle($title)->firstOr(
                 fn () => Task::factory()->create(['title' => $title]),
             )->id,
             array_values($titles),

@@ -70,10 +70,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
 
         $taskGroups = array_fill_keys($phaseIds, []);
 
-        $phaseTasks = PhaseTask::query()->whereIn(
-            'phase_id',
-            $phaseIds,
-        )->readAll('every task of the assigned phases')->orderBy('position')->get();
+        $phaseTasks = PhaseTask::query()->ofPhases($phaseIds)->readAll('every task of the assigned phases')->orderBy('position')->get();
 
         foreach ($phaseTasks as $phaseTask) {
             $taskGroups[$phaseTask->phase_id][] = $phaseTask->task_id;

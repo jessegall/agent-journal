@@ -13,28 +13,29 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
+use App\Models\Records\Comment;
 use App\Values\TextVersion;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
- * A file of a connected project that its host read whole at least once: its path in one connected folder and the
- * versions it was read in, so a comment on a range of its lines points at the exact text of one version.
- *
  * @property string $id
  * @property string $number_group_id
  * @property int $number
  * @property string $binding_id
  * @property string $path
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property Collection<int, Comment>|Comment[] $comments
+ * @property Collection<int, ProjectFileVersion>|ProjectFileVersion[] $versions
  */
 #[Fillable(['path'])]
 #[Table('project_files')]

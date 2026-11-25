@@ -20,17 +20,20 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * A record settled as needing no more attention: who did it, why, and the revision it was at. Written once; a later
- * changed revision makes the document active again and leaves this row in its history.
- *
  * @property string $id
+ * @property string $parent_type
+ * @property string $parent_id
  * @property ActorType $actor_type
  * @property string $actor_id
  * @property string $reason
- * @property int|null $revision_number
+ * @property ?int $revision_number
  * @property CarbonImmutable $settled_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $card attribute
  */
 #[Fillable([
     'parent_type',

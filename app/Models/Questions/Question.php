@@ -19,6 +19,8 @@ use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -176,5 +178,38 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     public static function lockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * The rows of the given target.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofTarget(Builder $query, string $targetId): void
+    {
+        $query->where('target_id', $targetId);
+    }
+
+    /**
+     * The rows of the given target type.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTargetType(Builder $query, string $targetType): void
+    {
+        $query->where('target_type', $targetType);
+    }
+
+    /**
+     * The rows of the given inbox.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofInbox(Builder $query, string $inboxId): void
+    {
+        $query->where('inbox_id', $inboxId);
     }
 }

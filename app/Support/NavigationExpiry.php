@@ -28,7 +28,7 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
     {
         $due = NavigationRequest::query()
             ->acrossActors()
-            ->whereIn('state', [
+            ->withAnyState([
                 NavigationState::Open,
                 NavigationState::Answering,
             ])

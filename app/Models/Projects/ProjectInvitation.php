@@ -24,23 +24,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A one-time install line the owner issued for one install attempt: the digest of its ticket, never the ticket, who
- * issued it, whether it connects a new project or joins one, when it expires and whether it was revoked or spent on a
- * binding. An attempt has at most one live line.
- *
  * @property string $id
  * @property string $ticket_digest
  * @property string $issuer_user_id
  * @property InvitationMode $mode
- * @property string|null $project_id
- * @property string|null $environment_id
- * @property string|null $install_attempt_id
+ * @property ?string $project_id
  * @property CarbonImmutable $expires_at
- * @property CarbonImmutable|null $revoked_at
- * @property CarbonImmutable|null $spent_at
- * @property string|null $binding_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $revoked_at
+ * @property ?CarbonImmutable $spent_at
+ * @property ?string $binding_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $install_attempt_id
+ * @property ?string $environment_id
  */
 #[Fillable([
     'ticket_digest',

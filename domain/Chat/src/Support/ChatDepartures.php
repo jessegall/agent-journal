@@ -35,7 +35,7 @@ final readonly class ChatDepartures implements InboxParticipationEnding
     private function leaveAll(ActorIdentity $actor): void
     {
         $chats = Inbox::query()
-            ->whereIn('provider_key', [
+            ->withAnyProviderKey([
                 ChatInboxes::PAIR_PROVIDER,
                 ChatInboxes::GROUP_PROVIDER,
             ])

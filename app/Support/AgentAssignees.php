@@ -69,7 +69,7 @@ final readonly class AgentAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        $agents = Agent::query()->whereNull('retired_at')
+        $agents = Agent::query()->unretired()
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
             ->orderBy('id')
             ->limit($page->limit + 1)

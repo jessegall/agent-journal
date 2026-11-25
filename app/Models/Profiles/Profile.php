@@ -21,17 +21,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A profile's lasting identity: its stable key, its label and which of its revisions is current. A retired profile
- * keeps its key and revisions but is no longer offered to new starts.
- *
  * @property string $id
  * @property string $key
  * @property string $label
  * @property string $description
- * @property string|null $current_revision_id
- * @property CarbonImmutable|null $retired_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $current_revision_id
+ * @property ?CarbonImmutable $retired_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'key',

@@ -31,26 +31,24 @@ use PhpOption\None;
 use PhpOption\Some;
 
 /**
- * One retained read of an actor's checkout, keyed by the reference of the run, instruction or evaluation that asked:
- * it waits for its host, which samples the checkout once and answers it. A later read of the same reference reuses
- * that one answer; a new reference samples fresh facts.
- *
  * @property string $id
  * @property string $read_reference
  * @property string $actor_type
  * @property string $actor_id
  * @property string $work
- * @property bool|null $available
- * @property bool|null $dirty
- * @property bool|null $clean
- * @property int|null $generation
- * @property CarbonImmutable|null $sampled_at
+ * @property ?bool $available
+ * @property ?bool $dirty
+ * @property ?bool $clean
+ * @property ?int $generation
+ * @property ?CarbonImmutable $sampled_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  * @property string $binding_id
  * @property string $checkout_id
  * @property string $head_oid
  * @property string $unavailable_reason
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property mixed $facts attribute
+ * @property mixed $reference attribute
  */
 #[Table('workspace_reads')]
 #[Fillable([

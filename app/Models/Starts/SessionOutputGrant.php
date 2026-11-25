@@ -19,19 +19,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One native conversation's saved output a journal session may read, granted by one process start in one mapping
- * generation of it. Only the grants of the session's current start and its newest mapping count; every remap
- * replaces the session's grants in its own transaction, so a stale grant never outlives it.
- *
  * @property string $id
  * @property string $session_id
  * @property string $start_id
  * @property int $mapping_generation
  * @property string $conversation_id
  * @property string $transcript_path
- * @property string|null $output_directory
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $output_directory
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $paths attribute
  */
 #[Fillable([
     'session_id',

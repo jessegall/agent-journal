@@ -18,7 +18,7 @@ final class SequencesSeeder extends Seeder
 
     public function run(): void
     {
-        if (Sequence::query()->where('name', self::NAME)->exists()) {
+        if (Sequence::query()->withName(self::NAME)->exists()) {
             return;
         }
 

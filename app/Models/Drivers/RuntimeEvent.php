@@ -11,26 +11,23 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\RuntimeEventType;
 use App\Models\Agents\AgentRuntime;
 use App\Values\RecordedEvent;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One numbered report of a runtime's generation, kept once by its sequence, so a report the host sends again is
- * taken once and a report that arrives after a missing one is known to.
- *
  * @property string $id
  * @property string $agent_runtime_id
  * @property int $generation
  * @property int $sequence
  * @property RuntimeEventType $event_type
- * @property string|null $driver_request_id
- * @property CarbonImmutable $created_at
- * @property CarbonImmutable $updated_at
+ * @property ?string $driver_request_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('runtime_events')]
 #[Fillable([

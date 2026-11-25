@@ -46,22 +46,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * One run of a sequence: its steps, the step it is on and whether it still runs. The agent and session following it are
- * set by starting it.
- * Only the agent following it reads it.
- *
  * @property string $id
  * @property string $number_group_id
- * @property string|null $sequence_id
  * @property int $number
+ * @property ?string $sequence_id
  * @property string $name
- * @property list<string> $steps
+ * @property array $steps
  * @property int $current_step
  * @property SequenceRunState $state
- * @property string|null $actor_type
- * @property string|null $actor_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $actor_type
+ * @property ?string $actor_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?Sequence $sequence
  */
 #[Fillable([
     'name',

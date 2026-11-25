@@ -26,18 +26,15 @@ use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
 /**
- * Classes and exact commands taken away from a permission source, such as a role; every later admission is narrowed
- * by them. Broadening again needs a new prepared session.
- *
  * @property string $id
  * @property string $permission_source
- * @property list<string> $revoked_classes
- * @property DataCollection<int, RevokedPatternData> $revoked_patterns
+ * @property array $revoked_classes
+ * @property RevokedPatternData[]|DataCollection<array-key, RevokedPatternData> $revoked_patterns
  * @property string $revoked_by_type
  * @property string $revoked_by_id
  * @property CarbonImmutable $revoked_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable(
     [

@@ -10,27 +10,23 @@ use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One step of connecting a project: issuing, replacing or revoking a line, redeeming it, recovering a binding or
- * revoking one, approving or revoking a terminal sign-in, with who took it, on which project and binding, when and how
- * it ended. It holds no ticket or its digest, device code, bearer, host secret, credential or canonical root.
- *
  * @property string $id
  * @property ConnectionAuditType $type
  * @property ConnectionAuditActor $actor_type
  * @property string $actor_id
- * @property string|null $invitation_id
- * @property string|null $project_id
- * @property string|null $binding_id
+ * @property ?string $invitation_id
+ * @property ?string $binding_id
  * @property string $outcome
- * @property CarbonImmutable $created_at
+ * @property Carbon $created_at
+ * @property ?string $project_id
  */
 #[Fillable([
     'type',

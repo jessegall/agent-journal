@@ -27,8 +27,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One line of a task run's log, kept against the run that was current when it was written, in the task's order.
- *
  * @property string $id
  * @property string $task_id
  * @property string $task_run_id
@@ -38,7 +36,7 @@ use Illuminate\Support\Carbon;
  * @property string $text
  * @property int $sequence
  * @property Carbon $created_at
- * @property-read TaskLogLine $line
+ * @property mixed $line attribute
  */
 #[Fillable([
     'task_id',

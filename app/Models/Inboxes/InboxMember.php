@@ -20,14 +20,12 @@ use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
 
 /**
- * One actor attached to one inbox, from when it joined until it left.
- *
  * @property string $id
  * @property string $inbox_id
  * @property string $actor_type
  * @property string $actor_id
  * @property CarbonImmutable $joined_at
- * @property CarbonImmutable|null $left_at
+ * @property ?CarbonImmutable $left_at
  */
 #[Fillable([
     'inbox_id',

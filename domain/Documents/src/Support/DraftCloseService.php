@@ -88,7 +88,7 @@ final readonly class DraftCloseService
             return $closed->result;
         }
 
-        $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
+        $draft = DocumentDraft::query()->ofDocument($document->id)->withToken($target->token)->firstOr(
             DraftMissing::throwing()->forDocument($document->number),
         );
 

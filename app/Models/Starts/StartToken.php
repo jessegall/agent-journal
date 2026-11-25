@@ -21,15 +21,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * The credential one start signs in with. Only the hash of its token is kept.
- *
  * @property string $id
  * @property string $agent_session_id
  * @property string $token_hash
- * @property CarbonImmutable|null $revoked_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read AgentSession $session
+ * @property ?CarbonImmutable $revoked_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property AgentSession $session
  */
 #[Fillable(['revoked_at'])]
 final class StartToken extends Model implements EventSource, ReadableModel

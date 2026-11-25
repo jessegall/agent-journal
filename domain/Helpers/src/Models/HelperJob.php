@@ -376,8 +376,8 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     {
         $query->where(fn (Builder $exposed) => $exposed
             ->whereIn('helper_purpose_id', HelperPurpose::query()
-                ->where('subject_type', $subject->type)
-                ->where('subject_id', $subject->id)
+                ->withSubjectType($subject->type)
+                ->ofSubject($subject->id)
                 ->select('id'))
             ->orWhereJsonContains('source_subjects', sprintf('%s:%s', $subject->type, $subject->id)));
     }
@@ -402,5 +402,38 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     protected function forPurposeLike(Builder $query, HelperPurpose $purpose): void
     {
         $query->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'));
+    }
+
+    /**
+     * The rows of the given request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRequest(Builder $query, string $requestId): void
+    {
+        $query->where('request_id', $requestId);
+    }
+
+    /**
+     * The rows of the given helper purpose.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofHelperPurpose(Builder $query, string $helperPurposeId): void
+    {
+        $query->where('helper_purpose_id', $helperPurposeId);
+    }
+
+    /**
+     * The rows of the given helper identity.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofHelperIdentity(Builder $query, string $helperIdentityId): void
+    {
+        $query->where('helper_identity_id', $helperIdentityId);
     }
 }

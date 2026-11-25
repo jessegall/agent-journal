@@ -112,7 +112,7 @@ final readonly class ShippedReaderInstaller
         $readerId = $this->commands->run(new ProposeReaderCommand($requestId, 1, $reader->reader));
         $proofId = $this->commands->run(new ProveReaderCommand($requestId, $readerId, $runs));
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($readerId, $proofId)], 'Core ships this reader.');
-        $proposal = RuleProposal::query()->where('command_request_id', $requestId)->sole();
+        $proposal = RuleProposal::query()->ofCommandRequest($requestId)->sole();
         $this->commands->run(new ApproveRuleProposalCommand($proposal->id, $approval));
     }
 

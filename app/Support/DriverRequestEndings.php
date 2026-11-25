@@ -79,7 +79,7 @@ final readonly class DriverRequestEndings
         $open = NavigationRequest::query()
             ->acrossActors()
             ->open()
-            ->where('driver_request_id', $request->id)
+            ->ofDriverRequest($request->id)
             ->lockForUpdate()
             ->first();
 
@@ -97,8 +97,8 @@ final readonly class DriverRequestEndings
     private function cancelQueuedRoundsOf(NavigationRequest $navigation): void
     {
         $queued = DriverRequest::query()
-            ->where('navigation_request_id', $navigation->id)
-            ->whereIn('progress', [
+            ->ofNavigationRequest($navigation->id)
+            ->withAnyProgress([
                 RequestProgress::Accepted,
                 RequestProgress::Staged,
             ])

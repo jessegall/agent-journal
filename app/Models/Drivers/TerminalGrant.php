@@ -273,4 +273,15 @@ final class TerminalGrant extends Model implements EventSource, ReadableModel
             ->whereIn('state', TerminalGrantState::holding())
             ->where('expires_at', '>', $now);
     }
+
+    /**
+     * The rows of the given agent.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofAgent(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId);
+    }
 }

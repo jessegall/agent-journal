@@ -33,30 +33,33 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One proven path through a driver's menus, in its owner's library: the steps that reach the goal from the screen
- * its first step expects, what replaying it completes, the proof that ends it, and the builds it was proven on, each
- * marked stale on its own. It belongs to the user, never to an agent.
- *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $family
  * @property string $entry_fingerprint
  * @property string $goal_script
  * @property int $goal_version
- * @property array<string, string> $goal_parameters
+ * @property array $goal_parameters
  * @property string $goal_key
- * @property list<MenuStep> $steps
+ * @property StoredValuesCast<array-key, MenuStep>|MenuStep[] $steps
  * @property NavigationCompletion $completes
- * @property int|null $next_step
+ * @property ?int $next_step
  * @property string $proof
  * @property MenuEntryState $state
- * @property list<MenuEntryBuild> $builds
+ * @property StoredValuesCast<array-key, MenuEntryBuild>|MenuEntryBuild[] $builds
  * @property int $uses
- * @property CarbonImmutable|null $last_used_at
- * @property string|null $last_replay_key
+ * @property ?CarbonImmutable $last_used_at
+ * @property ?string $last_replay_key
  * @property string $source_request_id
- * @property string|null $superseded_by_id
+ * @property ?string $superseded_by_id
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $goal attribute
+ * @property mixed $library_answer attribute
  */
 #[Fillable([
     'source_request_id',

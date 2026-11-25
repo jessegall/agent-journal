@@ -30,7 +30,7 @@ final readonly class HostLinkAlarms
         $quietSince = $now->subMinutes(2);
 
         return array_values(Host::query()
-            ->whereNull('revoked_at')
+            ->unrevoked()
             ->where(fn ($hosts) => $hosts
                 ->where('failing_since', '<', $failingSince)
                 ->orWhere(fn ($quiet) => $quiet

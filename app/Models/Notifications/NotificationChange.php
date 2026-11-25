@@ -149,4 +149,16 @@ final class NotificationChange extends Model implements ReadableModel
     {
         $query->orderBy('version');
     }
+
+    /**
+     * The rows of any of the given ids.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function withAnyId(Builder $query, array $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
 }

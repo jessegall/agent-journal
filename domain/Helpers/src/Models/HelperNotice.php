@@ -21,17 +21,19 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * What a parent is told when a helper's attempt at a job ended: the job, where it stands and what to run next. It is
- * kept for the parent actor, never for a session.
- *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $helper_identity_id
  * @property string $helper_job_id
  * @property JobState $job_state
  * @property string $text
- * @property CarbonImmutable|null $delivered_at
+ * @property ?CarbonImmutable $delivered_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Table('helper_notices')]
 #[Fillable([

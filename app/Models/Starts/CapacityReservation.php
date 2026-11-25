@@ -163,4 +163,15 @@ final class CapacityReservation extends Model implements ReadableModel
     {
         $query->where('state', ReservationState::Reserved);
     }
+
+    /**
+     * The rows of the given state.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withState(Builder $query, ReservationState $state): void
+    {
+        $query->where('state', $state);
+    }
 }

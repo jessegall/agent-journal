@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
-use App\Models\Support\Accessor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -31,6 +30,7 @@ use App\Events\Accounts\SignInAttemptReleased;
 use App\Events\Accounts\SignInAttemptStarted;
 use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInAttemptMissing;
+use App\Models\Support\Accessor;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\KeepsCleanupTries;
@@ -49,35 +49,32 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One run of a driver's own sign-in: for a new account, or to sign an existing one in again. Its private folder,
- * process and login references never leave the server, and no challenge, code or token is ever kept on it. A finished
- * attempt may still owe the deletion of what it left behind.
- *
  * @property string $id
- * @property string $account_protocol the account provider's protocol, which every driver of one family shares
- * @property string|null $account_id
- * @property string|null $result_account_id
+ * @property string $account_protocol
  * @property SignInMethod $method
  * @property ActorType $actor_type
  * @property string $actor_id
- * @property string|null $fingerprint
- * @property string|null $submission_key
+ * @property ?string $fingerprint
+ * @property ?string $account_id
  * @property SignInState $state
  * @property int $generation
- * @property string|null $directory
- * @property string|null $process_reference
- * @property string|null $login_reference
+ * @property ?string $directory
+ * @property ?string $process_reference
+ * @property ?string $login_reference
  * @property bool $cleanup_pending
  * @property bool $waits_for_uses
  * @property bool $store_removed
  * @property int $cleanup_tries
- * @property CleanupProblem|null $cleanup_problem
- * @property string|null $refusal
+ * @property ?CleanupProblem $cleanup_problem
  * @property CarbonImmutable $expires_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read Account|null $account
- * @property-read Account|null $resultAccount
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property ?string $refusal
+ * @property ?string $result_account_id
+ * @property ?string $submission_key
+ * @property mixed $type attribute
+ * @property ?Account $account
+ * @property ?Account $resultAccount
  */
 #[Fillable([
     'account_protocol',

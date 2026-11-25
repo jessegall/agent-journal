@@ -22,10 +22,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * Something an agent must still know when its context starts again. Its weight, 1 to 10, is the agent's own
- * priority: heavier memories come first when a context budget leaves light ones out. Only the agent that keeps it
- * reads it.
- *
  * @property string $id
  * @property string $number_group_id
  * @property int $number
@@ -34,8 +30,8 @@ use Illuminate\Support\Carbon;
  * @property string $text
  * @property int $weight
  * @property int $revision
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'text',

@@ -24,28 +24,27 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One request of a session to stop, by its stop callback: the policy and workspace generation it was asked under and
- * the conditions it must pass, kept once per session and stop callback until the host's results settle it. A request
- * reads only its own session's attempts.
- *
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
  * @property string $stop_id
  * @property string $policy_digest
  * @property int $workspace_generation
- * @property array<string, string> $condition_hashes
+ * @property array $condition_hashes
  * @property StopAttemptState $state
- * @property string|null $submission_digest
- * @property Carbon|null $certified_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?string $submission_digest
+ * @property ?Carbon $certified_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $reference attribute
+ * @property Collection<int, StopResult>|StopResult[] $results
  */
 #[Fillable([
     'stop_id',

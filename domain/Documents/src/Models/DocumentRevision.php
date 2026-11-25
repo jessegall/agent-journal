@@ -266,4 +266,15 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     {
         $query->where('number', $number);
     }
+
+    /**
+     * The rows of the given title.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTitle(Builder $query, string $title): void
+    {
+        $query->where('title', $title);
+    }
 }

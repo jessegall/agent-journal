@@ -70,7 +70,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
     {
         $request = DriverRequest::query()
             ->whereKey($command->requestId)
-            ->where('agent_runtime_id', $runtime->id)
+            ->ofAgentRuntime($runtime->id)
             ->lockForUpdate()
             ->firstOr(NavigationRaiseRefused::throwing()->notOfRuntime($command->requestId, $runtime->id));
 

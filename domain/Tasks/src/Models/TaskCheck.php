@@ -28,9 +28,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A check of one task run, bound from the start to the process run its caller opened for it; once that run's result is
- * published, its receipt and outcome are bound once and never change.
- *
  * @property string $id
  * @property string $task_id
  * @property string $task_run_id
@@ -39,11 +36,11 @@ use Illuminate\Support\Carbon;
  * @property ActorType $caller_type
  * @property string $caller_id
  * @property string $process_run_id
- * @property string|null $result_receipt_id
- * @property string|null $outcome
+ * @property ?string $result_receipt_id
+ * @property ?string $outcome
  * @property Carbon $created_at
- * @property Carbon|null $bound_at
- * @property-read TaskProof $proof
+ * @property ?Carbon $bound_at
+ * @property mixed $proof attribute
  */
 #[Fillable([
     'task_id',

@@ -300,7 +300,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     #[Scope]
     protected function holdingTask(Builder $query, string $taskId): void
     {
-        $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
+        $query->whereIn('id', PhaseTask::query()->select('phase_id')->ofTask($taskId));
     }
 
     /**

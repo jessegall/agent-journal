@@ -18,9 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One skill write an actor sent under a request id: the digest of what it sent and the skill revision it produced, so a
- * retry with the same id answers the same result and a reuse with other content is told apart. It keeps no body.
- *
  * @property string $id
  * @property ActorType $actor_type
  * @property string $actor_id
@@ -28,8 +25,8 @@ use Illuminate\Support\Carbon;
  * @property string $input_digest
  * @property string $skill_id
  * @property string $skill_revision_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'actor_type',

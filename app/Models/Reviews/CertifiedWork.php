@@ -24,17 +24,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The proof that one launch's work was certified complete by a passed stop, with the checkout it was done in. Only
- * work proved this way may have its commits imported by its parent.
- *
  * @property string $id
  * @property string $work_type
  * @property string $work_id
  * @property string $certificate
  * @property string $agent_session_id
  * @property string $worktree
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $import_ref attribute
  */
 #[Table('certified_works')]
 #[Fillable([

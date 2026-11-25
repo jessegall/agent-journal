@@ -28,17 +28,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The owner's settings for one gateway, kept as numbered revisions: a share pins the version it was made under, so a
- * change of settings reaches only new shares.
- *
  * @property string $id
  * @property string $gateway_key
  * @property int $configuration_version
  * @property GatewaySettings $settings
  * @property bool $is_default
- * @property CarbonImmutable|null $disabled_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property ?CarbonImmutable $disabled_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
+ * @property mixed $source_address_rule attribute
+ * @property mixed $to_configuration attribute
  */
 #[Fillable([
     'gateway_key',

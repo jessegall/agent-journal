@@ -30,7 +30,7 @@ final readonly class StoredAgentFocuses implements AgentFocuses
 
     public function focusOf(ActorIdentity $agent): Option
     {
-        $focus = AgentFocus::query()->where('agent_id', $agent->id)->first();
+        $focus = AgentFocus::query()->ofAgent($agent->id)->first();
 
         if ($focus === null) {
             return None::create();

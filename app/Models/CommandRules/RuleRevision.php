@@ -186,4 +186,26 @@ final class RuleRevision extends Model implements ReadableModel
     {
         $query->where('project_key', $projectKey);
     }
+
+    /**
+     * The rows of the given revision.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRevision(Builder $query, int $revision): void
+    {
+        $query->where('revision', $revision);
+    }
+
+    /**
+     * The rows of the given rule proposal revision.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRuleProposalRevision(Builder $query, string $ruleProposalRevisionId): void
+    {
+        $query->where('rule_proposal_revision_id', $ruleProposalRevisionId);
+    }
 }

@@ -52,7 +52,7 @@ final readonly class NotifyRuntimeScreenHandler implements CommandHandler
 
         $report = ScreenReportData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
 
-        $runtime = AgentRuntime::query()->whereKey($report->runtimeId)->where('host_id', $command->hostId)
+        $runtime = AgentRuntime::query()->whereKey($report->runtimeId)->onHost($command->hostId)
             ->lockForUpdate()->first();
 
         if ($runtime === null) {

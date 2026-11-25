@@ -15,16 +15,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One numbered event of a run's supervisor, such as a part's start or end. The same event sent again is kept once;
- * a different event under a number already taken is kept as an operational error at the next number.
- *
  * @property string $id
  * @property string $process_run_id
  * @property int $sequence
  * @property string $type
- * @property array<string, mixed> $payload
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array $payload
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'process_run_id',

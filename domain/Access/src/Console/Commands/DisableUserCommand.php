@@ -19,7 +19,7 @@ final class DisableUserCommand extends Command
 
     public function handle(OwnerCommands $commands): int
     {
-        $user = User::query()->where('email', (string) $this->argument('email'))->firstOrFail();
+        $user = User::query()->withEmail((string) $this->argument('email'))->firstOrFail();
 
         if ($this->option('enable') === true) {
             $user->enable();

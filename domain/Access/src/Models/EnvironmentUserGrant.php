@@ -19,11 +19,9 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
- * One user's admission to the chats of one environment, with what it may do there, until it is revoked. A user holds
- * at most one active grant per environment; a new grant replaces the old one.
- *
  * @property string $id
  * @property string $user_id
  * @property string $environment_key
@@ -33,7 +31,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $granted_by_type
  * @property string $granted_by_id
  * @property CarbonImmutable $granted_at
- * @property CarbonImmutable|null $revoked_at
+ * @property ?CarbonImmutable $revoked_at
+ * @property ?Carbon $created_at
+ * @property ?Carbon $updated_at
  */
 #[Fillable([
     'user_id',

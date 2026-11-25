@@ -24,10 +24,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One interpretation of a part's output by an approved reader: its state, its outcome,
- * every problem with its code, the counts and the offsets the reader consumed. It is never updated; a replay appends a
- * new assessment that names the one it replaces.
- *
  * @property string $id
  * @property string $project_key
  * @property string $part_run_id
@@ -35,10 +31,10 @@ use Illuminate\Support\Carbon;
  * @property string $rule_revision_id
  * @property InterpretationState $interpretation
  * @property AssessmentOutcome $outcome
- * @property list<OutputProblem> $problems
- * @property array<string, int> $counts
- * @property array<string, int> $final_offsets
- * @property string|null $replaces_assessment_id
+ * @property StoredValuesCast<array-key, OutputProblem>|OutputProblem[] $problems
+ * @property array $counts
+ * @property array $final_offsets
+ * @property ?string $replaces_assessment_id
  * @property Carbon $created_at
  */
 #[Fillable([

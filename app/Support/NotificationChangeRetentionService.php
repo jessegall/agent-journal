@@ -25,7 +25,7 @@ final readonly class NotificationChangeRetentionService
 
         do {
             $batch = NotificationChange::query()
-                ->whereIn('id', NotificationChange::query()
+                ->withAnyId(NotificationChange::query()
                     ->where('created_at', '<', $before)
                     ->orderBy('created_at')
                     ->limit(self::BATCH_LIMIT)

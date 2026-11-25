@@ -23,10 +23,10 @@ final readonly class RunListResolver implements PageResolver
 
     public function read(): DeclaredLayoutData
     {
-        $runs = ProcessRun::query()->forActor()->where('project_key', $this->projects->current())->limit(50)->get();
+        $runs = ProcessRun::query()->forActor()->withProjectKey($this->projects->current())->limit(50)->get();
 
         $operations = PartRun::query()
-            ->whereIn('process_run_id', $runs->modelKeys())
+            ->ofRuns($runs->modelKeys())
             ->readLimit(1_000)
             ->get()
             ->groupBy('process_run_id');

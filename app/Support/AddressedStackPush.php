@@ -67,7 +67,7 @@ final readonly class AddressedStackPush
     {
         $session = AgentSession::query()
             ->whereKey($target->sessionId)
-            ->where('agent_id', $target->agentId)
+            ->ofAgent($target->agentId)
             ->first();
 
         if ($session === null || ! $session->isActive()) {
