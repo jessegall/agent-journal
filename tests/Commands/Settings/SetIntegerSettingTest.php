@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Settings;
+namespace Tests\Commands\Settings;
 
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
@@ -17,14 +17,10 @@ use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\SettingDisabled;
 use App\Exceptions\SettingsAccessDenied;
 use App\Exceptions\SettingsConflict;
-use App\Exceptions\SettingStorageInvalid;
 use App\Exceptions\SettingUnavailable;
 use App\Exceptions\SettingValueInvalid;
 use App\Models\Records\SettingsRecord;
 use App\Support\ActorContext;
-use App\Support\Storage\EncodedSetting;
-use App\Support\Storage\EncodedToggle;
-use App\Support\Storage\EncodedValue;
 use App\Support\Storage\SettingsDocument;
 use App\Values\GroupReference;
 use App\Values\ProfileBase;
@@ -45,11 +41,11 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The settings commands on the bus, end to end: only the owner changes settings, each change is one new revision
- * checked against the revision it was made at, a group that is switched off keeps its settings unchangeable but
- * intact, and resets remove one entry without reading it.
+ * The owner sets a whole-number setting at the revision they read: each change is one new revision, the same value
+ * again changes nothing, a value equal to the default is kept as an override, and a stale revision, a second first
+ * write, a switched-off group, another actor, a wrong type or a value past a bound is refused and changes nothing.
  */
-final class SettingsCommandsTest extends TestCase
+final class SetIntegerSettingTest extends TestCase
 {
     use ChangesReviewsSettings;
     use CommitsHookRows;
@@ -239,88 +235,6 @@ final class SettingsCommandsTest extends TestCase
         $this->assertSame(0, SettingsRecord::query()->count());
     }
 
-    public function test_resetting_one_invalid_override_removes_only_it_and_keeps_its_siblings_byte_for_byte(): void
-    {
-        $this->storeDirectly(fn (SettingsDocument $document) => $document
-            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of('not a number')))
-            ->withSetting(new EncodedSetting('weight', EncodedValue::of('0.75')))
-            ->withSetting(new EncodedSetting('summary_style', EncodedValue::of([1, 2])))
-            ->withSetting(new EncodedSetting('retired_key', EncodedValue::of(true))));
-
-        $before = $this->storedText();
-
-        $this->assertChange(
-            SettingsOutcome::Changed,
-            2,
-            $this->runCommand($this->commands->reset($this->reviews->retryLimit, 1)),
-        );
-
-        $this->assertSame(
-            str_replace('{"key":"retry_limit","value":"not a number"},', '', $before),
-            $this->storedText(),
-        );
-    }
-
-    public function test_resetting_a_setting_without_an_override_changes_nothing(): void
-    {
-        $this->assertChange(
-            SettingsOutcome::Unchanged,
-            0,
-            $this->runCommand($this->commands->reset($this->reviews->title, 0)),
-        );
-    }
-
-    public function test_switching_a_group_off_and_on_keeps_every_saved_setting(): void
-    {
-        $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
-        $this->runCommand($this->commands->stringChoice($this->reviews->summaryStyle, 'long', 1));
-
-        $this->assertChange(
-            SettingsOutcome::Changed,
-            3,
-            $this->runCommand($this->commands->disable($this->reviews->review, 2)),
-        );
-
-        $this->assertChange(
-            SettingsOutcome::Unchanged,
-            3,
-            $this->runCommand($this->commands->disable($this->reviews->review, 3)),
-        );
-
-        $this->assertChange(
-            SettingsOutcome::Changed,
-            4,
-            $this->runCommand($this->commands->enable($this->reviews->review, 3)),
-        );
-
-        $review = $this->reviewGroup();
-        $this->assertSame(4, $review->integer($this->reviews->retryLimit));
-        $this->assertSame('long', $review->choice($this->reviews->summaryStyle));
-    }
-
-    public function test_resetting_an_invalid_switch_makes_the_group_follow_its_default_with_its_settings_intact(): void
-    {
-        $this->storeDirectly(fn (SettingsDocument $document) => $document
-            ->withToggle(new EncodedToggle('review', EncodedValue::of('on')))
-            ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of(6))));
-
-        $this->assertRefused(SettingStorageInvalid::class, $this->commands->integer($this->reviews->retryLimit, 4, 1));
-
-        $this->assertChange(
-            SettingsOutcome::Changed,
-            2,
-            $this->runCommand($this->commands->resetGroup($this->reviews->review, 1)),
-        );
-
-        $this->assertChange(
-            SettingsOutcome::Unchanged,
-            2,
-            $this->runCommand($this->commands->resetGroup($this->reviews->review, 2)),
-        );
-
-        $this->assertSame(6, $this->reviewGroup()->integer($this->reviews->retryLimit));
-    }
-
     private function assertChange(SettingsOutcome $outcome, int $revision, SettingsChange $change): void
     {
         $this->assertSame(['Reviews', $revision, $outcome], [$change->owner, $change->revision, $change->outcome]);
@@ -338,10 +252,5 @@ final class SettingsCommandsTest extends TestCase
     private function storedDocument(): SettingsDocument
     {
         return SettingsRecord::findSharedRuntimeForOwner('Reviews')->get()->document;
-    }
-
-    private function storedText(): string
-    {
-        return (string) SettingsRecord::query()->where('owner', 'Reviews')->sole()->getRawOriginal('document');
     }
 }
