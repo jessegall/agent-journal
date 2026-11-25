@@ -12,15 +12,14 @@ use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * A title over its limit is refused and the draft keeps its text.
  */
 final class ChangeDocumentDetailsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -51,7 +50,7 @@ final class ChangeDocumentDetailsTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
     }
 

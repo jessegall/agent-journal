@@ -18,7 +18,6 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -28,7 +27,6 @@ use Tests\Support\TestIds;
  */
 final class IsolationTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -44,13 +42,13 @@ final class IsolationTest extends TestCase
 
     public function test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first(): void
     {
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Private draft text\n"));
         $this->bus()->run(new OpenDocumentCommand('1'));
         $this->assertSame(EditingStatus::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
 
         $this->app->forgetScopedInstances();
-        $this->actAsUser(2);
+        $this->journal->actAsUserId(TestIds::of(2));
 
         $state = $this->app->make(DraftResolver::class)->stateOf(1);
         $this->assertSame(EditingStatus::Held, $state->state);
@@ -75,14 +73,14 @@ final class IsolationTest extends TestCase
             );
         }
 
-        $this->actAsUser(3);
+        $this->journal->actAsUserId(TestIds::of(3));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
         $this->assertSame(TestIds::of(3), DocumentRevision::query()->sole()->author_id);
     }
 
     public function test_a_failed_create_leaves_no_record_and_raises_no_event(): void
     {
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $announced = [];
 
         $this->app->make(Dispatcher::class)->listen(DocumentCreated::class, function (

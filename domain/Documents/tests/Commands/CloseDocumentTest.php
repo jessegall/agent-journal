@@ -15,8 +15,8 @@ use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * A close turns a draft's saves into exactly one next revision; an unchanged draft adds none, and a repeated close
@@ -24,7 +24,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class CloseDocumentTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const string RISKS_TEXT = <<<'TEXT'
@@ -67,7 +66,7 @@ final class CloseDocumentTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
     }
 

@@ -10,7 +10,6 @@ use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -20,7 +19,6 @@ use Tests\Support\TestIds;
  */
 final class OpenDocumentTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -51,7 +49,7 @@ final class OpenDocumentTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
     }
 
@@ -87,7 +85,7 @@ final class OpenDocumentTest extends TestCase
             $this->assertSame(DraftHeld::elsewhere(1)->getMessage(), $held->getMessage());
         }
 
-        $this->actAsUser(2);
+        $this->journal->actAsUserId(TestIds::of(2));
         $this->expectException(DraftHeld::class);
         $this->expectExceptionMessage(TestIds::of(1));
         $this->bus()->run(new OpenDocumentCommand('1'));

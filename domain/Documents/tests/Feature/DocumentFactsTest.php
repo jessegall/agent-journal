@@ -22,8 +22,8 @@ use Domain\Documents\Events\ReportFiled;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * Each Documents row raises its own fact, released once after the command committed with the payload it had: a new
@@ -31,7 +31,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class DocumentFactsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -53,7 +52,7 @@ final class DocumentFactsTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $events = $this->app->make(Dispatcher::class);
         $plain = [DocumentCreated::class, DocumentOpened::class, ReportFiled::class, RecordSettled::class];
         $events->listen($plain, fn (object $fact) => $this->facts[] = class_basename($fact));

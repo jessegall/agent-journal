@@ -19,8 +19,8 @@ use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * A user settles a document with a reason, kept trimmed, and a changed revision makes it active again; a blank or
@@ -28,7 +28,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class SettleDocumentTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const string REASON_REQUIRED = 'reason: The reason field is required.';
@@ -51,7 +50,7 @@ final class SettleDocumentTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal

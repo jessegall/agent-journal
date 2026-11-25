@@ -16,8 +16,8 @@ use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * A save replaces text in the open draft; a save on an old version, an edit with no open draft and an edit the text
@@ -25,7 +25,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class ReplaceDocumentTextTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -56,7 +55,7 @@ final class ReplaceDocumentTextTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
     }
 

@@ -13,7 +13,6 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Spatie\LaravelData\Optional;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -21,7 +20,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class TaskPlanSectionTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = [

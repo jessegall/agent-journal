@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Engine\ListenerLane;
 use App\Events\Sessions\SessionClosed;
-use App\Support\ActorContext;
-use App\Support\AgentContext;
 use App\Support\AvailableListener;
 use App\Support\ListenerRegistry;
-use App\Support\SignedCall;
-use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
@@ -24,11 +19,9 @@ use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
-use Tests\Support\TestStartAuthority;
 
 /**
  * An ended session closes a changed draft into a revision and an unchanged one into none; a failing close rolls
@@ -36,7 +29,6 @@ use Tests\Support\TestStartAuthority;
  */
 final class DraftSessionEndingTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -57,7 +49,7 @@ final class DraftSessionEndingTest extends TestCase
     {
         parent::setUp();
 
-        $this->actAsUser(1);
+        $this->journal->actAsUserId(TestIds::of(1));
 
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
@@ -69,10 +61,10 @@ final class DraftSessionEndingTest extends TestCase
     public function test_an_ended_session_closes_a_changed_draft_into_a_revision_and_an_unchanged_one_into_none(): void
     {
         $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
-        $this->actAsAgent(9, 90);
+        $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Shipped.'));
-        $this->actAsAgent(8, 80);
+        $this->journal->actAsAgentIds(TestIds::of(8), TestIds::of(80));
         $this->bus()->run(new OpenDocumentCommand('2'));
 
         DB::transaction(fn () => $this->endSession(9, 90));
@@ -98,7 +90,7 @@ final class DraftSessionEndingTest extends TestCase
 
     public function test_a_failing_close_rolls_the_session_ending_back_and_keeps_the_draft(): void
     {
-        $this->actAsAgent(9, 90);
+        $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Shipped.'));
 
@@ -132,18 +124,6 @@ final class DraftSessionEndingTest extends TestCase
     {
         $this->app->make(CloseEndedSessionDraft::class)
             ->handle(new SessionClosed(TestIds::of($agent), TestIds::of($session)));
-    }
-
-    private function actAsAgent(int $agent, int $session): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent(TestIds::of($agent)),
-            TestStartAuthority::forAgent(TestIds::of($agent)),
-        );
-
-        $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
-        $context = new AgentContext(TestIds::of($agent), TestIds::of($session), $call, null);
-        $this->app->instance(AgentContext::class, $context);
     }
 
     private function documents(): DocumentResolver

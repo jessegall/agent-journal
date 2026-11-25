@@ -13,7 +13,6 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -23,7 +22,6 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class PlanOutlineTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = [
