@@ -7,6 +7,7 @@ namespace Tests\Commands\Messages;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Events\Messages\MessageSent;
 use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -14,6 +15,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
+use App\Support\IsolatedListener;
 use App\Support\StartSessions;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,6 +23,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -65,6 +68,13 @@ final class SendMessageTest extends TestCase
     private int $sends = 0;
 
     /**
+     * @var list<string>
+     */
+    private array $received = [];
+
+    private const string SAVED_TEXT = 'Still saved.';
+
+    /**
      * Every installed domain, since the chat send route the page posts to is the Chat domain's.
      */
     protected static function bootedDomains(): array
@@ -76,7 +86,6 @@ final class SendMessageTest extends TestCase
     {
         parent::setUp();
 
-        Event::fake([MessageSent::class]);
         $this->journal->agent('Builder', 'read-only-helper')->owner();
         $this->ownInboxId = $this->journal->inboxCalled('Owner')->id;
         $this->builderInboxId = $this->journal->inboxCalled('Builder')->id;
@@ -84,6 +93,7 @@ final class SendMessageTest extends TestCase
 
     public function test_a_sent_message_keeps_its_text_and_sender_under_the_inboxs_next_number(): void
     {
+        Event::fake([MessageSent::class]);
         $firstId = $this->journal->run(new SendMessageCommand($this->ownInboxId, 'First.'));
         $messageId = $this->journal->run(new SendMessageCommand($this->ownInboxId, self::BUILD_NOTICE));
 
@@ -212,6 +222,82 @@ final class SendMessageTest extends TestCase
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
+    public function test_a_user_sends_to_the_chosen_agent_and_sees_the_pair_exchange(): void
+    {
+        $owner = $this->journal->ownerUser();
+        $session = $this->journal->idleAgent('Chat builder')
+            ->startSession('Chat builder', 'Chat builder')
+            ->sessionCalled('Chat builder');
+
+        $chatInboxId = $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($owner),
+            ActorIdentity::ofClass(Agent::class, $session->agent_id),
+        )->id;
+
+        $window = ConversationRequest::queryFor($session->agent_id);
+        $conversation = route('home', $window, false);
+
+        $this->actingAs($owner)
+            ->from($conversation)
+            ->post('/chat/messages', [
+                'inboxId' => $chatInboxId,
+                'requestKey' => 'host-send-1',
+                'body' => 'Is the build green?',
+                'agent' => $session->agent_id,
+                'expectedSessionId' => $session->id,
+                'expectedGeneration' => AgentRuntime::findForSession($session->id)?->process_generation ?? 0,
+            ])
+            ->assertRedirect($conversation);
+
+        $message = Message::query()->withoutGlobalScopes()->sole();
+        $this->assertSame($chatInboxId, $message->inbox_id);
+
+        $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(fn (AssertableInertia $page) => $page
+            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
+                ->where('window_chat_conversation.data.conversation.inboxId', $chatInboxId)));
+    }
+
+    public function test_a_refused_send_tells_nothing_and_a_resent_request_tells_nothing_again(): void
+    {
+        Event::listen(MessageSent::class, function (MessageSent $sent): void {
+            $this->received[] = $sent->messageId;
+        });
+
+        $this->assertThrows(
+            fn () => $this->journal->run(new SendMessageCommand((string) Str::ulid(), 'Nowhere.')),
+            InboxUnavailable::class,
+        );
+        $key = (string) Str::ulid();
+        $command = new SendMessageCommand($this->pairInboxId(), 'Once.');
+
+        $first = $this->journal->run($command, $key);
+        $this->journal->run($command, $key);
+
+        $this->assertSame([$first], $this->received);
+    }
+
+    // A failing listener is never swallowed. The message stays saved, the listeners after it
+    // still hear the fact, and then the failure is thrown.
+    public function test_a_failing_listener_leaves_the_message_saved_and_heard_and_is_then_thrown(): void
+    {
+        Event::listen(MessageSent::class, function (MessageSent $sent): void {
+            $this->received[] = $sent->messageId;
+        });
+
+        Event::listen(MessageSent::class, new IsolatedListener(
+            MessageSent::class,
+            FailingMessageListener::class.'@handle',
+        ));
+
+        $this->assertThrows(
+            fn () => $this->journal->run(new SendMessageCommand($this->pairInboxId(), self::SAVED_TEXT)),
+            CommittedFactListenerFailed::class,
+        );
+
+        $message = Message::query()->where('body', self::SAVED_TEXT)->sole();
+        $this->assertSame([$message->id], $this->received);
+    }
+
     /**
      * The agent a send goes to and the session the sender saw it run.
      *
@@ -234,5 +320,13 @@ final class SendMessageTest extends TestCase
     private function pair(): array
     {
         return ['inboxId' => $this->chatInboxId, 'requestKey' => 'home-send-'.++$this->sends];
+    }
+
+    private function pairInboxId(): string
+    {
+        return $this->journal->inboxes()->pairChat(
+            ActorIdentity::of($this->journal->ownerUser()),
+            ActorIdentity::of($this->journal->agentCalled('Builder')),
+        )->id;
     }
 }

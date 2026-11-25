@@ -4,25 +4,45 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\ContentMissing;
+use App\Exceptions\RecordUnavailable;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
+use App\Models\Messages\Message;
+use App\Models\Records\Link;
+use App\Support\ActorContext;
+use App\Support\AgentContext;
 use App\Support\RecordIdentity;
+use App\Support\RecordReference;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
 use App\Support\ReflectedType;
+use App\Support\SignedCall;
+use App\Values\OwnerAuthority;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
+use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Events\DocumentCreated;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
+use Domain\Plans\PlansDomain;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestStartAuthority;
 
 /**
  * A user or agent files a document: documents are numbered from one, each at its first revision that never changes,
@@ -60,6 +80,16 @@ final class CreateDocumentTest extends TestCase
         'number_groups',
         'document_closes',
         'document_drafts',
+        'links',
+        'messages',
+        'tasks',
+        'phases',
+        'plans',
+        'inboxes',
+        'inbox_members',
+        'assignments',
+        'command_receipts',
+        'users',
     ];
 
     protected function setUp(): void
@@ -199,8 +229,76 @@ final class CreateDocumentTest extends TestCase
         }
     }
 
+    public function test_doc_make_about_a_task_links_it_and_a_private_or_extra_target_creates_nothing(): void
+    {
+        $this->actAsUser();
+
+        Task::factory()->create(['title' => 'Write the client']);
+        $task = $this->records()->identify(RecordReference::parse('task 1'));
+
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", [$task]));
+        $this->assertSame(1, Link::query()->count());
+
+        $message = $this->messageFor(8);
+        $this->actAsAgent(9);
+
+        try {
+            $about = [new RecordIdentity(Message::linkType(), $message->id)];
+            $this->bus()->run(new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", $about));
+            $this->fail('A document about a private message was created.');
+        } catch (RecordUnavailable) {
+            $this->assertSame(1, Document::query()->count());
+        }
+
+        $this->expectException(CommandInputInvalid::class);
+        $this->bus()->run(new CreateDocumentCommand('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
+    }
+
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
+    }
+
+    private function records(): RecordResolver
+    {
+        return $this->app->make(RecordResolver::class);
+    }
+
+    private function actAsAgent(int $agent): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of($agent)),
+            TestStartAuthority::forAgent(TestIds::of($agent)),
+        );
+        $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
+        $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null);
+        $this->app->instance(AgentContext::class, $context);
+    }
+
+    private function actAsUser(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            TestActors::user(1),
+            new OwnerAuthority('test'),
+        );
+    }
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class, PlansDomain::class, TasksDomain::class);
+    }
+
+    private function messageFor(int $agent): Message
+    {
+        $inbox = $this->journal->inboxes()->personal(TestActors::agentIdentity($agent));
+
+        return $this->journal->inboxes()->post(
+            $inbox,
+            Agent::create('Sender', 'main-agent', $this->localProject()),
+            "Private plan\nDetails.",
+        );
     }
 }
