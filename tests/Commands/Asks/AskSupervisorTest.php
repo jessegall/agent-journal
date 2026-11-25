@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Tests\Commands\Asks;
 
 use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Asks\AskReader;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
@@ -38,26 +36,17 @@ final class AskSupervisorTest extends TestCase
 
     public function test_a_user_supervisor_has_a_card_without_a_runtime_wake(): void
     {
-        $this->activateProfiles();
-        $owner = User::factory()->create();
-        $this->journal->actAsUserId($owner->id);
+        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
+        $owner = $this->journal->ownerUser();
         $this->mock(ActorAttention::class)->shouldNotReceive('request');
         $requester = Agent::create('Requester', 'journal-main', $this->localProject());
         $this->journal->actAsAgentIds($requester->id, TestIds::of(99));
 
         $ask = $this->app->make(CommandBus::class)->run(new AskSupervisorCommand('Check my result.', 'owner-question'));
-        $this->journal->actAsUserId($owner->id);
+        $this->journal->actAs('Owner');
         $card = $this->app->make(AskReader::class)->card($ask);
 
         $this->assertTrue($card->isObligation);
         $this->assertSame($owner->id, $card->holderId);
-    }
-
-    private function activateProfiles(): void
-    {
-        $this->journal->actAsUserId(TestIds::of(1));
-        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
-            (array) config('profiles'),
-        )));
     }
 }

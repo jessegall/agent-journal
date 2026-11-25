@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Event;
  */
 trait WatchesPageChanges
 {
-    use ActsAsActors;
-
     protected function setUpWatchesPageChanges(): void
     {
         $this->journal->owner();

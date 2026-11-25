@@ -15,7 +15,6 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ use Tests\TestCase;
  */
 final class WithdrawRuleProposalTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private const string FOLDER = '/projects/acme';
@@ -35,10 +33,10 @@ final class WithdrawRuleProposalTest extends TestCase
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertThrows(
-            fn () => $this->runAsAgentId('agent-2', new WithdrawRuleProposalCommand($receipt->proposalId)),
+            fn () => $this->journal->runAsAgentId('agent-2', new WithdrawRuleProposalCommand($receipt->proposalId)),
             RuleProposalRefused::class,
         );
-        $this->runAsAgentId('agent-1', new WithdrawRuleProposalCommand($receipt->proposalId));
+        $this->journal->runAsAgentId('agent-1', new WithdrawRuleProposalCommand($receipt->proposalId));
 
         $this->assertSame(ProposalStatus::Withdrawn, RuleProposal::query()->findOrFail($receipt->proposalId)->status);
         $this->assertThrows(
@@ -51,14 +49,14 @@ final class WithdrawRuleProposalTest extends TestCase
     {
         $command = new ReviseRuleProposalCommand($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
 
-        return $this->runAsAgentId($agentId, $command);
+        return $this->journal->runAsAgentId($agentId, $command);
     }
 
     private function openRequest(string $agentId, RequestHoldReason $reason): string
     {
         $command = new OpenCommandRequestCommand('acme verify', str_repeat('a', 64), 'acme verify', self::FOLDER, $reason);
 
-        return $this->runAsAgentId($agentId, $command);
+        return $this->journal->runAsAgentId($agentId, $command);
     }
 
     private function propose(
@@ -67,6 +65,6 @@ final class WithdrawRuleProposalTest extends TestCase
         string $requestId,
         ProposedRule $proposed,
     ): ProposalReceipt {
-        return $this->runAsAgentId($agentId, new ProposeCommandRuleCommand($request, $requestId, $proposed));
+        return $this->journal->runAsAgentId($agentId, new ProposeCommandRuleCommand($request, $requestId, $proposed));
     }
 }

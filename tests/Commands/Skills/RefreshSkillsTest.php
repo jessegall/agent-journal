@@ -24,9 +24,8 @@ use App\Values\SkillDraft;
 use App\Values\SkillOwner;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -35,7 +34,6 @@ use Tests\TestCase;
  */
 final class RefreshSkillsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
@@ -103,7 +101,7 @@ final class RefreshSkillsTest extends TestCase
         $this->refresh();
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(
             new CreateSkillCommand(
                 'user-review-notes',
@@ -123,7 +121,7 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_only_the_system_refreshes(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->expectException(CommandNotRegistered::class);
 

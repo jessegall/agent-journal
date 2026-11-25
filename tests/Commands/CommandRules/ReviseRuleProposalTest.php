@@ -15,7 +15,6 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ use Tests\TestCase;
  */
 final class ReviseRuleProposalTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private const string FOLDER = '/projects/acme';
@@ -54,14 +52,14 @@ final class ReviseRuleProposalTest extends TestCase
     {
         $command = new ReviseRuleProposalCommand($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
 
-        return $this->runAsAgentId($agentId, $command);
+        return $this->journal->runAsAgentId($agentId, $command);
     }
 
     private function openRequest(string $agentId, RequestHoldReason $reason): string
     {
         $command = new OpenCommandRequestCommand('acme verify', str_repeat('a', 64), 'acme verify', self::FOLDER, $reason);
 
-        return $this->runAsAgentId($agentId, $command);
+        return $this->journal->runAsAgentId($agentId, $command);
     }
 
     private function propose(
@@ -70,6 +68,6 @@ final class ReviseRuleProposalTest extends TestCase
         string $requestId,
         ProposedRule $proposed,
     ): ProposalReceipt {
-        return $this->runAsAgentId($agentId, new ProposeCommandRuleCommand($request, $requestId, $proposed));
+        return $this->journal->runAsAgentId($agentId, new ProposeCommandRuleCommand($request, $requestId, $proposed));
     }
 }

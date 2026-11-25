@@ -25,9 +25,9 @@ use App\Values\SampleOutcome;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -36,7 +36,6 @@ use Tests\TestCase;
  */
 final class SettleSampleTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private TestStart $start;
@@ -67,7 +66,7 @@ final class SettleSampleTest extends TestCase
 
     public function test_the_approved_sample_runs_once_and_the_request_awaits_proof_with_the_run(): void
     {
-        $permitId = $this->asUser($this->approval());
+        $permitId = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($this->approval());
         $this->assertSame(RequestStatus::ReadyForSample, $this->request()->status);
 
         $runId = $this->journal->runAsStart(
@@ -98,7 +97,7 @@ final class SettleSampleTest extends TestCase
 
     public function test_a_failed_capture_returns_the_request_to_the_owner(): void
     {
-        $permitId = $this->asUser($this->approval());
+        $permitId = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($this->approval());
         $runId = $this->journal->runAsStart(
             $this->start,
             new StartSampleCommand($this->requestId, $permitId, 'first'),

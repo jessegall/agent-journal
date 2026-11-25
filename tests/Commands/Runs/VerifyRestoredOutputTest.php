@@ -12,6 +12,7 @@ use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -38,9 +39,9 @@ final class VerifyRestoredOutputTest extends TestCase
         Storage::disk(OutputRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
 
         $check = new VerifyRestoredOutputCommand($this->part->process_run_id);
-        $this->assertSame([CaptureStatus::Corrupt], $this->asUser($check)->states());
+        $this->assertSame([CaptureStatus::Corrupt], $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($check)->states());
 
         Storage::disk(OutputRecorder::DISK)->put($path, self::PASSED_OUTPUT);
-        $this->assertSame([CaptureStatus::Complete], $this->asUser($check)->states());
+        $this->assertSame([CaptureStatus::Complete], $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($check)->states());
     }
 }

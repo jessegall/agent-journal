@@ -25,8 +25,8 @@ use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -35,13 +35,12 @@ use Tests\TestCase;
  */
 final class ActiveRulesTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_two_project_keys_in_one_worker_see_only_their_own_rules(): void
     {
         config(['processes.project_key' => 'project-a']);
-        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
         $this->assertTrue($this->isKnown('tidy list'));
         $this->assertCount(1, $this->app->make(ActiveRules::class)->approvedFor('tidy list'));
 
@@ -55,13 +54,13 @@ final class ActiveRulesTest extends TestCase
     public function test_another_projects_proposal_is_not_found_by_its_owner(): void
     {
         config(['processes.project_key' => 'project-a']);
-        $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
         $proposal = RuleProposal::query()->sole();
 
         config(['processes.project_key' => 'project-b']);
 
         $this->assertThrows(
-            fn () => $this->asUser(new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b'))),
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b'))),
             ModelNotFoundException::class,
         );
     }

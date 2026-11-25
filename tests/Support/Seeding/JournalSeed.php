@@ -107,6 +107,8 @@ final class JournalSeed
 
     private readonly FixtureRequests $requests;
 
+    private bool $hasStandInOwner = false;
+
     private readonly FixtureInboxes $inboxes;
 
     private readonly FixtureRegistry $registry;
@@ -376,17 +378,44 @@ final class JournalSeed
 
     /**
      * Acts as a user known only by its id, with no one signed in, for an id the journal may not hold; while the journal
-     * has no owner, that user stands in as the owner, as the tests that act by id expect.
+     * has no owner, the first user to act by id stands in as the owner, as the tests that act by id expect, and a user
+     * acting by id after it is another user.
      */
     public function actAsUserId(string $userId): self
     {
-        if ($this->owner === null) {
+        if ($this->owner === null && ! $this->hasStandInOwner) {
             $this->app->instance(AccessSettings::class, new AccessSettings($userId));
+            $this->hasStandInOwner = true;
         }
 
         $this->requests->asUserId($userId);
 
         return $this;
+    }
+
+    /**
+     * Acts as an agent known only by its id, which need not exist, with no session bound.
+     */
+    public function actAsAgentId(string $agentId): self
+    {
+        $this->requests->asAgentId($agentId);
+
+        return $this;
+    }
+
+    /**
+     * Runs the command unkeyed as the agent of this id, in a request scope of its own, leaving that agent acting.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function runAsAgentId(string $agentId, Command $command): mixed
+    {
+        $this->app->forgetScopedInstances();
+
+        return $this->actAsAgentId($agentId)->runUnkeyed($command);
     }
 
     /**

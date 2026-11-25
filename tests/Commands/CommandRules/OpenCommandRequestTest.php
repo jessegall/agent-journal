@@ -8,7 +8,6 @@ use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Models\CommandRules\CommandRequest;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -18,7 +17,6 @@ use Tests\TestCase;
  */
 final class OpenCommandRequestTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private const string PROPOSE_STEP = 'the command_types_propose tool with request %s';
@@ -60,7 +58,7 @@ final class OpenCommandRequestTest extends TestCase
 
     private function open(string $agentId, string $folder): string
     {
-        return $this->runAsAgentId(
+        return $this->journal->runAsAgentId(
             $agentId,
             new OpenCommandRequestCommand(
                 'acme verify',

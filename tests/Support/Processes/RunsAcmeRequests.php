@@ -33,7 +33,7 @@ use App\Values\RecordRule;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
+use Tests\Support\TestIds;
 use Tests\Support\TestRunAdmissions;
 
 /**
@@ -42,8 +42,6 @@ use Tests\Support\TestRunAdmissions;
  */
 trait RunsAcmeRequests
 {
-    use ActsAsActors;
-
     private const string PASSED_OUTPUT = <<<'TEXT'
     {"test":"a","status":"ok"}
     {"passed":1,"failed":0}
@@ -102,7 +100,7 @@ trait RunsAcmeRequests
      */
     private function sample(int $status, string $output, bool $isRead): string
     {
-        $permit = $this->asUser(new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest));
+        $permit = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest));
         $runId = $this->journal->runAsStart(
             $this->start,
             new StartSampleCommand($this->requestId, $permit, "sample-{$status}"),
@@ -158,7 +156,7 @@ trait RunsAcmeRequests
         );
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');
 
-        $this->asUser(new ApproveRuleProposalCommand(RuleProposal::query()->sole()->id, $approval));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleProposalCommand(RuleProposal::query()->sole()->id, $approval));
     }
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun

@@ -16,7 +16,6 @@ use App\Values\ProfileActivation;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -28,7 +27,6 @@ use Tests\TestCase;
  */
 final class ActivateProfilesTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
     use HasContainerSupport;
 
@@ -37,6 +35,13 @@ final class ActivateProfilesTest extends TestCase
     private const string REVIEW_ONCE = 'Review the change.';
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_a_second_activation_appends_revision_2_and_keeps_revision_1_readable(): void
     {

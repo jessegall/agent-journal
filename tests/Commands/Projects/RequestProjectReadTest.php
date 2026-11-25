@@ -25,7 +25,6 @@ use App\Values\InboxMemberAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -37,7 +36,6 @@ use Tests\TestCase;
  */
 final class RequestProjectReadTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -78,14 +76,14 @@ final class RequestProjectReadTest extends TestCase
     {
         $this->ownedBy(7);
         $files = $this->app->make(ProjectFiles::class);
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $pending = $files->file($this->binding, 'src/main.go');
         $this->assertSame(ProjectReadStatus::Pending, $pending->state);
 
         $read = ProjectRead::query()->findOrFail($pending->readId);
         $this->reportText($read)->assertNoContent();
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $answered = $files->file($this->binding, 'src/main.go');
         $this->assertSame($pending->readId, $answered->readId);
@@ -109,7 +107,7 @@ final class RequestProjectReadTest extends TestCase
     public function test_a_path_over_the_limit_is_refused_by_name(): void
     {
         $this->ownedBy(7);
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->expectException(ProjectReadRefused::class);
 

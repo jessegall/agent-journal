@@ -10,7 +10,6 @@ use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -20,13 +19,12 @@ use Tests\TestCase;
  */
 final class WithdrawCommandRequestTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_a_withdrawn_request_stays_readable_and_a_new_attempt_opens_a_new_one(): void
     {
         $first = $this->open('agent-1', '/projects/acme');
-        $this->runAsAgentId('agent-1', new WithdrawCommandRequestCommand($first));
+        $this->journal->runAsAgentId('agent-1', new WithdrawCommandRequestCommand($first));
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestStatus::Withdrawn, $request->status);
@@ -39,7 +37,7 @@ final class WithdrawCommandRequestTest extends TestCase
         $first = $this->open('agent-1', '/projects/acme');
 
         $this->assertThrows(
-            fn () => $this->runAsAgentId('agent-2', new WithdrawCommandRequestCommand($first)),
+            fn () => $this->journal->runAsAgentId('agent-2', new WithdrawCommandRequestCommand($first)),
             RequestTransitionRefused::class,
         );
         $this->assertThrows(
@@ -50,7 +48,7 @@ final class WithdrawCommandRequestTest extends TestCase
 
     private function open(string $agentId, string $folder): string
     {
-        return $this->runAsAgentId(
+        return $this->journal->runAsAgentId(
             $agentId,
             new OpenCommandRequestCommand(
                 'acme verify',

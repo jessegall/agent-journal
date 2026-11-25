@@ -25,7 +25,6 @@ use App\Values\ProfileActivation;
 use App\Values\ProfileKey;
 use App\Values\ResourceRequest;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -39,7 +38,6 @@ use Tests\TestCase;
  */
 final class ProfilePolicyTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const string REQUIRED_CONTAINER = 'required container';
@@ -58,6 +56,13 @@ final class ProfilePolicyTest extends TestCase
             ['name' => 'shell:git.push'],
         ],
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_a_removed_class_blocks_while_an_exact_grant_passes_and_a_denial_wins(): void
     {

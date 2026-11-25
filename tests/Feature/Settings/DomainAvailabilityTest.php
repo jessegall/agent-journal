@@ -17,10 +17,8 @@ use App\Support\DomainStatus;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Values\GroupReference;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -30,7 +28,6 @@ use Tests\TestCase;
  */
 final class DomainAvailabilityTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
     use CountsReads;
 
@@ -135,7 +132,7 @@ final class DomainAvailabilityTest extends TestCase
     private function availability(): DomainAvailability
     {
         $this->app->forgetScopedInstances();
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $availability = $this->app->make(DomainAvailabilityContract::class);
         $this->assertInstanceOf(DomainAvailability::class, $availability);
 

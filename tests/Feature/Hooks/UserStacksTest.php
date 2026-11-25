@@ -23,9 +23,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -34,7 +32,6 @@ use Tests\TestCase;
  */
 final class UserStacksTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -64,7 +61,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_user_pushes_a_state_onto_a_running_agents_stack(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->pushInTransaction($this->target);
 
@@ -73,7 +70,7 @@ final class UserStacksTest extends TestCase
 
     public function test_an_agent_without_the_steer_ability_cannot_push_onto_a_stack(): void
     {
-        $this->actAsAgent($this->target->agentId);
+        $this->journal->actAsAgentId($this->target->agentId);
 
         $this->expectException(ActorNotAllowed::class);
 
@@ -82,7 +79,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_guessed_session_is_refused(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -92,7 +89,7 @@ final class UserStacksTest extends TestCase
     public function test_a_session_of_another_agent_is_refused(): void
     {
         $other = $this->targetOf($this->start());
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->expectException(StackTargetRefused::class);
 

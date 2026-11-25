@@ -14,7 +14,6 @@ use App\Models\CommandRules\RuleRevision;
 use App\Values\CommandClassSet;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -23,7 +22,6 @@ use Tests\TestCase;
  */
 final class ImportRuleProposalsTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_importing_a_declaration_file_creates_only_proposals(): void
@@ -35,7 +33,7 @@ final class ImportRuleProposalsTest extends TestCase
             'rule' => AcmeDeclarations::verify()->toArray(),
         ]]], JSON_THROW_ON_ERROR);
 
-        $receipts = $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
+        $receipts = $this->journal->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
 
         $this->assertCount(1, $receipts);
         $this->assertSame(ProposalStatus::Pending, $receipts[0]->state);
@@ -54,7 +52,7 @@ final class ImportRuleProposalsTest extends TestCase
         $file = json_encode(['declarations' => [$declaration]]);
 
         try {
-            $this->runAsAgentId('agent-1', new ImportRuleProposalsCommand((string) $file));
+            $this->journal->runAsAgentId('agent-1', new ImportRuleProposalsCommand((string) $file));
             $this->fail('The broken file was imported.');
         } catch (DeclarationInvalid $refusal) {
             $this->assertCount(2, $refusal->fields);

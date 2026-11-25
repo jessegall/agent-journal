@@ -16,9 +16,7 @@ use App\Support\SessionOption;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -28,7 +26,6 @@ use Tests\TestCase;
  */
 final class AgentResolversTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -77,7 +74,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_the_user_sees_every_running_session_with_its_agent_name(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $this->assertSame(
             [[$this->running->id, 'Builder'], [$this->reviewing->id, 'Reviewer']],
@@ -90,7 +87,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_an_agent_sees_only_its_own_running_sessions(): void
     {
-        $this->actAsAgent($this->reviewer->id);
+        $this->journal->actAsAgentId($this->reviewer->id);
 
         $this->assertSame(
             [$this->reviewing->id],
@@ -100,7 +97,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_a_running_session_gives_its_stack_target(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
 
         $target = $this->sessions()->requireActive($this->running->id);
 
@@ -109,7 +106,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_an_ended_a_missing_and_another_agents_session_are_refused_alike(): void
     {
-        $this->actAsAgent($this->reviewer->id);
+        $this->journal->actAsAgentId($this->reviewer->id);
 
         foreach ([$this->ended->id, TestIds::of(99999), $this->running->id] as $sessionId) {
             try {
@@ -126,7 +123,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_labels_cover_the_visible_agents_and_leave_out_the_rest(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $labels = $this->app->make(AgentResolver::class)->labelsFor(
             [$this->builder->id, TestIds::of(999999), $this->reviewer->id],
         );

@@ -20,7 +20,6 @@ use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -34,7 +33,6 @@ use Throwable;
  */
 final class CreateSkillTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const string RESERVED_PREFIX = 'whose prefix it does not own';
@@ -50,6 +48,13 @@ final class CreateSkillTest extends TestCase
         'number_groups',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_a_repeated_request_id_returns_the_same_result_and_other_content_under_it_is_refused(): void
     {

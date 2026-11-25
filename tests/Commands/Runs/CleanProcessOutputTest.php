@@ -14,6 +14,7 @@ use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -38,12 +39,12 @@ final class CleanProcessOutputTest extends TestCase
     {
         $this->storedRun()->markStopped('done');
 
-        $preview = $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], true));
+        $preview = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new CleanProcessOutputCommand([$this->part->process_run_id], true));
         $this->assertSame([$this->part->id], $preview->partRunIds);
         $this->assertSame(strlen(self::PASSED_OUTPUT), $preview->bytes);
         $this->assertSame(CaptureStatus::Complete, $this->part->refresh()->capture_state);
 
-        $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new CleanProcessOutputCommand([$this->part->process_run_id], false));
 
         $this->assertSame(CaptureStatus::Removed, $this->part->refresh()->capture_state);
         $chunk = OutputChunk::query()->where('part_run_id', $this->part->id)->sole();
@@ -53,7 +54,7 @@ final class CleanProcessOutputTest extends TestCase
     public function test_a_run_that_has_not_ended_keeps_its_output(): void
     {
         $this->assertThrows(
-            fn () => $this->asUser(new CleanProcessOutputCommand([$this->part->process_run_id], false)),
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new CleanProcessOutputCommand([$this->part->process_run_id], false)),
             CleanRefused::class,
         );
     }

@@ -7,14 +7,12 @@ namespace Tests\Feature\Mcp;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -23,7 +21,6 @@ use Tests\TestCase;
 #[TimeLimit(8, 'The plan flowsOutsideMcp cross several signed requests and inspect persisted outcomes.')]
 final class PlanToolsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const string RELEASE_NOTE = 'Release complete.';
@@ -89,7 +86,7 @@ final class PlanToolsTest extends TestCase
         $started->assertJsonPath('result.structuredContent.state', 'started');
         $this->journal->mcpTool($this->caller, 'phases_read', ['phase_id' => $first])->assertOk()
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
-        $this->actAs(ActorContext::forUser($this->ownerId));
+        $this->journal->actAsUserId(($this->ownerId));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new FinishTaskCommand($build->id, 0, 'Done.'));
         $bus->run(new FinishTaskCommand($check->id, 0, 'Done.'));

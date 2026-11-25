@@ -17,10 +17,9 @@ use Domain\Tasks\Support\TaskReferenceRecognizer;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Http\Request;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -32,7 +31,6 @@ use Tests\TestCase;
 #[TimeLimit(5, 'One case sends a signed MCP call beside the palette read.')]
 final class PaletteSearchPropsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -119,7 +117,7 @@ final class PaletteSearchPropsTest extends TestCase
     private function props(array $query): array
     {
         $this->app->forgetScopedInstances();
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $request = Request::create('/', 'GET', $query);
         $request->setLaravelSession($this->app->make('session.store'));
 

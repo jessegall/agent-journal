@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\AskRefused;
 use App\Exceptions\SupervisorRouteInvalid;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
 use App\Models\Records\AssignmentRecord;
@@ -23,7 +21,6 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class AskRecordsTest extends TestCase
@@ -58,7 +55,7 @@ final class AskRecordsTest extends TestCase
 
     public function test_the_plain_signed_cli_retains_a_question_for_the_reviewers_supervisor(): void
     {
-        $this->activateProfiles();
+        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
         $start = TestStart::start('journal-code-reviewer');
         $recipient = TestStart::start('journal-main');
         $this->journal->relayAgentCommands($start);
@@ -90,10 +87,9 @@ final class AskRecordsTest extends TestCase
 
     public function test_the_owner_sees_the_ask_card_on_the_inbox_page(): void
     {
-        $this->activateProfiles();
+        $this->journal->owner()->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')));
         $requester = Agent::create('Requester', 'journal-main', $this->localProject());
-        $owner = User::factory()->create();
-        $this->journal->actAsUserId($owner->id);
+        $owner = $this->journal->ownerUser();
         $this->retainFor($requester, SupervisorTarget::parse('owner'));
 
         $this->actingAs($owner)->get('/web/asks')->assertOk()->assertInertia(
@@ -101,14 +97,6 @@ final class AskRecordsTest extends TestCase
                 ->where('page.data.cards.0.body', 'Where does this fail?')
                 ->where('page.data.cards.0.isOpen', true),
         );
-    }
-
-    private function activateProfiles(): void
-    {
-        $this->journal->actAsUserId(TestIds::of(1));
-        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
-            (array) config('profiles'),
-        )));
     }
 
     private function retainFor(Agent $requester, SupervisorTarget $target, int $routeVersion = 0): Ask

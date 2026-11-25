@@ -15,8 +15,8 @@ use App\Values\CommandRule;
 use App\Values\ExecutionContext;
 use App\Values\RuleBundle;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -25,7 +25,6 @@ use Tests\TestCase;
  */
 final class ApproveRuleBundleTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_a_module_bundle_classifies_only_after_the_owner_activates_its_exact_digest(): void
@@ -33,7 +32,7 @@ final class ApproveRuleBundleTest extends TestCase
         $bundle = $this->installNotes(1);
         $this->assertFalse($this->isKnown('notes-cli list'));
 
-        $this->asUser(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
         $this->assertTrue($this->isKnown('notes-cli list'));
 
         $this->installNotes(2);
@@ -46,7 +45,7 @@ final class ApproveRuleBundleTest extends TestCase
         $this->installNotes(2);
 
         $this->assertThrows(
-            fn () => $this->asUser(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
             ApprovalRefused::class,
         );
     }

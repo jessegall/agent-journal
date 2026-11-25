@@ -16,7 +16,6 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ use Tests\TestCase;
  */
 final class StateBridgeReleaseTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [];
@@ -85,7 +83,7 @@ final class StateBridgeReleaseTest extends TestCase
 
     private function renameAs(StackTarget $target, RaisingRow $row, string $name): void
     {
-        $this->actAsAgent($target->agentId);
+        $this->journal->actAsAgentId($target->agentId);
         $scope = $this->app->make(StateEventScope::class);
         $scope->admit([$target], fn () => $this->within(fn () => $row->rename($name)));
     }

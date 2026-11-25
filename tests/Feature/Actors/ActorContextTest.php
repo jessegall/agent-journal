@@ -15,17 +15,14 @@ use App\Support\AgentContext;
 use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Domain\Plans\PlansDomain;
-use Tests\Support\ActsAsActors;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     /**
@@ -45,7 +42,7 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->assertSame(
             [User::storedType(), TestIds::of(7)],
             [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id],

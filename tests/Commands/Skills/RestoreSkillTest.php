@@ -14,8 +14,8 @@ use App\Models\Skills\SkillRevision;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -23,7 +23,6 @@ use Tests\TestCase;
  */
 final class RestoreSkillTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -35,6 +34,13 @@ final class RestoreSkillTest extends TestCase
         'number_groups',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_restore_appends_the_old_content_as_a_new_revision(): void
     {

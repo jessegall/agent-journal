@@ -17,9 +17,9 @@ use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillKey;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -28,7 +28,6 @@ use Tests\TestCase;
  */
 final class SkillMcpToolsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -70,7 +69,7 @@ final class SkillMcpToolsTest extends TestCase
 
     public function test_an_agent_edit_is_hidden_and_the_bus_refuses_the_same_write(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $created = $this->app->make(CommandBus::class)->run(
             new CreateSkillCommand(
                 'user-review-notes',

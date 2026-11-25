@@ -26,7 +26,6 @@ use App\Values\ProgramSpellings;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StaleAfterFirstEnd;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
@@ -37,7 +36,6 @@ use Tests\TestCase;
  */
 final class StaleAdmissionTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private const string EXPLAIN_AGAIN = 'explain the line again';

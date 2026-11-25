@@ -6,7 +6,6 @@ namespace Tests\Support\Settings;
 
 use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
@@ -18,7 +17,6 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Support\ActsAsActors;
 use Tests\Support\TestIds;
 
 /**
@@ -26,8 +24,6 @@ use Tests\Support\TestIds;
  */
 trait UsesReviewsSettings
 {
-    use ActsAsActors;
-
     private ReviewSettings $reviews;
 
     private SettingCommandsContract $commands;
@@ -39,7 +35,7 @@ trait UsesReviewsSettings
         $this->holdSettings(DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings()));
         $this->ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->ownerId));
-        $this->actAs(ActorContext::forUser($this->ownerId));
+        $this->journal->actAsUserId(($this->ownerId));
     }
 
     /**

@@ -20,6 +20,7 @@ use App\Values\ReaderApproval;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -43,7 +44,7 @@ final class ApproveRuleProposalTest extends TestCase
         Event::fake([RuleActivated::class]);
         [$reader, $proof] = $this->provenReader();
 
-        $receipt = $this->asUser(
+        $receipt = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
             new ApproveRuleProposalCommand($this->proposalId(), $this->approval($reader, $proof, 0)),
         );
 
@@ -78,8 +79,8 @@ final class ApproveRuleProposalTest extends TestCase
         $without = new ApproveRuleProposalCommand($this->proposalId(), new OwnerApproval(1, 0, [], 'looks right'));
         $mismatched = new ApproveRuleProposalCommand($this->proposalId(), $this->approval($other, $proof, 0));
 
-        $this->assertThrows(fn () => $this->asUser($without), ApprovalRefused::class);
-        $this->assertThrows(fn () => $this->asUser($mismatched), ApprovalRefused::class);
+        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($without), ApprovalRefused::class);
+        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($mismatched), ApprovalRefused::class);
         $this->assertSame(0, ClassificationRule::query()->count());
     }
 

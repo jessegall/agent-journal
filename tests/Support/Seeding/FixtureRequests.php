@@ -78,6 +78,17 @@ final class FixtureRequests
     }
 
     /**
+     * An agent known only by its id, acting under the authority its start gives it, with no session bound.
+     */
+    public function asAgentId(string $agentId): void
+    {
+        $this->select(fn () => $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestStartAuthority::forAgent($agentId),
+        ));
+    }
+
+    /**
      * The user signed in, under the owner's authority the tests act with; the journal's owner stays whoever it was.
      */
     public function asUser(User $user): void

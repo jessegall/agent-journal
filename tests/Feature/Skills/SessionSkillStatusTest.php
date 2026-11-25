@@ -17,12 +17,11 @@ use App\Support\Inputs\Values\ToolResult;
 use App\Support\ReminderContribution;
 use App\Values\SessionSkillStatus;
 use App\Values\StackTarget;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\Skills\MakesUserGuideSkill;
-use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -31,7 +30,6 @@ use Tests\TestCase;
  */
 final class SessionSkillStatusTest extends TestCase
 {
-    use ActsAsActors;
     use AdmitsMainAgentSkills;
     use CommitsHookRows;
     use HasSkillTargets;
@@ -107,7 +105,7 @@ final class SessionSkillStatusTest extends TestCase
     private function guideOf(AgentSession $session): SessionSkillStatus
     {
         $this->app->forgetScopedInstances();
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
         $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
         $this->assertCount(1, $guide);

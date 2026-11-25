@@ -23,6 +23,7 @@ use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -45,14 +46,14 @@ final class RestoreCommandRuleTest extends TestCase
         $this->saveOrdinary('save-1', 0);
         $rule = ClassificationRule::query()->sole();
 
-        $this->asUser(new RetireCommandRuleCommand($rule->id, 1, 'replaced by a script'));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RetireCommandRuleCommand($rule->id, 1, 'replaced by a script'));
         $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
-        $restored = $this->asUser(new RestoreCommandRuleCommand($rule->id, 1, 1, 'restore-1'));
+        $restored = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RestoreCommandRuleCommand($rule->id, 1, 1, 'restore-1'));
         $this->assertSame(ProposalStatus::Pending, $restored->state);
         $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
-        $this->asUser(new ApproveRuleProposalCommand($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleProposalCommand($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));
         $this->assertSame(ClassificationStatus::Active, $rule->refresh()->status);
         $this->assertSame(2, $rule->active_revision);
     }
@@ -70,7 +71,7 @@ final class RestoreCommandRuleTest extends TestCase
 
         $save = new SaveCommandRuleCommand($requestId, $proposed, $expectedActive, 'reviewed');
 
-        return $this->asUser($save);
+        return $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($save);
     }
 
     private function proposalId(): string

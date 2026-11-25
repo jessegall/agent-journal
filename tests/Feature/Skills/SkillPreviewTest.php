@@ -17,10 +17,10 @@ use App\Values\ProfileBase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\ActsAsActors;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -29,7 +29,6 @@ use Tests\TestCase;
  */
 final class SkillPreviewTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
     use HasContainerSupport;
 
@@ -54,7 +53,7 @@ final class SkillPreviewTest extends TestCase
         $this->journal->installProfiles();
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), 'Review.'),
         )));

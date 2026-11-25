@@ -17,9 +17,8 @@ use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -28,12 +27,11 @@ use Tests\TestCase;
  */
 final class AgentInstructionsTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_each_session_is_told_how_the_chat_works_and_its_own_profiles_instructions(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), 'Review_carefully.'),
             TestProposals::profile('journal-researcher', ProfileBase::readOnlyHelper(), 'Cite_sources.'),

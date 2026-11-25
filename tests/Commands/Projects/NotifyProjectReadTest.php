@@ -21,7 +21,6 @@ use App\Values\BindingFolder;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -31,7 +30,6 @@ use Tests\TestCase;
  */
 final class NotifyProjectReadTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [

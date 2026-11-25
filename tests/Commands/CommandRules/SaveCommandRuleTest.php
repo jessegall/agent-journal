@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -61,9 +62,9 @@ final class SaveCommandRuleTest extends TestCase
     {
         $save = new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposedVerify(), 0, 'trusted');
 
-        $this->assertThrows(fn () => $this->asUser($save), ApprovalRefused::class);
+        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($save), ApprovalRefused::class);
         $this->assertThrows(
-            fn () => $this->asUser(new RejectRuleProposalCommand('no-such-proposal', 'none')),
+            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RejectRuleProposalCommand('no-such-proposal', 'none')),
             ModelNotFoundException::class,
         );
         $this->assertThrows(
@@ -89,7 +90,7 @@ final class SaveCommandRuleTest extends TestCase
 
         $save = new SaveCommandRuleCommand($requestId, $proposed, $expectedActive, 'reviewed');
 
-        return $this->asUser($save);
+        return $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed($save);
     }
 
     private function proposalId(): string

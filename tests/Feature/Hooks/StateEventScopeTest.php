@@ -17,7 +17,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
-use Tests\Support\ActsAsActors;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -25,14 +24,13 @@ use Tests\TestCase;
 
 final class StateEventScopeTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_the_same_object_dispatched_twice_carries_distinct_occurrences_through_outer_commit(): void
     {
         $original = TestActors::stack(1, 10);
         $surrounding = TestActors::stack(2, 20);
-        $this->actAsAgent($original->agentId);
+        $this->journal->actAsAgentId($original->agentId);
         $dispatcher = $this->app->make(Dispatcher::class);
         $scope = $this->app->make(StateEventScope::class);
         $database = $this->app->make(ConnectionInterface::class);
@@ -56,7 +54,7 @@ final class StateEventScopeTest extends TestCase
         });
 
         $this->assertSame([], $seen);
-        $this->actAsAgent($surrounding->agentId);
+        $this->journal->actAsAgentId($surrounding->agentId);
         $scope->admit([$surrounding], fn () => $database->commit());
 
         $this->assertCount(2, $seen);
@@ -74,7 +72,7 @@ final class StateEventScopeTest extends TestCase
     public function test_a_rollback_drops_deferred_delivery_and_a_plain_dispatch_still_reaches_listeners(): void
     {
         $target = TestActors::stack(1, 10);
-        $this->actAsAgent($target->agentId);
+        $this->journal->actAsAgentId($target->agentId);
         $dispatcher = $this->app->make(Dispatcher::class);
         $scope = $this->app->make(StateEventScope::class);
         $database = $this->app->make(ConnectionInterface::class);

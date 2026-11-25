@@ -23,7 +23,6 @@ use Domain\Documents\DocumentsDomain;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
@@ -38,7 +37,6 @@ use Tests\TestCase;
  */
 final class SearchDomainSwitchesTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -65,7 +63,7 @@ final class SearchDomainSwitchesTest extends TestCase
 
     public function test_switching_documents_off_and_on_removes_and_restores_its_sources(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(
             new CreateDocumentCommand('Harbor guide', 'About the harbor.', "# Harbor\nThe harbor plan.\n"),
         );
@@ -83,7 +81,7 @@ final class SearchDomainSwitchesTest extends TestCase
 
     public function test_an_open_search_drops_the_work_of_a_domain_switched_off_and_continues(): void
     {
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
         Task::factory()->create(['title' => 'Harbor one']);
         Task::factory()->create(['title' => 'Harbor two']);
         $this->app->make(CommandBus::class)->run(
@@ -182,7 +180,7 @@ final class SearchDomainSwitchesTest extends TestCase
     private function freshRequest(): void
     {
         $this->app->forgetScopedInstances();
-        $this->actAs(TestActors::user(7));
+        $this->journal->actAsUserId(TestIds::of(7));
     }
 
     private function reader(): SearchReader

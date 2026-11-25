@@ -25,9 +25,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -37,11 +37,17 @@ use Tests\TestCase;
  */
 final class ProfileResolverTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
     use HasContainerSupport;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_a_reader_profile_is_a_read_only_helper(): void
     {

@@ -11,7 +11,6 @@ use App\Enums\CommandRules\RequestHoldReason;
 use App\Exceptions\SampleRefused;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -21,7 +20,6 @@ use Tests\TestCase;
  */
 final class StartSampleTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private const string OWNER_WAIT = 'waiting for the owner';

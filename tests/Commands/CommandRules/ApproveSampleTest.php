@@ -15,9 +15,9 @@ use App\Models\CommandRules\EvidencePermit;
 use App\Values\CommandRule;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\ActsAsActors;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -26,7 +26,6 @@ use Tests\TestCase;
  */
 final class ApproveSampleTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     private TestStart $start;
@@ -85,7 +84,7 @@ final class ApproveSampleTest extends TestCase
         );
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 
-        $this->assertThrows(fn () => $this->asUser(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);
+        $this->assertThrows(fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveSampleCommand($other, 1, $digest)), SampleRefused::class);
     }
 
     private function approval(): ApproveSampleCommand

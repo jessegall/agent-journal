@@ -14,8 +14,8 @@ use App\Models\Skills\SkillRevision;
 use App\Values\SectionDraft;
 use App\Values\SkillDraft;
 use App\Values\SkillRevisionResult;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 use Throwable;
 
@@ -25,7 +25,6 @@ use Throwable;
  */
 final class ReviseSkillTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const string REVISION_CONFLICT = 'is at revision 2 now';
@@ -39,6 +38,13 @@ final class ReviseSkillTest extends TestCase
         'number_groups',
         'command_receipts',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
     {

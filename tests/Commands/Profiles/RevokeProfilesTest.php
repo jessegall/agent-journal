@@ -17,9 +17,9 @@ use App\Values\ProfileActivation;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\ActsAsTestUser;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -28,11 +28,17 @@ use Tests\TestCase;
  */
 final class RevokeProfilesTest extends TestCase
 {
-    use ActsAsTestUser;
     use CommitsHookRows;
     use HasContainerSupport;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->actAsUserId(TestIds::of(7));
+    }
 
     public function test_a_revoked_profile_is_retired_for_the_reader_and_activating_it_again_keeps_its_identity(): void
     {

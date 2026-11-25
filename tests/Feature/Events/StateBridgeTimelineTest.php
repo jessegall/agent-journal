@@ -10,7 +10,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
-use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -22,7 +21,6 @@ use Tests\TestCase;
  */
 final class StateBridgeTimelineTest extends TestCase
 {
-    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_after_the_commit_each_siblings_event_reaches_the_bridge_last_with_its_own_audience(): void
@@ -50,9 +48,9 @@ final class StateBridgeTimelineTest extends TestCase
         });
 
         $database->beginTransaction();
-        $this->actAsAgent($first->agentId);
+        $this->journal->actAsAgentId($first->agentId);
         $scope->admit([$first], fn () => $dispatcher->dispatch(new AfterCommitStateEvent($first)));
-        $this->actAsAgent($second->agentId);
+        $this->journal->actAsAgentId($second->agentId);
         $scope->admit([$second], fn () => $dispatcher->dispatch(new AfterCommitStateEvent($second)));
         $timeline[] = 'commit';
         $database->commit();

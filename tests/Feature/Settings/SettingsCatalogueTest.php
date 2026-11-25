@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Exceptions\SettingsAccessDenied;
@@ -16,11 +17,11 @@ use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Support\Storage\SettingsDocument;
+use App\Values\OwnerAuthority;
 use Closure;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\CountsReads;
 use Tests\Support\Settings\UsesReviewsSettings;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -191,10 +192,13 @@ final class SettingsCatalogueTest extends TestCase
 
     public function test_an_agent_another_user_and_nobody_are_refused_before_any_read(): void
     {
-        $this->actAs(ActorContext::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(3)),
+            new OwnerAuthority('test'),
+        );
         $this->assertRefusedWithoutReading();
 
-        $this->actAs(TestActors::user(8));
+        $this->journal->actAsUserId(TestIds::of(8));
         $this->assertRefusedWithoutReading();
 
         $this->app->forgetScopedInstances();

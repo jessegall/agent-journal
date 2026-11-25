@@ -35,7 +35,6 @@ use Tests\Support\DomainBoot;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
-use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -124,7 +123,7 @@ final class SetIntegerSettingTest extends TestCase
 
         $this->useSettingsBesideTestModules();
         $this->installCommandModules();
-        $this->actAs(ActorContext::forUser($this->ownerId));
+        $this->journal->actAsUserId(($this->ownerId));
         $change = $this->commands->integer($this->reviews->retryLimit, 4, 0);
 
         $this->assertThrows(
@@ -200,10 +199,10 @@ final class SetIntegerSettingTest extends TestCase
 
         $this->assertRefused(ActorNotAllowed::class, $command);
 
-        $this->actAs(TestActors::user(8));
+        $this->journal->actAsUserId(TestIds::of(8));
         $this->assertRefused(SettingsAccessDenied::class, $command);
 
-        $this->actAs(ActorContext::forUser($this->ownerId));
+        $this->journal->actAsUserId(($this->ownerId));
 
         $this->assertRefused(
             SettingUnavailable::class,

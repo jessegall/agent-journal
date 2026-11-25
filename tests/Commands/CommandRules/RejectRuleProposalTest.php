@@ -13,6 +13,7 @@ use App\Models\CommandRules\RuleProposal;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -34,7 +35,7 @@ final class RejectRuleProposalTest extends TestCase
     {
         Event::fake([RuleRejected::class]);
 
-        $this->asUser(new RejectRuleProposalCommand($this->proposalId(), 'effects are wider than read'));
+        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RejectRuleProposalCommand($this->proposalId(), 'effects are wider than read'));
 
         $this->assertSame(RequestStatus::Rejected, $this->request()->status);
         $this->assertSame(ProposalStatus::Rejected, RuleProposal::query()->sole()->status);
