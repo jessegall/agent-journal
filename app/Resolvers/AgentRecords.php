@@ -29,7 +29,7 @@ use App\Support\AgentFacts;
 use App\Support\AgentInspection;
 use App\Support\AgentOption;
 use App\Support\AgentStatusRules;
-use App\Support\LaunchOutcome;
+use App\Support\SessionStartOutcome;
 use App\Support\ResumableConversation;
 use App\Support\StartRemedyWords;
 use Carbon\CarbonImmutable;
@@ -167,11 +167,11 @@ final readonly class AgentRecords implements AgentDirectory
      * outcome never stands in for a dismissed newer one.
      *
      * @param  list<string>  $ids
-     * @return array<string, LaunchOutcome>
+     * @return array<string, SessionStartOutcome>
      */
     private function launchOutcomesOf(array $ids): array
     {
-        $launches = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new LaunchOutcome(
+        $launches = SessionRequest::latestOf($ids)->map(fn (SessionRequest $record) => new SessionStartOutcome(
             $record->agent_id,
             $record->request_id,
             $record->disposition,
@@ -181,10 +181,10 @@ final readonly class AgentRecords implements AgentDirectory
 
         $dismissed = SessionOutcomeDismissal::dismissedKeysOf(
             ActorIdentity::of($this->actors->actor()),
-            array_values($launches->map(fn (LaunchOutcome $launch) => $launch->requestId)->all()),
+            array_values($launches->map(fn (SessionStartOutcome $launch) => $launch->requestId)->all()),
         );
 
-        return $launches->reject(fn (LaunchOutcome $launch) => in_array($launch->key(), $dismissed, true))->all();
+        return $launches->reject(fn (SessionStartOutcome $launch) => in_array($launch->key(), $dismissed, true))->all();
     }
 
     /**

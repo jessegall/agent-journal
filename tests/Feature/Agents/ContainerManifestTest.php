@@ -12,7 +12,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Agents\WorkspaceUse;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\LaunchProfileType;
+use App\Enums\Drivers\StartProfileType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
 use App\Enums\Sessions\StartOriginType;
@@ -623,7 +623,7 @@ final class ContainerManifestTest extends TestCase
             MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
             SecurityOptions::none(),
             false,
-            LaunchProfileType::ProtectedAccount,
+            StartProfileType::ProtectedAccount,
         );
     }
 

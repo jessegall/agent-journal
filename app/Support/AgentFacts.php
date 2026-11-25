@@ -26,7 +26,7 @@ final readonly class AgentFacts
         public SessionProcess|null $start,
         public DriverRequest|null $request,
         public DriverSwitch|null $switch,
-        public LaunchOutcome|null $launch,
+        public SessionStartOutcome|null $launch,
         public bool $waitsOnHelpers,
         public StartReadiness|null $readiness,
     ) {}

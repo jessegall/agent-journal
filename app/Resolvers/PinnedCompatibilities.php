@@ -10,7 +10,7 @@ use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
 use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\LaunchProfiles;
+use App\Support\StartProfiles;
 use App\Values\ProtectionReport;
 
 /**
@@ -22,7 +22,7 @@ use App\Values\ProtectionReport;
  */
 final readonly class PinnedCompatibilities implements DriverCompatibilities
 {
-    public function __construct(private ArrangementSetting $setting, private LaunchProfiles $launchProfiles) {}
+    public function __construct(private ArrangementSetting $setting, private StartProfiles $launchProfiles) {}
 
     public function for(string $driver): DriverCompatibility
     {

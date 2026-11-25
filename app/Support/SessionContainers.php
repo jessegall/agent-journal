@@ -23,7 +23,7 @@ final readonly class SessionContainers
     public function __construct(
         private SessionPolicyReader $policies,
         private ArrangementSetting $arrangement,
-        private LaunchProfiles $launchProfiles,
+        private StartProfiles $launchProfiles,
     ) {}
 
     /**

@@ -53,15 +53,15 @@ use App\Events\Sessions\DriverRequestWakeAcknowledged;
 use App\Events\Sessions\DriverRequestWakeClaimed;
 use App\Events\Sessions\DriverSwitchCancelled;
 use App\Events\Sessions\DriverSwitchConfirmed;
-use App\Events\Sessions\DriverSwitchLaunchFailed;
+use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchPreflighted;
 use App\Events\Sessions\DriverSwitchRefused;
 use App\Events\Sessions\DriverSwitchStartRequested;
 use App\Events\Sessions\DriverSwitchStopped;
 use App\Events\Sessions\DriverSwitchStopRequested;
 use App\Events\Sessions\DriverTurnFinished;
-use App\Events\Sessions\LaunchCancelled;
-use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionStartCancelled;
+use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\MenuEntryMarkedStale;
 use App\Events\Sessions\MenuEntryProven;
 use App\Events\Sessions\MenuEntryRetired;
@@ -183,11 +183,11 @@ return [
             'app/Support/DriverRequestRecovery.php',
         ],
     ],
-    LaunchCancelled::class => [
+    SessionStartCancelled::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Agents/CancelLaunch/CancelLaunchHandler.php',
+            'app/Commands/Agents/CancelSessionStart/CancelSessionStartHandler.php',
         ],
     ],
     DriverSwitchStopped::class => [
@@ -197,11 +197,11 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverSwitchStopped('switch'),
     ],
-    LaunchEnded::class => [
+    SessionStartEnded::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Listeners/AnnounceLaunchEnded.php',
+            'app/Listeners/AnnounceSessionStartEnded.php',
         ],
     ],
     MergeOutcomeRecorded::class => [
@@ -305,12 +305,12 @@ return [
         'producers' => [],
         'sample' => fn () => new DriverSwitchConfirmed('switch'),
     ],
-    DriverSwitchLaunchFailed::class => [
+    DriverSwitchStartFailed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DriverSwitch::failLaunch',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new DriverSwitchLaunchFailed('switch', 'the start timed out'),
+        'sample' => fn () => new DriverSwitchStartFailed('switch', 'the start timed out'),
     ],
     DriverSwitchCancelled::class => [
         'role' => EventRole::RowFact,

@@ -345,7 +345,7 @@ final class AgentStatusRules
         return self::plain(SessionState::Starting, $evidence, $actions, $operation);
     }
 
-    private static function refused(LaunchOutcome $launch, StartRemedyWords $words): AgentStatus
+    private static function refused(SessionStartOutcome $launch, StartRemedyWords $words): AgentStatus
     {
         $reason = StartRefusalCodes::reasonOf((string) $launch->refusalReason);
         $remedy = $reason->remedy();

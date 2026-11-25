@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Contracts\Sessions\LaunchCandidates;
-use App\Enums\Sessions\LaunchCandidateRank;
-use App\Support\LaunchCandidateFacts;
-use App\Support\LaunchCandidateQuery;
-use App\Support\LaunchProfileKey;
-use App\Support\RankedLaunchCandidate;
+use App\Contracts\Sessions\SessionStartCandidates;
+use App\Enums\Sessions\StartCandidateRank;
+use App\Support\StartCandidateFacts;
+use App\Support\StartCandidateQuery;
+use App\Support\StartProfileKey;
+use App\Support\RankedStartCandidate;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Models\HelperIdentity;
@@ -22,7 +22,7 @@ use Domain\Helpers\Models\HelperJob;
  */
 final readonly class HelperCandidates
 {
-    public function __construct(private LaunchCandidates $launches) {}
+    public function __construct(private SessionStartCandidates $launches) {}
 
     /**
      * @return list<HelperCandidate>
@@ -47,8 +47,8 @@ final readonly class HelperCandidates
 
         $exposedIdentityIds = $this->exposedIdentities($query, $identityIds);
 
-        $ranked = $this->launches->rank(new LaunchCandidateQuery(
-            new LaunchProfileKey($query->profileKey),
+        $ranked = $this->launches->rank(new StartCandidateQuery(
+            new StartProfileKey($query->profileKey),
             $query->driver,
             $query->model,
             $query->purpose->id,
@@ -83,7 +83,7 @@ final readonly class HelperCandidates
     /**
      * @param  list<HelperJob>  $jobs
      */
-    private function factsOf(HelperIdentity $identity, array $jobs, CandidateQuery $query): LaunchCandidateFacts
+    private function factsOf(HelperIdentity $identity, array $jobs, CandidateQuery $query): StartCandidateFacts
     {
         $finished = array_values(array_filter($jobs, fn (HelperJob $job) => $job->state === JobState::Finished));
 
@@ -92,7 +92,7 @@ final readonly class HelperCandidates
             fn (HelperJob $job) => $job->helper_purpose_id === $query->purpose->id,
         ));
 
-        return new LaunchCandidateFacts(
+        return new StartCandidateFacts(
             $identity->helper_actor,
             array_any($jobs, fn (HelperJob $job) => ! $job->state->isFinal()),
             $matching !== [],
@@ -135,9 +135,9 @@ final readonly class HelperCandidates
     /**
      * Only ordinary work on the same purpose with a conversation on the chosen driver and model resumes it.
      */
-    private function resumes(CandidateQuery $query, RankedLaunchCandidate $candidate): bool
+    private function resumes(CandidateQuery $query, RankedStartCandidate $candidate): bool
     {
-        return ! $query->isIndependent && $candidate->rank === LaunchCandidateRank::ExactConversation;
+        return ! $query->isIndependent && $candidate->rank === StartCandidateRank::ExactConversation;
     }
 
     /**

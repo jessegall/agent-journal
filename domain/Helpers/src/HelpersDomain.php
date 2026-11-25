@@ -30,7 +30,7 @@ use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
-use Domain\Helpers\Exceptions\HelperLaunchUncertain;
+use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperProfileMismatch;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
 use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
@@ -44,7 +44,7 @@ use Domain\Helpers\Resolvers\HelperJobAssignments;
 use Domain\Helpers\Support\States\HelperJobState;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
-use Domain\Helpers\Values\LaunchDetails;
+use Domain\Helpers\Values\SessionStartDetails;
 use Domain\Helpers\Values\SteerReceipt;
 
 final class HelpersDomain extends Domain implements
@@ -101,7 +101,7 @@ final class HelpersDomain extends Domain implements
                 HelperReceipt::class,
                 HelperWork::class,
                 JobState::class,
-                LaunchDetails::class,
+                SessionStartDetails::class,
                 SteerReceipt::class,
             )
             ->commands(
@@ -115,7 +115,7 @@ final class HelpersDomain extends Domain implements
                 HelperUnavailable::class,
                 HelperBusy::class,
                 HelperJobUnfinished::class,
-                HelperLaunchUncertain::class,
+                HelperStartUncertain::class,
                 HelperRetired::class,
                 HelperProfileMismatch::class,
                 HelperProfileTypeConflict::class,

@@ -26,7 +26,7 @@ final readonly class AgentEvidence
         public bool $expectsRuntime,
         public SwitchEvidence|null $switch,
         public DriverRequestStatus|null $request,
-        public LaunchOutcome|null $launch,
+        public SessionStartOutcome|null $launch,
         public bool $isResumable,
         public bool $canCancelLaunch,
         public bool $hasTerminal = false,

@@ -30,7 +30,7 @@ use Domain\Helpers\Events\HelperJobReopenedForRepair;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Exceptions\HelperJobEnded;
 use Domain\Helpers\Values\HelperReceipt;
-use Domain\Helpers\Values\LaunchDetails;
+use Domain\Helpers\Values\SessionStartDetails;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -100,7 +100,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         ActorIdentity $parent,
         string $brief,
         array $sourceSubjects,
-        LaunchDetails $launchDetails,
+        SessionStartDetails $launchDetails,
     ): self {
         $job = new self();
         $job->helper_identity_id = $helper->id;
@@ -261,11 +261,11 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     // ----------[ Accessors ]----------
 
     /**
-     * @return Attribute<LaunchDetails, never>
+     * @return Attribute<SessionStartDetails, never>
      */
     protected function launchDetails(): Attribute
     {
-        return Accessor::get(fn () => new LaunchDetails(
+        return Accessor::get(fn () => new SessionStartDetails(
             $this->request_id,
             $this->payload_digest,
             $this->profile_revision,

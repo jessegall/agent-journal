@@ -7,7 +7,7 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
-use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionStartEnded;
 use App\Support\ContextReminders;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
@@ -110,7 +110,7 @@ final class HelperContextTest extends TestCase
     {
         $receipt = $this->start((string) Str::ulid(), self::REVIEW_TITLE);
         $job = HelperJob::query()->findOrFail($receipt->jobId);
-        $this->app->make(Dispatcher::class)->dispatch(new LaunchEnded($job->assignmentIdentity()));
+        $this->app->make(Dispatcher::class)->dispatch(new SessionStartEnded($job->assignmentIdentity()));
 
         $first = $this->remindersOn($this->parent->agent->id, ContextStartType::Resume);
         $again = $this->remindersOn($this->parent->agent->id, ContextStartType::Resume);

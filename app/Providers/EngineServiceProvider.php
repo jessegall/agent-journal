@@ -15,7 +15,7 @@ use App\Support\AdvisoryEngineLock;
 use App\Support\AlarmWatchdog;
 use App\Support\CertifyPassedStopsOnTick;
 use App\Support\EndTerminalViewsOnTick;
-use App\Support\EnforceLaunchLimitsOnTick;
+use App\Support\EnforceSessionStartLimitsOnTick;
 use App\Support\EngineAccess;
 use App\Support\EngineListenerSet;
 use App\Support\EngineLoop;
@@ -82,7 +82,7 @@ final class EngineServiceProvider extends ServiceProvider
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(InterruptStuckTurnsOnTick::class);
-        $listeners->add(EnforceLaunchLimitsOnTick::class);
+        $listeners->add(EnforceSessionStartLimitsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);
     }

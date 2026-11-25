@@ -9,7 +9,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
-use Domain\Helpers\Values\LaunchDetails;
+use Domain\Helpers\Values\SessionStartDetails;
 use Tests\TestCase as BaseTestCase;
 
 /**
@@ -31,8 +31,8 @@ abstract class TestCase extends BaseTestCase
     /**
      * A job launched for the request on revision 1 of its profile, on a reused identity in a new conversation.
      */
-    protected static function launchFor(string $requestId): LaunchDetails
+    protected static function launchFor(string $requestId): SessionStartDetails
     {
-        return new LaunchDetails($requestId, hash('sha256', $requestId), 1, false, false, ConversationModeType::New, '');
+        return new SessionStartDetails($requestId, hash('sha256', $requestId), 1, false, false, ConversationModeType::New, '');
     }
 }

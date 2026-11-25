@@ -92,7 +92,7 @@ use App\Support\EngineTickedDelivery;
 use App\Support\EnrolledHost;
 use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
-use App\Support\LaunchProfiles;
+use App\Support\StartProfiles;
 use App\Support\MessageBatchService;
 use App\Support\NativeTurns;
 use App\Support\OpenedRuntime;
@@ -769,7 +769,7 @@ final class AgentDriverLedgerTest extends TestCase
             ArrangementSetting::class,
             ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
         );
-        $this->app->forgetInstance(LaunchProfiles::class);
+        $this->app->forgetInstance(StartProfiles::class);
         $execution = new ExecutionPolicy(
             ExecutionModeType::RequiredContainer,
             'journal-agent@sha256:'.str_repeat('a', 64),

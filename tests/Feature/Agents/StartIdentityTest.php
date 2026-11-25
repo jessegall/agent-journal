@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
 use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
@@ -245,7 +245,7 @@ final class StartIdentityTest extends TestCase
     {
         [$host, $opened, $wake, $record] = $this->startWithMessage();
         $this->claimedIds($host);
-        $this->asOwner(new CancelLaunchCommand(
+        $this->asOwner(new CancelSessionStartCommand(
             AgentSession::query()->findOrFail($opened->sessionId)->agent_id,
             $opened->sessionId,
             'cancel-1',

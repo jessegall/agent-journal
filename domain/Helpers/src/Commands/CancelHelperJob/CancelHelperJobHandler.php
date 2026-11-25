@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\CancelHelperJob;
 
-use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Exceptions\HelperUnavailable;
@@ -12,7 +12,7 @@ use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperStarts;
 
 /**
- * Stops the job's live attempt through Core's CancelLaunchCommand, then marks the job cancelled; the workspace stays.
+ * Stops the job's live attempt through Core's CancelSessionStartCommand, then marks the job cancelled; the workspace stays.
  */
 final readonly class CancelHelperJobHandler extends HelperCommandHandler
 {
@@ -48,7 +48,7 @@ final readonly class CancelHelperJobHandler extends HelperCommandHandler
                 continue;
             }
 
-            $this->commands->run(new CancelLaunchCommand($start->agentId, $start->sessionId, $idempotencyKey));
+            $this->commands->run(new CancelSessionStartCommand($start->agentId, $start->sessionId, $idempotencyKey));
         }
     }
 }

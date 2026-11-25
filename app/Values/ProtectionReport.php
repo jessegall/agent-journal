@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Data\Profiles\ProtectedItemData;
 use App\Data\Profiles\ProtectionReportData;
-use App\Enums\Drivers\LaunchProfileType;
+use App\Enums\Drivers\StartProfileType;
 
 /**
  * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),
@@ -38,7 +38,7 @@ final readonly class ProtectionReport
      */
     private static function keyOf(string $driver, string $build, string $platform): string
     {
-        if ($platform === LaunchProfileType::Standard->protectionPlatform()) {
+        if ($platform === StartProfileType::Standard->protectionPlatform()) {
             return "{$driver}@{$build}";
         }
 

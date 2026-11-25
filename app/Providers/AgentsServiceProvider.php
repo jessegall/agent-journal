@@ -39,7 +39,7 @@ use App\Contracts\Sessions\AgentDirectory;
 use App\Contracts\Sessions\AgentRequestClient as AgentRequestClientContract;
 use App\Contracts\Sessions\AgentResolver;
 use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Sessions\LaunchCandidates;
+use App\Contracts\Sessions\SessionStartCandidates;
 use App\Contracts\Sessions\RuntimeResolver;
 use App\Contracts\Sessions\SessionPolicyReader;
 use App\Contracts\Sessions\SessionProvenance as SessionProvenanceContract;
@@ -69,7 +69,7 @@ use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
 use App\Resolvers\AgentAuthorityRecords;
 use App\Resolvers\AgentLabels;
-use App\Resolvers\AgentLaunchCandidates;
+use App\Resolvers\AgentStartCandidates;
 use App\Resolvers\AgentRecords;
 use App\Resolvers\CallingSessionDriver;
 use App\Resolvers\DriverConversationRecords;
@@ -111,7 +111,7 @@ use App\Support\HelperCommitImport;
 use App\Support\HostStartExecutor;
 use App\Support\HostStartPreflight;
 use App\Support\InstallLineAvailability;
-use App\Support\LaunchProfiles;
+use App\Support\StartProfiles;
 use App\Support\NavigationExpiry;
 use App\Support\NavigationRequestProvider;
 use App\Support\PendingNavigationWork;
@@ -222,7 +222,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
-        $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
+        $this->app->bind(SessionStartCandidates::class, AgentStartCandidates::class);
         $this->app->bind(StartReservations::class, ReserveStarts::class);
         $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);
         $this->app->bind(CallingDriver::class, CallingSessionDriver::class);
@@ -258,10 +258,10 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->isLocal(),
         ));
 
-        $this->app->bind(LaunchProfiles::class, fn () => new LaunchProfiles(
+        $this->app->bind(StartProfiles::class, fn () => new StartProfiles(
             $this->app->make(ArrangementSetting::class),
             $this->app->make(HostCapabilities::class),
-            LaunchProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
+            StartProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
         ));
 
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(

@@ -33,7 +33,7 @@ use App\Values\StartProfileAuthority;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
-use Domain\Helpers\Exceptions\HelperLaunchUncertain;
+use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperProfileMismatch;
 use Domain\Helpers\Exceptions\HelperProfilesUnavailable;
 use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
@@ -49,7 +49,7 @@ use Domain\Helpers\Support\Readers\HelperCandidate;
 use Domain\Helpers\Support\Readers\HelperCandidates;
 use Domain\Helpers\Support\Readers\HelperRecords;
 use Domain\Helpers\Values\HelperReceipt;
-use Domain\Helpers\Values\LaunchDetails;
+use Domain\Helpers\Values\SessionStartDetails;
 
 /**
  * Dispatches a parent's work to a helper inside the command's transaction, in one order: the parent may delegate,
@@ -367,7 +367,7 @@ final readonly class HelperDispatch
             $request->parent,
             $request->work->brief,
             $request->work->sourceSubjects,
-            new LaunchDetails(
+            new SessionStartDetails(
                 $request->requestId,
                 $request->digest(),
                 $profile->revision,
@@ -427,7 +427,7 @@ final readonly class HelperDispatch
 
         throw match ($open->state) {
             JobState::Unfinished => HelperJobUnfinished::onJob($identity->id, $open->id),
-            JobState::Held => HelperLaunchUncertain::forIdentity($identity->id),
+            JobState::Held => HelperStartUncertain::forIdentity($identity->id),
             default => HelperBusy::onJob($identity->id, $open->id),
         };
     }

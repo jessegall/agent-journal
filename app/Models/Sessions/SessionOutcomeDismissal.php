@@ -10,7 +10,7 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\StartDisposition;
 use App\Support\ActorIdentity;
-use App\Support\LaunchOutcome;
+use App\Support\SessionStartOutcome;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -67,7 +67,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
             ->ofRequests($requestIds)
             ->readExactly(count($requestIds) * count(StartDisposition::cases()))
             ->get()
-            ->map(fn (self $dismissal) => LaunchOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version))
+            ->map(fn (self $dismissal) => SessionStartOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version))
             ->all());
     }
 

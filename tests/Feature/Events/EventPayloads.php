@@ -43,8 +43,8 @@ use App\Events\Sessions\AgentHoldReleased;
 use App\Events\Sessions\AgentRuntimeReassigned;
 use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\DriverRequestRecovered;
-use App\Events\Sessions\LaunchCancelled;
-use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionStartCancelled;
+use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\MergeOutcomeRecorded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
@@ -133,7 +133,7 @@ final class EventPayloads
                     'reason' => 'string',
                 ],
             ],
-            LaunchCancelled::class => [
+            SessionStartCancelled::class => [
                 'fields' => [
                     'work' => 'App\Support\RecordIdentity',
                 ],
@@ -621,7 +621,7 @@ final class EventPayloads
         return [
             AccountSettingsRequested::class => 'request',
             AccountUseChanged::class => 'projection',
-            LaunchEnded::class => 'projection',
+            SessionStartEnded::class => 'projection',
             StartGrantRequested::class => 'request',
             StartSettingsRequested::class => 'request',
             ContextStarted::class => 'request',

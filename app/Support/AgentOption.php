@@ -36,7 +36,7 @@ final readonly class AgentOption
         public array $actions,
         public array $conversations,
         public string|null $startRefusal,
-        public LaunchOutcome|null $launchOutcome,
+        public SessionStartOutcome|null $launchOutcome,
         public AgentStatus $status,
         public string|null $sessionDriver = null,
         // The label of the driver the session was launched on, as stored then.

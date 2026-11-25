@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Sessions\LaunchCandidateRank;
+use App\Enums\Sessions\StartCandidateRank;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
@@ -77,9 +77,9 @@ final class HelperSelectionTest extends TestCase
             $codex->id,
             $claude->id,
         ], $this->identityIds($candidates));
-        $this->assertSame(LaunchCandidateRank::ExactConversation, $candidates[0]->rank);
+        $this->assertSame(StartCandidateRank::ExactConversation, $candidates[0]->rank);
         $this->assertTrue($candidates[0]->resumesConversation);
-        $this->assertSame(LaunchCandidateRank::SamePurpose, $candidates[1]->rank);
+        $this->assertSame(StartCandidateRank::SamePurpose, $candidates[1]->rank);
     }
 
     public function test_equal_finishes_pick_the_lower_actor_id(): void

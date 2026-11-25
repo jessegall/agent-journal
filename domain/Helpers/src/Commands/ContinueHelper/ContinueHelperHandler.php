@@ -7,7 +7,7 @@ namespace Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
-use Domain\Helpers\Exceptions\HelperLaunchUncertain;
+use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperDispatch;
@@ -48,7 +48,7 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
         }
 
         if ($job->state !== JobState::Unfinished) {
-            throw HelperLaunchUncertain::forIdentity($job->helper_identity_id);
+            throw HelperStartUncertain::forIdentity($job->helper_identity_id);
         }
 
         return $this->dispatch->continueJob($job, $command->requestId, $command->model, $command->driverKey);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Commands\Agents\CancelLaunch\CancelLaunchCommand;
+use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
 use App\Commands\Sessions\CertifyPassedStops\CertifyPassedStopsCommand;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -21,7 +21,7 @@ use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Events\Hooks\HelperStopHeld;
-use App\Events\Sessions\LaunchCancelled;
+use App\Events\Sessions\SessionStartCancelled;
 use App\Exceptions\AgentReservedForReview;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
@@ -201,15 +201,15 @@ final class HelperCompletionTest extends TestCase
 
     public function test_a_cancel_stops_the_runtime_and_tells_the_owner(): void
     {
-        Event::fake([LaunchCancelled::class]);
+        Event::fake([SessionStartCancelled::class]);
         [, $opened] = $this->openRuntime();
         $session = AgentSession::query()->findOrFail($opened->sessionId);
         $work = $this->ownerStart($session);
 
-        $this->asOwner(new CancelLaunchCommand($session->agent_id, $session->id, 'cancel-1'));
+        $this->asOwner(new CancelSessionStartCommand($session->agent_id, $session->id, 'cancel-1'));
 
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Stop)->count());
-        Event::assertDispatched(LaunchCancelled::class, fn (LaunchCancelled $event) => $event->work->id === $work->id);
+        Event::assertDispatched(SessionStartCancelled::class, fn (SessionStartCancelled $event) => $event->work->id === $work->id);
     }
 
     private function helperWithConditions(bool $requiresReview = false): TestStart

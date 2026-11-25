@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Commands\Agents\StartSwitchReplacement\StartSwitchReplacementCommand;
-use App\Commands\Drivers\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
+use App\Commands\Drivers\FailDriverSwitchStart\FailDriverSwitchStartCommand;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
@@ -32,7 +32,7 @@ final readonly class StartSwitchReplacementOnStop implements Listener
             $this->journal->runAsJournal(
                 CommandEntry::HostControl,
                 'driver switch',
-                new FailDriverSwitchLaunchCommand($fact->switchId, $refused->getMessage()),
+                new FailDriverSwitchStartCommand($fact->switchId, $refused->getMessage()),
             );
         }
     }

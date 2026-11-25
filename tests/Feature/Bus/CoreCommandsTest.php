@@ -60,7 +60,7 @@ use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
 use App\Commands\CommandRules\StartSample\StartSampleCommand;
 use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
-use App\Commands\Drivers\FailDriverSwitchLaunch\FailDriverSwitchLaunchCommand;
+use App\Commands\Drivers\FailDriverSwitchStart\FailDriverSwitchStartCommand;
 use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
 use App\Commands\Notifications\HideUnseatedNotifications\HideUnseatedNotificationsCommand;
@@ -201,7 +201,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             SwitchAgentDriverCommand::class,
             RecheckDriverSwitchCommand::class,
             RetryDriverSwitchCommand::class,
-            FailDriverSwitchLaunchCommand::class,
+            FailDriverSwitchStartCommand::class,
             ReadShareCommand::class,
             ExpireSharesCommand::class,
             ClaimGatewayOperationCommand::class,

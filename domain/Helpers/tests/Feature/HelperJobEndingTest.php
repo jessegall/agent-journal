@@ -6,7 +6,7 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Events\Hooks\HelperStopHeld;
-use App\Events\Sessions\LaunchCancelled;
+use App\Events\Sessions\SessionStartCancelled;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -53,7 +53,7 @@ final class HelperJobEndingTest extends TestCase
             new HelperStopHeld($held->assignmentIdentity(), new StopCheckReference('attempt-2')),
         );
 
-        $this->raise(new LaunchCancelled($cancelled->assignmentIdentity()));
+        $this->raise(new SessionStartCancelled($cancelled->assignmentIdentity()));
 
         $this->assertSame(JobState::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->state);
         $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($cancelled->id)->state);
@@ -65,7 +65,7 @@ final class HelperJobEndingTest extends TestCase
         $job->cancel();
 
         $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopCheckReference('attempt-3')));
-        $this->raise(new LaunchCancelled(new RecordIdentity('tasks.task', $job->id)));
+        $this->raise(new SessionStartCancelled(new RecordIdentity('tasks.task', $job->id)));
 
         $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->state);
     }

@@ -14,7 +14,7 @@ use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\DriverSwitchCancelled;
 use App\Events\Sessions\DriverSwitchConfirmed;
-use App\Events\Sessions\DriverSwitchLaunchFailed;
+use App\Events\Sessions\DriverSwitchStartFailed;
 use App\Events\Sessions\DriverSwitchPreflighted;
 use App\Events\Sessions\DriverSwitchRefused;
 use App\Events\Sessions\DriverSwitchStartRequested;
@@ -164,7 +164,7 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     public function failLaunch(string $reason): void
     {
         $this->moveTo(DriverSwitchStage::LaunchFailed, $reason);
-        $this->raise(new DriverSwitchLaunchFailed($this->id, $reason));
+        $this->raise(new DriverSwitchStartFailed($this->id, $reason));
     }
 
     public function cancel(string|null $reason = null): void

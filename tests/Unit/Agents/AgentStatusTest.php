@@ -22,7 +22,7 @@ use App\Enums\Sessions\StartReadiness;
 use App\Support\AgentEvidence;
 use App\Support\AgentStatusRules;
 use App\Support\HoldCopy;
-use App\Support\LaunchOutcome;
+use App\Support\SessionStartOutcome;
 use App\Support\RuntimeEvidence;
 use App\Support\StartRemedyWords;
 use App\Support\StatusAction;
@@ -436,7 +436,7 @@ final class AgentStatusTest extends TestCase
         RuntimeEvidence|null $runtime,
         SessionStatus $status = SessionStatus::Active,
         SwitchEvidence|null $switch = null,
-        LaunchOutcome|null $launch = null,
+        SessionStartOutcome|null $launch = null,
         SessionProcessState $start = SessionProcessState::Running,
         DriverRequestStatus|null $request = null,
         bool $isTerminal = false,
@@ -486,7 +486,7 @@ final class AgentStatusTest extends TestCase
         );
     }
 
-    private static function stopped(LaunchOutcome|null $launch): AgentEvidence
+    private static function stopped(SessionStartOutcome|null $launch): AgentEvidence
     {
         return new AgentEvidence(false, null, null, null, null, false, null, null, $launch, false, false);
     }
@@ -499,9 +499,9 @@ final class AgentStatusTest extends TestCase
         return new RuntimeEvidence($activity, $hold, $isStale, $isStale ? 600 : 3, 3);
     }
 
-    private static function launch(StartDisposition $disposition, string|null $reason = null): LaunchOutcome
+    private static function launch(StartDisposition $disposition, string|null $reason = null): SessionStartOutcome
     {
-        return new LaunchOutcome(
+        return new SessionStartOutcome(
             '01jd8x0g9m3qz6v4k2t7r5w1ch',
             self::REQUEST,
             $disposition,

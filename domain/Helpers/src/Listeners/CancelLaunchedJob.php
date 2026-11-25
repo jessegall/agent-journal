@@ -7,7 +7,7 @@ namespace Domain\Helpers\Listeners;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\Accounts\CommandEntry;
-use App\Events\Sessions\LaunchCancelled;
+use App\Events\Sessions\SessionStartCancelled;
 use Domain\Helpers\Commands\CancelLaunchedHelperJob\CancelLaunchedHelperJobCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
@@ -20,7 +20,7 @@ final readonly class CancelLaunchedJob implements Listener
 {
     public function __construct(private JournalCommands $journal) {}
 
-    public function handle(LaunchCancelled $event): void
+    public function handle(SessionStartCancelled $event): void
     {
         if ($event->work->type !== HelperJob::linkType()) {
             return;

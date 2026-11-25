@@ -7,7 +7,7 @@ namespace Domain\Helpers\Listeners;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Enums\Accounts\CommandEntry;
-use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionStartEnded;
 use Domain\Helpers\Commands\MarkHelperJobUnfinished\MarkHelperJobUnfinishedCommand;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperLifecycleEntry;
@@ -20,7 +20,7 @@ final readonly class RecordAttemptEnded implements Listener
 {
     public function __construct(private JournalCommands $journal) {}
 
-    public function handle(LaunchEnded $event): void
+    public function handle(SessionStartEnded $event): void
     {
         if ($event->work->type !== HelperJob::linkType()) {
             return;

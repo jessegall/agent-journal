@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Agents\CancelLaunchController;
+use App\Http\Controllers\Agents\CancelSessionStartController;
 use App\Http\Controllers\Agents\CheckStartStatusController;
 use App\Http\Controllers\Agents\ContinueStartController;
-use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
+use App\Http\Controllers\Agents\DismissSessionStartOutcomeController;
 use App\Http\Controllers\Agents\InterruptAgentController;
 use App\Http\Controllers\Agents\RecheckDriverSwitchController;
 use App\Http\Controllers\Agents\RetireAgentController;
@@ -35,7 +35,7 @@ Route::post('/agents/{agent}/interrupt', InterruptAgentController::class)
     ->whereUlid('agent')
     ->name('agents.interrupt');
 
-Route::post('/agents/{agent}/launch-outcome/dismiss', DismissLaunchOutcomeController::class)
+Route::post('/agents/{agent}/launch-outcome/dismiss', DismissSessionStartOutcomeController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid('agent')
     ->name('agents.launch-outcome.dismiss');
@@ -49,7 +49,7 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::post('/recheck', RecheckDriverSwitchController::class)->name('recheck');
     });
 
-Route::post('/agents/{agent}/sessions/{session}/cancel-launch', CancelLaunchController::class)
+Route::post('/agents/{agent}/sessions/{session}/cancel-launch', CancelSessionStartController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->whereUlid(['agent', 'session'])
     ->name('agents.cancel-launch');

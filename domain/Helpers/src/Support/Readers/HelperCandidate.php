@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Enums\Sessions\LaunchCandidateRank;
+use App\Enums\Sessions\StartCandidateRank;
 use Domain\Helpers\Models\HelperIdentity;
 
 /**
@@ -15,7 +15,7 @@ final readonly class HelperCandidate
 {
     public function __construct(
         public HelperIdentity $identity,
-        public LaunchCandidateRank $rank,
+        public StartCandidateRank $rank,
         public bool $resumesConversation,
         public bool $isExposureChecked,
     ) {}

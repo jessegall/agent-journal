@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\Agents\WorkspaceUse;
-use App\Enums\Drivers\LaunchProfileType;
+use App\Enums\Drivers\StartProfileType;
 use App\Exceptions\ManifestRefused;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
@@ -48,7 +48,7 @@ final readonly class ContainerManifest
         public bool $isAttachable,
         // What the host fills or checks before the container mounts the workspace; none locally.
         public WorkspacePreparation|null $workspacePreparation,
-        public LaunchProfileType $launchProfile,
+        public StartProfileType $launchProfile,
     ) {}
 
     /**
@@ -66,7 +66,7 @@ final readonly class ContainerManifest
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
-        LaunchProfileType $launchProfile = LaunchProfileType::Standard,
+        StartProfileType $launchProfile = StartProfileType::Standard,
     ): self {
         $mount = $rules->workspaceMount($workspace, $use);
 
@@ -111,7 +111,7 @@ final readonly class ContainerManifest
         MountRules $rules,
         SecurityOptions $securityOptions,
         bool $isAttachable = false,
-        LaunchProfileType $launchProfile = LaunchProfileType::Standard,
+        StartProfileType $launchProfile = StartProfileType::Standard,
     ): self {
         if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
@@ -121,8 +121,8 @@ final readonly class ContainerManifest
 
         if ($isPrivileged || ! $matchesProfile || ! $isReadOnlyRoot) {
             throw ManifestRefused::because(match ($launchProfile) {
-                LaunchProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
-                LaunchProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',
+                StartProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
+                StartProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',
             });
         }
 

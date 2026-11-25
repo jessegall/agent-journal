@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Events\Sessions\LaunchEnded;
+use App\Events\Sessions\SessionStartEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Sessions\SessionRequest;
 use App\Support\Capabilities\CodexHeadlessCapabilities;
@@ -14,7 +14,7 @@ use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
-use Domain\Helpers\Exceptions\HelperLaunchUncertain;
+use Domain\Helpers\Exceptions\HelperStartUncertain;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperMessage;
 use Domain\Helpers\Models\HelperNotice;
@@ -103,7 +103,7 @@ final class HelperContinueTest extends TestCase
     {
         $receipt = $this->start('request-1', 'Review plan 7');
 
-        $this->assertThrows(fn () => $this->continueJob($receipt, (string) Str::ulid()), HelperLaunchUncertain::class);
+        $this->assertThrows(fn () => $this->continueJob($receipt, (string) Str::ulid()), HelperStartUncertain::class);
 
         HelperJob::query()->findOrFail($receipt->jobId)->finish('report:1');
 
@@ -141,7 +141,7 @@ final class HelperContinueTest extends TestCase
     private function endAttempt(HelperReceipt $receipt): void
     {
         $job = HelperJob::query()->findOrFail($receipt->jobId);
-        $this->app->make(Dispatcher::class)->dispatch(new LaunchEnded($job->assignmentIdentity()));
+        $this->app->make(Dispatcher::class)->dispatch(new SessionStartEnded($job->assignmentIdentity()));
     }
 
     private function continueJob(
