@@ -65,7 +65,7 @@ final class ChatMessage extends Model implements EventSource
      *
      * @throws InboxUnavailable
      */
-    public static function record(
+    public static function create(
         string $inboxId,
         AuthoredModel $source,
         ChatMessageType $type,

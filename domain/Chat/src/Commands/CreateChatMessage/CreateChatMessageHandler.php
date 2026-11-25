@@ -30,6 +30,6 @@ final readonly class CreateChatMessageHandler extends ChatCommandHandler
             throw ChatSourceRefused::notAuthored($command->sourceType);
         }
 
-        return ChatMessage::record($command->inboxId, $source, $command->type, $this->clock->now())->id;
+        return ChatMessage::create($command->inboxId, $source, $command->type, $this->clock->now())->id;
     }
 }

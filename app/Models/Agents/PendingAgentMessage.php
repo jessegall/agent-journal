@@ -45,7 +45,10 @@ final class PendingAgentMessage extends Model implements ReadableModel
 
     protected function casts(): array
     {
-        return ['lines' => 'array', 'requests_attention' => 'boolean'];
+        return [
+            'lines' => 'array',
+            'requests_attention' => 'boolean'
+        ];
     }
 
     // ----------[ Constructors ]----------

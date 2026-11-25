@@ -107,13 +107,54 @@ function textOf(string $source, ClassMethod $method): string
 }
 
 /**
+ * The model's constructors: its public static methods under the Constructors marker.
+ *
+ * @return list<ClassMethod>
+ */
+function constructorsOf(string $source, Class_ $class): array
+{
+    $marked = markedSections($source);
+
+    return array_values(array_filter(
+        $class->getMethods(),
+        fn (ClassMethod $method) => $method->isPublic() && $method->isStatic()
+            && currentSectionOf($marked, $method) === 'Constructors',
+    ));
+}
+
+/**
+ * A constructor is named create, or createFor and what it is made from when the model has several (user message
+ * 22052); none for any other method.
+ */
+function constructorNameFault(ClassMethod $method, string|null $section, int $constructorCount): string|null
+{
+    $name = $method->name->toString();
+
+    if ($section !== 'Constructors' || ! $method->isPublic() || ! $method->isStatic()) {
+        return null;
+    }
+
+    if ($constructorCount === 1 && $name !== 'create') {
+        return "constructor {$name} is the model's only one, so it is named create";
+    }
+
+    if ($constructorCount > 1 && preg_match('/^createFor[A-Z]/', $name) !== 1) {
+        return "constructor {$name} is one of {$constructorCount}, so it is named createFor and what it is made from";
+    }
+
+    return null;
+}
+
+/**
  * The faults of a model's sections as "line<TAB>fault".
  *
  * @return list<string>
  */
 function faultsOf(string $source, Class_ $class): array
 {
-    return sectionFaults($source, $class, SECTIONS, function (ClassMethod $method, string|null $section): string|null {
+    $constructorCount = count(constructorsOf($source, $class));
+
+    $check = function (ClassMethod $method, string|null $section) use ($constructorCount): string|null {
         $name = $method->name->toString();
 
         if (isPreamble($method)) {
@@ -126,6 +167,12 @@ function faultsOf(string $source, Class_ $class): array
 
         if ($section === null) {
             return "method {$name} is outside a section";
+        }
+
+        $constructorFault = constructorNameFault($method, $section, $constructorCount);
+
+        if ($constructorFault !== null) {
+            return $constructorFault;
         }
 
         $isAssert = str_starts_with($name, 'assert');
@@ -147,7 +194,9 @@ function faultsOf(string $source, Class_ $class): array
         }
 
         return "method {$name} is no accessor, so it does not belong in Accessors";
-    });
+    };
+
+    return sectionFaults($source, $class, SECTIONS, $check);
 }
 
 /**
