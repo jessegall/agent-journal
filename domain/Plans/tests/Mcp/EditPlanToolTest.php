@@ -8,7 +8,6 @@ use Domain\Plans\Commands\EditPlan\EditPlanCommand;
 use Domain\Plans\Mcp\Tools\EditPlanTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -32,8 +31,17 @@ final class EditPlanToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments(['plan_id' => $plan->id, 'expected_revision' => 1, 'title' => 'Release six', 'request_key' => 'plans-1'])
+            ->arguments([
+                'plan_id' => $plan->id,
+                'expected_revision' => 1,
+                'title' => 'Release six',
+                'request_key' => 'plans-1',
+            ])
             ->reply(EditPlanCommand::class, 2)
-            ->expects(ExpectedCommand::of(EditPlanCommand::class, ['planId' => $plan->id, 'expectedRevision' => 1, 'title' => 'Release six']));
+            ->expects(EditPlanCommand::class, [
+                'planId' => $plan->id,
+                'expectedRevision' => 1,
+                'title' => 'Release six',
+            ]);
     }
 }

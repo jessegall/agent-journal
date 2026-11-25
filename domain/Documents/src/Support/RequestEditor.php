@@ -20,7 +20,7 @@ final readonly class RequestEditor
 
     public function editor(): ActorReference
     {
-        return ActorReference::of($this->actors->actor());
+        return $this->actors->actor();
     }
 
     public function isEditing(DocumentDraft $draft): bool

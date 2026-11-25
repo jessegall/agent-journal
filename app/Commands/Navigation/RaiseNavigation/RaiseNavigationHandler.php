@@ -13,7 +13,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Pipelines\ResolveNavigationAdmissionPipeline;
-use App\Support\ActorReference;
 use App\Support\HostRuntimes;
 use App\Support\NavigationDispatch;
 use App\Support\NavigationRaiseAnswer;
@@ -53,7 +52,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
                 $command,
                 $runtime,
                 $request,
-                ActorReference::of($this->admission->owner()),
+                $this->admission->owner(),
                 $this->dispatch,
             ),
             NavigationRaiseAnswer::class,

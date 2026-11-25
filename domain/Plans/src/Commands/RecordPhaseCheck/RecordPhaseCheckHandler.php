@@ -6,7 +6,6 @@ namespace Domain\Plans\Commands\RecordPhaseCheck;
 
 use App\Contracts\Bus\ResultReceipts;
 use App\Enums\Runs\AssessmentOutcome;
-use App\Support\ActorReference;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
@@ -44,6 +43,6 @@ final readonly class RecordPhaseCheckHandler extends PlanCommandHandler
             throw PhaseCheckRefused::stale($receipt->receiptId, $receipt->runId);
         }
 
-        return PhaseCheck::create($phase, $receipt, ActorReference::of($command->dispatchedBy()))->id;
+        return PhaseCheck::create($phase, $receipt, $command->dispatchedBy())->id;
     }
 }

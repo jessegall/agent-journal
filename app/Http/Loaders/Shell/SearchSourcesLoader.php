@@ -9,7 +9,6 @@ use App\Contracts\Search\SearchSources;
 use App\Data\Palette\PaletteSourcesData;
 use App\Data\Palette\SearchSourcesInput;
 use App\Enums\Search\SearchSurface;
-use App\Support\ActorReference;
 use App\Values\SearchReader;
 
 /**
@@ -21,7 +20,7 @@ final readonly class SearchSourcesLoader
 
     public function __invoke(SearchSourcesInput $input): PaletteSourcesData
     {
-        $reader = new SearchReader(ActorReference::of($this->actors->actor()), SearchSurface::Palette);
+        $reader = new SearchReader($this->actors->actor(), SearchSurface::Palette);
         $page = $this->eligibility->discover($reader, trim((string) $input->prefix), after: $input->after);
 
         return PaletteSourcesData::from([

@@ -10,7 +10,6 @@ use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\CommandRules\RuleRevision;
-use App\Support\ActorReference;
 use App\Support\RuleProposals;
 use App\Support\ServedEnvironment;
 use App\Values\ProposalReceipt;
@@ -52,7 +51,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         $declaration = RuleProposalRevision::query()->whereKey($earlier->rule_proposal_revision_id)->sole();
         $evidence = "Restore of approved revision {$earlier->revision}: {$declaration->evidence}";
         $proposed = new ProposedRule($declaration->payload, $evidence, $declaration->examples->items());
-        $owner = ActorReference::of($command->dispatchedBy());
+        $owner = $command->dispatchedBy();
 
         return ProposalReceipt::of(
             $this->proposals->open($rule->project_key, $owner, $command->requestId, $proposed, null),

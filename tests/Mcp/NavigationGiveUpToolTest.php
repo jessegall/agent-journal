@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
 use App\Mcp\Tools\NavigationGiveUpTool;
 use Tests\Support\Agents\HoldsNavigationRequests;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -33,9 +32,9 @@ final class NavigationGiveUpToolTest extends McpToolEntryTestCase
                 'request_key' => 'give-up-1',
             ])
             ->reply(AbandonNavigationCommand::class, $navigation->id)
-            ->expects(ExpectedCommand::of(AbandonNavigationCommand::class, [
+            ->expects(AbandonNavigationCommand::class, [
                 'navigationId' => $navigation->id,
                 'reason' => 'The picker shows no such model.',
-            ]));
+            ]);
     }
 }

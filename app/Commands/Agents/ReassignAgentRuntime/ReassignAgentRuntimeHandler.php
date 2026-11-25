@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Sessions\AgentRuntimeReassigned;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentSession;
-use App\Support\ActorReference;
 use App\Support\DriverRequests;
 use App\Support\SessionTokens;
 
@@ -49,7 +48,7 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
             $fromHostId,
             $runtime->host_id,
             $runtime->process_generation,
-            ActorReference::of($command->dispatchedBy()),
+            $command->dispatchedBy(),
             $command->proof,
             $command->reason,
         ));

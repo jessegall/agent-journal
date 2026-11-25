@@ -102,7 +102,7 @@ final readonly class CommandCall
             return null;
         }
 
-        return ActorReference::of($this->actor)->text();
+        return $this->actor->text();
     }
 
     /**

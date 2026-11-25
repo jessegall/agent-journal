@@ -8,7 +8,6 @@ use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Mcp\Tools\NavigationDoneTool;
 use Tests\Support\Agents\HoldsNavigationRequests;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -35,10 +34,10 @@ final class NavigationDoneToolTest extends McpToolEntryTestCase
                 'request_key' => 'done-1',
             ])
             ->reply(ProveNavigationCommand::class, $stalled->receipt)
-            ->expects(ExpectedCommand::of(ProveNavigationCommand::class, [
+            ->expects(ProveNavigationCommand::class, [
                 'navigationId' => $navigation->id,
                 'completes' => NavigationCompletion::Goal,
                 'proof' => 'Model: GPT-6',
-            ]));
+            ]);
     }
 }

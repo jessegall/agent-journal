@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Seeding;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Support\ActorReference;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
@@ -26,7 +25,7 @@ final class JournalRequestsTest extends TestCase
 
         $this->assertEquals(
             $this->journal->actorCalled('Ada'),
-            ActorReference::of($this->app->make(CurrentActor::class)->actor()),
+            $this->app->make(CurrentActor::class)->actor(),
         );
     }
 
@@ -37,7 +36,7 @@ final class JournalRequestsTest extends TestCase
         $this->assertSame($this->journal->ownerUser()->id, $this->app->make('auth')->guard()->id());
         $this->assertEquals(
             $this->journal->actorCalled('Owner'),
-            ActorReference::of($this->app->make(CurrentActor::class)->actor()),
+            $this->app->make(CurrentActor::class)->actor(),
         );
     }
 

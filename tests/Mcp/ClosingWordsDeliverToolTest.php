@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\Messages\DeliverClosingWords\DeliverClosingWordsCommand;
 use App\Mcp\Tools\ClosingWordsDeliverTool;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -27,6 +26,6 @@ final class ClosingWordsDeliverToolTest extends McpToolEntryTestCase
         return ToolCall::by($start)
             ->arguments(['request_key' => 'closing-1'])
             ->reply(DeliverClosingWordsCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(DeliverClosingWordsCommand::class));
+            ->expects(DeliverClosingWordsCommand::class);
     }
 }

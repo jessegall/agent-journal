@@ -15,7 +15,6 @@ use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -56,9 +55,9 @@ final class ReassignRecordToolTest extends McpToolEntryTestCase
                 [new AssignmentOutcome($record, null, AssignmentOutcomeType::Changed)],
                 [],
             ))
-            ->expects(ExpectedCommand::of(ReassignRecordCommand::class, [
+            ->expects(ReassignRecordCommand::class, [
                 'record' => $record,
                 'recipient' => AssigneeIdentity::ofActorReference(ActorReference::of($second->agent)),
-            ]));
+            ]);
     }
 }

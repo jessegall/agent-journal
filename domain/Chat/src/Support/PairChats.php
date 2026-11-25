@@ -40,7 +40,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function pairWith(ActorReference $actor): string
     {
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
         $members = [$viewer, $actor];
         $key = implode('|', array_map(fn (ActorReference $member) => $member->text(), $members));
         $sorted = array_map(fn (ActorReference $member) => $member->text(), $members);
@@ -61,7 +61,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function openGroup(string $title, array $users): string
     {
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
 
         return $this->commands->run(new OpenInboxCommand(self::GROUP_PROVIDER, (string) Str::ulid(), $title, [
             $viewer,
@@ -78,7 +78,7 @@ final readonly class PairChats implements PairChatsContract
     {
         $inbox = Inbox::query()->whereKey($inboxId)->first();
 
-        if ($inbox === null || ! InboxMember::isAttached($inbox->id, ActorReference::of($this->actors->actor()))) {
+        if ($inbox === null || ! InboxMember::isAttached($inbox->id, $this->actors->actor())) {
             throw ChatUnavailable::notAttached($inboxId);
         }
 
@@ -93,7 +93,7 @@ final readonly class PairChats implements PairChatsContract
     public function assertManages(string $inboxId): void
     {
         $inbox = $this->attached($inboxId);
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
 
         if ($inbox->provider_key !== self::GROUP_PROVIDER || ! $this->eligibility->holds(
             $viewer,
@@ -111,7 +111,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function assertMayCreate(): void
     {
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
 
         if (! $this->eligibility->holds($viewer, InboxPermission::OpenInboxes, null)) {
             throw ChatUnavailable::none();
@@ -123,7 +123,7 @@ final readonly class PairChats implements PairChatsContract
      */
     public function mayCreate(): bool
     {
-        return $this->eligibility->holds(ActorReference::of($this->actors->actor()), InboxPermission::OpenInboxes, null);
+        return $this->eligibility->holds($this->actors->actor(), InboxPermission::OpenInboxes, null);
     }
 
     /**
@@ -138,7 +138,7 @@ final readonly class PairChats implements PairChatsContract
                 self::PAIR_PROVIDER,
                 self::GROUP_PROVIDER,
             ])
-            ->attachedTo(ActorReference::of($this->actors->actor()))
+            ->attachedTo($this->actors->actor())
             ->oldestFirst();
     }
 }

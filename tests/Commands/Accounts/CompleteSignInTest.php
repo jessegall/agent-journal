@@ -249,7 +249,7 @@ final class CompleteSignInTest extends TestCase
     private function verifiedKey(string $requestKey, string $key): SignInAttempt
     {
         $attempt = SignInAttempt::create(
-            ActorReference::of(ActorReference::forUser($this->journal->ownerUser()->id)),
+            ActorReference::forUser($this->journal->ownerUser()->id),
             DefaultDrivers::CLAUDE_CODE,
             SignInMethod::ApiKey,
             '/journal/accounts/'.$requestKey,

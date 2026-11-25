@@ -49,8 +49,8 @@ final readonly class NavigationAnswerCheck
      */
     public function checkAnswerer(NavigationRequest $navigation): void
     {
-        $actor = ActorReference::of($this->actors->actor());
-        $owner = ActorReference::of($this->admission->owner());
+        $actor = $this->actors->actor();
+        $owner = $this->admission->owner();
         $seated = $this->main->occupant()->map(fn (ActorReference $occupant) => $occupant->isSameAs($actor));
 
         if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {

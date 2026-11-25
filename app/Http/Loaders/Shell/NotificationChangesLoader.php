@@ -8,7 +8,6 @@ use App\Contracts\Actors\CurrentActor;
 use App\Data\Notifications\NotificationChangePage;
 use App\Data\Notifications\NotificationChangesInput;
 use App\Resolvers\Support\NotificationChanges;
-use App\Support\ActorReference;
 
 /**
  * What changed in the viewer's own notifications since a cursor; a cursor of another scope is refused as an invalid
@@ -20,6 +19,6 @@ final readonly class NotificationChangesLoader
 
     public function __invoke(NotificationChangesInput $input): NotificationChangePage
     {
-        return $this->changes->since(ActorReference::of($this->actors->actor()), $input->since);
+        return $this->changes->since($this->actors->actor(), $input->since);
     }
 }

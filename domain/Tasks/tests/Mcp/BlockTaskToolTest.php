@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Mcp\Tools\BlockTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -33,7 +32,15 @@ final class BlockTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'reason' => 'Waits on the dock route.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(BlockTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1]));
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'reason' => 'Waits on the dock route.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(BlockTaskCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+            ]);
     }
 }

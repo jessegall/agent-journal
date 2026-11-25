@@ -63,7 +63,7 @@ final readonly class AuthenticateDeviceGrant
     private function approverOf(DeviceCaller $caller): Actor
     {
         try {
-            return $this->resolver->get(ActorReference::of(ActorReference::forUser($caller->userId)));
+            return $this->resolver->get(ActorReference::forUser($caller->userId));
         } catch (ActorUnavailable $unavailable) {
             throw DeviceGrantRefused::approverWithdrawn($unavailable);
         }

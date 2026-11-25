@@ -6,7 +6,6 @@ namespace App\Commands\Terminals\CheckTerminalScreen;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorReference;
 use App\Support\TerminalControls;
 
 final readonly class CheckTerminalScreenHandler implements CommandHandler
@@ -18,7 +17,7 @@ final readonly class CheckTerminalScreenHandler implements CommandHandler
 
     public function handle(CheckTerminalScreenCommand $command): string
     {
-        $writer = ActorReference::of($command->dispatchedBy());
+        $writer = $command->dispatchedBy();
 
         return $this->controls->check($command->agentId, $writer, $command->grantId, $this->clock->now());
     }

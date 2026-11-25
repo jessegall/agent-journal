@@ -7,11 +7,18 @@ namespace Domain\Helpers\Tests\Fixtures;
 use App\Contracts\Bus\Command;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
+use App\Support\DriverCatalogue;
+use App\Support\OwnerStartReceipt;
+use App\Support\StartReceipt;
+use App\Values\ModelSelection;
+use App\Values\SelectedDriver;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperMessage;
 use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Support\HelperLifecycleEntry;
+use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\SessionStartDetails;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert;
@@ -59,6 +66,31 @@ final class HelperFixtures
         $this->journal->runAsJournal(CommandEntry::Application, HelperLifecycleEntry::NAME, $command);
 
         return $this;
+    }
+
+    /**
+     * The receipt a dispatch of the job hands back: a reused job of the writing-helper profile, started in a new
+     * conversation on Claude Code.
+     */
+    public function receiptOf(string $job): HelperReceipt
+    {
+        $start = new OwnerStartReceipt(
+            (string) Str::ulid(),
+            SelectedDriver::resolve(
+                'claude-code',
+                ModelSelection::named('claude-sonnet-5-5'),
+                null,
+                null,
+                $this->journal->service(DriverCatalogue::class),
+            ),
+            true,
+            ConversationModeType::New,
+            ExecutionModeType::RequiredContainer,
+            null,
+            StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
+        );
+
+        return $this->jobCalled($job)->receipt(self::PROFILE, $start, false);
     }
 
     public function jobCalled(string $name): HelperJob

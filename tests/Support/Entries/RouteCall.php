@@ -130,9 +130,15 @@ final class RouteCall
         return $this;
     }
 
-    public function expects(ExpectedCommand ...$expected): self
+    /**
+     * One more command the call must send, after those expected before it, with the arguments it must carry.
+     *
+     * @param  class-string<Command<mixed>>  $command
+     * @param  array<string, mixed>  $arguments
+     */
+    public function expects(string $command, array $arguments = []): self
     {
-        $this->expected = array_values($expected);
+        $this->expected[] = ExpectedCommand::of($command, $arguments);
 
         return $this;
     }

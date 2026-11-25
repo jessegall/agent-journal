@@ -48,7 +48,7 @@ final readonly class CommandPermissionResolver implements CommandPermissionResol
      */
     public function forActor(ActorReference $actor): CommandPermissions
     {
-        if ($this->actors->hasActor() && ActorReference::of($this->actors->actor())->isSameAs($actor)) {
+        if ($this->actors->hasActor() && $this->actors->actor()->isSameAs($actor)) {
             return $this->forCurrentSession();
         }
 

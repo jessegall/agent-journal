@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\SteerHelper;
 
-use App\Support\ActorReference;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperUnavailable;
@@ -37,7 +36,7 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
             : HelperStarts::sendCallFor($identity->id, "its model and the brief '{$command->text}'");
 
         $message = HelperMessage::create(
-            ActorReference::of($command->dispatchedBy()),
+            $command->dispatchedBy(),
             $identity,
             $command->text,
             $suggestedCommand,

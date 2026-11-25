@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\ActorReference;
 use App\Support\ProcessAdministration;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;
@@ -33,7 +32,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
      */
     public function handle(ProposeCommandRuleCommand $command): ProposalReceipt
     {
-        $actor = ActorReference::of($command->dispatchedBy());
+        $actor = $command->dispatchedBy();
         $request = CommandRequest::findLockedForChange($command->commandRequestId);
 
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {

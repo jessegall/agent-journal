@@ -13,7 +13,6 @@ use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Values\DockResult;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -47,9 +46,9 @@ final class DockAddToolTest extends McpToolEntryTestCase
                 'request_key' => 'dock-add-1',
             ])
             ->reply(DockSourceCommand::class, DockResult::of(DockOutcome::Added, 'placement-1'))
-            ->expects(ExpectedCommand::of(DockSourceCommand::class, [
+            ->expects(DockSourceCommand::class, [
                 'type' => 'tasks.task',
                 'id' => $task->id,
-            ]));
+            ]);
     }
 }

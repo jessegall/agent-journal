@@ -8,7 +8,6 @@ use App\Contracts\Actors\CurrentActor;
 use App\Data\Processes\RunOutcomeSummaryData;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\RunOutcome;
-use App\Support\ActorReference;
 use App\Support\ServedEnvironment;
 use PhpOption\Option;
 
@@ -55,7 +54,7 @@ final readonly class RunOutcomeSummaries
 
     private function mayHearOf(ProcessRun $run): bool
     {
-        return $run->hasOutcomeFor(ActorReference::of($this->actors->actor())) || $this->mayOpenFullRun($run->id);
+        return $run->hasOutcomeFor($this->actors->actor()) || $this->mayOpenFullRun($run->id);
     }
 
     private function summary(ProcessRun $run, RunOutcome $outcome): RunOutcomeSummaryData

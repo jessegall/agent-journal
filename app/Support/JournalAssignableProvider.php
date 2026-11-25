@@ -144,7 +144,7 @@ final readonly class JournalAssignableProvider implements JournalAssignableProvi
 
     private function requireRouteEditor(Ask $ask): void
     {
-        $actor = ActorReference::of($this->actors->actor());
+        $actor = $this->actors->actor();
 
         if (! $ask->actor()->isSameAs($actor) && ! $this->owner->resolve()->endsAt($actor)) {
             throw AskRefused::routeChanged();

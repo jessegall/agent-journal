@@ -8,7 +8,6 @@ use App\Contracts\Actors\CurrentActor;
 use App\Data\Notifications\NotificationPage;
 use App\Data\Notifications\NotificationPageInput;
 use App\Resolvers\Support\NotificationFeed;
-use App\Support\ActorReference;
 
 /**
  * A page of the viewer's own notifications: the newest, or an older one by its cursor; a cursor of another scope is
@@ -20,6 +19,6 @@ final readonly class NotificationsLoader
 
     public function __invoke(NotificationPageInput $input): NotificationPage
     {
-        return $this->feed->page(ActorReference::of($this->actors->actor()), $input->cursor);
+        return $this->feed->page($this->actors->actor(), $input->cursor);
     }
 }

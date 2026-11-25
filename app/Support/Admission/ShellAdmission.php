@@ -75,7 +75,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         string $requestKey,
     ): Admission {
         $this->projects->assertFolderAllowed($context->workingFolder);
-        $actor = ActorReference::of($this->actors->actor());
+        $actor = $this->actors->actor();
         $tree = $this->syntax->parse($line, $dialect);
         $earlier = ProcessRun::query()->acrossActors()->ofAdmission($requestKey)->first();
 
@@ -135,7 +135,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         }
 
         $refusal = $this->unknownRefusal($tree, $classification, $context)
-            ?? $this->deniedOrMistimed($tree, $classification, ActorReference::of($this->actors->actor()));
+            ?? $this->deniedOrMistimed($tree, $classification, $this->actors->actor());
 
         if ($refusal !== null) {
             return $refusal;

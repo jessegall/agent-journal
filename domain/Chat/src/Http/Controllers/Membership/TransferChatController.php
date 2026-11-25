@@ -31,7 +31,7 @@ final readonly class TransferChatController
 
         $commands->run(new HandOverInboxCommand(
             $input->inboxId,
-            ActorReference::of($actors->actor()),
+            $actors->actor(),
             ActorReference::fromText($input->participant),
         ));
 

@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Mcp\Tools\FinishTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -33,7 +32,16 @@ final class FinishTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'note' => 'Docked.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(FinishTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1, 'note' => 'Docked.']));
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'note' => 'Docked.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(FinishTaskCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+                'note' => 'Docked.',
+            ]);
     }
 }

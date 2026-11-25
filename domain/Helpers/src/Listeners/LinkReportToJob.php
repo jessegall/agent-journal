@@ -7,7 +7,6 @@ namespace Domain\Helpers\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Sessions\SessionRequestResolver;
-use App\Support\ActorReference;
 use App\Support\SessionRequestDetails;
 use Domain\Documents\Events\ReportFiled;
 use Domain\Helpers\Support\ReportJobLinkService;
@@ -27,7 +26,7 @@ final readonly class LinkReportToJob implements Listener
 
     public function handle(ReportFiled $fact): void
     {
-        $filer = ActorReference::of($fact->actor);
+        $filer = $fact->actor;
 
         $this->starts->currentOwnerStart()->forAll(
             fn (SessionRequestDetails $start) => $this->linking->link(

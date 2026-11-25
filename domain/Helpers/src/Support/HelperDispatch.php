@@ -329,7 +329,7 @@ final readonly class HelperDispatch
     private function designatedHolder(DispatchRequest $request): ActorReference
     {
         try {
-            return ActorReference::of($this->admission->owner());
+            return $this->admission->owner();
         } catch (ConsoleOwnerMissing) {
             return $request->parent;
         }

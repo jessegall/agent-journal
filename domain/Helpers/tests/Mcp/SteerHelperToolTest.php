@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Mcp;
 
+use Domain\Helpers\Commands\SteerHelper\SteerHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\SteerHelperTool;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
+use Domain\Helpers\Values\SteerReceipt;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool SteerHelperTool, as the generator wrote it.
+ * A main agent adds a line to a helper's running job.
  */
-#[Generated]
 #[TestsMcpTool(SteerHelperTool::class)]
 final class SteerHelperToolTest extends McpToolEntryTestCase
 {
@@ -28,12 +28,19 @@ final class SteerHelperToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('SteerHelperTool', [
-            'the argument identity_id',
-            'the argument text',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $helpers = $journal->fixtures(HelperFixtures::class)->openJob('Review', 'Planner', 'Review the change.');
+
+        return ToolCall::by($start)
+            ->arguments([
+                'identity_id' => $helpers->identityOf('Review')->id,
+                'text' => 'Look at the tests too.',
+                'request_key' => 'helper-1',
+            ])
+            ->reply(SteerHelperCommand::class, SteerReceipt::steered($helpers->jobCalled('Review')->id))
+            ->expects(SteerHelperCommand::class, [
+                'identityId' => $helpers->identityOf('Review')->id,
+                'text' => 'Look at the tests too.',
+            ]);
     }
 }

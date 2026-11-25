@@ -6,7 +6,6 @@ namespace App\Commands\Notifications\MarkAllNotificationsRead;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Exceptions\NotificationUnavailable;
-use App\Support\ActorReference;
 use App\Support\NotificationReceipts;
 use Carbon\CarbonImmutable;
 
@@ -20,7 +19,7 @@ final readonly class MarkAllNotificationsReadHandler implements CommandHandler
     public function handle(MarkAllNotificationsReadCommand $command): bool
     {
         return $this->receipts->markAllThrough(
-            ActorReference::of($command->dispatchedBy()),
+            $command->dispatchedBy(),
             $command->through,
             CarbonImmutable::now(),
         );

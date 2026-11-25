@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Mcp;
 
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool ContinueHelperTool, as the generator wrote it.
+ * A main agent continues a helper on the job it had, and is given its receipt.
  */
-#[Generated]
 #[TestsMcpTool(ContinueHelperTool::class)]
 final class ContinueHelperToolTest extends McpToolEntryTestCase
 {
@@ -28,13 +27,20 @@ final class ContinueHelperToolTest extends McpToolEntryTestCase
 
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('ContinueHelperTool', [
-            'the argument identity_id',
-            'the argument job_id',
-            'the argument model',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $helpers = $journal->fixtures(HelperFixtures::class)->openJob('Review', 'Planner', 'Review the change.');
+
+        return ToolCall::by($start)
+            ->arguments([
+                'identity_id' => $helpers->identityOf('Review')->id,
+                'job_id' => $helpers->jobCalled('Review')->id,
+                'model' => 'claude-sonnet-5-5',
+                'request_key' => 'helper-1',
+            ])
+            ->reply(ContinueHelperCommand::class, $helpers->receiptOf('Review'))
+            ->expects(ContinueHelperCommand::class, [
+                'identityId' => $helpers->identityOf('Review')->id,
+                'jobId' => $helpers->jobCalled('Review')->id,
+            ]);
     }
 }
