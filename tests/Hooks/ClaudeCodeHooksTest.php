@@ -2,32 +2,51 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Hooks;
+namespace Tests\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Drivers\DriverFailure;
+use App\Enums\Hooks\HookEvent;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\DefaultDrivers;
+use App\Support\OperationDeadline;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\TasksDomain;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsHook;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
-final class HookEndpointTest extends TestCase
+/**
+ * Every moment Claude Code's hooks reach the journal, sent as the program sends it to POST hooks.answer, signed as a
+ * started agent whose stack holds only its ready state: each is answered with a reply Claude Code reads and recorded
+ * for the session. Beside them, the endpoint's own answers: an unknown protocol, a replayed call with other input, a
+ * stale process, a stack held past the deadline, an unsigned call, an unreadable payload and a native subagent.
+ */
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::SessionStart)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::UserPromptSubmit)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::PreToolUse)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::PostToolUse)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::Stop)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::StopFailure)]
+#[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::SessionEnd)]
+final class ClaudeCodeHooksTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -74,6 +93,64 @@ final class HookEndpointTest extends TestCase
         $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(StartStacks::class)->open($this->target()),
         ));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function moments(): iterable
+    {
+        yield 'session start' => ['{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}'];
+
+        yield 'prompt' => ['{"session_id":"driver-session-1","hook_event_name":"UserPromptSubmit","prompt":"Go on."}'];
+
+        yield 'tool call' => [
+            '{"session_id":"driver-session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
+                .'"tool_input":{"command":"git status"}}',
+        ];
+
+        yield 'finished tool' => [
+            '{"session_id":"driver-session-1","hook_event_name":"PostToolUse","tool_name":"Bash",'
+                .'"tool_input":{"command":"git status"},"tool_response":{"stdout":"clean","stderr":""}}',
+        ];
+
+        yield 'stop' => ['{"session_id":"driver-session-1","hook_event_name":"Stop","stop_hook_active":false}'];
+
+        yield 'session end' => ['{"session_id":"driver-session-1","hook_event_name":"SessionEnd","reason":"other"}'];
+    }
+
+    #[DataProvider('moments')]
+    public function test_each_moment_is_answered_with_a_reply_claude_code_reads_and_recorded(string $body): void
+    {
+        $reply = $this->hook('claude-code', $body)->assertOk();
+
+        $this->assertSame(0, $reply->json('exitCode'));
+        $this->assertIsArray(json_decode((string) $reply->json('stdout'), true));
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    public function test_a_call_from_a_process_the_host_has_since_replaced_conflicts(): void
+    {
+        $this->hook('claude-code', $this->stopBody(), generation: 0)->assertStatus(409);
+    }
+
+    public function test_a_stack_another_connection_holds_past_the_deadline_is_unavailable(): void
+    {
+        config(['hooks.operation_deadline_milliseconds' => 300]);
+        $this->app->forgetInstance(OperationDeadline::class);
+        config(['database.connections.lock_holder' => config('database.connections.'.config('database.default'))]);
+        $holder = $this->app->make(DatabaseManager::class)->connection('lock_holder');
+        $holder->beginTransaction();
+        $holder->select(
+            'select id from agent_stacks where agent_id = ? and session_id = ? for update',
+            [$this->target()->agentId, $this->target()->sessionId],
+        );
+
+        try {
+            $this->hook('claude-code', $this->stopBody())->assertStatus(503);
+        } finally {
+            $holder->rollBack();
+        }
     }
 
     public function test_an_allowed_stop_answers_the_host_with_an_empty_object(): void
@@ -182,13 +259,17 @@ final class HookEndpointTest extends TestCase
     /**
      * @return TestResponse<Response>
      */
-    private function hook(string $driver, string $body, string $callId = 'call-1'): TestResponse
-    {
+    private function hook(
+        string $driver,
+        string $body,
+        string $callId = 'call-1',
+        int|null $generation = null,
+    ): TestResponse {
         $this->app->forgetScopedInstances();
+        $address = $generation === null ? "/hooks/{$driver}" : "/hooks/{$driver}?generation={$generation}";
+        $headers = $this->start->serverHeaders($body, $callId, target: $address);
 
-        $headers = $this->start->serverHeaders($body, $callId, target: "/hooks/{$driver}");
-
-        return $this->call('POST', "/hooks/{$driver}", server: $headers, content: $body);
+        return $this->call('POST', $address, server: $headers, content: $body);
     }
 
     /**
