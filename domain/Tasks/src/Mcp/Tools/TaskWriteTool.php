@@ -16,18 +16,10 @@ abstract class TaskWriteTool extends JournalWriteTool
     /**
      * @return array<string, Type>
      */
-    final protected function taskSchema(JsonSchema $schema): array
-    {
-        return ['task_id' => $this->recordIdArgument($schema)];
-    }
-
-    /**
-     * @return array<string, Type>
-     */
     final protected function runSchema(JsonSchema $schema): array
     {
         return [
-            ...$this->taskSchema($schema),
+            'task_id' => $this->recordIdArgument($schema),
             'run_number' => $schema->integer()->min(1)->required(),
         ];
     }

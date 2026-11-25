@@ -4,28 +4,27 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
-use App\Enums\ActorType;
-use App\Exceptions\InboxUnavailable;
-use App\Models\Inboxes\Inbox;
-use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
-use Domain\Chat\Data\ConversationData;
-use Domain\Chat\Resolvers\Support\ChatPages;
-use Domain\Chat\Support\ChatInboxes;
 use App\Contracts\Accounts\StartAccounts;
-use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Navigation\SlotSections;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Accounts\EligibleAccountsData;
+use App\Enums\ActorType;
+use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
+use App\Models\Inboxes\Inbox;
+use App\Models\Inboxes\InboxMember;
+use App\Support\ActorIdentity;
 use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ChatSummaryData;
+use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\DriverChoiceData;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Resolvers\Support\ChatPages;
+use Domain\Chat\Support\ChatInboxes;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -71,7 +70,7 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->getOrElse(Optional::create()),
             ...$chosen->map($this->conversationFields(...))->getOrElse([]),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->eligibleAccounts($chosen),
+            'eligibleAccounts' => $this->eligibleAccounts($chosen),
             ...$this->chatList(),
             'drivers' => DriverChoiceData::listed($this->drivers),
         ]);
@@ -113,25 +112,25 @@ final readonly class ChatWindowResolver implements PageResolver
         ];
     }
 
-
     /**
-     * The eligible accounts a start or switch form asked for, under the key ChatData reads them by, with the models the
-     * chosen agent's profile permits.
+     * The eligible accounts a start or switch form asked for, with the models the chosen agent's profile permits; none
+     * when the form asked for none.
      *
      * @param  Option<AgentOption>  $chosen
-     * @return array<string, EligibleAccountsData>
      */
-    private function eligibleAccounts(Option $chosen): array
+    private function eligibleAccounts(Option $chosen): EligibleAccountsData|Optional
     {
-        $asked = [];
+        $askedDriver = $this->request->accountDriver();
 
-        foreach ($this->request->accountDrivers() as $driver) {
-            $asked['eligibleAccounts'] = $chosen
-                ->map(fn (AgentOption $agent) => $this->startAccounts->forProfileStart($driver, $agent->profileKey))
-                ->getOrCall(fn () => $this->startAccounts->forDriver($driver));
+        if ($askedDriver->isEmpty()) {
+            return Optional::create();
         }
 
-        return $asked;
+        $driver = $askedDriver->get();
+
+        return $chosen
+            ->map(fn (AgentOption $agent) => $this->startAccounts->forProfileStart($driver, $agent->profileKey))
+            ->getOrCall(fn () => $this->startAccounts->forDriver($driver));
     }
 
     /**

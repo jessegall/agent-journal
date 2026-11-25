@@ -25,7 +25,7 @@ final class EditTaskTool extends TaskWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            ...$this->taskSchema($schema),
+            'task_id' => $this->recordIdArgument($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
             'title' => $schema->string()->max(TaskTextLimit::Title->value),
             'brief' => $schema->string()->max(TaskTextLimit::Note->value),

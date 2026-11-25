@@ -15,11 +15,13 @@ use Illuminate\Foundation\Http\FormRequest;
 abstract class RecordTargetRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string>>
+     * The rules of the target field.
+     *
+     * @return list<string>
      */
     protected function targetRules(): array
     {
-        return ['target' => ['required', 'string', 'max:64']];
+        return ['required', 'string', 'max:64'];
     }
 
     /**

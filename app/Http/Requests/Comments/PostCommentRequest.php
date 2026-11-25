@@ -44,7 +44,7 @@ final class PostCommentRequest extends RecordTargetRequest
     public function rules(): array
     {
         return [
-            ...$this->targetRules(),
+            'target' => $this->targetRules(),
             'body' => ['required', 'string'],
             'submission_key' => ['required', 'uuid'],
             'author' => ['prohibited'],

@@ -18,7 +18,7 @@ final class ReadTextRequest extends RecordTargetRequest
     public function rules(): array
     {
         return [
-            ...$this->targetRules(),
+            'target' => $this->targetRules(),
             'version' => ['required', 'string', 'max:64'],
             'section' => ['nullable', 'string', 'max:200', 'prohibits:first_line,last_line'],
             'first_line' => ['nullable', 'integer', 'min:1'],

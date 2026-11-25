@@ -33,17 +33,19 @@ final class ConversationRequest extends FormRequest
     }
 
     /**
-     * The driver whose eligible accounts a start or switch form asked for, none or one.
+     * The driver whose eligible accounts a start or switch form asked for; none when it asked for none.
      *
-     * @return list<string>
+     * @return Option<string>
      */
-    public function accountDrivers(): array
+    public function accountDriver(): Option
     {
         if ($this->filled('accountsFor')) {
-            return [$this->string('accountsFor')->toString()];
+            $driver = $this->string('accountsFor')->toString();
+
+            return new Some($driver);
         }
 
-        return [];
+        return None::create();
     }
 
     /**

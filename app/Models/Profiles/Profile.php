@@ -134,7 +134,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function listed(int $limit): array
     {
-        return array_values(self::query()->inKeyOrder()->readExactly($limit)->get()->all());
+        return self::query()->inKeyOrder()->readExactly($limit)->get()->all()->values();
     }
 
     // ----------[ Scopes ]----------

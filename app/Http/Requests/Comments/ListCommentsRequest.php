@@ -19,7 +19,7 @@ final class ListCommentsRequest extends RecordTargetRequest
     public function rules(): array
     {
         return [
-            ...$this->targetRules(),
+            'target' => $this->targetRules(),
             'after' => ['nullable', 'ulid'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:'.IdListPage::LARGEST_LIMIT],
         ];

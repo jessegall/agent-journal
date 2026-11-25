@@ -23,7 +23,7 @@ final class StartTaskTool extends TaskWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return $this->taskSchema($schema);
+        return ['task_id' => $this->recordIdArgument($schema)];
     }
 
     protected function command(ToolArguments $arguments): StartTaskCommand

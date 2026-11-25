@@ -26,7 +26,7 @@ final class CancelTaskTool extends TaskWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            ...$this->taskSchema($schema),
+            'task_id' => $this->recordIdArgument($schema),
             'reason' => $schema->string()->max(TaskTextLimit::Note->value)->required(),
         ];
     }
