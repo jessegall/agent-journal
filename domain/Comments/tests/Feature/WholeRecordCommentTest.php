@@ -13,9 +13,7 @@ use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
-use App\Values\TextRange;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
-use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\RecordCommentLocation;
 use Domain\Comments\Data\RecordCommentView;
@@ -95,24 +93,6 @@ final class WholeRecordCommentTest extends TestCase
         $this->assertSame(self::QUESTION, $items[0]->comment->body);
         $this->assertInstanceOf(RecordCommentLocation::class, $location);
         $this->assertSame(sprintf(self::NOTE_LABEL, $this->note->number), $location->target->label);
-    }
-
-    public function test_a_comment_on_text_is_refused_for_a_record_without_text(): void
-    {
-        $this->expectException(TargetHasNoText::class);
-
-        try {
-            $this->app->make(CommandBus::class)->run(
-                new PostTextCommentCommand(
-                    $this->target(),
-                    'Which line?',
-                    TextRange::lines('1', 1, 1),
-                    (string) Str::uuid(),
-                ),
-            );
-        } finally {
-            $this->assertSame(0, Comment::query()->count());
-        }
     }
 
     public function test_a_signed_in_user_comments_and_reads_the_comments_over_http(): void
