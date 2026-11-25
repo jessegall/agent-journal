@@ -6,9 +6,8 @@ namespace Domain\Chat\Tests\Commands;
 
 use App\Exceptions\MessageMissing;
 use App\Models\Messages\Message;
-use Domain\Chat\Commands\PinMessage\PinMessageCommand;
 use Domain\Chat\Commands\UnpinMessage\UnpinMessageCommand;
-use Domain\Chat\Models\MessagePin;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -19,7 +18,7 @@ final class UnpinMessageTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['messages', 'message_pins'];
+    private const array TABLES = ['messages', 'message_pins', 'command_receipts'];
 
     private string $chatId;
 
@@ -36,15 +35,14 @@ final class UnpinMessageTest extends TestCase
 
     public function test_a_member_takes_away_their_own_pin_and_leaves_the_others(): void
     {
-        $this->journal->run(new PinMessageCommand($this->chatId, $this->message->id));
-        $this->journal->actAs('Planner')->run(new PinMessageCommand($this->chatId, $this->message->id));
+        $chat = $this->journal->chatOf('Owner', 'Planner');
+        $pins = $this->journal->fixtures(ChatFixtures::class)
+            ->pin($chat, $this->message, 'Owner')
+            ->pin($chat, $this->message, 'Planner');
 
         $this->journal->actAs('Owner')->run(new UnpinMessageCommand($this->chatId, $this->message->id));
 
-        $this->assertSame(
-            [$this->journal->agentCalled('Planner')->id],
-            MessagePin::query()->withoutGlobalScopes()->pluck('actor_id')->all(),
-        );
+        $pins->assertUnpinned($chat, $this->message, 'Owner')->assertPinned($chat, $this->message, 'Planner');
     }
 
     public function test_a_message_outside_the_inbox_is_refused(): void
