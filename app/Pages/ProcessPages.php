@@ -71,7 +71,7 @@ use App\Enums\Processes\AdmissionState;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Records\RecordRole;
-use App\Enums\Reviews\ReviewLimit;
+use App\Enums\Processes\ReviewLimit;
 use App\Enums\Runs\AssessmentOutcome;
 use App\Enums\Runs\CaptureState;
 use App\Enums\Runs\ClaimedOutcome;

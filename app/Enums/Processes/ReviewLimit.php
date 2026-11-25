@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Reviews;
+namespace App\Enums\Processes;
 
 /**
  * The limits on what is sent to an agent for classification: a shape longer than

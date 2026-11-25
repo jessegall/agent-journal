@@ -8,7 +8,7 @@ use App\Attributes\Authorize;
 use App\Attributes\Effect;
 use App\Attributes\RepeatableRead;
 use App\Enums\Agents\AccessType;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 use App\Policies\AskPolicy;
 use App\Support\Command;
 use App\Values\AskReference;

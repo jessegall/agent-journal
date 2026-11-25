@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Reviews\ReviewLimit;
+use App\Enums\Processes\ReviewLimit;
 
 /**
  * Shapes split for classification by agents: batches within the count and character caps, and the shapes too long to

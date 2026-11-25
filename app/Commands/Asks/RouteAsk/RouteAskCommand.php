@@ -9,7 +9,7 @@ use App\Attributes\Effect;
 use App\Attributes\RepeatableRead;
 use App\Enums\Agents\AccessType;
 use App\Enums\Asks\AskRouteStatus;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 use App\Policies\AskPolicy;
 use App\Support\AssignmentReference;
 use App\Support\Command;

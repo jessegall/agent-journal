@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Attributes\Authorize;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 
 /**
  * One registered command as the bus runs it: its handler, owner, whether it is exported, its isolation, the actor

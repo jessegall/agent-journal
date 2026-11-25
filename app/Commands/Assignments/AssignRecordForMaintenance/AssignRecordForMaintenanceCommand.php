@@ -8,7 +8,7 @@ use App\Attributes\Effect;
 use App\Attributes\Entry;
 use App\Attributes\RepeatableRead;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentResult;
 use App\Support\Command;

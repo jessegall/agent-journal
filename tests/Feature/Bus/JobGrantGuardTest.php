@@ -9,7 +9,7 @@ use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
 use App\Contracts\Admission\ReadAdmission;
 use App\Enums\Engine\NoSubject;
 use App\Enums\Profiles\AccessRuleType;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use App\Support\CommandRegistry;

@@ -12,7 +12,7 @@ use App\Attributes\RequiresRequestKey;
 use App\Attributes\RetainedActorRequestKey;
 use App\Concerns\Reflects;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Reviews\CommandEffectType;
+use App\Enums\Engine\CommandEffectType;
 use App\Exceptions\CommandDeclarationInvalid;
 
 /**
