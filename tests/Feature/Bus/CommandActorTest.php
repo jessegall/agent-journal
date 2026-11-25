@@ -13,7 +13,7 @@ use App\Support\ActorContext;
 use App\Support\ActorStore;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
+use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Closure;
 use Illuminate\Support\Facades\Log;
@@ -107,7 +107,7 @@ final class CommandActorTest extends CommandBusTestCase
     private function actAsEngine(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::of(new EngineActor()),
+            ActorContext::of(new SystemActor()),
             new TrustedEntryAuthority('test'),
         );
     }

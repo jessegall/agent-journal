@@ -34,13 +34,9 @@ final class MessagePinTest extends TestCase
         'session_tokens',
         'agent_stacks',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
         'messages',
-        'message_attentions',
         'message_pins',
     ];
 

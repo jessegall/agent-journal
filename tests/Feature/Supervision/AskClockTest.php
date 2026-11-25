@@ -23,10 +23,10 @@ use App\Support\AskClock;
 use App\Support\AskTypeRegistry;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\ProfileProposal;
 use App\Support\RequestKey;
 use App\Support\SupervisorRouting;
+use App\Support\SystemActor;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;
 use App\Values\TrustedEntryAuthority;
@@ -152,7 +152,7 @@ final class AskClockTest extends TestCase
     private function advanceAt(Ask $ask, CarbonImmutable $now): void
     {
         $this->app->instance(ServerClock::class, new FixedServerClock($now));
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
         $this->app->make(EngineAccess::class)->grantMaintenance(AdvanceAskCommand::MAINTENANCE_SCOPE);
         $this->app->make(RequestKey::class)->set('advance-'.$now->getTimestamp());
         $bus = $this->app->make(CommandBus::class);

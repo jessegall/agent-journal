@@ -20,9 +20,6 @@ final class RegistrationDeskTest extends TestCase
     private const array TABLES = [
         'users',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
     ];

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -13,8 +12,6 @@ use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\Assignment;
-use App\Support\ProvedClaims;
 use App\Support\StartSessions;
 use Tests\Fixtures\Agents\TestSelections;
 
@@ -39,13 +36,12 @@ trait MessagingFixtures
         'agent_runtimes',
         'driver_requests',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
+        'inbox_members',
         'assignments',
         'command_receipts',
         'messages',
-        'message_attentions',
+        'message_reads',
+        'questions',
         'links',
         'notification_occurrences',
         'notification_scopes',
@@ -85,12 +81,12 @@ trait MessagingFixtures
 
     protected function ownerInboxId(): string
     {
-        return $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
+        return $this->inboxOf(ActorIdentity::of($this->owner))->id;
     }
 
     protected function inboxIdOf(AgentSession $session): string
     {
-        return $this->inboxOf($this->actorOf($session))->inboxId();
+        return $this->inboxOf($this->actorOf($session))->id;
     }
 
     protected function actorOf(AgentSession $session): ActorIdentity
@@ -104,29 +100,11 @@ trait MessagingFixtures
     }
 
     /**
-     * The owner asks a question to the inbox and is given its message id.
-     */
-    protected function ownerAsks(string $inboxId, string $body): string
-    {
-        return $this->runOnBus(new AskMessageCommand($this->ownerInboxId(), $inboxId, $body));
-    }
-
-    /**
-     * The owner sends a note to the inbox and is given its message id.
+     * The owner sends a message to an inbox it is attached to and is given its message id.
      */
     protected function ownerSends(string $inboxId, string $body): string
     {
-        return $this->runOnBus(new SendMessageCommand($this->ownerInboxId(), $inboxId, $body));
-    }
-
-    /**
-     * The claims that still stand on the message, keyed by its id.
-     *
-     * @return array<string, Assignment>
-     */
-    protected function claimsOn(string $messageId): array
-    {
-        return $this->app->make(ProvedClaims::class)->validClaimsOn(Message::linkType(), [$messageId]);
+        return $this->runOnBus(new SendMessageCommand($inboxId, $body));
     }
 
     private function start(string $name): AgentSession

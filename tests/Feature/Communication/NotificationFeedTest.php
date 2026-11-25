@@ -7,11 +7,11 @@ namespace Tests\Feature\Communication;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\Notifications\NotificationSourceType;
 use App\Http\Responses\NotificationProps;
-use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;
-use App\Resolvers\QuestionNotificationTarget;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
+use Domain\Questions\Models\Question;
+use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\MessagingTestCase;
 
@@ -39,7 +39,7 @@ final class NotificationFeedTest extends MessagingTestCase
         $this->assertSame(21, $first->json('props.notifications.unread'));
         $this->assertSame('21', $first->json('props.notifications.through'));
         $this->assertSame(21, $first->json('props.notifications.items.0.sequence'));
-        $this->assertSame(QuestionNotificationTarget::KEY, $first->json('props.notifications.items.0.target.key'));
+        $this->assertSame(QuestionNotificationKeys::target(), $first->json('props.notifications.items.0.target.key'));
 
         $second = $this->actingAs($this->owner)
             ->notifications([NotificationProps::CURSOR => $first->json('props.notifications.nextCursor')])
@@ -66,8 +66,8 @@ final class NotificationFeedTest extends MessagingTestCase
 
     public function test_another_actors_receipt_is_refused_and_changes_nothing(): void
     {
-        $message = $this->askInboxOf($this->actorOf($this->builder), 'Which port?');
-        $this->deliver($message, $this->actorOf($this->builder));
+        $question = $this->askInboxOf($this->actorOf($this->builder), 'Which port?');
+        $this->deliver($question, $this->actorOf($this->builder));
         $receipt = NotificationReceipt::query()->sole();
 
         $this->actingAs($this->owner)
@@ -126,12 +126,12 @@ final class NotificationFeedTest extends MessagingTestCase
         }
     }
 
-    private function deliver(Message $message, ActorIdentity $recipient): void
+    private function deliver(Question $question, ActorIdentity $recipient): void
     {
         $this->app->make(NotificationDelivery::class)->deliver(
-            QuestionNotificationTarget::occurrenceKey($message->id),
+            QuestionNotificationKeys::occurrenceKey($question->id),
             NotificationSourceType::Question,
-            new NotificationTarget(QuestionNotificationTarget::KEY, $message->id),
+            new NotificationTarget(QuestionNotificationKeys::target(), $question->id),
             [$recipient],
         );
     }

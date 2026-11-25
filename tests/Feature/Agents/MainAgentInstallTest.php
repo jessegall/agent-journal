@@ -25,9 +25,6 @@ final class MainAgentInstallTest extends TestCase
         'main_agent_designations',
         'agents',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'command_receipts',
         'links',
     ];

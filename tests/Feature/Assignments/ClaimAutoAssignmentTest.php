@@ -25,8 +25,8 @@ use App\Support\AutoAssignmentKey;
 use App\Support\AutoAssignmentOutcome;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\PoolReference;
+use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
@@ -108,7 +108,7 @@ final class ClaimAutoAssignmentTest extends TestCase
         AutoAssignmentKey $key,
         string $scope = AssignRecordForMaintenanceCommand::FILL_SCOPE,
     ): AutoAssignmentOutcome {
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
         $access = $this->app->make(EngineAccess::class);
 
         return $access->withinMaintenance($scope, fn () => $this->app->make(CommandEntrance::class)->through(

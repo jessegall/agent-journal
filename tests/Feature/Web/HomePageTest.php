@@ -58,12 +58,8 @@ final class HomePageTest extends TestCase
         'plans',
         'rules',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
-        'message_attentions',
     ];
 
     private string $chatInboxId;

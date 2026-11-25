@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Models\Desks\DeskRecord;
 use App\Models\Access\User;
-use Tests\TestCase;
+use App\Models\Desks\DeskRecord;
 use Illuminate\Support\Facades\Hash;
 use Tests\Support\CommitsHookRows;
+use Tests\TestCase;
 
 /**
  * The owner account named by the installation's settings exists with their password after every install,
@@ -21,9 +21,6 @@ final class EnsureOwnerCommandTest extends TestCase
     private const array TABLES = [
         'users',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
     ];

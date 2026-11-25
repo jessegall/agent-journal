@@ -35,13 +35,9 @@ final class InboxPageTest extends TestCase
         'users',
         'agents',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
         'messages',
-        'message_attentions',
         'links',
     ];
 

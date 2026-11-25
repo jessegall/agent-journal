@@ -32,14 +32,10 @@ final class AgentInboxTest extends TestCase
         'agent_sessions',
         'session_tokens',
         'agent_stacks',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'inboxes',
         'assignments',
         'command_receipts',
         'messages',
-        'message_attentions',
     ];
 
     public function test_the_message_schema_preserves_the_envelope_and_records_session_requests(): void

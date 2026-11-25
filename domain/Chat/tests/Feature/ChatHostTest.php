@@ -37,13 +37,9 @@ final class ChatHostTest extends TestCase
         'agent_stacks',
         'hook_calls',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
         'messages',
-        'message_attentions',
         'links',
     ];
 

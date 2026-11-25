@@ -8,9 +8,9 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\StackAdmission;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\OperationDeadline;
 use App\Support\StateEvents\StateEventScope;
+use App\Support\SystemActor;
 use App\Values\FrameGrant;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Database\ConnectionInterface;
@@ -100,7 +100,7 @@ final class StateEventScopeTest extends TestCase
     public function test_engine_admission_captures_only_its_frame_grant_and_maintenance_has_no_target(): void
     {
         $access = $this->app->make(EngineAccess::class);
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine tick'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine tick'));
         $admission = $this->app->make(StackAdmission::class);
         $scope = $this->app->make(StateEventScope::class);
         $dispatcher = $this->app->make(Dispatcher::class);
@@ -137,7 +137,7 @@ final class StateEventScopeTest extends TestCase
                 });
             } catch (SimulatedFailure) {
                 $this->assertTrue($access->allowsMaintenance('outer'));
-                $this->assertTrue($access->frameGrantFor(new EngineActor())->isEmpty());
+                $this->assertTrue($access->frameGrantFor(new SystemActor())->isEmpty());
             }
         });
 

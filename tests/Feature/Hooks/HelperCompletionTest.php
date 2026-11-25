@@ -28,9 +28,9 @@ use App\Models\Sessions\StopCheck;
 use App\Support\ActorIdentity;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
+use App\Support\SystemActor;
 use App\Values\AgentText;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
@@ -250,7 +250,7 @@ final class HelperCompletionTest extends TestCase
      */
     private function certifyPassedStops(string $pass): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
         $this->app->make(EngineAccess::class)->grantMaintenance(CertifyPassedStopsCommand::MAINTENANCE_SCOPE);
         $this->app->make(RequestKey::class)->set($pass);
         $bus = $this->app->make(CommandBus::class);

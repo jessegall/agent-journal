@@ -38,9 +38,6 @@ final class ForwardedAssignmentTest extends TestCase
         'agents',
         'tasks',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
         'command_receipts',
     ];

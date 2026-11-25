@@ -7,11 +7,9 @@ namespace Tests\Feature\Communication;
 use App\Data\Notifications\NotificationTarget;
 use App\Enums\Notifications\NotificationMutationType;
 use App\Enums\Notifications\NotificationSourceType;
-use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Resolvers\QuestionNotificationTarget;
 use App\Resolvers\Support\NotificationChanges;
 use App\Support\ActorIdentity;
 use App\Support\NotificationChangeCursor;
@@ -20,6 +18,8 @@ use App\Support\NotificationDelivery;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
 use Carbon\CarbonImmutable;
+use Domain\Questions\Models\Question;
+use Domain\Questions\Values\QuestionNotificationKeys;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -106,17 +106,17 @@ final class NotificationChangesTest extends MessagingTestCase
         }
 
         for ($number = 1; $number <= $count; $number++) {
-            $message = $this->askInboxOf($owner, "Question {$number}?");
-            $this->deliver($message, $owner);
+            $question = $this->askInboxOf($owner, "Question {$number}?");
+            $this->deliver($question, $owner);
         }
     }
 
-    private function deliver(Message $message, ActorIdentity $recipient): void
+    private function deliver(Question $question, ActorIdentity $recipient): void
     {
         $this->app->make(NotificationDelivery::class)->deliver(
-            QuestionNotificationTarget::occurrenceKey($message->id),
+            QuestionNotificationKeys::occurrenceKey($question->id),
             NotificationSourceType::Question,
-            new NotificationTarget(QuestionNotificationTarget::KEY, $message->id),
+            new NotificationTarget(QuestionNotificationKeys::target(), $question->id),
             [$recipient],
         );
     }

@@ -46,8 +46,6 @@ final class AssignmentPurposeTest extends TestCase
         'session_tokens',
         'tasks',
         'inboxes',
-        'desks',
-        'desk_seats',
         'assignments',
         'auto_assignments',
         'command_receipts',

@@ -47,7 +47,7 @@ final class BindingRuntimeTest extends TestCase
     private const array TABLES = [
         'connection_audits', 'project_invitations', 'install_attempts', 'binding_runtimes', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
-        'users', 'accounts', 'active_accounts', 'desks', 'desk_seats', 'inboxes',
+        'users', 'accounts', 'active_accounts', 'inboxes',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';

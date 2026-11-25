@@ -65,9 +65,6 @@ final class TaskDetailsResolverTest extends TestCase
         'task_runs',
         'claim_authorizations',
         'inboxes',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
     ];
 
     public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void

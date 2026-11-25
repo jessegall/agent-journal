@@ -33,7 +33,7 @@ trait ConnectsProjects
     /**
      * The tables a redemption also writes, giving the project's main agent its desk; they are emptied around each test.
      */
-    private const array DESK_TABLES = ['inboxes', 'desks', 'desk_seats', 'desk_preferences', 'assignments'];
+    private const array DESK_TABLES = ['inboxes', 'assignments'];
 
     protected function setUpConnectsProjects(): void
     {

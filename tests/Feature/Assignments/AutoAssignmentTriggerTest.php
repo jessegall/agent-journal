@@ -25,9 +25,9 @@ use App\Support\AutoAssignmentOutcome;
 use App\Support\AutoAssignmentPage;
 use App\Support\AutoAssignmentRun;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\IdListPage;
 use App\Support\PoolReference;
+use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Support\Assignments\TaskAssigner;
@@ -42,7 +42,7 @@ final class AutoAssignmentTriggerTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
         $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenanceCommand::FILL_SCOPE);
         $stop = $this->createStub(StopTime::class);
         $stop->method('remainingMilliseconds')->willReturn(100);

@@ -58,10 +58,6 @@ final class DocumentDraftTest extends TestCase
         'retained_drafts',
         'number_groups',
         'messages',
-        'message_attentions',
-        'desks',
-        'desk_seats',
-        'desk_preferences',
         'assignments',
     ];
 

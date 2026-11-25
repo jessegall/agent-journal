@@ -13,9 +13,9 @@ use App\Providers\AssignmentsServiceProvider;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\ClosedAutoAssignmentAccess;
-use App\Support\EngineActor;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\StartSessions;
+use App\Support\SystemActor;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -111,7 +111,7 @@ final class AutoAssignmentAccessTest extends TestCase
             AssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $this->access->assertMayWrite(new EngineActor(), ActorIdentity::of($this->worker)),
+            fn () => $this->access->assertMayWrite(new SystemActor(), ActorIdentity::of($this->worker)),
             AutoAssignmentDenied::class,
         );
     }

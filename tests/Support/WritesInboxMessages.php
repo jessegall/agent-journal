@@ -4,73 +4,65 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Chat\ActorDesks;
-use App\Models\CommandRules\CommandReceipt;
-use App\Models\Desks\DeskRecord;
+use App\Contracts\Messages\MessageSender;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
-use App\Support\AcceptedOperation;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use App\Support\DeskService;
-use App\Support\MessageBody;
-use App\Support\MessageEnvelope;
-use App\Support\ReceiptCaller;
-use App\Support\ReceiptRetention;
-use stdClass;
+use App\Support\InboxReceiver;
+use App\Support\PersonalInboxes;
+use Domain\Questions\Enums\QuestionType;
+use Domain\Questions\Models\Question;
 
 /**
- * Records inbox messages for tests the way an accepted send does: a source desk only the journal sends from, the
- * recipient's own seated inbox, and a command receipt for the operation.
+ * Writes inbox messages and questions for tests the way a send and an ask store them: the actor's own personal inbox,
+ * a message under the inbox's next number, and a question to an actor in an inbox.
  */
 trait WritesInboxMessages
 {
     /**
-     * A question to the actor's own inbox, which the actor sees and nobody else does.
+     * The actor's own inbox, made and joined the first time it is asked for.
      */
-    protected function askInboxOf(ActorIdentity $recipient, string $body): Message
+    protected function inboxOf(ActorIdentity $actor): Inbox
     {
-        return $this->askBetween($this->journalDesk(), $this->inboxOf($recipient), $body);
+        $inbox = Inbox::query()->personalTo($actor)->first();
+
+        if ($inbox !== null) {
+            return $inbox;
+        }
+
+        $this->app->make(PersonalInboxes::class)->provision($actor, 'Own');
+
+        return Inbox::personalOf($actor);
     }
 
     /**
-     * The actor's own inbox, seated and preferred, made the first time it is asked for.
+     * A message the sender posts to the inbox, under the inbox's next number.
      */
-    protected function inboxOf(ActorIdentity $actor): DeskRecord
+    protected function postTo(Inbox $inbox, MessageSender $sender, string $body): Message
     {
-        return DeskRecord::preferredBy($actor)->getOrCall(fn () => DeskRecord::query()->findOrFail(
-            $this->app->make(AssignmentTransaction::class)->run(
-                fn () => $this->app->make(ActorDesks::class)->provision($actor, 'Own')->deskId,
-            ),
-        ));
+        $locked = Inbox::lockedById($inbox->id);
+        $number = $locked->takeMessageNumber();
+
+        return Message::create(new InboxReceiver($locked), $number, $sender, $body);
     }
 
     /**
-     * A question between two inboxes no actor is seated at, which no actor sees.
+     * An open question to the actor in its own inbox, which the actor sees and nobody else does.
      */
-    protected function askNobody(string $body): Message
+    protected function askInboxOf(ActorIdentity $recipient, string $body): Question
     {
-        $nobody = $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'Nobody');
+        $inbox = $this->inboxOf($recipient);
 
-        return $this->askBetween($this->journalDesk(), $nobody, $body);
+        return Question::create($inbox->id, ActorIdentity::system(), $recipient, $body, QuestionType::Open, []);
     }
 
-    private function askBetween(DeskRecord $source, DeskRecord $destination, string $body): Message
+    /**
+     * An open question in an inbox no actor is attached to, which nobody sees.
+     */
+    protected function askNobody(string $body): Question
     {
-        $author = ActorContext::forAgent(TestIds::of(99));
-        $receipt = CommandReceipt::create(
-            ReceiptCaller::withoutSession($author),
-            (string) str()->ulid(),
-            new stdClass(),
-            ReceiptRetention::standard(),
-        );
-        $envelope = MessageEnvelope::ask($source, $destination, ActorIdentity::of($author), MessageBody::from($body));
+        $inbox = Inbox::create(Inbox::NAMED_PROVIDER, (string) str()->ulid(), 'Nobody');
 
-        return Message::create($envelope, new AcceptedOperation($receipt->id));
-    }
-
-    private function journalDesk(): DeskRecord
-    {
-        return $this->app->make(DeskService::class)->openSourceDesk((string) str()->ulid(), 'Journal');
+        return Question::create($inbox->id, ActorIdentity::system(), ActorIdentity::system(), $body, QuestionType::Open, []);
     }
 }

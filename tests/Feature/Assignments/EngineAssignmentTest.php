@@ -16,8 +16,8 @@ use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
-use App\Support\EngineActor;
 use App\Support\RequestKey;
+use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
@@ -84,6 +84,6 @@ final class EngineAssignmentTest extends TestCase
 
     private function actAsEngine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(CurrentActorSetter::class)->set(new SystemActor(), new TrustedEntryAuthority('engine pass'));
     }
 }
