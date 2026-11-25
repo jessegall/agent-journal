@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Questions\QuestionAnswerNoticeDelivered;
@@ -58,11 +59,11 @@ final class QuestionAnswerNotice extends Model implements EventSource
     /**
      * The key a delivery of this notice is sent under, the same on every retry.
      *
-     * @return Attribute<string, never>
+     * @return Attribute<non-falsy-string, never>
      */
     protected function deliveryKey(): Attribute
     {
-        return Attribute::get(fn () => "question-answer:{$this->question_id}");
+        return Attribute::get(fn (): string => "question-answer:{$this->question_id}");
     }
 
     // ----------[ Relations ]----------

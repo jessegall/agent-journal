@@ -379,11 +379,11 @@ final class Host extends Model implements EventSource, ReadableModel
      * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
      * it has been quiet.
      *
-     * @return Attribute<string, never>
+     * @return Attribute<non-falsy-string, never>
      */
     protected function linkAlarm(): Attribute
     {
-        return Attribute::get(function () {
+        return Attribute::get(function (): string {
             if ($this->failing_since !== null) {
                 return "The host {$this->installation_name} has failed to reach the journal since "
                     ."{$this->failing_since->format('H:i T')}: its last call, {$this->last_failure}.";
