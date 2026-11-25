@@ -75,4 +75,15 @@ final class Project extends Model implements EventSource, ReadableModel
     {
         $query->orderBy('label');
     }
+
+    /**
+     * The project of the key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withKey(Builder $query, string $key): void
+    {
+        $query->where('key', $key);
+    }
 }

@@ -111,6 +111,7 @@ install() {
         pin_images &&
         run_migrations &&
         artisan run access:owner-ensure &&
+        artisan run projects:local-provision &&
         enroll_host &&
         publish_release &&
         roll_app &&

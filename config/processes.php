@@ -10,12 +10,20 @@ return [
      */
     'runner' => (bool) env('JOURNAL_PROCESS_RUNNER', false),
 
-    /*
-     * The key of this installation's project (plan 14, decision D3): every rule, proposal, request, permit and proof
-     * is stored under it and read only by it, so a second project never sees another's rows.
-     */
     'minimum_free_bytes' => (int) env('JOURNAL_PROCESS_MINIMUM_FREE_BYTES', 104_857_600),
 
+    /*
+     * The key and label projects:local-provision gives the installation's own project when it makes it; the project
+     * row, not this setting, owns what is stored under it.
+     */
     'project_key' => (string) env('JOURNAL_PROJECT_KEY', env('APP_NAME', 'journal')),
+
+    'project_label' => (string) env('JOURNAL_PROJECT_LABEL', env('APP_NAME', 'Journal')),
+
+    /*
+     * Whether this installation runs agents itself, so it needs a local project, its Main environment and the owner's
+     * grants on it; off, projects:local-provision makes nothing and the installation still opens.
+     */
+    'local_execution' => (bool) env('JOURNAL_LOCAL_EXECUTION', true),
 
 ];

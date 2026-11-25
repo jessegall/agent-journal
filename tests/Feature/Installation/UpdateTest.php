@@ -94,6 +94,7 @@ final class UpdateTest extends TestCase
             $this->installation->setting(self::RUNNER_PIN),
         );
         $this->assertSame(substr($pushed, 0, 12), $this->installation->setting(self::RELEASE));
+        $this->assertTrue($this->installation->docker->wasAsked('artisan', 'projects:local-provision'));
     }
 
     public function test_a_push_that_leaves_the_host_program_alone_keeps_its_release(): void

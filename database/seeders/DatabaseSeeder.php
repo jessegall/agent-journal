@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call(NumbersSeeder::class);
         $this->call(InboxesSeeder::class);
         $this->call(OwnerSeeder::class);
+        $this->callWith(LocalProjectSeeder::class);
         $tasks = $this->container->make(PlanTasksSeeder::class);
         $this->callWith(PlansSeeder::class, [
             'readingTaskIds' => $tasks->readingTaskIds(),
