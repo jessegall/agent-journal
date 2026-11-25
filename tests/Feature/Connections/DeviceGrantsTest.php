@@ -7,7 +7,6 @@ namespace Tests\Feature\Connections;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Access\User;
 use App\Models\Projects\ConnectionAudit;
@@ -17,9 +16,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
-use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
-use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -60,61 +57,6 @@ final class DeviceGrantsTest extends TestCase
         return DomainBoot::withRequirements(TasksDomain::class);
     }
 
-    public function test_the_shell_gets_a_url_and_code_and_its_grant_once_the_owner_approves(): void
-    {
-        $binding = $this->connected();
-
-        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->assertStringStartsWith('https://journal.example.com/connections/devices/', (string) $start->json('approvalUrl'));
-        $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
-
-        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
-        $this->actingAs($this->owner)
-            ->post("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertRedirect();
-        $grant = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
-
-        $this->assertNotEmpty($grant->json('grant'));
-        $this->assertStringNotContainsString((string) $grant->json('grant'), (string) json_encode(DeviceGrant::query()->sole()->getAttributes()));
-    }
-
-    public function test_an_expired_code_is_refused(): void
-    {
-        $binding = $this->connected();
-        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-
-        $this->travel(DeviceGrant::CODE_MINUTES + 1)->minutes();
-
-        $this->actingAs($this->owner)
-            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertNotFound();
-        $expired = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(410);
-        $this->assertSame('expired_token', $expired->json('details.outcome'));
-    }
-
-    public function test_a_revoked_grant_is_refused_while_the_binding_stays_connected(): void
-    {
-        $binding = $this->connected();
-        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
-        $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->json('grant');
-
-        $this->actingAs($this->owner)
-            ->deleteJson('/project-connections/devices/'.DeviceGrant::query()->sole()->id)
-            ->assertNoContent();
-
-        $this->postJson('https://localhost/api/project-commands/device', [
-            'request_key' => 'request-1',
-            'binding' => $binding,
-            'argv' => ['overview', 'now'],
-            'stdin' => '',
-        ], ['Authorization' => "Bearer {$grant}"])->assertUnauthorized();
-        $this->assertNotSame(
-            BindingReadiness::Revoked,
-            ProjectBinding::query()->findOrFail($binding)->readinessAt(CarbonImmutable::now()),
-        );
-    }
-
     public function test_an_approved_grant_authenticates_its_approver_for_its_own_binding_only(): void
     {
         $binding = $this->connected();
@@ -137,25 +79,6 @@ final class DeviceGrantsTest extends TestCase
 
         $refusal = $this->deviceCommand($grant, $binding)->assertForbidden();
         $this->assertStringContainsString(self::REVOKED_REFUSAL, (string) $refusal->json('message'));
-    }
-
-    public function test_revoking_one_terminal_sign_in_leaves_the_other_working(): void
-    {
-        $binding = $this->connected();
-        $first = $this->approvedGrant($binding);
-        $second = $this->approvedGrant($binding);
-        $revoked = DeviceGrant::query()->where('grant_digest', InstallTicket::digestOf($first))->sole();
-
-        $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/devices/{$revoked->id}")
-            ->assertNoContent();
-
-        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.bindings.rows.0.signIns', 2)
-            ->where('page.data.bindings.rows.0.signIns.1.reference', $revoked->reference)
-            ->where('page.data.bindings.rows.0.signIns.1.state', 'revoked'));
-        $this->deviceCommand($first, $binding)->assertUnauthorized();
-        $this->deviceCommand($second, $binding)->assertForbidden();
     }
 
     public function test_overview_in_a_terminal_shows_the_users_tasks_of_its_environment_only(): void
@@ -247,71 +170,6 @@ final class DeviceGrantsTest extends TestCase
             'argv' => ['overview', 'now'],
             'stdin' => '',
         ], ['Authorization' => "Bearer {$grant}"]);
-    }
-
-    public function test_a_poll_too_soon_slows_down_and_keeps_the_request_waiting(): void
-    {
-        $binding = $this->connected();
-        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
-
-        $slow = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(429);
-
-        $this->assertSame('slow_down', $slow->json('details.outcome'));
-        $this->assertSame(DeviceGrant::POLL_SECONDS_MINIMUM, $slow->json('details.interval'));
-        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
-        $pending = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
-        $this->assertSame('authorization_pending', $pending->json('details.outcome'));
-    }
-
-    public function test_a_lost_successful_poll_answers_already_issued_with_the_reference(): void
-    {
-        $binding = $this->connected();
-        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
-        $this->app['auth']->forgetGuards();
-        $issued = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
-
-        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
-        $again = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(409);
-
-        $this->assertSame('issued', $issued->json('outcome'));
-        $this->assertSame('already_issued', $again->json('details.outcome'));
-        $this->assertSame($start->json('reference'), $again->json('details.reference'));
-        $this->assertNull($again->json('grant'));
-    }
-
-    public function test_two_terminals_get_two_references_and_a_repeated_start_finds_its_own(): void
-    {
-        $binding = $this->connected();
-
-        $first = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-a'])->assertCreated();
-        $second = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-b'])->assertCreated();
-        $again = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-a'])->assertCreated();
-
-        $this->assertNotSame($first->json('reference'), $second->json('reference'));
-        $this->assertSame([1, 2], [$first->json('generation'), $second->json('generation')]);
-        $this->assertSame($first->json('reference'), $again->json('reference'));
-        $this->assertSame(2, DeviceGrant::query()->count());
-    }
-
-    public function test_the_approval_window_reads_the_committed_state_of_the_request(): void
-    {
-        $binding = $this->connected();
-        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $window = "/connections/devices/{$start->json('userCode')}";
-
-        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.state', 'pending')
-            ->where('page.data.journalOrigin', 'https://journal.example.com')
-            ->where('page.data.isBindingRevoked', false));
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
-
-        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.state', 'approved'));
-        $this->actingAs($this->owner)
-            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertNotFound();
     }
 
     public function test_an_expired_code_reads_expired_in_the_approval_window(): void

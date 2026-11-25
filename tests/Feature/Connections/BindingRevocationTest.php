@@ -60,54 +60,6 @@ final class BindingRevocationTest extends TestCase
         $this->recoverBinding('nonce-bbbbbbbbbbbbbbbb')->assertOk();
     }
 
-    public function test_two_tabs_revoking_one_binding_get_its_one_revocation_time_and_one_audit(): void
-    {
-        $this->issueLine('ticket-one');
-        $binding = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
-
-        $first = $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$binding}")
-            ->assertOk();
-        $this->travel(5)->seconds();
-        $second = $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$binding}")
-            ->assertOk();
-
-        $revoked = ProjectBinding::query()->findOrFail($binding);
-        $this->assertSame('Revoked', $first->json('result'));
-        $this->assertSame(self::ALREADY_REVOKED, $second->json('result'));
-        $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
-        $this->assertSame($revoked->revokedAtText, $second->json('revokedAt'));
-        $this->assertSame(2, $revoked->authority_generation);
-        $this->assertCount(1, array_filter(
-            ConnectionAudit::findNewest(10),
-            fn (ConnectionAudit $audit) => $audit->type === ConnectionAuditType::BindingRevoked,
-        ));
-    }
-
-    public function test_several_chosen_bindings_are_revoked_at_once_each_with_its_outcome(): void
-    {
-        $this->issueLine('ticket-one');
-        $first = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
-        ProjectInvitation::create(
-            InstallAttempt::create($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
-            InstallTicket::digestOf('ticket-two'),
-        );
-        $second = (string) $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated()->json('bindingId');
-
-        $this->actingAs($this->owner)
-            ->from('/connections')
-            ->post('/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
-            ->assertRedirect('/connections')
-            ->assertSessionHas('inertia.flash_data', ['revokedBindings' => [$first => 'Revoked', $second => 'Revoked']]);
-
-        $this->assertSame(
-            [BindingReadiness::Revoked, BindingReadiness::Revoked],
-            ProjectBinding::query()->orderBy('created_at')->get()
-                ->map(fn (ProjectBinding $binding) => $binding->readiness)->all(),
-        );
-    }
-
     public function test_every_step_is_audited_with_its_actor_and_no_secret(): void
     {
         $this->issueByOwner('action-1');

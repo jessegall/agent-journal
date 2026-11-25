@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Connections;
+namespace Tests\Commands\Projects;
 
 use App\Models\Agents\Agent;
 use App\Models\Projects\Host;
@@ -19,7 +19,7 @@ use Tests\TestCase;
  * One redemption of an install line makes exactly one host, one binding and one main agent, in one transaction; every
  * other redemption of it gets the same generic failure.
  */
-final class RedemptionTest extends TestCase
+final class RedeemProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;
     use ConnectsProjects;

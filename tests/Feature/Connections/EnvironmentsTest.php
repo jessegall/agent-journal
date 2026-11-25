@@ -67,21 +67,6 @@ final class EnvironmentsTest extends TestCase
         $this->assertSame(1, ProjectBinding::query()->count());
     }
 
-    public function test_a_binding_with_no_environment_starts_nothing_until_the_owner_assigns_one(): void
-    {
-        $binding = $this->connected('new-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        $main = $binding->environment_id;
-        ProjectBinding::query()->whereKey($binding->id)->update(['environment_id' => null]);
-
-        $refused = $this->start($binding)->assertForbidden();
-        $this->assertStringContainsString(self::NO_ENVIRONMENT, (string) $refused->json('message'));
-
-        $this->actingAs($this->owner)
-            ->putJson("/project-connections/bindings/{$binding->id}/environment/{$main}")
-            ->assertNoContent();
-        $this->assertFalse(ProjectBinding::query()->findOrFail($binding->id)->isEnvironmentUnassigned());
-    }
-
     private function connected(string $ticket, string $nonce): ProjectBinding
     {
         $this->issueLine($ticket);

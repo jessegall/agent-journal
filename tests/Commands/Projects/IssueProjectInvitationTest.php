@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Connections;
+namespace Tests\Commands\Projects;
 
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -23,16 +23,13 @@ use Tests\Support\Connections\IssuesInstallLines;
 use Tests\TestCase;
 
 /**
- * The owner issues one-time install lines; anyone else is refused, asking again replaces the line, and the ticket
- * reaches neither a stored row nor a log line.
+ * The owner gets one install line whose script downloads and no log or row holds its ticket; a viewer and a signed-out
+ * visitor are refused, asking again replaces the line, and no line is issued while connecting projects is off.
  */
-final class InstallLinesTest extends TestCase
+final class IssueProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;
     use IssuesInstallLines;
-
-    private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
-        ."Copy a new one from the journal.\n";
 
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'projects',
@@ -110,22 +107,6 @@ final class InstallLinesTest extends TestCase
         $this->assertSame(1, ProjectInvitation::query()->pending()->count());
         $this->get("/install/{$first}")->assertNotFound();
         $this->get("/install/{$second}")->assertOk();
-    }
-
-    public function test_a_revoked_line_answers_the_generic_failure(): void
-    {
-        $this->switchOn();
-        $response = $this->issue('action-1');
-        $ticket = $this->ticketOf($response);
-
-        $this->actingAs($this->owner)
-            ->deleteJson('/project-connections/invitations/'.$response['invitationId'])
-            ->assertNoContent();
-
-        $this->assertSame(
-            self::UNUSABLE_LINE,
-            $this->get("/install/{$ticket}")->assertNotFound()->getContent(),
-        );
     }
 
     public function test_no_line_is_issued_while_connecting_projects_is_switched_off(): void

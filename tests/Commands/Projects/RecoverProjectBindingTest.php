@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Connections;
+namespace Tests\Commands\Projects;
 
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
@@ -17,7 +17,7 @@ use Tests\TestCase;
  * A relay that redeemed a line but lost the reply gets its binding back by a call signed with its credential; any
  * other caller gets one generic failure.
  */
-final class BindingRecoveryTest extends TestCase
+final class RecoverProjectBindingTest extends TestCase
 {
     use CommitsHookRows;
     use ConnectsProjects;

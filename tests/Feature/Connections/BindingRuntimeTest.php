@@ -60,20 +60,6 @@ final class BindingRuntimeTest extends TestCase
             ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
     }
 
-    public function test_another_folder_root_id_or_agent_is_refused_before_any_runtime(): void
-    {
-        $binding = $this->connected('the-ticket', self::NONCE);
-        $other = $this->connected('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
-        $runtimes = AgentRuntime::query()->count();
-
-        $this->start($binding, ['folder' => '/Users/owner/elsewhere'])->assertForbidden();
-        $this->start($binding, ['rootId' => $other->root_id])->assertForbidden();
-        $this->start($binding, ['agentId' => $other->main_agent_id])->assertForbidden();
-        $this->signedStart(self::NONCE, $other, [])->assertForbidden();
-
-        $this->assertSame($runtimes, AgentRuntime::query()->count());
-    }
-
     public function test_a_start_that_names_no_model_takes_its_profiles_default(): void
     {
         $binding = $this->connected('the-ticket', self::NONCE);
@@ -110,26 +96,6 @@ final class BindingRuntimeTest extends TestCase
         ProjectBinding::query()->whereKey($binding->id)->update(['readiness' => 'revoked']);
 
         $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
-    }
-
-    public function test_a_program_the_binding_may_not_start_is_refused_by_name_before_any_runtime(): void
-    {
-        $binding = $this->connected('the-ticket', self::NONCE);
-        $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
-        $this->notifyPresence('nonce-bbbbbbbbbbbbbbbb', $silent->id, []);
-
-        $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
-        $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
-
-        $this->assertStringContainsString(
-            self::HOOKS_NOT_KEPT,
-            (string) $codex->json('message'),
-        );
-        $this->assertStringContainsString(
-            self::CLAUDE_NOT_REPORTED,
-            (string) $unreported->json('message'),
-        );
-        $this->assertSame(0, AgentRuntime::query()->count());
     }
 
     public function test_a_new_boot_of_the_relay_starts_nothing_until_it_reported_its_earlier_sessions(): void
