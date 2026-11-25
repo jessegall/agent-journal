@@ -15,6 +15,7 @@ use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Domain\Chat\Values\DockResult;
 use Domain\Tasks\Models\Task;
@@ -73,7 +74,7 @@ final class UndockSourceTest extends TestCase
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
 
-        $this->journal->inboxes()->pairChat(
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::ofClass(Agent::class, $this->agentId),
         );

@@ -4,21 +4,39 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Fixtures;
 
+use App\Models\Inboxes\InboxMember;
 use Domain\Chat\Commands\UnpinMessage\UnpinMessageCommand;
+use Domain\Chat\Support\PairChats;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * Pins arranged through the journal belong to one member: taking away one's own pin leaves another member's, and the
- * message stays in its inbox.
+ * A pair chat arranged through the journal is the chat page's own pair chat with both members attached, and pins
+ * belong to one member: taking away one's own pin leaves another member's, and the message stays in its inbox.
  */
 final class ChatFixturesTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    public function test_a_pair_chat_is_the_chat_page_pair_chat_with_both_members_attached(): void
+    {
+        $this->journal->owner()->agent('Planner');
+
+        $chat = $this->journal->fixtures(
+            ChatFixtures::class,
+        )->pairChatBetween('Owner', 'Planner')->pairChatOf('Owner', 'Planner');
+
+        $this->assertSame(PairChats::PAIR_PROVIDER, $chat->provider_key);
+        $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Owner')));
+        $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Planner')));
+    }
+
     public function test_a_member_takes_away_only_their_own_pin_and_the_message_stays(): void
     {
-        $chat = $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner')->chatOf('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner');
+        $chat = $this->journal->fixtures(
+            ChatFixtures::class,
+        )->pairChatBetween('Owner', 'Planner')->pairChatOf('Owner', 'Planner');
         $message = $this->journal->post('Planner', $chat, 'Keep this.');
 
         $pins = $this->journal->fixtures(ChatFixtures::class)

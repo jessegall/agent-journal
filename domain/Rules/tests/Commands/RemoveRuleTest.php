@@ -18,7 +18,6 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\HoldingRules;
 
 /**
  * The user removes a rule that holds, which then no longer does; an agent may not remove one, and a rule that is not
@@ -82,7 +81,9 @@ final class RemoveRuleTest extends TestCase
     {
         Event::fake([PageChanged::class]);
 
-        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(
+            new RemoveRuleCommand($this->oldRule()->id),
+        );
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -93,8 +94,17 @@ final class RemoveRuleTest extends TestCase
 
         $this->app->instance(AccessSettings::class, new AccessSettings(null));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRuleCommand(HoldingRules::create('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(
+            new RemoveRuleCommand($this->oldRule()->id),
+        );
 
         Event::assertNotDispatched(PageChanged::class);
+    }
+
+    private function oldRule(): Rule
+    {
+        return $this->journal->user('Proposer')->user('Approver')->fixtures(RuleFixtures::class)
+            ->holdingRule('Old rule', 'Old rule.', 'Proposer', 'Approver')
+            ->ruleCalled('Old rule');
     }
 }

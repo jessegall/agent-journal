@@ -50,8 +50,8 @@ function installedDomains(string $root): array
 }
 
 /**
- * Every core file read as text: code, config, routes, database, bootstrap and the core frontend, less the files that
- * compose the domains and what is generated.
+ * Every core file read as text: code, config, routes, database, bootstrap, the core frontend and the core test support
+ * with its test journal, less the files that compose the domains and what is generated.
  *
  * @return list<string>
  */
@@ -73,6 +73,7 @@ function coreFiles(string $root): array
         'database',
         'bootstrap',
         'resources/js',
+        'tests/Support',
     ] as $folder) {
         if (! is_dir("{$root}/{$folder}")) {
             continue;

@@ -8,6 +8,7 @@ use App\Commands\Access\DisableUser\DisableUserCommand;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Tests\Support\DomainBoot;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -26,12 +27,14 @@ final class DisableUserTest extends TestCase
 
     public function test_a_disabled_user_leaves_every_inbox(): void
     {
-        $this->journal->owner()->user('Guest')->chat('Owner', 'Guest');
+        $this->journal->owner()->user('Guest')->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Guest');
         $guest = $this->journal->userCalled('Guest');
+
+        $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Guest');
 
         $this->journal->run(new DisableUserCommand($guest->id));
 
         $this->assertNotNull($guest->refresh()->disabled_at);
-        $this->assertFalse(InboxMember::isAttached($this->journal->chatOf('Owner', 'Guest')->id, ActorIdentity::of($guest)));
+        $this->assertFalse(InboxMember::isAttached($chat->id, ActorIdentity::of($guest)));
     }
 }

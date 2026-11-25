@@ -14,7 +14,7 @@ enum FixtureRefusalType
     case NoServerClock;
     case MissingAlias;
     case NotOneStart;
-    case SelfChat;
+    case SelfShare;
     case OccupiedAlias;
     case DomainNotBooted;
     case Unregistered;

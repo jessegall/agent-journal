@@ -22,7 +22,6 @@ use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -58,7 +57,7 @@ final class StackRestorerTest extends TestCase
     {
         parent::setUp();
 
-        $this->tasks = new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]);
+        $this->tasks = new InMemoryTasks([42, 43]);
         $this->app->instance(InMemoryTasks::class, $this->tasks);
         $this->app->instance(OperationPolicy::class, new FixedOperationPolicy());
         $this->app->instance(StopConditionGate::class, new AllowedStops());
@@ -80,14 +79,14 @@ final class StackRestorerTest extends TestCase
         $restored = $this->restore(...$records);
         $this->assertFalse($restored->frames()[1]->isFinished());
 
-        $this->tasks->tasks[42] = TaskStatus::Finished;
+        $this->tasks->finish(42);
 
         $this->assertTrue($restored->frames()[1]->isFinished());
     }
 
     public function test_restoring_keeps_a_finished_frame_and_only_an_exposed_one_is_popped(): void
     {
-        $this->tasks->tasks[42] = TaskStatus::Cancelled;
+        $this->tasks->finish(42);
 
         $stack = $this->restore($this->bottom(), $this->task('task-42', 42), $this->task('task-43', 43));
 
@@ -139,7 +138,13 @@ final class StackRestorerTest extends TestCase
 
         $this->restore(
             $this->bottom(),
-            new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
+            new FrameRecord(
+                'note-1',
+                new StateReference('notes.reading', NoSubject::None),
+                false,
+                1,
+                CarbonImmutable::now(),
+            ),
         );
     }
 
@@ -171,7 +176,10 @@ final class StackRestorerTest extends TestCase
         $this->app->make(Dispatcher::class)->listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
-                RegisteredStateType::named('test.switched_off', SwitchableState::class)->switchedBy(fn (): bool => false),
+                RegisteredStateType::named(
+                    'test.switched_off',
+                    SwitchableState::class,
+                )->switchedBy(fn (): bool => false),
             ),
         );
         $switched = new FrameRecord(

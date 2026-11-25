@@ -29,7 +29,7 @@ final class HideLeftInboxNotificationsTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Planner')->agent('Builder')
-            ->chat('Owner', 'Planner')->chat('Owner', 'Builder');
+            ->sharedInbox('Owner', 'Planner')->sharedInbox('Owner', 'Builder');
     }
 
     public function test_the_questions_of_the_left_inbox_lose_their_notifications_and_other_inboxes_stay_notified(): void
@@ -44,7 +44,7 @@ final class HideLeftInboxNotificationsTest extends TestCase
             new HideLeftInboxNotificationsCommand(
                 $owner->type,
                 $owner->id,
-                $this->journal->chatOf('Owner', 'Planner')->id,
+                $this->journal->sharedInboxOf('Owner', 'Planner')->id,
             ),
         );
 
@@ -55,7 +55,7 @@ final class HideLeftInboxNotificationsTest extends TestCase
     private function ask(string $agent): void
     {
         $this->journal->actAs($agent)->run(new AskQuestionCommand(
-            $this->journal->chatOf('Owner', $agent)->id,
+            $this->journal->sharedInboxOf('Owner', $agent)->id,
             $this->journal->actorCalled('Owner'),
             'Which database?',
             QuestionType::Open,

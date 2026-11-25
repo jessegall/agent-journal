@@ -23,7 +23,10 @@ final class QuestionFixturesTest extends TestCase
 
     public function test_an_answer_is_kept_trimmed_and_the_asker_is_told_once(): void
     {
-        $chat = $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner')->chatOf('Owner', 'Planner');
+        $chat = $this->journal->owner()->agent('Planner')->sharedInbox(
+            'Owner',
+            'Planner',
+        )->sharedInboxOf('Owner', 'Planner');
 
         $questions = $this->journal->fixtures(QuestionFixtures::class)
             ->question('Database', $chat, asker: 'Planner', target: 'Owner')

@@ -12,14 +12,11 @@ use App\Support\ActorIdentity;
 use App\Support\ActorProvisioning;
 use App\Support\InboxReceiver;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Support\PairChats;
-use Domain\Questions\Enums\QuestionType;
-use Domain\Questions\Models\Question;
 use Illuminate\Contracts\Foundation\Application;
 
 /**
- * The inboxes a test arranges, stored as the journal stores them: an actor's personal inbox, the pair chat of two
- * actors and a message under an inbox's next number.
+ * The inboxes a test arranges, stored as the journal stores them: an actor's personal inbox, an inbox two actors
+ * share and a message under an inbox's next number.
  */
 final readonly class FixtureInboxes
 {
@@ -42,13 +39,13 @@ final readonly class FixtureInboxes
     }
 
     /**
-     * The two actors' pair chat inbox, both attached, with the personal inbox of each made too.
+     * An inbox of the provider the two actors share, both attached, with the personal inbox of each made too.
      */
-    public function pairChat(ActorIdentity $first, ActorIdentity $second): Inbox
+    public function shared(ActorIdentity $first, ActorIdentity $second, string $provider = Inbox::NAMED_PROVIDER): Inbox
     {
         $this->personal($first);
         $this->personal($second);
-        $inbox = Inbox::create(PairChats::PAIR_PROVIDER, self::pairKey($first, $second), 'Chat');
+        $inbox = Inbox::create($provider, self::pairKey($first, $second), 'Shared');
         $now = CarbonImmutable::now();
         InboxMember::create($inbox->id, $first, $now);
         InboxMember::create($inbox->id, $second, $now);
@@ -68,7 +65,7 @@ final readonly class FixtureInboxes
     }
 
     /**
-     * The two actors in the order the pair chat keys them, whichever comes first.
+     * The two actors in the order a shared inbox keys them, whichever comes first.
      */
     public static function pairKey(ActorIdentity $first, ActorIdentity $second): string
     {
@@ -76,32 +73,5 @@ final readonly class FixtureInboxes
         sort($members);
 
         return implode('|', $members);
-    }
-
-    /**
-     * An open question to the actor in its own inbox, which the actor sees and nobody else does.
-     */
-    public function openQuestionTo(ActorIdentity $recipient, string $body): Question
-    {
-        $inbox = $this->personal($recipient);
-
-        return Question::create($inbox->id, ActorIdentity::system(), $recipient, $body, QuestionType::Open, []);
-    }
-
-    /**
-     * An open question in an inbox no actor is attached to, which nobody sees.
-     */
-    public function unseenQuestion(string $body): Question
-    {
-        $inbox = Inbox::create(Inbox::NAMED_PROVIDER, (string) str()->ulid(), 'Nobody');
-
-        return Question::create(
-            $inbox->id,
-            ActorIdentity::system(),
-            ActorIdentity::system(),
-            $body,
-            QuestionType::Open,
-            [],
-        );
     }
 }

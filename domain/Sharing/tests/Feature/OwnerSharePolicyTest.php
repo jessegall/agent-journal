@@ -20,10 +20,10 @@ use Domain\Sharing\Support\OwnerSharePolicy;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

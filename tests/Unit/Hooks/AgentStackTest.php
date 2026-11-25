@@ -35,7 +35,6 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Support\States\FollowSequenceState;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -72,16 +71,16 @@ final class AgentStackTest extends TestCase
     public function test_the_top_denial_answers_a_stop_and_no_state_below_it_is_asked(): void
     {
         $stop = $this->stop();
-        $both = $this->exampleStack(TaskStatus::Started, doesMessageWait: true);
+        $both = $this->exampleStack(isTaskStarted: true, doesMessageWait: true);
 
         $this->assertSame(['message-95 deny'], $this->stepsOf($both->answer($stop, TestText::renderer())));
 
-        $answered = $this->exampleStack(TaskStatus::Started, doesMessageWait: false)->withoutExposedInactive();
+        $answered = $this->exampleStack(isTaskStarted: true, doesMessageWait: false)->withoutExposedInactive();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
         $this->assertSame(['task-42 deny'], $this->stepsOf($answered->answer($stop, TestText::renderer())));
 
-        $done = $this->exampleStack(TaskStatus::Finished, doesMessageWait: false)->withoutExposedInactive();
+        $done = $this->exampleStack(isTaskStarted: false, doesMessageWait: false)->withoutExposedInactive();
         $answer = $done->answer($stop, TestText::renderer());
 
         $this->assertTrue($answer->isAllowed());
@@ -90,7 +89,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
     {
-        $answer = $this->exampleStack(TaskStatus::Started, doesMessageWait: true)
+        $answer = $this->exampleStack(isTaskStarted: true, doesMessageWait: true)
             ->answer(HookInputs::all()['shell command'], TestText::renderer());
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
@@ -111,7 +110,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.work', '42'),
-                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskStatus::Started])),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42])),
                 CarbonImmutable::now(),
             ),
         ], $factory, new StackTarget('agent-1', 'session-1'));
@@ -151,13 +150,22 @@ final class AgentStackTest extends TestCase
         $pending = $this->frame('skills', new AwaitSkillsState('publication-1'));
         $guarded = $this->stack($this->ready(), $pending, $passing);
 
-        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['shell command'], TestText::renderer())));
-        $this->assertSame(['guide delegate', 'skills deny'], $this->stepsOf($guarded->answer(HookInputs::all()['file edit'], TestText::renderer())));
+        $this->assertSame(
+            ['guide delegate', 'skills deny'],
+            $this->stepsOf($guarded->answer(HookInputs::all()['shell command'], TestText::renderer())),
+        );
+        $this->assertSame(
+            ['guide delegate', 'skills deny'],
+            $this->stepsOf($guarded->answer(HookInputs::all()['file edit'], TestText::renderer())),
+        );
     }
 
     public function test_a_tool_handler_that_passes_cannot_hide_the_operation_policy(): void
     {
-        $refusal = AccessDecision::refused(AccessRuleType::NotGranted, AgentText::of('core.access.profile_does_not_grant_pair'));
+        $refusal = AccessDecision::refused(
+            AccessRuleType::NotGranted,
+            AgentText::of('core.access.profile_does_not_grant_pair'),
+        );
         $policy = $this->createStub(OperationPolicy::class);
         $policy->method('assess')->willReturn($refusal);
         $ready = new Frame(
@@ -246,7 +254,10 @@ final class AgentStackTest extends TestCase
         $this->assertSame([TestText::words($above->text), TestText::words($before->text)], $answer->context);
         $this->assertSame([TestText::words($before->text)], $answer->messages);
         $this->assertSame(['top delegate', 'denier deny'], $this->stepsOf($answer));
-        $this->assertSame([null, TestText::words($denial->refusalReason())], array_column($answer->steps, 'denialReason'));
+        $this->assertSame(
+            [null, TestText::words($denial->refusalReason())],
+            array_column($answer->steps, 'denialReason'),
+        );
         $this->assertSame(0, $below->askedCount);
     }
 
@@ -392,7 +403,7 @@ final class AgentStackTest extends TestCase
 
     public function test_pushing_a_state_already_on_the_stack_changes_nothing(): void
     {
-        $stack = $this->exampleStack(TaskStatus::Started, doesMessageWait: true);
+        $stack = $this->exampleStack(isTaskStarted: true, doesMessageWait: true);
 
         $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.work', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
@@ -469,14 +480,17 @@ final class AgentStackTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_a_finished_state_is_never_asked(HookInput $input): void
     {
-        $stack = $this->exampleStack(TaskStatus::Finished, doesMessageWait: false);
+        $stack = $this->exampleStack(isTaskStarted: false, doesMessageWait: false);
 
-        $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input, TestText::renderer())->steps));
+        $this->assertSame(
+            ['ready'],
+            array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input, TestText::renderer())->steps),
+        );
     }
 
     public function test_a_finished_state_in_the_middle_stays_buried_when_the_top_is_popped(): void
     {
-        $stack = $this->exampleStack(TaskStatus::Finished, doesMessageWait: true);
+        $stack = $this->exampleStack(isTaskStarted: false, doesMessageWait: true);
 
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->withoutExposedInactive()->frameIds());
         $this->assertSame(['ready'], $stack->poppedOf($stack->frames()[2])->frameIds());
@@ -484,7 +498,7 @@ final class AgentStackTest extends TestCase
 
     public function test_the_records_list_every_frame_bottom_first(): void
     {
-        $records = $this->exampleStack(TaskStatus::Started, doesMessageWait: true)->records()->all();
+        $records = $this->exampleStack(isTaskStarted: true, doesMessageWait: true)->records()->all();
 
         $this->assertSame(['ready', 'task-42', 'message-95'], array_map(fn ($record) => $record->id, $records));
         $this->assertSame([true, false, false], array_map(fn ($record) => $record->isBottom, $records));
@@ -511,7 +525,7 @@ final class AgentStackTest extends TestCase
 
     public function test_the_shown_instruction_is_the_top_live_state_that_has_one(): void
     {
-        $task = new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskStatus::Started]));
+        $task = new InMemoryTaskState(42, 1, new InMemoryTasks([42]));
         $stack = $this->stack(
             $this->ready(),
             $this->answeringFrame(true),
@@ -531,7 +545,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.work', '42'),
-                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskStatus::Started])),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42])),
                 CarbonImmutable::now(),
             ),
             $this->frame('review', $switchedOff),
@@ -549,7 +563,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.work', '42'),
-                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskStatus::Started])),
+                new InMemoryTaskState(42, 1, new InMemoryTasks([42])),
                 CarbonImmutable::now(),
             ),
             $this->frame('notes', new SwitchableState(true)),
@@ -559,14 +573,14 @@ final class AgentStackTest extends TestCase
         $this->assertSame(['ready', 'review', 'task-42', 'notes'], $stack->withoutExposedInactive()->frameIds());
     }
 
-    private function exampleStack(TaskStatus $taskState, bool $doesMessageWait): AgentStack
+    private function exampleStack(bool $isTaskStarted, bool $doesMessageWait): AgentStack
     {
         return $this->stack(
             $this->ready(),
             new Frame(
                 'task-42',
                 $this->reference('tasks.work', '42'),
-                new InMemoryTaskState(42, 1, new InMemoryTasks([42 => $taskState])),
+                new InMemoryTaskState(42, 1, new InMemoryTasks($isTaskStarted ? [42] : [])),
                 CarbonImmutable::now(),
             ),
             $this->answeringFrame($doesMessageWait),
@@ -575,7 +589,11 @@ final class AgentStackTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        return new AgentStack(array_values($frames), new InMemoryStateFactory(), new StackTarget('agent-1', 'session-1'));
+        return new AgentStack(
+            array_values($frames),
+            new InMemoryStateFactory(),
+            new StackTarget('agent-1', 'session-1'),
+        );
     }
 
     private function ready(bool $changesFiles = true): Frame

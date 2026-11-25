@@ -18,6 +18,7 @@ use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockRequests;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Domain\Chat\Values\DockResult;
 use Domain\Documents\DocumentsDomain;
@@ -107,7 +108,7 @@ final class DockSourceTest extends TestCase
             ->startSession('Builder', 'Builder')
             ->sessionCalled('Builder')->agent_id;
 
-        $this->journal->inboxes()->pairChat(
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::ofClass(Agent::class, $this->agentId),
         );
@@ -147,7 +148,7 @@ final class DockSourceTest extends TestCase
 
     public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
     {
-        $strangers = $this->journal->inboxes()->pairChat(
+        $strangers = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::ofClass(Agent::class, 'agent-one'),
             ActorIdentity::ofClass(Agent::class, 'agent-two'),
         );
@@ -225,7 +226,10 @@ final class DockSourceTest extends TestCase
     {
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
-        $this->journal->inboxes()->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
+            ActorIdentity::of($owner),
+            ActorIdentity::of($this->start->agent),
+        );
 
         $this->journal->relayAgentCommands($this->start);
         $add = ['type' => 'tasks.task', 'id' => $this->task->id, '--request-key' => self::KEY, '--json' => true];
@@ -259,9 +263,12 @@ final class DockSourceTest extends TestCase
     {
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
-        $this->journal->inboxes()->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
+            ActorIdentity::of($owner),
+            ActorIdentity::of($this->start->agent),
+        );
 
-        $this->journal->inboxes()->pairChat(
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->start->agent),
             ActorIdentity::ofClass(Agent::class, 'another-agent'),
         );
@@ -292,7 +299,7 @@ final class DockSourceTest extends TestCase
             "Build ready\nAll checks passed.",
         );
 
-        $inboxId = $this->journal->inboxes()->pairChat(
+        $inboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->id;
@@ -314,7 +321,7 @@ final class DockSourceTest extends TestCase
         $this->owner = $this->journal->ownerUser();
         $this->agent = $this->journal->signedStart('Main agent', 'main-agent');
 
-        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+        $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->owner),
             ActorIdentity::of($this->agent->agent),
         )->id;
@@ -387,7 +394,10 @@ final class DockSourceTest extends TestCase
     private function startInConversation(string $profile): TestStart
     {
         $start = $this->journal->signedStart("Started {$profile}", $profile);
-        $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
+        $this->journal->fixtures(ChatFixtures::class)->pairChat(
+            ActorIdentity::of($this->owner),
+            ActorIdentity::of($start->agent),
+        );
 
         return $start;
     }

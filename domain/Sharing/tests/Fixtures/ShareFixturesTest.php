@@ -6,9 +6,9 @@ namespace Domain\Sharing\Tests\Fixtures;
 
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 
 /**

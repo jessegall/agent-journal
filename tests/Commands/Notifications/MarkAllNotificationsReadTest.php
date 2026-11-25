@@ -18,16 +18,16 @@ final class MarkAllNotificationsReadTest extends TestCase
 
     public function test_notifications_up_to_the_last_seen_are_read_and_later_ones_stay_unread(): void
     {
-        $this->journal->owner()->notifyQuestions('Owner', 1, 3);
+        $this->journal->owner()->notifyRunOutcomes('Owner', 1, 3);
 
         $finished = $this->journal->run(
-            new MarkAllNotificationsReadCommand($this->journal->notificationCalled('Question 2')->sequence),
+            new MarkAllNotificationsReadCommand($this->journal->notificationCalled('Run 2')->sequence),
         );
 
         $this->journal->assertResult(true, $finished)
-            ->assertNotificationRead('Question 1')
-            ->assertNotificationRead('Question 2')
-            ->assertNotificationUnread('Question 3')
+            ->assertNotificationRead('Run 1')
+            ->assertNotificationRead('Run 2')
+            ->assertNotificationUnread('Run 3')
             ->assertUnreadNotifications('Owner', 1);
     }
 }

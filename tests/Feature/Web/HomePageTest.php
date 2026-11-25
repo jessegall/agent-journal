@@ -65,7 +65,7 @@ final class HomePageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+        $this->chatInboxId = $this->journal->inboxes()->shared(
             ActorIdentity::of($this->journal->ownerUser()),
             ActorIdentity::of($agent),
         )->id;

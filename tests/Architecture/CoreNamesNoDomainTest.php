@@ -7,8 +7,9 @@ namespace Tests\Architecture;
 use Symfony\Component\Process\Process;
 
 /**
- * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap or the
- * core frontend; only the composition files that install the domains may. It closes what
+ * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap, the
+ * core frontend or the core test support with its test journal; only the composition files that install the domains
+ * may. It closes what
  * DomainBoundaryTest's class scan cannot see. tools/refactoring/core-domain-text.php lists every mention.
  */
 final class CoreNamesNoDomainTest extends TestCase
@@ -24,12 +25,17 @@ final class CoreNamesNoDomainTest extends TestCase
         $this->assertSame('', trim($output), self::HOW_TO_FIX.$output);
     }
 
-    public function test_a_domain_named_in_a_string_config_or_import_is_listed_and_composition_is_not(): void
+    public function test_a_domain_named_in_a_string_config_import_or_test_support_is_listed_and_composition_not(): void
     {
         preg_match_all('/^(\S+):(\d+)\t/m', $this->checkOutput(base_path(self::FIXTURE)), $found, PREG_SET_ORDER);
 
         $this->assertSame(
-            ['app/Support/ShelfLookup.php:6', 'config/library.php:4', 'resources/js/pages/Shelf.ts:2'],
+            [
+                'app/Support/ShelfLookup.php:6',
+                'config/library.php:4',
+                'resources/js/pages/Shelf.ts:2',
+                'tests/Support/ShelfJournal.php:4',
+            ],
             array_map(fn (array $match) => "{$match[1]}:{$match[2]}", $found),
         );
     }

@@ -21,11 +21,11 @@ final class JournalInboxesTest extends TestCase
 
     public function test_both_members_attach_and_either_order_finds_the_one_chat(): void
     {
-        $this->journal->owner()->agent('Ada')->chat('Owner', 'Ada');
+        $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada');
 
-        $chat = $this->journal->chatOf('Ada', 'Owner');
+        $chat = $this->journal->sharedInboxOf('Ada', 'Owner');
 
-        $this->assertSame($this->journal->chatOf('Owner', 'Ada')->id, $chat->id);
+        $this->assertSame($this->journal->sharedInboxOf('Owner', 'Ada')->id, $chat->id);
         $this->assertSame(2, InboxMember::query()->where('inbox_id', $chat->id)->count());
     }
 
@@ -34,29 +34,29 @@ final class JournalInboxesTest extends TestCase
         $this->journal->owner();
         $inboxes = Inbox::query()->count();
 
-        $this->assertThrows(fn () => $this->journal->chat('Owner', 'Adda'), FixtureRefused::class);
+        $this->assertThrows(fn () => $this->journal->sharedInbox('Owner', 'Adda'), FixtureRefused::class);
 
         $this->assertSame($inboxes, Inbox::query()->count());
     }
 
     public function test_a_chat_with_oneself_or_a_second_time_is_refused(): void
     {
-        $this->journal->owner()->user('Sam')->chat('Owner', 'Sam');
+        $this->journal->owner()->user('Sam')->sharedInbox('Owner', 'Sam');
 
         $this->assertThrows(
-            fn () => $this->journal->chat('Sam', 'Owner'),
+            fn () => $this->journal->sharedInbox('Sam', 'Owner'),
             fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::OccupiedAlias,
         );
         $this->assertThrows(
-            fn () => $this->journal->chat('Sam', 'Sam'),
-            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::SelfChat,
+            fn () => $this->journal->sharedInbox('Sam', 'Sam'),
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::SelfShare,
         );
     }
 
     public function test_posts_take_the_next_numbers_of_the_inbox(): void
     {
-        $this->journal->owner()->user('Sam')->chat('Owner', 'Sam');
-        $chat = $this->journal->chatOf('Owner', 'Sam');
+        $this->journal->owner()->user('Sam')->sharedInbox('Owner', 'Sam');
+        $chat = $this->journal->sharedInboxOf('Owner', 'Sam');
 
         $first = $this->journal->post('Owner', $chat, 'Hello');
         $second = $this->journal->post('Sam', $chat, 'Hi');

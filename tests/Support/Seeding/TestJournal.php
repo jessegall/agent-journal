@@ -62,7 +62,7 @@ final class TestJournal
     /**
      * @var array<string, Inbox>
      */
-    private array $chats = [];
+    private array $sharedInboxes = [];
 
     /**
      * @var array<string, User>
@@ -288,24 +288,24 @@ final class TestJournal
     }
 
     /**
-     * The pair chat of the two users or agents of these names, both attached to it.
+     * An inbox the two users or agents of these names share, both attached to it.
      */
-    public function chat(string $first, string $second): self
+    public function sharedInbox(string $first, string $second): self
     {
         $one = $this->actorCalled($first);
         $other = $this->actorCalled($second);
 
         if ($one->isSameAs($other)) {
-            throw FixtureRefused::selfChat($first);
+            throw FixtureRefused::selfShare($first);
         }
 
         $key = FixtureInboxes::pairKey($one, $other);
 
-        if (array_key_exists($key, $this->chats)) {
-            throw FixtureRefused::occupiedAlias("{$first} and {$second}", 'chat');
+        if (array_key_exists($key, $this->sharedInboxes)) {
+            throw FixtureRefused::occupiedAlias("{$first} and {$second}", 'shared inbox');
         }
 
-        $this->chats[$key] = $this->inboxes->pairChat($one, $other);
+        $this->sharedInboxes[$key] = $this->inboxes->shared($one, $other);
 
         return $this;
     }
@@ -579,11 +579,12 @@ final class TestJournal
         return $this->inboxes;
     }
 
-    public function chatOf(string $first, string $second): Inbox
+    public function sharedInboxOf(string $first, string $second): Inbox
     {
         $key = FixtureInboxes::pairKey($this->actorCalled($first), $this->actorCalled($second));
 
-        return $this->chats[$key] ?? throw FixtureRefused::missingAlias('chat', "{$first} and {$second}", self::OWNER);
+        return $this->sharedInboxes[$key]
+            ?? throw FixtureRefused::missingAlias('shared inbox', "{$first} and {$second}", self::OWNER);
     }
 
     /**

@@ -25,10 +25,10 @@ use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 
 /**

@@ -22,6 +22,7 @@ use App\Support\IsolatedListener;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -170,7 +171,7 @@ final class SendMessageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+        $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->journal->ownerUser()),
             ActorIdentity::of($agent),
         )->id;
@@ -211,7 +212,7 @@ final class SendMessageTest extends TestCase
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->chatInboxId = $this->journal->inboxes()->pairChat(
+        $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->journal->ownerUser()),
             ActorIdentity::of($agent),
         )->id;
@@ -234,7 +235,7 @@ final class SendMessageTest extends TestCase
             ->startSession('Chat builder', 'Chat builder')
             ->sessionCalled('Chat builder');
 
-        $chatInboxId = $this->journal->inboxes()->pairChat(
+        $chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($owner),
             ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->id;
@@ -355,7 +356,7 @@ final class SendMessageTest extends TestCase
 
     private function pairInboxId(): string
     {
-        return $this->journal->inboxes()->pairChat(
+        return $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorIdentity::of($this->journal->ownerUser()),
             ActorIdentity::of($this->journal->agentCalled('Builder')),
         )->id;

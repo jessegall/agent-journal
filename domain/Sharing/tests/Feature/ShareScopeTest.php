@@ -13,10 +13,10 @@ use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareScope;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Fixtures\Domains\Binders\BinderShareProvider;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

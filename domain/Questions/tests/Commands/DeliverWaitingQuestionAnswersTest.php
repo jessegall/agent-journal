@@ -30,7 +30,7 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner');
     }
 
     public function test_the_waiting_notices_go_to_the_running_session_and_are_counted(): void
@@ -65,7 +65,7 @@ final class DeliverWaitingQuestionAnswersTest extends TestCase
     private function waitingNotice(string $text): QuestionAnswerNotice
     {
         $question = $this->journal->fixtures(QuestionFixtures::class)
-            ->question($text, $this->journal->chatOf('Owner', 'Planner'), 'Planner', 'Owner', $text)
+            ->question($text, $this->journal->sharedInboxOf('Owner', 'Planner'), 'Planner', 'Owner', $text)
             ->questionCalled($text);
 
         return QuestionAnswerNotice::create($question, $this->journal->actorCalled('Planner'));

@@ -20,10 +20,10 @@ use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\RulesDomain;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
-use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -60,7 +60,12 @@ final class SessionContextTest extends TestCase
     {
         parent::setUp();
 
-        $this->rule = HoldingRules::create(self::RULE_TEXT);
+        $this->rule = $this->journal->user('Proposer')->user('Approver')->fixtures(RuleFixtures::class)->holdingRule(
+            'Session rule',
+            self::RULE_TEXT,
+            'Proposer',
+            'Approver',
+        )->ruleCalled('Session rule');
         Memory::create(TestActors::agentIdentity(1), self::MEMORY_TEXT, 3);
     }
 

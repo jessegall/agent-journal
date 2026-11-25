@@ -25,7 +25,6 @@ use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\AnswerStates;
@@ -187,9 +186,13 @@ final class TransparentFramesTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        $pushed = fn (): AgentState => new InMemoryTaskState(42, 1, new InMemoryTasks([42 => TaskStatus::Started]));
+        $pushed = fn (): AgentState => new InMemoryTaskState(42, 1, new InMemoryTasks([42]));
 
-        return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.work' => $pushed]), new StackTarget('agent-1', 'session-1'));
+        return new AgentStack(
+            array_values($frames),
+            new InMemoryStateFactory(['tasks.work' => $pushed]),
+            new StackTarget('agent-1', 'session-1'),
+        );
     }
 
     private function ready(): Frame
@@ -214,7 +217,7 @@ final class TransparentFramesTest extends TestCase
 
     private function task(bool $hasFinished = false): Frame
     {
-        $tasks = new InMemoryTasks([41 => $hasFinished ? TaskStatus::Finished : TaskStatus::Started]);
+        $tasks = new InMemoryTasks($hasFinished ? [] : [41]);
 
         return $this->frame('task', 'tasks.work', '41', new InMemoryTaskState(41, 3, $tasks));
     }

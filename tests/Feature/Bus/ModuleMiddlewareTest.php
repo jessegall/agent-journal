@@ -37,6 +37,7 @@ use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\RulesDomain;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -59,7 +60,6 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 
 /**
@@ -202,7 +202,12 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $this->installCommandModules();
         $this->journal->actAsUserId(TestIds::of(1));
-        $settled = HoldingRules::create('Already active.');
+        $settled = $this->journal->user('Proposer')->user('Approver')->fixtures(RuleFixtures::class)->holdingRule(
+            'Settled rule',
+            'Already active.',
+            'Proposer',
+            'Approver',
+        )->ruleCalled('Settled rule');
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($settled->id));

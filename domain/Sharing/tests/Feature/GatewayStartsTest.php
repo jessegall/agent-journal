@@ -10,10 +10,10 @@ use Domain\Sharing\Enums\GatewayAddressCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Domain\Sharing\Support\Gateways\GatewayChildren;
 use Domain\Sharing\Support\Gateways\GatewayStarts;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Process\Factory as Processes;
 use Illuminate\Process\FakeInvokedProcess;
-use Tests\Support\Sharing\FakeShareGateway;
 
 /**
  * The one start every gateway opens through: a confirmed address keeps the program for the run under its endpoint

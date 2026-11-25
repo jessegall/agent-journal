@@ -12,9 +12,9 @@ use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareExpiry;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 
 /**

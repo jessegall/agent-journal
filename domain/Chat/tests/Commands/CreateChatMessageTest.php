@@ -9,6 +9,7 @@ use Domain\Chat\Commands\CreateChatMessage\CreateChatMessageCommand;
 use Domain\Chat\Enums\ChatMessageType;
 use Domain\Chat\Exceptions\ChatSourceRefused;
 use Domain\Chat\Models\ChatMessage;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -31,8 +32,9 @@ final class CreateChatMessageTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
-        $this->chat = $this->journal->chatOf('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner');
+        $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
+        $this->chat = $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner');
     }
 
     public function test_an_authored_record_shows_in_the_chat_as_a_message_of_its_type(): void
@@ -40,7 +42,12 @@ final class CreateChatMessageTest extends TestCase
         $source = $this->journal->post('Planner', $this->chat, 'The build is green.');
 
         $chatMessageId = $this->journal->run(
-            new CreateChatMessageCommand($this->chat->id, $source->getMorphClass(), $source->id, ChatMessageType::Message),
+            new CreateChatMessageCommand(
+                $this->chat->id,
+                $source->getMorphClass(),
+                $source->id,
+                ChatMessageType::Message,
+            ),
         );
 
         $chatMessage = ChatMessage::query()->withoutGlobalScopes()->findOrFail($chatMessageId);
@@ -66,13 +73,20 @@ final class CreateChatMessageTest extends TestCase
         $before = ChatMessage::query()->withoutGlobalScopes()->count();
 
         $this->assertThrows(
-            fn () => $this->journal->run(new CreateChatMessageCommand($this->chat->id, 'nowhere.thing', 'x', ChatMessageType::Event)),
+            fn () => $this->journal->run(
+                new CreateChatMessageCommand($this->chat->id, 'nowhere.thing', 'x', ChatMessageType::Event),
+            ),
             ChatSourceRefused::class,
         );
 
         $this->assertThrows(
             fn () => $this->journal->run(
-                new CreateChatMessageCommand($this->chat->id, $this->chat->getMorphClass(), $this->chat->id, ChatMessageType::Event),
+                new CreateChatMessageCommand(
+                    $this->chat->id,
+                    $this->chat->getMorphClass(),
+                    $this->chat->id,
+                    ChatMessageType::Event,
+                ),
             ),
             ChatSourceRefused::class,
         );

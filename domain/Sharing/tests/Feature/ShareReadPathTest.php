@@ -11,9 +11,9 @@ use Domain\Sharing\Exceptions\ShareReadRefused;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\ShareReadPath;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

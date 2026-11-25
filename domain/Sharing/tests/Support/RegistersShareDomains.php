@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support\Sharing;
+namespace Domain\Sharing\Tests\Support;
 
 use App\Support\Domain;
 use App\Support\DomainEntry;

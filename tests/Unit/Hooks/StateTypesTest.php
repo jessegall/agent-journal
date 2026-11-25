@@ -21,7 +21,6 @@ use App\Support\States\Contracts\StopConditionGate;
 use App\Support\States\ReadyState;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -156,7 +155,7 @@ final class StateTypesTest extends TestCase
 
     public function test_a_pushed_frame_builds_its_state_from_the_values_its_reference_carries(): void
     {
-        $this->app->instance(InMemoryTasks::class, new InMemoryTasks([42 => TaskStatus::Started]));
+        $this->app->instance(InMemoryTasks::class, new InMemoryTasks([42]));
         $this->app->instance(ServerClock::class, new FakeServerClock(CarbonImmutable::parse('2026-11-24 12:00:00')));
         $events = new Dispatcher();
         $events->listen(

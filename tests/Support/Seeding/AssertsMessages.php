@@ -10,6 +10,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
+use App\Resolvers\RunNotificationTarget;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
 use App\Support\NotificationScopes;
@@ -84,17 +85,17 @@ trait AssertsMessages
     }
 
     /**
-     * Notifications of the questions numbered first to last delivered to the recipient, each kept as "Question <n>".
+     * Notifications of the runs numbered first to last delivered to the recipient, each kept as "Run <n>".
      */
-    public function notifyQuestions(string $recipient, int $first, int $last): self
+    public function notifyRunOutcomes(string $recipient, int $first, int $last): self
     {
         for ($number = $first; $number <= $last; $number++) {
             $this->notification(
-                "Question {$number}",
+                "Run {$number}",
                 $recipient,
-                "question:{$number}",
-                NotificationSourceType::Question,
-                new NotificationTarget('chat.question', (string) $number),
+                "run:{$number}",
+                NotificationSourceType::RunOutcome,
+                new NotificationTarget(RunNotificationTarget::KEY, (string) $number),
             );
         }
 

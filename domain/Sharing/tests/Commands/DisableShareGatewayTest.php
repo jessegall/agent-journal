@@ -27,13 +27,13 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 
 /**

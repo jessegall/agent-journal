@@ -28,12 +28,12 @@ final class DeliverClosingWordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner');
     }
 
     public function test_the_words_go_once_to_the_inbox_of_the_last_read_message(): void
     {
-        $asked = $this->journal->post('Owner', $this->journal->chatOf('Owner', 'Planner'), 'How far are you?');
+        $asked = $this->journal->post('Owner', $this->journal->sharedInboxOf('Owner', 'Planner'), 'How far are you?');
         $this->journal->actAs('Planner')->run(new ReadMessageCommand($asked->id));
         $this->turn()->offerClosingWords('Half way.');
 

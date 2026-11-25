@@ -51,9 +51,12 @@ final class FixtureRefused extends LogicException
         );
     }
 
-    public static function selfChat(string $name): self
+    public static function selfShare(string $name): self
     {
-        return new self(FixtureRefusalType::SelfChat, "{$name} cannot chat with itself: name two different actors.");
+        return new self(
+            FixtureRefusalType::SelfShare,
+            "{$name} cannot share an inbox with itself: name two different actors.",
+        );
     }
 
     public static function occupiedAlias(string $alias, string $existingType): self

@@ -19,14 +19,14 @@ use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
+use Domain\Sharing\Tests\Support\UnconfiguredShareGateway;
+use Domain\Sharing\Tests\Support\UsesSecretsFolder;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\UnconfiguredShareGateway;
-use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\TestActors;
 
 /**

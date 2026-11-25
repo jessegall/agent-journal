@@ -13,6 +13,7 @@ use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\RulesDomain;
+use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Domain\Sequences\Commands\StartSequence\StartSequenceCommand;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\SequencesDomain;
@@ -23,7 +24,6 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
-use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -70,8 +70,10 @@ final class HookCompactionTest extends TestCase
 
         $this->remember(self::MEMORY_TEXT, 2);
         $this->remember(self::QUESTION_TEXT, 1);
-        HoldingRules::create(self::RULE_TEXT);
-        HoldingRules::create('An old rule.')->remove();
+        $rules = $this->journal->user('Proposer')->user('Approver')->fixtures(RuleFixtures::class)
+            ->holdingRule('Holding rule', self::RULE_TEXT, 'Proposer', 'Approver')
+            ->holdingRule('Old rule', 'An old rule.', 'Proposer', 'Approver');
+        $rules->ruleCalled('Old rule')->remove();
     }
 
     public function test_the_reminders_come_from_the_current_records_and_the_current_step(): void

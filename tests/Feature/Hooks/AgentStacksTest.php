@@ -35,7 +35,6 @@ use App\Support\Storage\StoredFrames;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Plans\PlansDomain;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
@@ -93,7 +92,7 @@ final class AgentStacksTest extends TestCase
         );
         $this->app->instance(
             InMemoryTasks::class,
-            new InMemoryTasks([42 => TaskStatus::Started, 43 => TaskStatus::Started]),
+            new InMemoryTasks([42, 43]),
         );
         Event::listen(
             StateTypesRequested::class,

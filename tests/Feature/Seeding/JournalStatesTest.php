@@ -14,7 +14,6 @@ use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
-use Domain\Tasks\Enums\TaskStatus;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Domains\Counting\Events\SubjectSeen;
@@ -62,7 +61,7 @@ final class JournalStatesTest extends TestCase
         $this->ticks = new TickScript();
         $this->app->instance(TickScript::class, $this->ticks);
         $this->app->instance(ScriptedOccurrenceGuard::class, new ScriptedOccurrenceGuard());
-        $this->app->instance(InMemoryTasks::class, new InMemoryTasks([42 => TaskStatus::Started]));
+        $this->app->instance(InMemoryTasks::class, new InMemoryTasks([42]));
         $this->journal->owner()->agent('Writer');
     }
 

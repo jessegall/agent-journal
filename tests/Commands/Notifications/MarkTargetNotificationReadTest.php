@@ -6,6 +6,7 @@ namespace Tests\Commands\Notifications;
 
 use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use App\Exceptions\NotificationUnavailable;
+use App\Resolvers\RunNotificationTarget;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -19,13 +20,13 @@ final class MarkTargetNotificationReadTest extends TestCase
 
     public function test_the_notification_of_the_target_is_read_and_a_target_without_one_is_refused(): void
     {
-        $this->journal->owner()->notifyQuestions('Owner', 1, 2);
+        $this->journal->owner()->notifyRunOutcomes('Owner', 1, 2);
 
-        $this->journal->run(new MarkTargetNotificationReadCommand('chat.question', '2'));
+        $this->journal->run(new MarkTargetNotificationReadCommand(RunNotificationTarget::KEY, '2'));
 
-        $this->journal->assertNotificationUnread('Question 1')->assertNotificationRead('Question 2')->assertRefused(
+        $this->journal->assertNotificationUnread('Run 1')->assertNotificationRead('Run 2')->assertRefused(
             NotificationUnavailable::class,
-            fn () => $this->journal->run(new MarkTargetNotificationReadCommand('chat.question', '9')),
+            fn () => $this->journal->run(new MarkTargetNotificationReadCommand(RunNotificationTarget::KEY, '9')),
         );
     }
 }

@@ -19,15 +19,18 @@ final class ReadUnreadMessagesTest extends TestCase
 
     public function test_the_unread_messages_are_read_once(): void
     {
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
-        $chat = $this->journal->chatOf('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner');
+        $chat = $this->journal->sharedInboxOf('Owner', 'Planner');
         $this->journal->post('Owner', $chat, 'Start the build.');
         $this->journal->post('Owner', $chat, 'Then the tests.');
 
         $first = $this->journal->actAs('Planner')->run(new ReadUnreadMessagesCommand());
         $second = $this->journal->run(new ReadUnreadMessagesCommand());
 
-        $this->assertSame(['Start the build.', 'Then the tests.'], array_map(fn ($shown) => $shown->body, $first->messages));
+        $this->assertSame(
+            ['Start the build.', 'Then the tests.'],
+            array_map(fn ($shown) => $shown->body, $first->messages),
+        );
         $this->assertSame([], $second->messages);
     }
 }

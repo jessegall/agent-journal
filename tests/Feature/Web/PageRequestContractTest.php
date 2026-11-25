@@ -18,6 +18,7 @@ use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\PairChats;
+use Domain\Questions\Tests\Fixtures\QuestionFixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Finder;
 use Tests\Support\Agents\HostContract;
@@ -124,7 +125,15 @@ final class PageRequestContractTest extends TestCase
             AccountLabel::from('Work'),
             '/journal/accounts/recorded',
         );
-        $question = $this->journal->inboxes()->openQuestionTo(ActorIdentity::of($owner), 'Which plan first?');
+        $question = $this->journal->fixtures(QuestionFixtures::class)
+            ->question(
+                'Plan order',
+                $this->journal->inboxes()->personal(ActorIdentity::of($owner)),
+                'Owner',
+                'Owner',
+                'Which plan first?',
+            )
+            ->questionCalled('Plan order');
         $attempt = SignInAttempt::create(
             ActorIdentity::of($owner),
             $account,

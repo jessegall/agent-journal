@@ -7,6 +7,7 @@ namespace Domain\Chat\Tests\Commands;
 use App\Models\Messages\Message;
 use Domain\Chat\Commands\React\ReactCommand;
 use Domain\Chat\Exceptions\ReactionRefused;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -26,8 +27,13 @@ final class ReactTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
-        $this->message = $this->journal->post('Planner', $this->journal->chatOf('Owner', 'Planner'), 'The build is green.');
+        $this->journal->owner()->agent('Planner');
+        $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
+        $this->message = $this->journal->post(
+            'Planner',
+            $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner'),
+            'The build is green.',
+        );
     }
 
     public function test_a_reaction_is_one_emoji_sent_as_a_reply_to_the_message(): void

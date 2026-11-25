@@ -21,13 +21,13 @@ use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -128,7 +128,10 @@ final class RevokeShareTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of($this->journal->ownerUser()), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::of($this->journal->ownerUser()),
+            new OwnerAuthority('test'),
+        );
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);

@@ -86,7 +86,7 @@ trait MessagingFixtures
      */
     protected function pairInboxIdOf(AgentSession $session): string
     {
-        return $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
+        return $this->journal->inboxes()->shared(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
     }
 
     protected function actorOf(AgentSession $session): ActorIdentity

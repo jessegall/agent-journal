@@ -26,12 +26,12 @@ use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareSummary;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

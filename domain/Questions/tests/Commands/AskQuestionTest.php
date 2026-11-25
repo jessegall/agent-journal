@@ -30,8 +30,8 @@ final class AskQuestionTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->agent('Stranger')->chat('Owner', 'Planner')->actAs('Planner');
-        $this->chatId = $this->journal->chatOf('Owner', 'Planner')->id;
+        $this->journal->owner()->agent('Planner')->agent('Stranger')->sharedInbox('Owner', 'Planner')->actAs('Planner');
+        $this->chatId = $this->journal->sharedInboxOf('Owner', 'Planner')->id;
     }
 
     public function test_an_open_question_keeps_its_text_asker_and_target(): void

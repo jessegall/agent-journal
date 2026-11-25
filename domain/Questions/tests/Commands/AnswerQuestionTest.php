@@ -29,7 +29,7 @@ final class AnswerQuestionTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
+        $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner');
     }
 
     public function test_the_target_answers_and_the_answer_is_kept_trimmed_with_its_time(): void
@@ -107,7 +107,7 @@ final class AnswerQuestionTest extends TestCase
         return $this->journal->fixtures(QuestionFixtures::class)
             ->question(
                 'Database',
-                $this->journal->chatOf('Owner', 'Planner'),
+                $this->journal->sharedInboxOf('Owner', 'Planner'),
                 'Planner',
                 'Owner',
                 type: $type,

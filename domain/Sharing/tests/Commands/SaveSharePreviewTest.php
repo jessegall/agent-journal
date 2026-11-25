@@ -30,11 +30,11 @@ use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSelectedTarget;
+use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

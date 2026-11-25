@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use Domain\Tasks\Enums\TaskStatus;
-
 /**
- * The tasks a hook test pretends exist, each number with its current state, which a test changes in place.
+ * The started tasks a hook test pretends exist, by number; a test finishes one in place.
  */
 final class InMemoryTasks
 {
     /**
-     * @param  array<int, TaskStatus>  $tasks
+     * @param  list<int>  $started
      */
-    public function __construct(public array $tasks = []) {}
+    public function __construct(private array $started = []) {}
+
+    public function finish(int $number): void
+    {
+        $this->started = array_values(array_diff($this->started, [$number]));
+    }
 
     public function isStarted(int $number): bool
     {
-        return ($this->tasks[$number] ?? null) === TaskStatus::Started;
+        return in_array($number, $this->started, true);
     }
 }

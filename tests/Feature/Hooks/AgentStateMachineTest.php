@@ -19,7 +19,6 @@ use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
 use Closure;
-use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
@@ -71,7 +70,7 @@ final class AgentStateMachineTest extends TestCase
             $this->stopReply(),
         );
         $versionAfterFirst = AgentStackRow::query()->sole()->version;
-        $this->tasks->tasks[42] = TaskStatus::Finished;
+        $this->tasks->finish(42);
 
         $retry = $this->machine()->answer(
             $this->stop(),
@@ -98,7 +97,7 @@ final class AgentStateMachineTest extends TestCase
     public function test_a_failure_before_the_commit_keeps_nothing(): void
     {
         $this->journal->pushState($this->target, $this->task(42));
-        $this->tasks->tasks[42] = TaskStatus::Finished;
+        $this->tasks->finish(42);
 
         try {
             $this->machine()->answer(

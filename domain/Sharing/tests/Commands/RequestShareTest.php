@@ -30,12 +30,12 @@ use Domain\Sharing\Support\ProposalStatusResolver;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareProposalStatus;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 

@@ -30,11 +30,11 @@ use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ProposalStatusResolver;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareProposalStatus;
+use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**

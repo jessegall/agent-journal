@@ -32,14 +32,19 @@ final class UnpinMessageTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner()->agent('Planner')->chat('Owner', 'Planner');
-        $this->chatId = $this->journal->chatOf('Owner', 'Planner')->id;
-        $this->message = $this->journal->post('Planner', $this->journal->chatOf('Owner', 'Planner'), 'Keep this.');
+        $this->journal->owner()->agent('Planner');
+        $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
+        $this->chatId = $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner')->id;
+        $this->message = $this->journal->post(
+            'Planner',
+            $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner'),
+            'Keep this.',
+        );
     }
 
     public function test_a_member_takes_away_their_own_pin_and_leaves_the_others(): void
     {
-        $chat = $this->journal->chatOf('Owner', 'Planner');
+        $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner');
 
         $pins = $this->journal->fixtures(ChatFixtures::class)
             ->pin($chat, $this->message, 'Owner')
