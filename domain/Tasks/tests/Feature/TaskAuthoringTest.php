@@ -11,6 +11,7 @@ use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -33,13 +34,25 @@ final class TaskAuthoringTest extends TestCase
         'agent_sessions',
         'session_tokens',
         'agent_stacks',
+        'users',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_run_counts_up_and_records_its_note_and_reasons(): void
     {
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
 
         $task->start(ActorIdentity::system());
         $this->assertSame([
@@ -79,5 +92,10 @@ final class TaskAuthoringTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

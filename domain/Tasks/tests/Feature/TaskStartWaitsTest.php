@@ -14,8 +14,8 @@ use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
 use Domain\Tasks\Exceptions\TaskWaitsUnmet;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -25,7 +25,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class TaskStartWaitsTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -41,6 +40,9 @@ final class TaskStartWaitsTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private Task $prerequisite;
@@ -51,9 +53,11 @@ final class TaskStartWaitsTest extends TestCase
     {
         parent::setUp();
 
-        $this->prerequisite = Task::factory()->create(['title' => 'Prepare records']);
-        $this->dependent = Task::factory()->create(['title' => 'Publish records']);
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+
+        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 
     public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void
@@ -115,5 +119,10 @@ final class TaskStartWaitsTest extends TestCase
     private function runCommand(object $command): mixed
     {
         return $this->journal->run($command);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

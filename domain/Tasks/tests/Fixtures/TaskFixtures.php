@@ -9,6 +9,7 @@ use App\Contracts\Processes\RunClaims;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
+use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Models\TaskRun;
@@ -45,6 +46,24 @@ final class TaskFixtures
     ): self {
         $this->aliases->claim($name);
         $task = Task::create($name, $brief, $creator ?? $this->journal->ownerUser(), $environmentIds);
+        $this->aliases->remember($name, $task);
+
+        return $this;
+    }
+
+    /**
+     * A task the owner made that already stands in this state, with no run behind it, for reads of every state.
+     */
+    public function taskIn(string $name, TaskStatus $status): self
+    {
+        $this->aliases->claim($name);
+        $owner = $this->journal->ownerUser();
+        $task = Task::factory()->create([
+            'title' => $name,
+            'status' => $status,
+            'creator_type' => $owner->actorType(),
+            'creator_id' => $owner->actorId(),
+        ]);
         $this->aliases->remember($name, $task);
 
         return $this;

@@ -23,6 +23,7 @@ use Domain\Tasks\Listeners\PushTaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Events\Dispatcher;
 use RuntimeException;
 use Tests\Fixtures\Agents\TestSelections;
@@ -59,6 +60,9 @@ final class TaskStartFactsTest extends TestCase
         'claim_authorizations',
         'command_receipts',
         'settings_records',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     /**
@@ -75,6 +79,8 @@ final class TaskStartFactsTest extends TestCase
     {
         parent::setUp();
 
+        $this->journal->owner();
+
         $agent = Agent::create('Worker', 'main-agent', $this->localProject());
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -83,7 +89,7 @@ final class TaskStartFactsTest extends TestCase
 
     public function test_the_start_and_its_repeat_each_name_the_actor_that_started_the_task(): void
     {
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $started = $this->heard(TaskStarted::class);
 
         $this->start($task);
@@ -98,7 +104,7 @@ final class TaskStartFactsTest extends TestCase
     public function test_the_plan_holding_the_task_at_its_start_is_the_one_told_after_the_commit(): void
     {
         $plan = Plan::factory()->create();
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $progress = $this->heard(PlanProgressChanged::class);
 
@@ -111,7 +117,7 @@ final class TaskStartFactsTest extends TestCase
     {
         $progress = $this->heard(PlanProgressChanged::class);
 
-        $this->start(Task::factory()->create());
+        $this->start($this->tasks()->task('Loose')->taskCalled('Loose'));
 
         $this->assertSame([], $progress());
     }
@@ -119,7 +125,7 @@ final class TaskStartFactsTest extends TestCase
     public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
     {
         $plan = Plan::factory()->create();
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $this->switchDomainOff('plans');
         $progress = $this->heard(PlanProgressChanged::class);
@@ -132,7 +138,7 @@ final class TaskStartFactsTest extends TestCase
 
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void
     {
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             TaskStarted::class => [
@@ -178,5 +184,10 @@ final class TaskStartFactsTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -21,13 +21,13 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskFilters;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -39,7 +39,6 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class TaskDetailsResolverTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const string BRIEF = 'Held by one, run by another.';
@@ -59,9 +58,17 @@ final class TaskDetailsResolverTest extends TestCase
         'claim_authorizations',
         'inboxes',
         'inbox_members',
+        'number_groups',
     ];
 
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_page_of_20_cards_reads_its_runs_in_one_query(): void
     {
         $runner = $this->start('Runner');
@@ -140,8 +147,13 @@ final class TaskDetailsResolverTest extends TestCase
         $this->app->forgetScopedInstances();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser($this->owner->id),
+            ActorContext::forUser($this->journal->ownerUser()->id),
             new OwnerAuthority('test'),
         );
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

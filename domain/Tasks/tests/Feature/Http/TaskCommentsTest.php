@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\RecordIdentity;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
@@ -30,6 +29,9 @@ final class TaskCommentsTest extends TestCase
         'tasks',
         'agents',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private User $owner;
@@ -38,13 +40,12 @@ final class TaskCommentsTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
     }
 
     public function test_a_comment_on_a_task_is_read_back_on_its_page(): void
     {
-        $task = Task::factory()->create();
+        $task = $this->tasks()->task('task')->taskCalled('task');
         $this->journal->actAsUserId($this->owner->id);
 
         $this->app->make(CommandBus::class)->run(new PostCommentCommand(
@@ -68,8 +69,8 @@ final class TaskCommentsTest extends TestCase
 
     public function test_a_caller_with_no_access_writes_nothing_and_sees_nothing(): void
     {
-        $task = Task::factory()->create();
-        $this->app->make(CurrentActorSetter::class)->clear();
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->asGuest();
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new PostCommentCommand(
@@ -81,5 +82,10 @@ final class TaskCommentsTest extends TestCase
 
         $this->get("/tasks/{$task->number}?tab=comments")->assertRedirect('/login');
         $this->assertDatabaseCount('comments', 0);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -12,9 +12,9 @@ use Domain\Tasks\Data\TaskStreamEntryData;
 use Domain\Tasks\Enums\TaskStreamEntryType;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskStream;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Spatie\LaravelData\Optional;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -23,7 +23,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class TaskStreamTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const string LOG_TEXT = 'Read <b>the</b> schema.';
@@ -40,12 +39,22 @@ final class TaskStreamTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_changes_and_log_lines_come_in_one_stream_with_their_runs_and_page_to_the_start(): void
     {
-        $task = Task::factory()->create();
-        $this->journal->actAsUserId($this->owner->id);
+        $task = $this->tasks()->task('task')->taskCalled('task');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTaskCommand($task->id));
         $bus->run(new LogTaskRunCommand($task->id, 1, self::LOG_TEXT));
@@ -82,5 +91,10 @@ final class TaskStreamTest extends TestCase
         );
 
         $this->assertInstanceOf(Optional::class, $page->olderBefore);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -7,7 +7,6 @@ namespace Domain\Tasks\Tests\Feature\Http;
 use App\Contracts\Work\AgentFocuses;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
@@ -15,6 +14,7 @@ use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Models\TaskWait;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
@@ -42,6 +42,9 @@ final class TaskPageTest extends TestCase
         'assignments',
         'agents',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string READER = 'page.data.root.children.1.children.1.children';
@@ -54,16 +57,12 @@ final class TaskPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
     }
 
     public function test_a_task_opens_by_number_with_its_facts_and_brief(): void
     {
-        $task = Task::factory()->create([
-            'title' => 'Prepare records',
-            'brief' => "First part.\n\nSecond part.",
-        ]);
+        $task = $this->tasks()->task('Prepare records', "First part.\n\nSecond part.")->taskCalled('Prepare records');
         $this->journal->actAsUserId($this->owner->id);
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -105,8 +104,8 @@ final class TaskPageTest extends TestCase
 
     public function test_the_facts_name_the_tasks_it_waits_for_and_holds_up_as_links(): void
     {
-        $first = Task::factory()->create(['title' => 'Prepare records']);
-        $second = Task::factory()->create(['title' => 'Publish records']);
+        $first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
         $this->journal->actAsUserId($this->owner->id);
         $this->journal->run(new AddTaskWaitCommand($second->id, $first->id));
 
@@ -125,8 +124,8 @@ final class TaskPageTest extends TestCase
 
     public function test_the_waits_tab_lists_the_prerequisite_and_the_holder_both_ways(): void
     {
-        $first = Task::factory()->create(['title' => 'Prepare records']);
-        $second = Task::factory()->create(['title' => 'Publish records']);
+        $first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
         $this->journal->actAsUserId($this->owner->id);
         $this->journal->run(new AddTaskWaitCommand($second->id, $first->id));
 
@@ -146,8 +145,8 @@ final class TaskPageTest extends TestCase
 
     public function test_an_editor_adds_a_prerequisite_from_the_page_and_a_cycle_or_a_missing_reason_is_refused(): void
     {
-        $first = Task::factory()->create(['title' => 'Prepare records']);
-        $second = Task::factory()->create(['title' => 'Publish records']);
+        $first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
+        $second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
 
         $offered = $this->actingAs($this->owner)->get("/tasks/{$second->number}?section=waits")->assertOk();
 
@@ -190,7 +189,7 @@ final class TaskPageTest extends TestCase
 
     public function test_an_empty_brief_stays_empty_and_an_unknown_number_is_not_found(): void
     {
-        $task = Task::factory()->create(['brief' => '']);
+        $task = $this->tasks()->task('Empty brief', '')->taskCalled('Empty brief');
 
         $emptyPage = $this->actingAs($this->owner)->get("/tasks/{$task->number}")->assertOk();
         $emptyPage->assertInertia(fn (AssertableInertia $page) => $page->where(self::READER.'.2.text', ''));
@@ -217,5 +216,10 @@ final class TaskPageTest extends TestCase
         $this->app->make(AgentFocuses::class)->focus(ActorIdentity::ofClass(Agent::class, $agent->id), $task);
 
         return $task;
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -23,6 +23,7 @@ use App\Values\SourcePosition;
 use App\Values\WorkAllowance;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskSearchProvider;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;
@@ -43,6 +44,13 @@ final class TaskSearchProviderTest extends TestCase
     private const string ID_PREFIX = '01arz3ndektsv4rrffq69g';
 
     private const string AGENT_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_match_only_in_the_second_block_comes_after_a_scanning_call(): void
     {
@@ -223,5 +231,10 @@ final class TaskSearchProviderTest extends TestCase
                 return AllowedNames::only($this->ids);
             }
         };
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

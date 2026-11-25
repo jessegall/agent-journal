@@ -17,6 +17,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
 use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -33,9 +34,13 @@ final class TaskAssignerTest extends TestCase
 
     private ActorIdentity $reviewer;
 
+    private int $made = 0;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->reviewer = ActorIdentity::ofClass(Agent::class, TestIds::of(8));
@@ -45,7 +50,10 @@ final class TaskAssignerTest extends TestCase
     public function test_task_type_is_the_alias_tasks_are_assigned_under(): void
     {
         $this->assertSame(Task::linkType(), TaskType::linkType());
-        $this->assertSame(TaskType::linkType(), Task::factory()->create()->assignmentIdentity()->type);
+        $this->assertSame(
+            TaskType::linkType(),
+            $this->tasks()->task('Any')->taskCalled('Any')->assignmentIdentity()->type,
+        );
         $this->assertSame([
             TaskStatus::Open,
             TaskStatus::Started,
@@ -141,8 +149,8 @@ final class TaskAssignerTest extends TestCase
     public function test_a_candidate_must_still_be_open(): void
     {
         $assigner = $this->app->make(AutoAssigner::class);
-        $open = Task::factory()->create();
-        $finished = Task::factory()->create(['status' => TaskStatus::Finished]);
+        $open = $this->tasks()->task('open')->taskCalled('open');
+        $finished = $this->tasks()->taskIn('Finished', TaskStatus::Finished)->taskCalled('Finished');
 
         $assigner->requireCandidate($open->assignmentIdentity());
 
@@ -153,7 +161,9 @@ final class TaskAssignerTest extends TestCase
 
     private function task(TaskStatus $state): string
     {
-        return Task::factory()->create(['status' => $state])->id;
+        $name = 'Task '.++$this->made;
+
+        return $this->tasks()->taskIn($name, $state)->taskCalled($name)->id;
     }
 
     private function hold(string $taskId, ActorIdentity $holder): void
@@ -175,5 +185,10 @@ final class TaskAssignerTest extends TestCase
                 return $this->members;
             }
         };
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

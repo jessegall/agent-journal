@@ -15,6 +15,7 @@ use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
@@ -39,11 +40,18 @@ final class TaskCommandsTest extends TestCase
         'agent_stacks',
         'hook_calls',
         'links',
+        'users',
+        'number_groups',
+        'command_receipts',
+        'inboxes',
+        'inbox_members',
     ];
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         Event::fake([
             TaskFinished::class,
@@ -130,6 +138,11 @@ final class TaskCommandsTest extends TestCase
 
     private function task(string $title): Task
     {
-        return Task::factory()->create(['title' => $title]);
+        return $this->tasks()->task($title)->taskCalled($title);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use Tests\Support\TestIds;
 use App\Enums\Search\ScoreTier;
 use App\Enums\Search\SearchSurface;
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
@@ -23,9 +20,11 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Domain\Tasks\Support\TaskSearchAccess;
 use Domain\Tasks\Support\TaskSearchProvider;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskBriefPassage;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 
 /**
  * A phrase only late in a long brief, across a segment edge, is found by the brief tier; its tasks_read action
@@ -42,6 +41,7 @@ final class TaskBriefPassageTest extends TestCase
 
     public function test_a_late_phrase_is_found_and_opens_at_its_passage(): void
     {
+        $this->journal->owner();
         $task = $this->taskWithLatePhrase();
 
         $hit = $this->briefHit();
@@ -67,8 +67,7 @@ final class TaskBriefPassageTest extends TestCase
 
     public function test_the_inspector_opens_on_brief_at_the_passage(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $task = $this->taskWithLatePhrase();
         $passage = (string) $this->briefHit()->location?->id;
 
@@ -80,6 +79,7 @@ final class TaskBriefPassageTest extends TestCase
 
     public function test_an_edited_away_phrase_is_unavailable(): void
     {
+        $this->journal->owner();
         $task = $this->taskWithLatePhrase();
         $passage = TaskBriefPassage::fromId((string) $this->briefHit()->location?->id);
         $edited = ['brief' => 'Nothing left here.', 'revision' => $task->revision + 1];
@@ -96,10 +96,7 @@ final class TaskBriefPassageTest extends TestCase
         $edge = TaskSearchProvider::SEGMENT_CHARACTER_LIMIT - 8;
         $brief = str_repeat('a', $edge).' '.self::PHRASE.' '.str_repeat('b', 3000);
 
-        return Task::factory()->create([
-            'title' => 'Housekeeping',
-            'brief' => $brief,
-        ]);
+        return $this->tasks()->task('Housekeeping', $brief)->taskCalled('Housekeeping');
     }
 
     /**
@@ -132,5 +129,10 @@ final class TaskBriefPassageTest extends TestCase
     private function next(SearchBatch $batch): SourcePosition
     {
         return $batch->outcome->nextPosition() ?? $this->fail('the search ended before it found a hit');
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

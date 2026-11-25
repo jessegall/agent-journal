@@ -11,7 +11,7 @@ use App\Values\OwnerAuthority;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -24,6 +24,13 @@ final class TaskReadsTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_every_named_task_must_exist_or_the_whole_check_fails(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
@@ -31,8 +38,8 @@ final class TaskReadsTest extends TestCase
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
 
-        $first = Task::factory()->create(['title' => 'Write the walk']);
-        $second = Task::factory()->create(['title' => 'Test the walk']);
+        $first = $this->tasks()->task('Write the walk')->taskCalled('Write the walk');
+        $second = $this->tasks()->task('Test the walk')->taskCalled('Test the walk');
 
         $this->app->make(TaskResolver::class)->requireAllVisible([
             $first->id,
@@ -54,9 +61,9 @@ final class TaskReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $done = Task::factory()->create(['title' => 'Write the walk']);
+        $done = $this->tasks()->task('Write the walk')->taskCalled('Write the walk');
         $done->finish('Done.');
-        $open = Task::factory()->create(['title' => 'Test the walk']);
+        $open = $this->tasks()->task('Test the walk')->taskCalled('Test the walk');
 
         $progress = $this->app->make(TaskProgressCounter::class)->progressByGroup(
             [
@@ -86,8 +93,8 @@ final class TaskReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $first = Task::factory()->create(['title' => 'First']);
-        $second = Task::factory()->create(['title' => 'Second']);
+        $first = $this->tasks()->task('First')->taskCalled('First');
+        $second = $this->tasks()->task('Second')->taskCalled('Second');
         $resolver = $this->app->make(TaskResolver::class);
         $connection = $first->getConnection();
         $connection->flushQueryLog();
@@ -115,7 +122,7 @@ final class TaskReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $task = Task::factory()->create(['title' => 'Found']);
+        $task = $this->tasks()->task('Found')->taskCalled('Found');
         $firstMissing = TestIds::of(999999);
 
         $this->expectExceptionObject(TaskMissing::forId($firstMissing));
@@ -128,8 +135,14 @@ final class TaskReadsTest extends TestCase
 
     public function test_nothing_is_counted_or_checked_without_an_actor(): void
     {
+        $this->journal->asGuest();
         $this->expectException(ActorContextMissing::class);
 
         $this->app->make(TaskProgressCounter::class)->progressOf([1]);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

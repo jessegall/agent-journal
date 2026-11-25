@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature\Http;
 
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
@@ -34,6 +34,9 @@ final class TasksPageTest extends TestCase
         'assignments',
         'agents',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string CONTENT = 'page.data.root.children.1.children.0.children.1.children';
@@ -44,13 +47,12 @@ final class TasksPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
     }
 
     public function test_the_tasks_page_lists_tasks_with_their_numbers(): void
     {
-        $task = Task::factory()->create(['title' => 'Write the reader']);
+        $task = $this->tasks()->task('Write the reader')->taskCalled('Write the reader');
 
         $tasksPage = $this->actingAs($this->owner)->get('/tasks')->assertOk();
 
@@ -112,5 +114,10 @@ final class TasksPageTest extends TestCase
         $this->actingAs($this->owner)->get('/tasks')->assertOk();
 
         return $count;
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

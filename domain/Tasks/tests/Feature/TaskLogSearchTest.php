@@ -17,9 +17,9 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
 use Domain\Tasks\Support\Mcp\TaskLogReadResult;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Domain\Tasks\Values\TaskLogLocation;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -28,7 +28,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class TaskLogSearchTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const int PAGE_LIMIT = 10;
@@ -53,7 +52,17 @@ final class TaskLogSearchTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
 
     public function test_a_log_line_opens_at_its_line_and_task_and_log_hits_both_survive(): void
     {
@@ -80,12 +89,12 @@ final class TaskLogSearchTest extends TestCase
         $this->assertSame(self::CRASH_LINE, $read['entry']['text']);
         $this->assertSame([self::FIRST_LINE], array_column($read['before'], 'text'));
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->journal->ownerUser())
             ->get("/tasks/{$task->number}?tab=logs&entry={$log->open->arguments['entry_id']}")
             ->assertOk()
             ->assertSee(self::CRASH_LINE);
 
-        $this->actingAs($this->owner)
+        $this->actingAs($this->journal->ownerUser())
             ->get("/tasks/{$task->number}?tab=logs&entry=01arz3ndektsv4rrffq69g0000")
             ->assertOk()
             ->assertSee('"isSelectedGone":true', false);
@@ -111,8 +120,8 @@ final class TaskLogSearchTest extends TestCase
 
     private function loggedTask(): Task
     {
-        $task = Task::factory()->create(['title' => 'Driver work']);
-        $this->journal->actAsUserId($this->owner->id);
+        $task = $this->tasks()->task('Driver work')->taskCalled('Driver work');
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTaskCommand($task->id));
 
@@ -150,7 +159,7 @@ final class TaskLogSearchTest extends TestCase
 
     private function reader(): SearchReader
     {
-        return new SearchReader(ActorContext::forUser($this->owner->id), SearchSurface::Palette);
+        return new SearchReader(ActorContext::forUser($this->journal->ownerUser()->id), SearchSurface::Palette);
     }
 
     private static function owner(): SearchOwner
@@ -172,5 +181,10 @@ final class TaskLogSearchTest extends TestCase
         }
 
         self::fail("No hit from {$sourceKey}.");
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

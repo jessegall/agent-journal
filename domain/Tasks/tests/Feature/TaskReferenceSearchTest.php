@@ -17,6 +17,7 @@ use App\Values\WorkAllowance;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskReferenceRecognizer;
 use Domain\Tasks\Support\TaskSearchProvider;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Search\MutableReadGrant;
@@ -32,10 +33,17 @@ final class TaskReferenceSearchTest extends TestCase
 
     private const string READER_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->journal->owner();
+    }
+
     public function test_a_task_reference_is_found_by_one_indexed_read(): void
     {
-        Task::factory()->create();
-        $task = Task::factory()->create(['title' => 'Search through everything']);
+        $this->tasks()->task('Unrelated');
+        $task = $this->tasks()->task('Search through everything')->taskCalled('Search through everything');
 
         DB::enableQueryLog();
         $batch = $this->search("  TASK {$task->number} ", self::user());
@@ -58,8 +66,8 @@ final class TaskReferenceSearchTest extends TestCase
 
     public function test_an_invisible_task_and_an_absent_one_give_the_same_answer(): void
     {
-        $task = Task::factory()->create(['title' => 'Hidden']);
-        $other = Task::factory()->create(['title' => 'Visible']);
+        $task = $this->tasks()->task('Hidden')->taskCalled('Hidden');
+        $other = $this->tasks()->task('Visible')->taskCalled('Visible');
         $this->app->instance(ReadGrant::class, new MutableReadGrant([$other->id]));
         $agent = new SearchReader(ActorContext::forAgent(self::READER_ID), SearchSurface::AgentTool);
 
@@ -113,5 +121,10 @@ final class TaskReferenceSearchTest extends TestCase
     private static function user(): SearchReader
     {
         return new SearchReader(ActorContext::forUser(self::READER_ID), SearchSurface::Palette);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

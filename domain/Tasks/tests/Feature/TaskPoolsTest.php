@@ -14,12 +14,12 @@ use App\Support\PoolReference;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
 use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Support\TaskType;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -37,6 +37,8 @@ final class TaskPoolsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->journal->actAsUserId(TestIds::of(1));
@@ -68,7 +70,7 @@ final class TaskPoolsTest extends TestCase
     public function test_the_open_pool_takes_neither_a_target_nor_a_list(): void
     {
         $factory = $this->app->make(OpenTaskPoolFactory::class);
-        $task = Task::factory()->create()->id;
+        $task = $this->tasks()->task('task')->taskCalled('task')->id;
 
         $this->assertSame(
             PoolMembersType::All,
@@ -96,9 +98,9 @@ final class TaskPoolsTest extends TestCase
 
     public function test_a_named_pool_opens_to_its_tasks_in_the_listed_order(): void
     {
-        $first = Task::factory()->create()->id;
-        $second = Task::factory()->create()->id;
-        $third = Task::factory()->create()->id;
+        $first = $this->tasks()->task('first')->taskCalled('first')->id;
+        $second = $this->tasks()->task('second')->taskCalled('second')->id;
+        $third = $this->tasks()->task('third')->taskCalled('third')->id;
 
         $members = $this->app->make(NamedTaskPoolFactory::class)
             ->open(new PoolReference('tasks.named', null, [
@@ -119,7 +121,7 @@ final class TaskPoolsTest extends TestCase
     public function test_a_named_pool_refuses_a_list_that_does_not_fit(): void
     {
         $factory = $this->app->make(NamedTaskPoolFactory::class);
-        $task = Task::factory()->create()->id;
+        $task = $this->tasks()->task('task')->taskCalled('task')->id;
 
         $this->assertThrows(fn () => new PoolReference('tasks.named', null, [
             $task,
@@ -162,8 +164,8 @@ final class TaskPoolsTest extends TestCase
 
     public function test_a_named_pool_whose_task_went_missing_does_not_open(): void
     {
-        $kept = Task::factory()->create()->id;
-        $gone = Task::factory()->create();
+        $kept = $this->tasks()->task('kept')->taskCalled('kept')->id;
+        $gone = $this->tasks()->task('gone')->taskCalled('gone');
         $reference = new PoolReference('tasks.named', null, [
             $kept,
             $gone->id,
@@ -173,5 +175,10 @@ final class TaskPoolsTest extends TestCase
         $this->expectException(TaskMissing::class);
 
         $this->app->make(NamedTaskPoolFactory::class)->open($reference, $this->builder);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

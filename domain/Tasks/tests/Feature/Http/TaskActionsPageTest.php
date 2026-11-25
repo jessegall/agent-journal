@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature\Http;
 
-use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
-use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
-use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -35,9 +32,8 @@ final class TaskActionsPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->task = Task::factory()->create(['title' => 'Prepare records']);
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->task = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
     }
 
     public function test_the_page_offers_start_and_a_start_and_block_go_through_the_task_page(): void
@@ -69,5 +65,10 @@ final class TaskActionsPageTest extends TestCase
     {
         return $this->actingAs($this->owner)->from("/tasks/{$this->task->number}")
             ->post("/tasks/{$this->task->number}/{$action}", $fields);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }
