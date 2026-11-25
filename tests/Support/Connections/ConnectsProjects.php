@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\SignedCall;
 use App\Values\InstallTicket;
@@ -38,8 +37,7 @@ trait ConnectsProjects
     protected function setUpConnectsProjects(): void
     {
         $this->emptyTables(...self::DESK_TABLES);
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->owner()->ownerUser();
         $folder = sys_get_temp_dir().'/connections-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/1.0.0", 0755, true);
         file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode(PublicRelease::manifest('1.0.0')));
@@ -68,7 +66,10 @@ trait ConnectsProjects
 
     private function redeemLine(string $ticket, string $nonce): TestResponse
     {
-        return $this->postJson('https://localhost/api/project-connections/redeem', $this->redemptionBody($ticket, $nonce));
+        return $this->postJson(
+            'https://localhost/api/project-connections/redeem',
+            $this->redemptionBody($ticket, $nonce),
+        );
     }
 
     /**

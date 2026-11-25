@@ -32,9 +32,23 @@ final class AssertBindingRuntimeTest extends TestCase
     private const string CLAUDE_NOT_REPORTED = 'has not reported it can run Claude Code';
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'binding_runtimes', 'project_bindings',
-        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
-        'users', 'accounts', 'active_accounts', 'inboxes', 'inbox_members',
+        'connection_audits',
+        'project_invitations',
+        'install_attempts',
+        'binding_runtimes',
+        'project_bindings',
+        'project_environments',
+        'projects',
+        'agent_runtimes',
+        'agent_sessions',
+        'agents',
+        'hosts',
+        'settings_records',
+        'users',
+        'accounts',
+        'active_accounts',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -82,6 +96,15 @@ final class AssertBindingRuntimeTest extends TestCase
         $this->assertSame(0, AgentRuntime::query()->count());
     }
 
+    public function test_a_start_of_a_revoked_binding_cannot_be_looked_up(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $this->start($binding, ['startId' => 'start-1'])->assertCreated();
+        ProjectBinding::query()->whereKey($binding->id)->update(['readiness' => 'revoked']);
+
+        $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
+    }
+
     /**
      * A redeemed binding whose relay reported it can run Claude Code isolated.
      */
@@ -97,7 +120,9 @@ final class AssertBindingRuntimeTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return ProjectBinding::query()->findOrFail($this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'));
+        return ProjectBinding::query()->findOrFail(
+            $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'),
+        );
     }
 
     /**

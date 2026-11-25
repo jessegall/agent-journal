@@ -29,8 +29,18 @@ final class RenewRuntimeLeaseTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
-        'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records', 'users',
+        'connection_audits',
+        'project_invitations',
+        'install_attempts',
+        'project_bindings',
+        'project_environments',
+        'projects',
+        'agent_runtimes',
+        'agent_sessions',
+        'agents',
+        'hosts',
+        'settings_records',
+        'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -59,9 +69,30 @@ final class RenewRuntimeLeaseTest extends TestCase
     public function test_another_agents_runtime_in_the_binding_root_is_refused_its_lease(): void
     {
         $binding = $this->connected();
-        $runtime = $this->runtimeOf(Agent::create('Stranger '.Str::random(6), 'main-agent', $this->localProject()), $binding);
+        $runtime = $this->runtimeOf(
+            Agent::create('Stranger '.Str::random(6), 'main-agent', $this->localProject()),
+            $binding,
+        );
 
         $this->renew($binding, $runtime)->assertForbidden();
+    }
+
+    public function test_the_presence_receipt_names_the_authority_generation(): void
+    {
+        $binding = $this->connected();
+
+        $receipt = $this->signedRelayCall(
+            $this->relayCredential(self::NONCE),
+            "/host/bindings/{$binding->id}/presence",
+            [
+                'bootId' => 'boot-1', 'sequence' => 1, 'release' => '1.0.0',
+                'descriptors' => [],
+                'provisioning' => 'succeeded', 'isTakeover' => false,
+            ],
+            (string) Str::uuid(),
+        )->assertOk();
+
+        $this->assertSame($binding->authority_generation, $receipt->json('authorityGeneration'));
     }
 
     private function connected(): ProjectBinding
