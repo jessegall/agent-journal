@@ -5,24 +5,20 @@ declare(strict_types=1);
 namespace Tests\Mcp;
 
 use App\Mcp\Tools\OperationsReadTool;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool OperationsReadTool, as the generator wrote it.
+ * An agent asks what became of a write it sent under a request key; a key that never ran reads as unknown.
  */
-#[Generated]
 #[TestsMcpTool(OperationsReadTool::class)]
 final class OperationsReadToolTest extends McpToolEntryTestCase
 {
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('OperationsReadTool', [
-            'the argument request_key',
-        ]);
+        return ToolCall::by($journal->owner()->signedStart('Planner'))
+            ->arguments(['request_key' => 'never-sent-1']);
     }
 }

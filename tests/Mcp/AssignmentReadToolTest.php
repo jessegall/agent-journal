@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Mcp;
 
 use App\Mcp\Tools\AssignmentReadTool;
-use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
@@ -32,7 +31,7 @@ final class AssignmentReadToolTest extends McpToolEntryTestCase
         $start = $journal->signedStart('Planner');
 
         return ToolCall::by($start)
-            ->record(new RecordIdentity('tasks.task', $task->id))
+            ->forModel($task)
             ->hiddenFromProfile('read-only-helper');
     }
 }

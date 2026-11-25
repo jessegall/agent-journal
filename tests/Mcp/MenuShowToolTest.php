@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Enums\Navigation\NavigationCompletion;
 use App\Mcp\Tools\MenuShowTool;
-use Tests\Support\Entries\Attributes\Generated;
+use App\Models\Drivers\MenuEntry;
+use App\Support\ActorReference;
+use App\Values\MenuStep;
+use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool MenuShowTool, as the generator wrote it.
+ * The main agent reads one entry of the owner's menu library; a helper does not see the tool.
  */
-#[Generated]
 #[TestsMcpTool(MenuShowTool::class)]
 final class MenuShowToolTest extends McpToolEntryTestCase
 {
+    use HoldsNavigationRequests;
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('MenuShowTool', [
-            'the argument entry',
-        ]);
+        [$start, $navigation] = $this->heldNavigation($journal);
+        $navigation->cancel();
+        $entry = MenuEntry::create(
+            ActorReference::of($journal->ownerUser()),
+            $navigation,
+            [new MenuStep('fp1:first', 'GPT-6', null, null)],
+            NavigationCompletion::Goal,
+            'GPT-6',
+        );
+
+        return ToolCall::by($start)
+            ->arguments(['entry' => $entry->id])
+            ->hiddenFromProfile('read-only-helper');
     }
 }

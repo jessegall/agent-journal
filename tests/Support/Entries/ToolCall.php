@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Entries;
 
 use App\Contracts\Bus\Command;
-use App\Support\RecordIdentity;
+use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Bus\ExpectedCommand;
 
@@ -56,11 +56,11 @@ final class ToolCall
     }
 
     /**
-     * The record the tool works on, sent as its record_type and record_id arguments.
+     * The record the tool works on, sent as its record_type (the model's morph alias, its link type) and record_id.
      */
-    public function record(RecordIdentity $record): self
+    public function forModel(Model $model): self
     {
-        return $this->arguments(['record_type' => $record->type, 'record_id' => $record->id]);
+        return $this->arguments(['record_type' => $model->getMorphClass(), 'record_id' => $model->getKey()]);
     }
 
     public function expects(ExpectedCommand ...$expected): self

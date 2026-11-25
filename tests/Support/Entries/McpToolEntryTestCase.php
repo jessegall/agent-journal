@@ -6,7 +6,6 @@ namespace Tests\Support\Entries;
 
 use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Tools\JournalTool;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Support\ReflectedType;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
@@ -44,7 +43,7 @@ abstract class McpToolEntryTestCase extends TestCase
         $this->assertFalse($response->json('result.isError'), (string) $response->getContent());
 
         $this->journal->assertDispatchedOnlyDeclared(DeclaredCommands::ofTool($this->tool()), $this->tool())
-            ->assertDispatchedExactly($this->isWriteTool() ? $call->expected : []);
+            ->assertDispatchedExactly($call->expected);
         $this->assertNotSame('', (string) $response->json('result.content.0.text'), 'The tool answered no text.');
     }
 
@@ -89,11 +88,6 @@ abstract class McpToolEntryTestCase extends TestCase
     private function toolName(): string
     {
         return $this->app->make(McpCatalogue::class)->toolName($this->tool());
-    }
-
-    private function isWriteTool(): bool
-    {
-        return ReflectedType::of($this->tool())->isSubclassOf(JournalWriteTool::class);
     }
 
     /**
