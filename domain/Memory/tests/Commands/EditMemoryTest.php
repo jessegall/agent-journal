@@ -6,10 +6,10 @@ namespace Domain\Memory\Tests\Commands;
 
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\RecordUnavailable;
-use App\Support\ActorIdentity;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Tests\Fixtures\MemoryFixtures;
 use Domain\Memory\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -32,7 +32,9 @@ final class EditMemoryTest extends TestCase
             ->agent('Keeper', 'read-only-helper')
             ->agent('Other', 'read-only-helper')
             ->actAs('Keeper');
-        $this->memory = Memory::create(ActorIdentity::of($this->journal->agentCalled('Keeper')), 'First words.', 4);
+        $this->memory = $this->journal->fixtures(MemoryFixtures::class)
+            ->memory('Note', 'Keeper', 'First words.', 4)
+            ->memoryCalled('Note');
     }
 
     public function test_an_edit_changes_the_text_and_weight_and_moves_the_revision_on(): void

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Commands;
 
 use App\Exceptions\RecordUnavailable;
-use App\Support\ActorIdentity;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Tests\Fixtures\MemoryFixtures;
 use Domain\Memory\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -28,7 +28,9 @@ final class RemoveMemoryTest extends TestCase
             ->agent('Keeper', 'read-only-helper')
             ->agent('Other', 'read-only-helper')
             ->actAs('Keeper');
-        $this->memory = Memory::create(ActorIdentity::of($this->journal->agentCalled('Keeper')), 'Forget me.', 4);
+        $this->memory = $this->journal->fixtures(MemoryFixtures::class)
+            ->memory('Note', 'Keeper', 'Forget me.', 4)
+            ->memoryCalled('Note');
     }
 
     public function test_an_agent_removes_its_own_memory(): void
