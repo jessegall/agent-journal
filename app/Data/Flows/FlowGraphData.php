@@ -7,7 +7,6 @@ namespace App\Data\Flows;
 use App\Enums\Profiles\FlowNodeType;
 use App\Values\CompiledScript;
 use App\Values\Instruction;
-use App\Values\TriggerPolicy;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -49,16 +48,11 @@ final class FlowGraphData extends Data
         $nodes = [];
         $edges = [];
 
-        /**
-         * @var array<string, array{entry: string, policy: TriggerPolicy}> $handlers
-         */
-        $handlers = $compiled->graph['handlers'];
-
-        foreach ($handlers as $trigger => $handler) {
+        foreach ($compiled->handlers as $trigger => $handler) {
             $nodes[$trigger] = new FlowNodeData($trigger, "ON {$trigger}", FlowNodeType::Trigger, null);
-            $edges[] = new FlowEdgeData($trigger, $handler['entry'], 'start');
-            $fallthrough = $handler['policy']->fallthrough;
-            $returnToActor = $handler['policy']->returnToActor;
+            $edges[] = new FlowEdgeData($trigger, $handler->entry, 'start');
+            $fallthrough = $handler->policy->fallthrough;
+            $returnToActor = $handler->policy->returnToActor;
             $nodes[$fallthrough] = new FlowNodeData($fallthrough, 'final checks', FlowNodeType::Policy, null);
             $nodes[$returnToActor] = new FlowNodeData($returnToActor, 'return policy', FlowNodeType::Policy, null);
             $nodes['certified'] = new FlowNodeData('certified', 'certified', FlowNodeType::Terminal, null);
@@ -81,12 +75,7 @@ final class FlowGraphData extends Data
             );
         }
 
-        /**
-         * @var array<string, Instruction> $instructions
-         */
-        $instructions = $compiled->graph['instructions'];
-
-        foreach ($instructions as $id => $instruction) {
+        foreach ($compiled->instructions as $id => $instruction) {
             $nodes[$id] = new FlowNodeData(
                 $id,
                 $instruction->label(),

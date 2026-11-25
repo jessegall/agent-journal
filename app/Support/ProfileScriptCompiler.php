@@ -15,7 +15,6 @@ use App\Exceptions\InvalidScript;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\BooleanOperand;
 use App\Values\CompiledScript;
-use App\Values\Instruction;
 use App\Values\KeywordDefinition;
 use App\Values\NamedCommand;
 use App\Values\Operation;
@@ -53,12 +52,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
     {
         $compiled = $this->compile($source);
 
-        /**
-         * @var array<string, Instruction> $instructions
-         */
-        $instructions = $compiled->graph['instructions'];
-
-        foreach ($instructions as $instruction) {
+        foreach ($compiled->instructions as $instruction) {
             $refusal = $this->refusalOf($instruction->keyword, $instruction->operand, $profile);
 
             if ($refusal !== null) {

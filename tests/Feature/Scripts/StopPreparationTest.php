@@ -131,7 +131,7 @@ final class StopPreparationTest extends TestCase
         {
             public function check(ScriptSource $source): ScriptCheck
             {
-                return new ScriptCheck([], [], new CompiledScript([], 'changed'), $source->hash(), 'catalogue');
+                return new ScriptCheck([], [], new CompiledScript('', [], [], 'changed'), $source->hash(), 'catalogue');
             }
         });
 

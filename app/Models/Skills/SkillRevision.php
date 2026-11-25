@@ -8,6 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Skills\SkillCondition;
+use App\Data\Skills\Conditions\StoredConditionData;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
@@ -30,7 +31,7 @@ use Spatie\LaravelData\DataCollection;
  * @property string $name
  * @property string $description
  * @property DataCollection<int, SkillSection> $sections
- * @property array $condition
+ * @property StoredConditionData $condition
  * @property int $condition_version
  * @property string $author_type
  * @property string $author_id
@@ -61,7 +62,7 @@ final class SkillRevision extends Model implements ReadableModel
         return [
             'revision' => 'integer',
             'sections' => DataCollection::class.':'.SkillSection::class,
-            'condition' => 'array',
+            'condition' => StoredConditionData::class,
             'condition_version' => 'integer',
         ];
     }
@@ -94,7 +95,7 @@ final class SkillRevision extends Model implements ReadableModel
         $skillRevision->description = $draft->description;
         $sections = array_map(fn (SectionDraft $section) => $section->toSection(), $draft->sections);
         $skillRevision->sections = SkillSection::collect($sections, DataCollection::class);
-        $skillRevision->condition = $condition->toArray();
+        $skillRevision->condition = StoredConditionData::from($condition->toArray());
         $skillRevision->condition_version = self::CONDITION_VERSION;
         $skillRevision->author_type = $author->type;
         $skillRevision->author_id = $author->id;
@@ -113,7 +114,7 @@ final class SkillRevision extends Model implements ReadableModel
      */
     public function conditionThrough(ConditionTree $tree): SkillCondition
     {
-        return $tree->hydrate($this->condition);
+        return $tree->hydrate($this->condition->toArray());
     }
 
     // ----------[ Accessors ]----------
@@ -136,7 +137,7 @@ final class SkillRevision extends Model implements ReadableModel
                 ),
                 $this->sections->items(),
             ),
-            json_encode($this->condition, JSON_THROW_ON_ERROR),
+            $this->condition->toJson(),
         ));
     }
 

@@ -51,14 +51,14 @@ SCRIPT, ['tests' => [
 
         $this->assertSame([], $check->diagnostics);
         $this->assertNotNull($check->compiled);
-        $graph = $check->compiled->graph;
-        $this->assertSame('line-2', $graph['handlers']['STOP']['entry']);
+        $compiled = $check->compiled;
+        $this->assertSame('line-2', $compiled->handlers['STOP']->entry);
         $this->assertSame([
             'true' => 'line-3',
             'false' => 'final-checks',
             'failure' => 'return-policy',
-        ], $graph['instructions']['line-2']->successors);
-        $this->assertSame(['returned' => 'return-policy'], $graph['instructions']['line-4']->successors);
+        ], $compiled->instructions['line-2']->successors);
+        $this->assertSame(['returned' => 'return-policy'], $compiled->instructions['line-4']->successors);
     }
 
     #[DataProvider('invalidScripts')]
@@ -97,7 +97,7 @@ SCRIPT, ['tests' => [
 
         $this->assertSame([], $check->diagnostics);
         $this->assertNotNull($check->compiled);
-        $step = $check->compiled->graph['instructions']['line-2'];
+        $step = $check->compiled->instructions['line-2'];
         $this->assertSame('NOTE', $step->keyword);
         $this->assertEquals(new TextOperand('Retain "évidence".'), $step->operand);
     }
@@ -116,7 +116,9 @@ SCRIPT, ['tests' => [
 
         $revision = ProfileRevision::currentOf(Profile::byKey($profile));
         $this->assertEquals($source, $revision->script_source);
-        $this->assertSame('line-2', $revision->getAttribute('compiled_script')['handlers']['STOP']['entry']);
-        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/D', $revision->getAttribute('script_definition_digest'));
+        $script = $revision->script;
+        $this->assertSame('line-2', $script->compiled->handlers['STOP']->entry);
+        $this->assertSame(['STOP'], array_keys($script->compiled->handlers));
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/D', $script->compiled->definitionDigest);
     }
 }

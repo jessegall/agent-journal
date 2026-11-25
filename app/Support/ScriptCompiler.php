@@ -41,11 +41,11 @@ final readonly class ScriptCompiler
                 $policy,
             );
 
-            $handlerEntries[$trigger->token] = [
-                'entry' => $context->compileBlock($handler->statements),
-                'policy' => $policy,
-                'source' => $handler->source,
-            ];
+            $handlerEntries[$trigger->token] = new ScriptHandler(
+                $context->compileBlock($handler->statements),
+                $policy,
+                $handler->source,
+            );
         }
 
         return $graph->compiled($handlerEntries, $source->hash());

@@ -8,6 +8,7 @@ use App\Enums\Profiles\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
 use App\Values\CompiledScript;
 use App\Values\Instruction;
+use App\Values\ScriptHandler;
 
 final class ScriptGraph
 {
@@ -71,18 +72,14 @@ final class ScriptGraph
     }
 
     /**
-     * @param  array<string, mixed>  $handlers
+     * @param  array<string, ScriptHandler>  $handlers  by trigger
      */
     public function compiled(array $handlers, string $sourceHash): CompiledScript
     {
         ksort($this->definitions);
         $digest = hash('sha256', json_encode($this->definitions, JSON_THROW_ON_ERROR));
 
-        return new CompiledScript([
-            'sourceHash' => $sourceHash,
-            'handlers' => $handlers,
-            'instructions' => $this->instructions,
-        ], $digest);
+        return new CompiledScript($sourceHash, $handlers, $this->instructions, $digest);
     }
 
     private function remainingSeconds(string $successor): int

@@ -28,6 +28,6 @@ final readonly class ProfileScript
      */
     public function handles(string $trigger): bool
     {
-        return isset($this->compiled->graph['handlers'][$trigger]);
+        return array_key_exists($trigger, $this->compiled->handlers);
     }
 }

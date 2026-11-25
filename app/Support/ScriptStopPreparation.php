@@ -22,7 +22,6 @@ use App\Values\ScriptContext;
 use App\Values\StepOutcome;
 use App\Values\StopPreparation;
 use App\Values\StopPreparationRequest;
-use App\Values\TriggerPolicy;
 use App\Values\WorkspaceReadReference;
 use PhpOption\None;
 use PhpOption\Option;
@@ -125,15 +124,9 @@ final readonly class ScriptStopPreparation implements StopPreparer
             return $this->answer($run, tellsOwner: false);
         }
 
-        /**
-         * @var array{entry: string, policy: TriggerPolicy} $handler
-         */
-        $handler = $driver->graph['handlers'][self::TRIGGER];
-        /**
-         * @var array<string, Instruction> $instructions
-         */
-        $instructions = $driver->graph['instructions'];
-        $next = $handler['entry'];
+        $handler = $driver->handlers[self::TRIGGER];
+        $instructions = $driver->instructions;
+        $next = $handler->entry;
         $evidence = '';
 
         while (isset($instructions[$next])) {
@@ -153,7 +146,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             $next = $instruction->successors[(string) $outcome->port];
         }
 
-        if ($next === $handler['policy']->fallthrough) {
+        if ($next === $handler->policy->fallthrough) {
             $run->finish(ProfileRunState::FinalChecks, '', 0);
 
             return StopPreparation::finalChecks();

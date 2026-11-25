@@ -6,10 +6,10 @@ namespace App\Values;
 
 use App\Enums\Agents\AccessType;
 use App\Enums\Profiles\CommandDirectory;
+use App\Enums\Profiles\ScriptOperandType;
 use App\Exceptions\ProfileDraftRefused;
-use Spatie\LaravelData\Data;
 
-final class NamedCommand extends Data
+final class NamedCommand extends ScriptOperand
 {
     /**
      * @param  list<string>  $arguments
@@ -22,7 +22,9 @@ final class NamedCommand extends Data
         public readonly CommandDirectory $directory,
         public readonly array $effects,
         public readonly int $timeoutSeconds,
-    ) {}
+    ) {
+        $this->type = ScriptOperandType::Command;
+    }
 
     public static function fromDefinition(string $key, mixed $definition): self
     {

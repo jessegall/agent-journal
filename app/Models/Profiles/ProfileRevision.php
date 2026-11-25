@@ -47,8 +47,7 @@ use Illuminate\Support\Carbon;
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
  * @property ScriptSource $script_source
- * @property ?array $compiled_script
- * @property ?string $script_definition_digest
+ * @property ?CompiledScript $compiled_script
  * @property string $author_type
  * @property string $author_id
  * @property Carbon $created_at
@@ -82,7 +81,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'supervisor' => SupervisorRoutes::class,
             'instances' => InstancePolicy::class,
             'script_source' => ScriptSource::class,
-            'compiled_script' => 'array',
+            'compiled_script' => CompiledScript::class,
         ];
     }
 
@@ -114,8 +113,7 @@ final class ProfileRevision extends Model implements ReadableModel
         $profileRevision->supervisor = $definition->supervisor;
         $profileRevision->instances = $definition->instances;
         $profileRevision->script_source = $source;
-        $profileRevision->compiled_script = $compiled?->graph;
-        $profileRevision->script_definition_digest = $compiled?->definitionDigest;
+        $profileRevision->compiled_script = $compiled;
         $profileRevision->author_type = $author->type;
         $profileRevision->author_id = $author->id;
         $profileRevision->save();
@@ -140,11 +138,11 @@ final class ProfileRevision extends Model implements ReadableModel
     protected function script(): Attribute
     {
         return Accessor::get(function () {
-            if ($this->compiled_script === null || $this->script_definition_digest === null) {
+            if ($this->compiled_script === null) {
                 return ProfileScript::empty();
             }
 
-            return new ProfileScript($this->script_source, new CompiledScript($this->compiled_script, $this->script_definition_digest));
+            return new ProfileScript($this->script_source, $this->compiled_script);
         });
     }
 

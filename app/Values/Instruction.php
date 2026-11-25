@@ -6,17 +6,22 @@ namespace App\Values;
 
 use App\Enums\Profiles\DiagnosticCode;
 use App\Exceptions\ScriptSyntaxError;
+use Spatie\LaravelData\Data;
 
-final readonly class Instruction
+/**
+ * One compiled step of a script: its keyword, where it stands in the source, what it acts on and the instruction each
+ * of its ports leads to.
+ */
+final class Instruction extends Data
 {
     /**
      * @param  array<string, string>  $successors
      */
     public function __construct(
-        public string $keyword,
-        public ScriptRange $source,
-        public NamedCommand|BooleanOperand|TextOperand $operand,
-        public array $successors,
+        public readonly string $keyword,
+        public readonly ScriptRange $source,
+        public readonly ScriptOperand $operand,
+        public readonly array $successors,
     ) {}
 
     public function command(): NamedCommand
