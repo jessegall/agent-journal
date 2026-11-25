@@ -101,8 +101,6 @@ trait OpensRuntimes
             firstMessage: $firstMessage,
         );
 
-        $owner = $this->ownerUser();
-
-        return $this->requests->during(fn () => $this->requests->asUser($owner), fn () => $this->run($command));
+        return $this->asOwner($command);
     }
 }

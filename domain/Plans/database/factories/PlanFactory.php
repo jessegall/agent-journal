@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Database\Factories;
 
 use App\Support\ActorIdentity;
+use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -36,5 +37,13 @@ class PlanFactory extends Factory
             'creator_type' => $creator->type,
             'creator_id' => $creator->id,
         ];
+    }
+
+    /**
+     * A plan its owner paused.
+     */
+    public function paused(): self
+    {
+        return $this->state(['status' => PlanStatus::Paused]);
     }
 }

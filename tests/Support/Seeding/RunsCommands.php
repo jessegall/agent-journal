@@ -118,4 +118,19 @@ trait RunsCommands
 
         return $this->throughEntry($command);
     }
+
+    /**
+     * Runs the command unkeyed as the owner of the journal, as a fixture arranges, and puts the selection back after.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function asOwner(Command $command): mixed
+    {
+        $owner = $this->ownerUser();
+
+        return $this->requests->during(fn () => $this->requests->asUser($owner), fn () => $this->runUnkeyed($command));
+    }
 }

@@ -19,6 +19,7 @@ use App\Models\Projects\Project;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
+use App\Support\DomainRegistry;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
 use App\Values\SelectedDriver;
@@ -101,6 +102,8 @@ final class JournalSeed
 
     private readonly FixtureInboxes $inboxes;
 
+    private readonly FixtureRegistry $registry;
+
     private FakeServerClock|null $serverClock = null;
 
     /**
@@ -112,6 +115,7 @@ final class JournalSeed
     {
         $this->requests = new FixtureRequests($app);
         $this->inboxes = new FixtureInboxes($app);
+        $this->registry = new FixtureRegistry($app->make(DomainRegistry::class));
     }
 
     /**
@@ -127,6 +131,19 @@ final class JournalSeed
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         return $this->actAs($this->owner->name);
+    }
+
+    /**
+     * The fixture builder a booted domain registered for the class, made once per test.
+     *
+     * @template TFixtures of object
+     *
+     * @param  class-string<TFixtures>  $fixtures
+     * @return TFixtures
+     */
+    public function fixtures(string $fixtures): object
+    {
+        return $this->registry->fixtures($fixtures, $this);
     }
 
     /**

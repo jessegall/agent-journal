@@ -75,4 +75,9 @@ final class FixtureRefused extends LogicException
     {
         return new self("The maker of {$class} made a {$got}: it must make a {$class}.");
     }
+
+    public static function wrongRecord(string $expected, string $got): self
+    {
+        return new self("A {$got} record was given where a {$expected} belongs: give a {$expected}.");
+    }
 }
