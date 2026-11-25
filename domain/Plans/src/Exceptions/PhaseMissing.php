@@ -12,7 +12,9 @@ use RuntimeException;
  */
 final class PhaseMissing extends RuntimeException
 {
-    /** @use ThrowsLater<PhaseMissing> */
+    /**
+     * @use ThrowsLater<PhaseMissing>
+     */
     use ThrowsLater;
 
     public static function withId(string $phaseId): self

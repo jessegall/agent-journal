@@ -19,7 +19,9 @@ final class ResumeRefused extends RuntimeException implements CodedRefusal, Star
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<ResumeRefused> */
+    /**
+     * @use ThrowsLater<ResumeRefused>
+     */
     use ThrowsLater;
 
     private function __construct(public readonly ResumeRefusal $refusal)

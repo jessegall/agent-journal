@@ -33,7 +33,7 @@ final readonly class ProjectRules
                 ->withActiveRevision()
                 ->readLimit(1_000)
                 ->get()
-                ->map(fn (ClassificationRule $rule): RuleRevision => $rule->activeRevision)
+                ->map(fn (ClassificationRule $rule) => $rule->activeRevision)
                 ->all());
         } catch (QueryException $failure) {
             throw ClassificationUnavailable::storeFailed($failure, $this->texts);

@@ -19,7 +19,9 @@ final class PresenceRefused extends RuntimeException implements CodedRefusal, Co
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<PresenceRefused> */
+    /**
+     * @use ThrowsLater<PresenceRefused>
+     */
     use ThrowsLater;
 
     private int $status = 403;

@@ -34,7 +34,7 @@ final class CommandClassSet extends Data
      */
     public function values(): array
     {
-        return array_map(fn (CommandClass $class): string => $class->value, $this->classes);
+        return array_map(fn (CommandClass $class) => $class->value, $this->classes);
     }
 
     /**

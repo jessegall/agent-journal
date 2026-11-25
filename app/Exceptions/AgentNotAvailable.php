@@ -14,7 +14,9 @@ final class AgentNotAvailable extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<AgentNotAvailable> */
+    /**
+     * @use ThrowsLater<AgentNotAvailable>
+     */
     use ThrowsLater;
 
     public static function forAgent(string $agentId): self

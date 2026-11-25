@@ -100,7 +100,7 @@ final class PlanDetailsResolverTest extends TestCase
 
         do {
             $details = $resolver->plan($plan->id, ReadView::Summary, $offset);
-            $page = array_merge(...array_map(fn (PlanPhaseTasks $phase): array => $phase->taskIds, $details->phases));
+            $page = array_merge(...array_map(fn (PlanPhaseTasks $phase) => $phase->taskIds, $details->phases));
             $this->assertLessThanOrEqual(PlanDetailsResolver::TASKS_PER_READ, count($page));
             $seen = [...$seen, ...$page];
             $offset = $details->nextTaskOffset;

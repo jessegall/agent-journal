@@ -10,7 +10,9 @@ use RuntimeException;
 
 final class StackTargetRefused extends RuntimeException implements FieldRefusal
 {
-    /** @use ThrowsLater<StackTargetRefused> */
+    /**
+     * @use ThrowsLater<StackTargetRefused>
+     */
     use ThrowsLater;
 
     public static function forTarget(string $target): self

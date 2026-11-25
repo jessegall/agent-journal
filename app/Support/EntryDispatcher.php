@@ -36,6 +36,6 @@ final readonly class EntryDispatcher
             throw CommandNotRegistered::for($command::class);
         }
 
-        return $this->entrance->through($this->entry, fn (): mixed => $this->bus->run($command));
+        return $this->entrance->through($this->entry, fn () => $this->bus->run($command));
     }
 }

@@ -47,7 +47,7 @@ final readonly class PlanSearchProvider implements SearchProvider
             ],
             titleOf: fn (Plan $plan): string => $plan->title,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $planId): bool => $this->access->admitsOpen($query->reader, $planId),
+            admitsOpen: fn (string $planId) => $this->access->admitsOpen($query->reader, $planId),
             referenceOf: fn (SearchQuery $asked, TieredSearchSource $plans): SearchResult|null => $this->titles
                 ->numberedReference($asked, $this->recognizer, $plans),
         ));

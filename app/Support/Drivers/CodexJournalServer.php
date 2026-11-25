@@ -54,7 +54,7 @@ final readonly class CodexJournalServer
     {
         $variables = implode(
             ', ',
-            array_map(fn (string $name): string => sprintf('"%s"', $name), self::PASSED_VARIABLES),
+            array_map(fn (string $name) => sprintf('"%s"', $name), self::PASSED_VARIABLES),
         );
 
         $header = self::HEADER;

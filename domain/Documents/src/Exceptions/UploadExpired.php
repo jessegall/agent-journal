@@ -12,7 +12,9 @@ use RuntimeException;
 
 final class UploadExpired extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @use ThrowsLater<UploadExpired> */
+    /**
+     * @use ThrowsLater<UploadExpired>
+     */
     use ThrowsLater;
 
     public static function forUpload(): self

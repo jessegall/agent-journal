@@ -115,7 +115,7 @@ final readonly class SearchEligibility implements SearchSources
 
         $labelled = array_values(array_filter(
             $eligible,
-            fn (DeclaredSearchable $source): bool => $source->hasLabel($chosen),
+            fn (DeclaredSearchable $source) => $source->hasLabel($chosen),
         ));
 
         if (count($labelled) === 1) {
@@ -168,7 +168,7 @@ final readonly class SearchEligibility implements SearchSources
 
         $matching = array_values(array_filter(
             $this->eligible($reader),
-            fn (DeclaredSearchable $source): bool => ($after === null || strcmp($source->qualifiedKey, $after) > 0)
+            fn (DeclaredSearchable $source) => ($after === null || strcmp($source->qualifiedKey, $after) > 0)
                 && $source->startsWith($prefix),
         ));
 

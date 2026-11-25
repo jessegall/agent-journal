@@ -15,7 +15,9 @@ use Throwable;
  */
 final class DriverRequestRefused extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<DriverRequestRefused> */
+    /**
+     * @use ThrowsLater<DriverRequestRefused>
+     */
     use ThrowsLater;
 
     public static function noRuntime(StackTarget $target): self

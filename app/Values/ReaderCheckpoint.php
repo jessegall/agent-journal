@@ -64,6 +64,6 @@ final class ReaderCheckpoint extends Data
      */
     public function recordsOf(RecordRole $role): array
     {
-        return array_values(array_filter($this->records, fn (OutputRecord $record): bool => $record->role === $role));
+        return array_values(array_filter($this->records, fn (OutputRecord $record) => $record->role === $role));
     }
 }

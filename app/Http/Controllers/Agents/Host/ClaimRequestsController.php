@@ -64,7 +64,7 @@ final readonly class ClaimRequestsController
         $claiming = new ClaimDriverRequestsCommand($host->hostId, $limit, $browserInput);
         $reading = new ClaimProjectReadsCommand($host->hostId);
         $claim = fn () => new HostClaim($commands->run($claiming), $commands->run($reading));
-        $version = fn (): int => $watched->version($host->hostId);
+        $version = fn () => $watched->version($host->hostId);
 
         $claimed = ScopedReadMeter::ofCurrentScope()->withinSchedule(
             'host long poll',

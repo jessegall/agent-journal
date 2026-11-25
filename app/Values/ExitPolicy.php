@@ -28,7 +28,7 @@ final class ExitPolicy extends Data
      */
     public static function of(ExitBranch ...$branches): self
     {
-        $statuses = array_map(fn (ExitBranch $branch): int => $branch->status, $branches);
+        $statuses = array_map(fn (ExitBranch $branch) => $branch->status, $branches);
 
         if (count($statuses) !== count(array_unique($statuses))) {
             throw VerificationContractInvalid::field('exits', 'each exit status is listed once');
@@ -46,7 +46,7 @@ final class ExitPolicy extends Data
     {
         $branch = array_values(array_filter(
             $this->branches,
-            fn (ExitBranch $branch): bool => $branch->status === $status,
+            fn (ExitBranch $branch) => $branch->status === $status,
         ));
 
         if ($branch === []) {
@@ -66,7 +66,7 @@ final class ExitPolicy extends Data
     {
         return array_values(array_filter(
             $this->branches,
-            fn (ExitBranch $branch): bool => ! in_array($branch->status, $statuses, true),
+            fn (ExitBranch $branch) => ! in_array($branch->status, $statuses, true),
         ));
     }
 }

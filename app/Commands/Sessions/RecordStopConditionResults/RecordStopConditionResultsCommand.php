@@ -37,7 +37,7 @@ final readonly class RecordStopConditionResultsCommand extends Command
     public function submissionDigest(): string
     {
         $fingerprints = array_map(
-            fn (StopConditionResultReport $stopReport): array => $stopReport->fingerprint(),
+            fn (StopConditionResultReport $stopReport) => $stopReport->fingerprint(),
             $this->stopReports,
         );
 

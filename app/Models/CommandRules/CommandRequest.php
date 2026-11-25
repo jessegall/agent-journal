@@ -175,14 +175,14 @@ final class CommandRequest extends Model implements ReadableModel
     {
         $reads = EvidenceRead::query()->ofRunReadBy($run, $this->actor())->readLimit(1_000)->get();
 
-        if (! $reads->contains(fn (EvidenceRead $read): bool => $read->source === EvidenceSource::Envelope)) {
+        if (! $reads->contains(fn (EvidenceRead $read) => $read->source === EvidenceSource::Envelope)) {
             return false;
         }
 
-        return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part): bool => array_all(
+        return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part) => array_all(
             $part->recordedStreams(),
             fn (OutputStream $stream): bool => $reads->contains(
-                fn (EvidenceRead $read): bool => $read->part_run_id === $part->id
+                fn (EvidenceRead $read) => $read->part_run_id === $part->id
                     && $read->source === EvidenceSource::of($stream),
             ),
         ));

@@ -19,7 +19,9 @@ final class AccountUnavailable extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<AccountUnavailable> */
+    /**
+     * @use ThrowsLater<AccountUnavailable>
+     */
     use ThrowsLater;
 
     public function __construct(

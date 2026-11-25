@@ -19,7 +19,9 @@ final class BindingUnrecoverable extends RuntimeException implements CodedRefusa
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<BindingUnrecoverable> */
+    /**
+     * @use ThrowsLater<BindingUnrecoverable>
+     */
     use ThrowsLater;
 
     public static function generic(Throwable|null $cause = null): self

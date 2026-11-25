@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class HelperWorkUncertified extends RuntimeException
 {
-    /** @use ThrowsLater<HelperWorkUncertified> */
+    /**
+     * @use ThrowsLater<HelperWorkUncertified>
+     */
     use ThrowsLater;
 
     public static function for(RecordIdentity $work, string $certificate): self

@@ -375,7 +375,7 @@ final readonly class SearchCoordinator implements RecordSearch
         array &$emitted,
     ): bool {
         while (count($emitted) < $progress->limit) {
-            if (array_any($progress->sources, fn (SourceProgress $source): bool => $source->awaitsRefill())) {
+            if (array_any($progress->sources, fn (SourceProgress $source) => $source->awaitsRefill())) {
                 return false;
             }
 
@@ -424,7 +424,7 @@ final readonly class SearchCoordinator implements RecordSearch
      */
     private static function fitting(EmittedHit $hit, array $emitted): EmittedHit|null
     {
-        $used = array_sum(array_map(fn (EmittedHit $shown): int => $shown->byteSize(), $emitted));
+        $used = array_sum(array_map(fn (EmittedHit $shown) => $shown->byteSize(), $emitted));
 
         if ($used + $hit->byteSize() <= self::RESPONSE_BYTE_LIMIT) {
             return $hit;
@@ -557,7 +557,7 @@ final readonly class SearchCoordinator implements RecordSearch
         $progress = SearchProgress::fromStored($stored);
         $page = StoredSearchPage::from(json_decode($position->replayedPage(), true, 8, JSON_THROW_ON_ERROR));
         $status = $page->status;
-        $pageHits = array_map(fn (StoredSearchHit $stored): BufferedHit => $stored->toBufferedHit(), $page->hits);
+        $pageHits = array_map(fn (StoredSearchHit $stored) => $stored->toBufferedHit(), $page->hits);
         $held = [];
 
         foreach ($pageHits as $hit) {
@@ -637,7 +637,7 @@ final readonly class SearchCoordinator implements RecordSearch
     ): SearchAnswer {
         $others = array_values(array_filter(
             array_keys($sources),
-            fn (string $key): bool => $key !== $stalledKey && ! $progress->sources[$key]->isDone(),
+            fn (string $key) => $key !== $stalledKey && ! $progress->sources[$key]->isDone(),
         ));
 
         $narrower = count($sources) > 1 && $progress->within === null ? $others : [];
@@ -711,7 +711,7 @@ final readonly class SearchCoordinator implements RecordSearch
     {
         return array_filter(
             $sources,
-            fn (DeclaredSearchable $source): bool => $this->recognizes($source, $progress->words->text),
+            fn (DeclaredSearchable $source) => $this->recognizes($source, $progress->words->text),
         );
     }
 

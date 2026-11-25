@@ -39,7 +39,7 @@ final readonly class MemorySearchProvider implements SearchProvider
             ],
             titleOf: fn (Memory $memory): string => $memory->text,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $memoryId): bool => self::ownedBy($owner)->whereKey($memoryId)->exists()
+            admitsOpen: fn (string $memoryId) => self::ownedBy($owner)->whereKey($memoryId)->exists()
                 && $this->access->admitsOpen($query->reader, $memoryId),
             referenceOf: self::noReference(...),
         ));

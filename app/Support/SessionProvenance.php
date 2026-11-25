@@ -103,7 +103,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
         return $access->decide($operation)->isAllowed && array_any(
             $access->operationGrants,
-            fn (OperationGrant $grant): bool => $grant->resources !== [] && $grant->covers($operation),
+            fn (OperationGrant $grant) => $grant->resources !== [] && $grant->covers($operation),
         );
     }
 

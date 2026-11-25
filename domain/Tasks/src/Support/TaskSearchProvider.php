@@ -63,7 +63,7 @@ final readonly class TaskSearchProvider implements SearchProvider
             ],
             titleOf: fn (Task $task): string => $task->title,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $taskId): bool => $this->access->admitsOpen($query->reader, $taskId),
+            admitsOpen: fn (string $taskId) => $this->access->admitsOpen($query->reader, $taskId),
             referenceOf: fn (SearchQuery $asked, TieredSearchSource $tasks): SearchResult|null => $this->tiers
                 ->numberedReference($asked, $this->recognizer, $tasks),
             body: new SearchableBody('brief', self::briefHit(...), self::currentPassage(...)),

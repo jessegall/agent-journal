@@ -53,7 +53,7 @@ final class StopConditions extends Data
         }
 
         if (array_sum(
-            array_map(fn (StopCondition $condition): int => $condition->timeoutSeconds, $conditions),
+            array_map(fn (StopCondition $condition) => $condition->timeoutSeconds, $conditions),
         ) > $attemptSeconds) {
             throw StopConditionsInvalid::overAttempt($attemptSeconds);
         }

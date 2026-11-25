@@ -7,7 +7,6 @@ namespace Domain\Documents\Console\Commands;
 use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use App\Values\CommandReport;
 use Domain\Documents\Calls\DocumentCalls;
 use Domain\Documents\Console\Concerns\PrintsInspection;
 use Illuminate\Console\Command;
@@ -27,7 +26,7 @@ final class ReportInspectCommand extends Command
     public function handle(DocumentCalls $documents): int
     {
         return $this->runReport(
-            fn (): CommandReport => $this->inspectionReport(
+            fn () => $this->inspectionReport(
                 $documents->inspectReport((string) $this->argument('number')),
             ),
         );

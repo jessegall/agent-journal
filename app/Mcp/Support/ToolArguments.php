@@ -471,6 +471,6 @@ final readonly class ToolArguments
      */
     private static function valuesOf(string $type): string
     {
-        return implode(', ', array_map(fn (BackedEnum $case): string => (string) $case->value, $type::cases()));
+        return implode(', ', array_map(fn (BackedEnum $case) => (string) $case->value, $type::cases()));
     }
 }

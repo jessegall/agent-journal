@@ -241,7 +241,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
             $checksums[$chunk->stream->value][] = $chunk->checksum;
         }
 
-        return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
+        return array_map(fn (array $sums) => hash('sha256', implode("\n", $sums)), $checksums);
     }
 
     /**

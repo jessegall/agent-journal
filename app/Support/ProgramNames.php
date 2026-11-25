@@ -54,9 +54,9 @@ final readonly class ProgramNames
     {
         $matchingFamilies = array_filter(
             $spellings,
-            fn (ProgramSpellings $family): bool => $family->resembles($program->family),
+            fn (ProgramSpellings $family) => $family->resembles($program->family),
         );
 
-        return array_values(array_map(fn (ProgramSpellings $family): string => $family->family, $matchingFamilies));
+        return array_values(array_map(fn (ProgramSpellings $family) => $family->family, $matchingFamilies));
     }
 }

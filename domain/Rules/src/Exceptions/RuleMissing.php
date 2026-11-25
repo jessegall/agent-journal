@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class RuleMissing extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<RuleMissing> */
+    /**
+     * @use ThrowsLater<RuleMissing>
+     */
     use ThrowsLater;
 
     public static function withId(string $ruleId): self

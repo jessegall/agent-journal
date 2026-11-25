@@ -175,7 +175,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     private function requireAcyclic(array $profiles, array $actors): void
     {
         $routes = [...array_map(fn (SupervisorProfile $profile) => $profile->routes, $profiles), ...$actors];
-        $types = array_map(fn (AskType $type): AskTypeKey => $type->key(), $this->types->all());
+        $types = array_map(fn (AskType $type) => $type->key(), $this->types->all());
 
         new SupervisorGraph($routes)->requireAcyclic($types);
     }

@@ -61,7 +61,7 @@ final readonly class Explanations
             'diagnosticPosition' => $tree->diagnostic?->position,
             'executableParts' => count($tree->executableParts()),
             'nodes' => $nodes,
-            'requiredClasses' => array_map(fn (CommandClass $class): string => $class->value, $classes),
+            'requiredClasses' => array_map(fn (CommandClass $class) => $class->value, $classes),
             'isKnown' => $classification->isKnown(),
             'held' => $this->heldParts($classification),
         ]);
@@ -108,15 +108,15 @@ final readonly class Explanations
 
         $facts = array_values(array_filter(
             $classification->facts(),
-            fn (ClassFact $fact): bool => $fact->node === $node->id,
+            fn (ClassFact $fact) => $fact->node === $node->id,
         ));
 
         $parts = array_values(array_filter(
             $classification->parts,
-            fn (PartClassification $part): bool => $part->node === $node->id,
+            fn (PartClassification $part) => $part->node === $node->id,
         ));
 
-        $unresolved = array_merge(...array_map(fn (PartClassification $part): array => $part->unresolved, $parts));
+        $unresolved = array_merge(...array_map(fn (PartClassification $part) => $part->unresolved, $parts));
         $contracts = $parts[0]->contracts ?? [];
         $program = $parts[0]->program ?? null;
 
@@ -128,15 +128,15 @@ final readonly class Explanations
             array_map(fn (Redirect $redirect) => $this->redirectOf($tree, $redirect), $node->redirects),
             $program === null ? '' : $program->family,
             $program === null ? '' : self::safe($program->original),
-            array_values(array_unique(array_map(fn (ClassFact $fact): string => $fact->class->value, $facts))),
-            array_map(fn (ClassFact $fact): string => $fact->class->value.' from '.$fact->origin->reference(), $facts),
+            array_values(array_unique(array_map(fn (ClassFact $fact) => $fact->class->value, $facts))),
+            array_map(fn (ClassFact $fact) => $fact->class->value.' from '.$fact->origin->reference(), $facts),
             array_map(
                 fn (UnresolvedFact $fact) => "{$fact->type->value}: {$this->texts->render($fact->reason)}",
                 $unresolved,
             ),
             $parts === [] ? '' : $parts[0]->purpose->label(),
             array_merge(...array_map(
-                fn (VerificationContract $contract): array => $contract->description(),
+                fn (VerificationContract $contract) => $contract->description(),
                 $contracts,
             )),
         );

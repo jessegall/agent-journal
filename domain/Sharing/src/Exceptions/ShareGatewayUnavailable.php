@@ -18,7 +18,9 @@ final class ShareGatewayUnavailable extends RuntimeException implements CodedRef
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<ShareGatewayUnavailable> */
+    /**
+     * @use ThrowsLater<ShareGatewayUnavailable>
+     */
     use ThrowsLater;
 
     public static function forConfiguration(string $configurationId): self

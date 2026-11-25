@@ -21,7 +21,7 @@ final readonly class RestoredCaptures
      */
     public function states(): array
     {
-        return array_map(fn (PartCapture $part): CaptureState => $part->state, $this->parts);
+        return array_map(fn (PartCapture $part) => $part->state, $this->parts);
     }
 
     /**

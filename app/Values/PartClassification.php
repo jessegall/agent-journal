@@ -6,7 +6,6 @@ namespace App\Values;
 
 use App\Data\Processes\PartSummaryData;
 use App\Declarations\VerificationContract;
-use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\CommandRules\OutputRequirement;
 
@@ -40,7 +39,7 @@ final readonly class PartClassification
 
     public function classes(): CommandClassSet
     {
-        return CommandClassSet::of(...array_map(fn (ClassFact $fact): CommandClass => $fact->class, $this->facts));
+        return CommandClassSet::of(...array_map(fn (ClassFact $fact) => $fact->class, $this->facts));
     }
 
     public function isKnown(): bool
@@ -61,9 +60,9 @@ final readonly class PartClassification
         return PartSummaryData::from([
             'program' => $this->program?->family,
             'purpose' => $this->purpose->value,
-            'unresolved' => array_map(fn (UnresolvedFact $fact): string => $fact->type->value, $this->unresolved),
+            'unresolved' => array_map(fn (UnresolvedFact $fact) => $fact->type->value, $this->unresolved),
             'tools' => array_map(
-                fn (VerificationContract $contract): string => $contract->tool->value,
+                fn (VerificationContract $contract) => $contract->tool->value,
                 $this->contracts,
             ),
         ]);

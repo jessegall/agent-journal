@@ -342,7 +342,7 @@ final readonly class TieredRecordSearch implements TieredSearch
             }
         }
 
-        usort($matches, fn (SearchResult $first, SearchResult $second): int => $first->compare($second));
+        usort($matches, fn (SearchResult $first, SearchResult $second) => $first->compare($second));
 
         return SearchBatch::refreshed('', $query, $matches);
     }
@@ -363,7 +363,7 @@ final readonly class TieredRecordSearch implements TieredSearch
             $rows->selectRaw("{$source->body->column} as ".self::TEXT);
         }
 
-        return $rows->get()->keyBy(fn (Model $row): string => (string) $row->getKey());
+        return $rows->get()->keyBy(fn (Model $row) => (string) $row->getKey());
     }
 
     /**

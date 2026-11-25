@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class TextVersionUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<TextVersionUnavailable> */
+    /**
+     * @use ThrowsLater<TextVersionUnavailable>
+     */
     use ThrowsLater;
 
     public static function named(string $version): self

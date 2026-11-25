@@ -115,7 +115,7 @@ final readonly class ShellParser implements ShellCommandParser
 
         $changesFiles = array_any(
             $classification->factsOf($part),
-            fn (ClassFact $fact): bool => $fact->class->isFileChange(),
+            fn (ClassFact $fact) => $fact->class->isFileChange(),
         );
 
         if ($changesFiles) {

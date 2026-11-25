@@ -12,7 +12,9 @@ use RuntimeException;
  */
 final class HostCredentialRejected extends RuntimeException
 {
-    /** @use ThrowsLater<HostCredentialRejected> */
+    /**
+     * @use ThrowsLater<HostCredentialRejected>
+     */
     use ThrowsLater;
 
     public static function missing(): self

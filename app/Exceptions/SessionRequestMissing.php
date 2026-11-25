@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class SessionRequestMissing extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<SessionRequestMissing> */
+    /**
+     * @use ThrowsLater<SessionRequestMissing>
+     */
     use ThrowsLater;
 
     public static function forRequest(string $requestId): self

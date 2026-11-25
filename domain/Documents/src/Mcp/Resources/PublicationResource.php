@@ -63,7 +63,7 @@ abstract class PublicationResource extends JournalResource
 
         return Response::text($body."\n\n(This is one part of the text. Read the next part at {$next})")
             ->withMeta('next_actions', array_map(
-                fn (NextAction $action): array => $action->structuredContent(),
+                fn (NextAction $action) => $action->structuredContent(),
                 $page->nextActions,
             ));
     }

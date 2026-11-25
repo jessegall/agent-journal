@@ -18,7 +18,9 @@ final class AccountMissing extends RuntimeException implements CodedRefusal, Com
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<AccountMissing> */
+    /**
+     * @use ThrowsLater<AccountMissing>
+     */
     use ThrowsLater;
 
     public static function for(string $accountId): self

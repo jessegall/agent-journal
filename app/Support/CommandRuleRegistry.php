@@ -38,7 +38,7 @@ final readonly class CommandRuleRegistry
     {
         usort(
             $rules,
-            fn (CommandRule $first, CommandRule $second): int => [
+            fn (CommandRule $first, CommandRule $second) => [
                 $first->id,
                 $first->scope->name(),
             ]
@@ -89,7 +89,7 @@ final readonly class CommandRuleRegistry
     public function withApprovedBundles(RuleBundle ...$bundles): self
     {
         $active = $this->activeRules();
-        $approved = array_merge([], ...array_map(fn (RuleBundle $bundle): array => $bundle->rules, $bundles));
+        $approved = array_merge([], ...array_map(fn (RuleBundle $bundle) => $bundle->rules, $bundles));
 
         return self::from([
             ...$active,
@@ -124,7 +124,7 @@ final readonly class CommandRuleRegistry
      */
     public function revision(): string
     {
-        $digests = array_map(fn (CommandRule $rule): string => $rule->digest(), $this->activeRules());
+        $digests = array_map(fn (CommandRule $rule) => $rule->digest(), $this->activeRules());
         sort($digests);
 
         return hash('sha256', implode("\n", $digests));
@@ -205,7 +205,7 @@ final readonly class CommandRuleRegistry
 
         return array_any(
             $known,
-            fn (CommandRule $other): bool => $other->coversSameCommand($rule) && $other->hasContract(),
+            fn (CommandRule $other) => $other->coversSameCommand($rule) && $other->hasContract(),
         );
     }
 
@@ -233,7 +233,7 @@ final readonly class CommandRuleRegistry
     {
         usort(
             $rules,
-            fn (CommandRule $first, CommandRule $second): int => count($second->subcommands)
+            fn (CommandRule $first, CommandRule $second) => count($second->subcommands)
                 <=> count($first->subcommands),
         );
 
@@ -248,9 +248,9 @@ final readonly class CommandRuleRegistry
     {
         return array_values(array_filter(
             $rules,
-            fn (CommandRule $rule): bool => ! array_any(
+            fn (CommandRule $rule) => ! array_any(
                 $rules,
-                fn (CommandRule $other): bool => $other->replaces($rule),
+                fn (CommandRule $other) => $other->replaces($rule),
             ),
         ));
     }

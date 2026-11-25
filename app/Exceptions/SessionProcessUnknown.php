@@ -18,7 +18,9 @@ final class SessionProcessUnknown extends RuntimeException implements CodedRefus
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<SessionProcessUnknown> */
+    /**
+     * @use ThrowsLater<SessionProcessUnknown>
+     */
     use ThrowsLater;
 
     public static function for(string $startKey): self

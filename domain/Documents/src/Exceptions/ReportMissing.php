@@ -16,7 +16,9 @@ use RuntimeException;
  */
 final class ReportMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @use ThrowsLater<ReportMissing> */
+    /**
+     * @use ThrowsLater<ReportMissing>
+     */
     use ThrowsLater;
 
     public static function numbered(int $number): self

@@ -67,7 +67,7 @@ final class QuestionAnswerNotice extends Model implements EventSource, ReadableM
      */
     protected function deliveryKey(): Attribute
     {
-        return Accessor::get(fn (): string => "question-answer:{$this->question_id}");
+        return Accessor::get(fn () => "question-answer:{$this->question_id}");
     }
 
     // ----------[ Relations ]----------

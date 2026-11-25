@@ -128,7 +128,7 @@ final class OutputAssessment extends Model implements ReadableModel
             return InterpretationState::Valid;
         }
 
-        if (array_any($problems, fn (OutputProblem $problem): bool => $problem->code === ProblemCode::ReaderFailed)) {
+        if (array_any($problems, fn (OutputProblem $problem) => $problem->code === ProblemCode::ReaderFailed)) {
             return InterpretationState::ReaderFailed;
         }
 

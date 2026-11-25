@@ -16,7 +16,6 @@ use App\Enums\Search\SearchSurface;
 use App\Exceptions\SearchWordsInvalid;
 use App\Mcp\Support\DeclaredSearch;
 use App\Support\ActorContext;
-use App\Support\RecordIdentity;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
 use App\Values\SearchAnswer;
@@ -160,7 +159,7 @@ final readonly class SearchProps
      */
     private function pagesOf(array $hits): array
     {
-        $records = array_map(fn (EmittedHit $hit): RecordIdentity => $hit->reference, $hits);
+        $records = array_map(fn (EmittedHit $hit) => $hit->reference, $hits);
         $routes = [];
 
         foreach ($this->records->visibleCards($records) as $card) {

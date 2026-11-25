@@ -52,7 +52,7 @@ final readonly class ShellOperations
         $words = array_map(fn (Word $word): string => $word->literal() ?? '', $node->words);
 
         $facts = array_values(
-            array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin),
+            array_filter($part->facts, fn (ClassFact $fact) => ! $fact->origin instanceof SyntaxOrigin),
         );
 
         $name = self::nameOf($part, $facts);

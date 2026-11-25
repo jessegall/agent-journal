@@ -21,7 +21,9 @@ final class InstallAttemptRefused extends RuntimeException implements CodedRefus
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<InstallAttemptRefused> */
+    /**
+     * @use ThrowsLater<InstallAttemptRefused>
+     */
     use ThrowsLater;
 
     private int $status = 409;

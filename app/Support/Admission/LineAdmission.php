@@ -306,9 +306,9 @@ final readonly class LineAdmission implements ShellAdmission
     {
         return $part->contracts !== [] && array_all(
             $part->contracts,
-            fn ($contract): bool => array_any(
+            fn ($contract) => array_any(
                 $this->rules->approvedFor($contract->operation),
-                fn (RuleRevision $revision): bool => $revision->reader_approvals->count() > 0,
+                fn (RuleRevision $revision) => $revision->reader_approvals->count() > 0,
             ),
         );
     }
@@ -340,7 +340,7 @@ final readonly class LineAdmission implements ShellAdmission
     ): Admission {
         $plan = $this->planner->plan($tree, $classification);
         $policy = $this->permissions->forActor($actor);
-        $references = array_map(fn (ClassFact $fact): string => $fact->origin->reference(), $classification->facts());
+        $references = array_map(fn (ClassFact $fact) => $fact->origin->reference(), $classification->facts());
 
         $stored = ProcessRun::create($actor, new RunAdmission(
             $requestKey,

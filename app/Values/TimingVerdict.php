@@ -35,7 +35,7 @@ final readonly class TimingVerdict
 
     public function reason(): AgentText
     {
-        $tasks = implode(', ', array_map(fn (int $task): string => "task {$task}", $this->unfinishedTasks));
+        $tasks = implode(', ', array_map(fn (int $task) => "task {$task}", $this->unfinishedTasks));
 
         return AgentText::of(
             'core.shell.phase_timing',

@@ -55,9 +55,9 @@ final readonly class DocumentSearchProvider implements SearchProvider
                 'published.title as title',
                 'published.number as revision',
             ],
-            titleOf: fn (Document $document): string => (string) $document->getAttribute('title'),
+            titleOf: fn (Document $document) => (string) $document->getAttribute('title'),
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $documentId): bool => $this->access->admitsOpen($query->reader, $documentId),
+            admitsOpen: fn (string $documentId) => $this->access->admitsOpen($query->reader, $documentId),
             referenceOf: fn (SearchQuery $asked, TieredSearchSource $documents): SearchResult|null => $this->tiers
                 ->numberedReference($asked, $this->recognizer, $documents),
             body: new SearchableBody('published.body', self::bodyHit(...), self::currentPassage(...)),

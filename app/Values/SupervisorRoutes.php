@@ -76,7 +76,7 @@ final class SupervisorRoutes extends Data
     {
         $overrides = array_values(array_filter(
             $this->overrides,
-            fn (SupervisorOverride $override): bool => $override->type->key !== $type->key,
+            fn (SupervisorOverride $override) => $override->type->key !== $type->key,
         ));
 
         return new self($this->default, [

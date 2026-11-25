@@ -59,6 +59,6 @@ final class ReaderDefinition extends Data
 
     public function hasRole(RecordRole $role): bool
     {
-        return array_any($this->rules, fn (RecordRule $rule): bool => $rule->role === $role);
+        return array_any($this->rules, fn (RecordRule $rule) => $rule->role === $role);
     }
 }

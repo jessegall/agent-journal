@@ -111,7 +111,7 @@ final readonly class SearchBatch
      */
     public function byteSize(): int
     {
-        return array_sum(array_map(fn (SearchResult $hit): int => $hit->byteSize(), $this->hits));
+        return array_sum(array_map(fn (SearchResult $hit) => $hit->byteSize(), $this->hits));
     }
 
     public function hasFailed(): bool

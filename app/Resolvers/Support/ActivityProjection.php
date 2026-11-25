@@ -61,7 +61,7 @@ final readonly class ActivityProjection
     private function latestLineOf(OutputChunk $chunk): string
     {
         $bytes = (string) $this->disks->disk(SpoolRecorder::DISK)->get($chunk->storage_path);
-        $lines = array_values(array_filter(explode("\n", $bytes), fn (string $line): bool => trim($line) !== ''));
+        $lines = array_values(array_filter(explode("\n", $bytes), fn (string $line) => trim($line) !== ''));
 
         if ($lines === []) {
             return '';

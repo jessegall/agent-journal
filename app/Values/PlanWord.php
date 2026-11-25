@@ -27,7 +27,7 @@ final class PlanWord extends Data
      */
     public function literal(): string|null
     {
-        $substituted = array_any($this->pieces, fn (string|int $piece): bool => is_int($piece));
+        $substituted = array_any($this->pieces, fn (string|int $piece) => is_int($piece));
 
         if ($substituted) {
             return null;

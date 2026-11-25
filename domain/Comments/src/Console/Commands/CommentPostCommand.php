@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Comments\Console\Commands;
 
 use App\Attributes\Console\JournalRoute;
-use Domain\Comments\Calls\CommentPlace;
-use Domain\Comments\Calls\PostCommentCall;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
+use Domain\Comments\Calls\CommentPlace;
+use Domain\Comments\Calls\PostCommentCall;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -53,7 +53,7 @@ final class CommentPostCommand extends Command
             'quote' => $this->filledOption('quote'),
             'startOffset' => $this->filledOption('start-offset') === null ? null : (int) $this->option('start-offset'),
             'endOffset' => $this->filledOption('end-offset') === null ? null : (int) $this->option('end-offset'),
-        ], fn (int|string|null $commentField): bool => $commentField !== null);
+        ], fn (int|string|null $commentField) => $commentField !== null);
 
         $version = $this->filledOption('at-revision');
 

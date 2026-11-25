@@ -40,7 +40,7 @@ final readonly class SourceHit
      */
     public static function ordered(array $hits): array
     {
-        usort($hits, fn (self $first, self $second): int => $first->compare($second));
+        usort($hits, fn (self $first, self $second) => $first->compare($second));
 
         return $hits;
     }

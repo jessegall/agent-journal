@@ -9,7 +9,9 @@ use RuntimeException;
 
 final class StackMissing extends RuntimeException
 {
-    /** @use ThrowsLater<StackMissing> */
+    /**
+     * @use ThrowsLater<StackMissing>
+     */
     use ThrowsLater;
 
     public static function forTarget(string $target): self

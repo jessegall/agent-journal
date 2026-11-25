@@ -42,7 +42,7 @@ final class TaskReferenceSearchTest extends TestCase
 
         $lookups = array_filter(
             DB::getQueryLog(),
-            fn (array $entry): bool => str_contains($entry['query'], 'number_group_id'),
+            fn (array $entry) => str_contains($entry['query'], 'number_group_id'),
         );
 
         DB::disableQueryLog();

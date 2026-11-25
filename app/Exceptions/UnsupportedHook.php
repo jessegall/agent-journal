@@ -12,7 +12,9 @@ use LogicException;
  */
 final class UnsupportedHook extends LogicException
 {
-    /** @use ThrowsLater<UnsupportedHook> */
+    /**
+     * @use ThrowsLater<UnsupportedHook>
+     */
     use ThrowsLater;
 
     public static function for(string $driver, string $method): self

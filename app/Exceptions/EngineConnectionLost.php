@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class EngineConnectionLost extends RuntimeException
 {
-    /** @use ThrowsLater<EngineConnectionLost> */
+    /**
+     * @use ThrowsLater<EngineConnectionLost>
+     */
     use ThrowsLater;
 
     public static function onConnection(string $connection): self

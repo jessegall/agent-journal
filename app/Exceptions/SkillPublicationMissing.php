@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class SkillPublicationMissing extends RuntimeException implements CodedRefusal
 {
-    /** @use ThrowsLater<SkillPublicationMissing> */
+    /**
+     * @use ThrowsLater<SkillPublicationMissing>
+     */
     use ThrowsLater;
 
     public static function for(string $publicationId): self

@@ -9,7 +9,6 @@ use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
-use App\Values\CommandReport;
 use Domain\Plans\Calls\UnassignPlanWorkCall;
 use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
@@ -51,6 +50,6 @@ final class UnassignPlanWorkCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->runReport(fn (): CommandReport => $this->workReport($this->sendCall($call)));
+        return $this->runReport(fn () => $this->workReport($this->sendCall($call)));
     }
 }

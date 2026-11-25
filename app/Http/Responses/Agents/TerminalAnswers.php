@@ -9,8 +9,6 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Time\ServerClock;
-use App\Data\Terminals\TerminalControlData;
-use App\Data\Terminals\TerminalInterestData;
 use App\Enums\Engine\RefusalCode;
 use App\Support\ActorIdentity;
 use App\Support\TerminalControls;
@@ -39,7 +37,7 @@ final readonly class TerminalAnswers
      */
     public function run(Command $command): JsonResponse|Response
     {
-        return $this->answer(fn (): mixed => $this->commands->run($command));
+        return $this->answer(fn () => $this->commands->run($command));
     }
 
     /**
@@ -49,7 +47,7 @@ final readonly class TerminalAnswers
      */
     public function control(Command $command): JsonResponse|Response
     {
-        return $this->answer(fn (): TerminalControlData => $this->controls->answerFor(
+        return $this->answer(fn () => $this->controls->answerFor(
             ActorIdentity::of($this->actors->actor()),
             $this->commands->run($command),
             $this->clock->now(),
@@ -63,7 +61,7 @@ final readonly class TerminalAnswers
      */
     public function interest(Command $command): JsonResponse|Response
     {
-        return $this->answer(fn (): TerminalInterestData => $this->views->answerFor(
+        return $this->answer(fn () => $this->views->answerFor(
             ActorIdentity::of($this->actors->actor()),
             $this->commands->run($command),
             $this->clock->now(),

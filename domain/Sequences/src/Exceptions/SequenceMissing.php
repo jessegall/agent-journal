@@ -10,7 +10,9 @@ use RuntimeException;
 
 final class SequenceMissing extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<SequenceMissing> */
+    /**
+     * @use ThrowsLater<SequenceMissing>
+     */
     use ThrowsLater;
 
     public static function forId(string $sequenceId): self

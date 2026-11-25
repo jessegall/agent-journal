@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class CommentUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<CommentUnavailable> */
+    /**
+     * @use ThrowsLater<CommentUnavailable>
+     */
     use ThrowsLater;
 
     public static function for(string $commentId): self

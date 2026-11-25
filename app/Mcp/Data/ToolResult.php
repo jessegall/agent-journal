@@ -51,7 +51,7 @@ final class ToolResult extends Data
             'status' => $this->status,
             ...$this->responseFields,
             'next_actions' => array_map(
-                fn (NextAction $action): array => $action->structuredContent(),
+                fn (NextAction $action) => $action->structuredContent(),
                 $this->nextActions,
             ),
         ];

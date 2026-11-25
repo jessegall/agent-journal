@@ -19,7 +19,9 @@ final class SharePreviewRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<SharePreviewRefused> */
+    /**
+     * @use ThrowsLater<SharePreviewRefused>
+     */
     use ThrowsLater;
 
     public static function unknown(string $previewId): self

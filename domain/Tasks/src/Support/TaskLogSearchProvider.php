@@ -169,7 +169,7 @@ final readonly class TaskLogSearchProvider implements SearchProvider
             }
         }
 
-        usort($matches, fn (SearchResult $first, SearchResult $second): int => $first->compare($second));
+        usort($matches, fn (SearchResult $first, SearchResult $second) => $first->compare($second));
 
         return SearchBatch::refreshed('', $query, $matches);
     }

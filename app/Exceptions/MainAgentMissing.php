@@ -12,7 +12,9 @@ use RuntimeException;
  */
 final class MainAgentMissing extends RuntimeException
 {
-    /** @use ThrowsLater<MainAgentMissing> */
+    /**
+     * @use ThrowsLater<MainAgentMissing>
+     */
     use ThrowsLater;
 
     public static function forInstallation(): self

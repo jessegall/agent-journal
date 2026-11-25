@@ -88,6 +88,6 @@ final readonly class WrapperRules
             ], CommandClassSet::none()),
         ];
 
-        return array_combine(array_map(fn (WrapperRule $rule): string => $rule->family, $rules), $rules);
+        return array_combine(array_map(fn (WrapperRule $rule) => $rule->family, $rules), $rules);
     }
 }

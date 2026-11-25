@@ -34,7 +34,7 @@ final readonly class ProposedRule
             $missing[] = 'evidence';
         }
 
-        if (! array_any($this->examples, fn (RuleExample $example): bool => $example->isPositive())) {
+        if (! array_any($this->examples, fn (RuleExample $example) => $example->isPositive())) {
             $missing[] = 'examples';
         }
 
@@ -52,7 +52,7 @@ final readonly class ProposedRule
      */
     public function digest(): string
     {
-        $examples = array_map(fn (RuleExample $example): array => $example->toArray(), $this->examples);
+        $examples = array_map(fn (RuleExample $example) => $example->toArray(), $this->examples);
 
         return hash('sha256', json_encode([
             $this->rule->toArray(),

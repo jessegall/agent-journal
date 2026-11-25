@@ -55,7 +55,7 @@ final readonly class ReportSearchProvider implements SearchProvider
             ],
             titleOf: fn (Report $report): string => $report->title,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $reportId): bool => $this->access->admitsOpen($query->reader, $reportId),
+            admitsOpen: fn (string $reportId) => $this->access->admitsOpen($query->reader, $reportId),
             referenceOf: fn (SearchQuery $asked, TieredSearchSource $reports): SearchResult|null => $this->tiers
                 ->numberedReference($asked, $this->recognizer, $reports),
             body: new SearchableBody('body', self::bodyHit(...), self::currentPassage(...)),

@@ -73,7 +73,7 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->singleton(
             CommandRuleRegistry::class,
-            fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()),
+            fn () => $registry->commandRules(new CoreRules()->all()),
         );
 
         $this->app->singleton(

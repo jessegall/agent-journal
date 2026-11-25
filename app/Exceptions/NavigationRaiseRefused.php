@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class NavigationRaiseRefused extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<NavigationRaiseRefused> */
+    /**
+     * @use ThrowsLater<NavigationRaiseRefused>
+     */
     use ThrowsLater;
 
     public static function notAKeyScript(string $requestId): self

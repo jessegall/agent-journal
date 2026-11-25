@@ -48,7 +48,7 @@ final readonly class RuleSearchProvider implements SearchProvider
             ],
             titleOf: fn (Rule $rule): string => $rule->text,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $ruleId): bool => $this->access->admitsOpen($query->reader, $ruleId),
+            admitsOpen: fn (string $ruleId) => $this->access->admitsOpen($query->reader, $ruleId),
             referenceOf: fn (SearchQuery $asked, TieredSearchSource $rules): SearchResult|null => $this->texts
                 ->numberedReference($asked, $this->recognizer, $rules),
         ));

@@ -17,7 +17,9 @@ final class RecordUnavailable extends RuntimeException implements CodedRefusal, 
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<RecordUnavailable> */
+    /**
+     * @use ThrowsLater<RecordUnavailable>
+     */
     use ThrowsLater;
 
     public static function for(RecordIdentity $record): self

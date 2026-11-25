@@ -115,7 +115,7 @@ final readonly class ReaderProofCheck
         $assessment = $this->replays->replay($reader, $contract, $part)->assessment;
 
         $failures = array_map(
-            fn (OutputProblem $problem): string => sprintf(
+            fn (OutputProblem $problem) => sprintf(
                 '%s at %s bytes %s-%s: %s',
                 $problem->code->value,
                 $problem->stream?->value,
@@ -157,9 +157,9 @@ final readonly class ReaderProofCheck
      */
     private function unprovenStatuses(VerificationContract $contract, array $proven): array
     {
-        $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proven);
+        $covered = array_map(fn (ProvenBranch $branch) => $branch->status, $proven);
         $missing = $contract->exits->branchesMissing($covered);
 
-        return array_map(fn (ExitBranch $branch): int => $branch->status, $missing);
+        return array_map(fn (ExitBranch $branch) => $branch->status, $missing);
     }
 }

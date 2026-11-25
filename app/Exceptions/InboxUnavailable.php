@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class InboxUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<InboxUnavailable> */
+    /**
+     * @use ThrowsLater<InboxUnavailable>
+     */
     use ThrowsLater;
 
     public static function forId(string $inboxId): self

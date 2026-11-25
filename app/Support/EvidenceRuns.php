@@ -194,7 +194,7 @@ final readonly class EvidenceRuns
 
         $classifier = array_reduce(
             $candidates,
-            fn (CommandClassifier $known, CommandRule $rule): CommandClassifier => $known->withCandidate($rule),
+            fn (CommandClassifier $known, CommandRule $rule) => $known->withCandidate($rule),
             $this->classifier,
         );
 

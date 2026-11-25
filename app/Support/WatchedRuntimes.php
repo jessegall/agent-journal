@@ -61,7 +61,7 @@ final readonly class WatchedRuntimes
         }
 
         $runtimeSignatures = array_map(
-            fn (WatchedRuntime $runtime): string => "{$runtime->runtimeId}:{$runtime->intervalMs}",
+            fn (WatchedRuntime $runtime) => "{$runtime->runtimeId}:{$runtime->intervalMs}",
             $watched,
         );
 

@@ -46,7 +46,7 @@ final readonly class MessageSearchProvider implements MessageSearch
             ],
             titleOf: fn (Message $message): string => $message->body,
             hitOf: self::hitOf(...),
-            admitsOpen: fn (string $messageId): bool => $this->access->admitsOpen($query->reader, $messageId),
+            admitsOpen: fn (string $messageId) => $this->access->admitsOpen($query->reader, $messageId),
             referenceOf: fn (): SearchResult|null => null,
         ));
     }

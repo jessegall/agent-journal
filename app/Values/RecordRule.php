@@ -58,7 +58,7 @@ final class RecordRule extends Data
     {
         preg_match($this->expression(), $line, $match);
 
-        return array_filter($match, fn (int|string $key): bool => is_string($key), ARRAY_FILTER_USE_KEY);
+        return array_filter($match, fn (int|string $key) => is_string($key), ARRAY_FILTER_USE_KEY);
     }
 
     /**

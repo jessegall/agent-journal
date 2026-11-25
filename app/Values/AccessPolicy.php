@@ -79,7 +79,7 @@ final class AccessPolicy extends Data
             );
         }
 
-        if (array_any($this->operationGrants, fn (OperationGrant $grant): bool => $grant->covers($operation))) {
+        if (array_any($this->operationGrants, fn (OperationGrant $grant) => $grant->covers($operation))) {
             return AccessDecision::allowed(
                 AccessRuleType::OperationGrant,
                 AgentText::of('core.access.granted_by_name', ['operation' => $operation->name]),
@@ -125,11 +125,11 @@ final class AccessPolicy extends Data
     {
         return self::scopesContain($this->paths, $other->paths)
             && self::scopesContain($this->destinations, $other->destinations)
-            && array_all($other->operationGrants, fn (OperationGrant $grant): bool => in_array(
+            && array_all($other->operationGrants, fn (OperationGrant $grant) => in_array(
                 $grant,
                 $this->operationGrants,
             ))
-            && array_all($this->denials, fn (string $denial): bool => in_array($denial, $other->denials, true))
+            && array_all($this->denials, fn (string $denial) => in_array($denial, $other->denials, true))
             && $this->processes->contains($other->processes);
     }
 

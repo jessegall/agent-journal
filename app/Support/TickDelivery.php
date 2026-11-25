@@ -130,11 +130,11 @@ final readonly class TickDelivery
 
             foreach ($commands->all() as $command) {
                 $locks = WorkLockSet::for($candidate->occurrence, $command);
-                $run = fn (): mixed => $this->commands->run($command);
+                $run = fn () => $this->commands->run($command);
 
                 $this->origins->runWith(
                     $locks,
-                    fn (): mixed => $this->entrance->through(CommandEntry::Application, $run),
+                    fn () => $this->entrance->through(CommandEntry::Application, $run),
                 );
             }
 

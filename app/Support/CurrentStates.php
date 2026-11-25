@@ -24,7 +24,7 @@ final readonly class CurrentStates implements CurrentState
 
     public function of(StackTarget $target, string $typeKey): Option
     {
-        return $this->highestLive($target, fn (Frame $frame): bool => $frame->typeKey() === $typeKey);
+        return $this->highestLive($target, fn (Frame $frame) => $frame->typeKey() === $typeKey);
     }
 
     public function ofCaller(string $typeKey): Option

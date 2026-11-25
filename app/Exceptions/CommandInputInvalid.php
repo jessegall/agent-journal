@@ -39,7 +39,7 @@ final class CommandInputInvalid extends ValidationException implements CodedRefu
     private function fieldProblems(): array
     {
         return array_map(
-            fn (string $field, array $problems): string => "{$field}: {$problems[0]}",
+            fn (string $field, array $problems) => "{$field}: {$problems[0]}",
             array_keys($this->errors()),
             $this->errors(),
         );

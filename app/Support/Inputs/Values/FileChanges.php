@@ -67,6 +67,6 @@ final readonly class FileChanges
      */
     public function operations(): array
     {
-        return array_map(fn (FileChange $change): Operation => $change->asOperation(), $this->changes);
+        return array_map(fn (FileChange $change) => $change->asOperation(), $this->changes);
     }
 }

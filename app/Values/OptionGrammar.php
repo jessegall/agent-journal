@@ -53,7 +53,7 @@ final class OptionGrammar extends Data
 
         return $this->takesValue() && array_any(
             $this->names,
-            fn (string $name): bool => str_starts_with($name, '--') && str_starts_with($word, "{$name}="),
+            fn (string $name) => str_starts_with($name, '--') && str_starts_with($word, "{$name}="),
         );
     }
 

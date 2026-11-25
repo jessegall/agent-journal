@@ -88,7 +88,7 @@ final readonly class StateEventDelivery
     {
         $targets = $dispatch->targets();
 
-        $collect = fn (): array => array_map(
+        $collect = fn () => array_map(
             fn (StackTarget $target) => $this->collect($dispatch, $target),
             $targets,
         );

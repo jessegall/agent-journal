@@ -47,7 +47,7 @@ final class StopCondition extends Data
             $this->key,
             $this->executable,
             $this->arguments,
-            array_map(fn (AccessType $type): string => $type->value, $this->accessTypes),
+            array_map(fn (AccessType $type) => $type->value, $this->accessTypes),
             $this->directory,
             $this->timeoutSeconds,
             $this->outputBytes,

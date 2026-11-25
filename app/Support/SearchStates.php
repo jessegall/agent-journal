@@ -180,7 +180,7 @@ final readonly class SearchStates
 
         $active = array_values(array_filter(
             is_array($active) ? $active : [],
-            fn (mixed $id): bool => is_string($id) && $this->cache->has(self::searchKey($id)),
+            fn (mixed $id) => is_string($id) && $this->cache->has(self::searchKey($id)),
         ));
 
         while (count($active) >= self::ACTIVE_SEARCH_LIMIT) {

@@ -70,7 +70,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
         $position->advance($checkpoint);
         $this->updates->progressed($part);
 
-        if (array_any($checkpoint->problems, fn (OutputProblem $problem): bool => $problem->code->isReaderFailure())) {
+        if (array_any($checkpoint->problems, fn (OutputProblem $problem) => $problem->code->isReaderFailure())) {
             $position->markFailed();
         }
 

@@ -32,7 +32,7 @@ final readonly class RunReconciler
 
         foreach ($runs as $run) {
             $parts = $run->parts()->readLimit(500)->get();
-            $open = $parts->reject(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+            $open = $parts->reject(fn (PartRun $part) => $part->lifecycle->isFinal());
 
             foreach ($open as $part) {
                 $part->lose();

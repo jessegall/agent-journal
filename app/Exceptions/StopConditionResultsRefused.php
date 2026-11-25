@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class StopConditionResultsRefused extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<StopConditionResultsRefused> */
+    /**
+     * @use ThrowsLater<StopConditionResultsRefused>
+     */
     use ThrowsLater;
 
     public static function unknownAttempt(string $attemptId): self

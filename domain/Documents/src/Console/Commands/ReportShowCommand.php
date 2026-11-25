@@ -7,7 +7,6 @@ namespace Domain\Documents\Console\Commands;
 use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
-use App\Values\CommandReport;
 use Domain\Documents\Calls\DocumentCalls;
 use Domain\Documents\Console\Concerns\PrintsRecordText;
 use Illuminate\Console\Command;
@@ -28,7 +27,7 @@ final class ReportShowCommand extends Command
     {
         $number = (string) $this->argument('number');
 
-        return $this->runReport(fn (): CommandReport => $this->recordTextReport(
+        return $this->runReport(fn () => $this->recordTextReport(
             $documents->showReport(number: $number, selection: $this->selection()),
             "report:show {$number}",
         ));

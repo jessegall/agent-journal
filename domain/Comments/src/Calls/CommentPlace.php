@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Comments\Calls;
 
 use App\Enums\Records\TextAnchorType;
-use Domain\Comments\Exceptions\CommentPlaceUnclear;
 use App\Values\TextRange;
+use Domain\Comments\Exceptions\CommentPlaceUnclear;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -72,6 +72,6 @@ final class CommentPlace extends Data
      */
     private function givenFields(): array
     {
-        return array_values(array_filter(self::FIELDS, fn (string $field): bool => $this->{$field} !== null));
+        return array_values(array_filter(self::FIELDS, fn (string $field) => $this->{$field} !== null));
     }
 }

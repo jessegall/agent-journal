@@ -304,7 +304,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $parts = $this->parts()->readLimit(500)->get();
 
         return $parts->isNotEmpty() && $parts->every(
-            fn (PartRun $part): bool => $part->lifecycle === LifecycleState::Ended
+            fn (PartRun $part) => $part->lifecycle === LifecycleState::Ended
                 && $part->capture_state === CaptureState::Complete,
         );
     }
@@ -494,7 +494,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     private static function areAllPartsFinal(Collection $parts): bool
     {
-        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part) => $part->lifecycle->isFinal());
     }
 
     // ----------[ Queries ]----------

@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class MenuEntryRefused extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<MenuEntryRefused> */
+    /**
+     * @use ThrowsLater<MenuEntryRefused>
+     */
     use ThrowsLater;
 
     public static function notFound(string $entryId): self

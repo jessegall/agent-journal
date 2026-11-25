@@ -222,7 +222,7 @@ final class CommandRule extends Data
 
     public function replaces(self $other): bool
     {
-        return array_any($this->replaces, fn (RuleReference $replaced): bool => $replaced->names($other));
+        return array_any($this->replaces, fn (RuleReference $replaced) => $replaced->names($other));
     }
 
     /**

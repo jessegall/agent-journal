@@ -19,7 +19,7 @@ final readonly class QuestionSummaries implements QuestionSummaryReader
 
     public function shownByIds(array $ids): array
     {
-        return array_map(fn (Question $question): ShownQuestion => $question->shown, $this->questionsOf($ids));
+        return array_map(fn (Question $question) => $question->shown, $this->questionsOf($ids));
     }
 
     /**

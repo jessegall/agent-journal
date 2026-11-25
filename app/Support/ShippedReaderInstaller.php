@@ -120,7 +120,7 @@ final readonly class ShippedReaderInstaller
     {
         $rules = array_filter(
             $this->coreRules->declaredRules(),
-            fn (CommandRule $rule): bool => $rule->id === $reader->operation,
+            fn (CommandRule $rule) => $rule->id === $reader->operation,
         );
 
         return array_values($rules)[0] ?? throw ShippedReaderUnmatched::forRule($reader->operation);

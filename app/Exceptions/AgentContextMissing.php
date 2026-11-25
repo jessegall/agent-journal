@@ -12,7 +12,9 @@ use LogicException;
  */
 final class AgentContextMissing extends LogicException
 {
-    /** @use ThrowsLater<AgentContextMissing> */
+    /**
+     * @use ThrowsLater<AgentContextMissing>
+     */
     use ThrowsLater;
 
     public static function forRequest(): self

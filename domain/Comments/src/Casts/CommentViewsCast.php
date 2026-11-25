@@ -25,7 +25,7 @@ final class CommentViewsCast implements Cast
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): array
     {
         $views = (array) $value;
-        $texts = array_filter($views, fn (mixed $view): bool => self::typeOf($view) === CommentType::Text);
+        $texts = array_filter($views, fn (mixed $view) => self::typeOf($view) === CommentType::Text);
         $records = array_diff_key($views, $texts);
         $read = TextCommentView::collect($texts) + RecordCommentView::collect($records);
         ksort($read);

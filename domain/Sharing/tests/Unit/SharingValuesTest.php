@@ -135,7 +135,7 @@ final class SharingValuesTest extends TestCase
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
         $grammar = new CommandGrammar(
-            static fn (string $name): bool => preg_match('/Share|Gateway/', class_basename($name)) === 1
+            static fn (string $name) => preg_match('/Share|Gateway/', class_basename($name)) === 1
                 || $name === RecordIdentity::class,
         );
 

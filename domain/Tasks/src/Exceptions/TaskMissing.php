@@ -12,7 +12,9 @@ use RuntimeException;
 
 final class TaskMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @use ThrowsLater<TaskMissing> */
+    /**
+     * @use ThrowsLater<TaskMissing>
+     */
     use ThrowsLater;
 
     public static function forId(string $taskId): self

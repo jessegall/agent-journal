@@ -627,7 +627,7 @@ final readonly class DomainEntry
 
         return $this->provided(CommandRuleProvider::class)
             ->map(fn (CommandRuleProvider $domain) => array_map(
-                fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision),
+                fn (CommandRule $rule) => $rule->ownedBy($scope, $rule->revision),
                 $domain->commandRules(),
             ))
             ->getOrElse([]);

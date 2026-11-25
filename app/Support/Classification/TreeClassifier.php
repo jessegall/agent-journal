@@ -257,7 +257,7 @@ final readonly class TreeClassifier implements CommandClassifier
             );
         }
 
-        $boundWords = array_map(fn (Word $word): Word => $word->boundTo($context->positional), $words);
+        $boundWords = array_map(fn (Word $word) => $word->boundTo($context->positional), $words);
         $program = $this->names->canonical($boundWords[0], $node, $this->rules->spellings());
 
         if ($program instanceof UnresolvedFact) {
@@ -432,7 +432,7 @@ final readonly class TreeClassifier implements CommandClassifier
             );
 
             $contracts = array_merge(
-                ...array_map(fn (PartClassification $part): array => $part->contracts, $inner->parts),
+                ...array_map(fn (PartClassification $part) => $part->contracts, $inner->parts),
             );
 
             $children[] = new PartClassification(
@@ -526,7 +526,7 @@ final readonly class TreeClassifier implements CommandClassifier
             $inner->facts(),
         );
 
-        $contracts = array_merge(...array_map(fn (PartClassification $part): array => $part->contracts, $inner->parts));
+        $contracts = array_merge(...array_map(fn (PartClassification $part) => $part->contracts, $inner->parts));
 
         return new PartClassification(
             $node,
@@ -831,7 +831,7 @@ final readonly class TreeClassifier implements CommandClassifier
     private function purposeOf(array $parts): CommandType
     {
         $special = array_values(
-            array_filter($parts, fn (PartClassification $part): bool => $part->purpose !== CommandType::Ordinary),
+            array_filter($parts, fn (PartClassification $part) => $part->purpose !== CommandType::Ordinary),
         );
 
         if ($special === []) {

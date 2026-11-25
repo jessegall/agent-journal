@@ -19,7 +19,9 @@ final class ProfileMissing extends RuntimeException implements CodedRefusal, Com
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<ProfileMissing> */
+    /**
+     * @use ThrowsLater<ProfileMissing>
+     */
     use ThrowsLater;
 
     public static function for(ProfileKey $key): self

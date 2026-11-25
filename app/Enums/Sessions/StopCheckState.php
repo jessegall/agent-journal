@@ -22,13 +22,13 @@ enum StopCheckState: string
      */
     public static function settledBy(array $stepOutcomes): self
     {
-        if (array_any($stepOutcomes, fn (StopConditionResultType $stepOutcome): bool => $stepOutcome->refusesStop())) {
+        if (array_any($stepOutcomes, fn (StopConditionResultType $stepOutcome) => $stepOutcome->refusesStop())) {
             return self::Failed;
         }
 
         if (array_all(
             $stepOutcomes,
-            fn (StopConditionResultType $stepOutcome): bool => $stepOutcome === StopConditionResultType::Passed,
+            fn (StopConditionResultType $stepOutcome) => $stepOutcome === StopConditionResultType::Passed,
         )) {
             return self::Passed;
         }

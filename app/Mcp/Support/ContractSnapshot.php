@@ -90,7 +90,7 @@ final readonly class ContractSnapshot
 
         return array_values(array_filter(
             $fields,
-            fn (string $name): bool => json_encode($before[$name] ?? null, self::JSON_FLAGS)
+            fn (string $name) => json_encode($before[$name] ?? null, self::JSON_FLAGS)
                 !== json_encode($after[$name] ?? null, self::JSON_FLAGS),
         ));
     }

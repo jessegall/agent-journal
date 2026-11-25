@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class ProjectReadRefused extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<ProjectReadRefused> */
+    /**
+     * @use ThrowsLater<ProjectReadRefused>
+     */
     use ThrowsLater;
 
     public static function missing(string $readId): self

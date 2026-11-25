@@ -12,7 +12,9 @@ use RuntimeException;
  */
 final class GlobalGroupMissing extends RuntimeException
 {
-    /** @use ThrowsLater<GlobalGroupMissing> */
+    /**
+     * @use ThrowsLater<GlobalGroupMissing>
+     */
     use ThrowsLater;
 
     public static function named(string $name): self

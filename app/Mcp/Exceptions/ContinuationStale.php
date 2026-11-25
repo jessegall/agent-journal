@@ -15,7 +15,9 @@ use RuntimeException;
  */
 final class ContinuationStale extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @use ThrowsLater<ContinuationStale> */
+    /**
+     * @use ThrowsLater<ContinuationStale>
+     */
     use ThrowsLater;
 
     public static function expired(): self

@@ -111,14 +111,14 @@ final readonly class PhaseTiming implements VerificationTiming
     {
         $holding = array_filter(
             $this->tasks->summaries($taskIds),
-            fn (TaskSummary $task): bool => $task->state->isHoldingChecks(),
+            fn (TaskSummary $task) => $task->state->isHoldingChecks(),
         );
 
         if ($holding === []) {
             return TimingVerdict::allowed();
         }
 
-        $numbers = array_values(array_map(fn (TaskSummary $task): int => $task->number, $holding));
+        $numbers = array_values(array_map(fn (TaskSummary $task) => $task->number, $holding));
 
         return TimingVerdict::refused($planNumber, $phaseNumber, $numbers);
     }

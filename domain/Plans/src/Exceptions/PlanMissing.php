@@ -13,7 +13,9 @@ use RuntimeException;
  */
 final class PlanMissing extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<PlanMissing> */
+    /**
+     * @use ThrowsLater<PlanMissing>
+     */
     use ThrowsLater;
 
     public static function withId(string $planId): self

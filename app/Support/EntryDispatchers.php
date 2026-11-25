@@ -39,6 +39,6 @@ final readonly class EntryDispatchers implements JournalCommands
     {
         $dispatcher = $this->for($entry);
 
-        return $this->actors->actAsSystem($trustedEntry, fn (): mixed => $dispatcher->run($command));
+        return $this->actors->actAsSystem($trustedEntry, fn () => $dispatcher->run($command));
     }
 }

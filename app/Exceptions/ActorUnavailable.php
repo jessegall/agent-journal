@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class ActorUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<ActorUnavailable> */
+    /**
+     * @use ThrowsLater<ActorUnavailable>
+     */
     use ThrowsLater;
 
     public static function forIdentity(ActorIdentity $identity): self

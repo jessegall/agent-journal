@@ -24,12 +24,12 @@ final readonly class WorkLockSet
 
         $others = array_values(array_filter(
             $declared,
-            fn (WorkOccurrence $subject): bool => ! $subject->isSameWorkAs($origin),
+            fn (WorkOccurrence $subject) => ! $subject->isSameWorkAs($origin),
         ));
 
         usort(
             $others,
-            fn (WorkOccurrence $first, WorkOccurrence $second): int => $first->lockKey() <=> $second->lockKey(),
+            fn (WorkOccurrence $first, WorkOccurrence $second) => $first->lockKey() <=> $second->lockKey(),
         );
 
         return new self($origin, $others);
@@ -55,11 +55,11 @@ final readonly class WorkLockSet
             return true;
         }
 
-        $held = array_map(fn (WorkOccurrence $subject): string => $subject->lockKey(), $this->inLockOrder());
+        $held = array_map(fn (WorkOccurrence $subject) => $subject->lockKey(), $this->inLockOrder());
 
         return array_all(
             $command->lockedSubjects(),
-            fn (WorkOccurrence $subject): bool => in_array($subject->lockKey(), $held, true),
+            fn (WorkOccurrence $subject) => in_array($subject->lockKey(), $held, true),
         );
     }
 }

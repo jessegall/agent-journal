@@ -14,7 +14,9 @@ use RuntimeException;
  */
 final class HelperUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<HelperUnavailable> */
+    /**
+     * @use ThrowsLater<HelperUnavailable>
+     */
     use ThrowsLater;
 
     public static function forIndependentReview(string $profileKey): self

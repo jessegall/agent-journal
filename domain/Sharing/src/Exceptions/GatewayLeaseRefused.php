@@ -19,7 +19,9 @@ final class GatewayLeaseRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<GatewayLeaseRefused> */
+    /**
+     * @use ThrowsLater<GatewayLeaseRefused>
+     */
     use ThrowsLater;
 
     public static function forOperation(string $operationId): self

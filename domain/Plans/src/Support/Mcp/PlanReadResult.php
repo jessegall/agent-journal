@@ -70,7 +70,7 @@ final readonly class PlanReadResult
     {
         $phases = $position->offset === 0 ? $plan->phases : array_values(array_filter(
             $plan->phases,
-            fn (PlanPhaseTasks $phase): bool => $phase->taskIds !== [],
+            fn (PlanPhaseTasks $phase) => $phase->taskIds !== [],
         ));
 
         $phaseOffset = (int) $position->filters['phase_offset'];

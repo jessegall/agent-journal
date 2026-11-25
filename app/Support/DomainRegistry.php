@@ -172,7 +172,7 @@ final readonly class DomainRegistry
     public function commandRules(array $coreRules): CommandRuleRegistry
     {
         $domainRules = array_merge(
-            ...array_map(fn (DomainEntry $entry): array => $entry->commandRules(), $this->all()),
+            ...array_map(fn (DomainEntry $entry) => $entry->commandRules(), $this->all()),
         );
 
         return CommandRuleRegistry::from([

@@ -33,7 +33,7 @@ final class OperationGrant extends Data
 
         return $this->resources === [] || array_all(
             $operation->resources,
-            fn (ResourceRequest $resource): bool => array_any(
+            fn (ResourceRequest $resource) => array_any(
                 $this->resources,
                 fn (ResourceRequest $granted) => $granted->type === $resource->type
                     && $granted->normalizedPath() === $resource->normalizedPath(),

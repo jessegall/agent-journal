@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Data\Processes\ClassificationSummaryData;
-use App\Data\Processes\PartSummaryData;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
 
@@ -28,7 +27,7 @@ final readonly class Classification
 
     public function requiredClasses(): CommandClassSet
     {
-        return CommandClassSet::of(...array_map(fn (ClassFact $fact): CommandClass => $fact->class, $this->facts()));
+        return CommandClassSet::of(...array_map(fn (ClassFact $fact) => $fact->class, $this->facts()));
     }
 
     /**
@@ -39,7 +38,7 @@ final readonly class Classification
      */
     public function facts(): array
     {
-        $partFacts = array_merge(...array_map(fn (PartClassification $part): array => $part->facts, $this->parts));
+        $partFacts = array_merge(...array_map(fn (PartClassification $part) => $part->facts, $this->parts));
 
         return [
             ...$partFacts,
@@ -54,7 +53,7 @@ final readonly class Classification
      */
     public function factsFor(CommandClass $class): array
     {
-        return array_values(array_filter($this->facts(), fn (ClassFact $fact): bool => $fact->class === $class));
+        return array_values(array_filter($this->facts(), fn (ClassFact $fact) => $fact->class === $class));
     }
 
     /**
@@ -64,7 +63,7 @@ final readonly class Classification
     {
         return array_any(
             $this->parts,
-            fn (PartClassification $part): bool => $part->purpose === CommandType::Verification,
+            fn (PartClassification $part) => $part->purpose === CommandType::Verification,
         );
     }
 
@@ -78,7 +77,7 @@ final readonly class Classification
      */
     public function unresolved(): array
     {
-        return array_merge(...array_map(fn (PartClassification $part): array => $part->unresolved, $this->parts));
+        return array_merge(...array_map(fn (PartClassification $part) => $part->unresolved, $this->parts));
     }
 
     /**
@@ -89,7 +88,7 @@ final readonly class Classification
     {
         return ! $this->isKnown() || array_any(
             $this->requiredClasses()->classes,
-            fn (CommandClass $class): bool => $class->isFileChange(),
+            fn (CommandClass $class) => $class->isFileChange(),
         );
     }
 
@@ -101,7 +100,7 @@ final readonly class Classification
     {
         return ! $this->isKnown() || array_any(
             $this->parts,
-            fn (PartClassification $part): bool => $part->purpose->needsAlias(),
+            fn (PartClassification $part) => $part->purpose->needsAlias(),
         );
     }
 
@@ -113,7 +112,7 @@ final readonly class Classification
         return ClassificationSummaryData::from([
             'isKnown' => $this->isKnown(),
             'classes' => $this->requiredClasses()->values(),
-            'parts' => array_map(fn (PartClassification $part): PartSummaryData => $part->summary(), $this->parts),
+            'parts' => array_map(fn (PartClassification $part) => $part->summary(), $this->parts),
         ]);
     }
 
@@ -140,7 +139,7 @@ final readonly class Classification
      */
     public function classesOf(PartClassification $part): CommandClassSet
     {
-        $classes = array_map(fn (ClassFact $fact): CommandClass => $fact->class, $this->factsOf($part));
+        $classes = array_map(fn (ClassFact $fact) => $fact->class, $this->factsOf($part));
 
         return CommandClassSet::of(...$classes);
     }

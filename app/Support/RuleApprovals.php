@@ -79,8 +79,8 @@ final readonly class RuleApprovals
     private function checkConflicts(CommandRule $rule): void
     {
         $revisions = $this->projectRules->activeRevisions();
-        $active = array_map(fn (RuleRevision $revision): CommandRule => $revision->payload, $revisions);
-        $others = array_values(array_filter($active, fn (CommandRule $other): bool => ! $other->isSameRuleAs($rule)));
+        $active = array_map(fn (RuleRevision $revision) => $revision->payload, $revisions);
+        $others = array_values(array_filter($active, fn (CommandRule $other) => ! $other->isSameRuleAs($rule)));
 
         try {
             $this->rules->withRules(...[
@@ -120,8 +120,8 @@ final readonly class RuleApprovals
             throw ApprovalRefused::proofMismatch($readers[0]->proofId);
         }
 
-        $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proof->proven_branches->items());
-        $admitted = array_map(fn (ExitBranch $branch): int => $branch->status, $rule->contracts[0]->exits->branches);
+        $covered = array_map(fn (ProvenBranch $branch) => $branch->status, $proof->proven_branches->items());
+        $admitted = array_map(fn (ExitBranch $branch) => $branch->status, $rule->contracts[0]->exits->branches);
 
         if (array_diff($admitted, $covered) !== []) {
             throw ApprovalRefused::branchesUnproven($proof->id);

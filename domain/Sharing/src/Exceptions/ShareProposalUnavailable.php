@@ -18,7 +18,9 @@ final class ShareProposalUnavailable extends RuntimeException implements CodedRe
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<ShareProposalUnavailable> */
+    /**
+     * @use ThrowsLater<ShareProposalUnavailable>
+     */
     use ThrowsLater;
 
     public static function for(string $shareId): self

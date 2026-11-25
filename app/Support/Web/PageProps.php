@@ -142,7 +142,7 @@ final readonly class PageProps
             $page->key,
             $page->visibilityChecks(),
             $page->resolver,
-            fn (): Data => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read(),
+            fn () => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read(),
         );
     }
 
@@ -218,7 +218,7 @@ final readonly class PageProps
             $section->key,
             $section->visibilityChecks(),
             $section->resolver,
-            fn (): Data => $this->readers->sectionReader(
+            fn () => $this->readers->sectionReader(
                 $section->key,
                 $section->resolver,
                 $request,

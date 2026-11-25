@@ -21,7 +21,9 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<DeviceGrantRefused> */
+    /**
+     * @use ThrowsLater<DeviceGrantRefused>
+     */
     use ThrowsLater;
 
     private int $status = 404;

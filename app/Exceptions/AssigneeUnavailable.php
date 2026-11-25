@@ -17,7 +17,9 @@ final class AssigneeUnavailable extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<AssigneeUnavailable> */
+    /**
+     * @use ThrowsLater<AssigneeUnavailable>
+     */
     use ThrowsLater;
 
     public static function forActor(AssigneeIdentity $actor, Throwable|null $previous = null): self

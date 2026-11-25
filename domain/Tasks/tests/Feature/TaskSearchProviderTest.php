@@ -98,7 +98,7 @@ final class TaskSearchProviderTest extends TestCase
         $log = DB::getQueryLog();
         DB::disableQueryLog();
 
-        $isRead = fn (array $entry): bool => str_starts_with($entry['query'], 'select');
+        $isRead = fn (array $entry) => str_starts_with($entry['query'], 'select');
         $reads = array_values(array_filter($log, $isRead));
 
         $this->assertInstanceOf(ScanningOutcome::class, $second->outcome);

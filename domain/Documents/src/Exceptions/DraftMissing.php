@@ -15,7 +15,9 @@ use RuntimeException;
  */
 final class DraftMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @use ThrowsLater<DraftMissing> */
+    /**
+     * @use ThrowsLater<DraftMissing>
+     */
     use ThrowsLater;
 
     public static function unavailable(): self

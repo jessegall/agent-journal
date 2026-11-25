@@ -8,7 +8,6 @@ use App\Attributes\Console\JournalRoute;
 use App\Console\Concerns\RunsCallPipelines;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Support\CallKey;
-use App\Values\CommandReport;
 use Domain\Helpers\Calls\HelperCalls;
 use Domain\Helpers\Calls\SendHelperCall;
 use Domain\Helpers\Console\Concerns\PrintsHelperReceipts;
@@ -52,7 +51,7 @@ final class HelperSendCommand extends Command
             return $this->runCall($call);
         }
 
-        return $this->runReport(fn (): CommandReport => $this->receiptReport($helpers->sendHelper(
+        return $this->runReport(fn () => $this->receiptReport($helpers->sendHelper(
             $call->identityId,
             $call->profileKey,
             $call->model,

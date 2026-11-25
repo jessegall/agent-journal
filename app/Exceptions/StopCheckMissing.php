@@ -12,7 +12,9 @@ use LogicException;
  */
 final class StopCheckMissing extends LogicException
 {
-    /** @use ThrowsLater<StopCheckMissing> */
+    /**
+     * @use ThrowsLater<StopCheckMissing>
+     */
     use ThrowsLater;
 
     public static function for(string $attemptId): self

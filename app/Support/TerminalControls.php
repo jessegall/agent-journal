@@ -375,7 +375,7 @@ final readonly class TerminalControls
     public function revokeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
     {
         $grants = TerminalGrant::query()->withRuntimeSession()->ownedBy($viewer)->ofAgent($agentId)
-            ->get()->filter(fn (TerminalGrant $grant): bool => $grant->holdsAt($now));
+            ->get()->filter(fn (TerminalGrant $grant) => $grant->holdsAt($now));
 
         foreach ($grants as $grant) {
             $this->revoke($grant->runtime, $grant);

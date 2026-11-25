@@ -188,13 +188,13 @@ final class ArgumentGrammar extends Data
     {
         return array_any(
             $this->options,
-            fn (OptionGrammar $option): bool => $option->isRequired && ! $other->knowsOption($option),
+            fn (OptionGrammar $option) => $option->isRequired && ! $other->knowsOption($option),
         );
     }
 
     private function knowsOption(OptionGrammar $option): bool
     {
-        return array_any($this->options, fn (OptionGrammar $known): bool => $known->sharesNameWith($option));
+        return array_any($this->options, fn (OptionGrammar $known) => $known->sharesNameWith($option));
     }
 
     private function isOptionWord(string|null $text): bool
@@ -213,7 +213,7 @@ final class ArgumentGrammar extends Data
     {
         $named = array_values(array_filter(
             $this->options,
-            fn (OptionGrammar $option): bool => $option->matches($text),
+            fn (OptionGrammar $option) => $option->matches($text),
         ));
 
         if ($named !== []) {
@@ -264,7 +264,7 @@ final class ArgumentGrammar extends Data
     {
         return array_values(array_filter(
             $this->options,
-            fn (OptionGrammar $option): bool => in_array("-{$letter}", $option->names, true),
+            fn (OptionGrammar $option) => in_array("-{$letter}", $option->names, true),
         ));
     }
 
@@ -284,7 +284,7 @@ final class ArgumentGrammar extends Data
     {
         $missing = array_filter(
             $this->options,
-            fn (OptionGrammar $option): bool => $option->isRequired && ! in_array($option, $seen, true),
+            fn (OptionGrammar $option) => $option->isRequired && ! in_array($option, $seen, true),
         );
 
         return array_values(array_map(

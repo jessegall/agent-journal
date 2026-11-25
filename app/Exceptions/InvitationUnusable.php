@@ -19,7 +19,9 @@ final class InvitationUnusable extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<InvitationUnusable> */
+    /**
+     * @use ThrowsLater<InvitationUnusable>
+     */
     use ThrowsLater;
 
     public static function forTicket(): self

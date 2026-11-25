@@ -50,7 +50,7 @@ final readonly class ReviewBatches
                 ...$batches,
                 $batch,
             ],
-            array_values(array_filter($shapes, fn (CommandShape $shape): bool => $shape->isTooLongForReview())),
+            array_values(array_filter($shapes, fn (CommandShape $shape) => $shape->isTooLongForReview())),
         );
     }
 }

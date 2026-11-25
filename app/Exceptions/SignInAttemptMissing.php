@@ -18,7 +18,9 @@ final class SignInAttemptMissing extends RuntimeException implements CodedRefusa
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<SignInAttemptMissing> */
+    /**
+     * @use ThrowsLater<SignInAttemptMissing>
+     */
     use ThrowsLater;
 
     public static function for(string $attemptId): self

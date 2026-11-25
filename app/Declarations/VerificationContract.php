@@ -68,7 +68,7 @@ final class VerificationContract extends Data
     public function description(): array
     {
         $exits = array_map(
-            fn (ExitBranch $branch): string => sprintf(
+            fn (ExitBranch $branch) => sprintf(
                 'exit %s: %s when %s',
                 $branch->status,
                 $branch->outcome->value,

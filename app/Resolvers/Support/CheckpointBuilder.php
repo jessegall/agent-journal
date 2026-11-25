@@ -80,7 +80,7 @@ final class CheckpointBuilder
      */
     public function streamsWithPending(): array
     {
-        return array_keys(array_filter($this->pending, fn (string $bytes): bool => $bytes !== ''));
+        return array_keys(array_filter($this->pending, fn (string $bytes) => $bytes !== ''));
     }
 
     public function build(): ReaderCheckpoint

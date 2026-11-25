@@ -47,9 +47,9 @@ final readonly class ShippedReaders
      */
     public function forInstalled(string $tool, string $version): ShippedReader|null
     {
-        $readers = array_filter($this->all(), fn (ShippedReader $reader): bool => $reader->tool === $tool);
+        $readers = array_filter($this->all(), fn (ShippedReader $reader) => $reader->tool === $tool);
 
-        return array_find($readers, fn (ShippedReader $reader): bool => $reader->version === $version);
+        return array_find($readers, fn (ShippedReader $reader) => $reader->version === $version);
     }
 
     private function phpstan(): ShippedReader

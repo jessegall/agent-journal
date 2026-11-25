@@ -15,7 +15,9 @@ use Throwable;
  */
 final class DockSourceUnavailable extends RuntimeException implements CommandRefusal
 {
-    /** @use ThrowsLater<DockSourceUnavailable> */
+    /**
+     * @use ThrowsLater<DockSourceUnavailable>
+     */
     use ThrowsLater;
 
     public static function of(string $type, string $id): self

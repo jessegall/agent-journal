@@ -283,7 +283,7 @@ final class RelayFrames
 
         if ($cancelledId !== null) {
             $this->queue = array_values(
-                array_filter($this->queue, fn (Frame $queued): bool => $queued->id() !== $cancelledId),
+                array_filter($this->queue, fn (Frame $queued) => $queued->id() !== $cancelledId),
             );
 
             return;
@@ -333,7 +333,7 @@ final class RelayFrames
                 'data' => [
                     'code' => $code->value,
                     'retryable' => $code->isRetryable(),
-                    ...array_filter($details, fn (mixed $detail): bool => $detail !== null),
+                    ...array_filter($details, fn (mixed $detail) => $detail !== null),
                 ],
             ],
         ], self::JSON_FLAGS));

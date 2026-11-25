@@ -19,7 +19,9 @@ final class OperationUnavailable extends RuntimeException implements CodedRefusa
 {
     use RendersRefusal;
 
-    /** @use ThrowsLater<OperationUnavailable> */
+    /**
+     * @use ThrowsLater<OperationUnavailable>
+     */
     use ThrowsLater;
 
     public static function for(string $key): self
