@@ -17,8 +17,8 @@ final readonly class ReadOnlyTransaction
     public function __construct(private ConnectionInterface $database) {}
 
     /**
-     * The read in its own read-only transaction. Inside a caller's transaction the read keeps that transaction's
-     * mode: a transaction cannot turn read-only for one read and writable again.
+     * The read in one read-only snapshot, every query seeing the same committed rows. Inside a caller's transaction the
+     * read keeps that transaction: a transaction cannot turn read-only for one read and writable again.
      *
      * @template T
      *
@@ -31,34 +31,10 @@ final readonly class ReadOnlyTransaction
             return $read();
         }
 
-        return $this->within('SET TRANSACTION READ ONLY', $read);
-    }
-
-    /**
-     * The read in one read-only snapshot, every query seeing the same committed rows.
-     *
-     * @template T
-     *
-     * @param  Closure(): T  $read
-     * @return T
-     */
-    public function runInOneSnapshot(Closure $read): mixed
-    {
-        return $this->within('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY', $read);
-    }
-
-    /**
-     * @template T
-     *
-     * @param  Closure(): T  $read
-     * @return T
-     */
-    private function within(string $mode, Closure $read): mixed
-    {
         $this->database->beginTransaction();
 
         try {
-            $this->database->statement($mode);
+            $this->database->statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
             $answer = $read();
             $this->database->commit();
 

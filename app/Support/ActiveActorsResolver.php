@@ -27,7 +27,7 @@ final readonly class ActiveActorsResolver
     public function snapshot(): ActiveActorsSnapshot
     {
         try {
-            return $this->transaction->runInOneSnapshot(function (): ActiveActorsSnapshot {
+            return $this->transaction->run(function (): ActiveActorsSnapshot {
                 $observedAt = $this->clock->now();
 
                 return new ActiveActorsSnapshot(
