@@ -17,7 +17,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -94,26 +93,22 @@ final class ShareAudit extends Model implements ReadableModel
         return $audit;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The row as the share's owner reads it: a public read shows an unknown visitor, any other step its actor's role:
      * the
      * owner, the requesting agent or the system.
-     *
-     * @return Attribute<ShareAuditEntry, never>
      */
-    protected function entry(): Attribute
+    public function entry(): ShareAuditEntry
     {
-        return Attribute::get(
-            fn () => new ShareAuditEntry(
-                $this->id,
-                $this->type,
-                $this->created_at,
-                $this->reason_code,
-                $this->shownActor(),
-            ),
-        )->withoutObjectCaching();
+        return new ShareAuditEntry(
+            $this->id,
+            $this->type,
+            $this->created_at,
+            $this->reason_code,
+            $this->shownActor(),
+        );
     }
 
     // ----------[ Internals ]----------

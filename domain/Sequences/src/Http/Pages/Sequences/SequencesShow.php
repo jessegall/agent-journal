@@ -52,8 +52,8 @@ final readonly class SequencesShow extends SequencesPage
                     'leading' => [LayoutPartData::text('number', (string) ($index + 1), 'muted')],
                 ],
             ),
-            $sequence->stepList,
-            array_keys($sequence->stepList),
+            $sequence->stepList(),
+            array_keys($sequence->stepList()),
         );
     }
 }

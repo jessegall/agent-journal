@@ -23,10 +23,10 @@ final readonly class ReaderReplay
         $replay = new DeclarativeReader($reader->readerDefinition(), $contract->output, $reader->id);
         $checkpoint = new ReaderCheckpoint();
 
-        foreach ($part->recordedStreams as $stream) {
+        foreach ($part->recordedStreams() as $stream) {
             $checkpoint = $replay->read($checkpoint, ...$this->output->frames($part, $stream, 0));
         }
 
-        return new ReplayedOutput($checkpoint, $replay->finish($checkpoint, $part->end));
+        return new ReplayedOutput($checkpoint, $replay->finish($checkpoint, $part->end()));
     }
 }

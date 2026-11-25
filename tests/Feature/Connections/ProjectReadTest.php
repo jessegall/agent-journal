@@ -93,7 +93,7 @@ final class ProjectReadTest extends TestCase
             ['name' => 'README.md', 'is_folder' => false, 'size' => 6],
         ]])->assertNoContent();
 
-        $entries = ProjectRead::query()->findOrFail($read->id)->listedEntries;
+        $entries = ProjectRead::query()->findOrFail($read->id)->listedEntries();
         $this->assertSame(['src', 'README.md'], array_column($entries, 'name'));
     }
 

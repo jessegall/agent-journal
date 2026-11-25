@@ -98,13 +98,13 @@ final class StartRecordTest extends TestCase
         $this->assertSame(
             [DefaultDrivers::CLAUDE_CODE, 'claude-sonnet-5-5', 'journal-researcher', 4],
             [
-                $session->selection->driver,
-                $session->selection->model,
-                $session->selection->source->profileKey,
-                $session->selection->source->profileRevision,
+                $session->selection()->driver,
+                $session->selection()->model,
+                $session->selection()->source->profileKey,
+                $session->selection()->source->profileRevision,
             ],
         );
-        $this->assertSame(ModelSelectionType::ProfileDefault, $session->selection->requested->type);
+        $this->assertSame(ModelSelectionType::ProfileDefault, $session->selection()->requested->type);
     }
 
     public function test_a_session_never_takes_a_second_selection(): void

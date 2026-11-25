@@ -36,7 +36,7 @@ final class SkillEditCommand extends Command
         return $this->printRefusals(function () use ($console, $commands, $requestId) {
             $console->actAsOwner();
             $skill = $console->storedSkill($this->skillNumber());
-            $current = SkillRevision::currentOf($skill)->draft;
+            $current = SkillRevision::currentOf($skill)->draft();
 
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $current->name),

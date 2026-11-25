@@ -22,7 +22,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -127,14 +126,11 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
         return $this->retired_at !== null;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<SkillKey, never>
-     */
-    protected function skillKey(): Attribute
+    public function skillKey(): SkillKey
     {
-        return Attribute::get(fn () => SkillKey::from($this->key))->withoutObjectCaching();
+        return SkillKey::from($this->key);
     }
 
     // ----------[ Asserts ]----------

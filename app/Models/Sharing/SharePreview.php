@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
 use App\Casts\SelectedTargetsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -21,7 +21,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -59,11 +58,11 @@ use PhpOption\Option;
 )]
 final class SharePreview extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BelongsToOneRoot;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-preview';
@@ -137,14 +136,11 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         return $selection;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function root(): Attribute
+    public function root(): RecordIdentity
     {
-        return Attribute::get(fn () => new RecordIdentity($this->root_type, $this->root_id))->withoutObjectCaching();
+        return new RecordIdentity($this->root_type, $this->root_id);
     }
 
     // ----------[ Asserts ]----------
@@ -181,7 +177,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
         if ($checksum !== $this->checksum
-            || self::checksumOf($ownerUserId, $this->root, $selection, $configuration) !== $this->checksum) {
+            || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
             throw SharePreviewRefused::changed($this->id);
         }
     }

@@ -39,7 +39,7 @@ final readonly class AddressedStackPush
     public function offer(array $stacks, StateReference $state): void
     {
         $restored = array_map(
-            fn (AgentStackRow $stack) => $this->restorer->restore($stack->frames, $stack->target),
+            fn (AgentStackRow $stack) => $this->restorer->restore($stack->frames, $stack->target()),
             $stacks,
         );
 
@@ -55,7 +55,7 @@ final readonly class AddressedStackPush
             return;
         }
 
-        $target = $stack->target;
+        $target = $stack->target();
         $this->transaction->assertOpen($target);
         $this->statePush->push($target, $stack, $state);
     }

@@ -44,7 +44,6 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -168,7 +167,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             ->ofDocument($this->id)
             ->lastClosedFirst()
             ->get()
-            ->map(fn (DocumentClose $close) => $close->card)
+            ->map(fn (DocumentClose $close) => $close->card())
             ->all());
     }
 
@@ -178,7 +177,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     public function searchResult(string $words, DocumentRevision $matchingRevision): PublicationCard
     {
         return PublicationCard::from([
-            ...$this->card->all(),
+            ...$this->card()->all(),
             'snippet' => $matchingRevision->snippetFor($words),
             'foundIn' => "revision {$matchingRevision->number}",
         ]);
@@ -193,7 +192,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
             ? $this->revisions->sortByDesc('number')->first()
             : $this->currentRevision;
 
-        return $matchingRevision ?? $this->currentRevisionOrFail;
+        return $matchingRevision ?? $this->currentRevisionOrFail();
     }
 
     /**
@@ -248,59 +247,40 @@ final class Document extends Model implements Commentable, Dockable, EventSource
         return new DocumentDockCard($this, $context)->card;
     }
 
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<PublicationCard, never>
-     */
-    protected function card(): Attribute
+    public function card(): PublicationCard
     {
-        return Attribute::get(fn () => RecordViews::documentCard($this))->withoutObjectCaching();
+        return RecordViews::documentCard($this);
     }
 
     /**
      * The document's safe card for a share: its current closed revision's title, and that revision's number as the
      * published version.
-     *
-     * @return Attribute<ShareRecordCard, never>
      */
-    protected function shareCard(): Attribute
+    public function shareCard(): ShareRecordCard
     {
-        return Attribute::get(function () {
-            $revision = $this->currentRevisionOrFail;
+        $revision = $this->currentRevisionOrFail();
 
-            return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
-        })->withoutObjectCaching();
+        return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
     }
 
-    /**
-     * @return Attribute<DockSuggestion, never>
-     */
-    protected function dockCard(): Attribute
+    public function dockCard(): DockSuggestion
     {
-        return Attribute::get(fn () => RecordViews::documentSuggestion($this))->withoutObjectCaching();
+        return RecordViews::documentSuggestion($this);
     }
 
-    /**
-     * @return Attribute<DocumentView, never>
-     */
-    protected function view(): Attribute
+    public function view(): DocumentView
     {
-        return Attribute::get(fn () => RecordViews::documentView($this))->withoutObjectCaching();
+        return RecordViews::documentView($this);
     }
 
     /**
      * The current revision; every published document has one from the moment it is created.
-     *
-     * @return Attribute<DocumentRevision, never>
      */
-    protected function currentRevisionOrFail(): Attribute
+    public function currentRevisionOrFail(): DocumentRevision
     {
-        return Attribute::get(function (): DocumentRevision {
-            $this->assertHasCurrentRevision();
+        $this->assertHasCurrentRevision();
 
-            return $this->currentRevision;
-        })->withoutObjectCaching();
+        return $this->currentRevision;
     }
 
     // ----------[ Relations ]----------

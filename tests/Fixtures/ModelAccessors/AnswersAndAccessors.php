@@ -6,23 +6,26 @@ namespace Tests\Fixtures\ModelAccessors;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use ArrayObject;
 use RuntimeException;
 
 /**
- * A model with one answer that belongs in an accessor, one accessor that writes, and the answers that stay methods:
- * a question, an answer that names what it throws and an answer that types its own column.
+ * A model with one answer that belongs in an accessor, one accessor that writes, one that gives an object, and the
+ * answers that stay methods: a question, an answer that names what it throws and an answer that types its own column.
  *
  * @property string $title
  * @property string $state
  */
 final class AnswersAndAccessors extends Model
 {
-    // ----------[ Getters ]----------
+    // ----------[ Predicates ]----------
 
     public function isDone(): bool
     {
         return $this->state === 'done';
     }
+
+    // ----------[ Transformers ]----------
 
     public function heading(): string
     {
@@ -54,5 +57,13 @@ final class AnswersAndAccessors extends Model
 
             return $this->title;
         });
+    }
+
+    /**
+     * @return Attribute<ArrayObject<int, string>, never>
+     */
+    protected function words(): Attribute
+    {
+        return Attribute::get(fn () => new ArrayObject(explode(' ', $this->title)));
     }
 }

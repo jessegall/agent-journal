@@ -26,6 +26,6 @@ final readonly class InterruptAgentHandler implements CommandHandler
 
         $this->requests->holdRuntime($command->target(), HoldReason::Interrupted);
 
-        return $request->receipt;
+        return $request->receipt();
     }
 }

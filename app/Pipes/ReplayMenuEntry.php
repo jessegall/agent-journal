@@ -29,7 +29,7 @@ final readonly class ReplayMenuEntry implements Pipe
         }
 
         return NavigationRaiseAnswer::entry(
-            $entry->libraryAnswer,
+            $entry->libraryAnswer(),
             isGuarded: $entry->wasProvenElsewhere($raise->runtime->driver_build),
         );
     }

@@ -17,7 +17,6 @@ use App\Values\WorkspaceFacts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -101,22 +100,20 @@ final class ChildClaim extends Model implements ReadableModel
         return self::issue($binding, $parent->id, $agentId, $role, $read, $parent->id, $parent->root_runtime_id);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The checkout the relay prepares the child's worktree for: this claim, its generation, whether the child writes
      * and the commit it starts from.
-     *
-     * @return Attribute<ChildCheckout, never>
      */
-    protected function checkout(): Attribute
+    public function checkout(): ChildCheckout
     {
-        return Attribute::get(fn () => new ChildCheckout(
+        return new ChildCheckout(
             $this->id,
             $this->parent_generation,
             $this->role === ChildRole::Writer,
             $this->base_oid,
-        ));
+        );
     }
 
     // ----------[ Asserts ]----------

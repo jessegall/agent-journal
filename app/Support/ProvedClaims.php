@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Records\AssignmentRecord;
 use App\Models\Inboxes\InboxMember;
+use App\Models\Records\AssignmentRecord;
 use App\Models\Records\ClaimAuthorization;
 
 /**
@@ -28,7 +28,7 @@ final readonly class ProvedClaims
         $proofs = ClaimAuthorization::ofClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
 
         $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
-            fn (ClaimAuthorization $proof) => $proof->sourceIds,
+            fn (ClaimAuthorization $proof) => $proof->sourceIds(),
             array_values($proofs),
         )));
 
@@ -39,7 +39,7 @@ final readonly class ProvedClaims
         $valid = [];
 
         foreach ($claims as $claim) {
-            $assignment = $claim->toAssignment;
+            $assignment = $claim->toAssignment();
             $proof = $proofs[$claim->id] ?? null;
 
             if ($proof?->isValidAgainst($assignment->holder(), $liveHolders, $activeMemberIds) === true) {

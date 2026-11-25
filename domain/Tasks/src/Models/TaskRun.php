@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -117,18 +116,12 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The actor that started the run.
-     *
-     * @return Attribute<ActorIdentity, never>
      */
-    protected function starter(): Attribute
+    public function starter(): ActorIdentity
     {
-        return Attribute::get(
-            fn () => new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id),
-        )->withoutObjectCaching();
+        return new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id);
     }
 
     // ----------[ Asserts ]----------

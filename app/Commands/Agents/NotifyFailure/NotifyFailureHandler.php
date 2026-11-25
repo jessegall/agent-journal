@@ -24,17 +24,17 @@ final readonly class NotifyFailureHandler implements CommandHandler
         }
 
         $session = AgentSession::query()->findOrFail($start->session_id);
-        $driver = $session->selection->driver;
+        $driver = $session->selection()->driver;
 
         $this->facts->publishAfterCommit(new DriverFailed(
             $start->agent_id,
             $start->session_id,
             $driver,
             $command->failure,
-            $start->accountIdentity,
+            $start->accountIdentity(),
             $start->account_generation,
         ));
 
-        $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity));
+        $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity()));
     }
 }

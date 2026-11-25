@@ -25,7 +25,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -284,18 +283,12 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The key script the request navigates for, with its version and parameters.
-     *
-     * @return Attribute<ScriptGoal, never>
      */
-    protected function goal(): Attribute
+    public function goal(): ScriptGoal
     {
-        return Attribute::get(
-            fn () => new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters),
-        )->withoutObjectCaching();
+        return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
     }
 
     // ----------[ Relations ]----------

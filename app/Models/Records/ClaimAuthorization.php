@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -59,7 +58,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return $this->isValidAgainst(
             $claimant,
-            AssignmentRecord::holdersOf($this->sourceIds),
+            AssignmentRecord::holdersOf($this->sourceIds()),
             InboxMember::activeIdsAmong(array_filter([$this->inbox_member_id])),
         );
     }
@@ -79,16 +78,16 @@ final class ClaimAuthorization extends Model implements ReadableModel
         return $isMember && $workHolds;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The ids of the assignments the claim stands on.
      *
-     * @return Attribute<list{string}, never>
+     * @return list{string}
      */
-    protected function sourceIds(): Attribute
+    public function sourceIds(): array
     {
-        return Attribute::get(fn () => [$this->work_assignment_id]);
+        return [$this->work_assignment_id];
     }
 
     // ----------[ Internals ]----------

@@ -65,7 +65,7 @@ final class SeatLossTest extends TestCase
             TestActors::record('communication.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),
         );
-        $this->assertEquals(AssigneeIdentity::ofActorIdentity($arriving), $taken->toAssignment->holder());
+        $this->assertEquals(AssigneeIdentity::ofActorIdentity($arriving), $taken->toAssignment()->holder());
     }
 
     private function seat(DeskRecord $desk, ActorIdentity $actor): SeatChangeResult
@@ -80,7 +80,7 @@ final class SeatLossTest extends TestCase
         $claim = AssignmentRecord::createForRecord(
             TestActors::record('communication.message', $number),
             AssigneeIdentity::ofActorIdentity($actor),
-        )->toAssignment->reference;
+        )->toAssignment()->reference;
         ClaimAuthorization::forInbox($claim, $seat->reference);
 
         return $claim;

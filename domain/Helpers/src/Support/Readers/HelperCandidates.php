@@ -93,7 +93,7 @@ final readonly class HelperCandidates
         ));
 
         return new LaunchCandidateFacts(
-            $identity->helperActor,
+            $identity->helperActor(),
             array_any($jobs, fn (HelperJob $job) => ! $job->state->isFinal()),
             $matching !== [],
             self::latestFinish($matching),

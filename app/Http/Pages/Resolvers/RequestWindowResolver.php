@@ -50,7 +50,7 @@ final readonly class RequestWindowResolver implements PageResolver
 
         $detail = RequestWindowData::from([
             'request' => RequestRowData::fromRequest($request),
-            'steps' => $request->nextStep->steps,
+            'steps' => $request->nextStep()->steps,
             'proposals' => array_values(
                 $proposals->map(fn (RuleProposal $proposal) => $this->proposalOf($proposal, $active))->all(),
             ),
@@ -122,7 +122,7 @@ final readonly class RequestWindowResolver implements PageResolver
     {
         return array_values(PartRun::query()->where('process_run_id', $runId)->limit(50)->get()->map(
             fn (PartRun $part) => "{$part->operation}: {$part->lifecycle->value}, end {$part->end_type->value}"
-                .($part->end->hasStatus() ? " {$part->end_code}" : '').", capture {$part->capture_state->value}",
+                .($part->end()->hasStatus() ? " {$part->end_code}" : '').", capture {$part->capture_state->value}",
         )->all());
     }
 

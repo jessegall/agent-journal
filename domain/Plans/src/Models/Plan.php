@@ -426,19 +426,29 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         );
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The plan's safe card for a share: its title. A plan keeps no revisions, so its published version is always 1.
-     *
-     * @return Attribute<ShareRecordCard, never>
      */
-    protected function shareCard(): Attribute
+    public function shareCard(): ShareRecordCard
     {
-        return Attribute::get(
-            fn () => new ShareRecordCard($this->shareIdentity(), $this->title, '1'),
-        )->withoutObjectCaching();
+        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
     }
+
+    /**
+     * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.
+     */
+    public function progress(): PlanProgress
+    {
+        return new PlanProgress(
+            $this->finished_tasks,
+            $this->cancelled_tasks,
+            $this->blocked_tasks,
+            $this->started_tasks,
+            $this->total_tasks,
+        );
+    }
+
+    // ----------[ Accessors ]----------
 
     /**
      * The summary a share shows of the plan: its title and its state, never its phases or tasks.
@@ -453,22 +463,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         This plan is {$this->state->value}.
 
         TEXT);
-    }
-
-    /**
-     * How far the tasks in the plan's phases have got, from the tallies kept on the row; no task is read.
-     *
-     * @return Attribute<PlanProgress, never>
-     */
-    protected function progress(): Attribute
-    {
-        return Attribute::get(fn () => new PlanProgress(
-            $this->finished_tasks,
-            $this->cancelled_tasks,
-            $this->blocked_tasks,
-            $this->started_tasks,
-            $this->total_tasks,
-        ));
     }
 
     // ----------[ Relations ]----------

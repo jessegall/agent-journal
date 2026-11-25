@@ -60,7 +60,7 @@ final readonly class ClaimGatewayOperationHandler implements CommandHandler
 
         return new ClaimedGatewayOperation(
             $operation->type,
-            $operation->claimFor($command->runId, $endpoint, $configuration->toConfiguration),
+            $operation->claimFor($command->runId, $endpoint, $configuration->toConfiguration()),
         );
     }
 }

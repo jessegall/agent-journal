@@ -12,7 +12,6 @@ use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Support\ActorIdentity;
 use App\Values\ScriptSource;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -64,15 +63,10 @@ final class ProfileDraftRevision extends Model implements ReadableModel
         ]);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<ScriptSource, never>
-     */
-    protected function scriptSource(): Attribute
+    public function scriptSource(): ScriptSource
     {
-        return Attribute::get(
-            fn () => ScriptSource::fromDefinitions($this->source, $this->commands),
-        )->withoutObjectCaching();
+        return ScriptSource::fromDefinitions($this->source, $this->commands);
     }
 }

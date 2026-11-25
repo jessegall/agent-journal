@@ -129,7 +129,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         }
 
         $comment->assertSaved($comment->save());
-        $comment->raise(new CommentPosted($comment->id, $comment->target));
+        $comment->raise(new CommentPosted($comment->id, $comment->target()));
 
         return $comment;
     }
@@ -167,19 +167,23 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         return $this->anchor();
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The record the comment is on.
-     *
-     * @return Attribute<RecordIdentity, never>
      */
-    protected function target(): Attribute
+    public function target(): RecordIdentity
     {
-        return Attribute::get(
-            fn () => new RecordIdentity($this->target_type, $this->target_id),
-        )->withoutObjectCaching();
+        return new RecordIdentity($this->target_type, $this->target_id);
     }
+
+    /**
+     * The comment as it is shown, its text also as safe HTML.
+     */
+    public function details(): CommentDetails
+    {
+        return CommentDetailsFactory::details($this);
+    }
+
+    // ----------[ Accessors ]----------
 
     /**
      * What the comment is about, in a few words: the whole record, or the version and lines of its text.
@@ -197,16 +201,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
 
             return 'on the whole record';
         });
-    }
-
-    /**
-     * The comment as it is shown, its text also as safe HTML.
-     *
-     * @return Attribute<CommentDetails, never>
-     */
-    protected function details(): Attribute
-    {
-        return Attribute::get(fn () => CommentDetailsFactory::details($this))->withoutObjectCaching();
     }
 
     // ----------[ Asserts ]----------

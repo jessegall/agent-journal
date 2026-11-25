@@ -41,11 +41,11 @@ final readonly class StopAgentHandler implements CommandHandler
         $open = $this->requests->openStop($target);
 
         if ($open !== null) {
-            return $open->receipt;
+            return $open->receipt();
         }
 
         $this->controls->revokeRuntime($this->requests->runtimeOf($target)->load('session'), $this->clock->now());
 
-        return $this->requests->stop($target, $command->idempotencyKey)->receipt;
+        return $this->requests->stop($target, $command->idempotencyKey)->receipt();
     }
 }

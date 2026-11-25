@@ -65,7 +65,7 @@ final class RunReconcileTest extends TestCase
         $part = $this->part->refresh();
         $this->assertSame(LifecycleState::Lost, $part->lifecycle);
         $this->assertSame(PartEndType::Unavailable, $part->end_type);
-        $this->assertFalse($part->end->hasStatus());
+        $this->assertFalse($part->end()->hasStatus());
         $this->assertSame(CaptureState::Incomplete, $part->capture_state);
         $this->assertSame(LifecycleState::Lost, $this->run->refresh()->lifecycle);
         $this->assertSame(0, ResultReceipt::query()->count());

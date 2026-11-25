@@ -131,7 +131,7 @@ final class SharingSupervisor
     public function stopAll(): void
     {
         foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
-            $this->gateways->get($endpoint->gatewayKey())->close($endpoint->toGatewayEndpoint);
+            $this->gateways->get($endpoint->gatewayKey())->close($endpoint->toGatewayEndpoint());
         }
     }
 

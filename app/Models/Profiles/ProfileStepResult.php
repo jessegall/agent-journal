@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -67,16 +66,11 @@ final class ProfileStepResult extends Model implements ReadableModel
         return $result;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<StepOutcome, never>
-     */
-    protected function outcome(): Attribute
+    public function outcome(): StepOutcome
     {
-        return Attribute::get(
-            fn () => StepOutcome::reported($this->status, $this->port, $this->evidence),
-        )->withoutObjectCaching();
+        return StepOutcome::reported($this->status, $this->port, $this->evidence);
     }
 
     // ----------[ Scopes ]----------

@@ -29,7 +29,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -246,33 +245,28 @@ final class PartRun extends Model implements EventSource, ReadableModel
         return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<PartEnd, never>
-     */
-    protected function end(): Attribute
+    public function end(): PartEnd
     {
-        return Attribute::get(fn () => match ($this->end_type) {
+        return match ($this->end_type) {
             PartEndType::NotYet => PartEnd::notYet(),
             PartEndType::Exited => PartEnd::exited($this->end_code),
             PartEndType::Signalled => PartEnd::signalled($this->end_code),
             PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
-        })->withoutObjectCaching();
+        };
     }
 
     /**
      * The streams this part wrote at least one byte to.
      *
-     * @return Attribute<list<OutputStream>, never>
+     * @return list<OutputStream>
      */
-    protected function recordedStreams(): Attribute
+    public function recordedStreams(): array
     {
-        return Attribute::get(function () {
-            $written = array_keys(array_filter($this->stream_offsets, fn (int $end) => $end > 0));
+        $written = array_keys(array_filter($this->stream_offsets, fn (int $end) => $end > 0));
 
-            return array_map(fn (string $stream) => OutputStream::from($stream), $written);
-        });
+        return array_map(fn (string $stream) => OutputStream::from($stream), $written);
     }
 
     // ----------[ Relations ]----------
@@ -310,7 +304,7 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     private function assertDrained(): void
     {
-        if (! $this->end->hasEnded()) {
+        if (! $this->end()->hasEnded()) {
             throw PartTransitionRefused::notDrained();
         }
     }

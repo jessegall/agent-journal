@@ -21,7 +21,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -151,27 +150,18 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
         return Share::unendedOf($this->id);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
      * overwrites.
-     *
-     * @return Attribute<SourceAddressRule, never>
      */
-    protected function sourceAddressRule(): Attribute
+    public function sourceAddressRule(): SourceAddressRule
     {
-        return Attribute::get(fn () => SourceAddressRule::none())->withoutObjectCaching();
+        return SourceAddressRule::none();
     }
 
-    /**
-     * @return Attribute<GatewayConfiguration, never>
-     */
-    protected function toConfiguration(): Attribute
+    public function toConfiguration(): GatewayConfiguration
     {
-        return Attribute::get(
-            fn () => new GatewayConfiguration($this->id, $this->configuration_version, $this->settings),
-        )->withoutObjectCaching();
+        return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
     }
 
     // ----------[ Asserts ]----------

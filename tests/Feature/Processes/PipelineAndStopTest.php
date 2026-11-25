@@ -76,7 +76,7 @@ final class PipelineAndStopTest extends TestCase
         [$cat, $grep] = $this->parts();
         $this->assertSame(self::INPUT_LINES, $this->output->stdoutOf($cat));
         $this->assertSame(self::MATCHING_LINES, $this->output->stdoutOf($grep));
-        $this->assertSame(PartEndType::Exited, $cat->end->type);
+        $this->assertSame(PartEndType::Exited, $cat->end()->type);
         $this->assertSame(0, $outcome->status->code);
     }
 
@@ -88,9 +88,9 @@ final class PipelineAndStopTest extends TestCase
         $this->supervise('cat big.txt | head -1');
 
         [$cat, $head] = $this->parts();
-        $this->assertSame(PartEndType::Signalled, $cat->end->type);
-        $this->assertSame(SIGPIPE, $cat->end->code);
-        $this->assertSame(0, $head->end->code);
+        $this->assertSame(PartEndType::Signalled, $cat->end()->type);
+        $this->assertSame(SIGPIPE, $cat->end()->code);
+        $this->assertSame(0, $head->end()->code);
     }
 
     #[TimeLimit(5, 'A background sleep of one second runs while the foreground step returns.')]

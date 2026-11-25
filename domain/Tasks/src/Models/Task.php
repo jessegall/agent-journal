@@ -326,21 +326,17 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         return TaskRun::ofTask($this, $this->run_number);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The task as a list shows it: its number and title.
-     *
-     * @return Attribute<TaskSummary, never>
      */
-    protected function summary(): Attribute
+    public function summary(): TaskSummary
     {
-        return Attribute::get(function () {
-            $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
+        $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
 
-            return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
-        })->withoutObjectCaching();
+        return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
     }
+
+    // ----------[ Accessors ]----------
 
     /**
      * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
@@ -427,7 +423,7 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
             return None::create();
         }
 
-        return new Some($task->summary);
+        return new Some($task->summary());
     }
 
     /**

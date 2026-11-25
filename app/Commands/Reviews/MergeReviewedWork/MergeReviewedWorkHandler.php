@@ -37,7 +37,7 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
         $attempt = MergeAttempt::retain($approved);
 
         if ($attempt->state->isTerminal()) {
-            return $attempt->outcome;
+            return $attempt->outcome();
         }
 
         if ($attempt->wasRecentlyCreated) {
@@ -49,6 +49,6 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
         $this->facts->publishAfterCommit(new MergeOutcomeRecorded($attempt->id));
         $this->facts->runTransactionListeners();
 
-        return $attempt->outcome;
+        return $attempt->outcome();
     }
 }

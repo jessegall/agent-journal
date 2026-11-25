@@ -170,7 +170,7 @@ final class AssignmentCascadeTest extends TestCase
     {
         $row = AssignmentRecord::query()->where('record_type', $record->type)->where('record_id', $record->id)->sole();
 
-        return $row->toAssignment->holder();
+        return $row->toAssignment()->holder();
     }
 
     private function writer(): AssignmentWriter

@@ -20,7 +20,7 @@ abstract readonly class DocumentCommandHandler implements CommandHandler
      */
     final protected function assertDocumentRevision(Document $document, int $expectedRevision): void
     {
-        $current = $document->currentRevisionOrFail->number;
+        $current = $document->currentRevisionOrFail()->number;
 
         if ($current !== $expectedRevision) {
             throw StaleRead::revision($expectedRevision, $current);

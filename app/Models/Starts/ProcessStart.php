@@ -218,6 +218,13 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
         $this->raise(new ProcessStartCancelled($this->id));
     }
 
+    // ----------[ Transformers ]----------
+
+    public function accountIdentity(): RecordIdentity
+    {
+        return new RecordIdentity($this->account_type, $this->account_id);
+    }
+
     // ----------[ Accessors ]----------
 
     /**
@@ -228,16 +235,6 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     protected function settingsIdentity(): Attribute
     {
         return Attribute::get(fn () => $this->account_type.':'.$this->account_id);
-    }
-
-    /**
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function accountIdentity(): Attribute
-    {
-        return Attribute::get(
-            fn () => new RecordIdentity($this->account_type, $this->account_id),
-        )->withoutObjectCaching();
     }
 
     // ----------[ Asserts ]----------

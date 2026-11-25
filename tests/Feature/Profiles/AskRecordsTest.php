@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
-use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Asks\RouteAsk\RouteAskCommand;
 use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
+use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
+use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\ActorAttention;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Asks\AskReader;
+use App\Contracts\Bus\CommandBus;
 use App\Contracts\Work\WorkProgress;
 use App\Enums\AskRouteStatus;
 use App\Enums\NoSubject;
@@ -92,7 +92,7 @@ final class AskRecordsTest extends TestCase
         );
         $keys->forget();
         $this->assertSame(AskRouteStatus::Assigned, $bus->run(new RouteAskCommand(new AskReference($ask->id), 0)));
-        $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment;
+        $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment();
         $this->assertTrue($assignment->holder()->isSameAs($holder->assigneeIdentity()));
         $this->assertSame(1, AskHop::query()->count());
         $keys->set('public-reassign-ask');
@@ -164,7 +164,7 @@ final class AskRecordsTest extends TestCase
         $this->assertStringStartsWith('free:', $ask->work);
         $this->assertTrue(
             AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()
-                ->toAssignment->holder()->isSameAs($recipient->agent->assigneeIdentity()),
+                ->toAssignment()->holder()->isSameAs($recipient->agent->assigneeIdentity()),
         );
 
         $this->signed($recipient, '/agent/asks/reply', [
@@ -244,8 +244,8 @@ final class AskRecordsTest extends TestCase
         $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::from('review.ready')));
 
         $expected = WorkReference::forRecord($task->assignmentIdentity());
-        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference);
-        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference);
+        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference());
+        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference());
         $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key->key);
     }
 

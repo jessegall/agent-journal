@@ -56,7 +56,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
         $budget->chargeText($bytes);
 
         return new SharedContent(
-            $document->shareCard,
+            $document->shareCard(),
             (string) DocumentRevision::query()->whereKey($revisionId)->value('body'),
         );
     }
@@ -69,7 +69,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
     private function cardsOf(array $ids): array
     {
         return array_values(
-            $this->cardQuery($ids)->get()->map(fn (Document $document) => $document->shareCard)->all(),
+            $this->cardQuery($ids)->get()->map(fn (Document $document) => $document->shareCard())->all(),
         );
     }
 

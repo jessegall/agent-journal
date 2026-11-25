@@ -25,7 +25,7 @@ final readonly class SettleSampleHandler implements CommandHandler
         $request = CommandRequest::lockedForChange($command->commandRequestId);
 
         if ($request->state !== RequestState::CapturingSample) {
-            throw SampleRefused::notReady($request->nextStep->command);
+            throw SampleRefused::notReady($request->nextStep()->command);
         }
 
         $permit = EvidencePermit::query()

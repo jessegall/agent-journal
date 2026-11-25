@@ -7,8 +7,8 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Processes\RunClaims;
-use App\Exceptions\RunClaimRefused;
 use App\Enums\ActorType;
+use App\Exceptions\RunClaimRefused;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\ClaimAuthorization;
@@ -37,7 +37,7 @@ final readonly class InboxRunClaims implements RunClaims
 
             if ($proof !== null && $proof->isValidFor($holder)) {
                 if ($holder->isSameAs($claimant)) {
-                    return new RunClaim($current->get()->reference, $proof->sourceIds);
+                    return new RunClaim($current->get()->reference, $proof->sourceIds());
                 }
 
                 throw RunClaimRefused::claimedByAnother($run->id);
@@ -96,7 +96,7 @@ final readonly class InboxRunClaims implements RunClaims
         if ($work->holder()->isSameAs($claimant)) {
             $claim = $this->responsibilities->assign($run, $claimant)->reference;
 
-            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds);
+            return new RunClaim($claim, ClaimAuthorization::forDirectRun($claim, $work->reference)->sourceIds());
         }
 
         if ($work->holder()->type !== Inbox::ASSIGNEE_TYPE) {
@@ -110,7 +110,7 @@ final readonly class InboxRunClaims implements RunClaims
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
         $proof = ClaimAuthorization::forInboxRun($claim, $member, $work->reference);
 
-        return new RunClaim($claim, $proof->sourceIds);
+        return new RunClaim($claim, $proof->sourceIds());
     }
 
     private static function claimantOf(Assignment $claim): ActorIdentity

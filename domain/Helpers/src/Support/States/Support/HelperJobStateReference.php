@@ -28,7 +28,7 @@ final class HelperJobStateReference extends StateReferenceFactory
             'purpose' => $purposeLabel,
             'brief' => $job->brief,
             'steering' => $job->steering,
-            'sources' => $job->sourceSubjects,
+            'sources' => $job->sourceSubjects(),
         ]);
     }
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Scripts;
 
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\StopPreparer;
 use App\Contracts\Scripts\ScriptChecks;
@@ -180,7 +180,7 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $isDirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference, true, $isDirty, ! $isDirty, 7, CommitObservation::notRecorded()));
+            $this->asSystem(new NotifyWorkspaceReadCommand('host-1', $read->reference(), true, $isDirty, ! $isDirty, 7, CommitObservation::notRecorded()));
         }
     }
 

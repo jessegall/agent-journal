@@ -70,6 +70,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
         self|null $target = null,
     ): self {
         $inbox = Inbox::lockedById($to->inbox()->id);
+
         $message = self::query()->create([
             'inbox_id' => $inbox->id,
             'number' => $inbox->takeMessageNumber(),

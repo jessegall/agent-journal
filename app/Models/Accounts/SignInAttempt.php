@@ -419,9 +419,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     protected function type(): Attribute
     {
-        return Attribute::get(
-            fn (): SignInType => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain,
-        )->withoutObjectCaching();
+        return Attribute::get(fn () => $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain)->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

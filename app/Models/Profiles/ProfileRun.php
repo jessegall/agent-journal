@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -23,7 +21,9 @@ use App\Support\ActorIdentity;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -234,7 +234,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
             return None::create();
         }
 
-        return new Some($result->outcome);
+        return new Some($result->outcome());
     }
 
     // ----------[ Relations ]----------

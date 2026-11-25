@@ -87,7 +87,7 @@ final class CertifiedWork extends Model implements ReadableModel
      */
     public static function record(StartRecord $start, string $certificate): self
     {
-        $work = $start->ownerWork;
+        $work = $start->ownerWork();
         $policy = SessionPolicy::query()->ofSessions([$start->session_id])->sole();
 
         $certified = new self([

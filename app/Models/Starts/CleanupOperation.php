@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -107,19 +106,19 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
         return $this->state === CleanupState::Done;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The resources the host has not removed yet.
      *
-     * @return Attribute<list{0?: CleanupStep, 1?: CleanupStep, 2?: CleanupStep}, never>
+     * @return list{0?: CleanupStep, 1?: CleanupStep, 2?: CleanupStep}
      */
-    protected function remainingSteps(): Attribute
+    public function remainingSteps(): array
     {
-        return Attribute::get(fn () => array_values(array_filter(
+        return array_values(array_filter(
             CleanupStep::cases(),
             fn (CleanupStep $step) => ! in_array($step->value, $this->removed_steps, true),
-        )));
+        ));
     }
 
     // ----------[ Internals ]----------
@@ -127,7 +126,7 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
     private function stateAfterPass(): CleanupState
     {
         return match (true) {
-            $this->remainingSteps === [] => CleanupState::Done,
+            $this->remainingSteps() === [] => CleanupState::Done,
             $this->attempts >= self::ATTEMPT_LIMIT => CleanupState::Failed,
             default => CleanupState::Pending,
         };

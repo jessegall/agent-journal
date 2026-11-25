@@ -10,8 +10,8 @@ use App\Exceptions\ProfileRetired;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
 use App\Values\ProfileKey;
+use App\Values\ProfileScript;
 use App\Values\ProfileSnapshot;
-use PhpOption\Option;
 
 /**
  * Reads profiles from their stored revisions: the current revision of a profile that is not retired.
@@ -28,9 +28,9 @@ final readonly class ProfileRecords implements ProfileResolver, ProfileScripts
         return ProfileRevision::numbered(Profile::byKey($key), $revision)->snapshot($key);
     }
 
-    public function scriptAt(ProfileKey $key, int $revision): Option
+    public function scriptAt(ProfileKey $key, int $revision): ProfileScript
     {
-        return ProfileRevision::numbered(Profile::byKey($key), $revision)->script;
+        return ProfileRevision::numbered(Profile::byKey($key), $revision)->script();
     }
 
     public function admittedPin(ProfileKey $key, int $revision): ProfileSnapshot

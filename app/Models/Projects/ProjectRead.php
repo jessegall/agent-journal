@@ -27,7 +27,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -209,16 +208,16 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         return ProjectBinding::query()->whereKey($this->binding_id)->onHost($hostId)->exists();
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The folder's entries as the host listed them; none for a file or an unanswered read.
      *
-     * @return Attribute<list<ProjectEntry>, never>
+     * @return list<ProjectEntry>
      */
-    protected function listedEntries(): Attribute
+    public function listedEntries(): array
     {
-        return Attribute::get(fn () => array_map(ProjectEntry::fromFields(...), $this->entries ?? []));
+        return array_map(ProjectEntry::fromFields(...), $this->entries ?? []);
     }
 
     // ----------[ Asserts ]----------

@@ -23,6 +23,6 @@ final readonly class RecordRuntimeHandler implements CommandHandler
             $command->idempotencyKey,
             $driverEnvelope,
         )
-            ->receipt;
+            ->receipt();
     }
 }

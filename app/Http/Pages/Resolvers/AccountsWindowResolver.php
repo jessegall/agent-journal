@@ -58,7 +58,7 @@ final readonly class AccountsWindowResolver implements PageResolver
     private function listOf(array $accounts, array $selections): AccountListData
     {
         $chosen = array_map(fn (ActiveAccount $selection) => $selection->account_id, $selections);
-        $counts = $this->uses->counts(array_map(fn (Account $account) => $account->recordIdentity, $accounts));
+        $counts = $this->uses->counts(array_map(fn (Account $account) => $account->recordIdentity(), $accounts));
         $now = CarbonImmutable::now();
         $windows = AccountUsageWindow::currentOf($accounts);
         $costs = AccountUsageCost::monthTotals(array_map(fn (Account $account) => $account->id, $accounts), $now);
@@ -69,8 +69,8 @@ final readonly class AccountsWindowResolver implements PageResolver
                 $this->protocols,
                 $account,
                 in_array($account->id, $chosen, true),
-                $counts->runningFor($account->recordIdentity),
-                $this->uses->history($account->recordIdentity, self::RECENT_STARTS),
+                $counts->runningFor($account->recordIdentity()),
+                $this->uses->history($account->recordIdentity(), self::RECENT_STARTS),
                 AccountUsageData::fromReadings(
                     $windows[$account->id] ?? [],
                     $costs[$account->id] ?? null,

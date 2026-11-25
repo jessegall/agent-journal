@@ -32,7 +32,7 @@ final readonly class RecordDriverFailure
             $hook->sessionId,
             $details->driver,
             $details->failure,
-            $start?->accountIdentity,
+            $start?->accountIdentity(),
             $start?->account_generation,
         );
 

@@ -42,7 +42,7 @@ final readonly class StartSampleHandler implements CommandHandler
         }
 
         if ($permit === null || $request->state !== RequestState::ReadyForSample) {
-            throw SampleRefused::notReady($request->nextStep->command);
+            throw SampleRefused::notReady($request->nextStep()->command);
         }
 
         $run = $this->evidence->start($permit, ActorIdentity::of($command->dispatchedBy()), $command->requestKey);

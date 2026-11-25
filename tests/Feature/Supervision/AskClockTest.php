@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Supervision;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Asks\AdvanceAsk\AdvanceAskCommand;
 use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Asks\RouteAsk\RouteAskCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
@@ -113,7 +113,7 @@ final class AskClockTest extends TestCase
 
         $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference, self::LATE_ANSWER));
+        $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference(), self::LATE_ANSWER));
 
         $closed = $ask->refresh();
         $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);

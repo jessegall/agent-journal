@@ -79,7 +79,7 @@ final class LaunchCleanupTest extends TestCase
         $this->assertSame(ReservationState::Reserved, $this->reservationOf($launch)->state);
         $pending = $this->cleanupOf($launch);
         $this->assertSame('/workspaces/helper-7', $pending->recovery_location);
-        $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps);
+        $this->assertSame([CleanupStep::Network, CleanupStep::Runtime], $pending->remainingSteps());
 
         $retried = new CleanupReport([CleanupStep::Network, CleanupStep::Runtime], null, null);
         $this->notify($launch, $retried);

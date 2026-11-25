@@ -500,30 +500,25 @@ final class Account extends Model implements EventSource, ReadableModel
         return $this->directory;
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The account as the start it is chosen for runs with it.
-     *
-     * @return Attribute<SelectedAccount, never>
      */
-    protected function selectedForStart(): Attribute
+    public function selectedForStart(): SelectedAccount
     {
-        return Attribute::get(fn () => new SelectedAccount(
-            $this->recordIdentity,
+        return new SelectedAccount(
+            $this->recordIdentity(),
             $this->account_protocol,
             $this->directoryForStart(),
             $this->sign_in_generation,
-        ))->withoutObjectCaching();
+        );
     }
 
-    /**
-     * @return Attribute<RecordIdentity, never>
-     */
-    protected function recordIdentity(): Attribute
+    public function recordIdentity(): RecordIdentity
     {
-        return Attribute::get(fn () => new RecordIdentity(self::LINK_TYPE, $this->id))->withoutObjectCaching();
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
+
+    // ----------[ Accessors ]----------
 
     /**
      * Why a start cannot use the account now, none while it is signed in and not held for maintenance.

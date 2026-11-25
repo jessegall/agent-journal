@@ -29,7 +29,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -118,7 +117,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         NavigationCompletion $completes,
         string $proof,
     ): self {
-        $goal = $source->goal;
+        $goal = $source->goal();
         $entry = new self();
         $entry->family = $source->family;
         $entry->entry_fingerprint = $steps[0]->fingerprint;
@@ -226,34 +225,27 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         $this->raise(new MenuEntryMarkedStale($this->id, $build));
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<ScriptGoal, never>
-     */
-    protected function goal(): Attribute
+    public function goal(): ScriptGoal
     {
-        return Attribute::get(
-            fn () => new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters),
-        )->withoutObjectCaching();
+        return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
     }
 
     /**
      * The entry as the host replays it, and nothing else of its owner's.
-     *
-     * @return Attribute<LibraryEntryAnswer, never>
      */
-    protected function libraryAnswer(): Attribute
+    public function libraryAnswer(): LibraryEntryAnswer
     {
-        return Attribute::get(fn () => new LibraryEntryAnswer(
+        return new LibraryEntryAnswer(
             $this->id,
             $this->family,
-            EntryGoalAnswer::of($this->goal),
+            EntryGoalAnswer::of($this->goal()),
             $this->steps,
             $this->completes->value,
             $this->next_step,
             $this->proof,
-        ))->withoutObjectCaching();
+        );
     }
 
     // ----------[ Internals ]----------
@@ -286,7 +278,7 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
     {
         return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->family)
-            ->matching($steps[0]->fingerprint, $navigation->goal)
+            ->matching($steps[0]->fingerprint, $navigation->goal())
             ->withSteps($steps)
             ->lockForUpdate()
             ->recentFirst()

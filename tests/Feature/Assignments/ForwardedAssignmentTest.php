@@ -57,7 +57,7 @@ final class ForwardedAssignmentTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $result = $this->app->make(CommandBus::class)->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
 
-        $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment->holder();
+        $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
         $this->assertTrue($held->isSameAs($main->assigneeIdentity()));
         $this->assertTrue($result->requests[0]->requested->isSameAs($agent->assigneeIdentity()));
         $this->assertTrue($result->requests[0]->resolved->isSameAs($main->assigneeIdentity()));
@@ -71,7 +71,7 @@ final class ForwardedAssignmentTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $this->app->make(CommandBus::class)->run(new AssignRecordCommand($task, $agent->assigneeIdentity()));
 
-        $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment->holder();
+        $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
         $this->assertTrue($held->isSameAs($agent->assigneeIdentity()));
     }
 

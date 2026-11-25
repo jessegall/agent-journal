@@ -58,6 +58,6 @@ final readonly class ReplyToAskHandler implements CommandHandler
 
         $ask->answerLate($body);
 
-        return $ask->reference;
+        return $ask->reference();
     }
 }

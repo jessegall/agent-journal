@@ -44,7 +44,6 @@ use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -124,42 +123,29 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         return $report;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<PublicationCard, never>
-     */
-    protected function card(): Attribute
+    public function card(): PublicationCard
     {
-        return Attribute::get(fn () => RecordViews::reportCard($this))->withoutObjectCaching();
+        return RecordViews::reportCard($this);
     }
 
-    /**
-     * @return Attribute<DockSuggestion, never>
-     */
-    protected function dockCard(): Attribute
+    public function dockCard(): DockSuggestion
     {
-        return Attribute::get(fn () => RecordViews::reportSuggestion($this))->withoutObjectCaching();
+        return RecordViews::reportSuggestion($this);
     }
 
-    /**
-     * @return Attribute<ReportView, never>
-     */
-    protected function view(): Attribute
+    public function view(): ReportView
     {
-        return Attribute::get(fn () => RecordViews::reportView($this))->withoutObjectCaching();
+        return RecordViews::reportView($this);
     }
 
     /**
      * The report's safe card for a share; a filed report never changes, so its published version is always 1.
-     *
-     * @return Attribute<ShareRecordCard, never>
      */
-    protected function shareCard(): Attribute
+    public function shareCard(): ShareRecordCard
     {
-        return Attribute::get(
-            fn () => new ShareRecordCard($this->shareIdentity(), $this->title, '1'),
-        )->withoutObjectCaching();
+        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
     }
 
     // ----------[ Asserts ]----------
@@ -224,7 +210,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     public function searchResult(string $words): PublicationCard
     {
         return PublicationCard::from([
-            ...$this->card->all(),
+            ...$this->card()->all(),
             'snippet' => $this->snippetFor($words),
             'foundIn' => 'report',
         ]);

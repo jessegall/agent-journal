@@ -51,7 +51,7 @@ final readonly class VisibleTasks implements TaskResolver
         $tasks = Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->get()->keyBy('id');
         $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->keys()->all())));
 
-        return array_map(fn (string $taskId) => $tasks[$taskId]->summary, $ids);
+        return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $ids);
     }
 
     /**

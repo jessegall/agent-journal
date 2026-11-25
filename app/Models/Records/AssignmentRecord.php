@@ -100,17 +100,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<Assignment, never>
-     */
-    protected function toAssignment(): Attribute
+    public function toAssignment(): Assignment
     {
-        return Attribute::get(fn () => new Assignment(
+        return new Assignment(
             new RecordIdentity($this->record_type, $this->record_id),
             new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
-        ))->withoutObjectCaching();
+        );
     }
 
     // ----------[ Queries ]----------
@@ -151,7 +148,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment->holder()])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()->holder()])
             ->all();
     }
 
@@ -167,7 +164,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->withoutGlobalScope(SignedInScope::class)
             ->whereKey($ids)
             ->get()
-            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment])
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()])
             ->all();
     }
 

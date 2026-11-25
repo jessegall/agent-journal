@@ -357,21 +357,6 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
-     * it has been quiet.
-     */
-    public function linkAlarm(): string
-    {
-        if ($this->failing_since !== null) {
-            return "The host {$this->installation_name} has failed to reach the journal since "
-                ."{$this->failing_since->format('H:i T')}: its last call, {$this->last_failure}.";
-        }
-
-        return "The host {$this->installation_name} has not called the journal since "
-            ."{$this->last_answered_at?->format('H:i T')}.";
-    }
-
-    /**
      * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
      *
      * @throws HostUnavailable
@@ -382,6 +367,27 @@ final class Host extends Model implements EventSource, ReadableModel
         $this->assertStartFolder($folder);
 
         return $folder;
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * The sentence a broken link of this host shows: since when its calls fail and why the latest did, or since when
+     * it has been quiet.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function linkAlarm(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->failing_since !== null) {
+                return "The host {$this->installation_name} has failed to reach the journal since "
+                    ."{$this->failing_since->format('H:i T')}: its last call, {$this->last_failure}.";
+            }
+
+            return "The host {$this->installation_name} has not called the journal since "
+                ."{$this->last_answered_at?->format('H:i T')}.";
+        });
     }
 
     // ----------[ Asserts ]----------

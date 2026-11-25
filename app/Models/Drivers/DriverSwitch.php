@@ -29,7 +29,6 @@ use App\Values\PinnedDriver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -229,20 +228,17 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         };
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<DriverSwitchTarget, never>
-     */
-    protected function target(): Attribute
+    public function target(): DriverSwitchTarget
     {
-        return Attribute::get(fn () => new DriverSwitchTarget(
+        return new DriverSwitchTarget(
             $this->target_family,
             $this->driver_type,
             new ChosenAccount($this->account_id, $this->account_revision),
             $this->conversation_id,
             $this->remember,
-        ))->withoutObjectCaching();
+        );
     }
 
     // ----------[ Asserts ]----------

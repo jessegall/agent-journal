@@ -24,7 +24,7 @@ final readonly class StackInspectionQuery implements StackInspectionQueryContrac
     {
         $row = AgentStackRow::query()->authorizedFor($target)->firstOrFail();
         $lastCall = $row->links()->among(HookCall::query()->authorizedFor($target))->latest('id')->first();
-        $stack = $this->restorer->restore($row->frames, $row->target);
+        $stack = $this->restorer->restore($row->frames, $row->target());
 
         return StackInspection::of($row, $stack, InspectedCall::optionalOrMissing($lastCall));
     }

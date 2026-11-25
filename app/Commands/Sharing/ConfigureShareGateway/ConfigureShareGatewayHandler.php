@@ -79,6 +79,6 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
 
         ShareAudit::create(null, ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'configured');
 
-        return $configuration->toConfiguration;
+        return $configuration->toConfiguration();
     }
 }

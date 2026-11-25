@@ -18,7 +18,6 @@ use Domain\Documents\Support\DraftText;
 use Domain\Documents\Values\RetainedDraftView;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -85,30 +84,22 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
         return $kept;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<RetainedDraftView, never>
-     */
-    protected function view(): Attribute
+    public function view(): RetainedDraftView
     {
-        return Attribute::get(fn () => new RetainedDraftView(
+        return new RetainedDraftView(
             $this->id,
             $this->document_id,
             $this->base_revision_number,
             $this->body,
             $this->reason,
-        ))->withoutObjectCaching();
+        );
     }
 
-    /**
-     * @return Attribute<DraftText, never>
-     */
-    protected function workingText(): Attribute
+    public function workingText(): DraftText
     {
-        return Attribute::get(
-            fn () => new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body)),
-        )->withoutObjectCaching();
+        return new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body));
     }
 
     // ----------[ Asserts ]----------

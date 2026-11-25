@@ -75,7 +75,7 @@ final readonly class SessionContainers
         }
 
         return new SelectedAccount(
-            $start->accountIdentity,
+            $start->accountIdentity(),
             $runtime->family,
             $start->directory,
             $start->account_generation,

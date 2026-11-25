@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -119,18 +118,14 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
         $this->raise(new HelperDesignationReleased($this->id));
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The lasting actor this identity represents.
-     *
-     * @return Attribute<ActorIdentity, never>
      */
-    protected function helperActor(): Attribute
+    public function helperActor(): ActorIdentity
     {
-        return Attribute::get(
-            fn () => new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id),
-        )->withoutObjectCaching();
+        return new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id);
     }
 
     // ----------[ Asserts ]----------

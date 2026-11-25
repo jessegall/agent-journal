@@ -60,6 +60,6 @@ final readonly class RunKeyScriptHandler implements CommandHandler
             $driverEnvelope,
         );
 
-        return $request->receipt;
+        return $request->receipt();
     }
 }

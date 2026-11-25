@@ -247,6 +247,19 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
     }
 
+    public function status(): PublicationStatus
+    {
+        return new PublicationStatus(
+            $this->id,
+            $this->session_id,
+            $this->state,
+            $this->generation_id,
+            $this->selection_digest,
+            $this->target,
+            $this->error,
+        );
+    }
+
     // ----------[ Accessors ]----------
 
     /**
@@ -257,22 +270,6 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     protected function targetName(): Attribute
     {
         return Attribute::get(fn () => self::openKeyOf($this->session_id, $this->target));
-    }
-
-    /**
-     * @return Attribute<PublicationStatus, never>
-     */
-    protected function status(): Attribute
-    {
-        return Attribute::get(fn () => new PublicationStatus(
-            $this->id,
-            $this->session_id,
-            $this->state,
-            $this->generation_id,
-            $this->selection_digest,
-            $this->target,
-            $this->error,
-        ))->withoutObjectCaching();
     }
 
     /**

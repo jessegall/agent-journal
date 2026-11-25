@@ -34,7 +34,7 @@ final class CommandRequestTest extends TestCase
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame($first, $second);
         $this->assertSame(RequestState::CollectingDeclaration, $request->state);
-        $this->assertStringStartsWith(sprintf(self::PROPOSE_STEP, $first), $request->nextStep->command);
+        $this->assertStringStartsWith(sprintf(self::PROPOSE_STEP, $first), $request->nextStep()->command);
     }
 
     public function test_another_project_or_another_agent_gets_its_own_request(): void
@@ -56,7 +56,7 @@ final class CommandRequestTest extends TestCase
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::Withdrawn, $request->state);
-        $this->assertSame([], $request->nextStep->steps);
+        $this->assertSame([], $request->nextStep()->steps);
         $this->assertNotSame($first, $this->open('agent-1', '/projects/acme'));
     }
 
@@ -81,7 +81,7 @@ final class CommandRequestTest extends TestCase
 
         $again = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::AwaitingSampleApproval, $again->state);
-        $this->assertSame(sprintf(self::APPROVE_STEP, $first), $again->nextStep->command);
+        $this->assertSame(sprintf(self::APPROVE_STEP, $first), $again->nextStep()->command);
     }
 
     private function open(string $agentId, string $folder): string

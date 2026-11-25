@@ -46,6 +46,6 @@ final readonly class DeliverAgentHandler implements CommandHandler
             DriverOperation::Deliver,
             $command->idempotencyKey,
             DriverRequestPayload::parts($command->parts),
-        )->receipt;
+        )->receipt();
     }
 }

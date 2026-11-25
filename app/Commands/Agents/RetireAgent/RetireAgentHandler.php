@@ -140,7 +140,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 
         foreach ($starts as $start) {
             $start->cancelPending();
-            $account = $start->accountIdentity;
+            $account = $start->accountIdentity();
             $accounts["{$account->type} {$account->id}"] = $account;
         }
 

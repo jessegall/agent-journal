@@ -62,7 +62,7 @@ final class AccountSecretStartTest extends TestCase
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work '.$method->value), $folder);
         $account->forceFill(['method' => $method])->save();
         $settings = new AccountStartSettings();
-        $event = new AccountSettingsRequested('claude-code', $account->recordIdentity, $folder, $settings);
+        $event = new AccountSettingsRequested('claude-code', $account->recordIdentity(), $folder, $settings);
 
         $this->app->make(Dispatcher::class)->dispatch($event);
 

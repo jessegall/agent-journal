@@ -58,7 +58,7 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 
         $budget->chargeText($bytes);
 
-        return new SharedContent($report->shareCard, (string) Report::query()->whereKey($report->id)->value('body'));
+        return new SharedContent($report->shareCard(), (string) Report::query()->whereKey($report->id)->value('body'));
     }
 
     private function linkType(): string
@@ -71,6 +71,6 @@ final readonly class ReportShareProvider implements ShareRecordProvider
         return array_values(Report::query()->sharedPublished()->whereKey($ids)->readExactly(count($ids))->get(
             self::CARD_COLUMNS,
         )
-            ->map(fn (Report $report) => $report->shareCard)->all());
+            ->map(fn (Report $report) => $report->shareCard())->all());
     }
 }

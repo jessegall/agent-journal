@@ -56,14 +56,12 @@ final readonly class ScriptStopPreparation implements StopPreparer
 
     public function prepare(StopPreparationRequest $request): StopPreparation
     {
-        $scripts = $this->profiles->scriptAt(ProfileKey::from($request->profileKey), $request->profileRevision)
-            ->filter(fn (ProfileScript $script) => isset($script->compiled->graph['handlers'][self::TRIGGER]));
+        $profile = ProfileKey::from($request->profileKey);
+        $script = $this->profiles->scriptAt($profile, $request->profileRevision);
 
-        if ($scripts->isEmpty()) {
+        if (! $script->handles(self::TRIGGER)) {
             return StopPreparation::finalChecks();
         }
-
-        $script = $scripts->get();
 
         $run = ProfileRun::create(
             $request->actor,

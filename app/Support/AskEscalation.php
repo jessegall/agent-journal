@@ -58,7 +58,7 @@ final readonly class AskEscalation
             return;
         }
 
-        $held = AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()->toAssignment;
+        $held = AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()->toAssignment();
         $this->router->reroute($ask, $next, $held->reference);
         $this->attention->offerNext($hop->actor());
     }

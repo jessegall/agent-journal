@@ -82,7 +82,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         $work = StartRecord::ownerStartOf($stop->sessionId)
-            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork))
+            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork()))
             ->getOrElse(WorkReference::free(self::OWN_WORK));
 
         return $this->preparer->prepare(new StopPreparationRequest(
@@ -121,7 +121,7 @@ final readonly class StopAttemptGate implements StopConditionGate
             return StopAnswer::forAttempt($attempt->id, $this->passWithoutConditions($attempt));
         }
 
-        $stopOutcome = $this->evidence->result($attempt->reference);
+        $stopOutcome = $this->evidence->result($attempt->reference());
 
         return StopAnswer::forAttempt($attempt->id, match ($stopOutcome->state) {
             StopAttemptState::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
@@ -187,7 +187,7 @@ final readonly class StopAttemptGate implements StopConditionGate
     {
         StartRecord::ownerStartOf($attempt->session_id)->forAll(
             fn (StartRecord $start) => $this->facts->publishAfterCommit(
-                new HelperStopHeld($start->ownerWork, $attempt->reference),
+                new HelperStopHeld($start->ownerWork(), $attempt->reference()),
             ),
         );
     }

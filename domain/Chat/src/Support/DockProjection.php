@@ -8,6 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\DockCardInvalid;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\PartMapInvalid;
+use App\Models\Inboxes\Inbox;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -18,7 +19,6 @@ use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Wire\Contracts\CardEncoder;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockPageData;
-use App\Models\Inboxes\Inbox;
 use Domain\Chat\Models\DockPlacement;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Encryption\Encrypter;
@@ -90,7 +90,7 @@ final readonly class DockProjection
 
             foreach ($batch as $placement) {
                 $scanned++;
-                $card = $composed->find($placement->source);
+                $card = $composed->find($placement->source());
                 $next = DockCursor::after($viewer, $inboxKey, $placement->assigned_at, $placement->id);
 
                 if ($card->isEmpty()) {
@@ -168,7 +168,7 @@ final readonly class DockProjection
     private function composed(Collection $placements, CardContext $context): DockCards
     {
         return $this->composedSources(
-            array_values($placements->map(fn (DockPlacement $placement) => $placement->source)->all()),
+            array_values($placements->map(fn (DockPlacement $placement) => $placement->source())->all()),
             $context,
         );
     }
@@ -205,9 +205,9 @@ final readonly class DockProjection
         $summary = mb_substr($card->accessibleName, 0, self::SUMMARY_CHARACTER_LIMIT);
 
         try {
-            return $this->encoder->encode($card, $placement->id, $placement->source, $summary);
+            return $this->encoder->encode($card, $placement->id, $placement->source(), $summary);
         } catch (PartMapInvalid) {
-            return new EncodedCard($placement->id, $placement->source, $summary, $summary, null, null);
+            return new EncodedCard($placement->id, $placement->source(), $summary, $summary, null, null);
         }
     }
 }

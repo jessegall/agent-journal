@@ -20,7 +20,6 @@ use App\Values\CommandFrame;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -203,14 +202,12 @@ final class ProjectCommandRun extends Model implements EventSource, ReadableMode
         return CommandRunState::Interrupted;
     }
 
-    // ----------[ Accessors ]----------
-
     /**
-     * @return Attribute<list<CommandFrame>, never>
+     * @return list<CommandFrame>
      */
-    protected function recordedFrames(): Attribute
+    public function recordedFrames(): array
     {
-        return Attribute::get(fn () => array_map(CommandFrame::fromRecord(...), $this->frames));
+        return array_map(CommandFrame::fromRecord(...), $this->frames);
     }
 
     // ----------[ Queries ]----------

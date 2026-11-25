@@ -19,6 +19,6 @@ final readonly class RefreshShareScopeHandler implements CommandHandler
 
         return $this->grants
             ->refresh($command->dispatchedBy(), $command->shareId, $command->previewId, $command->previewChecksum)
-            ->summary;
+            ->summary();
     }
 }

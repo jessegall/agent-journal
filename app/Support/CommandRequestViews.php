@@ -24,7 +24,7 @@ final readonly class CommandRequestViews
             ->whereKey($requestId)
             ->firstOrFail();
 
-        $next = $request->nextStep;
+        $next = $request->nextStep();
         $proposals = RuleProposal::query()->where('command_request_id', $request->id)->limit(50)->get();
         $readers = ReaderRevision::query()->where('command_request_id', $request->id)->limit(50)->get();
 

@@ -96,6 +96,6 @@ final class WorkspaceReadCommitTest extends TestCase
 
     private function commitOf(WorkspaceRead $read): CommitObservation
     {
-        return WorkspaceRead::byReference($read->reference)->facts->get()->commit;
+        return WorkspaceRead::byReference($read->reference())->facts()->get()->commit;
     }
 }

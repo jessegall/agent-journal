@@ -24,7 +24,6 @@ use Domain\Plans\Values\PlanProgress;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -193,22 +192,18 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         );
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * How far the tasks placed in it have got, from the tallies kept on the row; no task is read.
-     *
-     * @return Attribute<PlanProgress, never>
      */
-    protected function progress(): Attribute
+    public function progress(): PlanProgress
     {
-        return Attribute::get(fn () => new PlanProgress(
+        return new PlanProgress(
             $this->finished_tasks,
             $this->cancelled_tasks,
             $this->blocked_tasks,
             $this->started_tasks,
             $this->total_tasks,
-        ));
+        );
     }
 
     // ----------[ Relations ]----------

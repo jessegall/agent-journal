@@ -45,7 +45,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -571,7 +570,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
             $this->attempt_version,
             $this->operation->value,
             $this->message,
-            $this->partList,
+            $this->partList(),
             $this->model,
             $this->effort,
             $this->script_id,
@@ -599,46 +598,40 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * What the caller who asked for this request is told: where it stands and the timing to expect.
-     *
-     * @return Attribute<DriverReceipt, never>
      */
-    protected function receipt(): Attribute
+    public function receipt(): DriverReceipt
     {
-        return Attribute::get(fn () => new DriverReceipt(
+        return new DriverReceipt(
             $this->id,
             $this->sequence,
             $this->operation,
             $this->progress,
             $this->expected_timing,
             $this->expected_observed_at?->toIso8601String(),
-        ))->withoutObjectCaching();
+        );
     }
 
     /**
      * The delivery's parts in their order; none for any other request.
      *
-     * @return Attribute<list<MessagePart>, never>
+     * @return list<MessagePart>
      */
-    protected function partList(): Attribute
+    public function partList(): array
     {
-        return Attribute::get(fn () => array_map(
+        return array_map(
             fn (array $stored) => MessagePartType::from($stored['type'])->partFrom($stored),
             $this->parts ?? [],
-        ));
+        );
     }
 
     /**
      * The request as stored, for readers.
-     *
-     * @return Attribute<DriverRequestStatus, never>
      */
-    protected function status(): Attribute
+    public function status(): DriverRequestStatus
     {
-        return Attribute::get(fn () => RuntimeStatuses::ofRequest($this))->withoutObjectCaching();
+        return RuntimeStatuses::ofRequest($this);
     }
 
     // ----------[ Relations ]----------

@@ -53,14 +53,16 @@ final class QuestionAnswerNotice extends Model implements EventSource
         $this->raise(new QuestionAnswerNoticeDelivered($this->id, $this->question_id));
     }
 
-    // ----------[ Transformers ]----------
+    // ----------[ Accessors ]----------
 
     /**
      * The key a delivery of this notice is sent under, the same on every retry.
+     *
+     * @return Attribute<string, never>
      */
-    public function deliveryKey(): string
+    protected function deliveryKey(): Attribute
     {
-        return "question-answer:{$this->question_id}";
+        return Attribute::get(fn () => "question-answer:{$this->question_id}");
     }
 
     // ----------[ Relations ]----------

@@ -33,7 +33,7 @@ final readonly class ProveReaderHandler implements CommandHandler
         $request = CommandRequest::lockedForChange($command->commandRequestId);
 
         if (! $request->awaitsProof()) {
-            throw ReaderProofFailed::notAwaiting($request->nextStep->command);
+            throw ReaderProofFailed::notAwaiting($request->nextStep()->command);
         }
 
         $reader = ReaderRevision::query()

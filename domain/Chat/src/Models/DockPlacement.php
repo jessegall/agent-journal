@@ -17,7 +17,6 @@ use Domain\Chat\Events\DockChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -109,16 +108,11 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         return DockDefinition::DEFAULT_PRESENTATION;
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<DockIdentity, never>
-     */
-    protected function source(): Attribute
+    public function source(): DockIdentity
     {
-        return Attribute::get(
-            fn () => new DockIdentity($this->dockable_type, $this->dockable_id),
-        )->withoutObjectCaching();
+        return new DockIdentity($this->dockable_type, $this->dockable_id);
     }
 
     // ----------[ Queries ]----------

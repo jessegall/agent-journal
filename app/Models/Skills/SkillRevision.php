@@ -20,7 +20,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -135,16 +134,12 @@ final class SkillRevision extends Model implements ReadableModel
         return $tree->hydrate($this->condition);
     }
 
-    // ----------[ Accessors ]----------
-
     /**
      * The revision's content as a draft, as a restore submits it again.
-     *
-     * @return Attribute<SkillDraft, never>
      */
-    protected function draft(): Attribute
+    public function draft(): SkillDraft
     {
-        return Attribute::get(fn () => new SkillDraft(
+        return new SkillDraft(
             $this->name,
             $this->description,
             array_map(
@@ -156,7 +151,7 @@ final class SkillRevision extends Model implements ReadableModel
                 $this->sections,
             ),
             json_encode($this->condition, JSON_THROW_ON_ERROR),
-        ))->withoutObjectCaching();
+        );
     }
 
     // ----------[ Asserts ]----------

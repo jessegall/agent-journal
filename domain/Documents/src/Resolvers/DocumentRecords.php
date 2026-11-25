@@ -75,7 +75,7 @@ final readonly class DocumentRecords implements DocumentResolver
                     fn (Document $document) => $filters->searches() ? $document->searchResult(
                         $filters->query,
                         $document->foundRevision($searched),
-                    ) : $document->card,
+                    ) : $document->card(),
                 )->all(),
             ),
             'page' => $filters->page,
@@ -92,7 +92,7 @@ final readonly class DocumentRecords implements DocumentResolver
             $page,
             50,
         )->get()
-            ->map(fn (DocumentRevision $revision) => $revision->card)->all());
+            ->map(fn (DocumentRevision $revision) => $revision->card())->all());
     }
 
     public function revision(int $documentNumber, int $revisionNumber): RevisionView
@@ -114,7 +114,7 @@ final readonly class DocumentRecords implements DocumentResolver
         int|null $expectedRevision = null,
     ): RecordText {
         $document = self::published($number);
-        $current = $document->currentRevisionOrFail->number;
+        $current = $document->currentRevisionOrFail()->number;
 
         if ($expectedRevision !== null && $expectedRevision !== $current) {
             throw StaleRead::revision($expectedRevision, $current);
@@ -130,7 +130,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function show(int $number): DocumentView
     {
-        return self::published($number)->view;
+        return self::published($number)->view();
     }
 
     /**

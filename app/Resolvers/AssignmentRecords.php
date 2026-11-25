@@ -67,7 +67,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
             }
         })->readExactly(array_sum(array_map(count(...), $visibleIdsByType)))->orderBy('id')->get();
 
-        return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment)->all()));
+        return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all()));
     }
 
     public function recordIdsFor(string $type, AssigneeIdentity $holder, IdListPage $page): RecordIds

@@ -55,6 +55,6 @@ final readonly class ProveNavigationHandler implements CommandHandler
         $request = $this->rounds->append($navigation, $round);
         $navigation->prove($command->completes, $nextStep, $proof->text);
 
-        return $request->receipt;
+        return $request->receipt();
     }
 }

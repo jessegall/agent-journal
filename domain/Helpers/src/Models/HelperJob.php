@@ -34,7 +34,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -229,7 +228,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $isNewJob,
             $profileType,
             $this->state,
-            $this->launch,
+            $this->launch(),
             $start,
         );
     }
@@ -257,14 +256,11 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
-    /**
-     * @return Attribute<JobLaunch, never>
-     */
-    protected function launch(): Attribute
+    public function launch(): JobLaunch
     {
-        return Attribute::get(fn () => new JobLaunch(
+        return new JobLaunch(
             $this->request_id,
             $this->payload_digest,
             $this->profile_revision,
@@ -272,17 +268,17 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
             $this->independent,
             $this->conversation_mode,
             $this->conversation_reason,
-        ))->withoutObjectCaching();
+        );
     }
 
     /**
      * The records the job was given as its source, written as type:id.
      *
-     * @return Attribute<list<string>, never>
+     * @return list<string>
      */
-    protected function sourceSubjects(): Attribute
+    public function sourceSubjects(): array
     {
-        return Attribute::get(fn () => $this->source_snapshot['subjects']);
+        return $this->source_snapshot['subjects'];
     }
 
     // ----------[ Asserts ]----------

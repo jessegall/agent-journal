@@ -41,7 +41,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             ->first();
 
         if ($sent !== null) {
-            return $sent->receipt;
+            return $sent->receipt();
         }
 
         $this->checkAnswerable($navigation, $command);
@@ -61,7 +61,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
 
         $navigation->answer();
 
-        return $request->receipt;
+        return $request->receipt();
     }
 
     /**

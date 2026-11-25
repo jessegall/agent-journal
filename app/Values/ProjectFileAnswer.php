@@ -36,7 +36,7 @@ final readonly class ProjectFileAnswer
             $read->path,
             $read->state,
             $read->failure,
-            $read->listedEntries,
+            $read->listedEntries(),
             $read->text,
             $read->digest,
             $read->size,

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Supervision;
 
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
 use App\Commands\Reviews\HandOffCodeReview\HandOffCodeReviewCommand;
-use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Asks\AskReader;
+use App\Contracts\Bus\CommandBus;
 use App\Enums\AskResult;
 use App\Enums\CodeReviewState;
 use App\Enums\CommandEntry;
@@ -109,7 +109,7 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference, $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
 
         $decision = ReviewDecision::query()->sole();
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
@@ -125,7 +125,7 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference, $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
 
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
         $receipt = NotificationReceipt::query()->with('occurrence')->sole();
@@ -143,12 +143,12 @@ final class CodeReviewTest extends TestCase
         $ask = $this->reviewAsk();
 
         $this->reviewer->startRequest($this->app);
-        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference, $ask->version, 'Clean.'));
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReviewCommand($ask->reference(), $ask->version, 'Clean.'));
         $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
 
         $this->app->forgetScopedInstances();
         $this->merger->startRequest($this->app);
-        $detail = $this->app->make(AskReader::class)->detail($merge->reference);
+        $detail = $this->app->make(AskReader::class)->detail($merge->reference());
         $link = $this->app->make(MergeAskNotificationTarget::class)->linksFor([$merge->id])[$merge->id];
 
         $this->assertSame($merge->version, $detail->version);
@@ -165,7 +165,7 @@ final class CodeReviewTest extends TestCase
 
         $this->reviewer->startRequest($this->app);
         rescue(
-            fn () => $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($this->reviewAsk()->reference, 'approved')),
+            fn () => $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($this->reviewAsk()->reference(), 'approved')),
         );
 
         $this->assertSame(0, ReviewDecision::query()->count());

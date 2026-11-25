@@ -328,7 +328,7 @@ final readonly class LineAdmission implements ShellAdmission
         $open = new OpenCommandRequestCommand($operation, $digest, $tree->source, $context->workingFolder, $reason);
         $request = CommandRequest::query()->findOrFail($this->commands->run($open));
 
-        return $refusal->heldIn($request->id, $request->nextStep->command);
+        return $refusal->heldIn($request->id, $request->nextStep()->command);
     }
 
     private function admitted(

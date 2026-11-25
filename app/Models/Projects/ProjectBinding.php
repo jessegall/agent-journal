@@ -168,12 +168,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $isSameBoot = $this->boot_id === $report->bootId;
 
         if ($isSameBoot && $report->sequence <= $this->report_sequence) {
-            return $this->presenceReceipt;
+            return $this->presenceReceipt();
         }
 
         // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
         if ($report->setupGeneration < $this->setup_generation) {
-            return $this->presenceReceipt;
+            return $this->presenceReceipt();
         }
 
         $this->assertNoOtherLiveBoot($isSameBoot, $now, $report);
@@ -201,7 +201,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
         }
 
-        return $this->presenceReceipt;
+        return $this->presenceReceipt();
     }
 
     /**
@@ -357,6 +357,25 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return ProviderEligibility::eligible($family);
     }
 
+    /**
+     * What the journal holds of the binding's presence now, with its effective readiness and last confirmed contact.
+     */
+    public function presenceReceipt(): PresenceReceipt
+    {
+        $now = CarbonImmutable::now();
+
+        return new PresenceReceipt(
+            $this->id,
+            $this->boot_generation,
+            $this->setup_generation,
+            $now->toIso8601String(),
+            (string) $this->presence_expires_at?->toIso8601String(),
+            $this->authority_generation,
+            $this->readinessAt($now)->value,
+            $this->last_contact_at?->toIso8601String(),
+        );
+    }
+
     // ----------[ Accessors ]----------
 
     /**
@@ -367,29 +386,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     protected function revokedAtText(): Attribute
     {
         return Attribute::get(fn () => (string) $this->revoked_at?->toIso8601String());
-    }
-
-    /**
-     * What the journal holds of the binding's presence now, with its effective readiness and last confirmed contact.
-     *
-     * @return Attribute<PresenceReceipt, never>
-     */
-    protected function presenceReceipt(): Attribute
-    {
-        return Attribute::get(function () {
-            $now = CarbonImmutable::now();
-
-            return new PresenceReceipt(
-                $this->id,
-                $this->boot_generation,
-                $this->setup_generation,
-                $now->toIso8601String(),
-                (string) $this->presence_expires_at?->toIso8601String(),
-                $this->authority_generation,
-                $this->readinessAt($now)->value,
-                $this->last_contact_at?->toIso8601String(),
-            );
-        })->withoutObjectCaching();
     }
 
     // ----------[ Relations ]----------

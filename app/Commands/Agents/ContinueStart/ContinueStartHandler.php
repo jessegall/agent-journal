@@ -47,7 +47,7 @@ final readonly class ContinueStartHandler implements CommandHandler
         return $this->commands->run(new StartAgentCommand(new StartRequest(
             self::successorRequestId($predecessor),
             $predecessor->agent_id,
-            $predecessor->selection,
+            $predecessor->selection(),
             StartOriginType::MainStart,
             null,
             $predecessor->id,

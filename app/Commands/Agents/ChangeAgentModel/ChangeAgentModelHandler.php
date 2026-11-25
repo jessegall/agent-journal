@@ -19,6 +19,6 @@ final readonly class ChangeAgentModelHandler implements CommandHandler
             $command->idempotencyKey,
             $command->model,
             null,
-        )[0]->receipt;
+        )[0]->receipt();
     }
 }

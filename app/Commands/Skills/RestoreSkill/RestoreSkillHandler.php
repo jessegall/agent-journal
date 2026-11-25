@@ -30,7 +30,7 @@ final readonly class RestoreSkillHandler implements CommandHandler
             return $this->writes->restoreFrom(
                 $skill,
                 $earlier,
-                $this->writes->checkedCondition($skill->key, $earlier->draft),
+                $this->writes->checkedCondition($skill->key, $earlier->draft()),
                 $this->writes->author(),
             );
         });

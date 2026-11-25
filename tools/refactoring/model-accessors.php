@@ -28,6 +28,10 @@ require_once __DIR__.'/models.php';
 require_once __DIR__.'/model-sections.php';
 require_once __DIR__.'/php-parse.php';
 
+/** The types of a string, an int or a float, as a declaration or a documented type writes them. */
+const SCALAR_TYPES = '/^(string|int|float|non-falsy-string|non-empty-string|positive-int|negative-int|non-negative-int|'
+    .'numeric-string|lowercase-string|int<[^>]*>)$/';
+
 /** What an accessor's closure, or an answer that may become one, must never do. */
 const SIDE_EFFECTS = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(|'
     .'\bdispatch\(|\bevent\(|->dispatch\(|->run\(|file_get_contents|file_put_contents|Process::/';
@@ -141,8 +145,61 @@ function readsItsOwnColumn(ClassMethod $method, string $body): bool
 }
 
 /**
- * Whether a model method takes nothing, changes nothing and answers with more than yes or no, so it is an accessor;
- * one that names what it throws keeps it in a method's contract, which a property read cannot carry.
+ * Whether a public answer of the row, an accessor or a transformer, gives a model: its declared type, or an accessor's
+ * documented one, names a model class (user message 22093).
+ */
+function returnsModel(string $source, ClassMethod $method): bool
+{
+    if (! $method->isPublic() && ! isAccessor($method) || $method->isStatic()) {
+        return false;
+    }
+
+    $type = isAccessor($method) ? accessorTypeOf($method) : returnedName($method);
+    $parts = array_diff(explode('|', ltrim($type, '?')), ['null']);
+
+    return array_any($parts, function (string $part) use ($source): bool {
+        if (preg_match('/^\w+$/', $part) !== 1 || in_array($part, ['self', 'static'], true)) {
+            return false;
+        }
+
+        $full = importedName($source, $part);
+
+        return class_exists($full) && is_subclass_of($full, Model::class);
+    });
+}
+
+/**
+ * Whether a type is one an accessor may give: a string, an int, a float or a backed enum (user messages 22093 and
+ * 22095); a bool is a predicate's and anything built is a transformer's.
+ */
+function givesScalar(string $source, string $type): bool
+{
+    $parts = array_diff(explode('|', ltrim($type, '?')), ['null']);
+
+    return $parts !== [] && array_all($parts, fn (string $part) => isScalarPart($source, $part));
+}
+
+/**
+ * Whether one part of a type is a scalar, a backed enum or one case of a backed enum.
+ */
+function isScalarPart(string $source, string $part): bool
+{
+    if (preg_match(SCALAR_TYPES, $part) === 1) {
+        return true;
+    }
+
+    if (preg_match('/^(\w+)(::\w+)?$/', $part, $enum) !== 1) {
+        return false;
+    }
+
+    $full = importedName($source, $enum[1]);
+
+    return enum_exists($full) && new ReflectionEnum($full)->isBacked();
+}
+
+/**
+ * Whether a model method takes nothing, changes nothing and gives a string, int, float or backed enum, so it is an
+ * accessor; one that names what it throws keeps it in a method's contract, which a property read cannot carry.
  */
 function belongsInAccessor(string $source, string $class, Class_ $model, ClassMethod $method): bool
 {
@@ -154,9 +211,9 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && ! $method->isStatic()
         && ! $method->isAbstract()
         && $method->params === []
-        && ! in_array($returned, METHOD_RETURNS, true)
+        && givesScalar($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && sectionOf($method, $body) === 'Answers'
+        && sectionOf($method, $body) === 'Transformers'
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')
@@ -185,12 +242,38 @@ function accessorFaultsOf(string $source, string $class, Class_ $model): array
             $faults[] = "{$method->getStartLine()}\taccessor {$name} reads rows";
         }
 
+        if (isAccessor($method) && ! givesScalar($source, accessorTypeOf($method))) {
+            $faults[] = "{$method->getStartLine()}\taccessor {$name} gives ".accessorTypeOf($method)
+                .'; an accessor gives only a string, int, float or backed enum, so make it a predicate or transformer';
+        }
+
+        $isAnswer = isAccessor($method) || sectionOf($method, $body) === 'Transformers';
+
+        if ($isAnswer && returnsModel($source, $method)) {
+            $faults[] = "{$method->getStartLine()}\tmethod {$name} gives a model; reach another model through a relation";
+        }
+
         if (belongsInAccessor($source, $class, $model, $method)) {
-            $faults[] = "{$method->getStartLine()}\tanswer {$name} takes nothing and returns no bool, so it is an accessor";
+            $faults[] = "{$method->getStartLine()}\tanswer {$name} takes nothing and gives a string, int, float or"
+                .' backed enum, so it is an accessor';
         }
     }
 
     return $faults;
+}
+
+/**
+ * The type an accessor gives, from its documented Attribute<type, never>; mixed when it documents none.
+ */
+function accessorTypeOf(ClassMethod $method): string
+{
+    $documented = (string) $method->getDocComment()?->getText();
+
+    if (preg_match('/@return\s+Attribute<(.+), never>/', $documented, $found) === 1) {
+        return trim($found[1]);
+    }
+
+    return 'mixed';
 }
 
 /**

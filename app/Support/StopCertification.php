@@ -41,9 +41,9 @@ final readonly class StopCertification
         $work = CertifiedWork::record($start, $attempt->id);
 
         if ($policy->requiresReview) {
-            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference), $attempt->workspace_generation);
+            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference()), $attempt->workspace_generation);
         }
 
-        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork, $attempt->reference));
+        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
     }
 }

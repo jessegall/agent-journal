@@ -50,7 +50,7 @@ final readonly class FinishCertifiedJob implements Listener
     private function tellParent(HelperJob $job): void
     {
         $purpose = HelperPurpose::query()->findOrFail($job->helper_purpose_id);
-        $helper = HelperIdentity::query()->findOrFail($job->helper_identity_id)->helperActor;
+        $helper = HelperIdentity::query()->findOrFail($job->helper_identity_id)->helperActor();
 
         $purpose->subject_record->forAll(
             fn (RecordIdentity $subject) => $this->helperFacts->reported($subject, $helper->id),

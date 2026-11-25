@@ -33,7 +33,7 @@ final readonly class CancelLaunchHandler implements CommandHandler
         }
 
         StartRecord::ownerStartOf($command->sessionId)->forAll(
-            fn (StartRecord $start) => $this->facts->publishAfterCommit(new LaunchCancelled($start->ownerWork)),
+            fn (StartRecord $start) => $this->facts->publishAfterCommit(new LaunchCancelled($start->ownerWork())),
         );
 
         return $hasRuntime;

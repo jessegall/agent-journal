@@ -57,8 +57,8 @@ final readonly class AskSupervisorHandler implements CommandHandler
             AskOriginType::Supervisor,
         );
 
-        $this->commands->run(new RouteAskCommand($ask->reference, 0));
+        $this->commands->run(new RouteAskCommand($ask->reference(), 0));
 
-        return $ask->reference;
+        return $ask->reference();
     }
 }

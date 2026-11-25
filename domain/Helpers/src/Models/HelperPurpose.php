@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -60,16 +59,16 @@ final class HelperPurpose extends Model implements ReadableModel
         return ['purpose_type' => PurposeType::class];
     }
 
-    // ----------[ Accessors ]----------
+    // ----------[ Transformers ]----------
 
     /**
      * The record the purpose is about, such as a plan to review; none for a free purpose.
      *
-     * @return Attribute<Option<RecordIdentity>, never>
+     * @return Option<RecordIdentity>
      */
-    protected function subjectRecord(): Attribute
+    public function subjectRecord(): Option
     {
-        return Attribute::get(fn () => $this->subjectRecordOf($this->subject_type, $this->subject_id));
+        return $this->subjectRecordOf($this->subject_type, $this->subject_id);
     }
 
     // ----------[ Internals ]----------

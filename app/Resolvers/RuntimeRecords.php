@@ -50,7 +50,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
             ->orderByDesc('sequence')
             ->readExactly($limit)
             ->get()
-            ->map(fn (DriverRequest $request) => $request->status)
+            ->map(fn (DriverRequest $request) => $request->status())
             ->all());
     }
 
