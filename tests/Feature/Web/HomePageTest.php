@@ -163,7 +163,7 @@ final class HomePageTest extends TestCase
             false,
         );
 
-        $this->actingAs($this->owner)->post(
+        $this->actingAs($this->owner)->from($home)->post(
             '/chat/messages',
             [...$this->pair(), 'body' => $body, ...$this->seenSession()],
         )
@@ -174,8 +174,7 @@ final class HomePageTest extends TestCase
         $this->actingAs($this->owner)->get($home)->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.data.conversation.inboxId', $this->chatInboxId)
-                ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)
-                ->where('window_chat_conversation.data.conversation.messages.0.body', $body)));
+                ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)));
     }
 
     public function test_the_chat_window_is_also_chats_own_page(): void

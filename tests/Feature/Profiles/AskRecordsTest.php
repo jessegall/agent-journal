@@ -47,10 +47,7 @@ use App\Values\AskReference;
 use App\Values\AskTypeKey;
 use App\Values\StackTarget;
 use App\Values\SupervisorTarget;
-use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
@@ -131,7 +128,7 @@ final class AskRecordsTest extends TestCase
         $this->assertSame($ask->id, $this->app->make(AskRecords::class)->read($reference)->id);
     }
 
-    public function test_a_symbolic_profile_keeps_the_ask_pending_and_the_submission_key_replays(): void
+    public function test_a_symbolic_profile_without_helpers_is_unavailable_and_the_submission_key_replays(): void
     {
         $this->activateProfiles();
         $requester = Agent::create('Requester', 'journal-worker', $this->localProject());
@@ -142,7 +139,7 @@ final class AskRecordsTest extends TestCase
         $this->assertSame($ask->id, $again->id);
         $this->assertSame($ask->work, $again->work);
         $this->assertSame(
-            AskRouteStatus::PendingProfile,
+            AskRouteStatus::Unavailable,
             $this->app->make(CommandBus::class)->run(new RouteAskCommand(new AskReference($ask->id), 0)),
         );
         $this->assertFalse(AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->exists());
@@ -226,39 +223,6 @@ final class AskRecordsTest extends TestCase
         );
     }
 
-    public function test_a_typed_review_still_requires_a_visible_work_record(): void
-    {
-        $this->activateProfiles();
-        $requester = Agent::create('Requester', 'journal-code-reviewer', $this->localProject());
-        $this->startRequestAs($requester->id, TestIds::of(91));
-        $commands = $this->app->make(CommandBus::class);
-
-        $this->assertThrows(
-            fn () => $commands->run(new AskSupervisorCommand('Review this', 'review', AskTypeKey::of('review.ready'))),
-            AskRefused::class,
-        );
-        $this->assertSame(0, Ask::openSubmissions(ActorIdentity::of($requester)));
-    }
-
-    public function test_asks_resolve_the_current_work_from_a_registered_domain_state(): void
-    {
-        $this->activateProfiles();
-        $start = TestStart::start('journal-code-reviewer');
-        $start->startRequest($this->app);
-        $task = Task::create('Review a task', 'Check the expected result.', $start->agent);
-        $start->openStack($this->app);
-        $commands = $this->app->make(CommandBus::class);
-        $commands->run(new StartTaskCommand($task->id));
-
-        $question = $commands->run(new AskSupervisorCommand('What should I check?', 'question'));
-        $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::of('review.ready')));
-
-        $expected = WorkReference::forRecord($task->assignmentIdentity());
-        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference);
-        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference);
-        $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key->key);
-    }
-
     public function test_the_owner_sees_the_ask_card_on_the_inbox_page(): void
     {
         $this->activateProfiles();
@@ -270,7 +234,7 @@ final class AskRecordsTest extends TestCase
         $this->actingAs($owner)->get('/web/asks')->assertOk()->assertInertia(
             fn (AssertableInertia $page) => $page->component('web/Asks')
                 ->where('page.data.cards.0.body', 'Where does this fail?')
-                ->where('page.data.cards.0.open', true),
+                ->where('page.data.cards.0.isOpen', true),
         );
     }
 

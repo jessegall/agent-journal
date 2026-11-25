@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\React;
 
+use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RetainedActorRequestKey;
+use App\Enums\Agents\AccessType;
+use App\Policies\MessagePolicy;
 use App\Support\Command;
 
 /**
@@ -12,6 +15,7 @@ use App\Support\Command;
  *
  * @extends Command<string>
  */
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 #[RetainedActorRequestKey]
 final readonly class ReactCommand extends Command
 {

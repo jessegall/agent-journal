@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\Messages\SendMessage;
 
+use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RetainedActorRequestKey;
+use App\Enums\Agents\AccessType;
+use App\Policies\MessagePolicy;
 use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
@@ -15,6 +18,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 final readonly class SendMessageCommand extends Command

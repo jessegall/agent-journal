@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Commands\StartSequence;
 
 use App\Attributes\Commands\Authorize;
+use App\Attributes\Commands\RepeatableRead;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Sequences\Policies\SequencePolicy;
@@ -15,6 +16,7 @@ use Domain\Sequences\Policies\SequencePolicy;
  * @extends Command<null>
  */
 #[Authorize(SequencePolicy::class, AccessType::Create)]
+#[RepeatableRead]
 final readonly class StartSequenceCommand extends Command
 {
     public function __construct(

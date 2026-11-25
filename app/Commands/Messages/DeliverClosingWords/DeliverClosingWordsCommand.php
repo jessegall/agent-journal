@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Commands\Messages\DeliverClosingWords;
 
+use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RepeatableRead;
+use App\Enums\Agents\AccessType;
+use App\Policies\MessagePolicy;
 use App\Support\Command;
 
 /**
@@ -13,5 +16,6 @@ use App\Support\Command;
  *
  * @extends Command<string>
  */
+#[Authorize(MessagePolicy::class, AccessType::Create)]
 #[RepeatableRead]
 final readonly class DeliverClosingWordsCommand extends Command {}

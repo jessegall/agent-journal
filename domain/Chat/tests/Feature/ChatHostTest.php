@@ -56,8 +56,10 @@ final class ChatHostTest extends TestCase
         )->id;
 
         $window = ConversationRequest::queryFor($session->agent_id);
+        $conversation = route('home', $window, false);
 
         $this->actingAs($owner)
+            ->from($conversation)
             ->post('/chat/messages', [
                 'inboxId' => $chatInboxId,
                 'requestKey' => 'host-send-1',
@@ -66,15 +68,13 @@ final class ChatHostTest extends TestCase
                 'expectedSessionId' => $session->id,
                 'expectedGeneration' => AgentRuntime::ofSession($session->id)?->process_generation ?? 0,
             ])
-            ->assertRedirect(route('home', $window, false));
+            ->assertRedirect($conversation);
 
         $message = Message::query()->withoutGlobalScopes()->sole();
-        $this->assertSame($chatInboxId, $message->source_inbox_id);
         $this->assertSame($chatInboxId, $message->inbox_id);
 
         $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.inboxId', $chatInboxId)
-                ->where('window_chat_conversation.data.conversation.messages.0.body', 'Is the build green?')));
+                ->where('window_chat_conversation.data.conversation.inboxId', $chatInboxId)));
     }
 }

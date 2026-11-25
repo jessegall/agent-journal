@@ -16,6 +16,7 @@ use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
+use Domain\Chat\ChatDomain;
 use Domain\Comments\Calls\ListCommentsCall;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
@@ -55,7 +56,9 @@ final class CommentsDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [];
+        return [
+            ChatDomain::class,
+        ];
     }
 
     public function exports(): Exports
