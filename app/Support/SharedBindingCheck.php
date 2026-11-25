@@ -20,7 +20,7 @@ final readonly class SharedBindingCheck
      */
     public static function check(string $class, callable $refusal): void
     {
-        $declaration = ReflectedType::of($class);
+        $declaration = Reflector::of($class);
 
         if ($declaration->hasAttribute(Singleton::class)
             || $declaration->hasAttribute(Scoped::class)

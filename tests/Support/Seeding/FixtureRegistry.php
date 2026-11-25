@@ -6,7 +6,7 @@ namespace Tests\Support\Seeding;
 
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use Illuminate\Support\Str;
 use Tests\Support\Seeding\Contracts\DomainFixtures;
@@ -65,7 +65,7 @@ final class FixtureRegistry
 
         $made = $this->built[$fixtures] ?? ($this->makers[$fixtures] ?? throw $this->missing($fixtures))($journal);
 
-        if (! ReflectedType::of($fixtures)->isInstance($made)) {
+        if (! Reflector::of($fixtures)->isInstance($made)) {
             throw FixtureRefused::wrongResult($fixtures, $made::class);
         }
 
@@ -86,11 +86,11 @@ final class FixtureRegistry
         foreach ($this->domains->all() as $domain) {
             $registrar = Str::beforeLast($domain->className(), '\\').'\\'.self::REGISTRAR;
 
-            if (! ReflectedType::exists($registrar)) {
+            if (! Reflector::exists($registrar)) {
                 continue;
             }
 
-            if (! ReflectedType::of($registrar)->implements(DomainFixtures::class)) {
+            if (! Reflector::of($registrar)->implements(DomainFixtures::class)) {
                 throw FixtureRefused::invalidRegistrar($registrar, 'it does not implement DomainFixtures');
             }
 

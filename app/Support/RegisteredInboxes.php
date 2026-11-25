@@ -32,7 +32,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
     public function register(string $providerKey, string $class): void
     {
-        if (! ReflectedType::factory()->isSubclassOf($class, InboxProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($class, InboxProvider::class)) {
             throw InboxProviderInvalid::notAProvider($providerKey, $class);
         }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\EngineListener;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
@@ -115,7 +115,7 @@ final readonly class RaiseCallers
      */
     private function outsideUnit(string $path, string $type): string|null
     {
-        $declaration = ReflectedType::exists($type) ? ReflectedType::of($type) : null;
+        $declaration = Reflector::exists($type) ? Reflector::of($type) : null;
         $isModel = $declaration !== null && $declaration->isSubclassOf(Model::class);
         $isTransactionListener = $declaration !== null && $declaration->hasAttribute($this->transactionListenerAttribute);
 

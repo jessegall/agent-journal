@@ -7,7 +7,7 @@ namespace App\Pipes;
 use App\Contracts\Bus\Pipe;
 use App\Support\ListenerDeclarations;
 use App\Support\ListenerOwnership;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * Wires a listener typed on a group of events, a base class or an interface, to every event of that group, so a new
@@ -20,7 +20,7 @@ final readonly class ExpandGroupListeners implements Pipe
         $events = $declarations->events;
 
         foreach (array_keys($events) as $type) {
-            if (! ReflectedType::exists($type) || ! ListenerOwnership::isGroup($type)) {
+            if (! Reflector::exists($type) || ! ListenerOwnership::isGroup($type)) {
                 continue;
             }
 

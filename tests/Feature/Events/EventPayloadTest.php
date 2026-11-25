@@ -7,7 +7,7 @@ namespace Tests\Feature\Events;
 use App\Contracts\Asks\AnsweredAtOnce;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\TasksDomain;
@@ -55,7 +55,7 @@ final class EventPayloadTest extends TestCase
     #[DataProvider('facts')]
     public function test_a_fact_keeps_its_published_shape(string $event, array $fields): void
     {
-        $declaration = ReflectedType::of($event);
+        $declaration = Reflector::of($event);
         $declared = [];
         $parameters = $declaration->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
@@ -90,7 +90,7 @@ final class EventPayloadTest extends TestCase
      */
     private function unqueueableTypesIn(string $type, array $seen): array
     {
-        $declaration = ReflectedType::find($type)->filter(fn (ReflectedType $found) => $found->isClass());
+        $declaration = Reflector::find($type)->filter(fn (Reflector $found) => $found->isClass());
 
         if (in_array($type, $seen, true) || $declaration->isEmpty()) {
             return [];

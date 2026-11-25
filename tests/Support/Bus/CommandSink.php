@@ -10,7 +10,7 @@ use App\Support\CommandCall;
 use App\Support\CommandRegistry;
 use App\Support\CommandSubjects;
 use App\Support\DeclaredType;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use PhpOption\Option;
 use Stringable;
@@ -83,7 +83,7 @@ final class CommandSink implements CommandEnd
      */
     private function returnTypeOf(string $command): Option
     {
-        return ReflectedType::of($this->registry->handlerOf($command))->method('handle')->returnType();
+        return Reflector::of($this->registry->handlerOf($command))->method('handle')->returnType();
     }
 
     private function replyOfType(string $command, DeclaredType $type, mixed $reply): mixed

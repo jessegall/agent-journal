@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Console\Commands\GenerateApiCommand;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\FolderType;
 use Tests\Architecture\Support\LayoutRoots;
@@ -135,10 +135,10 @@ final class FolderLayoutTest extends TestCase
 
         $this->assertSame(FolderType::ArtisanCommands, $adapterFolder);
         $this->assertSame(FolderType::Commands, $pairFolder);
-        $this->assertNull($adapterFolder->requirementNotMetBy(ReflectedType::of(GenerateApiCommand::class)));
-        $this->assertNull($pairFolder->requirementNotMetBy(ReflectedType::of(PlantCommand::class)));
-        $this->assertNotNull($adapterFolder->requirementNotMetBy(ReflectedType::of(PlantCommand::class)));
-        $this->assertNotNull($pairFolder->requirementNotMetBy(ReflectedType::of(GenerateApiCommand::class)));
+        $this->assertNull($adapterFolder->requirementNotMetBy(Reflector::of(GenerateApiCommand::class)));
+        $this->assertNull($pairFolder->requirementNotMetBy(Reflector::of(PlantCommand::class)));
+        $this->assertNotNull($adapterFolder->requirementNotMetBy(Reflector::of(PlantCommand::class)));
+        $this->assertNotNull($pairFolder->requirementNotMetBy(Reflector::of(GenerateApiCommand::class)));
     }
 
     public function test_every_type_folder_holds_only_its_own_type(): void
@@ -160,7 +160,7 @@ final class FolderLayoutTest extends TestCase
                  * @var class-string $name
                  */
                 $name = $declaration['name'];
-                $misfit = $type->requirementNotMetBy(ReflectedType::of($name));
+                $misfit = $type->requirementNotMetBy(Reflector::of($name));
 
                 if ($misfit !== null) {
                     $misfits[] = substr(

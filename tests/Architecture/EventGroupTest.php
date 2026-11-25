@@ -10,7 +10,7 @@ use App\Support\CoreListenerFolders;
 use App\Support\DomainRegistry;
 use App\Support\FolderClasses;
 use App\Support\ListenerOwnership;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventGroups;
@@ -122,7 +122,7 @@ final class EventGroupTest extends TestCase
 
             $interface = "{$namespace[1]}\\{$name[1]}";
 
-            if (ReflectedType::exists($interface) && ReflectedType::of($interface)->isSubclassOf(Event::class)) {
+            if (Reflector::exists($interface) && Reflector::of($interface)->isSubclassOf(Event::class)) {
                 $groups[] = $interface;
             }
         }

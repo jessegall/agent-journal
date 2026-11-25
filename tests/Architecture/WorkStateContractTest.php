@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AgentState;
@@ -41,7 +41,7 @@ final class WorkStateContractTest extends TestCase
      */
     private static function isSilent(string $class): bool
     {
-        $state = ReflectedType::of($class);
+        $state = Reflector::of($class);
 
         return $state->method('workRecordType')->declaringClass()->name() !== AgentState::class
             && $state->method('instruction')->declaringClass()->name() === AgentState::class;

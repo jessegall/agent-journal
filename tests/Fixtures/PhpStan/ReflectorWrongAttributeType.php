@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Fixtures\Reflection\Attributes\DerivedMarker;
 use Tests\Fixtures\Reflection\Attributes\Marker;
 use Tests\Fixtures\Reflection\Parcel;
@@ -21,6 +21,6 @@ final class ReflectorWrongAttributeType
 
     public function wrongType(): string
     {
-        return $this->labelOf(ReflectedType::of(Parcel::class)->attribute(Marker::class));
+        return $this->labelOf(Reflector::of(Parcel::class)->attribute(Marker::class));
     }
 }

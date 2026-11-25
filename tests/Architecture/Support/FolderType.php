@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Bus\CommandMiddleware as CommandMiddlewareContract;
 use App\Support\Command;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\States\AgentState;
 use Illuminate\Console\Command as ArtisanCommand;
 use Illuminate\Database\Eloquent\Model;
@@ -80,15 +80,15 @@ enum FolderType: string
     /**
      * What the class is not, when it does not belong at this folder's root; null when it belongs.
      *
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      */
-    public function requirementNotMetBy(ReflectedType $class): string|null
+    public function requirementNotMetBy(Reflector $class): string|null
     {
         $meetsFolderRequirement = match ($this) {
             self::States => $class->is(AgentState::class),
             self::Resolvers => ! $class->isInterface() && array_any(
                 $class->interfaces(),
-                fn (ReflectedType $interface) => str_contains($interface->name(), '\\Contracts\\'),
+                fn (Reflector $interface) => str_contains($interface->name(), '\\Contracts\\'),
             ),
             self::Actions => $class->isFinal() && ! $class->isEnum() && ! $class->isSubclassOf(
                 Throwable::class,

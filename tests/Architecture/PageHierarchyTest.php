@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Http\Pages\Page;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * Every page class under a subject folder of Http/Pages extends that subject's page, named after the folder, and
@@ -25,13 +25,13 @@ final class PageHierarchyTest extends TestCase
                 $class = $namespace.'\\'.basename($file, '.php');
                 $expected = basename($file, '.php') === $subject ? Page::class : "{$namespace}\\{$subject}";
 
-                if (! ReflectedType::exists($class)) {
+                if (! Reflector::exists($class)) {
                     $faults[] = "{$file} declares no class {$class}";
 
                     continue;
                 }
 
-                $parent = ReflectedType::of($class)->parent();
+                $parent = Reflector::of($class)->parent();
 
                 if (! $parent->isDefined() || $parent->get()->name() !== $expected) {
                     $faults[] = "{$class} does not extend {$expected}";

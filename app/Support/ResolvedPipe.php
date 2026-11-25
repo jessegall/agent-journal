@@ -16,11 +16,11 @@ use PhpOption\None;
 final readonly class ResolvedPipe
 {
     /**
-     * @param  ReflectedType<object>|null  $takes  the input class handle takes, or null when it takes any object
+     * @param  Reflector<object>|null  $takes  the input class handle takes, or null when it takes any object
      */
     private function __construct(
         private Pipe $pipe,
-        private ReflectedType|null $takes,
+        private Reflector|null $takes,
     ) {}
 
     /**
@@ -33,7 +33,7 @@ final readonly class ResolvedPipe
             throw NotAPipelineStep::named($pipe::class);
         }
 
-        $parameters = ReflectedType::of($pipe)->method('handle')->parameters();
+        $parameters = Reflector::of($pipe)->method('handle')->parameters();
 
         $type = $parameters === [] ? None::create() : $parameters[0]->type()
             ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
@@ -44,7 +44,7 @@ final readonly class ResolvedPipe
 
         $takes = $type->get()->name();
 
-        return new self($pipe, ReflectedType::find($takes)->getOrThrow(ClassMissing::for($takes)));
+        return new self($pipe, Reflector::find($takes)->getOrThrow(ClassMissing::for($takes)));
     }
 
     /**

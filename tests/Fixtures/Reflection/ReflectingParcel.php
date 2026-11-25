@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Reflection;
 
 use App\Concerns\Reflects;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * A class that reflects itself, or a target it is given, through the Reflects trait.
@@ -15,17 +15,17 @@ class ReflectingParcel
     use Reflects;
 
     /**
-     * @return ReflectedType<static>
+     * @return Reflector<static>
      */
-    public function reflectorOfItself(): ReflectedType
+    public function reflectorOfItself(): Reflector
     {
         return $this->reflect();
     }
 
     /**
-     * @return ReflectedType<Parcel>
+     * @return Reflector<Parcel>
      */
-    public function reflectorOf(Parcel $parcel): ReflectedType
+    public function reflectorOf(Parcel $parcel): Reflector
     {
         return static::reflect($parcel);
     }

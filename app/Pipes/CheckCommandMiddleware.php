@@ -12,7 +12,7 @@ use App\Exceptions\MiddlewareListedTwice;
 use App\Support\CommandDeclarations;
 use App\Support\CommandOwner;
 use App\Support\MiddlewareDeclaration;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\RegisteredMiddleware;
 use App\Support\SharedBindingCheck;
 
@@ -34,7 +34,7 @@ final readonly class CheckCommandMiddleware implements Pipe
                 $class = $declaration->middleware;
                 $key = $declaration->identity();
 
-                if (! ReflectedType::factory()->isSubclassOf($class, CommandMiddleware::class)) {
+                if (! Reflector::factory()->isSubclassOf($class, CommandMiddleware::class)) {
                     throw MiddlewareDeclarationInvalid::for($class, 'it is no class implementing CommandMiddleware');
                 }
 

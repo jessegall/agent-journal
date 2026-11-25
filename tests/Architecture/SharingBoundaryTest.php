@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Support\CommandRegistry;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
@@ -70,7 +70,7 @@ final class SharingBoundaryTest extends TestCase
 
         foreach ($sharing as $command) {
             $this->assertTrue($registry->has($command), $command);
-            $this->assertFalse(ReflectedType::of($command)->implements(ShouldQueue::class), $command);
+            $this->assertFalse(Reflector::of($command)->implements(ShouldQueue::class), $command);
         }
     }
 }

@@ -8,7 +8,7 @@ use App\Contracts\Bus\Pipe;
 use App\Exceptions\StateValuesRefused;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\StateLoading\SavedState;
 use App\Support\StateLoading\StateArguments;
 use App\Support\StateLoading\StateValues;
@@ -53,7 +53,7 @@ final readonly class CastConstructorValues implements Pipe
      */
     private function parametersOf(SavedState $saved): array
     {
-        return ReflectedType::of($saved->type->stateClass)->constructor()->map(
+        return Reflector::of($saved->type->stateClass)->constructor()->map(
             fn (ReflectedMethod $constructor) => $constructor->parameters(),
         )->getOrElse([]);
     }

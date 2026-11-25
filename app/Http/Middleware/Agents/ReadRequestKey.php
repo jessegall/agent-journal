@@ -10,7 +10,7 @@ use App\Exceptions\KeyedWriteWithoutReceipt;
 use App\Support\ApiDeclaration;
 use App\Support\ApiRegistrar;
 use App\Support\ReadGrant;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\RequestKey;
 use App\Values\ReadRequest;
 use Closure;
@@ -48,7 +48,7 @@ final readonly class ReadRequestKey
     public function handle(Request $request, Closure $next): Response
     {
         $call = $request->route()?->defaults[ApiRegistrar::CALL_DEFAULT] ?? null;
-        $declaration = is_string($call) && ReflectedType::exists($call) ? ApiDeclaration::of($call) : null;
+        $declaration = is_string($call) && Reflector::exists($call) ? ApiDeclaration::of($call) : null;
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);

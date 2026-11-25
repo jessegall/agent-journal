@@ -11,7 +11,7 @@ use App\Contracts\Settings\OptionSetting;
 use App\Enums\Settings\SettingType;
 use App\Exceptions\SettingDeclarationInvalid;
 use App\Support\ChoiceOptions;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\SettingKey;
 use App\Values\Choice;
 use App\Values\Decimal;
@@ -60,7 +60,7 @@ final readonly class EnumSetting implements OptionSetting
     ): self {
         SettingKey::require($key, $label);
 
-        $type = ReflectedType::of($enum);
+        $type = Reflector::of($enum);
 
         if ($type->backingType()->isEmpty()) {
             throw SettingDeclarationInvalid::notABackedEnum($key);

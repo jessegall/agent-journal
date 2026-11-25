@@ -6,7 +6,7 @@ namespace App\Support\Sources;
 
 use App\Exceptions\DockDefinitionInvalid;
 use App\Support\Cards\DockIdentity;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 
@@ -40,7 +40,7 @@ final readonly class DockDefinition
      */
     public function assertOwns(Dockable $source): void
     {
-        if (ReflectedType::of($this->class)->asInstance($source)->isEmpty()) {
+        if (Reflector::of($this->class)->asInstance($source)->isEmpty()) {
             throw DockDefinitionInvalid::notOwned($this->type, $source::class);
         }
     }

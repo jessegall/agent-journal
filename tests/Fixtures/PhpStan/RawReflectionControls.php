@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use ReflectionException;
 use Tests\Fixtures\Reflection\Attributes\Marker;
@@ -18,7 +18,7 @@ final class RawReflectionControls
 {
     public function wrapper(): Marker
     {
-        return ReflectedType::of(Parcel::class)->attribute(Marker::class);
+        return Reflector::of(Parcel::class)->attribute(Marker::class);
     }
 
     /**

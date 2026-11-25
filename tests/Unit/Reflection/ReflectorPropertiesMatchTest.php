@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Reflection;
 
 use App\Enums\Projects\InstallLineHold;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 
 /**
- * ReflectedType::propertiesMatch compares two objects, of one class or of two, by the public properties both
+ * Reflector::propertiesMatch compares two objects, of one class or of two, by the public properties both
  * declare, whole for a nested object unless a left-out path reaches inside it.
  */
 final class ReflectorPropertiesMatchTest extends TestCase
@@ -19,18 +19,18 @@ final class ReflectorPropertiesMatchTest extends TestCase
         $draft = $this->draft('Notes', 'sonnet', $this->policy('codex', 'drafted'));
         $saved = $this->saved('Saved notes', 'sonnet', $this->policy('codex', 'drafted'), 3);
 
-        $this->assertTrue(ReflectedType::propertiesMatch($draft, $saved, ['label']));
+        $this->assertTrue(Reflector::propertiesMatch($draft, $saved, ['label']));
     }
 
     public function test_a_different_value_or_nested_object_does_not_match(): void
     {
         $draft = $this->draft('Notes', 'sonnet', $this->policy('codex', 'drafted'));
 
-        $this->assertFalse(ReflectedType::propertiesMatch(
+        $this->assertFalse(Reflector::propertiesMatch(
             $draft,
             $this->saved('Notes', 'opus', $this->policy('codex', 'drafted'), 3),
         ));
-        $this->assertFalse(ReflectedType::propertiesMatch(
+        $this->assertFalse(Reflector::propertiesMatch(
             $draft,
             $this->saved('Notes', 'sonnet', $this->policy('claude-code', 'drafted'), 3),
         ));
@@ -41,8 +41,8 @@ final class ReflectorPropertiesMatchTest extends TestCase
         $draft = $this->draft('Notes', 'sonnet', $this->policy('codex', 'drafted'));
         $saved = $this->saved('Other', 'sonnet', $this->policy('codex', 'imported'), 3);
 
-        $this->assertFalse(ReflectedType::propertiesMatch($draft, $saved, ['label']));
-        $this->assertTrue(ReflectedType::propertiesMatch($draft, $saved, ['label', 'policy.origin']));
+        $this->assertFalse(Reflector::propertiesMatch($draft, $saved, ['label']));
+        $this->assertTrue(Reflector::propertiesMatch($draft, $saved, ['label', 'policy.origin']));
     }
 
     public function test_enums_are_compared_by_identity(): void
@@ -56,8 +56,8 @@ final class ReflectorPropertiesMatchTest extends TestCase
             public function __construct(public InstallLineHold $hold) {}
         };
 
-        $this->assertFalse(ReflectedType::propertiesMatch($off, $missing));
-        $this->assertTrue(ReflectedType::propertiesMatch($off, clone $off));
+        $this->assertFalse(Reflector::propertiesMatch($off, $missing));
+        $this->assertTrue(Reflector::propertiesMatch($off, clone $off));
     }
 
     private function policy(string $driver, string $origin): object

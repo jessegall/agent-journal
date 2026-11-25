@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Reflection\Attributes;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Attribute;
 use Tests\Fixtures\Reflection\SelfReadingParcel;
 
@@ -16,6 +16,6 @@ final class SelfReadingMarker
 {
     public function __construct()
     {
-        ReflectedType::of(SelfReadingParcel::class)->attribute(self::class);
+        Reflector::of(SelfReadingParcel::class)->attribute(self::class);
     }
 }

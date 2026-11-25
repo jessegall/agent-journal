@@ -16,7 +16,7 @@ use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\HookPayload;
 use App\Support\HookRetryWindow;
 use App\Support\ReflectedMethod;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\RetentionPeriods;
 use App\Support\ShellCommandParser;
 use App\Support\Stack\StateTypes;
@@ -169,7 +169,7 @@ final class HookRuntimeStartTest extends TestCase
         return array_values(array_map(
             fn (ReflectedMethod $method) => $method->name(),
             array_filter(
-                ReflectedType::of(AgentState::class)->methods(),
+                Reflector::of(AgentState::class)->methods(),
                 fn (ReflectedMethod $method) => str_starts_with($method->name(), 'on'),
             ),
         ));

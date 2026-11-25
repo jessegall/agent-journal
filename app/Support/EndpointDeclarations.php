@@ -33,7 +33,7 @@ final class EndpointDeclarations
      */
     public static function endpointOf(string $call): Endpoint
     {
-        $declaration = ReflectedType::of($call);
+        $declaration = Reflector::of($call);
 
         if (! $declaration->implements(ApiPayload::class)) {
             throw EndpointDeclarationInvalid::for($call, 'it does not implement ApiPayload');

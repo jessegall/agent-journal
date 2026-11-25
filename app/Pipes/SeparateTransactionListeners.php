@@ -9,7 +9,7 @@ use App\Attributes\Listeners\TransactionListenerConsent;
 use App\Contracts\Bus\Pipe;
 use App\Exceptions\InvalidListener;
 use App\Support\ListenerDeclarations;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
@@ -70,19 +70,19 @@ final readonly class SeparateTransactionListeners implements Pipe
     /**
      * The listener's class when it carries InCommandTransaction, or none.
      *
-     * @return ReflectedType<object>|null
+     * @return Reflector<object>|null
      */
-    private static function transactionClassOf(string $listener): ReflectedType|null
+    private static function transactionClassOf(string $listener): Reflector|null
     {
         $class = explode('@', $listener, 2)[0];
 
-        return ReflectedType::find($class)
-            ->filter(fn (ReflectedType $type) => $type->isClass() && $type->hasAttribute(InCommandTransaction::class))
+        return Reflector::find($class)
+            ->filter(fn (Reflector $type) => $type->isClass() && $type->hasAttribute(InCommandTransaction::class))
             ->getOrElse(null);
     }
 
     /**
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      * @param  list<string>  $earlier  the event's transaction listeners already taken
      *
      * @throws InvalidListener
@@ -91,7 +91,7 @@ final readonly class SeparateTransactionListeners implements Pipe
         ListenerDeclarations $declarations,
         string $event,
         string $listener,
-        ReflectedType $class,
+        Reflector $class,
         array $earlier,
     ): void {
         foreach (self::DEFERRING_INTERFACES as $interface) {
@@ -119,17 +119,17 @@ final readonly class SeparateTransactionListeners implements Pipe
     /**
      * Whether the listener is typed on the event, or on a group of it, whose owner consents to transaction listeners.
      *
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private static function listensWithConsent(string $event, ReflectedType $class, string $listener): bool
+    private static function listensWithConsent(string $event, Reflector $class, string $listener): bool
     {
         $method = Str::after($listener, '@');
         $type = $class->method($method === $listener ? 'handle' : $method)->firstParameterClass()->getOrElse('');
 
-        return ReflectedType::exists($type)
-            && ReflectedType::exists($event)
-            && in_array($type, ReflectedType::of($event)->typeNames(), true)
-            && ReflectedType::of($type)->hasAttribute(TransactionListenerConsent::class);
+        return Reflector::exists($type)
+            && Reflector::exists($event)
+            && in_array($type, Reflector::of($event)->typeNames(), true)
+            && Reflector::of($type)->hasAttribute(TransactionListenerConsent::class);
     }
 
     /**
