@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Requests;
 
 use App\Contracts\Records\RecordResolver;
+use App\Http\Requests\Concerns\ReadsChosenProject;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,6 +16,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class CreateRecordRequest extends FormRequest
 {
+    use ReadsChosenProject;
+
     /**
      * @return array<string, list<string>>
      */
@@ -26,6 +29,7 @@ final class CreateRecordRequest extends FormRequest
             'body' => ['required', 'string'],
             'about' => ['nullable', 'array'],
             'about.*' => ['string', 'max:64'],
+            ...$this->projectRules(),
         ];
     }
 

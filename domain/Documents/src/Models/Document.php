@@ -11,12 +11,14 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProjectOrGlobal;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -24,6 +26,7 @@ use App\Support\ShareRecordCard;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
@@ -53,6 +56,7 @@ use Illuminate\Database\Query\JoinClause;
 
 /**
  * @property string $id
+ * @property string|null $project_id
  * @property string $number_group_id
  * @property int $number
  * @property string $creator_type
@@ -71,8 +75,17 @@ use Illuminate\Database\Query\JoinClause;
  *
  * @mixin \Eloquent
  */
-final class Document extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
+final class Document extends Model implements
+    Commentable,
+    Dockable,
+    EventSource,
+    Numbered,
+    ProjectOwned,
+    ReadableModel,
+    Shareable,
+    TextContent
 {
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;
@@ -112,9 +125,10 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     /**
      * A new document by its author, numbered and announced; its first revision is added next and made current.
      */
-    public static function create(Actor $author): self
+    public static function create(Actor $author, ProjectOwner $owner): self
     {
         $document = new self();
+        $document->assignOwner($owner);
         $document->creator_type = $author->actorType();
         $document->creator_id = $author->actorId();
         $document->assertSaved($document->save());

@@ -34,6 +34,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 #[TestsCommand(RecoverDraftCommand::class)]
 final class RecoverDraftTest extends TestCase
@@ -75,7 +76,12 @@ final class RecoverDraftTest extends TestCase
 
         $this->journal->actAsAgentIds($child->id, $session->id);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocumentCommand('Design', 'Current plan.', "# Design\nPublished text."));
+        $created = $bus->run(new CreateDocumentCommand(
+            'Design',
+            'Current plan.',
+            "# Design\nPublished text.",
+            TestProjects::local()->id,
+        ));
         $opened = $bus->run(new OpenDocumentCommand($created->id, 1));
         $badText = "| Missing | Dashes |\n| A | B |";
 

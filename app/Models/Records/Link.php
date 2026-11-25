@@ -79,7 +79,7 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
         $link->source_id = $source->getKey();
         $link->target_type = $target->getMorphClass();
         $link->target_id = $target->getKey();
-        $link->project_id = $owner->isGlobal() ? null : $owner->projectId();
+        $link->assignOwner($owner);
         $link->save();
 
         return $link;
@@ -100,7 +100,7 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
         $link->source_id = $sourceId;
         $link->target_type = $targetType;
         $link->target_id = $targetId;
-        $link->project_id = $owner->isGlobal() ? null : $owner->projectId();
+        $link->assignOwner($owner);
         $link->save();
 
         return $link;

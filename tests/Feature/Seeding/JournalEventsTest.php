@@ -12,12 +12,12 @@ use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Database\DatabaseManager;
 use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\TestProjects;
 use Tests\TestCase;
 
 /**
@@ -94,13 +94,13 @@ final class JournalEventsTest extends TestCase
             'First',
             'One.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $second = Task::create(
             'Second',
             'Two.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $this->journal->run(new LinkRecordsCommand($first, $second));
 

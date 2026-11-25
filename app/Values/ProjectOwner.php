@@ -15,6 +15,11 @@ use PhpOption\Some;
 final readonly class ProjectOwner
 {
     /**
+     * The key a Global owner is written as, where a project id would stand.
+     */
+    public const string GLOBAL_KEY = 'global';
+
+    /**
      * @param  Option<string>  $project
      */
     private function __construct(private Option $project) {}
@@ -29,6 +34,18 @@ final readonly class ProjectOwner
         return new self(None::create());
     }
 
+    /**
+     * The owner a key names: Global for the Global key, else the project of that id.
+     */
+    public static function fromKey(string $key): self
+    {
+        if ($key === self::GLOBAL_KEY) {
+            return self::global();
+        }
+
+        return self::ofProject($key);
+    }
+
     public function isGlobal(): bool
     {
         return $this->project->isEmpty();
@@ -40,6 +57,14 @@ final readonly class ProjectOwner
     public function projectId(): string
     {
         return $this->project->getOrThrow(ProjectNotChosen::forSelection());
+    }
+
+    /**
+     * The owner as one word a command carries: the project id, or the Global key.
+     */
+    public function key(): string
+    {
+        return $this->project->getOrElse(self::GLOBAL_KEY);
     }
 
     /**

@@ -6,8 +6,6 @@ namespace Domain\Tasks\Tests\Fixtures;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Processes\RunClaims;
-use App\Contracts\Projects\ProjectOwned;
-use App\Values\ProjectOwner;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;
@@ -50,7 +48,7 @@ final class TaskFixtures
     ): self {
         $this->aliases->claim($name);
         $maker = $creator ?? $this->journal->ownerUser();
-        $task = Task::create($name, $brief, $maker, self::ownerFor($maker), $environmentIds);
+        $task = Task::create($name, $brief, $maker, TestProjects::ownerOf($maker), $environmentIds);
         $this->aliases->remember($name, $task);
 
         return $this;
@@ -209,17 +207,5 @@ final class TaskFixtures
         ]);
 
         return $this;
-    }
-
-    /**
-     * The project a task of this creator belongs to: an agent's own, the local project for anyone else.
-     */
-    public static function ownerFor(Actor $creator): ProjectOwner
-    {
-        if ($creator instanceof ProjectOwned) {
-            return $creator->projectOwner();
-        }
-
-        return ProjectOwner::ofProject(TestProjects::local()->id);
     }
 }

@@ -19,6 +19,7 @@ use Domain\Documents\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 #[TestsCommand(DiscardUploadCommand::class)]
 final class DiscardUploadTest extends TestCase
@@ -61,7 +62,12 @@ final class DiscardUploadTest extends TestCase
     private function begin(string $text): string
     {
         return $this->app->make(CommandBus::class)->run(
-            new BeginUploadCommand(UploadType::DocumentBody, strlen($text), hash('sha256', $text)),
+            new BeginUploadCommand(
+                UploadType::DocumentBody,
+                strlen($text),
+                hash('sha256', $text),
+                TestProjects::local()->id,
+            ),
         );
     }
 

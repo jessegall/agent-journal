@@ -38,6 +38,7 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 use Throwable;
 
@@ -88,7 +89,7 @@ final class ReadShareTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -208,7 +209,7 @@ final class ReadShareTest extends TestCase
         # Notes
         Keep it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();

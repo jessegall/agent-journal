@@ -6,6 +6,7 @@ namespace Domain\Documents\Http\Controllers;
 
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\ProjectDestination;
 use App\Contracts\Records\RecordResolver;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Http\Requests\CreateRecordRequest;
@@ -19,6 +20,7 @@ final readonly class CreateReportPageController
         CreateRecordRequest $request,
         CommandBus $commands,
         RecordResolver $records,
+        ProjectDestination $destination,
         Redirector $redirect,
     ): RedirectResponse {
         $commands->run(
@@ -26,6 +28,7 @@ final readonly class CreateReportPageController
                 $request->title(),
                 $request->abstract(),
                 $request->body(),
+                $destination->projectFor($request->chosenProject()),
                 $request->about($records),
             ),
         );

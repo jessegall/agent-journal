@@ -32,13 +32,13 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -83,13 +83,13 @@ final class LinkRecordsTest extends TestCase
             'First',
             'One.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $second = Task::create(
             'Second',
             'Two.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
 
         $this->journal->run(new LinkRecordsCommand($first, $second));
@@ -105,7 +105,7 @@ final class LinkRecordsTest extends TestCase
             'First',
             'One.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
 
         $this->assertThrows(
@@ -138,7 +138,7 @@ final class LinkRecordsTest extends TestCase
     {
         $this->actAsUser();
 
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id));
         $message = $this->messageFor(8);
         $stored = Message::query()->withoutGlobalScopes()->whereKey($message->id)->sole();
         Link::createForModels(Document::query()->sole(), $stored);
@@ -155,7 +155,7 @@ final class LinkRecordsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n", TestProjects::local()->id));
         $link = ['source' => 'report 1', 'target' => 'plan 1'];
 
         $this->actingAs($owner)->from('/reports/1')->post('/links/add', $link)->assertRedirect('/reports/1');
@@ -187,7 +187,7 @@ final class LinkRecordsTest extends TestCase
 
     private function localOwner(): ProjectOwner
     {
-        return TaskFixtures::ownerFor($this->journal->ownerUser());
+        return TestProjects::ownerOf($this->journal->ownerUser());
     }
 
     private function records(): RecordResolver

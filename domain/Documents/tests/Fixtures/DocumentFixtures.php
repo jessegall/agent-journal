@@ -15,6 +15,7 @@ use Domain\Documents\Values\DraftTarget;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Documents kept under the names a test gives them, written by named users and agents through the Documents
@@ -37,7 +38,8 @@ final class DocumentFixtures
     public function emptyDocument(string $name, string $author): self
     {
         $this->aliases->claim($name);
-        $this->aliases->remember($name, Document::create($this->journal->userOrAgentCalled($author)));
+        $maker = $this->journal->userOrAgentCalled($author);
+        $this->aliases->remember($name, Document::create($maker, TestProjects::ownerOf($maker)));
 
         return $this;
     }
@@ -50,7 +52,8 @@ final class DocumentFixtures
         string $abstract = self::ABSTRACT,
     ): self {
         $this->aliases->claim($name);
-        $created = $this->journal->runAs($author, new CreateDocumentCommand($title ?? $name, $abstract, $body));
+        $owner = TestProjects::ownerOf($this->journal->userOrAgentCalled($author))->key();
+        $created = $this->journal->runAs($author, new CreateDocumentCommand($title ?? $name, $abstract, $body, $owner));
         $this->aliases->rememberResult($name, $created->id, Document::class);
 
         return $this;

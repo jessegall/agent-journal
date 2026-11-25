@@ -10,10 +10,14 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
+use App\Exceptions\CrossProjectEdge;
+use App\Models\Support\BelongsToProjectOrGlobal;
 use App\Support\ActorReference;
 use App\Support\TextSearch;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleApproved;
@@ -32,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $number_group_id
  * @property int $number
+ * @property string|null $project_id
  * @property string $text
  * @property RuleStatus $status
  * @property string|null $reason
@@ -43,8 +48,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Rule extends Model implements EventSource, Numbered, ReadableModel
+final class Rule extends Model implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
@@ -80,16 +86,18 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the
-     * user approves it.
+     * A rule proposed in the project with its reason, the rule it would replace if any, and who proposed it; it holds
+     * only once the user approves it.
      */
     public static function create(
         string $text,
         string $reason,
         string|null $replacesRuleId,
         ActorReference $proposer,
+        ProjectOwner $owner,
     ): self {
         $rule = new self();
+        $rule->assignOwner($owner);
         $rule->text = $text;
         $rule->reason = $reason;
         $rule->replaces_rule_id = $replacesRuleId;
@@ -112,13 +120,17 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     }
 
     /**
-     * Makes the proposal hold, approved by an actor other than the one who proposed it.
+     * Makes the proposal hold, approved by an actor other than the one who proposed it, for its own project or as
+     * Global; the one change of a rule's project, and only from a project to Global.
      *
      * @throws RuleSelfApproval
+     * @throws CrossProjectEdge when the owner is another project, or a replacement would end with another owner
      */
-    public function approveBy(ActorReference $approver): void
+    public function approveBy(ActorReference $approver, ProjectOwner $owner): void
     {
         $this->assertNotProposedBy($approver);
+        $this->assertOwnerFits($owner);
+        $this->assignOwner($owner);
         $this->closeProposal(RuleStatus::Active);
         $this->raise(new RuleApproved($this->id));
     }
@@ -156,6 +168,29 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     }
 
     // ----------[ Asserts ]----------
+
+    /**
+     * The owner approved must be the proposal's own project or Global, and a replacement ends with the owner of the
+     * rule it replaces.
+     *
+     * @throws CrossProjectEdge
+     */
+    private function assertOwnerFits(ProjectOwner $owner): void
+    {
+        if (! $owner->isGlobal() && $owner->key() !== $this->projectOwner()->key()) {
+            throw CrossProjectEdge::forRecord("rule {$this->number}");
+        }
+
+        if ($this->replaces_rule_id === null) {
+            return;
+        }
+
+        $replaced = self::query()->findOrFail($this->replaces_rule_id)->projectOwner();
+
+        if ($replaced->key() !== $owner->key()) {
+            throw CrossProjectEdge::forRecord("rule {$this->number}");
+        }
+    }
 
     /**
      * Refuses an approval by the actor who proposed the rule.
@@ -198,6 +233,14 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The owner key of the rule's own project, the owner an approval names when it chooses no other.
+     */
+    public static function findOwnerKeyOf(string $id): string
+    {
+        return self::query()->findOrFail($id)->projectOwner()->key();
+    }
 
     /**
      * The rule read under its row lock, for a change that must happen once.

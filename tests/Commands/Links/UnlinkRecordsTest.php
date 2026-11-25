@@ -9,10 +9,10 @@ use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Models\Records\Link;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 use Tests\TestCase;
 
 /**
@@ -37,13 +37,13 @@ final class UnlinkRecordsTest extends TestCase
             'First',
             'One.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $second = Task::create(
             'Second',
             'Two.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $this->journal->run(new LinkRecordsCommand($first, $second));
 

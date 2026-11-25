@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 use Tests\Support\TestText;
 
 /**
@@ -37,27 +38,31 @@ final class ProposeRuleTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{ProposeRuleCommand, string}>
+     * @return iterable<string, array{string, string, string}>
      */
     public static function refusedProposals(): iterable
     {
         yield 'a long text' => [
-            new ProposeRuleCommand(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'),
+            str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1),
+            'Reason',
             'text',
         ];
 
         yield 'an empty text' => [
-            new ProposeRuleCommand('', 'Reason'),
+            '',
+            'Reason',
             'text',
         ];
 
         yield 'a long reason' => [
-            new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)),
+            'Text',
+            str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1),
             'reason',
         ];
 
         yield 'an empty reason' => [
-            new ProposeRuleCommand('Text', ''),
+            'Text',
+            '',
             'reason',
         ];
     }
@@ -68,7 +73,7 @@ final class ProposeRuleTest extends TestCase
             ->holdingRule('Old', 'Old rule.', proposer: 'Planner', approver: 'Owner')
             ->ruleCalled('Old');
 
-        $ruleId = $this->journal->run(new ProposeRuleCommand('New rule.', 'The old one is too vague.', $old->id));
+        $ruleId = $this->journal->run($this->proposal('New rule.', 'The old one is too vague.', $old->id));
 
         $rule = Rule::query()->findOrFail($ruleId);
 
@@ -98,7 +103,7 @@ final class ProposeRuleTest extends TestCase
     public function test_a_rule_to_replace_that_is_not_there_is_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->journal->run(new ProposeRuleCommand('New rule.', 'A reason.', (string) Str::ulid())),
+            fn () => $this->journal->run($this->proposal('New rule.', 'A reason.', (string) Str::ulid())),
             RuleMissing::class,
         );
 
@@ -106,9 +111,16 @@ final class ProposeRuleTest extends TestCase
     }
 
     #[DataProvider('refusedProposals')]
-    public function test_a_proposal_past_its_limit_or_empty_is_refused_naming_the_field(ProposeRuleCommand $proposal, string $field): void
-    {
-        $this->assertThrows(fn () => $this->journal->run($proposal), CommandInputInvalid::class, "{$field}:");
+    public function test_a_proposal_past_its_limit_or_empty_is_refused_naming_the_field(
+        string $text,
+        string $reason,
+        string $field,
+    ): void {
+        $this->assertThrows(
+            fn () => $this->journal->run($this->proposal($text, $reason)),
+            CommandInputInvalid::class,
+            "{$field}:",
+        );
 
         $this->assertSame(0, Rule::query()->count());
     }
@@ -117,8 +129,25 @@ final class ProposeRuleTest extends TestCase
     {
         $text = str_repeat('é', Rule::TEXT_CHARACTER_LIMIT);
 
-        $ruleId = $this->journal->run(new ProposeRuleCommand($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)));
+        $ruleId = $this->journal->run($this->proposal($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)));
 
         $this->assertSame($text, Rule::query()->findOrFail($ruleId)->text);
+    }
+
+    public function test_an_agents_proposal_is_a_rule_of_its_own_project(): void
+    {
+        $shop = $this->journal->project('Shop')->agent('Shopper', project: 'Shop')->projectCalled('Shop');
+        $this->journal->actAs('Shopper');
+
+        $ruleId = $this->journal->run(new ProposeRuleCommand('Ship on Fridays.', 'Weekends are quiet.', $shop->id));
+
+        $this->assertSame($shop->id, Rule::query()->findOrFail($ruleId)->project_id);
+    }
+
+    private function proposal(string $text, string $reason, string|null $replacesRuleId = null): ProposeRuleCommand
+    {
+        $projectId = TestProjects::ownerOf($this->journal->agentCalled('Planner'))->projectId();
+
+        return new ProposeRuleCommand($text, $reason, $projectId, $replacesRuleId);
     }
 }

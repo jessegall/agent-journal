@@ -6,6 +6,7 @@ namespace Domain\Documents\Support;
 
 use App\Contracts\Bus\CommandTransaction;
 use App\Contracts\Sessions\SessionProvenance;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadLimitReached;
@@ -23,13 +24,13 @@ final readonly class UploadStore
         private DatabaseManager $database,
     ) {}
 
-    public function begin(UploadType $type, int $bytes, string $digest): string
+    public function begin(UploadType $type, int $bytes, string $digest, ProjectOwner $owner): string
     {
         if (TextUpload::query()->unexpired()->unconsumed()->count() >= self::ACTIVE_UPLOADS) {
             throw UploadLimitReached::forSession();
         }
 
-        $upload = TextUpload::create($type, $bytes, $digest);
+        $upload = TextUpload::create($type, $bytes, $digest, $owner);
         $this->provenance->record($upload);
 
         return $upload->id;

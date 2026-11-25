@@ -23,10 +23,6 @@ final readonly class SelectedDestination implements ProjectDestination
 
     public function ownerFor(Option $chosen): ProjectOwner
     {
-        if ($chosen->filter(fn (string $choice): bool => $choice === self::GLOBAL)->isDefined()) {
-            return ProjectOwner::global();
-        }
-
-        return ProjectOwner::ofProject($this->projectFor($chosen));
+        return ProjectOwner::fromKey($this->projectFor($chosen));
     }
 }

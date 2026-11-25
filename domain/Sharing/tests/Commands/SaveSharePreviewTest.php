@@ -39,6 +39,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * The owner saves a preview of a root with some of its linked candidates and gets a checksum; anyone else is refused,
@@ -204,7 +205,7 @@ final class SaveSharePreviewTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $document = Document::query()->where('number', 1)->sole();
 

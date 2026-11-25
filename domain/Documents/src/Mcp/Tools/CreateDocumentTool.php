@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Mcp\Tools;
 
 use App\Attributes\Bus\Dispatches;
+use App\Contracts\Projects\ProjectDestination;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
@@ -15,6 +16,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+use PhpOption\None;
 
 #[IsIdempotent]
 #[Name('docs_create')]
@@ -23,6 +25,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Description('Publish a document from text or one sealed upload.')]
 final class CreateDocumentTool extends JournalWriteTool
 {
+    public function __construct(private readonly ProjectDestination $destination) {}
+
     use PublicationArguments;
 
     protected function writeSchema(JsonSchema $schema): array
@@ -42,6 +46,7 @@ final class CreateDocumentTool extends JournalWriteTool
             $arguments->text('title'),
             $arguments->text('abstract'),
             $arguments->optionalText('body'),
+            $this->destination->ownerFor(None::create())->key(),
             $this->sources($arguments),
             $arguments->optionalUlid('upload_id'),
         );

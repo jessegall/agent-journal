@@ -16,7 +16,7 @@ interface ProjectDestination
     /**
      * The choice of a may-be-global create that names Global.
      */
-    public const string GLOBAL = 'global';
+    public const string GLOBAL = ProjectOwner::GLOBAL_KEY;
 
     /**
      * The id of the project a create goes to.

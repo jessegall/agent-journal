@@ -28,6 +28,14 @@ trait HasProjectColumn
     }
 
     /**
+     * Writes the owner into the row: the project's id, or empty for Global.
+     */
+    public function assignOwner(ProjectOwner $owner): void
+    {
+        $this->setAttribute('project_id', $owner->isGlobal() ? null : $owner->projectId());
+    }
+
+    /**
      * Refuses joining this row to the other unless both are of one project or the other is Global.
      *
      * @throws CrossProjectEdge

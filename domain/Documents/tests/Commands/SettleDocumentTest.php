@@ -30,6 +30,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A user settles a document with a reason, kept trimmed, and a changed revision makes it active again; a blank or
@@ -71,7 +72,7 @@ final class SettleDocumentTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
     }
 
     public function test_a_user_settles_a_document_with_a_reason_and_a_changed_revision_makes_it_active_again(): void
@@ -110,7 +111,7 @@ final class SettleDocumentTest extends TestCase
 
     public function test_a_reason_over_its_limit_is_refused_and_the_record_stays_unsettled(): void
     {
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n", TestProjects::local()->id));
         $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTER_LIMIT + 1);
 
         $this->assertThrows(
@@ -168,7 +169,7 @@ final class SettleDocumentTest extends TestCase
 
         $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
         $this->bus()->run(new SettleDocumentCommand(1, 1, 'Shipped.'));
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n", TestProjects::local()->id));
         $this->bus()->run(new CloseReportCommand('1', 'Read.'));
 
         $this->assertSame(

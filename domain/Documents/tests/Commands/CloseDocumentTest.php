@@ -31,6 +31,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A close turns a draft's saves into exactly one next revision; an unchanged draft adds none, and a repeated close
@@ -89,7 +90,7 @@ final class CloseDocumentTest extends TestCase
         parent::setUp();
 
         $this->journal->actAsUserId(TestIds::of(1));
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY, TestProjects::local()->id));
     }
 
     public function test_two_saves_close_into_exactly_one_next_revision(): void
@@ -163,7 +164,12 @@ final class CloseDocumentTest extends TestCase
             fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
         );
 
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->bus()->run(new CreateDocumentCommand(
+            'Design',
+            'What we build',
+            "# Goal\nShip it.\n",
+            TestProjects::local()->id,
+        ));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Ship it soon.'));
         $this->bus()->run(new CloseDocumentCommand($draft->target()));
@@ -198,7 +204,12 @@ final class CloseDocumentTest extends TestCase
             fn (DocumentPublished $published) => $this->facts[] = "DocumentPublished {$published->revisionNumber}",
         );
 
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->bus()->run(new CreateDocumentCommand(
+            'Design',
+            'What we build',
+            "# Goal\nShip it.\n",
+            TestProjects::local()->id,
+        ));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->facts = [];
 
@@ -212,9 +223,9 @@ final class CloseDocumentTest extends TestCase
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
-        $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n", TestProjects::local()->id));
         $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Shipped.'));
@@ -248,7 +259,7 @@ final class CloseDocumentTest extends TestCase
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));

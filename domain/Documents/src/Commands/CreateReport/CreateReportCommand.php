@@ -6,9 +6,11 @@ namespace Domain\Documents\Commands\CreateReport;
 
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Validation\OneLine;
+use App\Contracts\Projects\ProjectCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use App\Support\RecordIdentity;
+use App\Values\ProjectOwner;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\ReportPolicy;
 use Domain\Documents\Values\CreatedRecord;
@@ -16,13 +18,13 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Files a new report, once; a report is never edited.
+ * Files a new report of a project, once; a report is never edited.
  * The author is whoever runs the command; the command names no author.
  *
  * @extends Command<CreatedRecord>
  */
 #[Authorize(ReportPolicy::class, AccessType::Create)]
-final readonly class CreateReportCommand extends Command
+final readonly class CreateReportCommand extends Command implements ProjectCommand
 {
     public const int MOST_LINKS = 50;
 
@@ -35,8 +37,14 @@ final readonly class CreateReportCommand extends Command
         #[Required, OneLine, Max(Document::ABSTRACT_CHARACTER_LIMIT)]
         public string $abstract,
         public string|null $body,
+        public string $projectId,
         #[Max(self::MOST_LINKS)]
         public array $relatedRecords = [],
         public string|null $uploadId = null,
     ) {}
+
+    public function owner(): ProjectOwner
+    {
+        return ProjectOwner::ofProject($this->projectId);
+    }
 }

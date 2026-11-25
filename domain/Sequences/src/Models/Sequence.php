@@ -8,7 +8,10 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Support\BelongsToProjectOrGlobal;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Data\SequenceStepData;
 use Domain\Sequences\Events\SequenceChanged;
@@ -25,6 +28,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
+ * @property string|null $project_id
  * @property string $name
  * @property string $summary
  * @property DataCollection<int, SequenceStepData> $steps
@@ -36,8 +40,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class Sequence extends Model implements EventSource, ReadableModel
+final class Sequence extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -65,13 +70,14 @@ final class Sequence extends Model implements EventSource, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * A new sequence of these steps.
+     * A new sequence of these steps, of one project or Global.
      *
      * @param  list<SequenceStep>  $steps
      */
-    public static function create(string $name, string $summary, array $steps): self
+    public static function create(string $name, string $summary, array $steps, ProjectOwner $owner): self
     {
         $sequence = new self();
+        $sequence->assignOwner($owner);
         $sequence->name = $name;
         $sequence->summary = $summary;
         $sequence->steps = self::stored($steps);

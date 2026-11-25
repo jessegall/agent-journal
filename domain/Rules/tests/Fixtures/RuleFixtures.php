@@ -10,6 +10,7 @@ use Domain\Rules\Models\Rule;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Project rules kept under the names a test gives them: proposed by a named user or agent, and made to hold by the
@@ -29,7 +30,8 @@ final class RuleFixtures
     public function proposedRule(string $name, string $text, string $proposer, string $reason = self::REASON): self
     {
         $this->aliases->claim($name);
-        $proposed = Rule::create($text, $reason, null, ActorReference::of($this->journal->userOrAgentCalled($proposer)));
+        $maker = $this->journal->userOrAgentCalled($proposer);
+        $proposed = Rule::create($text, $reason, null, ActorReference::of($maker), TestProjects::ownerOf($maker));
         $this->aliases->remember($name, $proposed);
 
         return $this;
@@ -45,9 +47,8 @@ final class RuleFixtures
         string $approver,
         string $reason = self::REASON,
     ): self {
-        $this->proposedRule($name, $text, $proposer, $reason)->ruleCalled($name)->approveBy(
-            $this->journal->actorCalled($approver),
-        );
+        $rule = $this->proposedRule($name, $text, $proposer, $reason)->ruleCalled($name);
+        $rule->approveBy($this->journal->actorCalled($approver), $rule->projectOwner());
 
         return $this;
     }

@@ -9,9 +9,9 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\TestProjects;
 
 /**
  * A Plans test reaches its plan fixture through the journal: plans, paused plans, numbered phases and placed tasks are
@@ -53,7 +53,7 @@ final class PlanFixturesTest extends TestCase
             'Write it',
             'The first step.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
 
         $this->journal->fixtures(PlanFixtures::class)
@@ -115,13 +115,13 @@ final class PlanFixturesTest extends TestCase
             'Design',
             'The first step.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
         $second = Task::create(
             'Build',
             'The second step.',
             $this->journal->ownerUser(),
-            TaskFixtures::ownerFor($this->journal->ownerUser()),
+            TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
 
         $this->journal->fixtures(PlanFixtures::class)

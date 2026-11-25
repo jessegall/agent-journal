@@ -15,6 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->text('text');
             $table->string('status', 16)->default('active');
             $table->text('reason')->nullable();

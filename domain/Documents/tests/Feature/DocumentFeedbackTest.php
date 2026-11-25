@@ -8,6 +8,7 @@ use App\Models\Messages\Message;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\MessagingFixtures;
+use Tests\Support\TestProjects;
 
 /**
  * Ask for feedback on a document sends the chosen agent a message in their chat asking for feedback on the document,
@@ -25,7 +26,12 @@ final class DocumentFeedbackTest extends TestCase
 
         $this->setUpMessaging();
 
-        $this->journal->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\nThen rest.\n"));
+        $this->journal->run(new CreateDocumentCommand(
+            'Design',
+            'What we build',
+            "# Goal\nShip it.\nThen rest.\n",
+            TestProjects::local()->id,
+        ));
     }
 
     public function test_asking_an_agent_for_feedback_on_the_document_sends_them_a_message(): void

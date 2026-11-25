@@ -16,6 +16,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 /**
  * A report is filed under its own numbers, and a document number never selects it.
@@ -48,8 +49,13 @@ final class CreateReportTest extends TestCase
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
     {
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
-        $report = $this->bus()->run(new CreateReportCommand('Check', 'What we found', self::GOOD_REPORT));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id));
+        $report = $this->bus()->run(new CreateReportCommand(
+            'Check',
+            'What we found',
+            self::GOOD_REPORT,
+            TestProjects::local()->id,
+        ));
 
         $this->assertSame(self::FIRST_REPORT, $report->label());
         $this->assertSame(self::GOOD_REPORT, $this->app->make(ReportResolver::class)->show(1)->body);

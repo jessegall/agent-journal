@@ -10,6 +10,7 @@ use App\Contracts\Files\Files;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\ContentMissing;
+use App\Exceptions\CrossProjectWrite;
 use App\Exceptions\FileMissing;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Access\User;
@@ -25,6 +26,7 @@ use App\Support\ReflectedParameter;
 use App\Support\ReflectedType;
 use App\Support\SignedCall;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -48,12 +50,14 @@ use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TestStartAuthority;
 
 /**
  * A user or agent files a document: documents are numbered from one, each at its first revision that never changes,
  * the title and abstract are kept trimmed, and an empty title, a two-line abstract or too many links leave no row and
- * name the field.
+ * name the field; a document is of a project or Global, only the owner makes a Global one, and a report is of its
+ * maker's project.
  */
 #[TestsCommand(CreateDocumentCommand::class)]
 final class CreateDocumentTest extends TestCase
@@ -81,6 +85,8 @@ final class CreateDocumentTest extends TestCase
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
     private const array TABLES = [
+        'projects',
+        'agents',
         'reports',
         'document_revisions',
         'documents',
@@ -108,9 +114,19 @@ final class CreateDocumentTest extends TestCase
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
-        $first = $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::GOAL_TEXT));
+        $first = $this->bus()->run(new CreateDocumentCommand(
+            'Design',
+            'What we build',
+            self::GOAL_TEXT,
+            TestProjects::local()->id,
+        ));
 
-        $second = $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
+        $second = $this->bus()->run(new CreateDocumentCommand(
+            'Notes',
+            'What we saw',
+            "Text\n",
+            TestProjects::local()->id,
+        ));
 
         $this->assertSame(self::FIRST_DOCUMENT, $first->label());
         $this->assertSame(self::SECOND_DOCUMENT, $second->label());
@@ -122,7 +138,12 @@ final class CreateDocumentTest extends TestCase
     public function test_an_empty_title_leaves_no_row_and_names_the_field(): void
     {
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateDocumentCommand(' ', 'What we build', "Text\n")),
+            fn () => $this->bus()->run(new CreateDocumentCommand(
+                ' ',
+                'What we build',
+                "Text\n",
+                TestProjects::local()->id,
+            )),
             CommandInputInvalid::class,
             self::TITLE_REQUIRED,
         );
@@ -138,13 +159,20 @@ final class CreateDocumentTest extends TestCase
         );
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateDocumentCommand('Design', "What we\nbuild", "Text\n")),
+            fn () => $this->bus()->run(new CreateDocumentCommand(
+                'Design',
+                "What we\nbuild",
+                "Text\n",
+                TestProjects::local()->id,
+            )),
             CommandInputInvalid::class,
             self::ABSTRACT_ONE_LINE,
         );
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CreateReportCommand('Check', 'What we found', "Text\n", $about)),
+            fn () => $this->bus()->run(
+                new CreateReportCommand('Check', 'What we found', "Text\n", TestProjects::local()->id, $about),
+            ),
             CommandInputInvalid::class,
             self::TOO_MANY_RELATED,
         );
@@ -154,8 +182,18 @@ final class CreateDocumentTest extends TestCase
 
     public function test_a_title_and_abstract_are_stored_trimmed(): void
     {
-        $this->bus()->run(new CreateDocumentCommand('  Plan for May  ', ' What we build ', "Text\n"));
-        $this->bus()->run(new CreateReportCommand('  Plan for May  ', ' What we found ', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand(
+            '  Plan for May  ',
+            ' What we build ',
+            "Text\n",
+            TestProjects::local()->id,
+        ));
+        $this->bus()->run(new CreateReportCommand(
+            '  Plan for May  ',
+            ' What we found ',
+            "Text\n",
+            TestProjects::local()->id,
+        ));
 
         $document = $this->app->make(DocumentResolver::class)->show(1);
 
@@ -178,7 +216,7 @@ final class CreateDocumentTest extends TestCase
 
     public function test_a_saved_revision_does_not_change(): void
     {
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id));
         $revision = DocumentRevision::query()->sole();
 
         $this->expectException(RecordImmutable::class);
@@ -205,7 +243,7 @@ final class CreateDocumentTest extends TestCase
         }
 
         $this->journal->actAsUserId(TestIds::of(3));
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id));
         $this->assertSame(TestIds::of(3), DocumentRevision::query()->sole()->author_id);
     }
 
@@ -221,7 +259,7 @@ final class CreateDocumentTest extends TestCase
         });
 
         try {
-            $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n"));
+            $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n", TestProjects::local()->id));
             $this->fail('An empty body was accepted.');
         } catch (ContentMissing) {
             $this->assertSame([
@@ -243,7 +281,9 @@ final class CreateDocumentTest extends TestCase
         Task::factory()->create(['title' => 'Write the client']);
         $task = $this->records()->identify(RecordReference::parse('task 1'));
 
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", [$task]));
+        $this->bus()->run(
+            new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id, [$task]),
+        );
         $this->assertSame(1, Link::query()->count());
 
         $message = $this->messageFor(8);
@@ -251,14 +291,22 @@ final class CreateDocumentTest extends TestCase
 
         try {
             $about = [new RecordIdentity(Message::linkType(), $message->id)];
-            $this->bus()->run(new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", $about));
+            $this->bus()->run(
+                new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", TestProjects::local()->id, $about),
+            );
             $this->fail('A document about a private message was created.');
         } catch (RecordUnavailable) {
             $this->assertSame(1, Document::query()->count());
         }
 
         $this->expectException(CommandInputInvalid::class);
-        $this->bus()->run(new CreateDocumentCommand('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
+        $this->bus()->run(new CreateDocumentCommand(
+            'Many',
+            'Too many links',
+            "Text\n",
+            TestProjects::local()->id,
+            array_fill(0, 51, $task),
+        ));
     }
 
     public function test_a_missing_body_file_fails_with_its_own_reason(): void
@@ -280,6 +328,39 @@ final class CreateDocumentTest extends TestCase
         $this->expectException(FileMissing::class);
 
         $this->artisan('test:record-body', ['--file' => sys_get_temp_dir().'/no-such-notes.md'])->run();
+    }
+
+    public function test_a_document_of_a_project_shows_there_only_and_a_global_one_shows_everywhere(): void
+    {
+        $this->journal->project('Shop')->agent('Ada')->agent('Cy', 'main-agent', 'Shop')->actAs('Owner');
+        $shop = $this->journal->projectCalled('Shop')->id;
+        $this->bus()->run(new CreateDocumentCommand('Stock', 'Shop only', "Text\n", $shop));
+        $this->bus()->run(new CreateDocumentCommand('Guide', 'For everyone', "Text\n", ProjectOwner::GLOBAL_KEY));
+
+        $this->journal->actAs('Ada');
+        $this->assertSame([null], Document::query()->pluck('project_id')->all());
+        $this->journal->actAs('Cy');
+        $this->assertEqualsCanonicalizing([$shop, null], Document::query()->pluck('project_id')->all());
+    }
+
+    public function test_an_agent_cannot_make_a_global_document(): void
+    {
+        $this->journal->agent('Ada')->actAs('Ada');
+
+        $this->journal->assertRefused(CrossProjectWrite::class, fn () => $this->bus()->run(
+            new CreateDocumentCommand('Guide', 'For everyone', "Text\n", ProjectOwner::GLOBAL_KEY),
+        ));
+        $this->assertSame(0, Document::query()->acrossProjects()->count());
+    }
+
+    public function test_a_report_belongs_to_the_project_of_the_agent_that_files_it(): void
+    {
+        $this->journal->project('Shop')->agent('Cy', 'main-agent', 'Shop')->actAs('Cy');
+        $shop = $this->journal->projectCalled('Shop')->id;
+
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "Text\n", $shop));
+
+        $this->assertSame([$shop], Report::query()->pluck('project_id')->all());
     }
 
     private function bus(): CommandBus

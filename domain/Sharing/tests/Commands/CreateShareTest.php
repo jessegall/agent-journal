@@ -56,6 +56,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -319,7 +320,7 @@ final class CreateShareTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();

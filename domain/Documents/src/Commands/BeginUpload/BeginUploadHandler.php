@@ -13,6 +13,6 @@ final readonly class BeginUploadHandler extends DocumentCommandHandler
 
     public function handle(BeginUploadCommand $command): string
     {
-        return $this->uploads->begin($command->type, $command->bytes, $command->digest);
+        return $this->uploads->begin($command->type, $command->bytes, $command->digest, $command->owner());
     }
 }

@@ -106,7 +106,7 @@ final class ActivityEntry extends Model implements ProjectOwned, ReadableModel
         $entry->actor_type = $actor->type;
         $entry->actor_id = $actor->id;
         $entry->environment_id = $environmentId;
-        $entry->project_id = $owner->isGlobal() ? null : $owner->projectId();
+        $entry->assignOwner($owner);
         $entry->level = $type->defaultLevel();
         $entry->type = $type;
         $entry->subject = mb_substr($subject, 0, self::SUBJECT_CHARACTER_LIMIT);

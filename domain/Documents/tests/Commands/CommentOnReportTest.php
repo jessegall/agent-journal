@@ -12,6 +12,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 /**
  * A reader comments on a report named by its number or id, as themselves; a report that is not there is refused
@@ -34,7 +35,12 @@ final class CommentOnReportTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->journal->run(new CreateReportCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->journal->run(new CreateReportCommand(
+            'Design',
+            'What we build',
+            "# Goal\nShip it.\n",
+            TestProjects::local()->id,
+        ));
     }
 
     public function test_a_comment_by_number_lands_on_the_report_as_its_author(): void

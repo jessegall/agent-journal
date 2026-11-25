@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Requests;
 
+use App\Http\Requests\Concerns\ReadsChosenProject;
 use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,6 +14,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class SaveSequenceRequest extends FormRequest
 {
+    use ReadsChosenProject;
+
     public const int TEXT_CHARACTER_LIMIT = 255;
 
     /**
@@ -23,6 +26,7 @@ final class SaveSequenceRequest extends FormRequest
         $text = ['required', 'string', 'max:'.self::TEXT_CHARACTER_LIMIT];
 
         return [
+            ...$this->projectRules(),
             'name' => $text,
             'version' => ['nullable', 'integer', 'min:1'],
             'steps' => ['present', 'array'],

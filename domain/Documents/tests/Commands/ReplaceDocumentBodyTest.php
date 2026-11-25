@@ -12,6 +12,7 @@ use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 /**
  * The writer of an open draft replaces its whole body; a save on a version older than the draft's is refused and the
@@ -35,7 +36,12 @@ final class ReplaceDocumentBodyTest extends TestCase
     public function test_the_body_is_replaced_and_a_save_on_an_older_version_is_refused(): void
     {
         $this->journal->owner();
-        $this->journal->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->journal->run(new CreateDocumentCommand(
+            'Design',
+            'What we build',
+            "# Goal\nShip it.\n",
+            TestProjects::local()->id,
+        ));
         $opened = $this->journal->run(new OpenDocumentCommand('1'));
 
         $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), self::SECOND_BODY));

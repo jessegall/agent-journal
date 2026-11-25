@@ -26,7 +26,7 @@ final readonly class CreateDocumentHandler extends DocumentCommandHandler
     {
         $actor = $command->dispatchedBy();
         $body = $this->bodies->read($command->body, $command->uploadId, UploadType::DocumentBody);
-        $document = Document::create($actor);
+        $document = Document::create($actor, $command->owner());
 
         $document->startWith(DocumentRevision::create(
             $document,
