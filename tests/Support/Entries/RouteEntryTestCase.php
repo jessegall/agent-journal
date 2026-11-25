@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\Command;
 use App\Http\Controllers\Web\PageController;
 use App\Support\ClientDeclarations;
 use App\Support\EnrolledHost;
@@ -49,7 +47,7 @@ abstract class RouteEntryTestCase extends TestCase
 
         $this->assertLessThan(400, $response->status(), (string) $response->getContent());
         $this->journal->assertDispatchedOnlyDeclared(
-            $this->declaredCommands(),
+            DeclaredCommands::ofRoute($this->route()),
             (string) $this->route()->getControllerClass(),
         )
             ->assertDispatchedExactly($call->expected);
@@ -177,25 +175,6 @@ abstract class RouteEntryTestCase extends TestCase
         $this->assertInstanceOf(EnrolledHost::class, $call->signer, 'A host call is signed by the host it names.');
 
         return $call->signer;
-    }
-
-    /**
-     * The commands the route's action declares with #[Dispatches].
-     *
-     * @return list<class-string<Command<mixed>>>
-     */
-    private function declaredCommands(): array
-    {
-        $route = $this->route();
-        $controller = (string) $route->getControllerClass();
-        // Laravel names an invokable controller's action by the controller itself.
-        $action = $route->getActionMethod() === $controller ? '__invoke' : $route->getActionMethod();
-        $method = ReflectedType::of($controller)->method($action);
-
-        return array_map(
-            fn (Dispatches $dispatches) => $dispatches->command,
-            iterator_to_array($method->attributes(Dispatches::class), false),
-        );
     }
 
     /**

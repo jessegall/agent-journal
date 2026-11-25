@@ -4,42 +4,53 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
+use App\Http\Controllers\Web\PageController;
+use App\Support\ClientDeclarations;
+use App\Support\Web\DeclaredRouteKey;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 
 /**
  * Every method of every route a journal controller, of core or of a domain, answers, by its name, tested in the
- * routes folder of the controller's owner; the hook answer route is left to the hook moments. Beside them stand the
- * journal's routes that have no name and the routes of every other controller.
+ * routes folder of its owner, the domain that declares a page or the controller's; the hook answer route is left to the
+ * hook moments. Beside them stand the journal's routes that have no name and the routes of every other controller.
  */
 final readonly class RouteEntries
 {
     private const string HOOK_ANSWER = 'POST hooks.answer';
 
-    public function __construct(private Router $router) {}
+    public function __construct(private Router $router, private ClientDeclarations $declarations) {}
 
     /**
      * @return list<EntryPoint>
      */
     public function entries(): array
     {
-        $entries = [];
+        return array_map(
+            fn (RouteMethod $method) => new EntryPoint(EntryType::Route, $method->entryName(), $method->testFolder()),
+            $this->methods(),
+        );
+    }
+
+    /**
+     * Each method of every named journal route but the hook answer, with its owner: a page's is the domain that
+     * declares it, any other route's the namespace of its controller.
+     *
+     * @return list<RouteMethod>
+     */
+    public function methods(): array
+    {
+        $methods = [];
 
         foreach ($this->journalRoutes() as $route) {
             foreach ($this->methodsOf($route) as $method) {
-                $name = "{$method} {$route->getName()}";
-
-                if ($route->getName() !== null && $name !== self::HOOK_ANSWER) {
-                    $entries[] = new EntryPoint(
-                        EntryType::Route,
-                        $name,
-                        EntryPoint::folderOf((string) $route->getControllerClass(), EntryType::Route),
-                    );
+                if ($route->getName() !== null && "{$method} {$route->getName()}" !== self::HOOK_ANSWER) {
+                    $methods[] = new RouteMethod($route, $method, $this->ownerOf($route));
                 }
             }
         }
 
-        return $entries;
+        return $methods;
     }
 
     /**
@@ -72,6 +83,21 @@ final readonly class RouteEntries
     private function journalRoutes(): array
     {
         return array_values(array_filter($this->router->getRoutes()->getRoutes(), self::isJournal(...)));
+    }
+
+    /**
+     * The namespace that owns the route: the declaring domain's for a page, which core's page controller answers, and
+     * the controller's own for every other route.
+     */
+    private function ownerOf(Route $route): string
+    {
+        if ($route->getControllerClass() === PageController::class) {
+            return $this->declarations->ownerOf(DeclaredRouteKey::of($route))->namespace;
+        }
+
+        preg_match('/^(App|Domain\\\\[^\\\\]+)\\\\/', (string) $route->getControllerClass(), $owner);
+
+        return $owner[1];
     }
 
     private static function isJournal(Route $route): bool

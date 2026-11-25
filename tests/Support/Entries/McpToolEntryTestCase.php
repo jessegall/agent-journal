@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Support\ReflectedType;
@@ -43,7 +41,7 @@ abstract class McpToolEntryTestCase extends TestCase
             ->assertOk()
             ->assertJsonPath('result.isError', false);
 
-        $this->journal->assertDispatchedOnlyDeclared($this->declaredCommands(), $this->tool())
+        $this->journal->assertDispatchedOnlyDeclared(DeclaredCommands::ofTool($this->tool()), $this->tool())
             ->assertDispatchedExactly($this->isWriteTool() ? $call->expected : []);
         $this->assertNotSame('', (string) $response->json('result.content.0.text'), 'The tool answered no text.');
     }
@@ -86,17 +84,6 @@ abstract class McpToolEntryTestCase extends TestCase
     private function isWriteTool(): bool
     {
         return ReflectedType::of($this->tool())->isSubclassOf(JournalWriteTool::class);
-    }
-
-    /**
-     * @return list<class-string<Command<mixed>>>
-     */
-    private function declaredCommands(): array
-    {
-        return array_map(
-            fn (Dispatches $dispatches) => $dispatches->command,
-            iterator_to_array(ReflectedType::of($this->tool())->attributes(Dispatches::class), false),
-        );
     }
 
     /**

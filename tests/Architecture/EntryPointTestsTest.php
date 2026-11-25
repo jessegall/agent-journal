@@ -6,6 +6,7 @@ namespace Tests\Architecture;
 
 use App\Contracts\Processes\ShellCommandParser;
 use App\Mcp\Support\McpCatalogue;
+use App\Support\ClientDeclarations;
 use App\Support\CommandRegistry;
 use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Support\StateCatalog\Contracts\StateTypes;
@@ -186,6 +187,6 @@ final class EntryPointTestsTest extends TestCase
 
     private function routes(): RouteEntries
     {
-        return new RouteEntries($this->app->make(Router::class));
+        return new RouteEntries($this->app->make(Router::class), $this->app->make(ClientDeclarations::class));
     }
 }

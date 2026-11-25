@@ -207,6 +207,18 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     }
 
     /**
+     * The names of the arguments the tool requires, read from its schema outside a request; a schema that names no
+     * required argument requires none.
+     *
+     * @param  class-string<JournalTool>  $className
+     * @return list<string>
+     */
+    public function requiredArgumentsOf(string $className): array
+    {
+        return $this->schemaToolOf($className)->toArray()['inputSchema']['required'] ?? [];
+    }
+
+    /**
      * @return array<string, array<string, mixed>>
      */
     public function resourceDefinitions(): array
