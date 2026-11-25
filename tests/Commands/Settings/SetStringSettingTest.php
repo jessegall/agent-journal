@@ -38,12 +38,22 @@ final class SetStringSettingTest extends TestCase
      */
     private const array TABLES = ['settings_records'];
 
+    private const string TITLE = 'Code reviews';
+
     public function test_a_text_setting_changes_once(): void
     {
-        $this->assertChange(SettingsOutcome::Changed, 1, $this->runCommand($this->commands->string($this->reviews->title, 'Code reviews', 0)));
-        $this->assertChange(SettingsOutcome::Unchanged, 1, $this->runCommand($this->commands->string($this->reviews->title, 'Code reviews', 1)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            1,
+            $this->runCommand($this->commands->string($this->reviews->title, self::TITLE, 0)),
+        );
+        $this->assertChange(
+            SettingsOutcome::Unchanged,
+            1,
+            $this->runCommand($this->commands->string($this->reviews->title, self::TITLE, 1)),
+        );
 
-        $this->assertSame('Code reviews', $this->settings()->string($this->reviews->title));
+        $this->assertSame(self::TITLE, $this->settings()->string($this->reviews->title));
     }
 
     private function assertChange(SettingsOutcome $outcome, int $revision, SettingsChange $change): void

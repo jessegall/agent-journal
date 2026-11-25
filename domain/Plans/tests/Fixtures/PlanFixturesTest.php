@@ -10,7 +10,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * A Plans test reaches its plan fixture through the journal: plans, paused plans, numbered phases and placed tasks are

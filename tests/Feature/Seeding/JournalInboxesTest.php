@@ -7,7 +7,8 @@ namespace Tests\Feature\Seeding;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Enums\FixtureRefusalType;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
 
 /**
@@ -44,13 +45,11 @@ final class JournalInboxesTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->chat('Sam', 'Owner'),
-            FixtureRefused::class,
-            'already belongs to a chat',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::OccupiedAlias,
         );
         $this->assertThrows(
             fn () => $this->journal->chat('Sam', 'Sam'),
-            FixtureRefused::class,
-            'cannot chat with itself',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::SelfChat,
         );
     }
 

@@ -10,6 +10,7 @@ use App\Support\ReflectedType;
 use Closure;
 use Illuminate\Support\Str;
 use Tests\Support\Seeding\Contracts\DomainFixtures;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The fixture builders of the domains this application booted, each made once on first use: a domain registers its

@@ -28,19 +28,21 @@ final class ReplaceDocumentBodyTest extends TestCase
         'number_groups',
     ];
 
+    private const string SECOND_BODY = "# Goal\nShip it twice.\n";
+
     public function test_the_body_is_replaced_and_a_save_on_an_older_version_is_refused(): void
     {
         $this->journal->owner();
         $this->journal->run(new CreateDocumentCommand('Design', 'What we build', "# Goal\nShip it.\n"));
         $opened = $this->journal->run(new OpenDocumentCommand('1'));
 
-        $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), "# Goal\nShip it twice.\n"));
+        $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), self::SECOND_BODY));
 
         $this->assertThrows(
             fn () => $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), "# Goal\nStale.\n")),
             DraftConflict::class,
         );
 
-        $this->assertStringContainsString('Ship it twice.', DocumentDraft::query()->sole()->body);
+        $this->assertStringContainsString(self::SECOND_BODY, DocumentDraft::query()->sole()->body);
     }
 }

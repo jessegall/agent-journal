@@ -35,10 +35,16 @@ final class ReadQuestionTest extends TestCase
 
     public function test_the_asker_and_the_target_read_the_question(): void
     {
-        $this->assertSame('Which database?', $this->journal->run(new ReadQuestionCommand($this->question->id))->text);
+        $this->assertSame(
+            $this->question->text,
+            $this->journal->run(new ReadQuestionCommand($this->question->id))->text,
+        );
 
         $this->journal->actAs('Planner');
-        $this->assertSame('Which database?', $this->journal->run(new ReadQuestionCommand($this->question->id))->text);
+        $this->assertSame(
+            $this->question->text,
+            $this->journal->run(new ReadQuestionCommand($this->question->id))->text,
+        );
     }
 
     public function test_anyone_else_is_refused(): void

@@ -7,7 +7,7 @@ namespace Tests\Feature\Seeding;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Agents\AgentSession;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
 
 /**

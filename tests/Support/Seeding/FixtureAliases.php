@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use Illuminate\Database\Eloquent\Model;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The names a domain fixture gives the records it arranges, each kept as the record's type and id, apart from any

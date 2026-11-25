@@ -12,6 +12,7 @@ use App\Support\Stack\HookAnswer;
 use App\Support\StateLoading\StateValues;
 use App\Support\Storage\WalkStep;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * A bound state's frame and its stack after one given step, against the stack before it, with the answer the stack

@@ -12,6 +12,7 @@ use App\Models\Runs\ProcessRun;
 use App\Values\ExecutionContext;
 use App\Values\PartKey;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * Process runs kept under the names a test gives them: a shell line admitted for the actor in place in the project

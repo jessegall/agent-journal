@@ -6,6 +6,7 @@ namespace Tests\Support\Seeding;
 
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * Starts a shared start position on the journal once all it needs is in place and none of its names is taken; a step
@@ -63,7 +64,7 @@ trait StartsScenarios
         }
 
         foreach ($fresh as $name) {
-            $this->refuseTakenName($name);
+            $this->assertNameFree($name);
         }
     }
 }

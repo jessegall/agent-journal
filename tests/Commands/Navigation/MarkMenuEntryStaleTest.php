@@ -57,7 +57,7 @@ final class MarkMenuEntryStaleTest extends TestCase
         $build = $entry->refresh()->buildOn('2.1.323');
         $this->assertTrue($build?->isStale);
         $this->assertSame(['Model: GPT-5'], $build->staleScreen);
-        $this->assertStringContainsString('at step 2', (string) $build->staleReason);
+        $this->assertStringStartsWith(NavigationReason::LabelMissing->value, (string) $build->staleReason);
     }
 
     public function test_an_entry_the_owner_does_not_have_is_refused(): void
@@ -72,7 +72,7 @@ final class MarkMenuEntryStaleTest extends TestCase
             'step' => 2,
             'build' => '2.1.323',
             'rows' => ['Model: GPT-5'],
-        ])->assertForbidden()->assertSee('There is no menu entry 01jd8x0g9m3qz6v4k2t7r00000', false);
+        ])->assertForbidden();
     }
 
     /**

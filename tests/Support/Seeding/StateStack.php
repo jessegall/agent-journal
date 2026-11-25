@@ -11,6 +11,7 @@ use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\StackRestorer;
 use App\Values\StackTarget;
 use Illuminate\Contracts\Foundation\Application;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The stored stack of one target as the engine restores it, read fresh on each call.

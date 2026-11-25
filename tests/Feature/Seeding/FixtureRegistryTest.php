@@ -10,7 +10,8 @@ use Domain\Plans\PlansDomain;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Modules\Notes\NoteFixtures;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Enums\FixtureRefusalType;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureRegistry;
 use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
@@ -45,8 +46,7 @@ final class FixtureRegistryTest extends TestCase
 
         $this->assertThrows(
             fn () => $registry->register($plans, NoteFixtures::class, $maker),
-            FixtureRefused::class,
-            'lies outside',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::Foreign,
         );
         $registry->register($this->notes(), NoteFixtures::class, $maker);
         $this->assertThrows(
@@ -63,13 +63,11 @@ final class FixtureRegistryTest extends TestCase
 
         $this->assertThrows(
             fn () => $registry->fixtures(NoteFixtures::class, $this->journal),
-            FixtureRefused::class,
-            'made a stdClass',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::WrongResult,
         );
         $this->assertThrows(
             fn () => $registry->fixtures(NoteFixtures::class, $this->journal),
-            FixtureRefused::class,
-            'made a stdClass',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::WrongResult,
         );
     }
 
@@ -82,8 +80,7 @@ final class FixtureRegistryTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->fixtures('Domain\\Plans\\Tests\\Fixtures\\PlanFixtures'),
-            FixtureRefused::class,
-            'The Plans domain is not booted',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::DomainNotBooted,
         );
         $this->assertSame(0, $queries);
     }

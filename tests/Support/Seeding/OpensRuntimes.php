@@ -13,6 +13,7 @@ use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\RuntimeIntent;
 use Illuminate\Support\Str;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The runtimes a test's agents run in: a stand-in runtime for an agent whose commands only need one open, or a real
@@ -42,7 +43,11 @@ trait OpensRuntimes
             null,
             null,
         );
-        $this->app->make(AgentRuntimes::class)->open(is_string($agent) ? $this->sessionOf($agent) : $agent, $intent, 'start-token');
+        $this->app->make(AgentRuntimes::class)->open(
+            is_string($agent) ? $this->sessionOf($agent) : $agent,
+            $intent,
+            'start-token',
+        );
 
         return $this;
     }

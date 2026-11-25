@@ -83,6 +83,8 @@ final class PostTextCommentTest extends TestCase
 
     private const string SECOND_LINE = 'Second line.';
 
+    private const string LINES_QUESTION = 'Which lines?';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -105,11 +107,16 @@ final class PostTextCommentTest extends TestCase
         $target = new RecordIdentity(NotePage::linkType(), $page->id);
 
         $commentId = $this->journal->run(
-            new PostTextCommentCommand($target, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
+            new PostTextCommentCommand(
+                $target,
+                self::LINES_QUESTION,
+                TextRange::lines('1', 2, 3),
+                (string) Str::uuid(),
+            ),
         );
 
         $comment = Comment::query()->findOrFail($commentId);
-        $this->assertSame('Which lines?', $comment->body);
+        $this->assertSame(self::LINES_QUESTION, $comment->body);
         $this->assertSame([
             2,
             3,

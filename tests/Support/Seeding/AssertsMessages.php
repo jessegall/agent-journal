@@ -14,6 +14,7 @@ use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
 use App\Support\NotificationScopes;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The messages and notifications a test arranges and asserts through the journal fixture: a message is found by its

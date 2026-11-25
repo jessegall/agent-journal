@@ -7,7 +7,8 @@ namespace Tests\Feature\Seeding;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Enums\FixtureRefusalType;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
 
 /**
@@ -30,8 +31,7 @@ final class JournalNamesTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->agent('Sam'),
-            FixtureRefused::class,
-            'The name Sam already belongs to a user',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::OccupiedAlias,
         );
 
         $this->assertSame(0, Agent::query()->count());

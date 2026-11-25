@@ -106,6 +106,6 @@ final class EditMemoryTest extends TestCase
             RecordUnavailable::class,
         );
 
-        $this->assertSame('First words.', $this->memory->refresh()->text);
+        $this->assertSame($this->memory->text, $this->memory->refresh()->text);
     }
 }

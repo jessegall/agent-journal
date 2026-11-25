@@ -25,6 +25,7 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Foundation\Application;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\TestStartAuthority;
 use Throwable;
 

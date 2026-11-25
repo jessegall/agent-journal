@@ -15,6 +15,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
 use Domain\Tasks\Enums\TaskStatus;
+use PHPUnit\Framework\AssertionFailedError;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Domains\Counting\Events\SubjectSeen;
 use Tests\Fixtures\Domains\Counting\States\CountFactsState;
@@ -27,7 +28,8 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\RegistersTestStates;
 use Tests\Support\ScenarioTick;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Enums\FixtureRefusalType;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 use Throwable;
@@ -70,8 +72,7 @@ final class JournalStatesTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->pushState($this->writerSession(), $this->counting('a', 1)),
-            FixtureRefused::class,
-            'The stack holds 2 frames of counting.count_facts',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::NotOneFrame,
         );
     }
 
@@ -124,8 +125,7 @@ final class JournalStatesTest extends TestCase
                 $state->assertLive();
                 $this->assertThrows(
                     fn () => $state->assertAnswer(AnswerType::Deny),
-                    FixtureRefused::class,
-                    'The last step given was SubjectSeen',
+                    fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::NoHookAnswer,
                 );
             },
         );
@@ -182,8 +182,7 @@ final class JournalStatesTest extends TestCase
         )->given([], function (StateObservation $state) {
             $this->assertThrows(
                 fn () => $state->assertValue('missing', null),
-                Throwable::class,
-                'saves no value at missing',
+                AssertionFailedError::class,
             );
             $state->assertValue('limit', 1);
         });

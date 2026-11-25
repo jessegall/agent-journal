@@ -16,7 +16,8 @@ use Tests\Support\ScanCache\FileScan;
 
 /**
  * Each assertion of a test that takes a literal sentence, a string literal with white space between two words, as
- * one of its own arguments, values put into it included: its line and the sentence.
+ * one of its own arguments, values put into it included: its line and the sentence. The assert verbs of the test
+ * journal and its fixture objects are left out: they take the names and values the test itself arranged.
  *
  * @implements FileScan<array{line: int, sentence: string}>
  */
@@ -24,7 +25,7 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
 {
     public function key(): string
     {
-        return 'literal-sentence-assertions-5';
+        return 'literal-sentence-assertions-6';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -49,7 +50,38 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
     private static function isAssertion(Expr\MethodCall|Expr\StaticCall $node): bool
     {
         return $node->name instanceof Node\Identifier
-            && preg_match('/^(assert|expectExceptionMessage)/', $node->name->toString()) === 1;
+            && preg_match('/^(assert|expectExceptionMessage)/', $node->name->toString()) === 1
+            && ! in_array($node->name->toString(), self::fixtureAssertions(), true);
+    }
+
+    /**
+     * The assert verbs the test journal and the fixture objects declare, PHPUnit's own left out.
+     *
+     * @return list<string>
+     */
+    private static function fixtureAssertions(): array
+    {
+        static $names = null;
+
+        if ($names !== null) {
+            return $names;
+        }
+
+        $files = [
+            ...(glob(base_path('tests/Support/Seeding/*.php')) ?: []),
+            ...(glob(base_path('domain/*/tests/Fixtures/*Fixtures.php')) ?: []),
+        ];
+        $declared = [];
+
+        foreach ($files as $file) {
+            preg_match_all('/public function (assert\w+)\(/', (string) file_get_contents($file), $found);
+            $declared = [...$declared, ...$found[1]];
+        }
+
+        $phpunit = ReflectedType::of(Assert::class);
+        $names = array_values(array_filter(array_unique($declared), fn (string $name) => ! $phpunit->hasMethod($name)));
+
+        return $names;
     }
 
     /**

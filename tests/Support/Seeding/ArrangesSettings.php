@@ -15,6 +15,7 @@ use App\Models\Records\SettingsRecord;
 use App\Values\Decimal;
 use Illuminate\Database\DatabaseManager;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The settings of a test, changed through the settings commands as the actor in place and read as the application

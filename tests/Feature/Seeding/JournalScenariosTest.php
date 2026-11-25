@@ -11,7 +11,8 @@ use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Fixtures\Seeding\ReviewerJoins;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Enums\FixtureRefusalType;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\ScenarioRequirements;
 use Tests\Support\Seeding\StartScenario;
 use Tests\Support\Seeding\TestJournal;
@@ -50,8 +51,7 @@ final class JournalScenariosTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->startScenario($scenario),
-            FixtureRefused::class,
-            'The CountingDomain domain is not booted',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::DomainNotBooted,
         );
 
         $this->assertFalse(Agent::query()->withoutGlobalScopes()->where('name', 'Counter')->exists());
@@ -69,8 +69,7 @@ final class JournalScenariosTest extends TestCase
         );
         $this->assertThrows(
             fn () => $this->journal->startScenario($this->scenario(new ScenarioRequirements(), ['Twin', 'Twin'])),
-            FixtureRefused::class,
-            'makes Twin twice',
+            fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::FreshNameTwice,
         );
 
         $this->assertSame($before, Agent::query()->withoutGlobalScopes()->count());

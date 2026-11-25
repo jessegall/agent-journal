@@ -44,7 +44,8 @@ abstract class TestCase extends BaseTestCase
     use WithCachedConfig;
 
     /**
-     * @var array<string, class-string<Model>> the application's morph map, before a test adds fixture types to it
+     * @var array<string, class-string<Model>> the morph map from before this test's application booted, so neither the
+     *                                         fixture domains it boots nor the types it adds outlive it
      */
     private array $applicationMorphMap = [];
 
@@ -55,9 +56,10 @@ abstract class TestCase extends BaseTestCase
 
     protected function setUp(): void
     {
+        $this->applicationMorphMap = Relation::morphMap();
+
         parent::setUp();
 
-        $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
         $this->withoutVite();
         $this->app->make(OuterTransactionOwner::class)->register();

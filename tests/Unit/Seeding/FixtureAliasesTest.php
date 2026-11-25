@@ -6,8 +6,8 @@ namespace Tests\Unit\Seeding;
 
 use App\Models\Agents\Agent;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\FixtureRefused;
 
 /**
  * A fixture's names keep each record's type and id: one read back is that id, a name is taken once, and a missing one

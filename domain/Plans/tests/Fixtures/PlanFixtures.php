@@ -16,8 +16,8 @@ use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureAliases;
-use Tests\Support\Seeding\FixtureRefused;
 use Tests\Support\Seeding\TestJournal;
 
 /**

@@ -16,6 +16,7 @@ use App\Support\ProfileProposal;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
  * The journal's profiles as a test needs them: the built-in ones installed only when the test asks, with the host's

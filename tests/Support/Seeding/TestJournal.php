@@ -32,6 +32,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\FakeServerClock;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\TestProjects;
 
 /**
@@ -207,7 +208,7 @@ final class TestJournal
     public function idleAgent(string $name, string $profile = 'main-agent', string|null $project = null): self
     {
         $name = trim($name);
-        $this->refuseTakenName($name);
+        $this->assertNameFree($name);
         $home = $project === null ? TestProjects::local() : $this->projectCalled($project);
         $agent = Agent::create($name, $profile, $home);
         $this->inboxes->personal(ActorIdentity::of($agent));
@@ -618,7 +619,7 @@ final class TestJournal
     private function makeUser(string $name): User
     {
         $name = trim($name);
-        $this->refuseTakenName($name);
+        $this->assertNameFree($name);
         $user = User::factory()->create(['name' => $name]);
         $this->users[$name] = $user;
         $this->inboxes->personal(ActorIdentity::of($user));
@@ -640,7 +641,7 @@ final class TestJournal
     /**
      * Users and agents share one set of names, so a second actor under a name already given is refused before its row.
      */
-    private function refuseTakenName(string $name): void
+    private function assertNameFree(string $name): void
     {
         if (array_key_exists($name, $this->users)) {
             throw FixtureRefused::occupiedAlias($name, 'user');

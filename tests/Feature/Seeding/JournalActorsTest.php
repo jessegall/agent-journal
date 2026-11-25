@@ -7,7 +7,7 @@ namespace Tests\Feature\Seeding;
 use App\Contracts\Actors\CurrentActor;
 use App\Support\Access\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\Seeding\FixtureRefused;
+use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;
 
 /**
