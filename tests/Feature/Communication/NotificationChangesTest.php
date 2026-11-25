@@ -18,8 +18,10 @@ use App\Support\NotificationDelivery;
 use App\Support\NotificationReceipts;
 use App\Support\NotificationScopes;
 use Carbon\CarbonImmutable;
+use Domain\Chat\ChatDomain;
 use Domain\Questions\Models\Question;
 use Domain\Questions\Values\QuestionNotificationKeys;
+use Tests\Support\DomainBoot;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -35,6 +37,15 @@ final class NotificationChangesTest extends MessagingTestCase
         'notification_scopes',
         'notification_occurrences',
     ];
+
+    /**
+     * Chat and the Questions it needs beside core: a question is what these notifications are about, and Chat
+     * links each to its chat.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     public function test_twenty_one_arrivals_read_in_pages_of_twenty_and_one_through_one_upper_version(): void
     {

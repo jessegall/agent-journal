@@ -18,7 +18,7 @@ final class ReadMessageEntryTest extends MessagingTestCase
 {
     public function test_messages_waiting_when_the_state_enters_hold_the_agent_until_they_are_read(): void
     {
-        $inboxId = $this->inboxIdOf($this->builder);
+        $inboxId = $this->pairInboxIdOf($this->builder);
         $first = $this->ownerSends($inboxId, 'The first note.');
         $second = $this->ownerSends($inboxId, 'The second note.');
         $state = new ReadMessageState($inboxId, $this->builder->agent_id, new AnswerBudget(2));

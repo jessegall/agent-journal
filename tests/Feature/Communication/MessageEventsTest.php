@@ -47,7 +47,7 @@ final class MessageEventsTest extends MessagingTestCase
     {
         $this->assertThrows(fn () => $this->ownerSends((string) Str::ulid(), 'Nowhere.'), InboxUnavailable::class);
         $key = (string) Str::ulid();
-        $command = new SendMessageCommand($this->ownerInboxId(), $this->inboxIdOf($this->builder), 'Once.');
+        $command = new SendMessageCommand($this->pairInboxIdOf($this->builder), 'Once.');
 
         $first = $this->runOnBus($command, $key);
         $this->asOwner();
@@ -66,7 +66,7 @@ final class MessageEventsTest extends MessagingTestCase
         ));
 
         $this->assertThrows(
-            fn () => $this->ownerSends($this->inboxIdOf($this->builder), self::SAVED_TEXT),
+            fn () => $this->ownerSends($this->pairInboxIdOf($this->builder), self::SAVED_TEXT),
             CommittedFactListenerFailed::class,
         );
 
@@ -76,8 +76,8 @@ final class MessageEventsTest extends MessagingTestCase
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
-        foreach (DomainFiles::in([app_path('Events')]) as $file) {
-            $event = Reflector::of('App\\Events\\'.basename($file, '.php'));
+        foreach (DomainFiles::in([app_path('Events/Messages')]) as $file) {
+            $event = Reflector::of('App\\Events\\Messages\\'.basename($file, '.php'));
 
             if (! $event->isSubclassOf(MessageEvent::class)) {
                 continue;

@@ -22,6 +22,7 @@ trait MessagingFixtures
 {
     use CommitsHookRows;
     use OpensDriverRuntimes;
+    use OpensPairChats;
     use RunsKeyedCommands;
     use StartsAgentRequests;
     use WritesInboxMessages;
@@ -87,6 +88,14 @@ trait MessagingFixtures
     protected function inboxIdOf(AgentSession $session): string
     {
         return $this->inboxOf($this->actorOf($session))->id;
+    }
+
+    /**
+     * The pair chat inbox of the owner and the session's agent, both attached.
+     */
+    protected function pairInboxIdOf(AgentSession $session): string
+    {
+        return $this->pairChat(ActorIdentity::of($this->owner), $this->actorOf($session))->id;
     }
 
     protected function actorOf(AgentSession $session): ActorIdentity

@@ -10,9 +10,11 @@ use App\Http\Responses\NotificationProps;
 use App\Models\Notifications\NotificationReceipt;
 use App\Support\ActorIdentity;
 use App\Support\NotificationDelivery;
+use Domain\Chat\ChatDomain;
 use Domain\Questions\Models\Question;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\DomainBoot;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -28,6 +30,15 @@ final class NotificationFeedTest extends MessagingTestCase
         'notification_scopes',
         'notification_occurrences',
     ];
+
+    /**
+     * Chat and the Questions it needs beside core: a question is what these notifications are about, and Chat
+     * links each to its chat.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(ChatDomain::class);
+    }
 
     public function test_the_first_page_holds_the_newest_twenty_and_the_cursor_reaches_the_twenty_first_once(): void
     {
