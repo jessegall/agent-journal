@@ -9,7 +9,7 @@ use App\Support\RecordIdentity;
 /**
  * A helper finished the work on a record its parent sent it on; the states of the parent's running stack hear it.
  */
-final readonly class HelperReportedOnRecord extends HookEvent
+final readonly class HelperFinishedOnRecord extends HookEvent
 {
     public function __construct(
         public RecordIdentity $subject,

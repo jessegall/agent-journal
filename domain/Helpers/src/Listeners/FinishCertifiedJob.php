@@ -45,7 +45,7 @@ final readonly class FinishCertifiedJob implements Listener
     }
 
     /**
-     * Tells the parent's states that the helper it sent on a record reported back, once its job is finished.
+     * Tells the parent's states that the helper it sent on a record finished its job, once its job is finished.
      */
     private function tellParent(HelperJob $job): void
     {
@@ -53,7 +53,7 @@ final readonly class FinishCertifiedJob implements Listener
         $helper = HelperIdentity::query()->findOrFail($job->helper_identity_id)->helperActor;
 
         $purpose->subject_record->forAll(
-            fn (RecordIdentity $subject) => $this->helperFacts->reported($subject, $helper->id),
+            fn (RecordIdentity $subject) => $this->helperFacts->finished($subject, $helper->id),
         );
     }
 }

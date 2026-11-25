@@ -7,7 +7,7 @@ namespace Tests\Feature\Activity;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Enums\Agents\ActivityType;
 use App\Enums\Hooks\ToolOutcome;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Events\Hooks\ToolCallFinished;
 use App\Events\Sessions\ActivityRecorded;
 use App\Events\Sessions\StartAccepted;
@@ -64,7 +64,7 @@ final class ActivityRecordersTest extends MessagingTestCase
         );
         $events->dispatch(new StartAccepted('request', $this->builder->agent_id, $this->builder->id));
         $events->dispatch(
-            new HelperReportedOnRecord(
+            new HelperFinishedOnRecord(
                 new RecordIdentity('tasks.task-run', (string) Str::ulid()),
                 $this->reviewer->agent_id,
             ),

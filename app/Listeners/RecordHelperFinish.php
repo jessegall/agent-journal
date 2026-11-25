@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Support\HelperActivity;
 
 /**
@@ -15,7 +15,7 @@ final readonly class RecordHelperFinish implements Listener
 {
     public function __construct(private HelperActivity $activity) {}
 
-    public function handle(HelperReportedOnRecord $fact): void
+    public function handle(HelperFinishedOnRecord $fact): void
     {
         $this->activity->finished($fact->helperAgentId);
     }

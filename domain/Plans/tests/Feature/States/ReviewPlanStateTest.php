@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\States;
 
 use App\Enums\Hooks\AnswerType;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
@@ -65,6 +65,7 @@ final class ReviewPlanStateTest extends TestCase
             'Reviewer 7',
             'journal-plan-reviewer',
         )->idleAgent('Reviewer 8', 'journal-plan-reviewer');
+
         [$seven, $eight] = [
             $this->journal->agentCalled('Reviewer 7')->id,
             $this->journal->agentCalled('Reviewer 8')->id,
@@ -75,12 +76,12 @@ final class ReviewPlanStateTest extends TestCase
                 [
                     new HelperSentOnRecord($this->plan(), $seven),
                     new HelperSentOnRecord($this->plan(), $eight),
-                    new HelperReportedOnRecord($this->plan(), $seven),
+                    new HelperFinishedOnRecord($this->plan(), $seven),
                 ],
                 fn (StateObservation $state) => $state->assertValue('reviewersOut.agentIds', [$eight]),
             )
             ->given(
-                [new HelperReportedOnRecord($this->plan(), $eight), $this->stop()],
+                [new HelperFinishedOnRecord($this->plan(), $eight), $this->stop()],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
             );
     }

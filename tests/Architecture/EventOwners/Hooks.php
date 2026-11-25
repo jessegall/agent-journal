@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Events\Hooks\ContextStarted;
 use App\Events\Hooks\HelperCompletionCertified;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
 use App\Events\Hooks\HelperStopHeld;
 use App\Events\Hooks\HookCallRecorded;
@@ -40,7 +40,7 @@ return [
             'app/Support/HelperRecordFacts.php',
         ],
     ],
-    HelperReportedOnRecord::class => [
+    HelperFinishedOnRecord::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [

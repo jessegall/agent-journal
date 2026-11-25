@@ -6,12 +6,12 @@ namespace App\Support;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\HelperRecordFacts as HelperRecordFactsContract;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Raises the facts of helpers sent on a record: a sending is staged in the caller's command, a report is dispatched
+ * Raises the facts of helpers sent on a record: a sending is staged in the caller's command, a finished job is dispatched
  * at once; each reaches every running stack with a state listening for it.
  */
 final readonly class HelperRecordFacts implements HelperRecordFactsContract
@@ -26,8 +26,8 @@ final readonly class HelperRecordFacts implements HelperRecordFactsContract
         $this->facts->publishAfterCommit(new HelperSentOnRecord($subject, $agentId));
     }
 
-    public function reported(RecordIdentity $subject, string $agentId): void
+    public function finished(RecordIdentity $subject, string $agentId): void
     {
-        $this->events->dispatch(new HelperReportedOnRecord($subject, $agentId));
+        $this->events->dispatch(new HelperFinishedOnRecord($subject, $agentId));
     }
 }

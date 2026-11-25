@@ -7,7 +7,7 @@ namespace Domain\Plans\Support\States;
 use App\Attributes\States\StateType;
 use App\Enums\Engine\FrameReuse;
 use App\Enums\Sessions\SessionTransferType;
-use App\Events\Hooks\HelperReportedOnRecord;
+use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
@@ -96,7 +96,7 @@ final class ReviewPlanState extends AgentState
         }
     }
 
-    public function onHelperReportedOnRecord(HelperReportedOnRecord $event): void
+    public function onHelperFinishedOnRecord(HelperFinishedOnRecord $event): void
     {
         if ($this->isAbout($event->subject)) {
             $this->reviewersOut = $this->reviewersOut->removing($event->helperAgentId);
