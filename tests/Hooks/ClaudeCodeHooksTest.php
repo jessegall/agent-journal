@@ -49,11 +49,9 @@ use App\Support\Relay\PreparationState;
 use App\Support\Relay\RelaySettings;
 use App\Support\RetentionPeriods;
 use App\Support\SignedCall;
-use App\Support\StackTransaction;
 use App\Support\StartedAgent;
 use App\Support\StartHeartbeats;
 use App\Support\StartSessions;
-use App\Support\StartStacks;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\RecordedAnswer;
@@ -74,15 +72,12 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Testing\TestResponse;
 use Laravel\Octane\Events\RequestReceived;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\Agents\BackdatesSessions;
@@ -91,6 +86,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsHook;
 use Tests\Support\HookDatabase;
+use Tests\Support\Hooks\SendsSignedHooks;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -114,6 +110,7 @@ final class ClaudeCodeHooksTest extends TestCase
 {
     use BackdatesSessions;
     use CommitsHookRows;
+    use SendsSignedHooks;
 
     private const string SECRET_DETAIL = 'secret detail';
 
@@ -187,8 +184,6 @@ final class ClaudeCodeHooksTest extends TestCase
         'x-journal-call-signature',
     ];
 
-    private TestStart $start;
-
     private string $bypassLog;
 
     private bool $isJournalDown = false;
@@ -197,12 +192,7 @@ final class ClaudeCodeHooksTest extends TestCase
     {
         parent::setUp();
 
-        config(['processes.runner' => true]);
-        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
-        $this->start->openRuntime($this->app);
-        $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(StartStacks::class)->open($this->target()),
-        ));
+        $this->signReadyAgent();
     }
 
     /**
@@ -288,15 +278,6 @@ final class ClaudeCodeHooksTest extends TestCase
         $this->hook('claude-code', $this->bashBody('composer test'), 'call-7')->assertOk();
 
         $this->hook('claude-code', $this->bashBody('git status'), 'call-7')->assertStatus(409);
-    }
-
-    public function test_codex_answers_through_its_own_adapter(): void
-    {
-        $body = $this->bashBody('composer test');
-
-        $stdout = json_decode((string) $this->hook('codex', $body)->assertOk()->json('stdout'), true);
-
-        $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
     }
 
     public function test_a_failure_notification_is_heard_once_and_answers_without_walking_the_stack(): void
@@ -475,9 +456,9 @@ final class ClaudeCodeHooksTest extends TestCase
 
         $this->assertSame(SessionStatus::Ended, $started->session->refresh()->status);
         $this->assertSame(
-sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE),
- $started->session->refresh()->end_evidence,
-);
+            sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE),
+            $started->session->refresh()->end_evidence,
+        );
         $this->assertSame(StackStatus::Closed, $this->stackOf($started)->status);
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($started->token);
@@ -651,18 +632,18 @@ sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE),
     {
         $this->asStoredAgent();
         new HookCall()->recordFor(
-$this->storedHook(),
- RecordedAnswer::of(AnswerType::Allow, '{}'),
- RecordedSteps::of([]),
-);
+            $this->storedHook(),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
+            RecordedSteps::of([]),
+        );
 
         $this->expectException(QueryException::class);
 
         new HookCall()->recordFor(
-$this->storedHook(),
- RecordedAnswer::of(AnswerType::Allow, '{}'),
- RecordedSteps::of([]),
-);
+            $this->storedHook(),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
+            RecordedSteps::of([]),
+        );
     }
 
     public function test_the_agent_and_session_cannot_be_mass_assigned(): void
@@ -689,10 +670,10 @@ $this->storedHook(),
     {
         $this->asStoredAgent();
         new HookCall()->recordFor(
-$this->storedHook(),
- RecordedAnswer::of(AnswerType::Allow, '{}'),
- RecordedSteps::of([]),
-);
+            $this->storedHook(),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
+            RecordedSteps::of([]),
+        );
         DB::table('hook_calls')->update(['steps' => '{"version":1,"steps":[{"frameId":"frame-1"}]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -726,9 +707,9 @@ $this->storedHook(),
 
         $this->assertSame(1, $pruned->hookCalls);
         $this->assertSame(
-['recent'],
- HookCall::query()->authorizedFor(self::retainedTarget(1))->pluck('event_id')->all(),
-);
+            ['recent'],
+            HookCall::query()->authorizedFor(self::retainedTarget(1))->pluck('event_id')->all(),
+        );
     }
 
     public function test_closed_stacks_past_thirty_days_go_and_active_or_recently_closed_stacks_stay(): void
@@ -1191,53 +1172,6 @@ $this->storedHook(),
         if ($line !== "{$expected}\n") {
             throw TestFailure::lockHolderMessage(var_export($line, true));
         }
-    }
-
-    /**
-     * @return TestResponse<Response>
-     */
-    private function hook(
-        string $driver,
-        string $body,
-        string $callId = 'call-1',
-        int|null $generation = null,
-    ): TestResponse {
-        $this->app->forgetScopedInstances();
-        $address = $generation === null ? "/hooks/{$driver}" : "/hooks/{$driver}?generation={$generation}";
-        $headers = $this->start->serverHeaders($body, $callId, target: $address);
-
-        return $this->call('POST', $address, server: $headers, content: $body);
-    }
-
-    /**
-     * The hook's answer to the driver, decoded from the stdout it returned.
-     *
-     * @return array<string, mixed>
-     */
-    private function hookOutput(string $driver, string $body, string $callId = 'call-1'): array
-    {
-        return (array) json_decode((string) $this->hook($driver, $body, $callId)->assertOk()->json('stdout'), true);
-    }
-
-    private function asStartedAgent(\Closure $work): void
-    {
-        $this->app->instance(AgentContext::class, new AgentContext(
-            $this->start->agent->id,
-            $this->start->session->id,
-            new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
-            null,
-        ));
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->start->agent->id),
-            TestStartAuthority::forAgent($this->start->agent->id),
-        );
-        $work();
-        $this->app->forgetScopedInstances();
-    }
-
-    private function target(): StackTarget
-    {
-        return new StackTarget($this->start->agent->id, $this->start->session->id);
     }
 
     private function stopBody(): string

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Hooks;
 
 use App\Support\Drivers\HookPayload;
+use App\Support\TextOrArrayRule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -13,7 +15,7 @@ use Illuminate\Foundation\Http\FormRequest;
 final class HookRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<string|ValidationRule>>
      */
     public function rules(): array
     {
@@ -22,7 +24,8 @@ final class HookRequest extends FormRequest
             'session_id' => ['required', 'string'],
             'tool_name' => ['sometimes', 'string'],
             'tool_input' => ['sometimes', 'array'],
-            'tool_response' => ['sometimes', 'array'],
+            // Claude Code sends the tool's response as an object, Codex as the text the tool printed.
+            'tool_response' => ['sometimes', new TextOrArrayRule()],
             'prompt' => ['sometimes', 'string'],
             'source' => ['sometimes', 'string'],
             'transcript_path' => ['sometimes', 'string', 'max:1024'],
