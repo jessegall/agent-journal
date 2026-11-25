@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Skills;
+namespace Tests\Commands\Skills;
 
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Skills\ReadEvidence;
@@ -26,7 +26,7 @@ use Tests\TestCase;
  * A proven whole read of a delivered skill leaves one receipt with the delivered digest; a listing leaves none; after
  * a compaction the skill reads as unread.
  */
-final class SkillReceiptsTest extends TestCase
+final class RecordSkillReadTest extends TestCase
 {
     use AdmitsMainAgentSkills;
     use CommitsHookRows;

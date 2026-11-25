@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Commands\Skills\RecordSkillRead\RecordSkillReadCommand;
+use App\Contracts\Bus\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\Hooks\ToolCallFinished;
-use App\Support\SkillReads;
 use App\Values\ProvenSkillRead;
 
 /**
@@ -15,7 +16,7 @@ use App\Values\ProvenSkillRead;
 final readonly class RecordProvenSkillReads implements Listener
 {
     public function __construct(
-        private SkillReads $reads,
+        private CommandBus $commands,
     ) {}
 
     public function handle(ToolCallFinished $event): void
@@ -26,6 +27,6 @@ final readonly class RecordProvenSkillReads implements Listener
             return;
         }
 
-        $this->reads->record($event->target->sessionId, $read->skillKey, $read->evidence);
+        $this->commands->run(new RecordSkillReadCommand($event->target->sessionId, $read->skillKey, $read->evidence));
     }
 }

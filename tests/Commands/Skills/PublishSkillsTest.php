@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
-use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
 use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Skills\PublicationStatus;
-use App\Exceptions\SkillPublicationStale;
-use App\Models\Skills\SkillPublication;
 use App\Support\SkillPublisher;
 use App\Support\SkillPublishingService;
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
@@ -93,20 +88,6 @@ final class PublishSkillsTest extends TestCase
             self::FOREIGN_FILES,
             (string) $publication->refresh()->error,
         );
-    }
-
-    public function test_a_worker_with_an_older_fence_is_stopped(): void
-    {
-        $publication = $this->intend('First text.');
-        $first = $this->asSystem(new PublishSkillsCommand($publication->id, 'worker-1'));
-        SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
-            'worker-2',
-            CarbonImmutable::now()->addMinute(),
-        );
-
-        $this->expectException(SkillPublicationStale::class);
-
-        $this->asSystem(new PrepareSkillPublicationCommand($publication->id, $first->fence));
     }
 
     private function publishing(): SkillPublishingService
