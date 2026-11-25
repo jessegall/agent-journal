@@ -57,10 +57,10 @@ trait ObservesEvents
      */
     public function assertEvent(string $type, Closure|null $predicate = null, int $count = 1): self
     {
-        $kind = ReflectedType::of($type);
+        $eventType = ReflectedType::of($type);
         $seen = array_filter(
             $this->observedEvents,
-            fn (object $event) => $kind->isInstance($event) && ($predicate === null || $predicate($event)),
+            fn (object $event) => $eventType->isInstance($event) && ($predicate === null || $predicate($event)),
         );
 
         Assert::assertCount($count, $seen, "The window saw a different number of {$type} events.");

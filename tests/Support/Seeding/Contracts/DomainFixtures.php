@@ -11,5 +11,8 @@ use Tests\Support\Seeding\FixtureRegistration;
  */
 interface DomainFixtures
 {
+    /**
+     * Registers each fixture builder of the domain with the journal fixture.
+     */
     public static function register(FixtureRegistration $registration): void;
 }

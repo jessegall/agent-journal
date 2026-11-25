@@ -66,7 +66,7 @@ final class SkillRequest extends Model implements ReadableModel
 
     // ----------[ Predicates ]----------
 
-    public function sentWith(string $inputDigest): bool
+    public function hasInputDigest(string $inputDigest): bool
     {
         return hash_equals($this->input_digest, $inputDigest);
     }

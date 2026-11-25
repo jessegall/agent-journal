@@ -47,7 +47,7 @@ final readonly class StoredSkillWrites
         $earlier = SkillRequest::findEarlier($author, $requestId);
 
         if ($earlier !== null) {
-            if ($earlier->sentWith($inputDigest)) {
+            if ($earlier->hasInputDigest($inputDigest)) {
                 $earlierRevision = SkillRevision::query()->whereKey($earlier->skill_revision_id)->firstOrFail();
 
                 return $this->resultOf($earlierRevision, $requestId);

@@ -87,6 +87,7 @@
             "Tests\\Fixtures\\Modules\\Handbook\\": "tests/Fixtures/Modules/Handbook/src/",
             "Tests\\Fixtures\\Modules\\Ledger\\": "tests/Fixtures/Modules/Ledger/src/",
             "Tests\\Fixtures\\Modules\\Notes\\": "tests/Fixtures/Modules/Notes/src/",
+            "Tests\\Fixtures\\Modules\\Notes\\Tests\\": "tests/Fixtures/Modules/Notes/tests/",
             "Tests\\": "tests/",
             "Tools\\InstallationChecks\\": "tools/installation-checks/src/",
             "Tools\\CodeStyle\\": "tools/code-style/",

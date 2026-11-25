@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Modules\Notes;
+namespace Tests\Fixtures\Modules\Notes\Tests\Fixtures;
 
 use Tests\Support\Seeding\TestJournal;
 

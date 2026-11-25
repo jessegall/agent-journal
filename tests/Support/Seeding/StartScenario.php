@@ -12,6 +12,9 @@ namespace Tests\Support\Seeding;
  */
 interface StartScenario
 {
+    /**
+     * The domains, named users and agents, and sessions the scenario needs in place before it writes.
+     */
     public function requirements(): ScenarioRequirements;
 
     /**

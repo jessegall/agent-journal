@@ -66,7 +66,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      * The task's current run, opened by the starter the first time it is asked for and answering to the inbox the
      * starter replies at, fixed from then on.
      */
-    public static function createForTask(Task $task, ActorIdentity $starter): self
+    public static function create(Task $task, ActorIdentity $starter): self
     {
         $current = self::findForTask($task, $task->run_number);
 

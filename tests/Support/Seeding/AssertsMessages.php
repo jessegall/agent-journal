@@ -63,7 +63,9 @@ trait AssertsMessages
 
     public function messageCalled(string $name): Message
     {
-        return ($this->messages[$name] ?? throw FixtureRefused::missingAlias('message', $name, self::OWNER))->fresh();
+        $message = $this->messages[$name] ?? throw FixtureRefused::missingAlias('message', $name, self::OWNER);
+
+        return $message->fresh();
     }
 
     /**

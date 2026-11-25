@@ -42,8 +42,6 @@ use Tests\Support\TestProjects;
  */
 final class TestJournal
 {
-    private const string OWNER = 'The journal';
-
     use ArrangesProcessRuns;
     use ArrangesProfiles;
     use ArrangesSettings;
@@ -58,6 +56,8 @@ final class TestJournal
     use RunsCommands;
     use SendsRequests;
     use StartsScenarios;
+
+    private const string OWNER = 'The journal';
 
     /**
      * @var array<string, Inbox>
@@ -452,7 +452,8 @@ final class TestJournal
      */
     public function moveServerClockTo(CarbonImmutable $later): self
     {
-        ($this->serverClock ?? throw FixtureRefused::noServerClock())->set($later);
+        $clock = $this->serverClock ?? throw FixtureRefused::noServerClock();
+        $clock->set($later);
 
         return $this;
     }

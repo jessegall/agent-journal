@@ -295,14 +295,6 @@ final readonly class ToolArguments
     }
 
     /**
-     * Whether the caller sent the argument at all, whatever its value.
-     */
-    public function sent(string $name): bool
-    {
-        return array_key_exists($name, $this->arguments);
-    }
-
-    /**
      * Whether the caller set a true/false argument; leaving it out is false.
      *
      * @throws ToolArgumentInvalid

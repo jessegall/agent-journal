@@ -62,7 +62,7 @@ final readonly class StateHandle
      */
     public function answeredFor(DriverCapabilities $driver): self
     {
-        return new self($this->app, $this->requests, $this->stack, $this->reference, $this->frameId, $driver);
+        return clone ($this, ['driver' => $driver]);
     }
 
     /**
