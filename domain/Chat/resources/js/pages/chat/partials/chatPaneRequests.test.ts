@@ -20,7 +20,7 @@ vi.mock('@kit/protectedView', () => ({
 }));
 vi.mock('../../../composables/useConversationIntents', () => ({
     useConversationIntents: () => ({
-        rows: (messages: unknown[]) => messages.map((message) => ({ kind: 'message', message })),
+        rows: (entries: unknown[]) => entries.map((entry) => ({ kind: 'entry', entry })),
         settle: () => undefined,
         recoveryEntries: () => [],
         refusalOf: () => '',
@@ -31,15 +31,17 @@ vi.mock('../../../composables/useChatTimeline', async () => {
     const { computed, ref } = await import('vue');
 
     return {
-        useChatTimeline: (conversation: { value?: { messages?: { id: string; isReadByMe: boolean }[] } }) => ({
-            messages: computed(() => conversation.value?.messages ?? []),
+        useChatTimeline: (conversation: {
+            value?: { entries?: { message: { id: string; isReadByViewer: boolean } }[] };
+        }) => ({
+            entries: computed(() => conversation.value?.entries ?? []),
             unreadShown: computed(() =>
-                (conversation.value?.messages ?? []).filter((row) => !row.isReadByMe).map((row) => row.id),
+                (conversation.value?.entries ?? [])
+                    .filter((entry) => !entry.message.isReadByViewer)
+                    .map((entry) => entry.message.id),
             ),
-            lines: ref([]),
             hasOlder: ref(false),
             loadOlder: vi.fn(),
-            catchUp: vi.fn(),
             accessEnded: ref(false),
         }),
     };
@@ -75,7 +77,15 @@ const chat = {
         sessionId: null,
         sessionGeneration: 0,
         dock: { cards: [], hasMore: null },
-        messages: [{ id: RECORDED.message, speaker: { actor: `user:${RECORDED.member}`, label: 'Bea', driver: null }, isReadByMe: false }],
+        entries: [
+            {
+                id: RECORDED.message,
+                type: 'message',
+                author: `user:${RECORDED.member}`,
+                authorLabel: 'Bea',
+                message: { id: RECORDED.message, isReadByViewer: false },
+            },
+        ],
     },
 } as unknown as ChatData;
 

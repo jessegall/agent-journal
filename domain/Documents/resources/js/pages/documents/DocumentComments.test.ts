@@ -24,22 +24,22 @@ function mountPart(props: DocumentCommentsPartData) {
 }
 
 describe('the document comments', () => {
-    it('selects lines by their gutter and comments with the bar under the last selected line', async () => {
+    it('selects blocks by a click, Shift extending, and comments with the bar under the last selected block', async () => {
         const view = mountPart(part());
 
-        await view.get('[data-line="2"] button').trigger('click');
-        await view.get('[data-line="3"] button').trigger('click', { shiftKey: true });
-        await view.get('[data-line="3"] button').trigger('keydown', { key: 'c' });
+        await view.get('[data-line="2"]').trigger('click');
+        await view.get('[data-line="3"]').trigger('click', { shiftKey: true });
+        await view.get('[data-line="3"]').trigger('keydown', { key: 'c' });
 
         const bar = view.get('[role="group"][aria-label="Comment on lines 2–3"]');
         expect(view.get('[data-line="3"]').element.nextElementSibling?.contains(bar.element)).toBe(true);
         view.unmount();
     });
 
-    it('opens the same bar from the keyboard with the Comment key on a line', async () => {
+    it('opens the same bar from the keyboard with the Comment key on a block', async () => {
         const view = mountPart(part());
 
-        await view.get('[data-line="1"] button').trigger('keydown', { key: 'c' });
+        await view.get('[data-line="1"]').trigger('keydown', { key: 'c' });
 
         expect(view.find('[aria-label="Your comment"]').exists()).toBe(true);
         view.unmount();
@@ -60,8 +60,8 @@ describe('the document comments', () => {
         });
         const view = mountPart(part());
 
-        await view.get('[data-line="2"] button').trigger('click');
-        await view.get('[data-line="2"] button').trigger('keydown', { key: 'c' });
+        await view.get('[data-line="2"]').trigger('click');
+        await view.get('[data-line="2"]').trigger('keydown', { key: 'c' });
         await view.get('textarea').setValue('Why this?');
         const sendButton = view.findAll('button').find((button) => button.text() === 'Send');
         await sendButton?.trigger('click');
@@ -98,12 +98,12 @@ describe('the document comments', () => {
 
     it('offers the recipient menu only where the server supplies recipients and a feedback address', async () => {
         const without = mountPart(part({ recipients: [{ id: 'r', name: 'Agent 1' }] }));
-        await without.get('[data-line="1"] button').trigger('keydown', { key: 'c' });
+        await without.get('[data-line="1"]').trigger('keydown', { key: 'c' });
         expect(without.find('[aria-haspopup="menu"]').exists()).toBe(false);
         without.unmount();
 
         const withFeedback = mountPart(part({ recipients: [{ id: 'r', name: 'Agent 1' }], feedbackAddress: '/feedback' }));
-        await withFeedback.get('[data-line="1"] button').trigger('keydown', { key: 'c' });
+        await withFeedback.get('[data-line="1"]').trigger('keydown', { key: 'c' });
         expect(withFeedback.find('[aria-haspopup="menu"]').exists()).toBe(true);
         withFeedback.unmount();
     });

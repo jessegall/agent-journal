@@ -1,7 +1,7 @@
 // The shared kit a domain's components import as @kit/dockCards: the card types the dock's part map generates.
 export type {
     ButtonNode,
-    ChatExcerptNode,
+    MessagesExcerptNode,
     ConsoleOutputNode,
     CountedProgressNode,
     DisclosureNode,

@@ -57,7 +57,7 @@ describe("ChatRoster", () => {
     });
 
     expect(owner.text()).toContain("Remove");
-    expect(owner.text()).toContain("Make owner");
+    expect(owner.text()).toContain("Add users");
     expect(owner.text()).toContain("Close chat");
     expect(member.text()).not.toContain("Remove");
     expect(member.text()).toContain("Leave");

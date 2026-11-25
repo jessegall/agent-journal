@@ -18,7 +18,7 @@ final readonly class ProfileScript
     public static function empty(): self
     {
         $source = ScriptSource::none();
-        $compiled = CompiledScript::empty();
+        $compiled = CompiledScript::none();
 
         return new self($source, $compiled);
     }

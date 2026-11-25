@@ -1,0 +1,8 @@
+{
+    "method": "POST",
+    "url": "/accounts/01JPAGEREQUESTACCOUNT00000/activate",
+    "body": {
+        "expectedChangeNumber": 0
+    },
+    "headers": {}
+}

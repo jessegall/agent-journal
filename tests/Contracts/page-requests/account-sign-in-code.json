@@ -1,0 +1,10 @@
+{
+    "method": "POST",
+    "url": "/accounts/sign-ins/01JPAGEREQUESTATTEMPT00000/code",
+    "body": {
+        "code": "123456"
+    },
+    "headers": {
+        "Idempotency-Key": "00000000-0000-4000-8000-000000000001"
+    }
+}

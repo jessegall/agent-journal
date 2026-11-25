@@ -1,0 +1,14 @@
+{
+    "method": "POST",
+    "url": "/chat/messages",
+    "body": {
+        "body": "Hello",
+        "agent": null,
+        "expectedSessionId": null,
+        "expectedGeneration": 0,
+        "inboxId": "01JPAGEREQUESTINBOX0000000"
+    },
+    "headers": {
+        "Idempotency-Key": "request-1"
+    }
+}

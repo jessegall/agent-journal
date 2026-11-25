@@ -30,7 +30,7 @@ import type { WindowResult } from "@kit/PageTypes";
 import type { DriverType } from "@kit/CoreTypes";
 import {
   accountsPage,
-  cancelStart,
+  cancelStart as cancelStartAction,
   recheck,
   startMain,
   switchMethod,
@@ -256,7 +256,7 @@ function cancelStart(): void {
 
   isCancelling.value = true;
   sendPageAction(
-    cancelStart({ agent: props.agent.id, session: props.agent.sessionId }),
+    cancelStartAction({ agent: props.agent.id, session: props.agent.sessionId }),
     { requestId: newRequestId() },
     {
       only: [chatProp],

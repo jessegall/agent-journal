@@ -1,0 +1,12 @@
+{
+    "method": "POST",
+    "url": "/chat/messages/read",
+    "body": {
+        "inboxId": "01JPAGEREQUESTINBOX0000000",
+        "messageIds": [
+            "01JPAGEREQUESTMESSAGE00000"
+        ],
+        "agent": null
+    },
+    "headers": {}
+}

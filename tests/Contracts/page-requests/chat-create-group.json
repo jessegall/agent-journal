@@ -1,0 +1,9 @@
+{
+    "method": "POST",
+    "url": "/chat/chats",
+    "body": {
+        "title": "Design",
+        "userIds": []
+    },
+    "headers": {}
+}

@@ -3,7 +3,6 @@ import type { ConversationIntent } from "../../../composables/useConversationInt
 import { UNKNOWN_OUTCOME_TEXT } from "../../../composables/useConversationIntents";
 import Button from "@kit/Button";
 import Spinner from "@kit/Spinner";
-import { history as historyPage } from "@generated/routes/chat";
 
 /**
  * One of the user's own sends still settling: Sending while its request is out, Checking while the conversation is
@@ -42,7 +41,6 @@ const statusLabels: Record<ConversationIntent["status"], string> = {
         <Button size="small" variant="ghost" @click="emit('checkAgain', intent)"
           >Check again</Button
         >
-        <a class="underline" :href="historyPage().url">Open History</a>
       </template>
     </span>
   </div>

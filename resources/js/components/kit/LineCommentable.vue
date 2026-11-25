@@ -63,7 +63,8 @@ async function step(line: number, direction: -1 | 1, extend: boolean): Promise<v
     }
 
     await nextTick();
-    root.value?.querySelector<HTMLElement>(`[data-line="${next}"] button`)?.focus();
+    const holder = root.value?.querySelector<HTMLElement>(`[data-line="${next}"]`);
+    (holder?.querySelector<HTMLElement>('button') ?? holder)?.focus();
 }
 
 function comment(): void {

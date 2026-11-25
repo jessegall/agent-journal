@@ -98,12 +98,16 @@ function sendFeedback(recipientId: string, from: number, to: number): void {
             :commented-lines="commentedBlocks"
             whole-label="Comment on this document"
         >
-            <template #line="{ line, selected, commented }">
+            <template #line="{ line, selected, cursor, commented, pick, step, comment }">
                 <Block
                     :kind="blocks[line - 1].type"
                     :line="line"
                     :selected="selected"
+                    :cursor="cursor"
                     :commented="commented"
+                    @pick="pick"
+                    @step="step"
+                    @comment="comment"
                     :class="{ 'ml-4.5 list-item': blocks[line - 1].type === 'item' }"
                     ><template v-for="(piece, index) in piecesOf(blocks[line - 1].text)" :key="index"
                         ><template v-if="piece.isCode"

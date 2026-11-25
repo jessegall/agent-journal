@@ -1,0 +1,9 @@
+{
+    "method": "POST",
+    "url": "/chat/chats/leave",
+    "body": {
+        "inboxId": "01JPAGEREQUESTINBOX0000000"
+    },
+    "headers": {},
+    "as": "member"
+}

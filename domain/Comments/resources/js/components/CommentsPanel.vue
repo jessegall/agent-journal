@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/core';
+import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/comments';
 import type { RecordReadsData } from '@/generated/types/documents';
 import Button from '@/components/kit/Button.vue';
 import CommentComposer from './CommentComposer.vue';

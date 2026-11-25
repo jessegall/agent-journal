@@ -29,7 +29,7 @@ final class CompiledScript extends Data
     /**
      * What a revision without a script compiles to: no handlers and no instructions.
      */
-    public static function empty(): self
+    public static function none(): self
     {
         return new self('', [], [], '');
     }

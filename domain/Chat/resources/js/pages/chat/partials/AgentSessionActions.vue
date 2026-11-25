@@ -6,7 +6,7 @@ import { newRequestId } from "@kit/requestId";
 import type { AgentOptionData, StatusActionData } from "@generated/types/chat";
 import {
   accountsPage,
-  cancelStart,
+  cancelStart as cancelStartAction,
   checkStart,
   dismissStartOutcome,
   recheck,
@@ -147,7 +147,7 @@ function cancelStart(): void {
 
   pendingType.value = "cancel-start";
   sendPageAction(
-    cancelStart({ agent: props.agent.id, session: props.agent.sessionId }),
+    cancelStartAction({ agent: props.agent.id, session: props.agent.sessionId }),
     { requestId: newRequestId() },
     { only: [], onFinish: () => (pendingType.value = null) },
   );

@@ -1,37 +1,39 @@
 import { describe, expect, it } from "vitest";
-import type { ChatMessageData } from "@generated/types/chat";
+import type { ChatEntryData, ChatMessageType } from "@generated/types/chat";
 import { arrivalAnnouncement } from "./arrivalAnnouncement";
 
-function row(
+function entry(
   id: string,
-  actor: string,
-  label: string,
-  addressedTo: string | null = null,
-): ChatMessageData {
-  return {
-    id,
-    speaker: { actor, label, driver: null },
-    addressedTo,
-  } as ChatMessageData;
+  author: string,
+  authorLabel: string | null,
+  type: ChatMessageType = "message",
+): ChatEntryData {
+  return { id, author, authorLabel, type } as ChatEntryData;
 }
 
 describe("arrivalAnnouncement", () => {
-  it("stays quiet on the first rows and on replays, and names each new post once", () => {
-    const announce = arrivalAnnouncement(
-      () => "user:bea",
-      (actor) => (actor === "user:bea" ? "Bea" : actor),
-    );
-    const first = [row("m1", "user:ada", "Ada")];
+  it("stays quiet on the first entries and on replays, and names each new message or question by another once", () => {
+    const announce = arrivalAnnouncement(() => "user:bea");
+    const first = [entry("m1", "user:ada", "Ada")];
 
     expect(announce(first)).toBeNull();
     expect(announce(first)).toBeNull();
 
     const next = [
       ...first,
-      row("m2", "agent:codex", "Codex", "user:bea"),
-      row("m3", "user:bea", "Bea"),
+      entry("m2", "agent:codex", "Codex"),
+      entry("m3", "user:bea", "Bea"),
+      entry("q1", "agent:codex", "Codex", "question"),
+      entry("r1", "user:ada", "Ada", "reaction"),
     ];
-    expect(announce(next)).toBe("New message from Codex to Bea.");
+    expect(announce(next)).toBe("New message from Codex. New question from Codex.");
     expect(announce(next)).toBeNull();
+  });
+
+  it("names an author who left the chat as someone who left", () => {
+    const announce = arrivalAnnouncement(() => "user:bea");
+    announce([]);
+
+    expect(announce([entry("m1", "user:gone", null)])).toBe("New message from someone who left.");
   });
 });

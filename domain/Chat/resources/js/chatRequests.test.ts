@@ -16,7 +16,7 @@ vi.mock('@kit/pageReads', () => ({
 
 const { default: ChatRoster } = await import('./pages/chat/partials/ChatRoster.vue');
 const { default: CreateChatForm } = await import('./pages/chat/partials/CreateChatForm.vue');
-const { toggleReaction } = await import('./reactions');
+const { sendReaction } = await import('./reactions');
 const { useConversationIntents } = await import('./composables/useConversationIntents');
 
 const member = `user:${RECORDED.member}`;
@@ -52,7 +52,7 @@ describe('the Inertia posts of the chat, as the page sends them', () => {
     });
 
     it('reacts to a message', () => {
-        toggleReaction(RECORDED.inbox, RECORDED.message, '👍', 'conversation');
+        sendReaction(RECORDED.inbox, RECORDED.message, '👍', 'conversation');
 
         holdsContract('chat-react', last());
     });

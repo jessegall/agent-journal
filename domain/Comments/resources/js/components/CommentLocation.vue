@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
-import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
+import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/comments';
 import Button from '@/components/kit/Button.vue';
 import SwitchItem from '@/components/kit/SwitchItem.vue';
 import CommentSource from './CommentSource.vue';

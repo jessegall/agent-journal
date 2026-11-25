@@ -1,0 +1,10 @@
+{
+    "method": "POST",
+    "url": "/chat/messages/react",
+    "body": {
+        "inboxId": "01JPAGEREQUESTINBOX0000000",
+        "messageId": "01JPAGEREQUESTMESSAGE00000",
+        "emoji": "👍"
+    },
+    "headers": {}
+}

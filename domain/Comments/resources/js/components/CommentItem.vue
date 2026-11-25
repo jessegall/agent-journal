@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import type {
-    RecordCommentView,
-    TextCommentView,
-} from '@/generated/types/core';
+import type { RecordCommentView, TextCommentView } from '@/generated/types/comments';
 import SwitchItem from '@/components/kit/SwitchItem.vue';
 import TextLink from '@/components/kit/TextLink.vue';
 

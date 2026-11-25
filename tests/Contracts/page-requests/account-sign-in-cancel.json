@@ -1,0 +1,6 @@
+{
+    "method": "POST",
+    "url": "/accounts/sign-ins/01JPAGEREQUESTATTEMPT00000/cancel",
+    "body": {},
+    "headers": {}
+}

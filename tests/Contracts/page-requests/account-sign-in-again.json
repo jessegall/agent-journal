@@ -1,0 +1,8 @@
+{
+    "method": "POST",
+    "url": "/accounts/01JPAGEREQUESTACCOUNT00000/sign-in-again",
+    "body": {},
+    "headers": {
+        "Idempotency-Key": "00000000-0000-4000-8000-000000000001"
+    }
+}

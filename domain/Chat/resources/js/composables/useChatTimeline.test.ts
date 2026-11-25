@@ -2,62 +2,51 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
-import type {
-  ChatEventsPageData,
-  ChatMessageData,
-  ChatRowsPageData,
-  ConversationData,
-} from "@generated/types/chat";
+import type { ChatEntryData, ChatRowsPageData, ConversationData } from "@generated/types/chat";
 import { notifyChatAccessEnded } from "@kit/chatAccess";
 import { useChatTimeline } from "./useChatTimeline";
 import type { ChatTimelineClient, ChatTimelineView } from "./useChatTimeline";
 
-function row(sequence: number): ChatMessageData {
+function entry(number: number, body = `message ${number}`): ChatEntryData {
   return {
-    id: `m${sequence}`,
-    sequence,
-    speaker: { actor: "user:ada", label: "Ada", driver: null },
-    isReadByMe: false,
-    stateVersion: 1,
-  } as ChatMessageData;
+    id: `m${number}`,
+    type: "message",
+    groupNumber: number,
+    author: "user:ada",
+    authorLabel: "Ada",
+    createdAt: `2026-11-25T10:00:${String(number).padStart(2, "0")}Z`,
+    message: {
+      id: `m${number}`,
+      number,
+      body,
+      targetMessageId: null,
+      targetNumber: null,
+      isReadByViewer: false,
+    },
+  } as ChatEntryData;
 }
 
-function conversationOf(
-  rows: ChatMessageData[],
-  olderCursor: string | null = null,
-): ConversationData {
+function conversationOf(entries: ChatEntryData[], hasOlder = false): ConversationData {
   return {
     inboxId: "design",
     viewer: "user:bea",
     participants: [],
-    latestSequence: rows.length === 0 ? 0 : rows[rows.length - 1].sequence,
-    olderCursor,
-    messages: rows,
-    lines: [],
+    hasOlder,
+    entries,
   } as unknown as ConversationData;
 }
 
 /**
- * A server whose reads wait until the test releases them, so a read can still be out when the room is lost.
+ * A server whose reads of older entries wait until the test releases them, so a read can still be out when the
+ * chat is lost.
  */
 function heldClient() {
   const releases: (() => void)[] = [];
-  const answer = <Page>(page: Page) =>
-    new Promise<Page>((resolve) => releases.push(() => resolve(page)));
   const client: ChatTimelineClient = {
-    events: () =>
-      answer<ChatEventsPageData>({
-        hasAccessEnded: false,
-        events: [],
-        cursor: "cursor-1",
-        watermark: 12,
-      }),
     rows: () =>
-      answer<ChatRowsPageData>({
-        messages: [row(10), row(11), row(12)],
-        lines: [],
-        olderCursor: null,
-      }),
+      new Promise<ChatRowsPageData>((resolve) =>
+        releases.push(() => resolve({ entries: [entry(1), entry(2)], hasOlder: false } as ChatRowsPageData)),
+      ),
   };
 
   return {
@@ -84,73 +73,42 @@ function mountTimeline(
   return view as ChatTimelineView;
 }
 
+function shownIds(view: ChatTimelineView): string[] {
+  return view.entries.value.map((shown) => shown.id);
+}
+
 describe("useChatTimeline", () => {
-  it("clears a lost room with rows buffered, ignores the late read, and a rejoin starts from a fresh snapshot", async () => {
-    const conversation = ref<ConversationData | undefined>(
-      conversationOf([row(10)]),
-    );
+  it("merges a newer page by id, so a changed entry replaces the one it held", async () => {
+    const conversation = ref<ConversationData | undefined>(conversationOf([entry(10)]));
+    const view = mountTimeline(conversation, heldClient().client);
+    await nextTick();
+
+    conversation.value = conversationOf([entry(10, "edited"), entry(11)]);
+    await nextTick();
+
+    expect(shownIds(view)).toEqual(["m10", "m11"]);
+    expect(view.entries.value[0].message?.body).toBe("edited");
+    expect(view.unreadShown.value).toEqual(["m10", "m11"]);
+  });
+
+  it("clears a lost chat, ignores the older read still out, and a rejoin starts from the fresh page", async () => {
+    const conversation = ref<ConversationData | undefined>(conversationOf([entry(10)], true));
     const server = heldClient();
     const view = mountTimeline(conversation, server.client);
     await nextTick();
 
-    conversation.value = conversationOf([row(12)], "older-1");
-    await nextTick();
-    expect(view.messages.value.map((shown) => shown.id)).toEqual(["m10"]);
-
+    const olderRead = view.loadOlder();
     notifyChatAccessEnded("design");
     server.releaseAll();
-    await nextTick();
-    await nextTick();
+    await olderRead;
 
     expect(view.accessEnded.value).toBe(true);
-    expect(view.messages.value).toEqual([]);
+    expect(view.entries.value).toEqual([]);
 
-    conversation.value = conversationOf([row(10), row(11), row(12)]);
+    conversation.value = conversationOf([entry(10), entry(11), entry(12)]);
     await nextTick();
 
     expect(view.accessEnded.value).toBe(false);
-    expect(view.messages.value.map((shown) => shown.id)).toEqual([
-      "m10",
-      "m11",
-      "m12",
-    ]);
-  });
-
-  it("reads a plain line in when a line event arrives, since a line names no message", async () => {
-    const step = {
-      sequence: 13,
-      subject: "Ship",
-      line: "Step 1 of 4",
-      postedAt: "2026-11-22T13:43:00Z",
-      card: null,
-      cardPlacement: "inline" as const,
-    };
-    let rowReads = 0;
-    const client: ChatTimelineClient = {
-      events: async () => ({
-        hasAccessEnded: false,
-        events: [
-          { sequence: 13, type: "line", actor: "agent:a1", messageId: null },
-        ],
-        cursor: "cursor-2",
-        watermark: 13,
-      }),
-      // The first read is the snapshot's, before the line was posted; the line is there from the next read on.
-      rows: async () => ({
-        messages: [row(12)],
-        lines: rowReads++ === 0 ? [] : [step],
-        olderCursor: null,
-      }),
-    };
-    const view = mountTimeline(
-      ref<ConversationData | undefined>(conversationOf([row(12)])),
-      client,
-    );
-
-    await view.catchUp();
-    expect(view.lines.value).toEqual([]);
-
-    await view.catchUp();
-    expect(view.lines.value).toEqual([step]);
+    expect(shownIds(view)).toEqual(["m10", "m11", "m12"]);
   });
 });

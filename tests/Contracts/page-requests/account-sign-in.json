@@ -1,0 +1,11 @@
+{
+    "method": "POST",
+    "url": "/accounts/sign-ins",
+    "body": {
+        "driver": "claude-code",
+        "method": "oauth"
+    },
+    "headers": {
+        "Idempotency-Key": "00000000-0000-4000-8000-000000000001"
+    }
+}

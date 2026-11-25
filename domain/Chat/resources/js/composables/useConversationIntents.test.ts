@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ref } from "vue";
-import type { ChatMessageData } from "@generated/types/chat";
+import type { ChatEntryData } from "@generated/types/chat";
 
 type PostOptions = {
   async: boolean;
@@ -63,8 +63,8 @@ function draft(text: string) {
   };
 }
 
-function row(id: string, requestKey: string | null): ChatMessageData {
-  return { id, requestKey } as ChatMessageData;
+function entry(id: string): ChatEntryData {
+  return { id, type: "message" } as ChatEntryData;
 }
 
 function ownerOf() {
@@ -117,24 +117,9 @@ describe("useConversationIntents", () => {
     owner.finishTransport(intent);
     owner.retry(intent, "window_chat_conversation");
 
-    expect(posts[0].data).toMatchObject({
-      inboxId: "inbox-chat",
-      requestKey: intent.key,
-    });
-    expect(posts[1].data).toMatchObject({ requestKey: intent.key });
+    expect(posts[0].data).toMatchObject({ inboxId: "inbox-chat" });
+    expect(posts[0].options.headers).toEqual({ "Idempotency-Key": intent.key });
     expect(posts[1].options.headers).toEqual({ "Idempotency-Key": intent.key });
-  });
-
-  it("replaces the Sending bubble with the one row a read returned while the request is still out", () => {
-    const owner = ownerOf();
-    const intent = owner.beginSend(draft("Hello"));
-    owner.submit(intent, "page");
-
-    expect(owner.rows([]).map((shown) => shown.kind)).toEqual(["intent"]);
-    expect(
-      owner.rows([row("message-1", intent.key)]).map((shown) => shown.kind),
-    ).toEqual(["message"]);
-    expect(owner.isSending()).toBe(true);
   });
 
   it("keeps a confirmed send across an older read, and lets a read begun after it decide", () => {
@@ -152,23 +137,18 @@ describe("useConversationIntents", () => {
     expect(owner.isSending()).toBe(false);
   });
 
-  it("settles a lost answer by reading the conversation again: found by its key, or unknown when missing", () => {
+  it("leaves a lost answer unknown once a read begun after it is applied, still shown after the entries", () => {
     const owner = ownerOf();
-    const found = owner.beginSend(draft("Found"));
-    owner.submit(found, "page");
-    const missing = owner.beginSend(draft("Missing"));
-    owner.submit(missing, "page");
+    const lost = owner.beginSend(draft("Lost"));
+    owner.submit(lost, "page");
 
     posts[0].options.onNetworkError();
-    posts[1].options.onNetworkError();
-    expect([found.status, missing.status]).toEqual(["uncertain", "uncertain"]);
+    expect(lost.status).toBe("uncertain");
     applied.value = marked;
-    owner.settle([row("message-1", found.key)]);
+    owner.settle();
 
-    expect(
-      owner.rows([row("message-1", found.key)]).map((shown) => shown.kind),
-    ).toEqual(["message", "intent"]);
-    expect(missing.status).toBe("unknown");
+    expect(lost.status).toBe("unknown");
+    expect(owner.rows([entry("message-1")]).map((shown) => shown.kind)).toEqual(["entry", "intent"]);
   });
 
   it("takes away only the refused row, offers its text, and keeps a second send independent", () => {

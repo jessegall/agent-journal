@@ -1,0 +1,9 @@
+{
+    "method": "PATCH",
+    "url": "/accounts/01JPAGEREQUESTACCOUNT00000",
+    "body": {
+        "label": "Home",
+        "seenRevision": 1
+    },
+    "headers": {}
+}

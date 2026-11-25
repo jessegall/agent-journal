@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { timeOfDay } from "@kit/format";
 import { Link } from "@inertiajs/vue3";
-import type { ChatExcerptNode } from "@kit/dockCards";
+import type { MessagesExcerptNode } from "@kit/dockCards";
 
 /**
  * A few messages as plain text, with who wrote each and when, and the conversation's page when it may be opened.
  */
-defineProps<{ node: ChatExcerptNode }>();
+defineProps<{ node: MessagesExcerptNode }>();
 </script>
 
 <template>

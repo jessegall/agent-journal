@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
+import type { ReplyTarget } from "../../../composables/useConversationIntents";
 
 const purgers: Array<() => void> = [];
 
@@ -40,7 +41,7 @@ vi.mock("../../../composables/useComposerHeight", () => ({
 const { useMessageDrafts } = await import("../../../composables/useMessageDrafts");
 const { default: Composer } = await import("./Composer.vue");
 
-function mountComposer(replyingTo: { id: string; body: string; stateVersion: number } | null = null) {
+function mountComposer(replyingTo: ReplyTarget | null = null) {
   return mount(Composer, {
     props: {
       draftKey: "user-1/inbox-chat",
@@ -88,7 +89,7 @@ describe("Composer", () => {
   });
 
   it("shows the message being answered with a button that stops the reply", async () => {
-    const composer = mountComposer({ id: "m1", body: "Which plan?", stateVersion: 1 });
+    const composer = mountComposer({ id: "m1", number: 1, body: "Which plan?" });
 
     expect(composer.text()).toContain("Which plan?");
 

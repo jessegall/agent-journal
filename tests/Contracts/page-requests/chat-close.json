@@ -1,0 +1,8 @@
+{
+    "method": "POST",
+    "url": "/chat/chats/close",
+    "body": {
+        "inboxId": "01JPAGEREQUESTINBOX0000000"
+    },
+    "headers": {}
+}
