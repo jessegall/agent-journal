@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Http\Requests\ReviewRuleRequest;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class DenyRuleController
 {
+    #[Dispatches(DenyRuleCommand::class)]
     public function __invoke(ReviewRuleRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new DenyRuleCommand($request->ruleId()));

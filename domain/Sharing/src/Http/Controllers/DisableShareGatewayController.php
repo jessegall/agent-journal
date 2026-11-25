@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Domain\Sharing\Http\Requests\GatewayActionRequest;
@@ -16,6 +17,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class DisableShareGatewayController
 {
+    #[Dispatches(DisableShareGatewayCommand::class)]
     public function __invoke(
         GatewayActionRequest $request,
         CommandBus $commands,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\JournalCommands;
 use App\Support\ReadPermit;
@@ -24,6 +25,7 @@ use Illuminate\Http\Response;
  */
 final readonly class ReadShareController
 {
+    #[Dispatches(ReadShareCommand::class)]
     public function __invoke(
         ReadShareRequest $request,
         ReadPermits $permits,

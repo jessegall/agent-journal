@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ActorIdentity;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class AddParticipantController
 {
+    #[Dispatches(JoinInboxCommand::class)]
     public function __invoke(
         ParticipantInput $input,
         PairChats $chats,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
@@ -16,6 +17,7 @@ use Domain\Plans\Data\PlanWorkResultData;
  */
 final readonly class UnassignPlanWorkController
 {
+    #[Dispatches(UnassignPlanWorkCommand::class)]
     public function __invoke(
         UnassignPlanWorkPayload $call,
         CommandBus $commands,

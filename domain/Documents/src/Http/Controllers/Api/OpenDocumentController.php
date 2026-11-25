@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Api\DraftHeld;
 use Domain\Documents\Api\OpenDocumentPayload;
@@ -14,6 +15,7 @@ use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
  */
 final readonly class OpenDocumentController
 {
+    #[Dispatches(OpenDocumentCommand::class)]
     public function __invoke(OpenDocumentPayload $call, CommandBus $commands): DraftHeld
     {
         $draft = $commands->run(new OpenDocumentCommand($call->number, $call->expectedRevision));

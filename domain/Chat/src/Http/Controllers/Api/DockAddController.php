@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Api\DockAddPayload;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
@@ -14,6 +15,7 @@ use Domain\Chat\Data\DockAnswerData;
  */
 final readonly class DockAddController
 {
+    #[Dispatches(DockSourceCommand::class)]
     public function __invoke(DockAddPayload $call, CommandBus $commands): DockAnswerData
     {
         return DockAnswerData::fromDockResult(

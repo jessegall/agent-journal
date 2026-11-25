@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Api\DockRemovePayload;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
@@ -18,6 +19,7 @@ use Domain\Chat\Values\DockResult;
  */
 final readonly class DockRemoveController
 {
+    #[Dispatches(UndockSourceCommand::class)]
     public function __invoke(DockRemovePayload $call, CommandBus $commands, DockRequests $requests): DockAnswerData
     {
         $inbox = $requests->chosenInbox($call->chat);

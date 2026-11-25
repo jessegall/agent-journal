@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
@@ -16,6 +17,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SharePreviewController
 {
+    #[Dispatches(SaveSharePreviewCommand::class)]
     public function __invoke(
         SaveSharePreviewRequest $request,
         RecordResolver $records,

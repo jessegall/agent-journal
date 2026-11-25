@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
@@ -19,6 +21,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class AskDocumentFeedbackPageController
 {
+    #[Dispatches(OpenInboxCommand::class)]
+    #[Dispatches(SendMessageCommand::class)]
     public function __invoke(
         DocumentFeedbackRequest $request,
         AgentDirectory $agents,

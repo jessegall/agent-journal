@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Http\Requests\StartPlanRequest;
@@ -19,6 +20,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class StartPlanController
 {
+    #[Dispatches(StartPlanCommand::class)]
     public function __invoke(StartPlanRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new StartPlanCommand($request->planId()));

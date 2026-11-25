@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Api\EditTaskPayload;
 use Domain\Tasks\Api\TaskEdited;
@@ -14,6 +15,7 @@ use Domain\Tasks\Commands\EditTask\EditTaskCommand;
  */
 final readonly class EditTaskController
 {
+    #[Dispatches(EditTaskCommand::class)]
     public function __invoke(EditTaskPayload $call, CommandBus $commands): TaskEdited
     {
         $revision = $commands->run(

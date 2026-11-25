@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Api\PhaseCheckRecorded;
 use Domain\Plans\Api\RecordPhaseCheckPayload;
@@ -14,6 +15,7 @@ use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
  */
 final readonly class RecordPhaseCheckController
 {
+    #[Dispatches(RecordPhaseCheckCommand::class)]
     public function __invoke(RecordPhaseCheckPayload $call, CommandBus $commands): PhaseCheckRecorded
     {
         $checkId = $commands->run(new RecordPhaseCheckCommand($call->phaseOfPlan()->id, $call->receipt));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Api\FinishPlanPayload;
 use Domain\Plans\Api\PlanNamed;
@@ -14,6 +15,7 @@ use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
  */
 final readonly class FinishPlanController
 {
+    #[Dispatches(FinishPlanCommand::class)]
     public function __invoke(FinishPlanPayload $call, CommandBus $commands): PlanNamed
     {
         $commands->run(new FinishPlanCommand($call->planId, $call->expectedRevision, $call->note));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Helpers\Api\SendHelperPayload;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;
@@ -15,6 +16,7 @@ use Domain\Helpers\Values\HelperWork;
  */
 final readonly class SendHelperController
 {
+    #[Dispatches(SendHelperCommand::class)]
     public function __invoke(SendHelperPayload $call, CommandBus $commands): HelperReceiptData
     {
         return HelperReceiptData::from($commands->run(new SendHelperCommand(

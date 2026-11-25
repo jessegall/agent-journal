@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Data\DockAnswerData;
@@ -25,6 +26,7 @@ final readonly class DockController
      * one-time flash beside the page it shows again, a JSON caller as the answer; a retry under the same key answers
      * the first time.
      */
+    #[Dispatches(DockSourceCommand::class)]
     public function __invoke(
         DockInput $input,
         Request $request,

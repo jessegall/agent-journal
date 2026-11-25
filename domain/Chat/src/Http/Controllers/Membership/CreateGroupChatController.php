@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
+use App\Attributes\Bus\Dispatches;
+use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\CreateGroupInput;
@@ -21,6 +23,7 @@ final readonly class CreateGroupChatController
      */
     public const string CREATED_CHAT = 'createdInboxId';
 
+    #[Dispatches(OpenInboxCommand::class)]
     public function __invoke(CreateGroupInput $input, PairChats $chats, ResponseFactory $inertia): RedirectResponse
     {
         $chats->assertMayCreate();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
@@ -18,6 +19,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class TransferChatController
 {
+    #[Dispatches(HandOverInboxCommand::class)]
     public function __invoke(
         ParticipantInput $input,
         PairChats $chats,

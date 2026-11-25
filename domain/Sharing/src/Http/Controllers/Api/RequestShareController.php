@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
@@ -16,6 +17,7 @@ use Domain\Sharing\Data\ShareProposalStatusData;
  */
 final readonly class RequestShareController
 {
+    #[Dispatches(RequestShareCommand::class)]
     public function __invoke(
         RequestSharePayload $call,
         RecordResolver $records,

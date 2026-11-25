@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Tasks\Commands\RemoveTaskWait\RemoveTaskWaitCommand;
 use Domain\Tasks\Http\Requests\TaskWaitRequest;
@@ -12,6 +13,7 @@ use Illuminate\Routing\Redirector;
 
 final readonly class RemoveTaskWaitPageController
 {
+    #[Dispatches(RemoveTaskWaitCommand::class)]
     public function __invoke(TaskWaitRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new RemoveTaskWaitCommand($request->taskId(), $request->prerequisiteId()));

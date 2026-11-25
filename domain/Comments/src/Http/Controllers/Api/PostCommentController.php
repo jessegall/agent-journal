@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
@@ -21,6 +22,8 @@ final readonly class PostCommentController
     /**
      * @throws CommentPlaceUnclear
      */
+    #[Dispatches(PostCommentCommand::class)]
+    #[Dispatches(PostTextCommentCommand::class)]
     public function __invoke(PostCommentPayload $call, CommandBus $commands, RecordResolver $records): CommentPosted
     {
         $target = $records->identify(RecordReference::parse($call->target));

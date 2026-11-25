@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\AgentDirectory;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SendMessageController
 {
+    #[Dispatches(SendMessageCommand::class)]
     public function __invoke(
         MessageInput $input,
         AgentDirectory $agents,

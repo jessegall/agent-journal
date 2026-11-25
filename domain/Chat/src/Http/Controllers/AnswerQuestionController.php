@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\AnswerInput;
 use Domain\Questions\Commands\AnswerQuestion\AnswerQuestionCommand;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class AnswerQuestionController
 {
+    #[Dispatches(AnswerQuestionCommand::class)]
     public function __invoke(AnswerInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new AnswerQuestionCommand($input->questionId, $input->answer));

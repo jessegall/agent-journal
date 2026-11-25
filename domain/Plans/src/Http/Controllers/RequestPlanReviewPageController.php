@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ActorIdentity;
@@ -17,6 +18,7 @@ final readonly class RequestPlanReviewPageController
     /**
      * The one asking on the page reviews the plan there.
      */
+    #[Dispatches(RequestPlanReviewCommand::class)]
     public function __invoke(
         PlanReviewRequest $request,
         CommandBus $commands,

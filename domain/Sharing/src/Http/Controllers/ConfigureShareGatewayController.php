@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
+use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Http\Requests\ConfigureShareGatewayRequest;
 use Domain\Sharing\Support\Gateways\GatewaySecrets;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +18,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class ConfigureShareGatewayController
 {
+    #[Dispatches(ConfigureShareGatewayCommand::class)]
     public function __invoke(
         ConfigureShareGatewayRequest $request,
         GatewaySecrets $secrets,

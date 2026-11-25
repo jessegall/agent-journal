@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
@@ -16,6 +17,7 @@ use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
  */
 final readonly class MakeDocumentController
 {
+    #[Dispatches(CreateDocumentCommand::class)]
     public function __invoke(MakeDocumentPayload $call, CommandBus $commands, RecordResolver $records): RecordFiled
     {
         $relatedRecords = array_map(

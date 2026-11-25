@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -13,6 +14,7 @@ use Illuminate\Routing\Redirector;
 
 final readonly class CreateReportPageController
 {
+    #[Dispatches(CreateReportCommand::class)]
     public function __invoke(
         CreateRecordRequest $request,
         CommandBus $commands,

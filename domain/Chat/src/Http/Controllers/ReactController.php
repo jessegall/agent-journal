@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Commands\React\ReactCommand;
 use Domain\Chat\Data\ReactInput;
@@ -15,6 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class ReactController
 {
+    #[Dispatches(ReactCommand::class)]
     public function __invoke(ReactInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new ReactCommand($input->messageId, $input->emoji));

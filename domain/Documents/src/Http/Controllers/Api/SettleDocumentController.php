@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use App\Support\RecordReference;
 use App\Values\ApiAccepted;
@@ -15,6 +16,7 @@ use Domain\Documents\Commands\SettleDocument\SettleDocumentCommand;
  */
 final readonly class SettleDocumentController
 {
+    #[Dispatches(SettleDocumentCommand::class)]
     public function __invoke(SettleDocumentPayload $call, CommandBus $commands): ApiAccepted
     {
         $commands->run(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Data\ReadShownInput;
@@ -16,6 +17,7 @@ final readonly class ReadShownController
     /**
      * Records that the viewer read each message the page showed it.
      */
+    #[Dispatches(ReadMessageCommand::class)]
     public function __invoke(ReadShownInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         foreach ($input->messageIds as $messageId) {

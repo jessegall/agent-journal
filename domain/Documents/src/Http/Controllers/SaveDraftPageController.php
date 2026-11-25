@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\ReplaceDocumentBody\ReplaceDocumentBodyCommand;
@@ -16,6 +17,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SaveDraftPageController
 {
+    #[Dispatches(ChangeDocumentDetailsCommand::class)]
+    #[Dispatches(ReplaceDocumentBodyCommand::class)]
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $saved = $commands->run(

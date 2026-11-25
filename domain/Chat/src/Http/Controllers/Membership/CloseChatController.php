@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
@@ -20,6 +21,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class CloseChatController
 {
+    #[Dispatches(LeaveInboxCommand::class)]
     public function __invoke(
         ChatInput $input,
         PairChats $chats,

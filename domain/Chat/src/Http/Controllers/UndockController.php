@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Data\UndockInput;
@@ -16,6 +17,7 @@ final readonly class UndockController
     /**
      * Undocks the placement from the chat the inbox names; the source itself stays as it is.
      */
+    #[Dispatches(UndockSourceCommand::class)]
     public function __invoke(
         UndockInput $input,
         CommandBus $commands,

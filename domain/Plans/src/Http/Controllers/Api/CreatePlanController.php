@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Api;
 
+use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Api\CreatePlanPayload;
 use Domain\Plans\Api\PlanNamed;
@@ -14,6 +15,7 @@ use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
  */
 final readonly class CreatePlanController
 {
+    #[Dispatches(CreatePlanCommand::class)]
     public function __invoke(CreatePlanPayload $call, CommandBus $commands): PlanNamed
     {
         return PlanNamed::from(
