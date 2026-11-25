@@ -28,7 +28,7 @@ final class EditMemoryToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
-        $memory = $journal->fixtures(MemoryFixtures::class)->memory('Rule', 'Builder', 'Run the phase tests once.')->memoryCalled('Rule');
+        $memory = $journal->fixtures(MemoryFixtures::class)->createMemory('Rule', 'Builder', 'Run the phase tests once.');
 
         return ToolCall::by($start)
             ->arguments([
@@ -37,7 +37,7 @@ final class EditMemoryToolTest extends McpToolEntryTestCase
                 'weight' => 9,
                 'request_key' => 'write-1',
             ])
-            ->reply(EditMemoryCommand::class, 2)
+            ->reply(EditMemoryCommand::class, $memory->id)
             ->expects(EditMemoryCommand::class, [
                 'memoryId' => $memory->id,
                 'expectedRevision' => 1,

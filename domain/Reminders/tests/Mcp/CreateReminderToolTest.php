@@ -35,7 +35,7 @@ final class CreateReminderToolTest extends McpToolEntryTestCase
                 'due_at' => '2026-12-01T09:00:00+00:00',
                 'request_key' => 'write-1',
             ])
-            ->reply(CreateReminderCommand::class, (string) Str::ulid())
+            ->reply(CreateReminderCommand::class, Str::ulid())
             ->expects(CreateReminderCommand::class, [
                 'title' => 'Check the run',
                 'dueAt' => '2026-12-01T09:00:00+00:00',

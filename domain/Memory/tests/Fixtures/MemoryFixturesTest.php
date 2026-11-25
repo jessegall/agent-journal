@@ -37,6 +37,13 @@ final class MemoryFixturesTest extends TestCase
         $memories->assertRevision('Plan', revision: 2, weight: 9, text: 'Newer words.');
     }
 
+    public function test_a_created_memory_is_given_back_and_still_found_by_its_name(): void
+    {
+        $memories = $this->journal->owner()->agent('Keeper', 'read-only-helper')->fixtures(MemoryFixtures::class);
+
+        $this->assertTrue($memories->createMemory('Plan', 'Keeper', 'First words.')->is($memories->memoryCalled('Plan')));
+    }
+
     public function test_a_removed_memory_is_forgotten_and_a_kept_one_is_not(): void
     {
         $memories = $this->journal->owner()->agent('Keeper', 'read-only-helper')->fixtures(MemoryFixtures::class)

@@ -35,7 +35,7 @@ final class ProposeRuleToolTest extends McpToolEntryTestCase
                 'reason' => 'User 24714.',
                 'request_key' => 'write-1',
             ])
-            ->reply(ProposeRuleCommand::class, (string) Str::ulid())
+            ->reply(ProposeRuleCommand::class, Str::ulid())
             ->expects(ProposeRuleCommand::class, [
                 'text' => 'Run the phase tests once.',
                 'reason' => 'User 24714.',

@@ -29,7 +29,7 @@ final class CommandRequestProveToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['request' => $request, 'reader_revision' => 'reader-1', 'runs' => [$run], 'request_key' => 'prove-1'])
-            ->reply(ProveReaderCommand::class, (string) Str::ulid())
+            ->reply(ProveReaderCommand::class, Str::ulid())
             ->expects(ProveReaderCommand::class, [
                 'commandRequestId' => $request,
                 'readerRevisionId' => 'reader-1',

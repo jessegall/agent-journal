@@ -32,8 +32,7 @@ final class RemoveMemoryTest extends TestCase
             ->actAs('Keeper');
 
         $this->memory = $this->journal->fixtures(MemoryFixtures::class)
-            ->memory('Note', 'Keeper', 'Forget me.', 4)
-            ->memoryCalled('Note');
+            ->createMemory('Note', 'Keeper', 'Forget me.', 4);
     }
 
     public function test_an_agent_removes_its_own_memory(): void

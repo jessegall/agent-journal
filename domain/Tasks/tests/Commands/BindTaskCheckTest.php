@@ -10,6 +10,7 @@ use App\Contracts\Bus\ResultReceipts;
 use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Runs\AssessmentOutcome;
+use App\Exceptions\ProcessRunOfAnotherCaller;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use App\Values\PublishedResult;
@@ -87,7 +88,7 @@ final class BindTaskCheckTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $other, 'acme verify')),
-            TaskCheckRefused::class,
+            ProcessRunOfAnotherCaller::class,
         );
 
         $this->assertThrows(

@@ -44,8 +44,7 @@ final class RequestPlanChangesTest extends TestCase
         $this->journal->owner();
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
-            ->plan('Release', 'Ship it.', PlanType::Build)
-            ->planCalled('Release');
+            ->createPlan('Release', 'Ship it.', PlanType::Build);
 
         $this->journal->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]));
     }

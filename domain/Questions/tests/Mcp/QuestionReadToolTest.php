@@ -30,14 +30,14 @@ final class QuestionReadToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Planner');
         $inbox = $journal->sharedInbox('Owner', 'Planner')->sharedInboxOf('Owner', 'Planner');
         $question = $journal->fixtures(QuestionFixtures::class)
-            ->question('Database', $inbox, 'Planner', 'Owner')
-            ->questionCalled('Database');
+            ->createQuestion('Database', $inbox, 'Planner', 'Owner');
 
         return ToolCall::by($start)
             ->arguments([
                 'question_id' => $question->id,
                 'request_key' => 'write-1',
             ])
+            ->reply(ReadQuestionCommand::class, $question->shown)
             ->expects(ReadQuestionCommand::class, ['questionId' => $question->id]);
     }
 }

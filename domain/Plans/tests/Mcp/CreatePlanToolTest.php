@@ -37,7 +37,7 @@ final class CreatePlanToolTest extends McpToolEntryTestCase
                 'type' => 'build',
                 'request_key' => 'plans-1',
             ])
-            ->reply(CreatePlanCommand::class, (string) Str::ulid())
+            ->reply(CreatePlanCommand::class, Str::ulid())
             ->expects(CreatePlanCommand::class, [
                 'title' => 'Release',
                 'brief' => 'Ship version 6.',

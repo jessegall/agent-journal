@@ -35,7 +35,7 @@ final class CreateTaskToolTest extends McpToolEntryTestCase
                 'brief' => 'Dock the source beside the chat.',
                 'request_key' => 'tasks-1',
             ])
-            ->reply(CreateTaskCommand::class, (string) Str::ulid())
+            ->reply(CreateTaskCommand::class, Str::ulid())
             ->expects(CreateTaskCommand::class, [
                 'title' => 'Ship the dock',
                 'brief' => 'Dock the source beside the chat.',

@@ -39,7 +39,7 @@ final class LogTaskToolTest extends McpToolEntryTestCase
                 'text' => 'Wired the route.',
                 'request_key' => 'tasks-1',
             ])
-            ->reply(LogTaskRunCommand::class, (string) Str::ulid())
+            ->reply(LogTaskRunCommand::class, Str::ulid())
             ->expects(LogTaskRunCommand::class, [
                 'taskId' => $task->id,
                 'runNumber' => 1,

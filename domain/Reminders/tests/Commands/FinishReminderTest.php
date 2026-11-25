@@ -33,8 +33,7 @@ final class FinishReminderTest extends TestCase
         $this->journal->user('Colleague')->owner();
 
         $this->reminder = $this->journal->fixtures(ReminderFixtures::class)
-            ->reminder('Book the room', 'Owner', CarbonImmutable::parse('2026-11-30 09:00'))
-            ->reminderCalled('Book the room');
+            ->createReminder('Book the room', 'Owner', CarbonImmutable::parse('2026-11-30 09:00'));
     }
 
     public function test_its_owner_finishes_an_open_reminder_and_it_is_done(): void

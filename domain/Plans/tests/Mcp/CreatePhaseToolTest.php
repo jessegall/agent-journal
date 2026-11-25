@@ -37,7 +37,7 @@ final class CreatePhaseToolTest extends McpToolEntryTestCase
                 'title' => 'Design',
                 'request_key' => 'plans-1',
             ])
-            ->reply(AddPhaseCommand::class, (string) Str::ulid())
+            ->reply(AddPhaseCommand::class, Str::ulid())
             ->expects(AddPhaseCommand::class, [
                 'planId' => $plan->id,
                 'title' => 'Design',

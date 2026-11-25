@@ -25,7 +25,7 @@ final class ClosingWordsDeliverToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['request_key' => 'closing-1'])
-            ->reply(DeliverClosingWordsCommand::class, (string) Str::ulid())
+            ->reply(DeliverClosingWordsCommand::class, Str::ulid())
             ->expects(DeliverClosingWordsCommand::class);
     }
 }
