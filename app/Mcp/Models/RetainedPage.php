@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Actors\ActorVisibility;
@@ -14,6 +13,7 @@ use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\MassPrunable;
@@ -32,7 +32,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['agent_id', 'session_id', 'references', 'expires_at'])]
+#[Fillable([
+    'agent_id',
+    'session_id',
+    'references',
+    'expires_at',
+])]
 final class RetainedPage extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -49,7 +54,10 @@ final class RetainedPage extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['references' => 'array', 'expires_at' => 'immutable_datetime'];
+        return [
+            'references' => 'array',
+            'expires_at' => 'immutable_datetime',
+        ];
     }
 
     protected static function booted(): void

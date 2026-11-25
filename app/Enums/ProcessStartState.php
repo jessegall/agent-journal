@@ -24,7 +24,11 @@ enum ProcessStartState: string
      */
     public static function unresolved(): array
     {
-        return [self::Pending, self::Starting, self::Running];
+        return [
+            self::Pending,
+            self::Starting,
+            self::Running,
+        ];
     }
 
     /**

@@ -44,13 +44,19 @@ final readonly class PreparationState
     private function storedState(): array
     {
         if (! $this->files->exists($this->file)) {
-            return ['generation' => null, 'prepared' => false];
+            return [
+                'generation' => null,
+                'prepared' => false,
+            ];
         }
 
         try {
             $stored = $this->files->readJson($this->file);
         } catch (FileJsonInvalid) {
-            return ['generation' => null, 'prepared' => false];
+            return [
+                'generation' => null,
+                'prepared' => false,
+            ];
         }
 
         $generation = $stored['generation'] ?? null;
@@ -65,7 +71,10 @@ final readonly class PreparationState
     {
         $this->files->write(
             $this->file,
-            json_encode(['generation' => $generation, 'prepared' => $isPrepared], JSON_THROW_ON_ERROR),
+            json_encode([
+                'generation' => $generation,
+                'prepared' => $isPrepared,
+            ], JSON_THROW_ON_ERROR),
         );
     }
 }

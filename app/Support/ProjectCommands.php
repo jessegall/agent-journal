@@ -59,7 +59,10 @@ final readonly class ProjectCommands
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
         if ($started->isNew) {
-            return $this->execute($call, ['JOURNAL_URL' => $this->journalUrl, ...$startEnvironment]);
+            return $this->execute($call, [
+                'JOURNAL_URL' => $this->journalUrl,
+                ...$startEnvironment,
+            ]);
         }
 
         return $this->earlierFrames($requestKey, $started);
@@ -127,7 +130,12 @@ final readonly class ProjectCommands
     private function execute(RunProjectCommandCall $call, array $environment): array
     {
         $process = new Process(
-            ['php', $this->artisanPath, $call->verbName(), ...array_slice($call->argv, 2)],
+            [
+                'php',
+                $this->artisanPath,
+                $call->verbName(),
+                ...array_slice($call->argv, 2),
+            ],
             dirname($this->artisanPath),
             $environment,
             $call->pipedInput(),

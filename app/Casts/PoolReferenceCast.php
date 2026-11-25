@@ -44,7 +44,10 @@ final class PoolReferenceCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
-        $target = $value->target === null ? null : ['type' => $value->target->type, 'id' => $value->target->id];
+        $target = $value->target === null ? null : [
+            'type' => $value->target->type,
+            'id' => $value->target->id,
+        ];
         $pool = ['type' => $value->type, 'target' => $target, 'record_ids' => $value->recordIds];
 
         return [$key => json_encode($pool, JSON_THROW_ON_ERROR)];

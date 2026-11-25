@@ -37,6 +37,9 @@ final readonly class CompoundParts
     {
         $range = new SourceRange($this->range->start, $redirect->range->end);
 
-        return new self($this->toParse, $this->node, $range, [...$this->redirects, $redirect]);
+        return new self($this->toParse, $this->node, $range, [
+            ...$this->redirects,
+            $redirect,
+        ]);
     }
 }

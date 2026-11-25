@@ -21,6 +21,9 @@ final readonly class RunClaim
      */
     public function assignmentIds(): array
     {
-        return [$this->claim->id, ...$this->standsOn];
+        return [
+            $this->claim->id,
+            ...$this->standsOn,
+        ];
     }
 }

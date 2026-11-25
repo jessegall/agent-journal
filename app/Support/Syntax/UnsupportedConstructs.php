@@ -45,7 +45,10 @@ final readonly class UnsupportedConstructs
 
         if ($construct->needsClosing()) {
             throw ShellGrammarStopped::invalid(
-                AgentText::of('core.shell.not_closed_by', ['opener' => $opener, 'terminator' => $terminator]),
+                AgentText::of('core.shell.not_closed_by', [
+                    'opener' => $opener,
+                    'terminator' => $terminator,
+                ]),
                 $start,
             );
         }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -13,6 +11,8 @@ use App\Contracts\Records\ReadableModel;
 use App\Enums\ReadEvidence;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,7 +27,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property ReadEvidence $evidence
  * @property CarbonImmutable $read_at
  */
-#[Fillable(['session_id', 'context_epoch', 'skill_key', 'content_digest', 'evidence', 'read_at'])]
+#[Fillable([
+    'session_id',
+    'context_epoch',
+    'skill_key',
+    'content_digest',
+    'evidence',
+    'read_at',
+])]
 final class SkillReceipt extends Model implements ReadableModel
 {
     use BoundedReads;

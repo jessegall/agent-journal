@@ -35,7 +35,11 @@ enum JobState: string
 
     public function isFinal(): bool
     {
-        return in_array($this, [self::Finished, self::Cancelled, self::Failed], true);
+        return in_array($this, [
+            self::Finished,
+            self::Cancelled,
+            self::Failed,
+        ], true);
     }
 
     /**
@@ -43,6 +47,9 @@ enum JobState: string
      */
     public function isLive(): bool
     {
-        return in_array($this, [self::Accepted, self::Running], true);
+        return in_array($this, [
+            self::Accepted,
+            self::Running,
+        ], true);
     }
 }

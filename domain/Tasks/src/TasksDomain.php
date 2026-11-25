@@ -171,7 +171,13 @@ final class TasksDomain extends Domain implements
      */
     public function nativeParts(): array
     {
-        return ['TaskCommentsTab.vue', 'TaskGraph.vue', 'TaskLogsTab.vue', 'TaskProofsTab.vue', 'TaskWaitsTab.vue'];
+        return [
+            'TaskCommentsTab.vue',
+            'TaskGraph.vue',
+            'TaskLogsTab.vue',
+            'TaskProofsTab.vue',
+            'TaskWaitsTab.vue',
+        ];
     }
 
     public function navigation(): array
@@ -269,18 +275,29 @@ final class TasksDomain extends Domain implements
         return [
             new PolicyDefinition(
                 TaskPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
+                [
+                    AccessType::Read,
+                    AccessType::Create,
+                    AccessType::Edit,
+                    AccessType::Admin,
+                ],
             ),
             new PolicyDefinition(
                 TaskRunPolicy::class,
-                [AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
         ];
     }
 
     public function states(): array
     {
-        return [WorkingOnTaskState::class, LogDueState::class];
+        return [
+            WorkingOnTaskState::class,
+            LogDueState::class,
+        ];
     }
 
     public function assignables(): array

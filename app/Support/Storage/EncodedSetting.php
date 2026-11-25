@@ -18,6 +18,9 @@ final readonly class EncodedSetting implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['key' => $this->key, 'value' => $this->encodedSetting];
+        return [
+            'key' => $this->key,
+            'value' => $this->encodedSetting,
+        ];
     }
 }

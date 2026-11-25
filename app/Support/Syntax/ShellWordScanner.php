@@ -198,10 +198,22 @@ final readonly class ShellWordScanner
 
             $closes = $character === ']' && $cursor->at($index + 1) === ']' && in_array(
                 $cursor->source[$index - 1],
-                [' ', "\t"],
+                [
+                    ' ',
+                    "\t",
+                ],
                 true,
             )
-                && in_array($cursor->at($index + 2), ['', ' ', "\t", "\n", ';', '&', '|', ')'], true);
+                && in_array($cursor->at($index + 2), [
+                    '',
+                    ' ',
+                    "\t",
+                    "\n",
+                    ';',
+                    '&',
+                    '|',
+                    ')',
+                ], true);
 
             if ($closes) {
                 $cursor->emitLiteralWord($start, $index + 2);
@@ -246,7 +258,13 @@ final readonly class ShellWordScanner
 
             $next = $cursor->at($cursor->position + 1);
 
-            if ($character === '\\' && in_array($next, ['$', '`', '"', '\\', "\n"], true)) {
+            if ($character === '\\' && in_array($next, [
+                '$',
+                '`',
+                '"',
+                '\\',
+                "\n",
+            ], true)) {
                 if ($next !== "\n") {
                     $text .= $next;
                 }

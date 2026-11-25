@@ -21,6 +21,10 @@ final readonly class AssigneeName
      */
     public function listing(): array
     {
-        return ['type' => $this->assignee->type, 'id' => $this->assignee->id, 'name' => $this->name];
+        return [
+            'type' => $this->assignee->type,
+            'id' => $this->assignee->id,
+            'name' => $this->name,
+        ];
     }
 }

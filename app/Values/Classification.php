@@ -41,7 +41,10 @@ final readonly class Classification
     {
         $partFacts = array_merge(...array_map(fn (PartClassification $part): array => $part->facts, $this->parts));
 
-        return [...$partFacts, ...$this->syntaxFacts];
+        return [
+            ...$partFacts,
+            ...$this->syntaxFacts,
+        ];
     }
 
     /**
@@ -126,7 +129,10 @@ final readonly class Classification
             fn (ClassFact $fact) => $this->isWithin($fact->node, $part->node),
         );
 
-        return [...$part->facts, ...array_values($syntaxFacts)];
+        return [
+            ...$part->facts,
+            ...array_values($syntaxFacts),
+        ];
     }
 
     /**

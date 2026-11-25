@@ -37,10 +37,24 @@ const ROW_READS = '/::query\(|->query\(|\b(self|static)::\w*[wW]here|DB::|->load
     .'\$this->\w+\(\)->(where|get|first|sole|count|exists|pluck|latest|oldest|orderBy|find)\w*\(/';
 
 /** The return types an answer keeps as a method: a question, nothing, or the model itself. */
-const METHOD_RETURNS = ['bool', 'void', 'never', 'static', 'self', 'Attribute', 'Builder'];
+const METHOD_RETURNS = [
+    'bool',
+    'void',
+    'never',
+    'static',
+    'self',
+    'Attribute',
+    'Builder',
+];
 
 /** The return types whose value PHP passes as a copy, so an accessor of one needs no object caching turned off. */
-const COPIED_RETURNS = ['string', 'int', 'float', 'array', 'null'];
+const COPIED_RETURNS = [
+    'string',
+    'int',
+    'float',
+    'array',
+    'null',
+];
 
 /**
  * Whether a parent, an interface or a trait of the model declares the method too, so the method answers a contract.
@@ -89,7 +103,10 @@ function readsRows(string $source, string $class, Class_ $model, ClassMethod $me
 
         $own = $model->getMethod($name);
 
-        if ($own !== null && readsRows($source, $class, $model, $own, [...$followed, $method->name->toString()])) {
+        if ($own !== null && readsRows($source, $class, $model, $own, [
+            ...$followed,
+            $method->name->toString(),
+        ])) {
             return true;
         }
     }
@@ -112,7 +129,6 @@ function importedName(string $source, string $name): string
 
     return $namespace[1].'\\'.$name;
 }
-
 
 /**
  * Whether the method types the column of its own name, which an accessor of that name would hide; a cast types it.
@@ -200,7 +216,11 @@ function accessorDocOf(ClassMethod $method, string $returned): string
 {
     $lines = array_values(array_filter(
         explode("\n", (string) $method->getDocComment()?->getText()),
-        fn (string $line) => ! str_contains($line, '@return') && ! in_array(trim($line), ['', '/**', '*/'], true),
+        fn (string $line) => ! str_contains($line, '@return') && ! in_array(trim($line), [
+            '',
+            '/**',
+            '*/',
+        ], true),
     ));
 
     while ($lines !== [] && trim(end($lines)) === '*') {
@@ -297,7 +317,10 @@ $keptOption = array_values(preg_grep('/^--keep=/', $argv) ?: []);
 $kept = $keptOption === [] ? [] : explode(',', substr($keptOption[0], strlen('--keep=')));
 $faultCount = 0;
 
-foreach (array_values(array_diff(array_slice($argv, 1), ['--fix', ...$keptOption])) as $path) {
+foreach (array_values(array_diff(array_slice($argv, 1), [
+    '--fix',
+    ...$keptOption,
+])) as $path) {
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
         $models = array_filter(

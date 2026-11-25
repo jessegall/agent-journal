@@ -55,7 +55,14 @@ final class PlanAuthoringTest extends TestCase
         $this->assertTrue(
             Schema::hasColumns(
                 'plans',
-                ['brief', 'creator_type', 'creator_id', 'revision', 'finish_note', 'cancel_reason'],
+                [
+                    'brief',
+                    'creator_type',
+                    'creator_id',
+                    'revision',
+                    'finish_note',
+                    'cancel_reason',
+                ],
             ),
         );
 
@@ -78,27 +85,55 @@ final class PlanAuthoringTest extends TestCase
         $plan = Plan::query()->findOrFail($planId);
 
         $this->assertSame(
-            ['Ship version 6.', PlanType::Build, PlanState::Planned, 1],
-            [$plan->brief, $plan->type, $plan->state, $plan->revision],
+            [
+                'Ship version 6.',
+                PlanType::Build,
+                PlanState::Planned,
+                1,
+            ],
+            [
+                $plan->brief,
+                $plan->type,
+                $plan->state,
+                $plan->revision,
+            ],
         );
 
-        $this->assertSame([ActorType::Agent, $this->start->agent->id], [$plan->creator_type, $plan->creator_id]);
+        $this->assertSame([
+            ActorType::Agent,
+            $this->start->agent->id,
+        ], [
+            $plan->creator_type,
+            $plan->creator_id,
+        ]);
     }
 
     public function test_phases_append_in_order(): void
     {
         $plan = Plan::factory()->create();
 
-        foreach (['Read', 'Build', 'Check'] as $title) {
+        foreach ([
+            'Read',
+            'Build',
+            'Check',
+        ] as $title) {
             $this->signed(
                 $this->start,
                 '/agent/plans/phases/create',
-                ['plan_id' => $plan->id, 'title' => $title, 'request_key' => bin2hex(random_bytes(8))],
+                [
+                    'plan_id' => $plan->id,
+                    'title' => $title,
+                    'request_key' => bin2hex(random_bytes(8)),
+                ],
             )->assertOk();
         }
 
         $this->assertSame(
-            ['Read', 'Build', 'Check'],
+            [
+                'Read',
+                'Build',
+                'Check',
+            ],
             Phase::query()->where('plan_id', $plan->id)->orderBy('number')->pluck('title')->all(),
         );
     }
@@ -155,7 +190,10 @@ final class PlanAuthoringTest extends TestCase
 
     public function test_a_stale_plan_edit_is_a_conflict_and_keeps_the_newer_text_and_assignments_stay(): void
     {
-        $plan = Plan::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+        $plan = Plan::factory()->create([
+            'title' => 'First',
+            'brief' => 'First brief',
+        ]);
         $plan->describe('Second', 'Second brief', PlanType::Fix);
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
@@ -182,8 +220,18 @@ final class PlanAuthoringTest extends TestCase
         )->assertOk()->assertJson(['revision' => 3]);
 
         $this->assertSame(
-            ['Second', 'Third brief', PlanType::Fix, 3],
-            [$plan->fresh()?->title, $plan->fresh()?->brief, $plan->fresh()?->type, $plan->fresh()?->revision],
+            [
+                'Second',
+                'Third brief',
+                PlanType::Fix,
+                3,
+            ],
+            [
+                $plan->fresh()?->title,
+                $plan->fresh()?->brief,
+                $plan->fresh()?->type,
+                $plan->fresh()?->revision,
+            ],
         );
 
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());

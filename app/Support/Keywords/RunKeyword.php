@@ -33,6 +33,9 @@ final readonly class RunKeyword implements ScriptStatement
 
     public function flow(): FlowShape
     {
-        return FlowShape::action(['passed', 'failure']);
+        return FlowShape::action([
+            'passed',
+            'failure',
+        ]);
     }
 }

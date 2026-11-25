@@ -20,7 +20,11 @@ final class BuiltInAuthorizations
     /**
      * The reads every built-in profile holds by name: the caller's own session and the operations it may run.
      */
-    public const array ORIENTATION_READS = ['overview_read', 'capabilities_read', 'operations_read'];
+    public const array ORIENTATION_READS = [
+        'overview_read',
+        'capabilities_read',
+        'operations_read',
+    ];
 
     /**
      * @param  list<PolicyDefinition>  $definitions

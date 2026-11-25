@@ -24,7 +24,10 @@ return new class extends Migration
             $table->timestampTz('created_at');
             $table->timestampTz('bound_at')->nullable();
 
-            $table->index(['task_id', 'id']);
+            $table->index([
+                'task_id',
+                'id',
+            ]);
         });
     }
 

@@ -114,18 +114,32 @@ enum ClaudeCodeTool: string
     public function operation(DriverToolInput $input): Operation
     {
         [$access, $type, $target] = match ($this) {
-            self::Read => [[AccessType::Read], ResourceType::Path, $input->firstText('file_path')],
+            self::Read => [
+                [AccessType::Read],
+                ResourceType::Path,
+                $input->firstText('file_path'),
+            ],
             self::Glob, self::Grep, self::LS => [
                 [AccessType::Search],
                 ResourceType::Path,
                 $input->textArgument('path') ?? '.',
             ],
             self::WebFetch => [
-                [AccessType::Read, AccessType::Network],
+                [
+                    AccessType::Read,
+                    AccessType::Network,
+                ],
                 ResourceType::Destination,
                 $input->firstText('url'),
             ],
-            self::WebSearch => [[AccessType::Read, AccessType::Network], ResourceType::Destination, 'web search'],
+            self::WebSearch => [
+                [
+                    AccessType::Read,
+                    AccessType::Network,
+                ],
+                ResourceType::Destination,
+                'web search',
+            ],
             self::Bash, self::Edit, self::MultiEdit, self::Write, self::NotebookEdit, self::TodoWrite, self::ToolSearch,
             self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => $this->refuseOperation(),
         };

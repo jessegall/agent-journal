@@ -26,7 +26,10 @@ final readonly class DraftTokens
         $held = $this->all()["doc {$documentNumber}"] ?? null;
 
         if (is_array($held)) {
-            return ['token' => (string) $held['token'], 'version' => (int) $held['version']];
+            return [
+                'token' => (string) $held['token'],
+                'version' => (int) $held['version'],
+            ];
         }
 
         return null;
@@ -35,7 +38,10 @@ final readonly class DraftTokens
     public function keep(int $documentNumber, string $token, int $version): void
     {
         $drafts = $this->all();
-        $drafts["doc {$documentNumber}"] = ['token' => $token, 'version' => $version];
+        $drafts["doc {$documentNumber}"] = [
+            'token' => $token,
+            'version' => $version,
+        ];
         $this->files->write($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 

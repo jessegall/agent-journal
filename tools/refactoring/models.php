@@ -8,7 +8,13 @@ declare(strict_types=1);
 
 use PhpParser\Node\Stmt\Class_;
 
-const MODEL_PARENTS = ['Model', 'Pivot', 'MorphPivot', 'Authenticatable', 'PackagePasskey'];
+const MODEL_PARENTS = [
+    'Model',
+    'Pivot',
+    'MorphPivot',
+    'Authenticatable',
+    'PackagePasskey',
+];
 
 /**
  * What a static model method's body does when it makes a row.

@@ -156,7 +156,10 @@ final readonly class FileWindowResolver implements PageResolver
         $found = ProjectFile::atPath($binding->id, $answer->path);
 
         if (! $found->isDefined()) {
-            return ['commentTarget' => null, 'threads' => []];
+            return [
+                'commentTarget' => null,
+                'threads' => [],
+            ];
         }
 
         $file = $found->get();
@@ -179,7 +182,10 @@ final readonly class FileWindowResolver implements PageResolver
 
         usort($threads, fn (FileThreadData $first, FileThreadData $second) => $first->firstLine <=> $second->firstLine);
 
-        return ['commentTarget' => "file {$file->number}", 'threads' => $threads];
+        return [
+            'commentTarget' => "file {$file->number}",
+            'threads' => $threads,
+        ];
     }
 
     /**
@@ -245,6 +251,9 @@ final readonly class FileWindowResolver implements PageResolver
 
     private function isMarkdown(string $path): bool
     {
-        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['md', 'markdown'], true);
+        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), [
+            'md',
+            'markdown',
+        ], true);
     }
 }

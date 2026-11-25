@@ -48,7 +48,10 @@ final readonly class PendingPart
             $this->context,
             $this->state,
             array_slice($this->substitutions, 1),
-            [...$this->substitutionOutputs, $this->substitutions[0]->node => rtrim($outcome->output, "\n")],
+            [
+                ...$this->substitutionOutputs,
+                $this->substitutions[0]->node => rtrim($outcome->output, "\n"),
+            ],
         );
     }
 

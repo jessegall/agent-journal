@@ -35,7 +35,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'due_at', 'status'])]
+#[Fillable([
+    'title',
+    'due_at',
+    'status',
+])]
 final class Reminder extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

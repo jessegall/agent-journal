@@ -137,7 +137,6 @@ final readonly class AgentStack
         return None::create();
     }
 
-
     /**
      * Whether a frame for the reference is on the stack as live work, read for the stack's own agent.
      */
@@ -167,7 +166,10 @@ final readonly class AgentStack
             return $this;
         }
 
-        return clone ($this, ['frames' => [...$this->withoutFrame($lifted)->frames, $lifted]]);
+        return clone ($this, ['frames' => [
+            ...$this->withoutFrame($lifted)->frames,
+            $lifted,
+        ]]);
     }
 
     /**
@@ -204,7 +206,10 @@ final readonly class AgentStack
             throw StackTooDeep::for($this->target->description(), self::DEPTH_LIMIT);
         }
 
-        return clone ($this, ['frames' => [...$this->frames, $frame]]);
+        return clone ($this, ['frames' => [
+            ...$this->frames,
+            $frame,
+        ]]);
     }
 
     /**

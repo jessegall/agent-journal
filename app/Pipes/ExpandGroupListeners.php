@@ -28,7 +28,10 @@ final readonly class ExpandGroupListeners implements Pipe
             unset($events[$type]);
 
             foreach ($declarations->ownership->eventsOf($type) as $event) {
-                $events[$event] = array_values(array_unique([...$events[$event] ?? [], ...$listeners]));
+                $events[$event] = array_values(array_unique([
+                    ...$events[$event] ?? [],
+                    ...$listeners,
+                ]));
             }
         }
 

@@ -57,7 +57,10 @@ final readonly class RegisteredMenuItem
     {
         $guard = $this->target instanceof RegisteredAction ? $this->target->guard : $this->target;
 
-        return [...array_filter([$this->menuItem->visibility]), ...$guard->visibilityChecks()];
+        return [
+            ...array_filter([$this->menuItem->visibility]),
+            ...$guard->visibilityChecks(),
+        ];
     }
 
     /**

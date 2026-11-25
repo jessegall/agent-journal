@@ -152,7 +152,11 @@ final readonly class SkillAuthoringService
         $children = [];
 
         foreach ($named as $type => $audienceMembers) {
-            $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($audienceMembers))];
+            $children[] = [
+                'type' => $type,
+                'version' => 1,
+                'keys' => array_values(array_unique($audienceMembers)),
+            ];
         }
 
         if ($children === []) {
@@ -160,7 +164,11 @@ final readonly class SkillAuthoringService
         }
 
         return json_encode(
-            ['type' => 'all', 'version' => 1, 'children' => $children],
+            [
+                'type' => 'all',
+                'version' => 1,
+                'children' => $children,
+            ],
             JSON_THROW_ON_ERROR,
         );
     }

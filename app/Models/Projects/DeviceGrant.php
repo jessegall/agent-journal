@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -22,6 +20,8 @@ use App\Exceptions\DeviceGrantRefused;
 use App\Support\ShortReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,15 +52,23 @@ use Illuminate\Support\Carbon;
  * @property-read ProjectBinding $binding
  */
 #[Fillable([
-    'binding_id', 'device_code_digest', 'user_code', 'scopes', 'state', 'code_expires_at', 'reference', 'generation',
-    'start_key', 'environment_id',
+    'binding_id',
+    'device_code_digest',
+    'user_code',
+    'scopes',
+    'state',
+    'code_expires_at',
+    'reference',
+    'generation',
+    'start_key',
+    'environment_id',
 ])]
 final class DeviceGrant extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -285,7 +293,10 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function ofUserCode(string $code): self
     {
-        return self::query()->with(['binding', 'environment'])->withUserCode($code)->firstOrFail();
+        return self::query()->with([
+            'binding',
+            'environment',
+        ])->withUserCode($code)->firstOrFail();
     }
 
     /**

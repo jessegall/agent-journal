@@ -16,7 +16,10 @@ final readonly class CodexJournalServer
 {
     public const string HEADER = '[mcp_servers.journal]';
 
-    public const array PASSED_VARIABLES = ['JOURNAL_URL', 'JOURNAL_LAUNCH_REF'];
+    public const array PASSED_VARIABLES = [
+        'JOURNAL_URL',
+        'JOURNAL_LAUNCH_REF',
+    ];
 
     public const int STARTUP_TIMEOUT_SECONDS = 15;
 
@@ -32,7 +35,10 @@ final readonly class CodexJournalServer
      */
     public static function of(string $command, string $relay): self
     {
-        foreach ([$command, $relay] as $path) {
+        foreach ([
+            $command,
+            $relay,
+        ] as $path) {
             if (! self::isFixedPath($path)) {
                 throw JournalServerUnresolved::for($path);
             }

@@ -232,7 +232,10 @@ final readonly class TerminalViews implements TerminalViewCloser
     private function ended(ReceivedScreen|null $received, CarbonImmutable $endedAt): TerminalFrameData
     {
         if ($received === null) {
-            return TerminalFrameData::from(['state' => TerminalFrameState::Ended, 'endedAt' => $endedAt]);
+            return TerminalFrameData::from([
+                'state' => TerminalFrameState::Ended,
+                'endedAt' => $endedAt,
+            ]);
         }
 
         return TerminalFrameData::from([

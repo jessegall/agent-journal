@@ -60,7 +60,11 @@ final class ConnectionsServiceProvider extends ServiceProvider
     ): void {
         $policies->register('Core', new PolicyDefinition(
             ConnectionsPolicy::class,
-            [AccessType::Read, AccessType::Create, AccessType::Edit],
+            [
+                AccessType::Read,
+                AccessType::Create,
+                AccessType::Edit,
+            ],
         ));
 
         $policies->register('Core', new PolicyDefinition(ProjectFilesPolicy::class, [AccessType::Read]));

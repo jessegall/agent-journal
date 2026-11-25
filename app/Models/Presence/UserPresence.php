@@ -28,7 +28,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'last_heartbeat_at'])]
+#[Fillable([
+    'user_id',
+    'last_heartbeat_at',
+])]
 final class UserPresence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -65,7 +68,10 @@ final class UserPresence extends Model implements EventSource, ReadableModel
      */
     public static function lockedFor(string $userId, CarbonImmutable $time): self
     {
-        $presence = new self(['user_id' => $userId, 'last_heartbeat_at' => $time]);
+        $presence = new self([
+            'user_id' => $userId,
+            'last_heartbeat_at' => $time,
+        ]);
         $presence->setAttribute($presence->getKeyName(), $presence->newUniqueId());
         $presence->insertIfAbsent();
 

@@ -31,7 +31,10 @@ final readonly class LexerScan
         return $this->runner->runSteps(
             [
                 Step::repeated(
-                    [CheckLexerBudget::class, Step::resolvedBy(self::nextPipe(...))],
+                    [
+                        CheckLexerBudget::class,
+                        Step::resolvedBy(self::nextPipe(...)),
+                    ],
                     while: fn (LexerCursor $cursor) => $cursor->hasBytes(),
                 ),
                 ReadHereDocumentBodies::class,

@@ -32,7 +32,11 @@ final readonly class ReadListPipeline implements PipelineDefinition
             CollectListItems::class,
             SkipListSeparator::class,
             Step::repeated(
-                [ParseListItem::class, AttachListItem::class, SkipListSeparator::class],
+                [
+                    ParseListItem::class,
+                    AttachListItem::class,
+                    SkipListSeparator::class,
+                ],
                 while: fn (ListItems $listCursor) => ! $listCursor->toParse->isAtItsEnd()
             ),
             CompleteList::class,

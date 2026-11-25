@@ -21,7 +21,11 @@ enum MergeAttemptState: string
      */
     public static function terminalValues(): array
     {
-        return [self::Merged->value, self::Refused->value, self::Uncertain->value];
+        return [
+            self::Merged->value,
+            self::Refused->value,
+            self::Uncertain->value,
+        ];
     }
 
     public function isTerminal(): bool

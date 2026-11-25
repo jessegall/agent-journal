@@ -32,7 +32,14 @@ final class StartPlanTest extends TestCase
     /**
      * The bus commits StartPlanCommand for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'links', 'assignments'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+        'links',
+        'assignments',
+    ];
 
     private Plan $plan;
 
@@ -41,7 +48,10 @@ final class StartPlanTest extends TestCase
         parent::setUp();
 
         Event::fake([PlanStarted::class]);
-        $this->plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create([
+            'title' => 'Build the plans page',
+            'type' => PlanType::Build,
+        ]);
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
@@ -101,7 +111,10 @@ final class StartPlanTest extends TestCase
 
     public function test_the_read_offers_the_start_by_the_same_rule(): void
     {
-        $paused = Plan::factory()->create(['title' => 'Paused plan', 'type' => PlanType::Fix]);
+        $paused = Plan::factory()->create([
+            'title' => 'Paused plan',
+            'type' => PlanType::Fix,
+        ]);
         Plan::query()->whereKey($paused->id)->update(['state' => PlanState::Paused->value]);
 
         $canStart = [];
@@ -111,8 +124,14 @@ final class StartPlanTest extends TestCase
         }
 
         $this->assertSame(
-            [$this->plan->id => true, $paused->id => false],
-            [$this->plan->id => $canStart[$this->plan->id], $paused->id => $canStart[$paused->id]],
+            [
+                $this->plan->id => true,
+                $paused->id => false,
+            ],
+            [
+                $this->plan->id => $canStart[$this->plan->id],
+                $paused->id => $canStart[$paused->id],
+            ],
         );
     }
 

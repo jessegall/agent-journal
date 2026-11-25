@@ -317,7 +317,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      */
     public function canRetry(): bool
     {
-        return in_array($this->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
+        return in_array($this->progress, [
+            RequestProgress::Failed,
+            RequestProgress::Unavailable,
+        ], true);
     }
 
     /**
@@ -350,7 +353,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      */
     public function canCancel(): bool
     {
-        return in_array($this->progress, [RequestProgress::Accepted, RequestProgress::Staged], true);
+        return in_array($this->progress, [
+            RequestProgress::Accepted,
+            RequestProgress::Staged,
+        ], true);
     }
 
     /**
@@ -382,7 +388,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      */
     public function changesASetting(): bool
     {
-        return in_array($this->operation, [DriverOperation::ChangeModel, DriverOperation::ChangeEffort], true);
+        return in_array($this->operation, [
+            DriverOperation::ChangeModel,
+            DriverOperation::ChangeEffort,
+        ], true);
     }
 
     /**
@@ -706,7 +715,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function turnsApplyingSince(Builder $query, CarbonImmutable $before): void
     {
-        $query->whereIn('operation', [DriverOperation::Deliver, DriverOperation::Wake])
+        $query->whereIn('operation', [
+            DriverOperation::Deliver,
+            DriverOperation::Wake,
+        ])
             ->where('progress', RequestProgress::Applying)
             ->where('updated_at', '<', $before);
     }
@@ -754,7 +766,10 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function changingSettings(Builder $query): void
     {
-        $query->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort]);
+        $query->whereIn('operation', [
+            DriverOperation::ChangeModel,
+            DriverOperation::ChangeEffort,
+        ]);
     }
 
     /**

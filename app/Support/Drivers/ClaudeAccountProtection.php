@@ -45,7 +45,10 @@ final class ClaudeAccountProtection
 
         return (string) json_encode([
             'permissions' => [
-                'deny' => [...$deny, ...self::SIGN_IN_COMMANDS],
+                'deny' => [
+                    ...$deny,
+                    ...self::SIGN_IN_COMMANDS,
+                ],
             ],
             'sandbox' => [
                 'enabled' => true,

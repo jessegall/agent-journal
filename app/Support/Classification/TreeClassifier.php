@@ -68,7 +68,8 @@ final readonly class TreeClassifier implements CommandClassifier
         'GIT_CONFIG',
         'GIT_CONFIG_GLOBAL',
         'PERL5LIB',
-        'PYTHONPATH', 'NODE_OPTIONS',
+        'PYTHONPATH',
+        'NODE_OPTIONS',
     ];
 
     private const array SHELL_DIALECTS = [
@@ -81,11 +82,30 @@ final readonly class TreeClassifier implements CommandClassifier
     /**
      * Shell options that change nothing about which commands run.
      */
-    private const array PLAIN_SHELL_OPTIONS = ['-e', '-u', '-x', '-eu', '-ex', '-eux', '-o'];
+    private const array PLAIN_SHELL_OPTIONS = [
+        '-e',
+        '-u',
+        '-x',
+        '-eu',
+        '-ex',
+        '-eux',
+        '-o',
+    ];
 
-    private const array SOURCE_READERS = ['eval', 'source', '.', 'ksh', 'fish'];
+    private const array SOURCE_READERS = [
+        'eval',
+        'source',
+        '.',
+        'ksh',
+        'fish',
+    ];
 
-    private const array FIND_CHILD_STARTS = ['-exec', '-execdir', '-ok', '-okdir'];
+    private const array FIND_CHILD_STARTS = [
+        '-exec',
+        '-execdir',
+        '-ok',
+        '-okdir',
+    ];
 
     public function __construct(
         private CommandRuleRegistry $rules,
@@ -200,7 +220,10 @@ final readonly class TreeClassifier implements CommandClassifier
         return new PartClassification(
             $node->id,
             $part->facts,
-            [...$part->unresolved, ...$unresolved],
+            [
+                ...$part->unresolved,
+                ...$unresolved,
+            ],
             $unresolved === [] ? $part->purpose : CommandType::Unknown,
             $part->program,
             $part->contracts,
@@ -317,11 +340,22 @@ final readonly class TreeClassifier implements CommandClassifier
         while ($index < count($words) && str_starts_with((string) $words[$index]->literal(), '-')) {
             $option = (string) $words[$index]->literal();
 
-            if (in_array($option, ['-C', '--git-dir', '--work-tree', '--namespace'], true)) {
+            if (in_array($option, [
+                '-C',
+                '--git-dir',
+                '--work-tree',
+                '--namespace',
+            ], true)) {
                 $index += 2;
             } elseif (in_array(
                 $option,
-                ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'],
+                [
+                    '--no-pager',
+                    '--no-optional-locks',
+                    '--bare',
+                    '--literal-pathspecs',
+                    '-P',
+                ],
                 true,
             )
                 || preg_match('/^--(git-dir|work-tree|namespace)=/', $option) === 1) {
@@ -336,7 +370,10 @@ final readonly class TreeClassifier implements CommandClassifier
             }
         }
 
-        return $this->rulePart($program, [$words[0], ...array_slice($words, $index)], $node);
+        return $this->rulePart($program, [
+            $words[0],
+            ...array_slice($words, $index),
+        ], $node);
     }
 
     /**
@@ -367,7 +404,10 @@ final readonly class TreeClassifier implements CommandClassifier
                     UnresolvedType::UnknownProgram,
                     AgentText::of(
                         'core.shell.composer_callback',
-                        ['callback' => $line, 'binding' => $script->binding->reference()],
+                        [
+                            'callback' => $line,
+                            'binding' => $script->binding->reference(),
+                        ],
                     ),
                 );
 
@@ -441,7 +481,10 @@ final readonly class TreeClassifier implements CommandClassifier
         ExecutionContext $context,
     ): PartClassification {
         if (in_array($alias->id, $context->aliases, true)) {
-            $loop = implode(', ', [...$context->aliases, $alias->id]);
+            $loop = implode(', ', [
+                ...$context->aliases,
+                $alias->id,
+            ]);
 
             return $this->unknown(
                 $node,
@@ -506,7 +549,12 @@ final readonly class TreeClassifier implements CommandClassifier
             $text === '-delete' => [
                 new ClassFact(CommandClass::Delete, $node, $origin, 'find -delete removes what it matches.'),
             ],
-            in_array($text, ['-fprint', '-fprint0', '-fprintf', '-fls'], true) => [
+            in_array($text, [
+                '-fprint',
+                '-fprint0',
+                '-fprintf',
+                '-fls',
+            ], true) => [
                 new ClassFact(CommandClass::Write, $node, $origin, "find {$text} writes a file."),
             ],
             default => [],
@@ -520,7 +568,10 @@ final readonly class TreeClassifier implements CommandClassifier
     {
         $first = strtok($reference, ' ');
 
-        if (in_array($first, ['php', 'composer'], true)) {
+        if (in_array($first, [
+            'php',
+            'composer',
+        ], true)) {
             return $reference;
         }
 
@@ -582,7 +633,10 @@ final readonly class TreeClassifier implements CommandClassifier
                     $node,
                     $program,
                     UnresolvedType::UnknownWrapperOption,
-                    AgentText::of('core.shell.wrapper_option', ['wrapper' => $wrapper->family, 'option' => $text]),
+                    AgentText::of('core.shell.wrapper_option', [
+                        'wrapper' => $wrapper->family,
+                        'option' => $text,
+                    ]),
                 );
             }
 
@@ -758,7 +812,10 @@ final readonly class TreeClassifier implements CommandClassifier
     private function findChildEnd(array $words, int $from): int
     {
         for ($index = $from; $index < count($words); $index++) {
-            if (in_array($words[$index]->literal(), [';', '+'], true)) {
+            if (in_array($words[$index]->literal(), [
+                ';',
+                '+',
+            ], true)) {
                 return $index;
             }
         }

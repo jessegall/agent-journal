@@ -17,7 +17,10 @@ final readonly class AccessPolicy
     /**
      * Files no profile may touch wherever they lie, whatever grants them: the drivers' own sign-ins.
      */
-    public const array PROTECTED_PATHS = ['.claude/.credentials.json', '.codex/auth.json'];
+    public const array PROTECTED_PATHS = [
+        '.claude/.credentials.json',
+        '.codex/auth.json',
+    ];
 
     /**
      * @param  list<HostAccess>  $paths

@@ -38,14 +38,20 @@ final class PlansPageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->release = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $this->release = Plan::factory()->create([
+            'title' => 'Build the release page',
+            'type' => PlanType::Build,
+        ]);
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($this->release, 'Read'),
             [Task::factory()->create(['title' => 'List the plans'])->id],
         );
 
-        $this->paused = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        $this->paused = Plan::factory()->create([
+            'title' => 'Compare chat layouts',
+            'type' => PlanType::Research,
+        ]);
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Paused->value]);
     }
 
@@ -96,7 +102,11 @@ final class PlansPageTest extends TestCase
     {
         $this->actingAs($this->owner)->from('/plans')->get('/plans?q='.str_repeat('a', 201).'&page=0&plan=-3')
             ->assertRedirect('/plans')
-            ->assertSessionHasErrors(['q', 'page', 'plan']);
+            ->assertSessionHasErrors([
+                'q',
+                'page',
+                'plan',
+            ]);
     }
 
     public function test_a_partial_reload_of_other_props_does_not_build_the_page(): void

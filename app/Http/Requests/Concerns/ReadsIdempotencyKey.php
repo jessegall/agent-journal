@@ -19,7 +19,10 @@ trait ReadsIdempotencyKey
      */
     public function validationData(): array
     {
-        return [...$this->all(), 'idempotency_key' => $this->header(self::IDEMPOTENCY_HEADER)];
+        return [
+            ...$this->all(),
+            'idempotency_key' => $this->header(self::IDEMPOTENCY_HEADER),
+        ];
     }
 
     /**
@@ -27,7 +30,12 @@ trait ReadsIdempotencyKey
      */
     protected function idempotencyKeyRules(): array
     {
-        return ['idempotency_key' => ['required', 'string', 'max:'.RequestKey::LONGEST, 'regex:/^[A-Za-z0-9-]+$/']];
+        return ['idempotency_key' => [
+            'required',
+            'string',
+            'max:'.RequestKey::LONGEST,
+            'regex:/^[A-Za-z0-9-]+$/',
+        ]];
     }
 
     public function requestKey(): string

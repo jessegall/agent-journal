@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -90,10 +90,10 @@ use Illuminate\Support\Carbon;
 ])]
 final class AgentSession extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -383,7 +383,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             ->ofAgents($ids)
             ->running()
             ->oldestFirst()
-            ->get(['agent_id', 'driver_key'])
+            ->get([
+                'agent_id',
+                'driver_key',
+            ])
             ->pluck('driver_key', 'agent_id')
             ->all();
     }
@@ -471,7 +474,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function lockedForHeartbeat(string $sessionId): self
     {
-        return self::query()->whereKey($sessionId)->with(['startToken', 'agent'])->lockForUpdate()->firstOrFail();
+        return self::query()->whereKey($sessionId)->with([
+            'startToken',
+            'agent',
+        ])->lockForUpdate()->firstOrFail();
     }
 
     /**

@@ -20,7 +20,11 @@ final class WorkingOnTaskStateReference extends StateReferenceFactory
     {
         return self::about(
             new SubjectReference($task->id, $task->run_number),
-            ['taskId' => $task->id, 'number' => $task->number, 'runNumber' => $task->run_number],
+            [
+                'taskId' => $task->id,
+                'number' => $task->number,
+                'runNumber' => $task->run_number,
+            ],
         );
     }
 }

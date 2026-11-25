@@ -20,9 +20,16 @@ enum PlanStateGroup: string
     public function states(): array
     {
         return match ($this) {
-            self::Open => [PlanState::Planned, PlanState::Started, PlanState::Paused],
+            self::Open => [
+                PlanState::Planned,
+                PlanState::Started,
+                PlanState::Paused,
+            ],
             self::Waiting => [PlanState::Reviewing],
-            self::Closed => [PlanState::Done, PlanState::Cancelled],
+            self::Closed => [
+                PlanState::Done,
+                PlanState::Cancelled,
+            ],
         };
     }
 }

@@ -267,7 +267,10 @@ final readonly class DeclarativeReader
 
         $counts = [];
 
-        foreach ([...$this->definition->countFields, $this->definition->totalField] as $field) {
+        foreach ([
+            ...$this->definition->countFields,
+            $this->definition->totalField,
+        ] as $field) {
             $count = $field === null ? null : $summary->count($field);
 
             if ($field !== null && $count !== null) {

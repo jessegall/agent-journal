@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\Notifications;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\NotificationMutationType;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -30,7 +30,13 @@ use PhpOption\Option;
  * @property CarbonImmutable|null $created_at
  */
 #[Table('notification_changes')]
-#[Fillable(['scope_id', 'version', 'receipt_id', 'mutation_type', 'sequence'])]
+#[Fillable([
+    'scope_id',
+    'version',
+    'receipt_id',
+    'mutation_type',
+    'sequence',
+])]
 final class NotificationChange extends Model implements ReadableModel
 {
     use BoundedReads;

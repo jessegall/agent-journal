@@ -76,7 +76,15 @@ exit(1);
  */
 function stagedFiles(): array
 {
-    $staged = commandLines(['git', 'diff', '--cached', '--name-only', '--diff-filter=ACMR', '--', ...PROJECT_FOLDERS]);
+    $staged = commandLines([
+        'git',
+        'diff',
+        '--cached',
+        '--name-only',
+        '--diff-filter=ACMR',
+        '--',
+        ...PROJECT_FOLDERS,
+    ]);
 
     return array_values(array_filter($staged, fn (string $file) => is_file($file) && preg_match(NOT_PROJECT_NAMES, $file) !== 1));
 }
@@ -88,7 +96,11 @@ function wholeCodeVocabulary(): NameVocabulary
 {
     // learned in a process of its own: this one parses the scanned files, and a file is parsed once per process
     if (! is_file(VOCABULARY_FILE)) {
-        commandLines([PHP_BINARY, __FILE__, '--vocabulary']);
+        commandLines([
+            PHP_BINARY,
+            __FILE__,
+            '--vocabulary',
+        ]);
     }
 
     return NameVocabulary::fromFile(VOCABULARY_FILE);

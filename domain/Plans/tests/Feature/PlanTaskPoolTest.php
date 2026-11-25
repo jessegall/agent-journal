@@ -66,12 +66,23 @@ final class PlanTaskPoolTest extends TestCase
         $this->planStructure()->addTasks($build, [$first]);
         $factory = $this->app->make(PlanTaskPoolFactory::class);
 
-        $this->assertSame([$second, $first, $fourth, $third], $this->open($factory, $plan)->ids->ids);
+        $this->assertSame([
+            $second,
+            $first,
+            $fourth,
+            $third,
+        ], $this->open($factory, $plan)->ids->ids);
 
         $later = Task::factory()->create()->id;
         $this->planStructure()->addTasks($build, [$later]);
 
-        $this->assertSame([$second, $first, $later, $fourth, $third], $this->open($factory, $plan)->ids->ids);
+        $this->assertSame([
+            $second,
+            $first,
+            $later,
+            $fourth,
+            $third,
+        ], $this->open($factory, $plan)->ids->ids);
     }
 
     /**

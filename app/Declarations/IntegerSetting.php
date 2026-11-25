@@ -103,6 +103,9 @@ final readonly class IntegerSetting implements Setting
 
     public function catalogueConstraints(): CatalogueConstraints|Optional
     {
-        return IntegerConstraintsData::from(['minimum' => $this->minimum, 'maximum' => $this->maximum]);
+        return IntegerConstraintsData::from([
+            'minimum' => $this->minimum,
+            'maximum' => $this->maximum,
+        ]);
     }
 }

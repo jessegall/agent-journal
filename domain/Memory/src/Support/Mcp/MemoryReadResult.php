@@ -41,7 +41,10 @@ final readonly class MemoryReadResult
         }
 
         if (strlen(json_encode($text, JSON_THROW_ON_ERROR)) <= 3000) {
-            return ToolResult::ok([...$summary, ...$text]);
+            return ToolResult::ok([
+                ...$summary,
+                ...$text,
+            ]);
         }
 
         $position = $this->fields->start(new Continuation(

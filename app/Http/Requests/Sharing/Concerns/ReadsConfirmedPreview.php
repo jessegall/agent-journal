@@ -15,8 +15,16 @@ trait ReadsConfirmedPreview
     protected function confirmedPreviewRules(): array
     {
         return [
-            'previewId' => ['required', 'string', 'ulid'],
-            'previewChecksum' => ['required', 'string', 'size:64'],
+            'previewId' => [
+                'required',
+                'string',
+                'ulid',
+            ],
+            'previewChecksum' => [
+                'required',
+                'string',
+                'size:64',
+            ],
         ];
     }
 

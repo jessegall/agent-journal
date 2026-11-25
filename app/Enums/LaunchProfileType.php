@@ -34,7 +34,11 @@ enum LaunchProfileType: string
     {
         return match ($this) {
             self::Standard => [],
-            self::ProtectedAccount => ['SETUID', 'SETGID', 'SETPCAP'],
+            self::ProtectedAccount => [
+                'SETUID',
+                'SETGID',
+                'SETPCAP',
+            ],
         };
     }
 

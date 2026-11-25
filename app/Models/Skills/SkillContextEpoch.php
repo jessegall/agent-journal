@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -13,6 +11,8 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Skills\SkillContextEpochAdvanced;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -27,7 +27,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'epoch'])]
+#[Fillable([
+    'session_id',
+    'epoch',
+])]
 final class SkillContextEpoch extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -64,7 +67,10 @@ final class SkillContextEpoch extends Model implements EventSource, ReadableMode
      */
     public static function lockedFor(string $sessionId): self
     {
-        $epoch = new self(['session_id' => $sessionId, 'epoch' => 0]);
+        $epoch = new self([
+            'session_id' => $sessionId,
+            'epoch' => 0,
+        ]);
         $epoch->setAttribute($epoch->getKeyName(), $epoch->newUniqueId());
         $epoch->insertIfAbsent();
 

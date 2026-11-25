@@ -57,7 +57,10 @@ final readonly class PlanReadResult
 
     private function first(string $planId, ReadView $view): Continuation
     {
-        return new Continuation(self::TOOL, $planId, ['view' => $view->value, 'phase_offset' => 0], 0);
+        return new Continuation(self::TOOL, $planId, [
+            'view' => $view->value,
+            'phase_offset' => 0,
+        ], 0);
     }
 
     /**
@@ -108,7 +111,10 @@ final readonly class PlanReadResult
         return new Continuation(
             self::TOOL,
             $plan->id,
-            [...$position->filters, 'phase_offset' => $hasMorePhases ? $phase : 0],
+            [
+                ...$position->filters,
+                'phase_offset' => $hasMorePhases ? $phase : 0,
+            ],
             $taskOffset,
             revision: $plan->revision,
         );
@@ -126,7 +132,10 @@ final readonly class PlanReadResult
             'type' => $plan->type->value,
             'state' => $plan->state->value,
             'revision' => $plan->revision,
-            'creator' => ['type' => $plan->creatorType->value, 'id' => $plan->creatorId],
+            'creator' => [
+                'type' => $plan->creatorType->value,
+                'id' => $plan->creatorId,
+            ],
             'progress' => [
                 'finished' => $plan->progress->finished,
                 'cancelled' => $plan->progress->cancelled,

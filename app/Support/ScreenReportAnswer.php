@@ -38,6 +38,9 @@ final readonly class ScreenReportAnswer implements JsonSerializable
             return ['status' => 'stored'];
         }
 
-        return ['status' => 'refused', 'reason' => $this->refusal->value];
+        return [
+            'status' => 'refused',
+            'reason' => $this->refusal->value,
+        ];
     }
 }

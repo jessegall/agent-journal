@@ -47,7 +47,15 @@ use PhpOption\Option;
  * @property CarbonImmutable|null $last_served_at
  */
 #[Table('auto_assignments')]
-#[Fillable(['actor_type', 'actor_id', 'assignable_type', 'enabled', 'pool', 'size', 'configuration_revision'])]
+#[Fillable([
+    'actor_type',
+    'actor_id',
+    'assignable_type',
+    'enabled',
+    'pool',
+    'size',
+    'configuration_revision',
+])]
 final class AutoAssignment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

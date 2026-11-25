@@ -27,9 +27,19 @@ trait ReadsAutoAssignmentInput
     protected function keyRules(): array
     {
         return [
-            'actorType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
-            'actorId' => ['required', 'ulid'],
-            'assignableType' => ['required', 'string', 'max:100'],
+            'actorType' => [
+                'required',
+                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+            ],
+            'actorId' => [
+                'required',
+                'ulid',
+            ],
+            'assignableType' => [
+                'required',
+                'string',
+                'max:100',
+            ],
             'agent' => ['prohibited'],
             'session' => ['prohibited'],
             'actor' => ['prohibited'],
@@ -42,11 +52,29 @@ trait ReadsAutoAssignmentInput
     protected function poolRules(): array
     {
         return [
-            'pool' => ['required', 'string', 'max:100'],
-            'records' => ['present', 'array', 'max:1000'],
-            'records.*' => ['string', 'max:64'],
-            'target' => ['nullable', 'string', 'max:64'],
-            'size' => ['required', 'integer'],
+            'pool' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'records' => [
+                'present',
+                'array',
+                'max:1000',
+            ],
+            'records.*' => [
+                'string',
+                'max:64',
+            ],
+            'target' => [
+                'nullable',
+                'string',
+                'max:64',
+            ],
+            'size' => [
+                'required',
+                'integer',
+            ],
         ];
     }
 
@@ -55,7 +83,11 @@ trait ReadsAutoAssignmentInput
      */
     protected function revisionRules(): array
     {
-        return ['expectedRevision' => ['required', 'integer', 'min:0']];
+        return ['expectedRevision' => [
+            'required',
+            'integer',
+            'min:0',
+        ]];
     }
 
     public function key(): AutoAssignmentKey

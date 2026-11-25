@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\ActorType;
 use App\Models\Desks\DeskRecord;
@@ -85,7 +85,10 @@ final class FocusedQuestionTest extends TestCase
         $this->asOwner();
         $this->team = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDeskCommand('Team', 2, false)));
 
-        foreach ([ActorIdentity::of($this->owner), $this->builderIdentity()] as $actor) {
+        foreach ([
+            ActorIdentity::of($this->owner),
+            $this->builderIdentity(),
+        ] as $actor) {
             $this->app->make(AssignmentTransaction::class)->run(
                 fn () => $this->app->make(DeskSeatService::class)->seat($this->team->id, $actor),
             );

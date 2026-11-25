@@ -67,6 +67,9 @@ final readonly class PlanDetailRecords implements PlanDetailsResolver
             $position += count($taskIds);
         }
 
-        return [$phases, $position > $end ? $end : null];
+        return [
+            $phases,
+            $position > $end ? $end : null,
+        ];
     }
 }

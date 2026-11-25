@@ -63,7 +63,10 @@ final readonly class ReaderDefinition
     {
         return [
             'rules' => array_map(
-                fn (RecordRule $rule) => ['role' => $rule->role->value, 'pattern' => $rule->pattern],
+                fn (RecordRule $rule) => [
+                    'role' => $rule->role->value,
+                    'pattern' => $rule->pattern,
+                ],
                 $this->rules,
             ),
             'count_fields' => $this->countFields,

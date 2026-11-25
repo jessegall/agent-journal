@@ -25,7 +25,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $created_at
  */
 #[Table('run_result_conflicts')]
-#[Fillable(['run_id', 'attempt_id', 'kept_result', 'offered_result'])]
+#[Fillable([
+    'run_id',
+    'attempt_id',
+    'kept_result',
+    'offered_result',
+])]
 final class RunResultConflict extends Model implements ReadableModel
 {
     use BoundedReads;

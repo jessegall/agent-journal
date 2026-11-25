@@ -25,7 +25,11 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property int $position
  */
 #[Table('phase_tasks')]
-#[Fillable(['phase_id', 'task_id', 'position'])]
+#[Fillable([
+    'phase_id',
+    'task_id',
+    'position',
+])]
 final class PhaseTask extends Pivot implements ReadableModel
 {
     use BoundedReads;
@@ -57,7 +61,10 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
+        return ReadOrder::by([
+            'phase_tasks.phase_id',
+            'phase_tasks.position',
+        ], 'phase_tasks.id');
     }
 
     /**
@@ -81,7 +88,11 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public static function create(Phase $phase, string $taskId, int $position): self
     {
-        return self::query()->create(['phase_id' => $phase->id, 'task_id' => $taskId, 'position' => $position]);
+        return self::query()->create([
+            'phase_id' => $phase->id,
+            'task_id' => $taskId,
+            'position' => $position,
+        ]);
     }
 
     /**
@@ -98,7 +109,10 @@ final class PhaseTask extends Pivot implements ReadableModel
             ->ofPhases($phaseIds)
             ->inPositionOrder()
             ->readAll('every task of the phases a plan read shows')
-            ->get(['phase_id', 'task_id']);
+            ->get([
+                'phase_id',
+                'task_id',
+            ]);
 
         foreach ($phaseTasks as $phaseTask) {
             $taskIds[$phaseTask->phase_id][] = (string) $phaseTask->task_id;

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -17,6 +16,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Domain\Tasks\Events\TaskWaitChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,13 +39,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['dependent_task_id', 'prerequisite_task_id', 'created_by_type', 'created_by_id'])]
+#[Fillable([
+    'dependent_task_id',
+    'prerequisite_task_id',
+    'created_by_type',
+    'created_by_id',
+])]
 final class TaskWait extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

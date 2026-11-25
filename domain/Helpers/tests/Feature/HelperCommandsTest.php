@@ -30,7 +30,10 @@ final class HelperCommandsTest extends TestCase
     {
         $this->runCommandsAs($this->parent);
 
-        $this->artisan('helper:start', ['profile' => 'plan-reviewer', '--brief' => 'Review it.'])
+        $this->artisan('helper:start', [
+            'profile' => 'plan-reviewer',
+            '--brief' => 'Review it.',
+        ])
             ->expectsOutputToContain('model-required')
             ->assertFailed();
 
@@ -59,11 +62,17 @@ final class HelperCommandsTest extends TestCase
         $receipt = $this->start((string) Str::ulid(), 'Review plan 7');
         $this->runCommandsAs($this->parent);
 
-        $this->artisan('helper:steer', ['identity' => $receipt->identityId, 'text' => 'Look at the tests too'])
+        $this->artisan('helper:steer', [
+            'identity' => $receipt->identityId,
+            'text' => 'Look at the tests too',
+        ])
             ->expectsOutputToContain("Steered job {$receipt->jobId}.")
             ->assertSuccessful();
 
-        $this->artisan('helper:cancel', ['identity' => $receipt->identityId, '--job' => $receipt->jobId])
+        $this->artisan('helper:cancel', [
+            'identity' => $receipt->identityId,
+            '--job' => $receipt->jobId,
+        ])
             ->expectsOutputToContain("Cancelled job {$receipt->jobId}")
             ->assertSuccessful();
 

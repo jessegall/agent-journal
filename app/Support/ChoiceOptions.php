@@ -110,7 +110,10 @@ final readonly class ChoiceOptions
      */
     public static function constraintsData(array $options): CatalogueConstraints
     {
-        $shown = array_map(fn (Choice $option) => ['value' => $option->optionKey, 'label' => $option->label], $options);
+        $shown = array_map(fn (Choice $option) => [
+            'value' => $option->optionKey,
+            'label' => $option->label,
+        ], $options);
 
         if (is_int($options[0]->optionKey)) {
             return IntegerChoiceConstraintsData::from(['options' => IntegerChoiceOptionData::collect($shown)]);

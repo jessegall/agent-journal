@@ -16,7 +16,10 @@ final readonly class RecheckDriverSwitchHandler implements CommandHandler
     {
         $switch = DriverSwitch::lockedById($command->switchId);
 
-        $session = in_array($switch->stage, [DriverSwitchStage::Stopping, DriverSwitchStage::StopUnconfirmed], true)
+        $session = in_array($switch->stage, [
+            DriverSwitchStage::Stopping,
+            DriverSwitchStage::StopUnconfirmed,
+        ], true)
             ? $switch->expected_session_id
             : $switch->replacement_session_id;
 

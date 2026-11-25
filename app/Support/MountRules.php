@@ -177,12 +177,20 @@ final readonly class MountRules
         if ($resumedSessionId !== null) {
             $history = "{$this->installationName}-history-{$resumedSessionId}";
 
-            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true), $files, $settings];
+            return [
+                ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true),
+                $files,
+                $settings,
+            ];
         }
 
         $history = ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true);
 
-        return [$history, $files, $settings];
+        return [
+            $history,
+            $files,
+            $settings,
+        ];
     }
 
     /**

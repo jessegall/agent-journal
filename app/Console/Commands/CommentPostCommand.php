@@ -61,7 +61,10 @@ final class CommentPostCommand extends Command
             return null;
         }
 
-        return CommentPlace::from(['version' => (string) $version, ...$fields]);
+        return CommentPlace::from([
+            'version' => (string) $version,
+            ...$fields,
+        ]);
     }
 
     private function filledOption(string $name): string|null

@@ -33,7 +33,10 @@ final class PresenceReportData extends Data
         #[Present]
         #[DataCollectionOf(HostDescriptorData::class)]
         public readonly array $descriptors,
-        #[In(['succeeded', 'failed'])]
+        #[In([
+            'succeeded',
+            'failed',
+        ])]
         public readonly string $provisioning,
         public readonly bool $isTakeover = false,
         #[Min(0)]

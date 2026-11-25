@@ -17,8 +17,15 @@ final readonly class PrintFormatted implements Pipe
 {
     public function handle(BuiltinCall $call): BuiltinEnded
     {
-        [$format, $arguments] = [$call->arguments[0], array_slice($call->arguments, 1)];
-        $pattern = strtr($format, ['\\n' => "\n", '\\t' => "\t", '\\\\' => '\\']);
+        [$format, $arguments] = [
+            $call->arguments[0],
+            array_slice($call->arguments, 1),
+        ];
+        $pattern = strtr($format, [
+            '\\n' => "\n",
+            '\\t' => "\t",
+            '\\\\' => '\\',
+        ]);
         $perPass = max(1, preg_match_all('/%[sd]/', $pattern));
         $printed = '';
 

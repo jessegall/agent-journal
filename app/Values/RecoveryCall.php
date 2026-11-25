@@ -20,6 +20,9 @@ final readonly class RecoveryCall
      */
     public function toArray(): array
     {
-        return ['tool' => $this->tool, 'arguments' => (object) $this->arguments];
+        return [
+            'tool' => $this->tool,
+            'arguments' => (object) $this->arguments,
+        ];
     }
 }

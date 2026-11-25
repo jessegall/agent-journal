@@ -63,7 +63,10 @@ final readonly class ChatInboxes implements PairChats
     {
         $viewer = ActorIdentity::of($this->actors->actor());
 
-        return $this->commands->run(new OpenInboxCommand(self::GROUP_PROVIDER, (string) Str::ulid(), $title, [$viewer, ...$users]));
+        return $this->commands->run(new OpenInboxCommand(self::GROUP_PROVIDER, (string) Str::ulid(), $title, [
+            $viewer,
+            ...$users,
+        ]));
     }
 
     /**
@@ -127,7 +130,10 @@ final readonly class ChatInboxes implements PairChats
     public function joined(): Builder
     {
         return Inbox::query()
-            ->whereIn('provider_key', [self::PAIR_PROVIDER, self::GROUP_PROVIDER])
+            ->whereIn('provider_key', [
+                self::PAIR_PROVIDER,
+                self::GROUP_PROVIDER,
+            ])
             ->attachedTo(ActorIdentity::of($this->actors->actor()))
             ->orderBy('id');
     }

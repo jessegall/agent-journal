@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\TakesPartInMessages;
-use App\Contracts\Messages\MessageReceiver;
-use App\Contracts\Messages\MessageSender;
-use App\Contracts\Questions\AnswersQuestions;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
+use App\Concerns\TakesPartInMessages;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Messages\MessageReceiver;
+use App\Contracts\Messages\MessageSender;
+use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\DriverType;
@@ -28,6 +26,8 @@ use App\Values\RunningRuntime;
 use App\Values\StackTarget;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -49,27 +49,33 @@ use PhpOption\Some;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'profile_key'])]
+#[Fillable([
+    'name',
+    'profile_key',
+])]
 final class Agent extends Model implements
-    MessageReceiver,
-    MessageSender,
+    AnswersQuestions,
     Assignee,
     EventSource,
-    AnswersQuestions,
+    MessageReceiver,
+    MessageSender,
     ReadableModel
 {
-    use TakesPartInMessages;
     use BoundedReads;
     use HasUlids;
     use Linkable;
     use RaisesEvents;
+    use TakesPartInMessages;
 
     /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
-        return ['retired_at' => 'datetime', 'driver_type_preference' => DriverType::class];
+        return [
+            'retired_at' => 'datetime',
+            'driver_type_preference' => DriverType::class,
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -79,7 +85,10 @@ final class Agent extends Model implements
      */
     public static function create(string $name, string $profileKey): self
     {
-        return self::query()->create(['name' => $name, 'profile_key' => $profileKey]);
+        return self::query()->create([
+            'name' => $name,
+            'profile_key' => $profileKey,
+        ]);
     }
 
     // ----------[ Mutations ]----------

@@ -17,6 +17,9 @@ final class ReviewingPlanStateReference extends StateReferenceFactory
 
     public static function forPlan(string $planId, int $number): StateReference
     {
-        return self::about(new SubjectReference($planId, 1), ['planId' => $planId, 'number' => $number]);
+        return self::about(new SubjectReference($planId, 1), [
+            'planId' => $planId,
+            'number' => $number,
+        ]);
     }
 }

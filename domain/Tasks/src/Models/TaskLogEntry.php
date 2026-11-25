@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -39,13 +39,21 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property-read TaskLogLine $line
  */
-#[Fillable(['task_id', 'task_run_id', 'run_number', 'actor_type', 'actor_id', 'text', 'sequence'])]
+#[Fillable([
+    'task_id',
+    'task_run_id',
+    'run_number',
+    'actor_type',
+    'actor_id',
+    'text',
+    'sequence',
+])]
 final class TaskLogEntry extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const null UPDATED_AT = null;
@@ -93,7 +101,10 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by(['task_log_entries.task_id', 'task_log_entries.sequence'], 'task_log_entries.id');
+        return ReadOrder::by([
+            'task_log_entries.task_id',
+            'task_log_entries.sequence',
+        ], 'task_log_entries.id');
     }
 
     // ----------[ Accessors ]----------

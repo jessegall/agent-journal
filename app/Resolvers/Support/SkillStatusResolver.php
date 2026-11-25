@@ -106,10 +106,13 @@ final readonly class SkillStatusResolver
         try {
             $selected = $this->selection->select($entries, $this->contexts->forSession($session));
         } catch (SkillSelectionConflict|SkillContextUnavailable $refused) {
-            return ['selected' => [], 'reasons' => array_fill_keys(
-                array_map(fn (SkillEntry $entry) => $entry->key->key, $entries),
-                $refused->getMessage(),
-            )];
+            return [
+                'selected' => [],
+                'reasons' => array_fill_keys(
+                    array_map(fn (SkillEntry $entry) => $entry->key->key, $entries),
+                    $refused->getMessage(),
+                ),
+            ];
         }
 
         $reasons = [];
@@ -118,7 +121,10 @@ final readonly class SkillStatusResolver
             $reasons[$excluded->key->key] = $excluded->reason;
         }
 
-        return ['selected' => $selected->selectedKeys(), 'reasons' => $reasons];
+        return [
+            'selected' => $selected->selectedKeys(),
+            'reasons' => $reasons,
+        ];
     }
 
     public function status(): SkillStatus

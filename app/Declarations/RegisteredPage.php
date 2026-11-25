@@ -51,7 +51,10 @@ final readonly class RegisteredPage
             uri: $owner->uri($path),
             resolver: ResolverDefinition::of($owner, $key, $page->resolver, PageResolver::class, $page->dataClass),
             componentFile: $owner->presentationFile($key, $page->component, $page->isDeclared),
-            propName: 'window_'.str_replace(['.', '-'], '_', $key),
+            propName: 'window_'.str_replace([
+                '.',
+                '-',
+            ], '_', $key),
             slots: self::checkedSlots($owner, $key, $path, $page->slots),
         );
     }

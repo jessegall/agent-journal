@@ -99,7 +99,12 @@ final class RulesDomain extends Domain implements
         return [
             new PolicyDefinition(
                 RulePolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+                [
+                    AccessType::Read,
+                    AccessType::Create,
+                    AccessType::Edit,
+                    AccessType::Delete,
+                ],
             ),
         ];
     }
@@ -109,7 +114,12 @@ final class RulesDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [ApproveRuleCommand::class, DenyRuleCommand::class, ProposeRuleCommand::class, RemoveRuleCommand::class];
+        return [
+            ApproveRuleCommand::class,
+            DenyRuleCommand::class,
+            ProposeRuleCommand::class,
+            RemoveRuleCommand::class,
+        ];
     }
 
     public function pages(): array
@@ -127,7 +137,11 @@ final class RulesDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [RulesListTool::class, RuleReadTool::class, ProposeRuleTool::class];
+        return [
+            RulesListTool::class,
+            RuleReadTool::class,
+            ProposeRuleTool::class,
+        ];
     }
 
     public function mcpResources(): array

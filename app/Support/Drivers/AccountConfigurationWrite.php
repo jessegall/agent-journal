@@ -54,7 +54,10 @@ final readonly class AccountConfigurationWrite
 
         try {
             $current = is_file($path) ? (string) file_get_contents($path) : '';
-            $added = $this->withTables($this->withSettings($current, $settings), [...$tables, $trust->tomlTable()]);
+            $added = $this->withTables($this->withSettings($current, $settings), [
+                ...$tables,
+                $trust->tomlTable(),
+            ]);
             $prepared = $this->withTables($this->withoutTables($added, $replacedTables), $replacedTables);
 
             if ($prepared === $current) {

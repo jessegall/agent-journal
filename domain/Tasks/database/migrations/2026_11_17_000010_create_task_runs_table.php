@@ -20,7 +20,10 @@ return new class extends Migration
             $table->text('outcome')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['task_id', 'run_number']);
+            $table->unique([
+                'task_id',
+                'run_number',
+            ]);
         });
     }
 

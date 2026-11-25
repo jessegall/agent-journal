@@ -26,7 +26,11 @@ final class JournalAdmissionTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.user'])->get(
+        Route::middleware([
+            'web',
+            'auth',
+            'journal.user',
+        ])->get(
             '/access-test/actor',
             fn (ActorContext $actor) => "{$actor->type->value} {$actor->id}",
         );
@@ -71,7 +75,13 @@ final class JournalAdmissionTest extends TestCase
         $admission = $this->app->make(JournalAdmission::class);
 
         $this->assertInstanceOf(OwnerAdmission::class, $admission);
-        $this->assertSame([ActorType::User, $owner->id], [$owner->actorType(), $owner->actorId()]);
+        $this->assertSame([
+            ActorType::User,
+            $owner->id,
+        ], [
+            $owner->actorType(),
+            $owner->actorId(),
+        ]);
         $this->assertSame(ActorType::Agent, $agent->actorType());
         $this->assertTrue($admission->admits($owner));
         $this->assertFalse($admission->admits($agent));

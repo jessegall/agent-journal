@@ -14,7 +14,12 @@ use PhpOption\Option;
  */
 final readonly class CommandGrammar
 {
-    private const array SCALARS = ['int', 'string', 'bool', 'float'];
+    private const array SCALARS = [
+        'int',
+        'string',
+        'bool',
+        'float',
+    ];
 
     private const string UNLISTED_ARRAY = 'is an array without a list<int>, list<string>, list of an enum or list of '
         .'a value docblock';
@@ -37,7 +42,10 @@ final readonly class CommandGrammar
                 return "{$property->name()} is not a public constructor property";
             }
 
-            $problem = $this->problemWithType($property->type(), $property, [...$seen, $class]);
+            $problem = $this->problemWithType($property->type(), $property, [
+                ...$seen,
+                $class,
+            ]);
 
             if ($problem !== null) {
                 return "{$property->name()} {$problem}";
@@ -118,7 +126,10 @@ final readonly class CommandGrammar
 
         $elementType = ltrim($match[1], '\\');
 
-        if (in_array($elementType, ['int', 'string'], true)) {
+        if (in_array($elementType, [
+            'int',
+            'string',
+        ], true)) {
             return null;
         }
 

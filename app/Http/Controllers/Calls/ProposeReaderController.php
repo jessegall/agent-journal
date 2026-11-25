@@ -20,6 +20,9 @@ final readonly class ProposeReaderController
         $definition = ReaderDefinition::fromArray($call->definition);
         $command = new ProposeReaderCommand($call->commandRequest, $call->declarationRevision, $definition);
 
-        return ReaderProposed::from(['readerRevisionId' => $commands->run($command), 'state' => 'draft']);
+        return ReaderProposed::from([
+            'readerRevisionId' => $commands->run($command),
+            'state' => 'draft',
+        ]);
     }
 }

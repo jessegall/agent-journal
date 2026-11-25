@@ -21,11 +21,29 @@ trait ReadsTaskFilters
     protected function filterRules(): array
     {
         return [
-            'q' => ['nullable', 'string', 'max:200'],
-            'page' => ['nullable', 'integer', 'min:1'],
-            'state' => ['nullable', Rule::enum(TaskStateGroup::class)],
-            'holder' => ['nullable', Rule::enum(TaskHolderFilter::class)],
-            'task' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
+            'q' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'state' => [
+                'nullable',
+                Rule::enum(TaskStateGroup::class),
+            ],
+            'holder' => [
+                'nullable',
+                Rule::enum(TaskHolderFilter::class),
+            ],
+            'task' => [
+                'nullable',
+                'string',
+                'regex:/^[1-9][0-9]{0,18}$/',
+            ],
         ];
     }
 

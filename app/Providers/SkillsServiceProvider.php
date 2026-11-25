@@ -63,7 +63,13 @@ final class SkillsServiceProvider extends ServiceProvider
 
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
-            ['skills', 'skill_revisions', 'skill_requests', 'skill_generations', 'skill_publications'],
+            [
+                'skills',
+                'skill_revisions',
+                'skill_requests',
+                'skill_generations',
+                'skill_publications',
+            ],
         ));
 
         $this->app->scoped(SkillResolver::class, fn (Application $app) => new CatalogueOnFirstRead(
@@ -86,7 +92,10 @@ final class SkillsServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             SkillAuthoringPolicy::class,
-            [AccessType::Create, AccessType::Edit],
+            [
+                AccessType::Create,
+                AccessType::Edit,
+            ],
         ));
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {

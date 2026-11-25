@@ -30,7 +30,10 @@ final class EnsureOwnerCommandTest extends TestCase
 
     public function test_it_makes_the_owner_with_its_desk_once(): void
     {
-        config(['access.owner_email' => 'owner@journal.test', 'access.owner_password' => 'first-secret']);
+        config([
+            'access.owner_email' => 'owner@journal.test',
+            'access.owner_password' => 'first-secret',
+        ]);
 
         $this->artisan('access:owner-ensure')->assertSuccessful();
         $desks = DeskRecord::query()->withoutGlobalScopes()->count();
@@ -44,7 +47,10 @@ final class EnsureOwnerCommandTest extends TestCase
 
     public function test_a_changed_password_setting_resets_the_owner_password(): void
     {
-        config(['access.owner_email' => 'owner@journal.test', 'access.owner_password' => 'first-secret']);
+        config([
+            'access.owner_email' => 'owner@journal.test',
+            'access.owner_password' => 'first-secret',
+        ]);
         $this->artisan('access:owner-ensure')->assertSuccessful();
 
         config(['access.owner_password' => 'second-secret']);
@@ -56,7 +62,10 @@ final class EnsureOwnerCommandTest extends TestCase
 
     public function test_without_a_password_setting_no_account_is_made(): void
     {
-        config(['access.owner_email' => 'owner@journal.test', 'access.owner_password' => null]);
+        config([
+            'access.owner_email' => 'owner@journal.test',
+            'access.owner_password' => null,
+        ]);
 
         $this->artisan('access:owner-ensure')->assertSuccessful();
 

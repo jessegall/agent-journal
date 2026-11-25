@@ -12,11 +12,15 @@ declare(strict_types=1);
  */
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
@@ -43,18 +47,55 @@ function outermostArrayOf(Node $node): Node
 }
 
 /**
- * Whether an array may stay on one line: the value of a local variable, or the left side of a destructuring.
+ * Whether an array may stay on one line: the value of a local variable, the left side of a destructuring, or a
+ * validation rule list, in a request class or passed to a validate call (user message 22100).
  */
 function mayStayOnOneLine(Array_ $array): bool
 {
     $outermost = outermostArrayOf($array);
     $holder = $outermost->getAttribute('parent');
 
+    if (isInRequestClass($array) || isValidationRules($holder)) {
+        return true;
+    }
+
     if ($holder instanceof Assign || $holder instanceof AssignRef) {
         return $holder->var === $outermost || $holder->var instanceof Variable;
     }
 
     return $holder instanceof Foreach_ && ($holder->valueVar === $outermost || $holder->keyVar === $outermost);
+}
+
+/**
+ * Whether the node sits in a request class: one that extends a class whose name ends in Request.
+ */
+function isInRequestClass(Node $node): bool
+{
+    $parent = $node->getAttribute('parent');
+
+    while ($parent !== null && ! $parent instanceof Class_) {
+        $parent = $parent->getAttribute('parent');
+    }
+
+    if (! $parent instanceof Class_ || $parent->extends === null) {
+        return false;
+    }
+
+    return str_ends_with($parent->extends->getLast(), 'Request');
+}
+
+/**
+ * Whether the node is an argument of a validate call, the rules a request is checked against.
+ */
+function isValidationRules(Node|null $holder): bool
+{
+    if (! $holder instanceof Arg) {
+        return false;
+    }
+
+    $call = $holder->getAttribute('parent');
+
+    return $call instanceof MethodCall && $call->name instanceof Identifier && $call->name->toString() === 'validate';
 }
 
 /**

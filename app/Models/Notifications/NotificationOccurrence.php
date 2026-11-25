@@ -30,7 +30,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $created_at
  */
 #[Table('notification_occurrences')]
-#[Fillable(['occurrence_key', 'source_type', 'target_key', 'target_id'])]
+#[Fillable([
+    'occurrence_key',
+    'source_type',
+    'target_key',
+    'target_id',
+])]
 final class NotificationOccurrence extends Model implements ReadableModel
 {
     use BoundedReads;

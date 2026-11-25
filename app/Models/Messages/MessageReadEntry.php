@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Messages;
 
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageParticipant;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
-use App\Concerns\RaisesEvents;
-use App\Contracts\Events\EventSource;
 use App\Events\Messages\MessageRead;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -29,7 +29,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $read_at
  * @property CarbonImmutable $last_read_at
  */
-#[Fillable(['message_id', 'reader_type', 'reader_id', 'read_at', 'last_read_at'])]
+#[Fillable([
+    'message_id',
+    'reader_type',
+    'reader_id',
+    'read_at',
+    'last_read_at',
+])]
 final class MessageReadEntry extends Model implements EventSource
 {
     use HasUlids;
@@ -44,7 +50,10 @@ final class MessageReadEntry extends Model implements EventSource
      */
     protected function casts(): array
     {
-        return ['read_at' => 'immutable_datetime', 'last_read_at' => 'immutable_datetime'];
+        return [
+            'read_at' => 'immutable_datetime',
+            'last_read_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -57,7 +66,10 @@ final class MessageReadEntry extends Model implements EventSource
                 'reader_type' => $reader->participantType(),
                 'reader_id' => $reader->participantId(),
             ],
-            ['read_at' => $at, 'last_read_at' => $at],
+            [
+                'read_at' => $at,
+                'last_read_at' => $at,
+            ],
         );
 
         if ($entry->wasRecentlyCreated) {

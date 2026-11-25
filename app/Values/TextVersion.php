@@ -31,7 +31,10 @@ final readonly class TextVersion
         return new self(
             $fields['id'],
             $fields['label'],
-            str_replace(["\r\n", "\r"], "\n", $fields['text']),
+            str_replace([
+                "\r\n",
+                "\r",
+            ], "\n", $fields['text']),
             $fields['sections'],
         );
     }

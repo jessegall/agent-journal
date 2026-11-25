@@ -18,6 +18,9 @@ final readonly class RetireRuleController
     {
         $command = new RetireCommandRuleCommand($call->rule, $call->expectedRevision, $call->reason);
 
-        return RuleRetired::from(['ruleId' => $commands->run($command), 'state' => 'retired']);
+        return RuleRetired::from([
+            'ruleId' => $commands->run($command),
+            'state' => 'retired',
+        ]);
     }
 }

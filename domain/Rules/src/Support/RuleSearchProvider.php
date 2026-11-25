@@ -43,7 +43,11 @@ final readonly class RuleSearchProvider implements SearchProvider
             admitted: fn () => self::admitted($constraints),
             idColumn: 'id',
             titleColumn: 'text',
-            columns: ['id', 'number', 'text'],
+            columns: [
+                'id',
+                'number',
+                'text',
+            ],
             titleOf: fn (Rule $rule): string => $rule->text,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $ruleId): bool => $this->access->admitsOpen($query->reader, $ruleId),

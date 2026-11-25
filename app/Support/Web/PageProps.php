@@ -66,7 +66,10 @@ final readonly class PageProps
 
         // Home also offers every window as its own optional prop.
         if ($page->isHome()) {
-            return [...$props, ...$this->forHome($request)];
+            return [
+                ...$props,
+                ...$this->forHome($request),
+            ];
         }
 
         return $props;

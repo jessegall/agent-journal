@@ -37,8 +37,16 @@ while (($line = fgets($input)) !== false) {
     $record = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
     $tree = $syntax->parse($record['source'], ShellDialect::tryFrom($record['dialect']) ?? ShellDialect::Bash);
     $parts = $tree->outcome === ParseOutcome::Complete
-        ? array_map(fn (ShellNode $node) => ['start' => $node->range->start, 'end' => $node->range->end], $tree->executableParts())
+        ? array_map(fn (ShellNode $node) => [
+            'start' => $node->range->start,
+            'end' => $node->range->end,
+        ], $tree->executableParts())
         : [];
     $classification = $tree->outcome === ParseOutcome::Complete ? $classifier->classify($tree, $context)->summary()->toArray() : null;
-    fwrite($output, json_encode(['id' => $record['id'], 'outcome' => $tree->outcome->value, 'parts' => $parts, 'classification' => $classification], JSON_THROW_ON_ERROR)."\n");
+    fwrite($output, json_encode([
+        'id' => $record['id'],
+        'outcome' => $tree->outcome->value,
+        'parts' => $parts,
+        'classification' => $classification,
+    ], JSON_THROW_ON_ERROR)."\n");
 }

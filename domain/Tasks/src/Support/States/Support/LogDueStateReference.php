@@ -14,6 +14,9 @@ final class LogDueStateReference extends StateReferenceFactory
 
     public static function forTask(string $taskId, int $number): StateReference
     {
-        return self::about(new SubjectReference($taskId, 0), ['taskId' => $taskId, 'number' => $number]);
+        return self::about(new SubjectReference($taskId, 0), [
+            'taskId' => $taskId,
+            'number' => $number,
+        ]);
     }
 }

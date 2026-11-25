@@ -21,9 +21,19 @@ return new class extends Migration
             $table->string('author_id', 64);
             $table->timestampsTz();
 
-            $table->unique(['source_type', 'source_id']);
-            $table->index(['inbox_id', 'created_at', 'id']);
-            $table->index(['inbox_id', 'group_number']);
+            $table->unique([
+                'source_type',
+                'source_id',
+            ]);
+            $table->index([
+                'inbox_id',
+                'created_at',
+                'id',
+            ]);
+            $table->index([
+                'inbox_id',
+                'group_number',
+            ]);
         });
     }
 };

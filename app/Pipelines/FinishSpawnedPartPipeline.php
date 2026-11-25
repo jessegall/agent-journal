@@ -23,6 +23,9 @@ final readonly class FinishSpawnedPartPipeline implements PipelineDefinition
 
     public function pipes(): array
     {
-        return [DrainPart::class, FinishPart::class];
+        return [
+            DrainPart::class,
+            FinishPart::class,
+        ];
     }
 }

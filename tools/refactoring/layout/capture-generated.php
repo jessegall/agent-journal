@@ -61,7 +61,10 @@ $callFiles = explode("\n", trim((string) shell_exec('cd '.escapeshellarg($root).
 
 foreach (array_filter($callFiles) as $file) {
     preg_match_all('/public function (\w+)\(/', (string) file_get_contents("{$root}/{$file}"), $methods);
-    $client[$file] = ['hash' => hash_file('sha256', "{$root}/{$file}"), 'methods' => $methods[1]];
+    $client[$file] = [
+        'hash' => hash_file('sha256', "{$root}/{$file}"),
+        'methods' => $methods[1],
+    ];
 }
 
 ksort($client);
@@ -73,9 +76,19 @@ foreach (array_count_values(array_column($typeOwners, 'class')) as $class => $co
     }
 }
 
-foreach ([$files, $exports, $client, $typeOwners] as $index => $set) {
+foreach ([
+    $files,
+    $exports,
+    $client,
+    $typeOwners,
+] as $index => $set) {
     if ($set === []) {
-        $failures[] = ['generated files', 'exports', 'client calls', 'type owners'][$index].' came back empty';
+        $failures[] = [
+            'generated files',
+            'exports',
+            'client calls',
+            'type owners',
+        ][$index].' came back empty';
     }
 }
 

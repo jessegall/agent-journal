@@ -49,6 +49,9 @@ final readonly class TaskLogSearchAccess extends ReadToolSearchAccess
             return [];
         }
 
-        return ['tab' => 'logs', 'entry' => $location->id];
+        return [
+            'tab' => 'logs',
+            'entry' => $location->id,
+        ];
     }
 }

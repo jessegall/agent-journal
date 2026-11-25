@@ -44,9 +44,25 @@ final class DocumentDraftTest extends TestCase
     use WritesInboxMessages;
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'session_policies', 'links', 'command_receipts',
-        'documents', 'document_revisions', 'document_drafts', 'document_closes', 'retained_drafts', 'number_groups',
-        'messages', 'message_attentions', 'desks', 'desk_seats', 'desk_preferences', 'assignments',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'session_policies',
+        'links',
+        'command_receipts',
+        'documents',
+        'document_revisions',
+        'document_drafts',
+        'document_closes',
+        'retained_drafts',
+        'number_groups',
+        'messages',
+        'message_attentions',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'assignments',
     ];
 
     public function test_a_broken_draft_is_kept_and_only_its_granted_parent_can_recover_it(): void

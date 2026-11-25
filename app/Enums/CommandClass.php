@@ -49,7 +49,12 @@ enum CommandClass: string
      */
     public function isFileChange(): bool
     {
-        return in_array($this, [self::Write, self::Edit, self::Delete, self::PackageInstall], true);
+        return in_array($this, [
+            self::Write,
+            self::Edit,
+            self::Delete,
+            self::PackageInstall,
+        ], true);
     }
 
     /**
@@ -62,13 +67,19 @@ enum CommandClass: string
     {
         return match ($this) {
             self::Read => [AccessType::Read],
-            self::Write => [AccessType::Create, AccessType::Edit],
+            self::Write => [
+                AccessType::Create,
+                AccessType::Edit,
+            ],
             self::Edit, self::VersionControl => [AccessType::Edit],
             self::Delete => [AccessType::Delete],
             self::Network => [AccessType::Network],
             self::ProcessControl => [AccessType::Execute],
             self::PrivilegeChange => [AccessType::Admin],
-            self::PackageInstall => [AccessType::Create, AccessType::Network],
+            self::PackageInstall => [
+                AccessType::Create,
+                AccessType::Network,
+            ],
             self::Verification => [AccessType::Test],
             self::Build => [AccessType::Build],
             self::JournalOperation => [],

@@ -31,7 +31,10 @@ final readonly class OpenMainRuntimeController
         );
 
         return new JsonResponse(
-            ['session_id' => $opened->sessionId, 'runtime_id' => $opened->runtimeId],
+            [
+                'session_id' => $opened->sessionId,
+                'runtime_id' => $opened->runtimeId,
+            ],
             JsonResponse::HTTP_CREATED,
         );
     }

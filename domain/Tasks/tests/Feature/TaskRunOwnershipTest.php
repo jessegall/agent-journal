@@ -79,7 +79,13 @@ final class TaskRunOwnershipTest extends TestCase
         $this->actAs($this->second);
         $this->assertThrows(fn () => $this->bus()->run(new StartTaskCommand($this->task->id)), TaskRunTaken::class);
 
-        $this->assertSame([1, 1], [$run, $retry]);
+        $this->assertSame([
+            1,
+            1,
+        ], [
+            $run,
+            $retry,
+        ]);
         $run = TaskRun::query()->where('task_id', $this->task->id)->sole();
         $holder = $this->app->make(RunClaims::class)->holderOf($run->assignmentIdentity())->get();
         $this->assertSame($this->first->agent_id, $holder->id);
@@ -93,8 +99,14 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new FinishTaskCommand($this->task->id, $run, 'Built and tested.'));
 
         $this->assertSame(
-            [TaskState::Finished, 'Built and tested.'],
-            [$this->task->fresh()?->state, $this->task->fresh()?->result_note],
+            [
+                TaskState::Finished,
+                'Built and tested.',
+            ],
+            [
+                $this->task->fresh()?->state,
+                $this->task->fresh()?->result_note,
+            ],
         );
 
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
@@ -122,8 +134,14 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new BlockTaskCommand($this->task->id, $run, 'Waits on review.'));
 
         $this->assertSame(
-            [TaskState::Blocked, 'Waits on review.'],
-            [$this->task->fresh()?->state, $this->task->fresh()?->block_reason],
+            [
+                TaskState::Blocked,
+                'Waits on review.',
+            ],
+            [
+                $this->task->fresh()?->state,
+                $this->task->fresh()?->block_reason,
+            ],
         );
     }
 
@@ -146,8 +164,16 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new CancelTaskCommand($helperTask->id, 'Superseded.'));
 
         $this->assertSame(
-            [TaskState::Started, TaskState::Cancelled, 'Superseded.'],
-            [$this->task->fresh()?->state, $helperTask->fresh()?->state, $helperTask->fresh()?->cancel_reason],
+            [
+                TaskState::Started,
+                TaskState::Cancelled,
+                'Superseded.',
+            ],
+            [
+                $this->task->fresh()?->state,
+                $helperTask->fresh()?->state,
+                $helperTask->fresh()?->cancel_reason,
+            ],
         );
     }
 

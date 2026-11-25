@@ -31,7 +31,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'name', 'line', 'revision', 'body_digest', 'argument_grammar'])]
+#[Fillable([
+    'project_key',
+    'name',
+    'line',
+    'revision',
+    'body_digest',
+    'argument_grammar',
+])]
 final class CommandAlias extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -40,7 +47,10 @@ final class CommandAlias extends Model implements ReadableModel
 
     protected function casts(): array
     {
-        return ['argument_grammar' => 'array', 'revision' => 'integer'];
+        return [
+            'argument_grammar' => 'array',
+            'revision' => 'integer',
+        ];
     }
 
     // ----------[ Mutations ]----------
@@ -87,7 +97,11 @@ final class CommandAlias extends Model implements ReadableModel
     public static function forName(string $projectKey, string $name): self
     {
         return self::query()->named($name, $projectKey)->first() ?? new self(
-            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
+            [
+                'project_key' => $projectKey,
+                'name' => $name,
+                'revision' => 0,
+            ],
         );
     }
 

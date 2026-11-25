@@ -40,11 +40,26 @@ enum TaskState: string
     public function badge(): array
     {
         return match ($this) {
-            self::Open => ['Open', 'waiting'],
-            self::Started => ['Working', 'busy'],
-            self::Blocked => ['Blocked', 'warn'],
-            self::Finished => ['Done', 'good'],
-            self::Cancelled => ['Cancelled', 'quiet'],
+            self::Open => [
+                'Open',
+                'waiting',
+            ],
+            self::Started => [
+                'Working',
+                'busy',
+            ],
+            self::Blocked => [
+                'Blocked',
+                'warn',
+            ],
+            self::Finished => [
+                'Done',
+                'good',
+            ],
+            self::Cancelled => [
+                'Cancelled',
+                'quiet',
+            ],
         };
     }
 

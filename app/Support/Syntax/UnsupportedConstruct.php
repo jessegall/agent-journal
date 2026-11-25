@@ -16,7 +16,16 @@ final class UnsupportedConstruct
     /**
      * Words after which the next word stands where a command starts.
      */
-    private const array COMMAND_STARTING_WORDS = ['do', 'then', 'else', 'elif', 'time', 'fi', 'done', 'esac'];
+    private const array COMMAND_STARTING_WORDS = [
+        'do',
+        'then',
+        'else',
+        'elif',
+        'time',
+        'fi',
+        'done',
+        'esac',
+    ];
 
     private int $nesting = 0;
 

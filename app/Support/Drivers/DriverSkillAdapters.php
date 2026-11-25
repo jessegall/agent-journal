@@ -20,7 +20,10 @@ final readonly class DriverSkillAdapters
 
     public function __construct(ClaudeCodeSkills $claudeCode, CodexSkills $codex)
     {
-        $this->adapters = [$claudeCode->skillProtocol() => $claudeCode, $codex->skillProtocol() => $codex];
+        $this->adapters = [
+            $claudeCode->skillProtocol() => $claudeCode,
+            $codex->skillProtocol() => $codex,
+        ];
     }
 
     /**

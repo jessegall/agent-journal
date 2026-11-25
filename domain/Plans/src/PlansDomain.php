@@ -228,7 +228,12 @@ final class PlansDomain extends Domain implements
         return [
             new PolicyDefinition(
                 PlanPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
+                [
+                    AccessType::Read,
+                    AccessType::Create,
+                    AccessType::Edit,
+                    AccessType::Admin,
+                ],
             ),
         ];
     }

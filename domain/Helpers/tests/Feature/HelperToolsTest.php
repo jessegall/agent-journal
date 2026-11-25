@@ -49,7 +49,11 @@ final class HelperToolsTest extends TestCase
 
         $this->sendMcp($helper, 'tools/call', [
             'name' => 'helpers_start',
-            'arguments' => ['profile_key' => 'plan-reviewer', 'model' => 'default', 'brief' => 'Review it.'],
+            'arguments' => [
+                'profile_key' => 'plan-reviewer',
+                'model' => 'default',
+                'brief' => 'Review it.',
+            ],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
     }
 
@@ -57,7 +61,11 @@ final class HelperToolsTest extends TestCase
     {
         $this->sendMcp($this->parent, 'tools/call', [
             'name' => 'helpers_start',
-            'arguments' => ['profile_key' => 'plan-reviewer', 'brief' => 'Review it.', 'request_key' => 'no-model'],
+            'arguments' => [
+                'profile_key' => 'plan-reviewer',
+                'brief' => 'Review it.',
+                'request_key' => 'no-model',
+            ],
         ])->assertJsonPath('result.isError', true);
 
         $this->assertDatabaseCount('command_receipts', 0);

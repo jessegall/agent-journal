@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -19,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Events\TaskCheckRecorded;
 use Domain\Tasks\Values\TaskProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -44,13 +44,21 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $bound_at
  * @property-read TaskProof $proof
  */
-#[Fillable(['task_id', 'task_run_id', 'run_number', 'operation', 'caller_type', 'caller_id', 'process_run_id'])]
+#[Fillable([
+    'task_id',
+    'task_run_id',
+    'run_number',
+    'operation',
+    'caller_type',
+    'caller_id',
+    'process_run_id',
+])]
 final class TaskCheck extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const null UPDATED_AT = null;

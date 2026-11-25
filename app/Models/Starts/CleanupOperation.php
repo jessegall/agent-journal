@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -17,7 +15,9 @@ use App\Events\Sessions\CleanupPassRecorded;
 use App\Models\Agents\AgentSession;
 use App\Values\CleanupReport;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -88,7 +88,10 @@ final class CleanupOperation extends Model implements EventSource, ReadableModel
         }
 
         $removed = array_map(fn (CleanupStep $step) => $step->value, $report->removedSteps);
-        $this->removed_steps = array_values(array_unique([...$this->removed_steps, ...$removed]));
+        $this->removed_steps = array_values(array_unique([
+            ...$this->removed_steps,
+            ...$removed,
+        ]));
         $this->recovery_location = $report->keptWorkspace ?? $this->recovery_location;
         $this->last_error = $report->failure;
         $this->attempts += $report->hasFailed() ? 1 : 0;

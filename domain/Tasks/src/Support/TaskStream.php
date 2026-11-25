@@ -34,18 +34,32 @@ final readonly class TaskStream
 
         $entries = [
             ...array_map(
-                fn (TaskTransition $change) => ['at' => $change->at, 'id' => $change->id, 'change' => $change],
+                fn (TaskTransition $change) => [
+                    'at' => $change->at,
+                    'id' => $change->id,
+                    'change' => $change,
+                ],
                 $changes['entries'],
             ),
             ...array_map(
-                fn (TaskLogLine $line) => ['at' => $line->at, 'id' => $line->id, 'line' => $line],
+                fn (TaskLogLine $line) => [
+                    'at' => $line->at,
+                    'id' => $line->id,
+                    'line' => $line,
+                ],
                 $lines['entries'],
             ),
         ];
 
         usort(
             $entries,
-            fn (array $first, array $second) => [$second['at'], $second['id']] <=> [$first['at'], $first['id']],
+            fn (array $first, array $second) => [
+                $second['at'],
+                $second['id'],
+            ] <=> [
+                $first['at'],
+                $first['id'],
+            ],
         );
 
         $shown = array_slice($entries, 0, self::PAGE);
@@ -71,12 +85,18 @@ final readonly class TaskStream
     private function changes(string $taskId, int|null $before): array
     {
         if ($before === 0) {
-            return ['entries' => [], 'hasOlder' => false];
+            return [
+                'entries' => [],
+                'hasOlder' => false,
+            ];
         }
 
         $page = $this->history->historyOf($taskId, $before, self::PAGE);
 
-        return ['entries' => $page->entries, 'hasOlder' => $page->nextBefore !== null];
+        return [
+            'entries' => $page->entries,
+            'hasOlder' => $page->nextBefore !== null,
+        ];
     }
 
     /**
@@ -85,14 +105,20 @@ final readonly class TaskStream
     private function lines(string $taskId, int|null $before): array
     {
         if ($before === 0) {
-            return ['entries' => [], 'hasOlder' => false];
+            return [
+                'entries' => [],
+                'hasOlder' => false,
+            ];
         }
 
         $page = $before === null
             ? $this->log->newest($taskId, self::PAGE)
             : $this->log->before($taskId, $before, self::PAGE);
 
-        return ['entries' => $page->lines, 'hasOlder' => $page->olderBefore !== null];
+        return [
+            'entries' => $page->lines,
+            'hasOlder' => $page->olderBefore !== null,
+        ];
     }
 
     /**
@@ -125,13 +151,19 @@ final readonly class TaskStream
     private static function cursorOf(string $before): array
     {
         if ($before === '') {
-            return [null, null];
+            return [
+                null,
+                null,
+            ];
         }
 
         $parts = array_pad(explode(',', $before, 2), 2, 'n');
 
         [$first, $second] = array_map(fn (string $part) => $part === 'n' ? null : max(0, (int) $part), $parts);
 
-        return [$first, $second];
+        return [
+            $first,
+            $second,
+        ];
     }
 }

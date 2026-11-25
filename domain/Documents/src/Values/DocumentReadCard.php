@@ -16,6 +16,10 @@ final readonly class DocumentReadCard
      */
     public function toArray(): array
     {
-        return ['doc_id' => $this->number, 'document_id' => $this->id, 'revision' => $this->revision];
+        return [
+            'doc_id' => $this->number,
+            'document_id' => $this->id,
+            'revision' => $this->revision,
+        ];
     }
 }

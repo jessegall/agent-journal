@@ -42,8 +42,30 @@ final class SuperviseSharingCommand extends Command
         int $auditPruneSeconds,
     ): int {
         $listener = SpawnedProcess::start(
-            [PHP_BINARY, '-q', '-S', "{$host}:{$port}", base_path('bootstrap/sharing-server.php')],
-            [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            [
+                PHP_BINARY,
+                '-q',
+                '-S',
+                "{$host}:{$port}",
+                base_path('bootstrap/sharing-server.php'),
+            ],
+            [
+                0 => [
+                    'file',
+                    '/dev/null',
+                    'r',
+                ],
+                1 => [
+                    'file',
+                    '/dev/null',
+                    'w',
+                ],
+                2 => [
+                    'file',
+                    '/dev/null',
+                    'w',
+                ],
+            ],
             base_path(),
             $this->listenerEnvironment(),
         );

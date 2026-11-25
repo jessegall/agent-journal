@@ -66,11 +66,14 @@ final readonly class WrapperRules
             new WrapperRule('exec', [], $processControlClasses),
             new WrapperRule('time', [$pFlag], CommandClassSet::empty()),
             new WrapperRule('xargs', [
-                OptionGrammar::flag('-0', '--null'), OptionGrammar::flag(
+                OptionGrammar::flag('-0', '--null'),
+                OptionGrammar::flag(
                     '-r',
                     '--no-run-if-empty',
-                ), OptionGrammar::flag('-t', '--verbose'),
-                OptionGrammar::valued(OperandType::Count, '-n', '--max-args'), OptionGrammar::valued(
+                ),
+                OptionGrammar::flag('-t', '--verbose'),
+                OptionGrammar::valued(OperandType::Count, '-n', '--max-args'),
+                OptionGrammar::valued(
                     OperandType::Count,
                     '-L',
                     '--max-lines',
@@ -79,7 +82,8 @@ final readonly class WrapperRules
                     OperandType::Count,
                     '-P',
                     '--max-procs',
-                ), OptionGrammar::valued(OperandType::Text, '-d', '--delimiter'),
+                ),
+                OptionGrammar::valued(OperandType::Text, '-d', '--delimiter'),
                 OptionGrammar::valued(OperandType::Text, '-I'),
             ], CommandClassSet::empty()),
         ];

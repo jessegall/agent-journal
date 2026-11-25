@@ -34,7 +34,10 @@ final class UsageReportData extends Data
         #[Min(0)]
         public readonly int $sourceOrder,
         #[BeforeOrEqual('+5 minutes')]
-        #[WithCast(DateTimeInterfaceCast::class, format: [DATE_ATOM, 'Y-m-d\TH:i:s.uP'])]
+        #[WithCast(DateTimeInterfaceCast::class, format: [
+            DATE_ATOM,
+            'Y-m-d\TH:i:s.uP',
+        ])]
         public readonly CarbonImmutable $observedAt,
         public readonly UsageMeasurementData $measurement,
     ) {}

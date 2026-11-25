@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ResumeRefusal;
 use App\Exceptions\ResumeRefused;
@@ -31,13 +31,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['resume_protocol', 'settings_identity', 'native_id', 'agent_id', 'context_reference'])]
+#[Fillable([
+    'resume_protocol',
+    'settings_identity',
+    'native_id',
+    'agent_id',
+    'context_reference',
+])]
 final class DriverConversation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use OrdersById;
     use Linkable;
+    use OrdersById;
 
     // ----------[ Constructors ]----------
 

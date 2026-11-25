@@ -23,6 +23,9 @@ final readonly class OpenAction
      */
     public function toArray(): array
     {
-        return ['tool' => $this->tool, 'arguments' => $this->arguments];
+        return [
+            'tool' => $this->tool,
+            'arguments' => $this->arguments,
+        ];
     }
 }

@@ -15,7 +15,10 @@ use Laravel\Mcp\Server\Resource;
  */
 abstract class JournalResource extends Resource
 {
-    private const array MIME_TYPES = ['application/json', 'text/markdown'];
+    private const array MIME_TYPES = [
+        'application/json',
+        'text/markdown',
+    ];
 
     /**
      * @throws ResourceMimeTypeRefused

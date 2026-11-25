@@ -88,7 +88,13 @@ final class TaskWaitsTest extends TestCase
 
         $wait = TaskWait::between($this->second->id, $this->first->id);
         $this->assertNotNull($wait?->waived_at);
-        $this->assertSame([$this->owner->id, 'Done by hand.'], [$wait->waived_by_id, $wait->waive_reason]);
+        $this->assertSame([
+            $this->owner->id,
+            'Done by hand.',
+        ], [
+            $wait->waived_by_id,
+            $wait->waive_reason,
+        ]);
         $this->assertSame([$this->second->id], $this->waits()->readyAmong([$this->second->id]));
     }
 
@@ -105,7 +111,10 @@ final class TaskWaitsTest extends TestCase
         $this->runCommand(new RemoveTaskWaitCommand($this->second->id, $this->first->id));
 
         $this->assertSame(
-            [TaskWaitChange::Added, TaskWaitChange::Removed],
+            [
+                TaskWaitChange::Added,
+                TaskWaitChange::Removed,
+            ],
             TaskWaitHistory::query()->orderBy('created_at')->orderBy('id')->pluck('change')->all(),
         );
 

@@ -19,8 +19,15 @@ enum TaskStateGroup: string
     public function states(): array
     {
         return match ($this) {
-            self::Open => [TaskState::Open, TaskState::Started, TaskState::Blocked],
-            self::Done => [TaskState::Finished, TaskState::Cancelled],
+            self::Open => [
+                TaskState::Open,
+                TaskState::Started,
+                TaskState::Blocked,
+            ],
+            self::Done => [
+                TaskState::Finished,
+                TaskState::Cancelled,
+            ],
         };
     }
 }

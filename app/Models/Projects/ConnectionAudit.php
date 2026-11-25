@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ConnectionAuditActor;
 use App\Enums\ConnectionAuditType;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,13 +32,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $outcome
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['type', 'actor_type', 'actor_id', 'invitation_id', 'project_id', 'binding_id', 'outcome'])]
+#[Fillable([
+    'type',
+    'actor_type',
+    'actor_id',
+    'invitation_id',
+    'project_id',
+    'binding_id',
+    'outcome',
+])]
 final class ConnectionAudit extends Model implements ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
 
     public const string DONE = 'done';
 

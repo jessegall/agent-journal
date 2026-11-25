@@ -23,7 +23,11 @@ final class ProfileListCommand extends Command
         $profiles = Profile::listed(self::ROWS);
 
         $this->table(
-            ['Key', 'Label', 'State'],
+            [
+                'Key',
+                'Label',
+                'State',
+            ],
             array_map(
                 fn (Profile $profile) => [
                     $profile->key,

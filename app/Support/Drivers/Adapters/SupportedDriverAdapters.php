@@ -24,7 +24,10 @@ final readonly class SupportedDriverAdapters implements DriverAdapters
         CodexAdapter $codex,
         private DriverCatalogue $drivers,
     ) {
-        $this->adapters = [$claudeCode->hookProtocol() => $claudeCode, $codex->hookProtocol() => $codex];
+        $this->adapters = [
+            $claudeCode->hookProtocol() => $claudeCode,
+            $codex->hookProtocol() => $codex,
+        ];
     }
 
     public function for(string $family): DriverAdapter

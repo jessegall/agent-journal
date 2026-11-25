@@ -30,7 +30,10 @@ final class ExecutionPlanRefused extends RuntimeException
 
     public static function unsupportedNode(string $type, int $node): self
     {
-        return new self(AgentText::of('core.shell.plan_unsupported_node', ['type' => $type, 'node' => $node]));
+        return new self(AgentText::of('core.shell.plan_unsupported_node', [
+            'type' => $type,
+            'node' => $node,
+        ]));
     }
 
     public static function dynamicWord(int $node): self

@@ -96,7 +96,10 @@ final readonly class Frame
         $method = $this->method();
 
         if ($version !== null && $method !== null) {
-            return [...$this->mirroredHeaders($method), RequestHeader::PROTOCOL_VERSION->value => $version];
+            return [
+                ...$this->mirroredHeaders($method),
+                RequestHeader::PROTOCOL_VERSION->value => $version,
+            ];
         }
 
         if ($negotiatedVersion === null) {

@@ -22,7 +22,13 @@ final class StartPlanTest extends TestCase
     /**
      * The start runs on the bus and commits for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['users', 'plans', 'phases', 'phase_tasks', 'tasks'];
+    private const array TABLES = [
+        'users',
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+    ];
 
     private User $owner;
 
@@ -34,7 +40,10 @@ final class StartPlanTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create([
+            'title' => 'Build the release page',
+            'type' => PlanType::Build,
+        ]);
     }
 
     public function test_a_start_returns_to_the_page_it_came_from(): void
@@ -90,7 +99,13 @@ final class StartPlanTest extends TestCase
 
     public function test_an_id_that_is_no_positive_whole_number_in_range_is_not_found(): void
     {
-        foreach (['abc', '0', '-3', '9223372036854775808', '99999999999999999999'] as $id) {
+        foreach ([
+            'abc',
+            '0',
+            '-3',
+            '9223372036854775808',
+            '99999999999999999999',
+        ] as $id) {
             $this->actingAs($this->owner)->post("/plans/{$id}/start")->assertNotFound();
         }
 

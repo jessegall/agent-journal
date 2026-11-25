@@ -63,10 +63,20 @@ foreach ($chunks as $number => $chunk) {
     $input = implode('', array_map(fn (array $record) => json_encode($record, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n", $chunk));
     $expected = readings([ORACLE], $input);
     $actual = readings([
-        'docker', 'compose', '-p', 'agent-journal-6', 'exec', '-T',
+        'docker',
+        'compose',
+        '-p',
+        'agent-journal-6',
+        'exec',
+        '-T',
         // Classification reads the project's stored rules, which the migrated test database holds.
-        '-e', 'APP_ENV=testing', '-e', 'DB_DATABASE=journal_hooks_test',
-        'app', 'php', 'tools/processes/analyse-shell-lines.php',
+        '-e',
+        'APP_ENV=testing',
+        '-e',
+        'DB_DATABASE=journal_hooks_test',
+        'app',
+        'php',
+        'tools/processes/analyse-shell-lines.php',
     ], $input);
 
     $counts = ['lines' => count($chunk), 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
@@ -75,8 +85,14 @@ foreach ($chunks as $number => $chunk) {
     $classifications = hash_init('sha256');
 
     foreach ($chunk as $record) {
-        $want = comparable($expected[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
-        $got = comparable($actual[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
+        $want = comparable($expected[$record['id']] ?? [
+            'outcome' => 'missing',
+            'parts' => [],
+        ]);
+        $got = comparable($actual[$record['id']] ?? [
+            'outcome' => 'missing',
+            'parts' => [],
+        ]);
         hash_update($readings, $record['id'].json_encode($got, JSON_THROW_ON_ERROR)."\n");
         $classification = $actual[$record['id']]['classification'] ?? null;
         hash_update($classifications, $record['id'].json_encode($classification, JSON_THROW_ON_ERROR)."\n");
@@ -94,7 +110,14 @@ foreach ($chunks as $number => $chunk) {
         if ($family !== null) {
             $counts['explained'][$family] = ($counts['explained'][$family] ?? 0) + 1;
         }
-        $differences[] = json_encode(['id' => $record['id'], 'source' => $record['source'], 'origin' => $record['origin'], 'reference' => $want, 'version6' => $got, 'decision' => $family], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $differences[] = json_encode([
+            'id' => $record['id'],
+            'source' => $record['source'],
+            'origin' => $record['origin'],
+            'reference' => $want,
+            'version6' => $got,
+            'decision' => $family,
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     $counts['version6_digest'] = hash_final($readings);
     $counts['classification_digest'] = hash_final($classifications);
@@ -185,7 +208,10 @@ function corpusRecords(): array
     $records = [];
     $sources = [];
     $add = function (string $origin, mixed $source, string $dialect = 'bash') use (&$records, &$sources): void {
-        $sources[$origin] ??= ['lines' => 0, 'empty' => 0];
+        $sources[$origin] ??= [
+            'lines' => 0,
+            'empty' => 0,
+        ];
         $sources[$origin]['lines']++;
 
         if (! is_string($source) || trim($source) === '') {
@@ -194,10 +220,19 @@ function corpusRecords(): array
             return;
         }
         $id = 'line-'.substr(hash('sha256', $dialect."\0".$source), 0, 20);
-        $records[$id] ??= ['id' => $id, 'source' => $source, 'dialect' => $dialect, 'origin' => $origin];
+        $records[$id] ??= [
+            'id' => $id,
+            'source' => $source,
+            'dialect' => $dialect,
+            'origin' => $origin,
+        ];
     };
 
-    foreach (['commands.txt', 'new_commands.jsonl', 'sessions_commands.txt'] as $name) {
+    foreach ([
+        'commands.txt',
+        'new_commands.jsonl',
+        'sessions_commands.txt',
+    ] as $name) {
         eachLine(CORPUS."/{$name}", fn (string $line) => $add($name, json_decode($line, true, 512, JSON_THROW_ON_ERROR)));
     }
     eachLine(CORPUS.'/all_commands.txt', fn (string $line) => $add('all_commands.txt', explode("\t", $line, 2)[1] ?? null));
@@ -205,7 +240,10 @@ function corpusRecords(): array
         $row = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $dialect = ShellDialect::tryFrom($row['shell'] ?? ShellDialect::Bash->value);
 
-        if (in_array($dialect, [ShellDialect::Bash, ShellDialect::Sh], true)) {
+        if (in_array($dialect, [
+            ShellDialect::Bash,
+            ShellDialect::Sh,
+        ], true)) {
             $add('github_commands.jsonl', $row['line'] ?? null, $row['shell'] ?? 'bash');
         }
     });
@@ -223,20 +261,29 @@ function corpusRecords(): array
         });
     }
 
-    foreach (['v5-project-aliases.json', 'v6-project-aliases.json'] as $name) {
+    foreach ([
+        'v5-project-aliases.json',
+        'v6-project-aliases.json',
+    ] as $name) {
         foreach (jsonRows(CORPUS."/{$name}") as $row) {
             $add($name, $row['line'] ?? null);
         }
     }
 
-    foreach (['v5-project-command-types.json', 'v6-project-command-types.json'] as $name) {
+    foreach ([
+        'v5-project-command-types.json',
+        'v6-project-command-types.json',
+    ] as $name) {
         foreach (jsonRows(CORPUS."/{$name}") as $row) {
             $add($name, $row['words'] ?? null);
         }
     }
     ksort($records);
 
-    return [$records, $sources];
+    return [
+        $records,
+        $sources,
+    ];
 }
 
 function eachLine(string $path, Closure $read): void
@@ -278,7 +325,17 @@ function jsonRows(string $path): array
  */
 function readings(array $command, string $input): array
 {
-    $process = proc_open($command, [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes, ROOT);
+    $process = proc_open($command, [
+        [
+            'pipe',
+            'r',
+        ],
+        [
+            'pipe',
+            'w',
+        ],
+        STDERR,
+    ], $pipes, ROOT);
 
     if (! is_resource($process)) {
         notRun(implode(' ', $command).' did not start');
@@ -330,7 +387,10 @@ function comparable(array $reading): array
     $result = ['outcome' => $reading['outcome']];
 
     if ($reading['outcome'] === 'complete') {
-        $parts = array_map(fn (array $span) => [$span['start'], $span['end']], $reading['parts']);
+        $parts = array_map(fn (array $span) => [
+            $span['start'],
+            $span['end'],
+        ], $reading['parts']);
         sort($parts);
         $result['parts'] = $parts;
     }

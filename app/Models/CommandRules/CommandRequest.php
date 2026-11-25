@@ -78,7 +78,10 @@ final class CommandRequest extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['hold_reason' => RequestHoldReason::class, 'state' => RequestState::class];
+        return [
+            'hold_reason' => RequestHoldReason::class,
+            'state' => RequestState::class,
+        ];
     }
 
     // ----------[ Constructors ]----------

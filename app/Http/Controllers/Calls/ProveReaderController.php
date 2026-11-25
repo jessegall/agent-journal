@@ -18,6 +18,9 @@ final readonly class ProveReaderController
     {
         $proofId = $commands->run(new ProveReaderCommand($call->commandRequest, $call->readerRevision, $call->runs));
 
-        return ReaderProofStarted::from(['proofId' => $proofId, 'state' => 'awaiting_approval']);
+        return ReaderProofStarted::from([
+            'proofId' => $proofId,
+            'state' => 'awaiting_approval',
+        ]);
     }
 }

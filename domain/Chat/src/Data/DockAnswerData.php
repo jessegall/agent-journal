@@ -22,6 +22,9 @@ final class DockAnswerData extends Data
 
     public static function fromDockResult(DockResult $result): self
     {
-        return self::from(['outcome' => $result->outcome, 'placementId' => $result->placementId]);
+        return self::from([
+            'outcome' => $result->outcome,
+            'placementId' => $result->placementId,
+        ]);
     }
 }

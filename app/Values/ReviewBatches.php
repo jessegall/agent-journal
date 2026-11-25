@@ -46,7 +46,10 @@ final readonly class ReviewBatches
         }
 
         return new self(
-            $batch === [] ? $batches : [...$batches, $batch],
+            $batch === [] ? $batches : [
+                ...$batches,
+                $batch,
+            ],
             array_values(array_filter($shapes, fn (CommandShape $shape): bool => $shape->isTooLongForReview())),
         );
     }

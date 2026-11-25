@@ -25,7 +25,12 @@ final class CheckedCommandRegistries
     public static function for(array $owners, PipelineRunner $pipelines): CommandRegistry
     {
         $key = hash('sha256', serialize(array_map(
-            fn (CommandOwner $owner) => [$owner->name, $owner->commands, $owner->middleware, $owner->requires],
+            fn (CommandOwner $owner) => [
+                $owner->name,
+                $owner->commands,
+                $owner->middleware,
+                $owner->requires,
+            ],
             $owners,
         )));
 

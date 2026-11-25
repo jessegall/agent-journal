@@ -160,13 +160,38 @@ final readonly class RuleDeclarations
         $each = 'declarations.*';
 
         return [
-            'declarations' => ['required', 'array', 'list'],
-            "{$each}.request_id" => ['required', 'string', 'max:255'],
-            "{$each}.evidence" => ['present', 'string'],
-            "{$each}.examples" => ['present', 'array', 'list'],
-            "{$each}.examples.*.type" => ['required', Rule::enum(ExampleType::class)],
-            "{$each}.examples.*.line" => ['required', 'string'],
-            "{$each}.examples.*.classes" => ['present', 'array', 'list'],
+            'declarations' => [
+                'required',
+                'array',
+                'list',
+            ],
+            "{$each}.request_id" => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            "{$each}.evidence" => [
+                'present',
+                'string',
+            ],
+            "{$each}.examples" => [
+                'present',
+                'array',
+                'list',
+            ],
+            "{$each}.examples.*.type" => [
+                'required',
+                Rule::enum(ExampleType::class),
+            ],
+            "{$each}.examples.*.line" => [
+                'required',
+                'string',
+            ],
+            "{$each}.examples.*.classes" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$each}.examples.*.classes.*" => [Rule::enum(CommandClass::class)],
             ...$this->ruleFields("{$each}.rule"),
         ];
@@ -180,36 +205,117 @@ final readonly class RuleDeclarations
         $operandType = Rule::enum(OperandType::class);
 
         return [
-            "{$rule}.id" => ['required', 'string', self::RULE_ID],
+            "{$rule}.id" => [
+                'required',
+                'string',
+                self::RULE_ID,
+            ],
             ...$this->scopeFields("{$rule}.scope"),
-            "{$rule}.program.family" => ['required', 'string'],
-            "{$rule}.program.spellings" => ['present', 'array', 'list'],
+            "{$rule}.program.family" => [
+                'required',
+                'string',
+            ],
+            "{$rule}.program.spellings" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$rule}.program.spellings.*" => ['string'],
-            "{$rule}.subcommands" => ['present', 'array', 'list'],
+            "{$rule}.subcommands" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$rule}.subcommands.*" => ['string'],
-            "{$rule}.arguments.options" => ['present', 'array', 'list'],
-            "{$rule}.arguments.options.*.names" => ['required', 'array', 'list', 'min:1'],
+            "{$rule}.arguments.options" => [
+                'present',
+                'array',
+                'list',
+            ],
+            "{$rule}.arguments.options.*.names" => [
+                'required',
+                'array',
+                'list',
+                'min:1',
+            ],
             "{$rule}.arguments.options.*.names.*" => ['string'],
-            "{$rule}.arguments.options.*.value" => ['present', 'array', 'list', 'max:1'],
+            "{$rule}.arguments.options.*.value" => [
+                'present',
+                'array',
+                'list',
+                'max:1',
+            ],
             "{$rule}.arguments.options.*.value.*" => [$operandType],
-            "{$rule}.arguments.options.*.required" => ['required', 'boolean'],
-            "{$rule}.arguments.operands" => ['present', 'array', 'list'],
+            "{$rule}.arguments.options.*.required" => [
+                'required',
+                'boolean',
+            ],
+            "{$rule}.arguments.operands" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$rule}.arguments.operands.*" => [$operandType],
-            "{$rule}.arguments.repeats_last_operand" => ['required', 'boolean'],
-            "{$rule}.arguments.ends_options_at_double_dash" => ['required', 'boolean'],
-            "{$rule}.arguments.accepts_numeric_options" => ['required', 'boolean'],
-            "{$rule}.arguments.minimum_operands" => ['required', 'integer', 'min:0'],
-            "{$rule}.classes" => ['present', 'array', 'list'],
+            "{$rule}.arguments.repeats_last_operand" => [
+                'required',
+                'boolean',
+            ],
+            "{$rule}.arguments.ends_options_at_double_dash" => [
+                'required',
+                'boolean',
+            ],
+            "{$rule}.arguments.accepts_numeric_options" => [
+                'required',
+                'boolean',
+            ],
+            "{$rule}.arguments.minimum_operands" => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+            "{$rule}.classes" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$rule}.classes.*" => [Rule::enum(CommandClass::class)],
-            "{$rule}.purpose" => ['required', Rule::enum(CommandType::class)],
-            "{$rule}.output_requirement" => ['required', Rule::enum(OutputRequirement::class)],
+            "{$rule}.purpose" => [
+                'required',
+                Rule::enum(CommandType::class),
+            ],
+            "{$rule}.output_requirement" => [
+                'required',
+                Rule::enum(OutputRequirement::class),
+            ],
             ...$this->bindingFields("{$rule}.binding"),
-            "{$rule}.revision" => ['required', 'integer', 'min:1'],
-            "{$rule}.replaces" => ['present', 'array', 'list', 'max:1'],
+            "{$rule}.revision" => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            "{$rule}.replaces" => [
+                'present',
+                'array',
+                'list',
+                'max:1',
+            ],
             ...$this->scopeFields("{$rule}.replaces.*.scope"),
-            "{$rule}.replaces.*.id" => ['required', 'string', self::RULE_ID],
-            "{$rule}.replaces.*.revision" => ['required', 'integer', 'min:1'],
-            "{$rule}.contracts" => ['present', 'array', 'list', 'max:1'],
+            "{$rule}.replaces.*.id" => [
+                'required',
+                'string',
+                self::RULE_ID,
+            ],
+            "{$rule}.replaces.*.revision" => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+            "{$rule}.contracts" => [
+                'present',
+                'array',
+                'list',
+                'max:1',
+            ],
             ...$this->contractFields("{$rule}.contracts.*"),
         ];
     }
@@ -220,9 +326,18 @@ final readonly class RuleDeclarations
     private function scopeFields(string $scope): array
     {
         return [
-            "{$scope}.type" => ['required', Rule::enum(ScopeType::class)],
-            "{$scope}.owner" => ['required', 'string'],
-            "{$scope}.version" => ['present', 'string'],
+            "{$scope}.type" => [
+                'required',
+                Rule::enum(ScopeType::class),
+            ],
+            "{$scope}.owner" => [
+                'required',
+                'string',
+            ],
+            "{$scope}.version" => [
+                'present',
+                'string',
+            ],
         ];
     }
 
@@ -232,12 +347,29 @@ final readonly class RuleDeclarations
     private function bindingFields(string $binding): array
     {
         return [
-            "{$binding}.type" => ['required', Rule::enum(BindingType::class)],
-            "{$binding}.family" => ['required', 'string'],
-            "{$binding}.locations" => ['present', 'array', 'list'],
+            "{$binding}.type" => [
+                'required',
+                Rule::enum(BindingType::class),
+            ],
+            "{$binding}.family" => [
+                'required',
+                'string',
+            ],
+            "{$binding}.locations" => [
+                'present',
+                'array',
+                'list',
+            ],
             "{$binding}.locations.*" => ['string'],
-            "{$binding}.content_digest" => ['present', 'string'],
-            "{$binding}.configuration_revision" => ['required', 'integer', 'min:0'],
+            "{$binding}.content_digest" => [
+                'present',
+                'string',
+            ],
+            "{$binding}.configuration_revision" => [
+                'required',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 
@@ -247,26 +379,85 @@ final readonly class RuleDeclarations
     private function contractFields(string $contract): array
     {
         return [
-            "{$contract}.operation" => ['required', 'string'],
-            "{$contract}.tool" => ['required', Rule::enum(ToolType::class)],
+            "{$contract}.operation" => [
+                'required',
+                'string',
+            ],
+            "{$contract}.tool" => [
+                'required',
+                Rule::enum(ToolType::class),
+            ],
             ...$this->bindingFields("{$contract}.binding"),
-            "{$contract}.output.encoding" => ['required', Rule::enum(OutputEncoding::class)],
-            "{$contract}.output.framing" => ['required', Rule::enum(FramingType::class)],
-            "{$contract}.output.schema_versions" => ['required', 'string'],
-            "{$contract}.output.streams" => ['required', Rule::enum(StreamUse::class)],
-            "{$contract}.output.summary" => ['required', Rule::enum(SummaryRule::class)],
-            "{$contract}.output.empty.policy" => ['required', Rule::enum(EmptyPolicy::class)],
-            "{$contract}.output.empty.summary" => ['present', 'string'],
-            "{$contract}.output.empty_selection" => ['required', Rule::enum(EmptySelection::class)],
-            "{$contract}.exits" => ['present', 'array', 'list'],
-            "{$contract}.exits.*.status" => ['required', 'integer', 'between:0,255', 'distinct'],
-            "{$contract}.exits.*.outcome" => ['required', Rule::enum(Outcome::class)],
-            "{$contract}.exits.*.requires" => ['required', 'string'],
-            "{$contract}.progress.type" => ['required', Rule::enum(ProgressType::class)],
-            "{$contract}.progress.listing" => ['present', 'array', 'list', 'max:1'],
+            "{$contract}.output.encoding" => [
+                'required',
+                Rule::enum(OutputEncoding::class),
+            ],
+            "{$contract}.output.framing" => [
+                'required',
+                Rule::enum(FramingType::class),
+            ],
+            "{$contract}.output.schema_versions" => [
+                'required',
+                'string',
+            ],
+            "{$contract}.output.streams" => [
+                'required',
+                Rule::enum(StreamUse::class),
+            ],
+            "{$contract}.output.summary" => [
+                'required',
+                Rule::enum(SummaryRule::class),
+            ],
+            "{$contract}.output.empty.policy" => [
+                'required',
+                Rule::enum(EmptyPolicy::class),
+            ],
+            "{$contract}.output.empty.summary" => [
+                'present',
+                'string',
+            ],
+            "{$contract}.output.empty_selection" => [
+                'required',
+                Rule::enum(EmptySelection::class),
+            ],
+            "{$contract}.exits" => [
+                'present',
+                'array',
+                'list',
+            ],
+            "{$contract}.exits.*.status" => [
+                'required',
+                'integer',
+                'between:0,255',
+                'distinct',
+            ],
+            "{$contract}.exits.*.outcome" => [
+                'required',
+                Rule::enum(Outcome::class),
+            ],
+            "{$contract}.exits.*.requires" => [
+                'required',
+                'string',
+            ],
+            "{$contract}.progress.type" => [
+                'required',
+                Rule::enum(ProgressType::class),
+            ],
+            "{$contract}.progress.listing" => [
+                'present',
+                'array',
+                'list',
+                'max:1',
+            ],
             "{$contract}.progress.listing.*" => ['string'],
-            "{$contract}.progress.selection_fingerprint" => ['present', 'string'],
-            "{$contract}.reader" => ['present', 'string'],
+            "{$contract}.progress.selection_fingerprint" => [
+                'present',
+                'string',
+            ],
+            "{$contract}.reader" => [
+                'present',
+                'string',
+            ],
         ];
     }
 }

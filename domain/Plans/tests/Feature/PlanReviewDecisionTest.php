@@ -54,7 +54,10 @@ final class PlanReviewDecisionTest extends TestCase
         parent::setUp();
 
         $this->plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $this->task = Task::factory()->create(['title' => 'Write', 'brief' => 'Write the page.']);
+        $this->task = Task::factory()->create([
+            'title' => 'Write',
+            'brief' => 'Write the page.',
+        ]);
         $this->startUserRequestAs($this->owner->id);
         $structure = $this->app->make(PlanStructure::class);
         $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);

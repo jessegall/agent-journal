@@ -87,7 +87,10 @@ final readonly class TextRange
             throw InvalidTextRange::badLines($this->firstLine, $this->lastLine, $version->lineCount());
         }
 
-        return [$this->firstLine, $this->lastLine];
+        return [
+            $this->firstLine,
+            $this->lastLine,
+        ];
     }
 
     private function quoteAnchorIn(TextVersion $version): TextAnchor

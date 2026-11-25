@@ -44,11 +44,24 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartSequenceCommand($run->id, $this->target->sessionId));
 
         $this->assertSame(
-            [SequenceRunState::Running, 1, 'agent', TestIds::of(1)],
-            [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id],
+            [
+                SequenceRunState::Running,
+                1,
+                'agent',
+                TestIds::of(1),
+            ],
+            [
+                $run->fresh()?->state,
+                $run->fresh()?->current_step,
+                $run->fresh()?->actor_type,
+                $run->fresh()?->actor_id,
+            ],
         );
 
-        $this->assertSame(['core.ready', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame([
+            'core.ready',
+            'sequences.following',
+        ], $this->storedTypeKeys());
     }
 
     public function test_a_failed_push_rolls_the_start_back(): void
@@ -104,12 +117,18 @@ final class SequenceStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CancelSequenceCommand($cancelled->id));
 
         $this->assertSame('{}', $this->answerStop('call-2'));
-        $this->assertSame(['core.ready', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame([
+            'core.ready',
+            'sequences.following',
+        ], $this->storedTypeKeys());
     }
 
     private function newRun(): SequenceRun
     {
-        return SequenceRun::create('Close a task', [self::FIRST_STEP, self::SECOND_STEP]);
+        return SequenceRun::create('Close a task', [
+            self::FIRST_STEP,
+            self::SECOND_STEP,
+        ]);
     }
 
     private function stepText(SequenceRun $run, int $step): string

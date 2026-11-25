@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -14,6 +13,7 @@ use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\PurposeType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -37,7 +37,13 @@ use PhpOption\Some;
  * @property string $label
  */
 #[Table('helper_purposes')]
-#[Fillable(['profile_key', 'purpose_type', 'subject_type', 'subject_id', 'label'])]
+#[Fillable([
+    'profile_key',
+    'purpose_type',
+    'subject_type',
+    'subject_id',
+    'label',
+])]
 final class HelperPurpose extends Model implements ReadableModel
 {
     use BelongsToOneActor;

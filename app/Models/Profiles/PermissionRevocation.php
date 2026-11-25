@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandClass;
 use App\Support\ActorIdentity;
@@ -18,6 +16,8 @@ use App\Values\CommandPatternSet;
 use App\Values\CommandPermissions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -38,21 +38,32 @@ use Illuminate\Support\Collection;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['permission_source', 'revoked_classes', 'revoked_patterns', 'revoked_by_type', 'revoked_by_id', 'revoked_at'],
+    [
+        'permission_source',
+        'revoked_classes',
+        'revoked_patterns',
+        'revoked_by_type',
+        'revoked_by_id',
+        'revoked_at',
+    ],
 )]
 final class PermissionRevocation extends Model implements ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
 
     /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
-        return ['revoked_classes' => 'array', 'revoked_patterns' => 'array', 'revoked_at' => 'immutable_datetime'];
+        return [
+            'revoked_classes' => 'array',
+            'revoked_patterns' => 'array',
+            'revoked_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------

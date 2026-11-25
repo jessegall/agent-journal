@@ -13,7 +13,12 @@ namespace App\Support\Drivers;
  */
 final class CodexAccountProtection
 {
-    private const array HIDDEN_VARIABLES = ['CODEX_HOME', 'JOURNAL_ACCOUNTS_ROOT', 'OPENAI_API_KEY', 'CODEX_API_KEY'];
+    private const array HIDDEN_VARIABLES = [
+        'CODEX_HOME',
+        'JOURNAL_ACCOUNTS_ROOT',
+        'OPENAI_API_KEY',
+        'CODEX_API_KEY',
+    ];
 
     public static function settingsFor(): string
     {

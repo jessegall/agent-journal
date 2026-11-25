@@ -30,7 +30,11 @@ final readonly class SkillDraft
             $this->name,
             $this->description,
             array_map(
-                fn (SectionDraft $section) => [$section->key, $section->heading, $section->markdown],
+                fn (SectionDraft $section) => [
+                    $section->key,
+                    $section->heading,
+                    $section->markdown,
+                ],
                 $this->sections,
             ),
             $this->condition,

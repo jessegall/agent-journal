@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -13,6 +11,8 @@ use App\Enums\OutputStream;
 use App\Values\CapturedChunk;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -32,7 +32,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['part_run_id', 'stream', 'offset', 'length', 'checksum', 'captured_at', 'storage_path'])]
+#[Fillable([
+    'part_run_id',
+    'stream',
+    'offset',
+    'length',
+    'checksum',
+    'captured_at',
+    'storage_path',
+])]
 final class OutputChunk extends Model implements ReadableModel
 {
     use BoundedReads;

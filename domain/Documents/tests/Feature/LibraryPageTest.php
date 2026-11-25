@@ -89,7 +89,11 @@ final class LibraryPageTest extends TestCase
                 ->where(self::CONTENT.'.1.children.0.key', 'clear')
                 ->where(
                     self::CONTENT.'.1.children.0.action.query',
-                    ['query' => '', 'attention' => 'active', 'after' => ''],
+                    [
+                        'query' => '',
+                        'attention' => 'active',
+                        'after' => '',
+                    ],
                 ));
     }
 

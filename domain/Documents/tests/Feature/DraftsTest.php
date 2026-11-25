@@ -85,9 +85,19 @@ final class DraftsTest extends TestCase
         $opened = $this->bus()->run(new OpenDocumentCommand('1'));
         $again = $this->bus()->run(new OpenDocumentCommand('1'));
 
-        $this->assertSame([1, 1], [$opened->version, $opened->baseRevisionNumber]);
+        $this->assertSame([
+            1,
+            1,
+        ], [
+            $opened->version,
+            $opened->baseRevisionNumber,
+        ]);
         $this->assertSame($opened->token, $again->token);
-        $this->assertSame(['1 Goal', '2 Steps', '3 Risks'], $opened->outline);
+        $this->assertSame([
+            '1 Goal',
+            '2 Steps',
+            '3 Risks',
+        ], $opened->outline);
     }
 
     public function test_two_saves_close_into_exactly_one_next_revision(): void
@@ -100,7 +110,13 @@ final class DraftsTest extends TestCase
         $closed = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
         $this->assertSame(3, $draft->version);
-        $this->assertSame([2, true], [$closed->revisionNumber, $closed->isPublished]);
+        $this->assertSame([
+            2,
+            true,
+        ], [
+            $closed->revisionNumber,
+            $closed->isPublished,
+        ]);
 
         $this->assertStringContainsString(self::RISKS_TEXT, $this->documents()->show(1)->body);
 
@@ -120,7 +136,13 @@ final class DraftsTest extends TestCase
         $first = $this->bus()->run(new CloseDocumentCommand($draft->target()));
         $repeated = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
-        $this->assertSame([1, false], [$first->revisionNumber, $first->isPublished]);
+        $this->assertSame([
+            1,
+            false,
+        ], [
+            $first->revisionNumber,
+            $first->isPublished,
+        ]);
         $this->assertEquals($first, $repeated);
         $this->assertSame(1, DocumentClose::query()->count());
         $this->assertSame('1', $this->documents()->show(1)->revision);
@@ -197,7 +219,10 @@ final class DraftsTest extends TestCase
 
         $this->assertThrows(fn () => $this->bus()->run($tooLong), CommandInputInvalid::class, 'title:');
 
-        $this->assertSame([1, 'Design'], [
+        $this->assertSame([
+            1,
+            'Design',
+        ], [
             DocumentDraft::query()->sole()->version,
             DocumentDraft::query()->sole()->title,
         ]);

@@ -77,7 +77,10 @@ final class FollowingSequenceTest extends TestCase
 
     private function following(): FollowingSequenceState
     {
-        return new FollowingSequenceState('run-8', 8, ['Run the phase tests.', 'Report what the tests found.']);
+        return new FollowingSequenceState('run-8', 8, [
+            'Run the phase tests.',
+            'Report what the tests found.',
+        ]);
     }
 
     private function stop(): StopRequested

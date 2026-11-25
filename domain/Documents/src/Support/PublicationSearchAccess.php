@@ -23,7 +23,10 @@ abstract readonly class PublicationSearchAccess extends ReadToolSearchAccess
 
         $passage = PublicationPassage::fromId($location->id);
 
-        return new OpenAction($this->readName(), [$this->idArgument() => $recordId, ...$passage->readArguments()]);
+        return new OpenAction($this->readName(), [
+            $this->idArgument() => $recordId,
+            ...$passage->readArguments(),
+        ]);
     }
 
     /**

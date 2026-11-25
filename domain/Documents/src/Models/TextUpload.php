@@ -35,7 +35,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $sealed_at
  * @property CarbonImmutable|null $consumed_at
  */
-#[Fillable(['type', 'bytes', 'digest', 'expires_at'])]
+#[Fillable([
+    'type',
+    'bytes',
+    'digest',
+    'expires_at',
+])]
 final class TextUpload extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -51,7 +56,10 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     public const string SESSION_SCOPE = 'upload_session';
 
-    protected $attributes = ['received_bytes' => 0, 'next_index' => 0];
+    protected $attributes = [
+        'received_bytes' => 0,
+        'next_index' => 0,
+    ];
 
     protected function casts(): array
     {

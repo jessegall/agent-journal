@@ -43,7 +43,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'environment_id', 'install_attempt_id', 'expires_at',
+    'ticket_digest',
+    'issuer_user_id',
+    'mode',
+    'project_id',
+    'environment_id',
+    'install_attempt_id',
+    'expires_at',
 ])]
 final class ProjectInvitation extends Model implements EventSource, ReadableModel
 {

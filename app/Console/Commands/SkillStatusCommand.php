@@ -50,7 +50,10 @@ final class SkillStatusCommand extends Command
 
         if ($this->option('json')) {
             $this->line(json_encode(
-                [...$status->jsonSerialize(), 'skills' => $skills],
+                [
+                    ...$status->jsonSerialize(),
+                    'skills' => $skills,
+                ],
                 JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
             ));
 
@@ -73,7 +76,15 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Delivered', 'Loaded', 'New session needed'],
+            [
+                'Skill',
+                'Stored revision',
+                'Generated',
+                'Selected',
+                'Delivered',
+                'Loaded',
+                'New session needed',
+            ],
             array_map(fn (SessionSkillStatus $skill) => [
                 $skill->key,
                 $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,
@@ -97,7 +108,15 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            ['Session', 'Publication', 'State', 'Generation', 'Selection', 'Target', 'Error'],
+            [
+                'Session',
+                'Publication',
+                'State',
+                'Generation',
+                'Selection',
+                'Target',
+                'Error',
+            ],
             array_map(fn (PublicationStatus $publication) => $this->row($publication), $status->publications),
         );
 

@@ -21,7 +21,11 @@ final class CoreMcpTools
     /**
      * The tools an agent should read first, listed before every other tool.
      */
-    private const array ORIENTATION_TOOLS = [OverviewReadTool::class, CapabilitiesReadTool::class, SearchTool::class];
+    private const array ORIENTATION_TOOLS = [
+        OverviewReadTool::class,
+        CapabilitiesReadTool::class,
+        SearchTool::class,
+    ];
 
     /**
      * The resource an agent should read first, listed before every other resource.
@@ -35,7 +39,10 @@ final class CoreMcpTools
     {
         $found = FolderClasses::in(__DIR__.'/Mcp/Tools', JournalTool::class);
 
-        return [...self::ORIENTATION_TOOLS, ...array_values(array_diff($found, self::ORIENTATION_TOOLS))];
+        return [
+            ...self::ORIENTATION_TOOLS,
+            ...array_values(array_diff($found, self::ORIENTATION_TOOLS)),
+        ];
     }
 
     /**
@@ -45,7 +52,10 @@ final class CoreMcpTools
     {
         $found = FolderClasses::in(__DIR__.'/Mcp/Resources', JournalResource::class);
 
-        return [...self::ORIENTATION_RESOURCES, ...array_values(array_diff($found, self::ORIENTATION_RESOURCES))];
+        return [
+            ...self::ORIENTATION_RESOURCES,
+            ...array_values(array_diff($found, self::ORIENTATION_RESOURCES)),
+        ];
     }
 
     public static function registerIn(McpRegistration $registration): void

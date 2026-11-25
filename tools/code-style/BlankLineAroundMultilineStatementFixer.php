@@ -23,10 +23,46 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
      * The first tokens of a statement that is not an expression statement.
      */
     private const array NOT_EXPRESSIONS = [
-        T_ABSTRACT, T_BREAK, T_CASE, T_CLASS, T_CONST, T_CONTINUE, T_DECLARE, T_DEFAULT, T_DO, T_ECHO, T_ELSE,
-        T_ELSEIF, T_ENUM, T_FINAL, T_FOR, T_FOREACH, T_FUNCTION, T_GLOBAL, T_GOTO, T_IF, T_INTERFACE, T_NAMESPACE,
-        T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_RETURN, T_SWITCH, T_TRAIT, T_TRY, T_UNSET, T_USE, T_VAR,
-        T_WHILE, T_ATTRIBUTE, T_INLINE_HTML, T_OPEN_TAG, T_CATCH, T_FINALLY, T_THROW,
+        T_ABSTRACT,
+        T_BREAK,
+        T_CASE,
+        T_CLASS,
+        T_CONST,
+        T_CONTINUE,
+        T_DECLARE,
+        T_DEFAULT,
+        T_DO,
+        T_ECHO,
+        T_ELSE,
+        T_ELSEIF,
+        T_ENUM,
+        T_FINAL,
+        T_FOR,
+        T_FOREACH,
+        T_FUNCTION,
+        T_GLOBAL,
+        T_GOTO,
+        T_IF,
+        T_INTERFACE,
+        T_NAMESPACE,
+        T_PRIVATE,
+        T_PROTECTED,
+        T_PUBLIC,
+        T_READONLY,
+        T_RETURN,
+        T_SWITCH,
+        T_TRAIT,
+        T_TRY,
+        T_UNSET,
+        T_USE,
+        T_VAR,
+        T_WHILE,
+        T_ATTRIBUTE,
+        T_INLINE_HTML,
+        T_OPEN_TAG,
+        T_CATCH,
+        T_FINALLY,
+        T_THROW,
     ];
 
     public function getName(): string
@@ -129,7 +165,17 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
         $next = $tokens->getNextMeaningfulToken($closingBrace);
 
         return $next !== null
-            && $tokens[$next]->equalsAny([';', ')', ',', ']', '(', '[', [T_OBJECT_OPERATOR], [T_NULLSAFE_OBJECT_OPERATOR], [T_DOUBLE_COLON]]);
+            && $tokens[$next]->equalsAny([
+                ';',
+                ')',
+                ',',
+                ']',
+                '(',
+                '[',
+                [T_OBJECT_OPERATOR],
+                [T_NULLSAFE_OBJECT_OPERATOR],
+                [T_DOUBLE_COLON],
+            ]);
     }
 
     private function isMultilineExpression(Tokens $tokens, int $start, int $end): bool
@@ -154,7 +200,10 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
     {
         $previous = $tokens->getPrevMeaningfulToken($start);
 
-        if ($previous === null || $tokens[$previous]->equalsAny(['{', ':']) || $tokens[$previous]->isGivenKind(T_OPEN_TAG)) {
+        if ($previous === null || $tokens[$previous]->equalsAny([
+            '{',
+            ':',
+        ]) || $tokens[$previous]->isGivenKind(T_OPEN_TAG)) {
             return;
         }
 
@@ -192,6 +241,9 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
             return;
         }
 
-        $tokens[$index] = new Token([T_WHITESPACE, "\n".$token->getContent()]);
+        $tokens[$index] = new Token([
+            T_WHITESPACE,
+            "\n".$token->getContent(),
+        ]);
     }
 }

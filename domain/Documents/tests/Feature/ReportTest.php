@@ -29,9 +29,21 @@ final class ReportTest extends TestCase
     private const string SETTLEMENT_REASON = 'The findings were addressed.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
-        'documents', 'document_revisions', 'record_settlements', 'reports', 'comments', 'text_uploads',
-        'text_upload_chunks', 'plans',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'number_groups',
+        'documents',
+        'document_revisions',
+        'record_settlements',
+        'reports',
+        'comments',
+        'text_uploads',
+        'text_upload_chunks',
+        'plans',
     ];
 
     public function test_a_reviewer_files_links_comments_and_closes_without_changing_the_findings(): void

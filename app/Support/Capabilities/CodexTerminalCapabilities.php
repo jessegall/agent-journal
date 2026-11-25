@@ -23,13 +23,19 @@ final readonly class CodexTerminalCapabilities implements DriverCapabilities
     {
         return SupportSnapshot::allowingAllBut([
             ...array_map(
-                fn (DriverCapability $capability) => [$capability, OperationSupport::unavailable(self::NOT_PROVEN)],
+                fn (DriverCapability $capability) => [
+                    $capability,
+                    OperationSupport::unavailable(self::NOT_PROVEN),
+                ],
                 array_filter(
                     DriverCapability::cases(),
                     fn (DriverCapability $capability) => $capability !== DriverCapability::SharedAccount,
                 ),
             ),
-            [DriverCapability::SharedAccount, OperationSupport::unsupported(self::RUNS_ALONE)],
+            [
+                DriverCapability::SharedAccount,
+                OperationSupport::unsupported(self::RUNS_ALONE),
+            ],
         ]);
     }
 }

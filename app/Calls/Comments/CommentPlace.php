@@ -17,7 +17,15 @@ use Spatie\LaravelData\Data;
  */
 final class CommentPlace extends Data
 {
-    private const array FIELDS = ['version', 'section', 'firstLine', 'lastLine', 'quote', 'startOffset', 'endOffset'];
+    private const array FIELDS = [
+        'version',
+        'section',
+        'firstLine',
+        'lastLine',
+        'quote',
+        'startOffset',
+        'endOffset',
+    ];
 
     public function __construct(
         #[Max(64)]

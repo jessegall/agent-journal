@@ -53,16 +53,30 @@ final class PlanTalliesTest extends TestCase
         $phase = $this->structure()->addPhase($plan, 'Work');
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
         $this->startUserRequestAs($this->owner->id);
-        $this->structure()->addTasks($phase, [$first->id, $second->id, $third->id]);
+        $this->structure()->addTasks($phase, [
+            $first->id,
+            $second->id,
+            $third->id,
+        ]);
 
         $this->runCommand(new StartTaskCommand($first->id));
         $this->runCommand(new StartTaskCommand($second->id));
         $this->runCommand(new FinishTaskCommand($second->id, 1, 'Done.'));
         $this->runCommand(new CancelTaskCommand($third->id, 'Not needed.'));
 
-        foreach ([$phase->refresh()->progress, $plan->refresh()->progress] as $progress) {
+        foreach ([
+            $phase->refresh()->progress,
+            $plan->refresh()->progress,
+        ] as $progress) {
             $this->assertSame(
-                ['total' => 3, 'finished' => 1, 'cancelled' => 1, 'started' => 1, 'blocked' => 0, 'unfinished' => 1],
+                [
+                    'total' => 3,
+                    'finished' => 1,
+                    'cancelled' => 1,
+                    'started' => 1,
+                    'blocked' => 0,
+                    'unfinished' => 1,
+                ],
                 self::tallies($progress),
             );
         }
@@ -70,7 +84,14 @@ final class PlanTalliesTest extends TestCase
         $this->runCommand(new CancelTaskCommand($first->id, 'Dropped.'));
 
         $this->assertSame(
-            ['total' => 3, 'finished' => 1, 'cancelled' => 2, 'started' => 0, 'blocked' => 0, 'unfinished' => 0],
+            [
+                'total' => 3,
+                'finished' => 1,
+                'cancelled' => 2,
+                'started' => 0,
+                'blocked' => 0,
+                'unfinished' => 0,
+            ],
             self::tallies($phase->refresh()->progress),
         );
     }
@@ -93,9 +114,16 @@ final class PlanTalliesTest extends TestCase
 
         $bare = Plan::factory()->create();
 
-        $current = Phase::currentNumbersOf([$complete->id, $cancelledFirst->id, $bare->id]);
+        $current = Phase::currentNumbersOf([
+            $complete->id,
+            $cancelledFirst->id,
+            $bare->id,
+        ]);
 
-        $this->assertSame([$complete->id => 2, $cancelledFirst->id => 1], [
+        $this->assertSame([
+            $complete->id => 2,
+            $cancelledFirst->id => 1,
+        ], [
             $complete->id => $current[$complete->id],
             $cancelledFirst->id => $current[$cancelledFirst->id],
         ]);
@@ -153,7 +181,10 @@ final class PlanTalliesTest extends TestCase
             fn (string $query) => str_contains($query, '"tasks"') || str_contains($query, '"phase_tasks"'),
         ));
 
-        return ['models' => $models, 'queries' => count($queries)];
+        return [
+            'models' => $models,
+            'queries' => count($queries),
+        ];
     }
 
     /**

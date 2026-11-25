@@ -18,7 +18,10 @@ final readonly class DatabaseAssignmentTransaction implements AssignmentTransact
 {
     public const int ATTEMPTS = 3;
 
-    private const array RETRYABLE_STATES = ['40001', '40P01'];
+    private const array RETRYABLE_STATES = [
+        '40001',
+        '40P01',
+    ];
 
     public function __construct(private ConnectionInterface $database) {}
 

@@ -13,9 +13,9 @@ use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\Command;
-use App\Support\Exports;
 use App\Support\CommandOwner;
 use App\Support\CommandScope;
+use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\MiddlewareDeclaration;
 
@@ -58,7 +58,11 @@ final class CoreCommands
                 AnnounceUnavailableStart::class,
                 CommandScope::command($start),
             ),
-            [StartAgentCommand::class, OpenAgentRuntimeCommand::class, ContinueStartCommand::class],
+            [
+                StartAgentCommand::class,
+                OpenAgentRuntimeCommand::class,
+                ContinueStartCommand::class,
+            ],
         );
     }
 

@@ -42,7 +42,14 @@ use PhpOption\Option;
  * @property CarbonImmutable|null $updated_at
  */
 #[Table('notification_scopes')]
-#[Fillable(['scope_key', 'recipient_type', 'recipient_id', 'next_sequence', 'mutation_version', 'unread_count'])]
+#[Fillable([
+    'scope_key',
+    'recipient_type',
+    'recipient_id',
+    'next_sequence',
+    'mutation_version',
+    'unread_count',
+])]
 final class NotificationScope extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

@@ -263,7 +263,11 @@ final readonly class TerminalControls
         $this->takeSequence($grant, $submission->sequence);
 
         $message = PrivateInputMessageData::from(
-            ['grantId' => $grantId, 'sequence' => $submission->sequence, 'submissionId' => $submission->submissionId],
+            [
+                'grantId' => $grantId,
+                'sequence' => $submission->sequence,
+                'submissionId' => $submission->submissionId,
+            ],
         );
 
         $this->send(
@@ -343,7 +347,11 @@ final readonly class TerminalControls
 
         return TerminalControlData::from([
             ...$this->fieldsOf($grant, $now),
-            'receipt' => ['sequence' => $sequence, 'outcome' => $outcome, 'achievedSize' => $sent?->actual_binding],
+            'receipt' => [
+                'sequence' => $sequence,
+                'outcome' => $outcome,
+                'achievedSize' => $sent?->actual_binding,
+            ],
         ]);
     }
 
@@ -393,7 +401,10 @@ final readonly class TerminalControls
             throw TerminalControlRefused::grantEnded();
         }
 
-        return [$runtime, $grant];
+        return [
+            $runtime,
+            $grant,
+        ];
     }
 
     /**

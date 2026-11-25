@@ -98,7 +98,10 @@ final readonly class DriverRequestEndings
     {
         $queued = DriverRequest::query()
             ->where('navigation_request_id', $navigation->id)
-            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged])
+            ->whereIn('progress', [
+                RequestProgress::Accepted,
+                RequestProgress::Staged,
+            ])
             ->lockForUpdate()
             ->limit(20)
             ->get();

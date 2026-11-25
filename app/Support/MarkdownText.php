@@ -67,7 +67,10 @@ final readonly class MarkdownText
             throw MarkdownInvalid::encoding();
         }
 
-        $normalized = str_replace(["\r\n", "\r"], "\n", $text);
+        $normalized = str_replace([
+            "\r\n",
+            "\r",
+        ], "\n", $text);
 
         if (trim($normalized) === '') {
             throw ContentMissing::field('body');
@@ -99,7 +102,10 @@ final readonly class MarkdownText
             throw ContentTooLarge::field('comment', self::COMMENT_BYTES.' bytes');
         }
 
-        return str_replace(["\r\n", "\r"], "\n", $text);
+        return str_replace([
+            "\r\n",
+            "\r",
+        ], "\n", $text);
     }
 
     /**
@@ -276,7 +282,10 @@ final readonly class MarkdownText
     {
         $section = $this->section($number);
         $lines = explode("\n", $this->text);
-        $replacement = explode("\n", str_replace(["\r\n", "\r"], "\n", rtrim($text, "\n")));
+        $replacement = explode("\n", str_replace([
+            "\r\n",
+            "\r",
+        ], "\n", rtrim($text, "\n")));
         $newLevel = self::headingLevel($replacement[0]);
 
         if ($section->level > 0 && $newLevel === 0) {
@@ -294,7 +303,10 @@ final readonly class MarkdownText
             $lines,
             $section->firstLine - 1,
             count($replaced),
-            [...$replacement, ...array_fill(0, $blankLinesAfter, '')],
+            [
+                ...$replacement,
+                ...array_fill(0, $blankLinesAfter, ''),
+            ],
         );
 
         return self::workingBody(implode("\n", $lines));
@@ -370,7 +382,10 @@ final readonly class MarkdownText
      */
     private static function rendered(string $text, int|null $firstLine): string
     {
-        $environment = new Environment(['html_input' => 'escape', 'allow_unsafe_links' => false]);
+        $environment = new Environment([
+            'html_input' => 'escape',
+            'allow_unsafe_links' => false,
+        ]);
         $environment->addExtension(new CommonMarkCoreExtension());
 
         if ($firstLine !== null) {
@@ -474,7 +489,11 @@ final readonly class MarkdownText
             ) === 1 && $index > 0 && trim($lines[$index - 1]) !== '';
 
             if ($setext) {
-                $headings[] = [$index, $underline[1][0] === '=' ? 1 : 2, trim($lines[$index - 1])];
+                $headings[] = [
+                    $index,
+                    $underline[1][0] === '=' ? 1 : 2,
+                    trim($lines[$index - 1]),
+                ];
             }
         }
 

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Models\Concerns\OfSignIn;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -14,11 +11,14 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Concerns\KeepsNewestReading;
+use App\Models\Concerns\OfSignIn;
 use App\Models\Concerns\RemovedWithAccount;
 use App\Models\Support\AccountOwnerScope;
 use App\Values\ThreadTokens;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -43,7 +43,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['account_id', 'sign_in_generation', 'thread_id'])]
+#[Fillable([
+    'account_id',
+    'sign_in_generation',
+    'thread_id',
+])]
 final class AccountUsageTokens extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

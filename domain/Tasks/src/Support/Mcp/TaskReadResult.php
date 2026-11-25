@@ -69,7 +69,10 @@ final readonly class TaskReadResult
         }
 
         if (strlen($encoded) <= self::INLINE_TEXT_BYTES) {
-            return ToolResult::ok([...$summary, ...$text]);
+            return ToolResult::ok([
+                ...$summary,
+                ...$text,
+            ]);
         }
 
         $read = new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision);

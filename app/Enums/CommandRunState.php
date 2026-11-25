@@ -26,7 +26,10 @@ enum CommandRunState: string
      */
     public static function active(): array
     {
-        return [self::Running, self::CancellationRequested];
+        return [
+            self::Running,
+            self::CancellationRequested,
+        ];
     }
 
     public function isActive(): bool

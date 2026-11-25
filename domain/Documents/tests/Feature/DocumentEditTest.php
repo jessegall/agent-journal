@@ -36,9 +36,20 @@ final class DocumentEditTest extends TestCase
     private const string SECTION_COMMENT = 'Check the first section.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links',
-        'documents', 'document_revisions', 'document_drafts', 'document_closes', 'number_groups',
-        'text_uploads', 'text_upload_chunks', 'comments',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'documents',
+        'document_revisions',
+        'document_drafts',
+        'document_closes',
+        'number_groups',
+        'text_uploads',
+        'text_upload_chunks',
+        'comments',
     ];
 
     public function test_a_designer_can_publish_a_section_from_a_sealed_upload(): void

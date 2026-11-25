@@ -59,7 +59,10 @@ final readonly class SequencesIndex extends SequencesPage
             ->counting(count($sequences))
             ->creatingWith($this->creation())
             ->withReader(
-                LayoutBackData::from(['href' => route('sequences.index', [], false), 'label' => 'Sequences']),
+                LayoutBackData::from([
+                    'href' => route('sequences.index', [], false),
+                    'label' => 'Sequences',
+                ]),
                 ...$reader,
             )
             ->layout();
@@ -111,7 +114,10 @@ final readonly class SequencesIndex extends SequencesPage
         return $this->creationDialog(
             $creation,
             $plain,
-            LayoutFormData::from(['method' => ActionMethod::Get, 'href' => route('sequences.new', [], false)]),
+            LayoutFormData::from([
+                'method' => ActionMethod::Get,
+                'href' => route('sequences.new', [], false),
+            ]),
             [
                 LayoutPartData::field('name', 'Name', LayoutFieldData::from(['name' => 'name']), 'text'),
                 LayoutPartData::field(

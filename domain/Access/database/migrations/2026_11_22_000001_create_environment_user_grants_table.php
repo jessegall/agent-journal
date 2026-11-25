@@ -24,7 +24,10 @@ return new class extends Migration
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['environment_key', 'revoked_at']);
+            $table->index([
+                'environment_key',
+                'revoked_at',
+            ]);
         });
 
         DB::statement(<<<'SQL'

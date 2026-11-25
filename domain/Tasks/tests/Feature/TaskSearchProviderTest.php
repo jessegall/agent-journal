@@ -75,7 +75,10 @@ final class TaskSearchProviderTest extends TestCase
         $query = self::searchQuery('rotate the keys', self::user());
         $batch = $this->app->make(TaskSearchProvider::class)->search($query);
 
-        $this->assertSame([$first->id, $second->id], self::ids($batch));
+        $this->assertSame([
+            $first->id,
+            $second->id,
+        ], self::ids($batch));
         $this->assertInstanceOf(MoreOutcome::class, $batch->outcome);
     }
 
@@ -141,7 +144,10 @@ final class TaskSearchProviderTest extends TestCase
 
     private static function task(int $index, string $title): Task
     {
-        return Task::factory()->create(['id' => self::ID_PREFIX.sprintf('%04d', $index), 'title' => $title]);
+        return Task::factory()->create([
+            'id' => self::ID_PREFIX.sprintf('%04d', $index),
+            'title' => $title,
+        ]);
     }
 
     private static function searchQuery(string $words, SearchReader $reader, int $allowance = 10): SearchQuery

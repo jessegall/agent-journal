@@ -179,7 +179,10 @@ final readonly class WriteAssignments implements
         Closure $records,
     ): AssignmentResult {
         $this->transaction->assertOpen();
-        $reservations = WorkerReservation::lockedFor(self::workersAmong([$recipient, $expectedRoot->holder]));
+        $reservations = WorkerReservation::lockedFor(self::workersAmong([
+            $recipient,
+            $expectedRoot->holder,
+        ]));
         [$group, $finished] = $this->checkedGroup($records);
         $admitted = $this->admission->admitPublic($group->root, $recipient);
         $this->store->lockExpected($group->root, $expectedRoot);
@@ -229,7 +232,10 @@ final readonly class WriteAssignments implements
             throw AssignmentRootFinished::for($group->root, $group->finishedRootRecovery);
         }
 
-        return [$group, $finished];
+        return [
+            $group,
+            $finished,
+        ];
     }
 
     /**

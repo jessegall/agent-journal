@@ -25,7 +25,10 @@ final class CallRetries
 
     private const int MOST_ATTEMPT_SECONDS = 4;
 
-    private const array WAITS_MILLISECONDS = [200, 400];
+    private const array WAITS_MILLISECONDS = [
+        200,
+        400,
+    ];
 
     /**
      * @template TResult

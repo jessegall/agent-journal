@@ -63,7 +63,10 @@ final readonly class ActorIdentity
      */
     public function asFields(string $prefix): array
     {
-        return ["{$prefix}Type" => $this->type->value, "{$prefix}Id" => $this->id];
+        return [
+            "{$prefix}Type" => $this->type->value,
+            "{$prefix}Id" => $this->id,
+        ];
     }
 
     /**
@@ -73,7 +76,10 @@ final readonly class ActorIdentity
      */
     public function asColumns(string $prefix): array
     {
-        return ["{$prefix}_type" => $this->type->value, "{$prefix}_id" => $this->id];
+        return [
+            "{$prefix}_type" => $this->type->value,
+            "{$prefix}_id" => $this->id,
+        ];
     }
 
     /**
@@ -81,7 +87,10 @@ final readonly class ActorIdentity
      */
     public function toArray(): array
     {
-        return ['type' => $this->type->value, 'id' => $this->id];
+        return [
+            'type' => $this->type->value,
+            'id' => $this->id,
+        ];
     }
 
     public function isUser(): bool

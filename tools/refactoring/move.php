@@ -41,7 +41,10 @@ $prefixes = psr4Prefixes($root);
 $requests = match (true) {
     $listPath !== null => listedRequests($listPath),
     $namespaceFrom !== null && count($names) === 1 => namespaceRequests($root, $prefixes, $namespaceFrom, $names[0]),
-    count($names) === 2 => [[$names[0], $names[1]]],
+    count($names) === 2 => [[
+        $names[0],
+        $names[1],
+    ]],
     default => exit(failed('Name the class and its new name, a --namespace with its new namespace, or a --list.')),
 };
 $rows = [];
@@ -59,7 +62,13 @@ foreach ($requests as [$old, $new]) {
         exit(failed($replace ? "{$new} does not exist to merge {$old} into." : "{$new} exists already at {$to}; merge with --replace."));
     }
 
-    $rows[] = implode(' ', [$old, $new, $from, $to, ...($replace ? ['merge'] : [])]);
+    $rows[] = implode(' ', [
+        $old,
+        $new,
+        $from,
+        $to,
+        ...($replace ? ['merge'] : []),
+    ]);
 }
 
 if ($dryRun) {
@@ -70,7 +79,12 @@ if ($dryRun) {
 
 $list = tempnam(sys_get_temp_dir(), 'moves');
 file_put_contents($list, implode("\n", $rows)."\n");
-passthru(implode(' ', array_map('escapeshellarg', [PHP_BINARY, __DIR__.'/layout/batch-move.php', $list, "--root={$root}"])), $status);
+passthru(implode(' ', array_map('escapeshellarg', [
+    PHP_BINARY,
+    __DIR__.'/layout/batch-move.php',
+    $list,
+    "--root={$root}",
+])), $status);
 unlink($list);
 
 exit($status);
@@ -116,7 +130,10 @@ function listedRequests(string $path): array
         }
 
         [$old, $new] = array_pad(preg_split('/\s+/', $line) ?: [], 2, '');
-        $requests[] = [ltrim($old, '\\'), ltrim($new, '\\')];
+        $requests[] = [
+            ltrim($old, '\\'),
+            ltrim($new, '\\'),
+        ];
     }
 
     return $requests;
@@ -139,7 +156,10 @@ function namespaceRequests(string $root, array $prefixes, string $from, string $
         }
 
         $relative = str_replace('/', '\\', substr($file->getPathname(), strlen("{$root}/{$folder}/"), -4));
-        $requests[] = ["{$from}\\{$relative}", "{$to}\\{$relative}"];
+        $requests[] = [
+            "{$from}\\{$relative}",
+            "{$to}\\{$relative}",
+        ];
     }
 
     sort($requests);

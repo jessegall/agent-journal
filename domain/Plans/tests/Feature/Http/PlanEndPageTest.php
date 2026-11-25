@@ -49,12 +49,20 @@ final class PlanEndPageTest extends TestCase
         $structure->addTasks($structure->addPhase($this->plan, 'Work'), [$task->id]);
         $this->app->make(CommandBus::class)->run(new StartPlanCommand($this->plan->id));
 
-        $this->end('cancel', ['revision' => $this->plan->revision, 'state' => 'planned', 'text' => 'Dropped.'])
+        $this->end('cancel', [
+            'revision' => $this->plan->revision,
+            'state' => 'planned',
+            'text' => 'Dropped.',
+        ])
             ->assertSessionHasErrors();
 
         $this->assertSame(PlanState::Started, $this->plan->refresh()->state);
 
-        $this->end('cancel', ['revision' => $this->plan->revision, 'state' => 'started', 'text' => 'Dropped.'])
+        $this->end('cancel', [
+            'revision' => $this->plan->revision,
+            'state' => 'started',
+            'text' => 'Dropped.',
+        ])
             ->assertSessionHasNoErrors();
 
         $this->assertSame(PlanState::Cancelled, $this->plan->refresh()->state);
@@ -71,7 +79,11 @@ final class PlanEndPageTest extends TestCase
             ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.mayFinish', true)
             ->where('page.data.root.children.1.children.1.children.3.children.0.native.props.review.mayCancel', true));
 
-        $this->end('finish', ['revision' => $this->plan->revision, 'state' => 'started', 'text' => 'Shipped.'])
+        $this->end('finish', [
+            'revision' => $this->plan->revision,
+            'state' => 'started',
+            'text' => 'Shipped.',
+        ])
             ->assertSessionHasNoErrors();
 
         $this->assertSame(PlanState::Done, $this->plan->refresh()->state);

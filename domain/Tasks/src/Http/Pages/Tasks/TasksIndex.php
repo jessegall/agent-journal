@@ -69,10 +69,16 @@ final readonly class TasksIndex extends TasksPage
             [
                 'key' => $card->id,
                 'label' => $card->title,
-                'href' => route('tasks.task', ['task' => $card->number, ...$this->queryOf($filters)], false),
+                'href' => route('tasks.task', [
+                    'task' => $card->number,
+                    ...$this->queryOf($filters),
+                ], false),
                 'isCurrent' => $filters->task === (string) $card->number,
                 'leading' => [LayoutPartData::text('number', (string) $card->number, 'muted')],
-                'trailing' => [...$this->focusBadgeOf($card), LayoutPartData::badge('state', $word, $tone)],
+                'trailing' => [
+                    ...$this->focusBadgeOf($card),
+                    LayoutPartData::badge('state', $word, $tone),
+                ],
             ],
         );
     }
@@ -103,7 +109,10 @@ final readonly class TasksIndex extends TasksPage
                     [
                         'key' => $group->value,
                         'label' => ucfirst($group->value),
-                        'query' => ['state' => $group->value, 'page' => ''],
+                        'query' => [
+                            'state' => $group->value,
+                            'page' => '',
+                        ],
                         'isCurrent' => $chosen === $group->value,
                     ],
                 ),
@@ -113,7 +122,10 @@ final readonly class TasksIndex extends TasksPage
                 [
                     'key' => 'all',
                     'label' => 'All',
-                    'query' => ['state' => '', 'page' => ''],
+                    'query' => [
+                        'state' => '',
+                        'page' => '',
+                    ],
                     'isCurrent' => $chosen === '',
                 ],
             ),
@@ -128,7 +140,11 @@ final readonly class TasksIndex extends TasksPage
             return $this->nothingMatches(
                 'No task matches these filters.',
                 'Show all tasks',
-                ['state' => '', 'q' => '', 'page' => ''],
+                [
+                    'state' => '',
+                    'q' => '',
+                    'page' => '',
+                ],
             );
         }
 
@@ -160,7 +176,11 @@ final readonly class TasksIndex extends TasksPage
             $creation,
             LayoutPartData::action('open', 'New task', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
-                ['method' => ActionMethod::Post, 'href' => route('tasks.create-task', [], false), 'isKeyed' => true],
+                [
+                    'method' => ActionMethod::Post,
+                    'href' => route('tasks.create-task', [], false),
+                    'isKeyed' => true,
+                ],
             ),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),

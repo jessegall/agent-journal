@@ -50,7 +50,12 @@ $environment = fn (string $accountDirectory) => [
 
 // Of an account's status only whether it is signed in and a digest of its identity are kept.
 $status = function (string $accountDirectory) use ($program, $environment, $home): AccountStatus {
-    $run = run_program([$program, 'auth', 'status', '--json'], $environment($accountDirectory), $home);
+    $run = run_program([
+        $program,
+        'auth',
+        'status',
+        '--json',
+    ], $environment($accountDirectory), $home);
     $report = json_decode($run->stdout, true) ?: [];
     $identity = $report['email'] ?? $report['orgId'] ?? null;
 
@@ -60,9 +65,15 @@ $status = function (string $accountDirectory) use ($program, $environment, $home
     );
 };
 
-$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)->stdout;
+$version = run_program([
+    $program,
+    '--version',
+], $environment(empty_folder('version')), $home)->stdout;
 $installed = installed_build($program, $version);
-$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)->stdout;
+$help = run_program([
+    $program,
+    '--help',
+], $environment(empty_folder('help')), $home)->stdout;
 $absentFlags = array_filter($compatibility->startFlags, fn (string $flag) => ! str_contains($help, $flag));
 $signedOut = $status(empty_folder('signed-out'));
 
@@ -75,7 +86,10 @@ $items = [
 $statusA = $accountA === null ? null : $status($accountA);
 $statusB = $accountB === null ? null : $status($accountB);
 
-foreach (['a' => $statusA, 'b' => $statusB] as $name => $accountStatus) {
+foreach ([
+    'a' => $statusA,
+    'b' => $statusB,
+] as $name => $accountStatus) {
     $items[] = $accountStatus === null
         ? missing("account-{$name}-signed-in", "a journal account {$name} signed in through the host", 'task 253')
         : judged("account-{$name}-signed-in", $accountStatus->isSignedIn, 'signed in', 'not signed in', 'task 253');

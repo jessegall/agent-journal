@@ -51,6 +51,9 @@ final readonly class TaskSearchAccess extends ReadToolSearchAccess
             return [];
         }
 
-        return ['tab' => 'brief', 'passage' => $location->id];
+        return [
+            'tab' => 'brief',
+            'passage' => $location->id,
+        ];
     }
 }

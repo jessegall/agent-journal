@@ -24,7 +24,10 @@ final readonly class ToolVersions
         $versions = [];
         $composer = self::lockOf("{$root}/composer.lock");
 
-        foreach ([...$composer->packages, ...$composer->developmentPackages] as $package) {
+        foreach ([
+            ...$composer->packages,
+            ...$composer->developmentPackages,
+        ] as $package) {
             $versions["composer.lock: {$package->name}"] = ltrim($package->version, 'v');
         }
 

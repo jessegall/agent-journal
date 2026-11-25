@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
-use Domain\Chat\ChatDomain;
 use App\Concerns\HasLinkRecords;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
@@ -36,6 +35,7 @@ use App\Support\FolderClasses;
 use App\Support\Searchable;
 use App\Support\ShareRecordDefinition;
 use App\Values\PolicyDefinition;
+use Domain\Chat\ChatDomain;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
@@ -233,7 +233,10 @@ final class DocumentsDomain extends Domain implements
 
     public function linkRecords(): array
     {
-        return [Document::LINK_TYPE => DocumentLinkRecords::class, Report::LINK_TYPE => ReportLinkRecords::class];
+        return [
+            Document::LINK_TYPE => DocumentLinkRecords::class,
+            Report::LINK_TYPE => ReportLinkRecords::class,
+        ];
     }
 
     /**
@@ -262,7 +265,10 @@ final class DocumentsDomain extends Domain implements
         return [
             new PolicyDefinition(
                 DocumentPolicy::class,
-                [AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
             new PolicyDefinition(
                 DocumentAdministrationPolicy::class,
@@ -270,11 +276,17 @@ final class DocumentsDomain extends Domain implements
             ),
             new PolicyDefinition(
                 ReportPolicy::class,
-                [AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
             new PolicyDefinition(
                 UploadPolicy::class,
-                [AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
         ];
     }

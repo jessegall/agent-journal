@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -29,6 +27,8 @@ use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use App\Values\PinnedDriver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -346,7 +346,10 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     protected function stoppingSession(Builder $query, string $sessionId): void
     {
         $query->where('expected_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value]);
+            ->whereIn('stage', [
+                DriverSwitchStage::Stopping->value,
+                DriverSwitchStage::StopUnconfirmed->value,
+            ]);
     }
 
     /**
@@ -358,7 +361,10 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     protected function startingSession(Builder $query, string $sessionId): void
     {
         $query->where('replacement_session_id', $sessionId)
-            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value]);
+            ->whereIn('stage', [
+                DriverSwitchStage::Starting->value,
+                DriverSwitchStage::StartUnconfirmed->value,
+            ]);
     }
 
     /**

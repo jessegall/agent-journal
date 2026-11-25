@@ -20,10 +20,26 @@ enum PublicationState: string
     public function canMoveTo(self $next): bool
     {
         return in_array($next, match ($this) {
-            self::Pending => [self::Preparing, self::Failed, self::Superseded],
-            self::Preparing => [self::Preparing, self::Delivered, self::Failed, self::Superseded],
-            self::Delivered => [self::Superseded, self::Retired],
-            self::Failed => [self::Pending, self::Superseded, self::Retired],
+            self::Pending => [
+                self::Preparing,
+                self::Failed,
+                self::Superseded,
+            ],
+            self::Preparing => [
+                self::Preparing,
+                self::Delivered,
+                self::Failed,
+                self::Superseded,
+            ],
+            self::Delivered => [
+                self::Superseded,
+                self::Retired,
+            ],
+            self::Failed => [
+                self::Pending,
+                self::Superseded,
+                self::Retired,
+            ],
             self::Superseded => [self::Retired],
             self::Retired => [],
         }, true);

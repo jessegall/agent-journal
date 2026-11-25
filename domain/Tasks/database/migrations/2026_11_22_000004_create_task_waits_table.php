@@ -22,7 +22,10 @@ return new class extends Migration
             $table->text('waive_reason')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['dependent_task_id', 'prerequisite_task_id']);
+            $table->unique([
+                'dependent_task_id',
+                'prerequisite_task_id',
+            ]);
             $table->index('prerequisite_task_id');
         });
     }

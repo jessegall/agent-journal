@@ -51,7 +51,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $release_request_id
  * @property CarbonImmutable $expires_at
  */
-#[Fillable(['state', 'expires_at'])]
+#[Fillable([
+    'state',
+    'expires_at',
+])]
 final class TerminalGrant extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

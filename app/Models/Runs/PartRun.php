@@ -64,7 +64,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['process_run_id', 'syntax_node', 'part_id', 'attempt', 'parent_part_run_id', 'operation'])]
+#[Fillable([
+    'process_run_id',
+    'syntax_node',
+    'part_id',
+    'attempt',
+    'parent_part_run_id',
+    'operation',
+])]
 final class PartRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -165,7 +172,10 @@ final class PartRun extends Model implements EventSource, ReadableModel
      */
     public function captureUpTo(OutputChunk $chunk): void
     {
-        $this->stream_offsets = [...$this->stream_offsets, $chunk->stream->value => $chunk->offset + $chunk->length];
+        $this->stream_offsets = [
+            ...$this->stream_offsets,
+            $chunk->stream->value => $chunk->offset + $chunk->length,
+        ];
         $this->assertSaved($this->save());
         $this->raise(new PartRunCaptured($this->id));
     }

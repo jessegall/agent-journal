@@ -102,7 +102,10 @@ final class StateEventDispatcher extends Dispatcher
                 : $eventArguments;
         }
 
-        return [$name, $arguments];
+        return [
+            $name,
+            $arguments,
+        ];
     }
 
     /**
@@ -140,7 +143,10 @@ final class StateEventDispatcher extends Dispatcher
 
         $last = array_splice($listeners, $bridge, 1);
 
-        return [...$listeners, ...$last];
+        return [
+            ...$listeners,
+            ...$last,
+        ];
     }
 
     private function awaitsCommit(Event $event): bool

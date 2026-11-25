@@ -18,6 +18,9 @@ final readonly class EncodedToggle implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['key' => $this->key, 'value' => $this->encodedToggle];
+        return [
+            'key' => $this->key,
+            'value' => $this->encodedToggle,
+        ];
     }
 }

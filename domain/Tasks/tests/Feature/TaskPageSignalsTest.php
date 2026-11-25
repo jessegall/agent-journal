@@ -59,7 +59,12 @@ final class TaskPageSignalsTest extends TestCase
 
     public function test_the_ending_facts_of_a_task_are_page_signals(): void
     {
-        foreach ([TaskFinished::class, TaskBlocked::class, TaskCancelled::class, TaskStartCommitted::class] as $fact) {
+        foreach ([
+            TaskFinished::class,
+            TaskBlocked::class,
+            TaskCancelled::class,
+            TaskStartCommitted::class,
+        ] as $fact) {
             $this->assertTrue(Reflector::of($fact)->isSubclassOf(UserInterfaceUpdater::class), $fact);
         }
     }

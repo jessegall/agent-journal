@@ -23,7 +23,12 @@ final readonly class DocumentDraftProducer implements DraftProducer
         return [
             DraftQuestionData::from([
                 'prompt' => 'What is the document about?',
-                'suggestions' => ['A design', 'A decision', 'How something works', 'A guide'],
+                'suggestions' => [
+                    'A design',
+                    'A decision',
+                    'How something works',
+                    'A guide',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'Who reads it, and what do they decide with it?',
@@ -35,7 +40,11 @@ final readonly class DocumentDraftProducer implements DraftProducer
             ]),
             DraftQuestionData::from([
                 'prompt' => 'What must be in it?',
-                'suggestions' => ['The goal and the steps', 'The options and the choice', 'Examples'],
+                'suggestions' => [
+                    'The goal and the steps',
+                    'The options and the choice',
+                    'Examples',
+                ],
             ]),
         ];
     }

@@ -18,6 +18,9 @@ final readonly class CloseDocumentController
     {
         $closed = $commands->run(new CloseDocumentCommand($call->target()));
 
-        return DraftClosed::from(['revisionNumber' => $closed->revisionNumber, 'isPublished' => $closed->isPublished]);
+        return DraftClosed::from([
+            'revisionNumber' => $closed->revisionNumber,
+            'isPublished' => $closed->isPublished,
+        ]);
     }
 }

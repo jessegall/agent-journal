@@ -37,7 +37,10 @@ use PhpOption\Option;
  * @property string|null $designated_profile
  */
 #[Table('helper_identities')]
-#[Fillable(['profile_key', 'profile_base'])]
+#[Fillable([
+    'profile_key',
+    'profile_base',
+])]
 final class HelperIdentity extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;

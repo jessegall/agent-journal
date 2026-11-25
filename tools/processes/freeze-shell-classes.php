@@ -49,7 +49,10 @@ file_put_contents(CORPUS.'/cases.jsonl', implode('', $lines));
 
 $manifest = json_decode((string) file_get_contents(CORPUS.'/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
 
-foreach (['cases.jsonl', 'class-decisions.jsonl'] as $name) {
+foreach ([
+    'cases.jsonl',
+    'class-decisions.jsonl',
+] as $name) {
     $manifest['fixtures'][$name] = hash_file('sha256', CORPUS.'/'.$name);
 }
 file_put_contents(CORPUS.'/manifest.json', json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -13,6 +11,8 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,7 +26,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $message_id
  * @property CarbonImmutable $pinned_at
  */
-#[Fillable(['inbox_id', 'message_id', 'pinned_at'])]
+#[Fillable([
+    'inbox_id',
+    'message_id',
+    'pinned_at',
+])]
 final class MessagePin extends Model implements ReadableModel
 {
     use BelongsToOneActor;

@@ -82,7 +82,10 @@ final readonly class AnswerNavigationHandler implements CommandHandler
      */
     private function checkAnswerable(NavigationRequest $navigation, AnswerNavigationCommand $command): void
     {
-        if (! in_array($navigation->state, [NavigationState::Open, NavigationState::Answering], true)) {
+        if (! in_array($navigation->state, [
+            NavigationState::Open,
+            NavigationState::Answering,
+        ], true)) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
 

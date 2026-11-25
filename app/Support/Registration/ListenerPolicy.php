@@ -30,7 +30,11 @@ final readonly class ListenerPolicy
     public function discover(array $events): array
     {
         $declarations = $this->runner->runSteps(
-            [ExpandGroupListeners::class, CheckListenerPairs::class, SeparateTransactionListeners::class],
+            [
+                ExpandGroupListeners::class,
+                CheckListenerPairs::class,
+                SeparateTransactionListeners::class,
+            ],
             new ListenerDeclarations($events, $this->ownership),
             ListenerDeclarations::class,
         );
@@ -44,7 +48,11 @@ final readonly class ListenerPolicy
     public function registerCached(array $events): ListenerRegistry
     {
         return $this->runner->runSteps(
-            [CheckListenerPairs::class, SeparateTransactionListeners::class, GateListenersByDomain::class],
+            [
+                CheckListenerPairs::class,
+                SeparateTransactionListeners::class,
+                GateListenersByDomain::class,
+            ],
             new ListenerDeclarations($events, $this->ownership),
             ListenerRegistry::class,
         );
@@ -56,7 +64,10 @@ final readonly class ListenerPolicy
     public function registerDiscovered(array $events): ListenerRegistry
     {
         return $this->runner->runSteps(
-            [SeparateTransactionListeners::class, GateListenersByDomain::class],
+            [
+                SeparateTransactionListeners::class,
+                GateListenersByDomain::class,
+            ],
             new ListenerDeclarations($events, $this->ownership),
             ListenerRegistry::class,
         );

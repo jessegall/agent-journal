@@ -65,7 +65,10 @@ final class TaskPageTest extends TestCase
 
     public function test_a_task_opens_by_number_with_its_facts_and_brief(): void
     {
-        $task = Task::factory()->create(['title' => 'Prepare records', 'brief' => "First part.\n\nSecond part."]);
+        $task = Task::factory()->create([
+            'title' => 'Prepare records',
+            'brief' => "First part.\n\nSecond part.",
+        ]);
         $this->startUserRequestAs($this->owner->id);
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -176,7 +179,10 @@ final class TaskPageTest extends TestCase
 
         $this->actingAs($this->owner)->from("/tasks/{$second->number}")
             ->withHeader('Idempotency-Key', self::key())
-            ->post("/tasks/{$second->number}/waits/waive", ['prerequisite' => (string) $first->number, 'reason' => ' '])
+            ->post("/tasks/{$second->number}/waits/waive", [
+                'prerequisite' => (string) $first->number,
+                'reason' => ' ',
+            ])
             ->assertSessionHasErrors();
 
         $this->app->make('auth')->forgetGuards();
@@ -208,7 +214,10 @@ final class TaskPageTest extends TestCase
     private function focusedTask(string $agentName): Task
     {
         $agent = Agent::create($agentName, 'main-agent');
-        $task = Task::factory()->create(['state' => TaskState::Started, 'run_number' => 1]);
+        $task = Task::factory()->create([
+            'state' => TaskState::Started,
+            'run_number' => 1,
+        ]);
         TaskRun::create($task, 1, new ActorIdentity(ActorType::Agent, $agent->id));
         $this->app->make(AgentFocuses::class)->focus(new ActorIdentity(ActorType::Agent, $agent->id), $task);
 

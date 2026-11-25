@@ -62,7 +62,11 @@ final readonly class ProfileBase
                 ...self::running(),
             ],
             [
-                HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
+                HostAccess::root('.', [
+                    ...self::looking(),
+                    ...self::changing(),
+                    ...self::running(),
+                ]),
             ],
             ExecutionModeType::ProtectedHost,
             false,
@@ -90,7 +94,10 @@ final readonly class ProfileBase
                 AccessType::Execute,
             ],
             [
-                HostAccess::root('.', [...self::looking(), AccessType::Execute]),
+                HostAccess::root('.', [
+                    ...self::looking(),
+                    AccessType::Execute,
+                ]),
             ],
             ExecutionModeType::RequiredContainer,
             false,
@@ -113,8 +120,15 @@ final readonly class ProfileBase
             'Writing helper',
             'Changes the project\'s files for one bounded job, in a container of its own.',
             ModelTier::General,
-            [...self::journalWork(), ...self::running()],
-            [HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()])],
+            [
+                ...self::journalWork(),
+                ...self::running(),
+            ],
+            [HostAccess::root('.', [
+                ...self::looking(),
+                ...self::changing(),
+                ...self::running(),
+            ])],
             ExecutionModeType::RequiredContainer,
             true,
             [StopCondition::cleanWorktree()],
@@ -131,7 +145,11 @@ final readonly class ProfileBase
      */
     public static function all(): array
     {
-        return [self::mainAgent(), self::writingHelper(), self::readOnlyHelper()];
+        return [
+            self::mainAgent(),
+            self::writingHelper(),
+            self::readOnlyHelper(),
+        ];
     }
 
     /**
@@ -241,7 +259,10 @@ final readonly class ProfileBase
      */
     private static function looking(): array
     {
-        return [AccessType::Read, AccessType::Search];
+        return [
+            AccessType::Read,
+            AccessType::Search,
+        ];
     }
 
     /**
@@ -249,7 +270,11 @@ final readonly class ProfileBase
      */
     private static function changing(): array
     {
-        return [AccessType::Create, AccessType::Edit, AccessType::Delete];
+        return [
+            AccessType::Create,
+            AccessType::Edit,
+            AccessType::Delete,
+        ];
     }
 
     /**
@@ -257,7 +282,11 @@ final readonly class ProfileBase
      */
     private static function running(): array
     {
-        return [AccessType::Execute, AccessType::Test, AccessType::Build];
+        return [
+            AccessType::Execute,
+            AccessType::Test,
+            AccessType::Build,
+        ];
     }
 
     /**
@@ -265,6 +294,11 @@ final readonly class ProfileBase
      */
     private static function journalWork(): array
     {
-        return [AccessType::Read, AccessType::Search, AccessType::Create, AccessType::Edit];
+        return [
+            AccessType::Read,
+            AccessType::Search,
+            AccessType::Create,
+            AccessType::Edit,
+        ];
     }
 }

@@ -128,7 +128,10 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         ReceiptRetention $retention,
     ): self {
         return self::query()->create(
-            [...self::keyColumns($caller, $requestKey, $command, $retention), 'state' => ReceiptState::Taken],
+            [
+                ...self::keyColumns($caller, $requestKey, $command, $retention),
+                'state' => ReceiptState::Taken,
+            ],
         );
     }
 
@@ -137,7 +140,10 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
     public function complete(mixed $reply): void
     {
         $this->state = ReceiptState::Completed;
-        $this->result = ['value' => PlainValue::of($reply), 'php' => base64_encode(serialize($reply))];
+        $this->result = [
+            'value' => PlainValue::of($reply),
+            'php' => base64_encode(serialize($reply)),
+        ];
         $this->assertSaved($this->save());
         $this->raise(new CommandReceiptCompleted($this->id));
     }

@@ -41,6 +41,10 @@ final readonly class SearchOwner
      */
     public function principal(): string
     {
-        return hash('sha256', implode("\n", [$this->actor->type->value, $this->actor->id, $this->environmentId]));
+        return hash('sha256', implode("\n", [
+            $this->actor->type->value,
+            $this->actor->id,
+            $this->environmentId,
+        ]));
     }
 }

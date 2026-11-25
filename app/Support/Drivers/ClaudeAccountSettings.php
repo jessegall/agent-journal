@@ -15,7 +15,11 @@ use App\Support\Compatibility\DriverCompatibility;
  */
 final readonly class ClaudeAccountSettings implements AccountSettingsFiller
 {
-    private const array OTHER_CREDENTIALS = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN'];
+    private const array OTHER_CREDENTIALS = [
+        'ANTHROPIC_API_KEY',
+        'ANTHROPIC_AUTH_TOKEN',
+        'CLAUDE_CODE_OAUTH_TOKEN',
+    ];
 
     public function fill(
         AccountStartSettings $settings,

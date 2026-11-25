@@ -76,7 +76,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
             return $events;
         }
 
-        return [...$events, self::STATE_EVENTS => $stateEventEntries];
+        return [
+            ...$events,
+            self::STATE_EVENTS => $stateEventEntries,
+        ];
     }
 
     /**
@@ -174,7 +177,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     public function discoverEventsWithin(): array
     {
-        return [...$this->app->make(DomainRegistry::class)->listenerFolders(), ...$this->coreListenerFolders()];
+        return [
+            ...$this->app->make(DomainRegistry::class)->listenerFolders(),
+            ...$this->coreListenerFolders(),
+        ];
     }
 
     private function policy(): ListenerPolicy
@@ -199,6 +205,9 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     private function coreListenerFolders(): array
     {
-        return [...CoreListenerFolders::all(), ...self::$eventDiscoveryPaths ?? []];
+        return [
+            ...CoreListenerFolders::all(),
+            ...self::$eventDiscoveryPaths ?? [],
+        ];
     }
 }

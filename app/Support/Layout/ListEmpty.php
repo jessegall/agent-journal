@@ -72,6 +72,9 @@ final readonly class ListEmpty
             return [$notice];
         }
 
-        return [$notice, LayoutPartData::box('empty-actions', 'row', ...$this->actions)];
+        return [
+            $notice,
+            LayoutPartData::box('empty-actions', 'row', ...$this->actions),
+        ];
     }
 }

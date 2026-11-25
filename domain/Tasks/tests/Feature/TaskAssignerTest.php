@@ -48,7 +48,11 @@ final class TaskAssignerTest extends TestCase
     {
         $this->assertSame(Task::LINK_TYPE, TaskType::VALUE);
         $this->assertSame(TaskType::VALUE, Task::factory()->create()->assignmentIdentity()->type);
-        $this->assertSame([TaskState::Open, TaskState::Started, TaskState::Blocked], TaskState::unfinished());
+        $this->assertSame([
+            TaskState::Open,
+            TaskState::Started,
+            TaskState::Blocked,
+        ], TaskState::unfinished());
     }
 
     public function test_the_count_holds_the_actors_unfinished_tasks_only(): void
@@ -77,7 +81,10 @@ final class TaskAssignerTest extends TestCase
         $this->assertSame([$middle], $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1)->ids);
 
         $this->assertSame(
-            [$middle, $highest],
+            [
+                $middle,
+                $highest,
+            ],
             $assigner->pick($this->builder, self::pool(PoolMembers::all()), 5)->ids,
         );
     }
@@ -89,12 +96,20 @@ final class TaskAssignerTest extends TestCase
         $third = $this->task(TaskState::Open);
         $finished = $this->task(TaskState::Finished);
         $this->hold($third, $this->reviewer);
-        $pool = self::pool(PoolMembers::ordered([$third, $finished, $first, $second]));
+        $pool = self::pool(PoolMembers::ordered([
+            $third,
+            $finished,
+            $first,
+            $second,
+        ]));
 
         $assigner = $this->app->make(TaskAssigner::class);
 
         $this->assertSame([$first], $assigner->pick($this->builder, $pool, 1)->ids);
-        $this->assertSame([$first, $second], $assigner->pick($this->builder, $pool, 3)->ids);
+        $this->assertSame([
+            $first,
+            $second,
+        ], $assigner->pick($this->builder, $pool, 3)->ids);
         $this->assertSame([], $assigner->pick($this->builder, self::pool(PoolMembers::ordered([])), 3)->ids);
     }
 

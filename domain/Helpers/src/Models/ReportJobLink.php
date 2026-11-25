@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -15,7 +13,9 @@ use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Values\FiledReport;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -33,7 +33,13 @@ use PhpOption\Option;
  * @property CarbonImmutable|null $created_at
  */
 #[Table('report_job_links')]
-#[Fillable(['report_id', 'report_number', 'helper_job_id', 'dispatch_request_id', 'verified_at'])]
+#[Fillable([
+    'report_id',
+    'report_number',
+    'helper_job_id',
+    'dispatch_request_id',
+    'verified_at',
+])]
 final class ReportJobLink extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

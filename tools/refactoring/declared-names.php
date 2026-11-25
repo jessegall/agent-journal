@@ -69,7 +69,10 @@ function declaredNames(array $files): array
 
             foreach (new NodeFinder()->findInstanceOf($type->stmts, Node\Stmt\TraitUse::class) as $use) {
                 foreach ($use->traits as $trait) {
-                    $traitUserParents[$trait->toString()] = [...$traitUserParents[$trait->toString()] ?? [], ...$parents];
+                    $traitUserParents[$trait->toString()] = [
+                        ...$traitUserParents[$trait->toString()] ?? [],
+                        ...$parents,
+                    ];
                 }
             }
 
@@ -182,7 +185,10 @@ function roleOfType(Node|null $type, bool $returns): string
 
     return match (true) {
         $name === 'bool' => 'question',
-        $returns && in_array($name, ['void', 'never'], true) => 'action',
+        $returns && in_array($name, [
+            'void',
+            'never',
+        ], true) => 'action',
         default => 'thing',
     };
 }
@@ -205,15 +211,31 @@ function membersOf(Node $member): array
 {
     return match (true) {
         $member instanceof ClassMethod => [
-            ['method', $member->name->toString().'()', isQueryScope($member) ? 'thing' : roleOfType($member->returnType, returns: true)],
+            [
+                'method',
+                $member->name->toString().'()',
+                isQueryScope($member) ? 'thing' : roleOfType($member->returnType, returns: true),
+            ],
             ...promotedProperties($member),
         ],
         $member instanceof Property => array_map(
-            fn ($property) => ['property', '$'.$property->name->toString(), roleOfType($member->type, returns: false)],
+            fn ($property) => [
+                'property',
+                '$'.$property->name->toString(),
+                roleOfType($member->type, returns: false),
+            ],
             $member->props,
         ),
-        $member instanceof ClassConst => array_map(fn ($constant) => ['constant', $constant->name->toString(), 'thing'], $member->consts),
-        $member instanceof EnumCase => [['case', $member->name->toString(), 'thing']],
+        $member instanceof ClassConst => array_map(fn ($constant) => [
+            'constant',
+            $constant->name->toString(),
+            'thing',
+        ], $member->consts),
+        $member instanceof EnumCase => [[
+            'case',
+            $member->name->toString(),
+            'thing',
+        ]],
         default => [],
     };
 }
@@ -227,7 +249,11 @@ function promotedProperties(ClassMethod $method): array
 
     foreach ($method->params as $param) {
         if (isPromoted($param)) {
-            $properties[] = ['property', '$'.$param->var->name, roleOfType($param->type, returns: false)];
+            $properties[] = [
+                'property',
+                '$'.$param->var->name,
+                roleOfType($param->type, returns: false),
+            ];
         }
     }
 
@@ -242,7 +268,10 @@ function promotedProperties(ClassMethod $method): array
 function parentsOf(ClassLike $type): array
 {
     $parents = match (true) {
-        $type instanceof Class_ => [...($type->extends === null ? [] : [$type->extends]), ...$type->implements],
+        $type instanceof Class_ => [
+            ...($type->extends === null ? [] : [$type->extends]),
+            ...$type->implements,
+        ],
         $type instanceof Interface_ => $type->extends,
         $type instanceof Enum_ => $type->implements,
         default => [],

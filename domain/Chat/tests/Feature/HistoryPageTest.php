@@ -76,7 +76,10 @@ final class HistoryPageTest extends TestCase
         $this->assertNull($this->stored($questionId)->read_at);
 
         $this->actingAs($owner)
-            ->post('/chat/history/cancel', ['messageId' => $questionId, 'reason' => self::CANCEL_REASON])
+            ->post('/chat/history/cancel', [
+                'messageId' => $questionId,
+                'reason' => self::CANCEL_REASON,
+            ])
             ->assertRedirect();
 
         $this->assertSame(DismissalType::Cancelled, $this->stored($questionId)->dismissal_type);

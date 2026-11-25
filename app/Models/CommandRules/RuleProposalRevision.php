@@ -37,7 +37,15 @@ use Illuminate\Support\Carbon;
  * @property string $author_id
  * @property Carbon $created_at
  */
-#[Fillable(['rule_proposal_id', 'revision', 'payload', 'evidence', 'examples', 'author_type', 'author_id'])]
+#[Fillable([
+    'rule_proposal_id',
+    'revision',
+    'payload',
+    'evidence',
+    'examples',
+    'author_type',
+    'author_id',
+])]
 final class RuleProposalRevision extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -40,7 +40,10 @@ final readonly class WorkLockSet
      */
     public function inLockOrder(): array
     {
-        return [$this->origin, ...$this->others];
+        return [
+            $this->origin,
+            ...$this->others,
+        ];
     }
 
     /**

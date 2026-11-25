@@ -31,7 +31,13 @@ final class ShareListCommand extends Command
         $rows = array_slice($found, 0, self::ROWS);
 
         $this->table(
-            ['Id', 'Number', 'State', 'Record', 'Expires'],
+            [
+                'Id',
+                'Number',
+                'State',
+                'Record',
+                'Expires',
+            ],
             array_map(
                 fn (Share $share) => [
                     $share->id,

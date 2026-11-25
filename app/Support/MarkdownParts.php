@@ -81,7 +81,10 @@ final readonly class MarkdownParts implements MarkdownPartsContract
             $sections[] = SkillSection::markdown(
                 $key,
                 $heading->heading,
-                MarkdownPart::heading($file, [$name, $heading->heading]),
+                MarkdownPart::heading($file, [
+                    $name,
+                    $heading->heading,
+                ]),
             );
         }
 
@@ -134,7 +137,10 @@ final readonly class MarkdownParts implements MarkdownPartsContract
         $text = $this->sourceOf($file, $owner);
 
         try {
-            return MarkdownText::body($this->withoutFrontMatter(str_replace(["\r\n", "\r"], "\n", $text)));
+            return MarkdownText::body($this->withoutFrontMatter(str_replace([
+                "\r\n",
+                "\r",
+            ], "\n", $text)));
         } catch (MarkdownInvalid|ContentMissing|ContentTooLarge $refusal) {
             throw SkillSourceInvalid::unreadable($file, $refusal);
         }

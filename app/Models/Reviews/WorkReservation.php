@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -17,7 +15,9 @@ use App\Events\Reviews\WorkReservationReleased;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,7 +41,14 @@ use Illuminate\Support\Carbon;
  * @property-read CertifiedWork $certifiedWork
  */
 #[Table('work_reservations')]
-#[Fillable(['actor_type', 'actor_id', 'generation', 'certificate', 'handed_off_at', 'released_at'])]
+#[Fillable([
+    'actor_type',
+    'actor_id',
+    'generation',
+    'certificate',
+    'handed_off_at',
+    'released_at',
+])]
 final class WorkReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -55,7 +62,11 @@ final class WorkReservation extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['generation' => 'integer', 'handed_off_at' => 'datetime', 'released_at' => 'datetime'];
+        return [
+            'generation' => 'integer',
+            'handed_off_at' => 'datetime',
+            'released_at' => 'datetime',
+        ];
     }
 
     // ----------[ Mutations ]----------

@@ -34,16 +34,32 @@ final class AgentInboxTest extends TestCase
     use WritesInboxMessages;
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
-        'desks', 'desk_seats', 'desk_preferences', 'inboxes', 'assignments',
-        'command_receipts', 'messages', 'message_attentions',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'inboxes',
+        'assignments',
+        'command_receipts',
+        'messages',
+        'message_attentions',
     ];
 
     public function test_the_message_schema_preserves_the_envelope_and_records_session_requests(): void
     {
         $this->assertTrue(Schema::hasColumns('messages', [
-            'sender_type', 'sender_id', 'destination_inbox_id', 'reply_to_id',
-            'answer_message_id', 'dismissal_reason', 'is_question', 'state_version', 'conversation_id',
+            'sender_type',
+            'sender_id',
+            'destination_inbox_id',
+            'reply_to_id',
+            'answer_message_id',
+            'dismissal_reason',
+            'is_question',
+            'state_version',
+            'conversation_id',
         ]));
 
         $this->assertTrue(Schema::hasColumn('agent_sessions', 'selected_message_id'));

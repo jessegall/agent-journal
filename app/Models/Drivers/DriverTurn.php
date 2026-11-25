@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Events\Sessions\DriverTurnFinished;
-use App\Models\Agents\AgentRuntime;
 use App\Events\Messages\ClosingWordsDelivered;
 use App\Events\Sessions\ClosingWordsKeptPrivate;
 use App\Events\Sessions\ClosingWordsOffered;
+use App\Events\Sessions\DriverTurnFinished;
+use App\Models\Agents\AgentRuntime;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,14 +41,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $delivered_message_id
  */
 #[Fillable(
-    ['agent_runtime_id', 'process_generation', 'native_prompt_id', 'observed_model', 'observed_effort', 'started_at'],
+    [
+        'agent_runtime_id',
+        'process_generation',
+        'native_prompt_id',
+        'observed_model',
+        'observed_effort',
+        'started_at',
+    ],
 )]
 final class DriverTurn extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

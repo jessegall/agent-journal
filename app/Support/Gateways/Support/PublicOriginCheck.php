@@ -22,8 +22,14 @@ final readonly class PublicOriginCheck
 
         return in_array(
             $publicOrigin,
-            [$origin, "{$origin}/"],
+            [
+                $origin,
+                "{$origin}/",
+            ],
             true,
-        ) && in_array($address, [$origin, "{$origin}/"], true);
+        ) && in_array($address, [
+            $origin,
+            "{$origin}/",
+        ], true);
     }
 }

@@ -80,7 +80,10 @@ final readonly class NavigationCandidate
             return [];
         }
 
-        usort($children, fn (self $one, self $other) => [$one->position(), $one->key()] <=> [
+        usort($children, fn (self $one, self $other) => [
+            $one->position(),
+            $one->key(),
+        ] <=> [
             $other->position(),
             $other->key(),
         ]);

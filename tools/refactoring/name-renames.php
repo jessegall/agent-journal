@@ -40,12 +40,20 @@ function renameNames(array $arguments): int
 
     foreach ($chosen as $declared) {
         $line = renameLine($declared, $options);
-        $declared->owner !== '' && in_array($declared->declarationType, ['class', 'interface', 'trait', 'enum'], true)
+        $declared->owner !== '' && in_array($declared->declarationType, [
+            'class',
+            'interface',
+            'trait',
+            'enum',
+        ], true)
             ? $typeLines[] = $line
             : $memberLines[] = $line;
     }
 
-    echo implode("\n", [...$typeLines, ...$memberLines])."\n";
+    echo implode("\n", [
+        ...$typeLines,
+        ...$memberLines,
+    ])."\n";
 
     if (! $options['apply']) {
         return 0;
@@ -109,7 +117,10 @@ function renameOptions(array $arguments): array
         };
     }
 
-    [$options['word'], $options['replacement']] = array_map(strtolower(...), $words + ['', '']);
+    [$options['word'], $options['replacement']] = array_map(strtolower(...), $words + [
+        '',
+        '',
+    ]);
     $options['paths'] = $options['paths'] ?: PROJECT_FOLDERS;
 
     return $options;
@@ -187,7 +198,16 @@ function applyRenames(array $typeLines, array $memberLines): int
 {
     $status = 0;
 
-    foreach ([['move.php', $typeLines], ['rename-member.php', $memberLines]] as [$renamer, $lines]) {
+    foreach ([
+        [
+            'move.php',
+            $typeLines,
+        ],
+        [
+            'rename-member.php',
+            $memberLines,
+        ],
+    ] as [$renamer, $lines]) {
         if ($lines === []) {
             continue;
         }

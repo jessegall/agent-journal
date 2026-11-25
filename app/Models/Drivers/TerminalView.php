@@ -42,7 +42,13 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['agent_runtime_id', 'interval_ms', 'process_generation', 'expires_at', 'closed_at'])]
+#[Fillable([
+    'agent_runtime_id',
+    'interval_ms',
+    'process_generation',
+    'expires_at',
+    'closed_at',
+])]
 final class TerminalView extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
@@ -71,7 +77,10 @@ final class TerminalView extends Model implements EventSource, ReadableModel
      *
      * @var list<int>
      */
-    public const array INTERVALS_MS = [500, 1000];
+    public const array INTERVALS_MS = [
+        500,
+        1000,
+    ];
 
     public const int DEFAULT_INTERVAL_MS = 500;
 

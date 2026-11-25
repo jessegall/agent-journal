@@ -25,6 +25,10 @@ final readonly class NavigationScreen implements Arrayable
 
     public function toArray(): array
     {
-        return ['rows' => $this->rows, 'highlight' => $this->highlight, 'generation' => $this->generation];
+        return [
+            'rows' => $this->rows,
+            'highlight' => $this->highlight,
+            'generation' => $this->generation,
+        ];
     }
 }

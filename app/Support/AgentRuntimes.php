@@ -32,13 +32,19 @@ final readonly class AgentRuntimes
         $runtime->holdStartGrant($startToken);
 
         if ($intent->firstMessage === null) {
-            return [$runtime, null];
+            return [
+                $runtime,
+                null,
+            ];
         }
 
         $firstRequestFields = DriverRequestPayload::text($intent->firstMessage);
         $request = DriverRequest::create($runtime, DriverOperation::Deliver, (string) Str::ulid(), $firstRequestFields);
         $request->accept();
 
-        return [$runtime, $request];
+        return [
+            $runtime,
+            $request,
+        ];
     }
 }

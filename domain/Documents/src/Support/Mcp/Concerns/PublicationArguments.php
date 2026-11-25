@@ -18,7 +18,10 @@ trait PublicationArguments
      */
     protected function referenceSchema(JsonSchema $schema): Type
     {
-        return $schema->anyOf([$schema->integer()->min(1), $this->optionalRecordIdArgument($schema)])->required();
+        return $schema->anyOf([
+            $schema->integer()->min(1),
+            $this->optionalRecordIdArgument($schema),
+        ])->required();
     }
 
     /**

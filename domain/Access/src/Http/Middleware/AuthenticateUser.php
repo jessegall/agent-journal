@@ -26,7 +26,10 @@ final readonly class AuthenticateUser
     /**
      * The routes a chat member may open: the chat window, its actions and the message reads behind them.
      */
-    private const array CHAT_ROUTE_PREFIXES = ['chat.', 'communication.'];
+    private const array CHAT_ROUTE_PREFIXES = [
+        'chat.',
+        'communication.',
+    ];
 
     public function __construct(
         private JournalAdmission $admission,

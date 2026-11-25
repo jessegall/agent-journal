@@ -33,7 +33,12 @@ if (! $isCore && ! is_dir("{$root}/domain/{$scope}/src")) {
 
 $paths = $isCore
     ? ['app']
-    : ["domain/{$scope}/src", "domain/{$scope}/routes", "domain/{$scope}/database", "domain/{$scope}/resources"];
+    : [
+        "domain/{$scope}/src",
+        "domain/{$scope}/routes",
+        "domain/{$scope}/database",
+        "domain/{$scope}/resources",
+    ];
 $files = array_values(array_filter(
     explode("\n", trim(run($root, 'git ls-files -- '.implode(' ', array_map('escapeshellarg', $paths))))),
     fn (string $file) => $file !== '',
@@ -59,7 +64,10 @@ foreach ($files as $old) {
         'final_class' => classOfPath($new, $kind, $root, $old),
         'status' => isGenerated($root, $old) ? 'generate' : ($new === $old ? 'stay' : 'move'),
         'kind' => $kind,
-        'generator' => ['input' => null, 'output' => null],
+        'generator' => [
+            'input' => null,
+            'output' => null,
+        ],
         'phase' => phaseOf($new, $rules),
         'batch' => batchOf($old, $scope),
         'consumers' => [],
@@ -104,9 +112,16 @@ function destinationOf(string $old, string $scope, array $rules): string
 
         // A class in a role folder (app/Values/Operation.php, app/Data/Agents/UsageReportData.php) is already where
         // the layout wants it; Pipelines and Contracts were areas too, so only their direct files count.
-        $roleRoot = in_array($top, [...$rules['kind_roots'], 'Support', 'Concerns'], true);
+        $roleRoot = in_array($top, [
+            ...$rules['kind_roots'],
+            'Support',
+            'Concerns',
+        ], true);
 
-        if ($roleRoot && (count($segments) === 2 || ! in_array($top, ['Pipelines', 'Contracts'], true))) {
+        if ($roleRoot && (count($segments) === 2 || ! in_array($top, [
+            'Pipelines',
+            'Contracts',
+        ], true))) {
             return $old;
         }
 
@@ -239,7 +254,10 @@ function mapInArea(string|null $area, string $inArea, array $rules, string $base
 
     $renamed = $rules['renamed_roots'];
 
-    foreach ([2, 1] as $depth) {
+    foreach ([
+        2,
+        1,
+    ] as $depth) {
         $prefix = implode('/', array_slice($segments, 0, $depth));
 
         if (count($segments) > $depth && isset($renamed[$prefix])) {
@@ -343,7 +361,10 @@ function batchOf(string $old, string $scope): string
 function withOutsideConsumers(string $root, array $rows, array $rules, string $scope): array
 {
     // A package's consumers are everything outside its own src, Core included; Core's are outside the PHP roots.
-    $outsideRoots = $scope === 'core' ? $rules['outside_consumer_roots'] : [...$rules['outside_consumer_roots'], 'app'];
+    $outsideRoots = $scope === 'core' ? $rules['outside_consumer_roots'] : [
+        ...$rules['outside_consumer_roots'],
+        'app',
+    ];
     $listing = run($root, 'git ls-files -- '.implode(' ', array_map('escapeshellarg', $outsideRoots)));
     $own = $scope === 'core' ? '#^domain/\w+/src/#' : '#^domain/'.preg_quote($scope, '#').'/src/#';
     $texts = [];
@@ -361,7 +382,11 @@ function withOutsideConsumers(string $root, array $rows, array $rules, string $s
             continue;
         }
 
-        $needles = array_filter([$row['old_path'], $row['old_class'] === null ? null : str_replace('\\', '\\\\', $row['old_class']), $row['old_class']]);
+        $needles = array_filter([
+            $row['old_path'],
+            $row['old_class'] === null ? null : str_replace('\\', '\\\\', $row['old_class']),
+            $row['old_class'],
+        ]);
 
         foreach ($texts as $file => $text) {
             foreach ($needles as $needle) {
@@ -410,7 +435,10 @@ function kindOf(string $root, string $path): string
 
 function classOf(string $root, string $path, string $kind): string|null
 {
-    if (! in_array($kind, ['class', 'seeder'], true)) {
+    if (! in_array($kind, [
+        'class',
+        'seeder',
+    ], true)) {
         return null;
     }
 
@@ -425,7 +453,10 @@ function classOf(string $root, string $path, string $kind): string|null
 
 function classOfPath(string $path, string $kind, string $root, string $old): string|null
 {
-    if (! in_array($kind, ['class', 'seeder'], true)) {
+    if (! in_array($kind, [
+        'class',
+        'seeder',
+    ], true)) {
         return null;
     }
 

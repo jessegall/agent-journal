@@ -43,7 +43,13 @@ final class TaskStateContributionTest extends TestCase
 
         $stored = $task->fresh();
         $this->assertNotNull($stored);
-        $this->assertSame([TaskState::Started, 1], [$stored->state, $stored->run_number]);
+        $this->assertSame([
+            TaskState::Started,
+            1,
+        ], [
+            $stored->state,
+            $stored->run_number,
+        ]);
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
 
@@ -58,7 +64,13 @@ final class TaskStateContributionTest extends TestCase
         } catch (StackAlreadyClosed) {
             $stored = $task->fresh();
             $this->assertNotNull($stored);
-            $this->assertSame([TaskState::Open, 0], [$stored->state, $stored->run_number]);
+            $this->assertSame([
+                TaskState::Open,
+                0,
+            ], [
+                $stored->state,
+                $stored->run_number,
+            ]);
         }
     }
 
@@ -147,7 +159,10 @@ final class TaskStateContributionTest extends TestCase
         $commands->run(new StartTaskCommand($second->id));
         $commands->run(new FinishTaskCommand($second->id, 1, 'Done.'));
 
-        $this->assertSame(["tasks.working {$first->id} 1", "tasks.working {$second->id} 1"], $this->taskFrames());
+        $this->assertSame([
+            "tasks.working {$first->id} 1",
+            "tasks.working {$second->id} 1",
+        ], $this->taskFrames());
     }
 
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
@@ -174,7 +189,10 @@ final class TaskStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new FinishTaskCommand($second->id, 1, 'Fixed.'));
 
-        $this->assertSame(["tasks.working {$first->id} 1", "tasks.working {$second->id} 1"], $this->taskFrames());
+        $this->assertSame([
+            "tasks.working {$first->id} 1",
+            "tasks.working {$second->id} 1",
+        ], $this->taskFrames());
         $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
     }
 
@@ -189,7 +207,10 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CancelTaskCommand($cancelled->id, 'Dropped.'));
         $this->app->make(CommandBus::class)->run(new BlockTaskCommand($blocked->id, 1, 'Waits for review.'));
 
-        $this->assertSame(["tasks.working {$blocked->id} 1", "tasks.working {$cancelled->id} 1"], $this->taskFrames());
+        $this->assertSame([
+            "tasks.working {$blocked->id} 1",
+            "tasks.working {$cancelled->id} 1",
+        ], $this->taskFrames());
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
@@ -206,7 +227,10 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new FocusTaskCommand($first->id));
 
         $this->assertSame([$first->id], $this->focusedTaskIds());
-        $this->assertSame(["tasks.working {$second->id} 1", "tasks.working {$first->id} 1"], $this->taskFrames());
+        $this->assertSame([
+            "tasks.working {$second->id} 1",
+            "tasks.working {$first->id} 1",
+        ], $this->taskFrames());
 
         $this->assertSame(
             $first->number,

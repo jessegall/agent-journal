@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
-use Illuminate\Database\Query\Builder as QueryBuilder;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -44,6 +43,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -78,7 +78,12 @@ use Illuminate\Support\Str;
  * @property-read Account|null $account
  * @property-read Account|null $resultAccount
  */
-#[Fillable(['account_protocol', 'method', 'actor_type', 'actor_id'])]
+#[Fillable([
+    'account_protocol',
+    'method',
+    'actor_type',
+    'actor_id',
+])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {
     /**
@@ -99,7 +104,12 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * @var list<string>
      */
-    protected $hidden = ['directory', 'process_reference', 'login_reference', 'submission_key'];
+    protected $hidden = [
+        'directory',
+        'process_reference',
+        'login_reference',
+        'submission_key',
+    ];
 
     /**
      * @return array<string, string>

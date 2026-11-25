@@ -34,7 +34,10 @@ final readonly class EncodedCard implements JsonSerializable
         return [
             'version' => self::VERSION,
             'placementId' => $this->placementId,
-            'source' => ['type' => $this->source->type, 'id' => $this->source->id],
+            'source' => [
+                'type' => $this->source->type,
+                'id' => $this->source->id,
+            ],
             'accessibleName' => $this->accessibleName,
             'safeSummary' => $this->safeSummary,
             'open' => $this->open,

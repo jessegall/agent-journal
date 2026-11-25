@@ -25,7 +25,12 @@ final class PlanOutlineTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+    ];
 
     #[TimeLimit(seconds: 30, reason: 'It builds a phase of 1,500 tasks and a plan of 300 one-task phases.')]
     public function test_first_and_second_pages_read_the_same_rows_whatever_the_totals(): void
@@ -125,7 +130,10 @@ final class PlanOutlineTest extends TestCase
         DB::disableQueryLog();
         Event::forget('eloquent.retrieved: *');
 
-        return ['queries' => $queries, 'models' => $models];
+        return [
+            'queries' => $queries,
+            'models' => $models,
+        ];
     }
 
     private function outline(): PlanOutline

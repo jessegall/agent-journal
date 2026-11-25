@@ -87,7 +87,10 @@ final readonly class OutputPolicy
      */
     private function lostBy(Redirect $redirect, PartClassification $part): array
     {
-        if (! in_array($redirect->descriptor, [1, 2], true)) {
+        if (! in_array($redirect->descriptor, [
+            1,
+            2,
+        ], true)) {
             return [];
         }
 
@@ -116,7 +119,10 @@ final readonly class OutputPolicy
         $commands = array_values(
             array_filter(
                 $tree->children($pipeline->id),
-                fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true),
+                fn (ShellNode $child) => ! in_array($child->type, [
+                    NodeType::Comment,
+                    NodeType::Redirect,
+                ], true),
             ),
         );
 

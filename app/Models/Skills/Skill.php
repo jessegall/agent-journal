@@ -43,7 +43,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['key', 'owner_type', 'owner_id', 'environment', 'current_revision_id', 'retired_at'])]
+#[Fillable([
+    'key',
+    'owner_type',
+    'owner_id',
+    'environment',
+    'current_revision_id',
+    'retired_at',
+])]
 final class Skill extends Model implements EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
@@ -74,7 +81,12 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     public static function create(SkillKey $key, ActorIdentity $owner, string|null $environment): self
     {
         return self::query()->create(
-            ['key' => $key->key, 'owner_type' => $owner->type, 'owner_id' => $owner->id, 'environment' => $environment],
+            [
+                'key' => $key->key,
+                'owner_type' => $owner->type,
+                'owner_id' => $owner->id,
+                'environment' => $environment,
+            ],
         );
     }
 

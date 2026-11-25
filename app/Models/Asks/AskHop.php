@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -38,14 +38,22 @@ use PhpOption\Option;
  * @property string $type_key
  * @property CarbonImmutable $accepted_at
  */
-#[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
+#[Fillable([
+    'ask_id',
+    'actor_type',
+    'actor_id',
+    'type_key',
+    'version',
+    'route_version',
+    'accepted_at',
+])]
 final class AskHop extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.ask-hop';
@@ -59,7 +67,11 @@ final class AskHop extends Model implements EventSource, ReadableModel
 
     protected function casts(): array
     {
-        return ['accepted_at' => 'immutable_datetime', 'version' => 'integer', 'route_version' => 'integer'];
+        return [
+            'accepted_at' => 'immutable_datetime',
+            'version' => 'integer',
+            'route_version' => 'integer',
+        ];
     }
 
     // ----------[ Constructors ]----------

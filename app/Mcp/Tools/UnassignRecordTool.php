@@ -25,7 +25,10 @@ final class UnassignRecordTool extends AssignmentWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return [...$this->recordSchema($schema), 'expected_assignment' => $this->expectedSchema($schema)];
+        return [
+            ...$this->recordSchema($schema),
+            'expected_assignment' => $this->expectedSchema($schema),
+        ];
     }
 
     protected function command(ToolArguments $arguments): UnassignRecordCommand

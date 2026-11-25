@@ -66,7 +66,10 @@ final class CommandSubjects
         $subjects = array_values(array_filter($authorized->authorizedSubject(), is_object(...)));
 
         foreach ($subjects as $subject) {
-            $this->handedOver[] = [$authorized->command(), $subject];
+            $this->handedOver[] = [
+                $authorized->command(),
+                $subject,
+            ];
         }
 
         try {

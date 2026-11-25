@@ -39,7 +39,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property CarbonImmutable $updated_at
  * @property Model $source
  */
-#[Fillable(['inbox_id', 'source_type', 'source_id', 'type', 'group_number', 'author_type', 'author_id'])]
+#[Fillable([
+    'inbox_id',
+    'source_type',
+    'source_id',
+    'type',
+    'group_number',
+    'author_type',
+    'author_id',
+])]
 final class ChatMessage extends Model implements EventSource
 {
     use HasUlids;

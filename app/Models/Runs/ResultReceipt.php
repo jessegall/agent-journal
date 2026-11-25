@@ -69,7 +69,11 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['attempt' => 'integer', 'outcome' => AssessmentOutcome::class, 'published_at' => 'datetime'];
+        return [
+            'attempt' => 'integer',
+            'outcome' => AssessmentOutcome::class,
+            'published_at' => 'datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------

@@ -32,7 +32,10 @@ final readonly class IsolatedSettingsFile implements JsonSerializable
     {
         return new self(
             array_map(
-                fn (string $command) => [['hooks' => [['type' => 'command', 'command' => $command]]]],
+                fn (string $command) => [['hooks' => [[
+                    'type' => 'command',
+                    'command' => $command,
+                ]]]],
                 $hookCommands,
             ),
             $allowedTools,
@@ -50,7 +53,10 @@ final readonly class IsolatedSettingsFile implements JsonSerializable
     {
         return [
             'hooks' => $this->hooks,
-            'permissions' => ['allow' => $this->allowedTools, 'deny' => $this->deniedTools],
+            'permissions' => [
+                'allow' => $this->allowedTools,
+                'deny' => $this->deniedTools,
+            ],
         ];
     }
 }

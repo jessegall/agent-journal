@@ -25,9 +25,18 @@ require __DIR__.'/models.php';
 require __DIR__.'/sections.php';
 require_once __DIR__.'/php-parse.php';
 
-const STATE_SECTIONS = ['Lifecycle', 'Hooks', 'Events', 'Internals'];
+const STATE_SECTIONS = [
+    'Lifecycle',
+    'Hooks',
+    'Events',
+    'Internals',
+];
 
-const LIFECYCLE_METHODS = ['onEnter', 'onExit', 'onResume'];
+const LIFECYCLE_METHODS = [
+    'onEnter',
+    'onExit',
+    'onResume',
+];
 
 const TICK_METHOD = 'onTick';
 

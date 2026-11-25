@@ -17,7 +17,11 @@ trait PrintsRecordText
     protected function selection(): TextSelection
     {
         $lines = $this->option('lines');
-        $range = is_string($lines) && preg_match('/^(\d*)-?(\d*)$/', $lines, $bounds) === 1 ? $bounds : ['', '', ''];
+        $range = is_string($lines) && preg_match('/^(\d*)-?(\d*)$/', $lines, $bounds) === 1 ? $bounds : [
+            '',
+            '',
+            '',
+        ];
 
         return TextSelection::from([
             'section' => $this->option('section'),

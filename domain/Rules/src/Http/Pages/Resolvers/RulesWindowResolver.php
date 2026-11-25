@@ -45,7 +45,10 @@ final readonly class RulesWindowResolver implements PageResolver
                 LayoutPartData::field(
                     'search',
                     'Search rules',
-                    new LayoutFieldData('q', $filters->search, ['page', 'rule']),
+                    new LayoutFieldData('q', $filters->search, [
+                        'page',
+                        'rule',
+                    ]),
                 ),
             ),
             LayoutPartData::box(
@@ -75,7 +78,11 @@ final readonly class RulesWindowResolver implements PageResolver
                 LayoutPartData::action(
                     'clear',
                     'Clear search',
-                    LayoutActionData::changing(['q' => '', 'page' => '', 'rule' => '']),
+                    LayoutActionData::changing([
+                        'q' => '',
+                        'page' => '',
+                        'rule' => '',
+                    ]),
                 ),
             );
         }
@@ -103,7 +110,10 @@ final readonly class RulesWindowResolver implements PageResolver
             'list',
             'stack',
             ...$review,
-            ...[LayoutPartData::collection('rows', 'list', $rows), $this->pagerOf($page)],
+            ...[
+                LayoutPartData::collection('rows', 'list', $rows),
+                $this->pagerOf($page),
+            ],
         );
     }
 
@@ -170,7 +180,10 @@ final readonly class RulesWindowResolver implements PageResolver
         $review = fn (string $key, string $route, string $label, string $style) => LayoutPartData::form(
             $key,
             LayoutFormData::from(
-                ['method' => ActionMethod::Patch, 'href' => route($route, ['rule' => $rule->number], false)],
+                [
+                    'method' => ActionMethod::Patch,
+                    'href' => route($route, ['rule' => $rule->number], false),
+                ],
             ),
             'inline',
             LayoutPartData::action('send', $label, LayoutActionData::submitting(), $style),

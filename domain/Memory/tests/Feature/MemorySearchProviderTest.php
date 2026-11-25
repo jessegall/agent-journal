@@ -48,7 +48,10 @@ final class MemorySearchProviderTest extends TestCase
         $ownerFinds = $this->search(self::OWNER_ID);
         $strangerFinds = $this->search('01ARZ3NDEKTSV4RRFFQ69G5FA3');
 
-        $this->assertSame([[MemorySearchProvider::RECORD_TYPE, $own->id]], self::references($ownerFinds));
+        $this->assertSame([[
+            MemorySearchProvider::RECORD_TYPE,
+            $own->id,
+        ]], self::references($ownerFinds));
         $this->assertSame([], self::references($strangerFinds));
     }
 
@@ -94,6 +97,9 @@ final class MemorySearchProviderTest extends TestCase
      */
     private static function references(array $hits): array
     {
-        return array_map(fn (SearchResult $hit) => [$hit->reference->type, $hit->reference->id], $hits);
+        return array_map(fn (SearchResult $hit) => [
+            $hit->reference->type,
+            $hit->reference->id,
+        ], $hits);
     }
 }

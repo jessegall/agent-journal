@@ -114,7 +114,10 @@ final class HelperJobState extends AgentState
     private function addSteeringFor(string $jobId, string $steering): void
     {
         if ($jobId === $this->jobId) {
-            $this->steering = [...$this->steering, $steering];
+            $this->steering = [
+                ...$this->steering,
+                $steering,
+            ];
         }
     }
 

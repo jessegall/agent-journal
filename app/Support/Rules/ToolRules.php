@@ -25,14 +25,41 @@ final readonly class ToolRules
     private const CommandType CHECK = CommandType::Verification;
 
     private const array GH_READS = [
-        'pr' => ['view', 'list', 'diff', 'checks', 'status'],
-        'issue' => ['view', 'list', 'status'],
-        'run' => ['list', 'view', 'watch'],
+        'pr' => [
+            'view',
+            'list',
+            'diff',
+            'checks',
+            'status',
+        ],
+        'issue' => [
+            'view',
+            'list',
+            'status',
+        ],
+        'run' => [
+            'list',
+            'view',
+            'watch',
+        ],
     ];
 
     private const array GH_WRITES = [
-        'pr' => ['create', 'comment', 'edit', 'close', 'merge', 'reopen'],
-        'issue' => ['create', 'comment', 'edit', 'close', 'reopen'],
+        'pr' => [
+            'create',
+            'comment',
+            'edit',
+            'close',
+            'merge',
+            'reopen',
+        ],
+        'issue' => [
+            'create',
+            'comment',
+            'edit',
+            'close',
+            'reopen',
+        ],
     ];
 
     /**
@@ -40,7 +67,13 @@ final readonly class ToolRules
      */
     public function all(): array
     {
-        return [...$this->github(), ...$this->docker(), ...$this->go(), ...$this->databases(), ...$this->packages()];
+        return [
+            ...$this->github(),
+            ...$this->docker(),
+            ...$this->go(),
+            ...$this->databases(),
+            ...$this->packages(),
+        ];
     }
 
     /**
@@ -56,14 +89,20 @@ final readonly class ToolRules
         foreach (self::GH_READS as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";
-                $rules[] = CommandRule::forProgram($id, $gh, [$group, $verb], $this->ghReading(), $read);
+                $rules[] = CommandRule::forProgram($id, $gh, [
+                    $group,
+                    $verb,
+                ], $this->ghReading(), $read);
             }
         }
 
         foreach (self::GH_WRITES as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";
-                $rules[] = CommandRule::forProgram($id, $gh, [$group, $verb], $this->ghWriting(), $write);
+                $rules[] = CommandRule::forProgram($id, $gh, [
+                    $group,
+                    $verb,
+                ], $this->ghWriting(), $write);
             }
         }
 
@@ -153,10 +192,22 @@ final readonly class ToolRules
             CommandRule::forProgram('core.docker.logs', $docker, ['logs'], $logs, $read),
             CommandRule::forProgram('core.docker.images', $docker, ['images'], $listing, $read),
             CommandRule::forProgram('core.docker.build', $docker, ['build'], $build, $process),
-            CommandRule::forProgram('core.docker.compose-ps', $docker, ['compose', 'ps'], $listing, $read),
-            CommandRule::forProgram('core.docker.compose-logs', $docker, ['compose', 'logs'], $logs, $read),
-            CommandRule::forProgram('core.docker.compose-build', $docker, ['compose', 'build'], $build, $process),
-            CommandRule::forProgram('core.docker.compose-up', $docker, ['compose', 'up'], $up, $process),
+            CommandRule::forProgram('core.docker.compose-ps', $docker, [
+                'compose',
+                'ps',
+            ], $listing, $read),
+            CommandRule::forProgram('core.docker.compose-logs', $docker, [
+                'compose',
+                'logs',
+            ], $logs, $read),
+            CommandRule::forProgram('core.docker.compose-build', $docker, [
+                'compose',
+                'build',
+            ], $build, $process),
+            CommandRule::forProgram('core.docker.compose-up', $docker, [
+                'compose',
+                'up',
+            ], $up, $process),
         ];
     }
 
@@ -175,8 +226,14 @@ final readonly class ToolRules
 
         return [
             CommandRule::forCheck('core.go.vet', $go, ['vet'], $paths, $vet, self::CHECK, ToolType::Other),
-            CommandRule::forProgram('core.go.mod-tidy', $go, ['mod', 'tidy'], ArgumentGrammar::none(), $tidy),
-            CommandRule::forProgram('core.go.mod-download', $go, ['mod', 'download'], $paths, $download),
+            CommandRule::forProgram('core.go.mod-tidy', $go, [
+                'mod',
+                'tidy',
+            ], ArgumentGrammar::none(), $tidy),
+            CommandRule::forProgram('core.go.mod-download', $go, [
+                'mod',
+                'download',
+            ], $paths, $download),
             CommandRule::forProgram('core.go.version', $go, ['version'], ArgumentGrammar::none(), $read),
             CommandRule::forProgram('core.go.env', $go, ['env'], $names, $read),
         ];

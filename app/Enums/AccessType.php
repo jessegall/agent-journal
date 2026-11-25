@@ -38,7 +38,13 @@ enum AccessType: string
      */
     public function changesFiles(): bool
     {
-        return in_array($this, [self::Create, self::Edit, self::Delete, self::Test, self::Build], true);
+        return in_array($this, [
+            self::Create,
+            self::Edit,
+            self::Delete,
+            self::Test,
+            self::Build,
+        ], true);
     }
 
     /**

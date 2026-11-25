@@ -64,7 +64,10 @@ final readonly class SupervisorRoutes implements JsonSerializable
             fn (SupervisorOverride $override): bool => $override->type->key !== $type->key,
         ));
 
-        return new self($this->default, [...$overrides, new SupervisorOverride($type, $target)]);
+        return new self($this->default, [
+            ...$overrides,
+            new SupervisorOverride($type, $target),
+        ]);
     }
 
     /**

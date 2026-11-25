@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -26,7 +26,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['frame_id', 'stack_id', 'settled_at'])]
+#[Fillable([
+    'frame_id',
+    'stack_id',
+    'settled_at',
+])]
 final class EngineFrameTime extends Model implements ReadableModel
 {
     use BoundedReads;

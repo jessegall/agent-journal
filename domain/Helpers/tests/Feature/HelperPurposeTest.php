@@ -68,7 +68,10 @@ final class HelperPurposeTest extends TestCase
         $hidden = new RecordIdentity('plans.plan', (string) Str::ulid());
         $missing = new RecordIdentity('tasks.task', (string) Str::ulid());
 
-        foreach ([$hidden, $missing] as $record) {
+        foreach ([
+            $hidden,
+            $missing,
+        ] as $record) {
             $this->assertThrows(fn () => $this->resolve($record, null, null), SubjectUnavailable::class);
         }
 

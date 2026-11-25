@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
-use App\Enums\ActorType;
-use App\Contracts\Records\AuthoredModel;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
+use App\Enums\ActorType;
 use App\Enums\Alignment;
 use App\Enums\Tone;
 use App\Exceptions\CrossOwnerReadRefused;
@@ -63,7 +63,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'steps'])]
+#[Fillable([
+    'name',
+    'steps',
+])]
 final class SequenceRun extends Model implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
@@ -86,7 +89,10 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['current_step' => 1, 'state' => 'running'];
+    protected $attributes = [
+        'current_step' => 1,
+        'state' => 'running',
+    ];
 
     /**
      * @return array<string, string>
@@ -303,6 +309,9 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     #[Scope]
     protected function onePerFollower(Builder $query): void
     {
-        $query->whereNotNull('actor_id')->select(['actor_type', 'actor_id'])->groupBy('actor_type', 'actor_id');
+        $query->whereNotNull('actor_id')->select([
+            'actor_type',
+            'actor_id',
+        ])->groupBy('actor_type', 'actor_id');
     }
 }

@@ -40,7 +40,15 @@ use Illuminate\Support\Carbon;
  * @property string $author_id
  * @property Carbon|null $closed_at
  */
-#[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'closed_at'])]
+#[Fillable([
+    'document_id',
+    'title',
+    'abstract',
+    'body',
+    'author_type',
+    'author_id',
+    'closed_at',
+])]
 final class DocumentRevision extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
@@ -165,7 +173,14 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     #[Scope]
     protected function forCards(Builder $query): void
     {
-        $query->select(['id', 'document_id', 'number', 'title', 'abstract', 'closed_at']);
+        $query->select([
+            'id',
+            'document_id',
+            'number',
+            'title',
+            'abstract',
+            'closed_at',
+        ]);
     }
 
     /**

@@ -22,6 +22,10 @@ final readonly class MappedRefusal
      */
     public function toArray(): array
     {
-        return ['code' => $this->code->value, 'message' => $this->message, 'details' => (object) $this->details];
+        return [
+            'code' => $this->code->value,
+            'message' => $this->message,
+            'details' => (object) $this->details,
+        ];
     }
 }

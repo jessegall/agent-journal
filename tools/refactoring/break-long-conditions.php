@@ -12,7 +12,13 @@ declare(strict_types=1);
 
 const LIMIT = 120;
 
-const BREAK_BEFORE = [T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND, T_LOGICAL_OR, T_COALESCE];
+const BREAK_BEFORE = [
+    T_BOOLEAN_AND,
+    T_BOOLEAN_OR,
+    T_LOGICAL_AND,
+    T_LOGICAL_OR,
+    T_COALESCE,
+];
 
 require_once __DIR__.'/php-files.php';
 
@@ -40,16 +46,27 @@ function chainSteps(array $tokens, array $indexes): array
     foreach ($indexes as $index) {
         $token = $tokens[$index];
 
-        if (in_array($token->text, ['(', '[', '{'], true) && $token->id < 256) {
+        if (in_array($token->text, [
+            '(',
+            '[',
+            '{',
+        ], true) && $token->id < 256) {
             $depth++;
         }
 
-        if (in_array($token->text, [')', ']', '}'], true) && $token->id < 256) {
+        if (in_array($token->text, [
+            ')',
+            ']',
+            '}',
+        ], true) && $token->id < 256) {
             $depth--;
         }
 
         if ($token->id === T_OBJECT_OPERATOR || $token->id === T_NULLSAFE_OBJECT_OPERATOR) {
-            $arrows[] = [$index, $depth];
+            $arrows[] = [
+                $index,
+                $depth,
+            ];
         }
     }
 
@@ -97,16 +114,27 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
         foreach ($byLine[$lineNumber] ?? [] as $index) {
             $token = $tokens[$index];
 
-            if (in_array($token->text, ['(', '[', '{'], true) && $token->id < 256) {
+            if (in_array($token->text, [
+                '(',
+                '[',
+                '{',
+            ], true) && $token->id < 256) {
                 $depth++;
             }
 
-            if (in_array($token->text, [')', ']', '}'], true) && $token->id < 256) {
+            if (in_array($token->text, [
+                ')',
+                ']',
+                '}',
+            ], true) && $token->id < 256) {
                 $depth--;
             }
 
             if (breaksBefore($token)) {
-                $candidates[] = [$index, $depth];
+                $candidates[] = [
+                    $index,
+                    $depth,
+                ];
 
                 if ($token->text === '?') {
                     $openTernaries[$depth] = ($openTernaries[$depth] ?? 0) + 1;
@@ -115,7 +143,10 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
 
             if ($token->text === ':' && $token->id < 256 && ($openTernaries[$depth] ?? 0) > 0) {
                 $openTernaries[$depth]--;
-                $candidates[] = [$index, $depth];
+                $candidates[] = [
+                    $index,
+                    $depth,
+                ];
             }
         }
 

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\StateType;
+use App\Enums\FrameReuse;
+use App\Enums\SessionTransferType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
-use App\Enums\FrameReuse;
-use App\Enums\SessionTransferType;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\Decisions\Decision;
@@ -42,7 +42,6 @@ final class ReadingMessageState extends AgentState
     private array $unreadIds = [];
 
     private int $toolUses = 0;
-
 
     public function __construct(
         private readonly string $inboxId,
@@ -117,7 +116,10 @@ final class ReadingMessageState extends AgentState
     public function onMessageSent(MessageSent $event): void
     {
         if ($event->inboxId === $this->inboxId && ! $this->isOwnAgent($event->sender)) {
-            $this->unreadIds = array_values(array_unique([...$this->unreadIds, $event->messageId]));
+            $this->unreadIds = array_values(array_unique([
+                ...$this->unreadIds,
+                $event->messageId,
+            ]));
         }
     }
 

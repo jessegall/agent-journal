@@ -21,9 +21,16 @@ final readonly class QueuedPart implements SpawnablePart
     /**
      * Variables a part never inherits: the journal's start token and the run's event key.
      */
-    private const array SECRET_VARIABLES = ['JOURNAL_START_TOKEN', 'JOURNAL_EVENT_KEY'];
+    private const array SECRET_VARIABLES = [
+        'JOURNAL_START_TOKEN',
+        'JOURNAL_EVENT_KEY',
+    ];
 
-    public const array NO_INPUT = ['file', '/dev/null', 'r'];
+    public const array NO_INPUT = [
+        'file',
+        '/dev/null',
+        'r',
+    ];
 
     /**
      * @param  array<int, string>  $substitutionOutputs
@@ -100,7 +107,10 @@ final readonly class QueuedPart implements SpawnablePart
     {
         $assigned = array_map($this->text(...), $this->step->assignments);
 
-        return array_diff_key([...$this->context->environment, ...$assigned], array_flip(self::SECRET_VARIABLES));
+        return array_diff_key([
+            ...$this->context->environment,
+            ...$assigned,
+        ], array_flip(self::SECRET_VARIABLES));
     }
 
     private function text(PlanWord $word): string
@@ -117,10 +127,25 @@ final readonly class QueuedPart implements SpawnablePart
         $path = str_starts_with($target, '/') ? $target : rtrim($this->context->workingFolder, '/').'/'.$target;
 
         return match ($redirect->type) {
-            RedirectType::Output, RedirectType::Clobber => ['file', $path, 'w'],
-            RedirectType::Append => ['file', $path, 'a'],
-            RedirectType::Input => ['file', $path, 'r'],
-            RedirectType::DuplicateOutput => ['redirect', (int) $target],
+            RedirectType::Output, RedirectType::Clobber => [
+                'file',
+                $path,
+                'w',
+            ],
+            RedirectType::Append => [
+                'file',
+                $path,
+                'a',
+            ],
+            RedirectType::Input => [
+                'file',
+                $path,
+                'r',
+            ],
+            RedirectType::DuplicateOutput => [
+                'redirect',
+                (int) $target,
+            ],
             default => throw SupervisorRefused::unsupportedRedirect($redirect->type->value),
         };
     }

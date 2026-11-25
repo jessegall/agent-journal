@@ -51,7 +51,10 @@ final readonly class SharesIndex extends SharingPage
                 [
                     'key' => 'any',
                     'label' => 'Any',
-                    'query' => ['state' => '', 'after' => ''],
+                    'query' => [
+                        'state' => '',
+                        'after' => '',
+                    ],
                     'isCurrent' => $chosen === '',
                 ],
             ),
@@ -60,7 +63,10 @@ final readonly class SharesIndex extends SharingPage
                     [
                         'key' => $state->value,
                         'label' => $state->value,
-                        'query' => ['state' => $state->value, 'after' => ''],
+                        'query' => [
+                            'state' => $state->value,
+                            'after' => '',
+                        ],
                         'isCurrent' => $chosen === $state->value,
                     ],
                 ),
@@ -127,7 +133,13 @@ final readonly class SharesIndex extends SharingPage
         return $this->nothingMatches(
             'No share matches these filters.',
             'Show all shares',
-            ['state' => '', 'rootType' => '', 'gateway' => '', 'expiresBefore' => '', 'after' => ''],
+            [
+                'state' => '',
+                'rootType' => '',
+                'gateway' => '',
+                'expiresBefore' => '',
+                'after' => '',
+            ],
         );
     }
 

@@ -52,7 +52,10 @@ final class PlanGraphEditingTest extends TestCase
 
         $structure->addTasks(
             $structure->addPhase($this->plan, 'Build'),
-            [$this->tasks['build']->id, $this->tasks['ship']->id],
+            [
+                $this->tasks['build']->id,
+                $this->tasks['ship']->id,
+            ],
         );
 
         $this->wait('ship', 'design');
@@ -65,7 +68,10 @@ final class PlanGraphEditingTest extends TestCase
         $this->graphAction('suggest')->assertRedirect();
         $this->graphAction('apply')->assertRedirect();
 
-        $this->assertSame([['ship', 'build']], $this->waits());
+        $this->assertSame([[
+            'ship',
+            'build',
+        ]], $this->waits());
         $this->graphAction('apply')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
 
@@ -90,7 +96,20 @@ final class PlanGraphEditingTest extends TestCase
 
         $this->graphAction('undo')->assertRedirect();
 
-        $this->assertEqualsCanonicalizing([['ship', 'design'], ['ship', 'build'], ['build', 'design']], $this->waits());
+        $this->assertEqualsCanonicalizing([
+            [
+                'ship',
+                'design',
+            ],
+            [
+                'ship',
+                'build',
+            ],
+            [
+                'build',
+                'design',
+            ],
+        ], $this->waits());
         $this->graphAction('undo')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
 
@@ -102,7 +121,16 @@ final class PlanGraphEditingTest extends TestCase
 
         $this->graphAction('undo')->assertSessionHas('refusal_code', 'task-graph-changed');
 
-        $this->assertEqualsCanonicalizing([['ship', 'build'], ['ship', 'design']], $this->waits());
+        $this->assertEqualsCanonicalizing([
+            [
+                'ship',
+                'build',
+            ],
+            [
+                'ship',
+                'design',
+            ],
+        ], $this->waits());
     }
 
     private function graphAction(string $action): TestResponse
@@ -125,7 +153,10 @@ final class PlanGraphEditingTest extends TestCase
 
         return TaskWait::query()->orderBy('created_at')->get()
             ->map(
-                fn (TaskWait $wait) => [$names[$wait->dependent_task_id], $names[$wait->prerequisite_task_id]],
+                fn (TaskWait $wait) => [
+                    $names[$wait->dependent_task_id],
+                    $names[$wait->prerequisite_task_id],
+                ],
             )->all();
     }
 }

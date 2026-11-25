@@ -46,7 +46,10 @@ final readonly class PublicationChunks
         return new Continuation(
             $position->tool,
             $position->selector,
-            [...$position->filters, 'line_end' => $lastLine],
+            [
+                ...$position->filters,
+                'line_end' => $lastLine,
+            ],
             $firstLine ?? 1,
             $offset ?? 0,
             $position->revision,

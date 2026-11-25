@@ -53,7 +53,12 @@ final readonly class DriverCompatibility
                 $driver,
                 '2.1.323',
                 '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
-                ['--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
+                [
+                    '--strict-mcp-config',
+                    '--mcp-config',
+                    '--settings',
+                    '--tools',
+                ],
                 [],
                 AuthenticationArrangement::DirectProcesses,
                 DriverEvidence::PrerequisiteMissing,
@@ -64,7 +69,10 @@ final readonly class DriverCompatibility
                 $driver,
                 '0.165.0',
                 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
-                ['app-server', '--add-dir'],
+                [
+                    'app-server',
+                    '--add-dir',
+                ],
                 ['cli_auth_credentials_store' => 'file'],
                 AuthenticationArrangement::SharedOwner,
                 DriverEvidence::PrerequisiteMissing,
@@ -80,7 +88,10 @@ final readonly class DriverCompatibility
      */
     public function withEvidence(DriverEvidence $evidence, string $owner): self
     {
-        return clone ($this, ['arrangementEvidence' => $evidence, 'evidenceOwner' => $owner]);
+        return clone ($this, [
+            'arrangementEvidence' => $evidence,
+            'evidenceOwner' => $owner,
+        ]);
     }
 
     /**

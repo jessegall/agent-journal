@@ -82,7 +82,10 @@ final readonly class NgrokGateway implements ShareGateway
 
         $version = $this->processes->newPendingProcess()->timeout(self::VERSION_SECONDS)->env(
             ['HOME' => $this->configFolder],
-        )->run([$this->binary, 'version'])->output();
+        )->run([
+            $this->binary,
+            'version',
+        ])->output();
 
         if (! str_contains($version, $settings->executableVersion)) {
             $problems[] = "The ngrok program is not version {$settings->executableVersion}.";
@@ -172,7 +175,10 @@ final readonly class NgrokGateway implements ShareGateway
 
     private static function isUpstream(string $address, string $upstream): bool
     {
-        return in_array($address, [$upstream, "http://{$upstream}"], true);
+        return in_array($address, [
+            $upstream,
+            "http://{$upstream}",
+        ], true);
     }
 
     /**

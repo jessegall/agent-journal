@@ -60,6 +60,9 @@ final class PlanStep extends Data
      */
     public function flatten(): array
     {
-        return [...array_merge(...array_map(fn (self $child) => $child->flatten(), $this->children)), $this];
+        return [
+            ...array_merge(...array_map(fn (self $child) => $child->flatten(), $this->children)),
+            $this,
+        ];
     }
 }

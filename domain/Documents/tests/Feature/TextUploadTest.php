@@ -31,8 +31,14 @@ final class TextUploadTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'text_upload_chunks', 'text_uploads', 'links', 'agents', 'agent_sessions', 'start_tokens',
-        'agent_stacks', 'command_receipts',
+        'text_upload_chunks',
+        'text_uploads',
+        'links',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
     ];
 
     public function test_a_large_upload_seals_and_is_consumed_once_as_its_declared_type(): void

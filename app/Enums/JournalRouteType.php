@@ -18,7 +18,10 @@ enum JournalRouteType: string
     public function classes(): array
     {
         return match ($this) {
-            self::Read => [CommandClass::JournalOperation, CommandClass::Read],
+            self::Read => [
+                CommandClass::JournalOperation,
+                CommandClass::Read,
+            ],
             self::Write => [CommandClass::JournalOperation],
         };
     }

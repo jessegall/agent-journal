@@ -24,7 +24,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['native_event', 'failure', 'occurred_at'])]
+#[Fillable([
+    'native_event',
+    'failure',
+    'occurred_at',
+])]
 final class StartBypass extends Model implements ReadableModel
 {
     use BoundedReads;

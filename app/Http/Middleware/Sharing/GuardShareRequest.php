@@ -15,7 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class GuardShareRequest
 {
-    private const array METHODS = ['GET', 'HEAD'];
+    private const array METHODS = [
+        'GET',
+        'HEAD',
+    ];
 
     public function __construct(private SharedPageResponses $responses) {}
 

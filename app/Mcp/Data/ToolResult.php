@@ -33,7 +33,11 @@ final class ToolResult extends Data
      */
     public static function ok(array $responseFields, array $nextActions = []): self
     {
-        return self::from(['status' => 'ok', 'payload' => $responseFields, 'nextActions' => $nextActions]);
+        return self::from([
+            'status' => 'ok',
+            'payload' => $responseFields,
+            'nextActions' => $nextActions,
+        ]);
     }
 
     /**

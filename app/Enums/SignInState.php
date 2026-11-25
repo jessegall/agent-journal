@@ -31,7 +31,11 @@ enum SignInState: string
      */
     public static function live(): array
     {
-        return [self::Starting, self::Waiting, self::Checking];
+        return [
+            self::Starting,
+            self::Waiting,
+            self::Checking,
+        ];
     }
 
     public function isLive(): bool

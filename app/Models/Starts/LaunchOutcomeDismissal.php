@@ -31,7 +31,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['viewer_type', 'viewer_id', 'agent_id', 'request_id', 'outcome_version'])]
+#[Fillable([
+    'viewer_type',
+    'viewer_id',
+    'agent_id',
+    'request_id',
+    'outcome_version',
+])]
 final class LaunchOutcomeDismissal extends Model implements ReadableModel
 {
     use BoundedReads;

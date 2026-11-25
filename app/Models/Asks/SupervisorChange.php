@@ -15,7 +15,15 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['supervisor_link_id', 'actor_type', 'actor_id', 'route', 'previous_target', 'target', 'version'])]
+#[Fillable([
+    'supervisor_link_id',
+    'actor_type',
+    'actor_id',
+    'route',
+    'previous_target',
+    'target',
+    'version',
+])]
 final class SupervisorChange extends Model implements ReadableModel
 {
     use BoundedReads;

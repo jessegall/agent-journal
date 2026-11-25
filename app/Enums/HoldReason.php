@@ -51,6 +51,9 @@ enum HoldReason: string
      */
     public function needsAttentionInDriver(): bool
     {
-        return in_array($this, [self::TrustRequired, self::OnboardingRequired], true);
+        return in_array($this, [
+            self::TrustRequired,
+            self::OnboardingRequired,
+        ], true);
     }
 }

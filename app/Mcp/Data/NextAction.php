@@ -24,6 +24,9 @@ final class NextAction extends Data
      */
     public function structuredContent(): array
     {
-        return ['tool' => $this->tool, 'arguments' => $this->arguments];
+        return [
+            'tool' => $this->tool,
+            'arguments' => $this->arguments,
+        ];
     }
 }

@@ -33,7 +33,11 @@ trait SearchesText
      */
     public function snippetFor(string $words): string
     {
-        foreach ([$this->body, $this->abstract, $this->title] as $text) {
+        foreach ([
+            $this->body,
+            $this->abstract,
+            $this->title,
+        ] as $text) {
             $matchOffset = mb_stripos($text, trim($words));
 
             if ($matchOffset !== false) {

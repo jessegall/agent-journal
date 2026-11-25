@@ -26,7 +26,10 @@ final readonly class ContractSnapshot
             $profiles[$profile->value] = $this->catalogue->toolDefinitionsFor($profile);
         }
 
-        $versions = array_unique([...ProtocolVersion::serverSupported(), ...ProtocolVersion::initializeSupported()]);
+        $versions = array_unique([
+            ...ProtocolVersion::serverSupported(),
+            ...ProtocolVersion::initializeSupported(),
+        ]);
         sort($versions);
         $refusals = array_column(RefusalCode::cases(), 'value');
         sort($refusals);
@@ -56,7 +59,10 @@ final readonly class ContractSnapshot
         $oldProfiles = $before->profiles;
         $newProfiles = $after->profiles;
 
-        foreach (array_unique([...array_keys($oldProfiles), ...array_keys($newProfiles)]) as $profile) {
+        foreach (array_unique([
+            ...array_keys($oldProfiles),
+            ...array_keys($newProfiles),
+        ]) as $profile) {
             $tools = $this->changedFields(
                 $oldProfiles[$profile] ?? [],
                 $newProfiles[$profile] ?? [],
@@ -77,7 +83,10 @@ final readonly class ContractSnapshot
      */
     private function changedFields(array $before, array $after): array
     {
-        $fields = array_unique([...array_keys($before), ...array_keys($after)]);
+        $fields = array_unique([
+            ...array_keys($before),
+            ...array_keys($after),
+        ]);
 
         return array_values(array_filter(
             $fields,

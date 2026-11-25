@@ -80,7 +80,10 @@ class HandleInertiaRequests extends Middleware
             return [
                 ...parent::share($request),
                 ...SharedData::from(
-                    ['name' => $this->settings->string($this->core->displayName), 'version' => $this->version->label()],
+                    [
+                        'name' => $this->settings->string($this->core->displayName),
+                        'version' => $this->version->label(),
+                    ],
                 )->toArray(),
             ];
         }

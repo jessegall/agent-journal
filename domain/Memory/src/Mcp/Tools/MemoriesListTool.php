@@ -28,7 +28,10 @@ final class MemoriesListTool extends JournalReadTool
 
     public function schema(JsonSchema $schema): array
     {
-        return ['page' => $schema->integer()->min(1), 'continuation' => $schema->string()];
+        return [
+            'page' => $schema->integer()->min(1),
+            'continuation' => $schema->string(),
+        ];
     }
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest

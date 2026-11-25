@@ -64,7 +64,10 @@ final readonly class ProfileAuthorization
      */
     public function denying(array $commands): self
     {
-        $denied = array_values(array_unique([...$this->deniedCommands, ...$commands]));
+        $denied = array_values(array_unique([
+            ...$this->deniedCommands,
+            ...$commands,
+        ]));
 
         return clone ($this, ['deniedCommands' => $denied]);
     }
@@ -88,9 +91,9 @@ final readonly class ProfileAuthorization
         }
 
         return AccessDecision::refused(
-                AccessRuleType::NotGranted,
-                AgentText::of('core.access.profile_does_not_grant_pair'),
-            );
+            AccessRuleType::NotGranted,
+            AgentText::of('core.access.profile_does_not_grant_pair'),
+        );
     }
 
     /**

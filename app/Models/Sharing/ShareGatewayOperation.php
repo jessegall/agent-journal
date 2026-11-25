@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -45,14 +45,20 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['type', 'run_id', 'lease_token', 'lease_ends_at', 'outcome_code'])]
+#[Fillable([
+    'type',
+    'run_id',
+    'lease_token',
+    'lease_ends_at',
+    'outcome_code',
+])]
 final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-gateway-operation';

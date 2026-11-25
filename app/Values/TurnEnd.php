@@ -18,7 +18,10 @@ final readonly class TurnEnd
 {
     private const string SUCCESS_SUBTYPE = 'success';
 
-    private const array APPLIED_CODEX_STATUSES = ['completed', 'interrupted'];
+    private const array APPLIED_CODEX_STATUSES = [
+        'completed',
+        'interrupted',
+    ];
 
     public function __construct(
         public int|null $exitCode = null,

@@ -31,7 +31,11 @@ final readonly class RuleExample implements StoredValue
      */
     public function toArray(): array
     {
-        return ['type' => $this->type->value, 'line' => $this->line, 'classes' => $this->classes->toArray()];
+        return [
+            'type' => $this->type->value,
+            'line' => $this->line,
+            'classes' => $this->classes->toArray(),
+        ];
     }
 
     /**

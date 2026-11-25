@@ -35,7 +35,13 @@ final class RuleProposalTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['rules', 'agents', 'agent_sessions', 'start_tokens', 'command_receipts'];
+    private const array TABLES = [
+        'rules',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'command_receipts',
+    ];
 
     public function test_a_proposal_stores_its_reason_replaced_rule_and_proposer_and_is_not_enforced(): void
     {
@@ -50,7 +56,13 @@ final class RuleProposalTest extends TestCase
         $details = $this->app->make(RuleDetailsResolver::class)->rule($id);
 
         $this->assertSame(
-            [RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $start->agent->id, $old->number],
+            [
+                RuleState::Proposed,
+                'The old one is too vague.',
+                ActorType::Agent,
+                $start->agent->id,
+                $old->number,
+            ],
             [
                 $details->state,
                 $details->reason,
@@ -78,8 +90,14 @@ final class RuleProposalTest extends TestCase
         $this->assertThrows(fn () => $bus->run(new DenyRuleCommand($proposed->id)), CommandAdmissionRefused::class);
 
         $this->assertSame(
-            [RuleState::Active, RuleState::Proposed],
-            [$active->fresh()?->state, $proposed->fresh()?->state],
+            [
+                RuleState::Active,
+                RuleState::Proposed,
+            ],
+            [
+                $active->fresh()?->state,
+                $proposed->fresh()?->state,
+            ],
         );
     }
 

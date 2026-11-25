@@ -111,6 +111,9 @@ final readonly class RefreshSessionSkills implements Listener
     {
         $keys = $selected->selectedKeys() === [] ? 'none' : implode(', ', $selected->selectedKeys());
 
-        return AgentText::of('core.skills.changed', ['skills' => $keys, 'driver' => $driver->key]);
+        return AgentText::of('core.skills.changed', [
+            'skills' => $keys,
+            'driver' => $driver->key,
+        ]);
     }
 }

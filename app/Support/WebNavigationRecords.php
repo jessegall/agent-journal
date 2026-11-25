@@ -65,7 +65,10 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
             } catch (Throwable $failure) {
                 $this->log->error(
                     "The count of {$key} failed: {$failure->getMessage()}",
-                    ['key' => $key, 'exception' => $failure],
+                    [
+                        'key' => $key,
+                        'exception' => $failure,
+                    ],
                 );
             }
         }
@@ -127,7 +130,10 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
             $rank = [$score, $candidate->depth(), $candidate->key()];
 
             if ($bestRank === null || $this->outranks($rank, $bestRank)) {
-                [$best, $bestRank] = [$candidate->path, $rank];
+                [$best, $bestRank] = [
+                    $candidate->path,
+                    $rank,
+                ];
             }
         }
 
@@ -142,7 +148,15 @@ final readonly class WebNavigationRecords implements NavigationRecordsContract
      */
     private function outranks(array $rank, array $bestRank): bool
     {
-        return ([$rank[0], $rank[1], $bestRank[2]] <=> [$bestRank[0], $bestRank[1], $rank[2]]) > 0;
+        return ([
+            $rank[0],
+            $rank[1],
+            $bestRank[2],
+        ] <=> [
+            $bestRank[0],
+            $bestRank[1],
+            $rank[2],
+        ]) > 0;
     }
 
     /**

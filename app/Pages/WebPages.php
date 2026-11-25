@@ -116,7 +116,10 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
      */
     public function nativeParts(): array
     {
-        return ['RuntimeCard.vue', 'RuntimeRefusal.vue'];
+        return [
+            'RuntimeCard.vue',
+            'RuntimeRefusal.vue',
+        ];
     }
 
     public function navigation(): array

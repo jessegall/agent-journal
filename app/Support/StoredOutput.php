@@ -75,7 +75,11 @@ final readonly class StoredOutput
         $bytes = rtrim($this->bytes($part, $stream), "\n");
         $text = implode("\n", array_slice(explode("\n", $bytes), -$lines));
 
-        return ['text' => $this->preview($text), 'before' => strlen($bytes) - strlen($text), 'end' => strlen($bytes)];
+        return [
+            'text' => $this->preview($text),
+            'before' => strlen($bytes) - strlen($text),
+            'end' => strlen($bytes),
+        ];
     }
 
     /**

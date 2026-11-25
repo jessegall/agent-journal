@@ -107,7 +107,12 @@ final class DocumentPageTest extends TestCase
     {
         $this->actingAs($this->owner)->post('/documents/docs/1/open')->assertRedirect();
 
-        foreach (['text', 'links', 'details', 'history'] as $tab) {
+        foreach ([
+            'text',
+            'links',
+            'details',
+            'history',
+        ] as $tab) {
             $this->actingAs($this->owner)
                 ->get("/documents/docs/1?tab={$tab}")
                 ->assertOk()

@@ -24,15 +24,28 @@ final readonly class PlanDraftProducer implements DraftProducer
         return [
             DraftQuestionData::from([
                 'prompt' => 'What is the plan for?',
-                'suggestions' => ['Build a feature', 'Fix a set of bugs', 'Research a question', 'Clean up code'],
+                'suggestions' => [
+                    'Build a feature',
+                    'Fix a set of bugs',
+                    'Research a question',
+                    'Clean up code',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'How will you know it is done?',
-                'suggestions' => ['The feature works on the server', 'The tests pass', 'The question is answered'],
+                'suggestions' => [
+                    'The feature works on the server',
+                    'The tests pass',
+                    'The question is answered',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'What must be true before it starts?',
-                'suggestions' => ['Nothing', 'A design is approved', 'Another plan is finished'],
+                'suggestions' => [
+                    'Nothing',
+                    'A design is approved',
+                    'Another plan is finished',
+                ],
             ]),
         ];
     }

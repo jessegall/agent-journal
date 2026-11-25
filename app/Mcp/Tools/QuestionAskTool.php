@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Commands\Questions\AskQuestion\AskQuestionCommand;
+use App\Contracts\Bus\Command;
 use App\Enums\ActorType;
 use App\Enums\QuestionType;
-use App\Support\ActorIdentity;
-use App\Contracts\Bus\Command;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Support\ToolArguments;
+use App\Support\ActorIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -30,7 +30,10 @@ final class QuestionAskTool extends MessageWriteTool
     {
         return [
             'inbox_id' => $this->recordIdArgument($schema),
-            'target_type' => $schema->string()->enum([ActorType::User->value, ActorType::Agent->value])->required(),
+            'target_type' => $schema->string()->enum([
+                ActorType::User->value,
+                ActorType::Agent->value,
+            ])->required(),
             'target_id' => $schema->string()->required(),
             'text' => $schema->string()->required(),
             'type' => $schema->string()->enum(array_column(QuestionType::cases(), 'value'))->required(),

@@ -85,7 +85,10 @@ final readonly class ReadRequestKey
             'communication/show' => 'messages_read',
             'communication/history' => 'inbox_history',
             'communication/counts' => 'inbox_counts',
-            default => Str::replace(['/', '-'], '_', $path),
+            default => Str::replace([
+                '/',
+                '-',
+            ], '_', $path),
         };
 
         $arguments = $name === 'messages_read' && $request->filled('message_id')

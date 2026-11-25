@@ -23,7 +23,12 @@ final class CoreSkills
      */
     public static function skills(): array
     {
-        return [JournalSkill::class, ProfilesSkill::class, SkillsSkill::class, ShellSkill::class];
+        return [
+            JournalSkill::class,
+            ProfilesSkill::class,
+            SkillsSkill::class,
+            ShellSkill::class,
+        ];
     }
 
     /**

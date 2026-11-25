@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -14,7 +12,9 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Sessions\RevisionFenceReconciled;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,7 +28,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $reconciled_at
  */
 #[Table('revision_fences')]
-#[Fillable(['profile_key', 'profile_revision', 'reconciled_at'])]
+#[Fillable([
+    'profile_key',
+    'profile_revision',
+    'reconciled_at',
+])]
 final class RevisionFence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -41,7 +45,10 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['profile_revision' => 'integer', 'reconciled_at' => 'immutable_datetime'];
+        return [
+            'profile_revision' => 'integer',
+            'reconciled_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Mutations ]----------
@@ -60,7 +67,10 @@ final class RevisionFence extends Model implements EventSource, ReadableModel
      */
     public static function retain(string $key, int $revision): self
     {
-        $fence = new self(['profile_key' => $key, 'profile_revision' => $revision]);
+        $fence = new self([
+            'profile_key' => $key,
+            'profile_revision' => $revision,
+        ]);
         $fence->setAttribute($fence->getKeyName(), $fence->newUniqueId());
         $fence->insertIfAbsent();
 

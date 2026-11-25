@@ -52,7 +52,13 @@ final class TextResolverTest extends TestCase
 
         $version = $this->resolver()->version($this->record('doc', 1));
 
-        $this->assertSame(['1', 3], [$version->id, $version->lineCount]);
+        $this->assertSame([
+            '1',
+            3,
+        ], [
+            $version->id,
+            $version->lineCount,
+        ]);
     }
 
     public function test_sections_come_a_page_at_a_time_with_duplicate_headings_kept_apart(): void
@@ -77,8 +83,20 @@ final class TextResolverTest extends TestCase
         );
 
         $this->assertSame(
-            [['Notes', 1], ['Notes', 3]],
-            array_map(fn ($section) => [$section->heading, $section->firstLine], $first->sections),
+            [
+                [
+                    'Notes',
+                    1,
+                ],
+                [
+                    'Notes',
+                    3,
+                ],
+            ],
+            array_map(fn ($section) => [
+                $section->heading,
+                $section->firstLine,
+            ], $first->sections),
         );
 
         $this->assertSame(['End'], array_map(fn ($section) => $section->heading, $rest->sections));
@@ -99,7 +117,15 @@ final class TextResolverTest extends TestCase
             TextSelection::from(['firstLine' => (int) $first->nextLine]),
         );
 
-        $this->assertSame([1, 200, 201], [$first->firstLine, $first->lastLine, $first->nextLine]);
+        $this->assertSame([
+            1,
+            200,
+            201,
+        ], [
+            $first->firstLine,
+            $first->lastLine,
+            $first->nextLine,
+        ]);
         $this->assertSame(201, $next->firstLine);
         $this->assertNull($next->nextLine);
     }

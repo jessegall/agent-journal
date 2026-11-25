@@ -22,7 +22,10 @@ final readonly class SupervisorGraph
      */
     public function requireAcyclic(array $types): void
     {
-        foreach ([null, ...$types] as $type) {
+        foreach ([
+            null,
+            ...$types,
+        ] as $type) {
             foreach (array_keys($this->routes) as $source) {
                 $this->follow($source, $type);
             }
@@ -37,11 +40,17 @@ final readonly class SupervisorGraph
 
         while (isset($this->routes[$source])) {
             if (isset($path[$source])) {
-                throw SupervisorRouteRefused::cycle($route, [...array_keys($path), $source]);
+                throw SupervisorRouteRefused::cycle($route, [
+                    ...array_keys($path),
+                    $source,
+                ]);
             }
 
             if (count($path) === self::MAX_HOPS) {
-                throw SupervisorRouteRefused::tooDeep($route, [...array_keys($path), $source]);
+                throw SupervisorRouteRefused::tooDeep($route, [
+                    ...array_keys($path),
+                    $source,
+                ]);
             }
 
             $path[$source] = true;

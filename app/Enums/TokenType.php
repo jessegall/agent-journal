@@ -49,7 +49,15 @@ enum TokenType: string
     {
         return in_array(
             $this,
-            [self::Newline, self::Semicolon, self::AndIf, self::OrIf, self::Pipe, self::PipeBoth, self::Background],
+            [
+                self::Newline,
+                self::Semicolon,
+                self::AndIf,
+                self::OrIf,
+                self::Pipe,
+                self::PipeBoth,
+                self::Background,
+            ],
             true,
         );
     }

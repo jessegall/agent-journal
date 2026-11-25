@@ -45,7 +45,10 @@ final readonly class ProjectWindowResolver implements PageResolver
         }
 
         $open = $this->request->openFolders();
-        $answers = $this->files->folders($binding, ['', ...$open]);
+        $answers = $this->files->folders($binding, [
+            '',
+            ...$open,
+        ]);
         $root = $answers->of('');
 
         $state = match ($root->state) {
@@ -100,7 +103,10 @@ final readonly class ProjectWindowResolver implements PageResolver
                 'size' => $entry->size,
                 'isOpen' => $isOpen,
                 'isLoading' => $answer?->state === ProjectReadState::Pending,
-                'isFailed' => in_array($answer?->state, [ProjectReadState::Failed, ProjectReadState::Expired], true),
+                'isFailed' => in_array($answer?->state, [
+                    ProjectReadState::Failed,
+                    ProjectReadState::Expired,
+                ], true),
                 'children' => $answer?->state === ProjectReadState::Answered
                     ? $this->tree($answers, $path, $answer->entries, $open)
                     : [],

@@ -29,8 +29,17 @@ const CLAUSE = '/^(where(?!Key(Not)?\b)\w*|orWhere\w*|having\w*|orderBy\w*|lates
 
 /** The relation types a relation method returns; its constraints are part of the relation. */
 const RELATION_TYPES = [
-    'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
-    'MorphOne', 'MorphToMany', 'MorphedByMany',
+    'BelongsTo',
+    'BelongsToMany',
+    'HasMany',
+    'HasOne',
+    'HasManyThrough',
+    'HasOneThrough',
+    'MorphTo',
+    'MorphMany',
+    'MorphOne',
+    'MorphToMany',
+    'MorphedByMany',
 ];
 
 /**

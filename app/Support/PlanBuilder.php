@@ -28,9 +28,23 @@ final class PlanBuilder
     /**
      * Builtins that change or read the shell's own context, run inside it rather than as a program.
      */
-    private const array BUILTINS = ['cd', 'pwd', 'export', 'unset', ':', 'true', 'false', 'echo', 'printf'];
+    private const array BUILTINS = [
+        'cd',
+        'pwd',
+        'export',
+        'unset',
+        ':',
+        'true',
+        'false',
+        'echo',
+        'printf',
+    ];
 
-    private const array SHELLS = ['sh' => ShellDialect::Sh, 'bash' => ShellDialect::Bash, 'zsh' => ShellDialect::Zsh];
+    private const array SHELLS = [
+        'sh' => ShellDialect::Sh,
+        'bash' => ShellDialect::Bash,
+        'zsh' => ShellDialect::Zsh,
+    ];
 
     private int $contexts = 0;
 
@@ -72,7 +86,12 @@ final class PlanBuilder
             );
 
             return PlanStep::from(
-                ['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children],
+                [
+                    'type' => $control,
+                    'node' => $node->id,
+                    'context' => $context,
+                    'children' => $children,
+                ],
             );
         }
 
@@ -90,7 +109,10 @@ final class PlanBuilder
                 $this->tree->children($node->id),
                 fn (ShellNode $child) => in_array(
                     $child->type,
-                    [NodeType::CommandSubstitution, NodeType::ProcessSubstitution],
+                    [
+                        NodeType::CommandSubstitution,
+                        NodeType::ProcessSubstitution,
+                    ],
                     true,
                 ),
             ),
@@ -180,7 +202,10 @@ final class PlanBuilder
             'context' => $context,
             'argv' => $argv,
             'redirects' => $redirects,
-            'children' => [...$substitutions, $child],
+            'children' => [
+                ...$substitutions,
+                $child,
+            ],
             'zero' => $arguments[0] ?? '',
             'positional' => array_slice($arguments, 1),
         ]);
@@ -207,7 +232,10 @@ final class PlanBuilder
                 throw ExecutionPlanRefused::dynamicWord($child->id);
             }
 
-            $assignments[$name] = new PlanWord([substr($text, strlen($name) + 1), ...array_slice($word->pieces, 1)]);
+            $assignments[$name] = new PlanWord([
+                substr($text, strlen($name) + 1),
+                ...array_slice($word->pieces, 1),
+            ]);
         }
 
         return $assignments;
@@ -262,7 +290,12 @@ final class PlanBuilder
                 $this->tree->children($node->id),
                 fn (ShellNode $child) => ! in_array(
                     $child->type,
-                    [NodeType::Comment, NodeType::Redirect, NodeType::Assignment, NodeType::HereDocument],
+                    [
+                        NodeType::Comment,
+                        NodeType::Redirect,
+                        NodeType::Assignment,
+                        NodeType::HereDocument,
+                    ],
                     true,
                 ),
             ),

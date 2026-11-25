@@ -16,7 +16,12 @@ final readonly class ReleaseManifest
     /**
      * What a release must do before the window offers its install line to the public.
      */
-    public const array REQUIRED_CAPABILITIES = ['enrollment', 'presence', 'commands', 'child-worktrees'];
+    public const array REQUIRED_CAPABILITIES = [
+        'enrollment',
+        'presence',
+        'commands',
+        'child-worktrees',
+    ];
 
     /**
      * @param  array<string, array<string, ReleaseFile>>  $files  by target folder (darwin-arm64), each file by the

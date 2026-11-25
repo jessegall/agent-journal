@@ -46,7 +46,10 @@ final readonly class ProfilesIndex extends ProfilesPage
         )
             ->counting(count($profiles))
             ->withReader(
-                LayoutBackData::from(['href' => route('accounts.profiles', [], false), 'label' => 'Profiles']),
+                LayoutBackData::from([
+                    'href' => route('accounts.profiles', [], false),
+                    'label' => 'Profiles',
+                ]),
                 ...$reader,
             )
             ->layout();

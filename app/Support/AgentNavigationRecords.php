@@ -45,7 +45,10 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'builds' => array_map(
-                fn (MenuEntryBuild $build) => ['build' => $build->build, 'stale' => $build->isStale],
+                fn (MenuEntryBuild $build) => [
+                    'build' => $build->build,
+                    'stale' => $build->isStale,
+                ],
                 $entry->builds,
             ),
             'uses' => $entry->uses,
@@ -110,7 +113,10 @@ final readonly class AgentNavigationRecords implements NavigationReader
             'agent' => $runtime->session->agent->name,
             'driver' => $navigation->family,
             'build' => $navigation->build,
-            'goal' => ['script' => $navigation->goal_script, 'parameters' => $navigation->goal_parameters],
+            'goal' => [
+                'script' => $navigation->goal_script,
+                'parameters' => $navigation->goal_parameters,
+            ],
             'stalled_step' => $navigation->stalled_step,
             'reason' => $navigation->reason->value,
             'state' => $navigation->state->value,
@@ -146,7 +152,10 @@ final readonly class AgentNavigationRecords implements NavigationReader
 
         $entry = MenuEntry::query()->acrossActors()->findOrFail($navigation->stale_entry_id);
 
-        return ['id' => $entry->id, 'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps)];
+        return [
+            'id' => $entry->id,
+            'steps' => array_map(fn (MenuStep $step) => $step->toArray(), $entry->steps),
+        ];
     }
 
     /**

@@ -71,18 +71,30 @@ final readonly class StartPreviews
         $offered = $this->driverTypesOf($family);
 
         if ($driverType !== null) {
-            return [$driverType, DriverTypeSource::Explicit];
+            return [
+                $driverType,
+                DriverTypeSource::Explicit,
+            ];
         }
 
         if (count($offered) === 1) {
-            return [$offered[0], DriverTypeSource::OnlyType];
+            return [
+                $offered[0],
+                DriverTypeSource::OnlyType,
+            ];
         }
 
         if ($agent->driver_type_preference !== null) {
-            return [$agent->driver_type_preference, DriverTypeSource::Saved];
+            return [
+                $agent->driver_type_preference,
+                DriverTypeSource::Saved,
+            ];
         }
 
-        return [$profileDefault, DriverTypeSource::Profile];
+        return [
+            $profileDefault,
+            DriverTypeSource::Profile,
+        ];
     }
 
     /**

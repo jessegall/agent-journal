@@ -110,12 +110,24 @@ final class SharingTest extends TestCase
     public function test_both_record_types_are_registered_with_the_linked_capability_and_owned_comments(): void
     {
         $aliases = array_map(
-            fn (ShareRecordDefinition $definition) => [$definition->alias, $definition->capabilities],
+            fn (ShareRecordDefinition $definition) => [
+                $definition->alias,
+                $definition->capabilities,
+            ],
             new DocumentsDomain()->shareRecords(),
         );
 
         $this->assertSame(
-            [[Document::LINK_TYPE, ['share-linked-record']], [Report::LINK_TYPE, ['share-linked-record']]],
+            [
+                [
+                    Document::LINK_TYPE,
+                    ['share-linked-record'],
+                ],
+                [
+                    Report::LINK_TYPE,
+                    ['share-linked-record'],
+                ],
+            ],
             $aliases,
         );
 
@@ -132,7 +144,13 @@ final class SharingTest extends TestCase
         $content = $documents->content(new ShareContentRead($root), $this->budget());
 
         $this->assertTrue($documents->mayDisclose($root));
-        $this->assertSame(['Design', '1'], [$card->title, $card->publicationVersion]);
+        $this->assertSame([
+            'Design',
+            '1',
+        ], [
+            $card->title,
+            $card->publicationVersion,
+        ]);
         $this->assertSame(self::BODY, $content->body);
     }
 
@@ -145,7 +163,13 @@ final class SharingTest extends TestCase
 
         $this->assertSame(self::FOUND_TEXT, $content->body);
 
-        $this->assertSame(['Check', '1'], [$content->card->title, $content->card->publicationVersion]);
+        $this->assertSame([
+            'Check',
+            '1',
+        ], [
+            $content->card->title,
+            $content->card->publicationVersion,
+        ]);
     }
 
     public function test_a_body_stored_too_large_is_refused_before_it_is_loaded(): void
@@ -173,12 +197,19 @@ final class SharingTest extends TestCase
         $missing = new RecordIdentity(Document::LINK_TYPE, TestIds::of(77));
 
         $page = $documents->readTargets(
-            new ShareTargetRead([], [$this->document->shareIdentity(), $missing, $this->report->shareIdentity()], null),
+            new ShareTargetRead([], [
+                $this->document->shareIdentity(),
+                $missing,
+                $this->report->shareIdentity(),
+            ], null),
             $this->budget(),
         );
 
         $this->assertSame([$this->document->id], array_map(fn ($card) => $card->record->id, $page->eligible));
-        $this->assertEquals([$missing, $this->report->shareIdentity()], $page->ineligible);
+        $this->assertEquals([
+            $missing,
+            $this->report->shareIdentity(),
+        ], $page->ineligible);
         $this->assertFalse($documents->mayDisclose($missing));
 
         $this->assertThrows(
@@ -189,7 +220,10 @@ final class SharingTest extends TestCase
 
     public function test_a_parent_with_1001_comments_pages_through_all_of_them(): void
     {
-        $this->insertComments(array_map(fn (int $number) => ["Comment {$number}", null], range(1, 1001)));
+        $this->insertComments(array_map(fn (int $number) => [
+            "Comment {$number}",
+            null,
+        ], range(1, 1001)));
         $documents = $this->app->make(DocumentShareProvider::class);
         $seen = [];
         $continuation = null;
@@ -209,7 +243,20 @@ final class SharingTest extends TestCase
 
     public function test_a_quote_no_longer_in_the_published_body_shows_the_label(): void
     {
-        $this->insertComments([['Agreed', 'Ship it.'], ['Why?', 'Ship it slowly.'], ['Overall fine', null]]);
+        $this->insertComments([
+            [
+                'Agreed',
+                'Ship it.',
+            ],
+            [
+                'Why?',
+                'Ship it slowly.',
+            ],
+            [
+                'Overall fine',
+                null,
+            ],
+        ]);
 
         $page = $this->app->make(DocumentShareProvider::class)->readRelated(
             new ShareRelationRead($this->document->shareIdentity(), 'comments', 50, null),
@@ -217,12 +264,20 @@ final class SharingTest extends TestCase
         );
 
         $this->assertSame(
-            ['Ship it.', ShareRecordCard::QUOTE_NOT_IN_VERSION, null],
+            [
+                'Ship it.',
+                ShareRecordCard::QUOTE_NOT_IN_VERSION,
+                null,
+            ],
             array_map(fn (ShareRecordCard $card) => $card->quote, $page->eligible),
         );
 
         $this->assertSame(
-            ['Agreed', 'Why?', 'Overall fine'],
+            [
+                'Agreed',
+                'Why?',
+                'Overall fine',
+            ],
             array_map(fn (ShareRecordCard $card) => $card->excerpt, $page->eligible),
         );
     }

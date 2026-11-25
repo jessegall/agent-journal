@@ -49,10 +49,23 @@ const LABEL_KEYS = 'title|label|placeholder|aria-label|alt|description|heading|h
 /**
  * PHP methods whose returned strings a user reads.
  */
-const TEXT_METHODS = ['label', 'labels', 'description', 'title', 'heading', 'summary', 'placeholder', 'hint', 'messages'];
+const TEXT_METHODS = [
+    'label',
+    'labels',
+    'description',
+    'title',
+    'heading',
+    'summary',
+    'placeholder',
+    'hint',
+    'messages',
+];
 
 $arguments = array_slice($argv, 1);
-$mode = in_array($arguments[0] ?? null, ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
+$mode = in_array($arguments[0] ?? null, [
+    '--check',
+    '--accept',
+], true) ? array_shift($arguments) : '--list';
 $reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
 $texts = screenTexts($arguments);
 $current = array_values(array_unique(array_map(static fn (ScreenText $text) => $text->reviewLine(), $texts)));
@@ -115,7 +128,10 @@ function screenTexts(array $folders): array
             }
 
             $found = match ($file->getExtension()) {
-                'vue' => [...templateTexts($path), ...scriptTexts($path)],
+                'vue' => [
+                    ...templateTexts($path),
+                    ...scriptTexts($path),
+                ],
                 'ts' => scriptTexts($path),
                 'php' => phpTexts($path),
                 default => [],
@@ -124,7 +140,13 @@ function screenTexts(array $folders): array
         }
     }
 
-    usort($texts, static fn (ScreenText $a, ScreenText $b) => [$a->file, $a->line] <=> [$b->file, $b->line]);
+    usort($texts, static fn (ScreenText $a, ScreenText $b) => [
+        $a->file,
+        $a->line,
+    ] <=> [
+        $b->file,
+        $b->line,
+    ]);
 
     return $texts;
 }
@@ -171,7 +193,10 @@ function scriptTexts(string $path): array
     $source = (string) file_get_contents($path);
     $script = preg_match('/<script[^>]*>(.*?)<\/script>/s', $source, $match, PREG_OFFSET_CAPTURE) === 1
         ? $match[1]
-        : [$source, 0];
+        : [
+            $source,
+            0,
+        ];
     [$code, $offset] = $script;
     preg_match_all('/\b(?:'.str_replace('-', '', LABEL_KEYS).')\s*:\s*([\'"`])((?:(?!\1).)+)\1/', $code, $keys, PREG_OFFSET_CAPTURE);
     $texts = [];

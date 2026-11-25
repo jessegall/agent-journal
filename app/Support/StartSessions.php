@@ -106,7 +106,10 @@ final readonly class StartSessions
     ): StartedAgent {
         $session = $this->sessions->start($agent, $selection, $requestId, $parent);
         $token = $this->credentials->issue($session);
-        [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
+        [$runtime, $firstRequest] = $intent === null ? [
+            null,
+            null,
+        ] : $this->runtimes->open($session, $intent, $token);
 
         if ($runtime !== null) {
             $session->keepDriverLabel($runtime->driver_label);

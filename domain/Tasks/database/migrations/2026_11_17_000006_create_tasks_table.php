@@ -27,7 +27,10 @@ return new class extends Migration
             $table->text('cancel_reason')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['number_group_id', 'number']);
+            $table->unique([
+                'number_group_id',
+                'number',
+            ]);
 
             // The environment of the connected binding a task was made through, by id alone; none for a task made here.
             $table->string('environment_id')->nullable()->index();

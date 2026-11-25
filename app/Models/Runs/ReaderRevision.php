@@ -60,7 +60,10 @@ final class ReaderRevision extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['definition' => 'array', 'declaration_revision' => 'integer'];
+        return [
+            'definition' => 'array',
+            'declaration_revision' => 'integer',
+        ];
     }
 
     protected static function booted(): void

@@ -37,7 +37,10 @@ final readonly class AssignmentReference
     {
         return [
             'id' => $this->id,
-            'holder' => ['type' => $this->holder->type, 'id' => $this->holder->id],
+            'holder' => [
+                'type' => $this->holder->type,
+                'id' => $this->holder->id,
+            ],
         ];
     }
 }

@@ -44,7 +44,10 @@ final readonly class PlanWindowResolver implements PageResolver
         $number = $card->number;
 
         return $this->page->of(
-            PlanFiltersData::from([...$this->request->filters()->toArray(), 'plan' => $number]),
+            PlanFiltersData::from([
+                ...$this->request->filters()->toArray(),
+                'plan' => $number,
+            ]),
             $card,
             $this->request->chosenTab(),
             fn () => PlanReaderData::forPlan(
@@ -57,7 +60,10 @@ final readonly class PlanWindowResolver implements PageResolver
                 $plan->id,
                 $plan->taskIds(),
                 $this->request->selectedNode(),
-                route('plans.plan', ['plan' => $number, 'tab' => 'graph'], false),
+                route('plans.plan', [
+                    'plan' => $number,
+                    'tab' => 'graph',
+                ], false),
             ), $number),
         );
     }

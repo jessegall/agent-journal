@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -18,7 +16,9 @@ use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Events\HelperNoticeDelivered;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,14 +34,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $delivered_at
  */
 #[Table('helper_notices')]
-#[Fillable(['job_state', 'text'])]
+#[Fillable([
+    'job_state',
+    'text',
+])]
 final class HelperNotice extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -54,7 +57,10 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['job_state' => JobState::class, 'delivered_at' => 'immutable_datetime'];
+        return [
+            'job_state' => JobState::class,
+            'delivered_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------

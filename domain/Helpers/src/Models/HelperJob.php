@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
@@ -63,14 +63,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $conversation_reason
  */
 #[Table('helper_jobs')]
-#[Fillable(['brief', 'source_snapshot', 'request_id', 'state', 'steering', 'profile_revision'])]
+#[Fillable([
+    'brief',
+    'source_snapshot',
+    'request_id',
+    'state',
+    'steering',
+    'profile_revision',
+])]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
 {
-    use OrdersById;
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'helpers.job';
@@ -144,7 +151,10 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     {
         $this->state = JobState::Accepted;
         $this->finished_at = null;
-        $this->steering = [...$this->steering, $findings];
+        $this->steering = [
+            ...$this->steering,
+            $findings,
+        ];
         $this->assertSaved($this->save());
         $this->raise(new HelperJobReopenedForRepair($this->id, $findings));
     }
@@ -162,7 +172,10 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
     public function addSteering(string $steering): void
     {
         $this->moveTo($this->state);
-        $this->steering = [...$this->steering, $steering];
+        $this->steering = [
+            ...$this->steering,
+            $steering,
+        ];
         $this->assertSaved($this->save());
         $this->raise(new HelperJobSteered($this->id, $steering));
     }

@@ -32,7 +32,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['holder_type', 'holder_id', 'record_type'])]
+#[Fillable([
+    'holder_type',
+    'holder_id',
+    'record_type',
+])]
 final class NumberGroup extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -55,7 +59,10 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['last_number' => 'integer', 'retired_at' => 'datetime'];
+        return [
+            'last_number' => 'integer',
+            'retired_at' => 'datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -65,7 +72,11 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
      */
     public static function create(string $holderType, string $holderId, string $recordType): void
     {
-        self::query()->create(['holder_type' => $holderType, 'holder_id' => $holderId, 'record_type' => $recordType]);
+        self::query()->create([
+            'holder_type' => $holderType,
+            'holder_id' => $holderId,
+            'record_type' => $recordType,
+        ]);
     }
 
     // ----------[ Mutations ]----------
@@ -116,7 +127,11 @@ final class NumberGroup extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function forRecords(Builder $query, string $holderType, string $holderId, string $recordType): void
     {
-        $query->where(['holder_type' => $holderType, 'holder_id' => $holderId, 'record_type' => $recordType]);
+        $query->where([
+            'holder_type' => $holderType,
+            'holder_id' => $holderId,
+            'record_type' => $recordType,
+        ]);
     }
 
     /**

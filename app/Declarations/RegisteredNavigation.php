@@ -63,7 +63,10 @@ final readonly class RegisteredNavigation
      */
     public function keys(): array
     {
-        return [$this->key, ...array_merge(...array_map(fn (self $child) => $child->keys(), $this->children))];
+        return [
+            $this->key,
+            ...array_merge(...array_map(fn (self $child) => $child->keys(), $this->children)),
+        ];
     }
 
     /**

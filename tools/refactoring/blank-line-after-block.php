@@ -69,7 +69,10 @@ function withBlankLines(array $lines, array $blockEnds): array
         $added[] = $number;
     }
 
-    return [$lines, array_reverse($added)];
+    return [
+        $lines,
+        array_reverse($added),
+    ];
 }
 
 $check = ($argv[1] ?? '') === '--check';

@@ -31,7 +31,21 @@ require_once __DIR__.'/php-parse.php';
  * Short names too bare to stand alone: the leading word is what says whose they are.
  */
 const BARE_NAMES = [
-    'id', 'of', 'ms', 'parse', 'key', 'at', 'by', 'to', 'is', 'has', 'value', 'name', 'type', 'data', 'text',
+    'id',
+    'of',
+    'ms',
+    'parse',
+    'key',
+    'at',
+    'by',
+    'to',
+    'is',
+    'has',
+    'value',
+    'name',
+    'type',
+    'data',
+    'text',
 ];
 
 /**
@@ -123,12 +137,19 @@ function renamesIn(ClassMethod $method, string $old, string $new): array
 {
     $replacements = [];
     $variables = new NodeFinder()->find(
-        [...$method->getParams(), ...(array) $method->getStmts()],
+        [
+            ...$method->getParams(),
+            ...(array) $method->getStmts(),
+        ],
         fn (Node $node) => $node instanceof Variable && $node->name === $old,
     );
 
     foreach ($variables as $variable) {
-        $replacements[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
+        $replacements[] = [
+            $variable->getStartFilePos(),
+            $variable->getEndFilePos(),
+            '$'.$new,
+        ];
     }
 
     $doc = $method->getDocComment();
@@ -138,7 +159,11 @@ function renamesIn(ClassMethod $method, string $old, string $new): array
         $renamed = (string) preg_replace('/\$'.$old.'\b/', '$'.$new, $text);
 
         if ($renamed !== $text) {
-            $replacements[] = [$doc->getStartFilePos(), $doc->getEndFilePos(), $renamed];
+            $replacements[] = [
+                $doc->getStartFilePos(),
+                $doc->getEndFilePos(),
+                $renamed,
+            ];
         }
     }
 

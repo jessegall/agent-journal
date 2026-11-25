@@ -12,7 +12,10 @@ declare(strict_types=1);
  */
 const MODULE = 'tools/journal-agent';
 
-$options = getopt('', ['list:', 'dry-run']);
+$options = getopt('', [
+    'list:',
+    'dry-run',
+]);
 $root = dirname(__DIR__, 2);
 $module = "{$root}/".MODULE;
 $renames = listedGoRenames((string) ($options['list'] ?? ''));
@@ -32,7 +35,10 @@ foreach ($renames as [$file, $line, $column, $newName]) {
     }
 
     foreach (textEditsOf($answer['result'] ?? []) as $path => $edits) {
-        $editsByFile[$path] = [...$editsByFile[$path] ?? [], ...$edits];
+        $editsByFile[$path] = [
+            ...$editsByFile[$path] ?? [],
+            ...$edits,
+        ];
     }
 
     echo "Renamed {$file}:{$line}:{$column} to {$newName}\n";
@@ -79,12 +85,32 @@ final class GoplsServer
 
         $isStarted = true;
         $gopls = trim((string) shell_exec('command -v gopls')) ?: getenv('HOME').'/go/bin/gopls';
-        $process = proc_open([$gopls, 'serve'], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'a']], $pipes, $module);
+        $process = proc_open([
+            $gopls,
+            'serve',
+        ], [
+            0 => [
+                'pipe',
+                'r',
+            ],
+            1 => [
+                'pipe',
+                'w',
+            ],
+            2 => [
+                'file',
+                '/dev/null',
+                'a',
+            ],
+        ], $pipes, $module);
         $server = new self($process, $pipes);
         $server->request('initialize', [
             'processId' => getmypid(),
             'rootUri' => "file://{$module}",
-            'workspaceFolders' => [['uri' => "file://{$module}", 'name' => basename($module)]],
+            'workspaceFolders' => [[
+                'uri' => "file://{$module}",
+                'name' => basename($module),
+            ]],
             'capabilities' => ['workspace' => ['workspaceEdit' => ['documentChanges' => true]]],
         ]);
         $server->notify('initialized', new stdClass());
@@ -147,7 +173,12 @@ final class GoplsServer
     private function request(string $method, mixed $params): array
     {
         $id = $this->nextId++;
-        $this->send(['jsonrpc' => '2.0', 'id' => $id, 'method' => $method, 'params' => $params]);
+        $this->send([
+            'jsonrpc' => '2.0',
+            'id' => $id,
+            'method' => $method,
+            'params' => $params,
+        ]);
 
         while (true) {
             $message = $this->receive();
@@ -160,14 +191,22 @@ final class GoplsServer
             if (isset($message['id'], $message['method'])) {
                 $items = $message['params']['items'] ?? null;
                 $result = is_array($items) ? array_fill(0, count($items), new stdClass()) : null;
-                $this->send(['jsonrpc' => '2.0', 'id' => $message['id'], 'result' => $result]);
+                $this->send([
+                    'jsonrpc' => '2.0',
+                    'id' => $message['id'],
+                    'result' => $result,
+                ]);
             }
         }
     }
 
     private function notify(string $method, mixed $params): void
     {
-        $this->send(['jsonrpc' => '2.0', 'method' => $method, 'params' => $params]);
+        $this->send([
+            'jsonrpc' => '2.0',
+            'method' => $method,
+            'params' => $params,
+        ]);
     }
 
     /**
@@ -217,8 +256,16 @@ function listedGoRenames(string $file): array
 
     foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
         [$place, $newName] = preg_split('/\s+/', trim($line)) + [1 => ''];
-        [$path, $row, $column] = explode(':', $place) + [1 => '0', 2 => '0'];
-        $renames[] = [$path, (int) $row, (int) $column, $newName];
+        [$path, $row, $column] = explode(':', $place) + [
+            1 => '0',
+            2 => '0',
+        ];
+        $renames[] = [
+            $path,
+            (int) $row,
+            (int) $column,
+            $newName,
+        ];
     }
 
     return $renames;
@@ -258,7 +305,11 @@ function editedText(string $text, array $edits): string
 
     foreach ($edits as $edit) {
         $start = offsetOf($lines, $edit['range']['start']);
-        $byOffset[$start] = [$start, offsetOf($lines, $edit['range']['end']), $edit['newText']];
+        $byOffset[$start] = [
+            $start,
+            offsetOf($lines, $edit['range']['end']),
+            $edit['newText'],
+        ];
     }
 
     krsort($byOffset);

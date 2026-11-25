@@ -19,7 +19,13 @@ final class InstallSecretRedaction implements ProcessorInterface
     /**
      * The fields of the connection routes' bodies that hold a secret.
      */
-    private const array SECRET_FIELDS = ['ticket', 'hostCredential', 'installationNonce', 'deviceCode', 'grant'];
+    private const array SECRET_FIELDS = [
+        'ticket',
+        'hostCredential',
+        'installationNonce',
+        'deviceCode',
+        'grant',
+    ];
 
     private const string INSTALL_PATH = '#/install/[A-Za-z0-9_-]+#';
 

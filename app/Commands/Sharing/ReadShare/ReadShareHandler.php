@@ -190,7 +190,10 @@ final readonly class ReadShareHandler implements CommandHandler
         );
 
         if ($owned === []) {
-            return [[], null];
+            return [
+                [],
+                null,
+            ];
         }
 
         $relation = $owned[0]->name;
@@ -225,7 +228,10 @@ final readonly class ReadShareHandler implements CommandHandler
             ),
         );
 
-        return [array_map(SharedPageItem::fromCard(...), $page->eligible), $next];
+        return [
+            array_map(SharedPageItem::fromCard(...), $page->eligible),
+            $next,
+        ];
     }
 
     private function deny(Share $share, string $reason): SharedPage

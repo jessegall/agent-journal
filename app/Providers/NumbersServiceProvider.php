@@ -25,7 +25,10 @@ final class NumbersServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
-        $links->register(['core.global-group' => GlobalGroup::class, 'core.number-group' => NumberGroup::class]);
+        $links->register([
+            'core.global-group' => GlobalGroup::class,
+            'core.number-group' => NumberGroup::class,
+        ]);
         $this->commands([InstallNumbersCommand::class]);
         $this->app->booted(fn () => $this->app->make(NumberedTypeRegistry::class)->checkDeclarations());
     }

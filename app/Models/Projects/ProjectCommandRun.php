@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -20,6 +18,8 @@ use App\Events\Connections\ProjectCommandReconciled;
 use App\Support\CommandRunEvidence;
 use App\Values\CommandFrame;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -44,7 +44,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['request_key', 'agent_id', 'binding_id', 'argv', 'fingerprint', 'worker', 'state'])]
+#[Fillable([
+    'request_key',
+    'agent_id',
+    'binding_id',
+    'argv',
+    'fingerprint',
+    'worker',
+    'state',
+])]
 final class ProjectCommandRun extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

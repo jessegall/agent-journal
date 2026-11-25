@@ -59,12 +59,19 @@ final readonly class DeviceGrantController
             return new JsonResponse([
                 'code' => RefusalCode::StateBlocked->value,
                 'message' => 'The owner has not approved this device yet.',
-                'details' => ['outcome' => $polled->outcome, 'reference' => $polled->reference],
+                'details' => [
+                    'outcome' => $polled->outcome,
+                    'reference' => $polled->reference,
+                ],
             ], JsonResponse::HTTP_PRECONDITION_REQUIRED, ['Cache-Control' => 'no-store']);
         }
 
         return new JsonResponse(
-            ['outcome' => $polled->outcome, 'grant' => $grant->secret, 'reference' => $polled->reference],
+            [
+                'outcome' => $polled->outcome,
+                'grant' => $grant->secret,
+                'reference' => $polled->reference,
+            ],
             JsonResponse::HTTP_OK,
             ['Cache-Control' => 'no-store'],
         );

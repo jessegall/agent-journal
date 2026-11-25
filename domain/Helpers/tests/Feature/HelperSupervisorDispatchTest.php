@@ -34,7 +34,13 @@ final class HelperSupervisorDispatchTest extends TestCase
         $first = $dispatch->startFor($this->request('Review plan 7'));
         $second = $dispatch->startFor($this->request('Review plan 8'));
 
-        $this->assertSame([SupervisorDispatchOutcome::Started, SupervisorDispatchOutcome::Started], [$first, $second]);
+        $this->assertSame([
+            SupervisorDispatchOutcome::Started,
+            SupervisorDispatchOutcome::Started,
+        ], [
+            $first,
+            $second,
+        ]);
         $identity = HelperIdentity::designatedFor('lone-reviewer')->get();
         $this->assertSame(1, HelperIdentity::query()->acrossActors()->where('profile_key', 'lone-reviewer')->count());
         $this->assertSame('user', $identity->actor_type);

@@ -40,7 +40,15 @@ final readonly class TaskLogSearchProvider implements SearchProvider
     private const string HIGH_WATER = 'high_water';
 
     private const array COLUMNS = [
-        'id', 'task_id', 'task_run_id', 'run_number', 'actor_type', 'actor_id', 'text', 'sequence', 'created_at',
+        'id',
+        'task_id',
+        'task_run_id',
+        'run_number',
+        'actor_type',
+        'actor_id',
+        'text',
+        'sequence',
+        'created_at',
     ];
 
     public function __construct(
@@ -105,7 +113,10 @@ final readonly class TaskLogSearchProvider implements SearchProvider
                 break;
             }
 
-            [$afterTask, $afterLine] = [$entry->task_id, $entry->id];
+            [$afterTask, $afterLine] = [
+                $entry->task_id,
+                $entry->id,
+            ];
 
             if ($query->words->titleTier($entry->text) === $tier) {
                 $hits[] = self::hitOf($entry, $numbers[$entry->task_id], $tier);

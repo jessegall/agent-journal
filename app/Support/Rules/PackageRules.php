@@ -74,9 +74,27 @@ final readonly class PackageRules
         $rules = [];
 
         foreach ([
-            'npm' => ['install', 'i', 'ci', 'update', 'uninstall', 'remove'],
-            'pnpm' => ['install', 'i', 'add', 'remove', 'update'],
-            'composer' => ['install', 'update', 'require', 'remove'],
+            'npm' => [
+                'install',
+                'i',
+                'ci',
+                'update',
+                'uninstall',
+                'remove',
+            ],
+            'pnpm' => [
+                'install',
+                'i',
+                'add',
+                'remove',
+                'update',
+            ],
+            'composer' => [
+                'install',
+                'update',
+                'require',
+                'remove',
+            ],
         ] as $program => $subcommands) {
             foreach ($subcommands as $subcommand) {
                 $options = $program === 'composer' ? $composerOptions : $npmOptions;

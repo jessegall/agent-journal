@@ -78,7 +78,12 @@ final readonly class ProtectedMerge
         $target = $this->revision($branch);
         $attempt->apply($target);
 
-        if ($this->git($this->repository, ['merge-base', '--is-ancestor', $attempt->head, $target])->successful()) {
+        if ($this->git($this->repository, [
+            'merge-base',
+            '--is-ancestor',
+            $attempt->head,
+            $target,
+        ])->successful()) {
             $attempt->merged($target);
 
             return;
@@ -90,7 +95,11 @@ final readonly class ProtectedMerge
             return;
         }
 
-        $this->git($this->repository, ['update-ref', $attempt->resultRef, $result]);
+        $this->git($this->repository, [
+            'update-ref',
+            $attempt->resultRef,
+            $result,
+        ]);
         $this->publish($attempt, $branch, $target, $result);
     }
 
@@ -100,18 +109,44 @@ final readonly class ProtectedMerge
     private function build(MergeAttempt $attempt, string $target): string|null
     {
         $folder = sys_get_temp_dir()."/journal-merge-{$attempt->id}";
-        $this->git($this->repository, ['worktree', 'add', '--detach', '--force', $folder, $target]);
+        $this->git($this->repository, [
+            'worktree',
+            'add',
+            '--detach',
+            '--force',
+            $folder,
+            $target,
+        ]);
         $message = "Merge reviewed work {$attempt->work_id}";
-        $merge = $this->git($folder, ['merge', '--no-ff', '--no-edit', '-m', $message, $attempt->head]);
+        $merge = $this->git($folder, [
+            'merge',
+            '--no-ff',
+            '--no-edit',
+            '-m',
+            $message,
+            $attempt->head,
+        ]);
         $result = $merge->successful() ? $this->revision('HEAD', $folder) : null;
 
         if ($result === null) {
-            $conflicts = trim($this->git($folder, ['diff', '--name-only', '--diff-filter=U'])->output());
-            $this->git($folder, ['merge', '--abort']);
+            $conflicts = trim($this->git($folder, [
+                'diff',
+                '--name-only',
+                '--diff-filter=U',
+            ])->output());
+            $this->git($folder, [
+                'merge',
+                '--abort',
+            ]);
             $attempt->refuse(MergeRefusalReason::Conflict, "Conflicting paths on {$target}:\n{$conflicts}");
         }
 
-        $this->git($this->repository, ['worktree', 'remove', '--force', $folder]);
+        $this->git($this->repository, [
+            'worktree',
+            'remove',
+            '--force',
+            $folder,
+        ]);
 
         return $result;
     }
@@ -122,11 +157,25 @@ final readonly class ProtectedMerge
      */
     private function publish(MergeAttempt $attempt, string $branch, string $target, string $result): void
     {
-        $checkedOut = trim($this->git($this->repository, ['symbolic-ref', '--quiet', 'HEAD'])->output()) === $branch;
+        $checkedOut = trim($this->git($this->repository, [
+            'symbolic-ref',
+            '--quiet',
+            'HEAD',
+        ])->output()) === $branch;
 
         $published = $checkedOut
-            ? $this->git($this->repository, ['merge', '--ff-only', '--quiet', $result])
-            : $this->git($this->repository, ['update-ref', $branch, $result, $target]);
+            ? $this->git($this->repository, [
+                'merge',
+                '--ff-only',
+                '--quiet',
+                $result,
+            ])
+            : $this->git($this->repository, [
+                'update-ref',
+                $branch,
+                $result,
+                $target,
+            ]);
 
         if ($published->successful()) {
             $attempt->merged($result);
@@ -142,7 +191,12 @@ final readonly class ProtectedMerge
 
     private function revision(string $name, string|null $folder = null): string
     {
-        return trim($this->git($folder ?? $this->repository, ['rev-parse', '--verify', '--quiet', $name])->output());
+        return trim($this->git($folder ?? $this->repository, [
+            'rev-parse',
+            '--verify',
+            '--quiet',
+            $name,
+        ])->output());
     }
 
     /**
@@ -150,13 +204,24 @@ final readonly class ProtectedMerge
      */
     private function git(string $folder, array $arguments): ProcessResult
     {
-        $settings = array_merge(...array_map(fn (string $setting) => ['-c', $setting], self::SAFE_SETTINGS));
+        $settings = array_merge(...array_map(fn (string $setting) => [
+            '-c',
+            $setting,
+        ], self::SAFE_SETTINGS));
 
         return $this->processes
             ->newPendingProcess()
             ->path($folder)
             ->timeout(self::STEP_SECONDS_LIMIT)
-            ->env(['GIT_CONFIG_NOSYSTEM' => '1', 'GIT_CONFIG_GLOBAL' => '/dev/null', 'GIT_TERMINAL_PROMPT' => '0'])
-            ->run(['git', ...$settings, ...$arguments]);
+            ->env([
+                'GIT_CONFIG_NOSYSTEM' => '1',
+                'GIT_CONFIG_GLOBAL' => '/dev/null',
+                'GIT_TERMINAL_PROMPT' => '0',
+            ])
+            ->run([
+                'git',
+                ...$settings,
+                ...$arguments,
+            ]);
     }
 }

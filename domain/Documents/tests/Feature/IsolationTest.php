@@ -95,7 +95,15 @@ final class IsolationTest extends TestCase
             $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n"));
             $this->fail('An empty body was accepted.');
         } catch (ContentMissing) {
-            $this->assertSame([0, 0, []], [Document::query()->count(), DocumentRevision::query()->count(), $announced]);
+            $this->assertSame([
+                0,
+                0,
+                [],
+            ], [
+                Document::query()->count(),
+                DocumentRevision::query()->count(),
+                $announced,
+            ]);
         }
     }
 

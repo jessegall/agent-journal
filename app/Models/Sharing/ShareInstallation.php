@@ -30,7 +30,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'run_id', 'run_lease_ends_at'])]
+#[Fillable([
+    'name',
+    'run_id',
+    'run_lease_ends_at',
+])]
 final class ShareInstallation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -66,7 +70,10 @@ final class ShareInstallation extends Model implements EventSource, ReadableMode
     public static function create(): self
     {
         $installation = new self();
-        $installation->setRawAttributes(['id' => $installation->newUniqueId(), 'name' => self::NAME]);
+        $installation->setRawAttributes([
+            'id' => $installation->newUniqueId(),
+            'name' => self::NAME,
+        ]);
         $installation->insertIfAbsent();
 
         return self::query()->named(self::NAME)->lockForUpdate()->firstOrFail();

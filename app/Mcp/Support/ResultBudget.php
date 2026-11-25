@@ -50,7 +50,10 @@ final readonly class ResultBudget
         $resultBytes = strlen(
             json_encode(
                 [
-                    'content' => [['type' => 'text', 'text' => $text]],
+                    'content' => [[
+                        'type' => 'text',
+                        'text' => $text,
+                    ]],
                     'isError' => false,
                     'structuredContent' => $structured,
                 ],

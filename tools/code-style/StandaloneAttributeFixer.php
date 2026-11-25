@@ -23,7 +23,12 @@ final class StandaloneAttributeFixer implements FixerInterface
      * The words that open a property or a promoted parameter after its attributes.
      */
     private const array MODIFIERS = [
-        T_PUBLIC, T_PROTECTED, T_PRIVATE, T_READONLY, T_VAR, T_STATIC,
+        T_PUBLIC,
+        T_PROTECTED,
+        T_PRIVATE,
+        T_READONLY,
+        T_VAR,
+        T_STATIC,
         CT::T_CONSTRUCTOR_PROPERTY_PROMOTION_PUBLIC,
         CT::T_CONSTRUCTOR_PROPERTY_PROMOTION_PROTECTED,
         CT::T_CONSTRUCTOR_PROPERTY_PROMOTION_PRIVATE,
@@ -76,7 +81,10 @@ final class StandaloneAttributeFixer implements FixerInterface
                 continue;
             }
 
-            $tokens[$close + 1] = new Token([T_WHITESPACE, "\n".$this->indentationOf($tokens, $index)]);
+            $tokens[$close + 1] = new Token([
+                T_WHITESPACE,
+                "\n".$this->indentationOf($tokens, $index),
+            ]);
         }
     }
 
@@ -97,7 +105,16 @@ final class StandaloneAttributeFixer implements FixerInterface
                 return true;
             }
 
-            if ($token->isGivenKind([T_FUNCTION, T_CONST, T_CASE]) || $token->equalsAny([';', '{', '(', '='])) {
+            if ($token->isGivenKind([
+                T_FUNCTION,
+                T_CONST,
+                T_CASE,
+            ]) || $token->equalsAny([
+                ';',
+                '{',
+                '(',
+                '=',
+            ])) {
                 return false;
             }
         }

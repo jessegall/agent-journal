@@ -54,6 +54,10 @@ final readonly class ProposedRule
     {
         $examples = array_map(fn (RuleExample $example): array => $example->toArray(), $this->examples);
 
-        return hash('sha256', json_encode([$this->rule->toArray(), $this->evidence, $examples], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([
+            $this->rule->toArray(),
+            $this->evidence,
+            $examples,
+        ], JSON_THROW_ON_ERROR));
     }
 }

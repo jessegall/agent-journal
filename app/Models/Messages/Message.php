@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models\Messages;
 
-use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
-use App\Contracts\Records\AuthoredModel;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Enums\ActorType;
-use App\Events\Messages\MessageSent;
-use App\Models\Inboxes\Inbox;
 use App\Contracts\Messages\MessageParticipant;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
+use App\Contracts\Records\AuthoredModel;
+use App\Contracts\Records\ReadableModel;
+use App\Enums\ActorType;
+use App\Events\Messages\MessageSent;
+use App\Models\Inboxes\Inbox;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -40,7 +40,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['inbox_id', 'number', 'sender_type', 'sender_id', 'body', 'target_message_id'])]
+#[Fillable([
+    'inbox_id',
+    'number',
+    'sender_type',
+    'sender_id',
+    'body',
+    'target_message_id',
+])]
 final class Message extends Model implements AuthoredModel, EventSource, ReadableModel
 {
     use BoundedReads;

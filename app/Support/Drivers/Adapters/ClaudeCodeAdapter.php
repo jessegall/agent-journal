@@ -151,7 +151,10 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function modelArguments(string $model): array
     {
-        return ['--model', $model];
+        return [
+            '--model',
+            $model,
+        ];
     }
 
     public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall

@@ -128,16 +128,28 @@ final class FlowGraphData extends Data
         foreach (array_keys(array_count_values($ranks)) as $rank) {
             $inRank = array_values(array_filter($nodes, fn (FlowNodeData $node) => $ranks[$node->id] === $rank));
 
-            usort($inRank, fn (FlowNodeData $first, FlowNodeData $second) => [$first->line ?? PHP_INT_MAX, $first->id]
-                <=> [$second->line ?? PHP_INT_MAX, $second->id]);
+            usort($inRank, fn (FlowNodeData $first, FlowNodeData $second) => [
+                $first->line ?? PHP_INT_MAX,
+                $first->id,
+            ]
+                <=> [
+                    $second->line ?? PHP_INT_MAX,
+                    $second->id,
+                ]);
 
             foreach ($inRank as $order => $node) {
                 $placed[] = $node->placedAt($rank, $order);
             }
         }
 
-        usort($placed, fn (FlowNodeData $first, FlowNodeData $second) => [$first->rank, $first->order]
-            <=> [$second->rank, $second->order]);
+        usort($placed, fn (FlowNodeData $first, FlowNodeData $second) => [
+            $first->rank,
+            $first->order,
+        ]
+            <=> [
+                $second->rank,
+                $second->order,
+            ]);
 
         return $placed;
     }

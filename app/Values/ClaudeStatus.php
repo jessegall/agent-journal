@@ -61,6 +61,9 @@ final readonly class ClaudeStatus
             return false;
         }
 
-        return in_array(rtrim($this->configDirectory, '/'), [rtrim($directory, '/'), $realDirectory], true);
+        return in_array(rtrim($this->configDirectory, '/'), [
+            rtrim($directory, '/'),
+            $realDirectory,
+        ], true);
     }
 }

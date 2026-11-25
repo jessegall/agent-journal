@@ -31,12 +31,21 @@ enum AgentAction: string
     ): array {
         return match (true) {
             $isRetired => [],
-            $switchStage === DriverSwitchStage::LaunchFailed => [self::Retry, self::Start],
+            $switchStage === DriverSwitchStage::LaunchFailed => [
+                self::Retry,
+                self::Start,
+            ],
             $switchStage?->isUnconfirmed() === true => [self::Recheck],
             $switchStage !== null && ! $switchStage->isFinal() => [],
-            $isLive && $hasTerminal => [self::Open, self::Switch],
+            $isLive && $hasTerminal => [
+                self::Open,
+                self::Switch,
+            ],
             $isLive => [self::Switch],
-            $isResumable => [self::Start, self::Resume],
+            $isResumable => [
+                self::Start,
+                self::Resume,
+            ],
             default => [self::Start],
         };
     }

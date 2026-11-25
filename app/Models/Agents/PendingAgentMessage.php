@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
@@ -14,6 +12,8 @@ use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\AttentionOrigin;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -31,7 +31,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['origin_type', 'origin_id', 'lines', 'requests_attention'])]
+#[Fillable([
+    'origin_type',
+    'origin_id',
+    'lines',
+    'requests_attention',
+])]
 final class PendingAgentMessage extends Model implements ReadableModel
 {
     use BelongsToOneActor;

@@ -80,7 +80,11 @@ final readonly class SignedCall
     ): string {
         return self::sign(
             $token,
-            [...self::envelope($method, $url, $callId, $issuedAt, $body), $profile->key, (string) $profile->revision],
+            [
+                ...self::envelope($method, $url, $callId, $issuedAt, $body),
+                $profile->key,
+                (string) $profile->revision,
+            ],
         );
     }
 
@@ -111,7 +115,13 @@ final readonly class SignedCall
      */
     private static function envelope(string $method, string $url, string $callId, int $issuedAt, string $body): array
     {
-        return [strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
+        return [
+            strtoupper($method),
+            self::targetOf($url),
+            $callId,
+            (string) $issuedAt,
+            self::digestOf($body),
+        ];
     }
 
     /**

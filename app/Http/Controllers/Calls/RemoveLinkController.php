@@ -22,6 +22,9 @@ final readonly class RemoveLinkController
         $target = $records->identify(RecordReference::parse($call->target));
         $commands->run(new UnlinkRecordsCommand($source, $target));
 
-        return LinkChanged::from(['source' => $call->source, 'target' => $call->target]);
+        return LinkChanged::from([
+            'source' => $call->source,
+            'target' => $call->target,
+        ]);
     }
 }

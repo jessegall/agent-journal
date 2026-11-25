@@ -33,7 +33,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['key', 'label', 'description', 'current_revision_id', 'retired_at'])]
+#[Fillable([
+    'key',
+    'label',
+    'description',
+    'current_revision_id',
+    'retired_at',
+])]
 final class Profile extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

@@ -32,13 +32,22 @@ final class PlansSeeder extends Seeder
             return;
         }
 
-        $build = Plan::factory()->create(['title' => self::BUILD_TITLE, 'type' => PlanType::Build]);
+        $build = Plan::factory()->create([
+            'title' => self::BUILD_TITLE,
+            'type' => PlanType::Build,
+        ]);
         $structure->addTasks($structure->addPhase($build, 'Read the plans'), $readingTaskIds);
         $structure->addTasks($structure->addPhase($build, 'Start a plan'), $startingTaskIds);
 
-        $fix = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
+        $fix = Plan::factory()->create([
+            'title' => 'Fix the login redirect',
+            'type' => PlanType::Fix,
+        ]);
         $structure->addTasks($structure->addPhase($fix, 'Reproduce it'), $reproducingTaskIds);
 
-        Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        Plan::factory()->create([
+            'title' => 'Compare chat layouts',
+            'type' => PlanType::Research,
+        ]);
     }
 }

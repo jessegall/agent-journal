@@ -14,7 +14,12 @@ use App\Exceptions\StartTokenRefused;
  */
 final readonly class EnvironmentCredentialSource implements StartTokenSource
 {
-    private const array LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]'];
+    private const array LOOPBACK_HOSTS = [
+        'localhost',
+        '127.0.0.1',
+        '::1',
+        '[::1]',
+    ];
 
     public function __construct(private StartEnvironment $start) {}
 

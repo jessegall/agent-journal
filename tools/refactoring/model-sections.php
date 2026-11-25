@@ -28,15 +28,35 @@ require_once __DIR__.'/sections.php';
 require_once __DIR__.'/php-parse.php';
 
 /** The sections a method is placed in by what it is, never kept in because it sits there. */
-const BY_LOOKS = ['Accessors', 'Asserts'];
+const BY_LOOKS = [
+    'Accessors',
+    'Asserts',
+];
 
 const SECTIONS = [
-    'Constructors', 'Mutations', 'Getters', 'Accessors', 'Relations', 'Asserts', 'Internals', 'Queries', 'Scopes',
+    'Constructors',
+    'Mutations',
+    'Getters',
+    'Accessors',
+    'Relations',
+    'Asserts',
+    'Internals',
+    'Queries',
+    'Scopes',
 ];
 
 const RELATIONS = [
-    'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
-    'MorphOne', 'MorphToMany', 'MorphedByMany',
+    'BelongsTo',
+    'BelongsToMany',
+    'HasMany',
+    'HasOne',
+    'HasManyThrough',
+    'HasOneThrough',
+    'MorphTo',
+    'MorphMany',
+    'MorphOne',
+    'MorphToMany',
+    'MorphedByMany',
 ];
 
 const MARKER_ANYWHERE = '/^[ \t]*\/\/ -+\[ (\w+) \]-+[ \t]*$/m';
@@ -48,7 +68,7 @@ const ROW_WRITES = '/->(save|update|delete|forceDelete|increment|decrement|force
  */
 function isAccessor(ClassMethod $method): bool
 {
-    return $method->returnType instanceof Node\Name && $method->returnType->getLast() === 'Attribute';
+    return $method->returnType instanceof Name && $method->returnType->getLast() === 'Attribute';
 }
 
 /**
@@ -57,7 +77,11 @@ function isAccessor(ClassMethod $method): bool
  */
 function isPreamble(ClassMethod $method): bool
 {
-    return in_array($method->name->toString(), ['casts', 'boot', 'booted'], true);
+    return in_array($method->name->toString(), [
+        'casts',
+        'boot',
+        'booted',
+    ], true);
 }
 
 /**
@@ -66,7 +90,7 @@ function isPreamble(ClassMethod $method): bool
 function sectionOf(ClassMethod $method, string $body): string
 {
     $name = $method->name->toString();
-    $returns = $method->returnType instanceof Node\Name ? $method->returnType->getLast() : '';
+    $returns = $method->returnType instanceof Name ? $method->returnType->getLast() : '';
     $isScope = str_starts_with($name, 'scope') || str_contains($body, '#[Scope]');
 
     return match (true) {
@@ -140,7 +164,11 @@ function staticCallCounts(): array
 
     $counts = [];
 
-    foreach (['app', 'domain', 'tests'] as $folder) {
+    foreach ([
+        'app',
+        'domain',
+        'tests',
+    ] as $folder) {
         foreach (phpFiles(dirname(__DIR__, 2).'/'.$folder) as $file) {
             preg_match_all('/\b([A-Z]\w*)::([a-z]\w*)\(/', (string) file_get_contents($file), $calls, PREG_SET_ORDER);
 
@@ -166,7 +194,10 @@ function inlineFaultsOf(string $source, Class_ $class): array
 
     foreach ($class->getMethods() as $caller) {
         $calls = new NodeFinder()->find($caller->stmts ?? [], fn (Node $node) => $node instanceof StaticCall
-            && $node->class instanceof Name && in_array($node->class->toLowerString(), ['self', 'static'], true)
+            && $node->class instanceof Name && in_array($node->class->toLowerString(), [
+                'self',
+                'static',
+            ], true)
             && $node->name instanceof Identifier);
 
         foreach ($calls as $call) {
@@ -285,7 +316,10 @@ function faultsOf(string $source, Class_ $class): array
         return "method {$name} is no accessor, so it does not belong in Accessors";
     };
 
-    return [...sectionFaults($source, $class, SECTIONS, $check), ...inlineFaultsOf($source, $class)];
+    return [
+        ...sectionFaults($source, $class, SECTIONS, $check),
+        ...inlineFaultsOf($source, $class),
+    ];
 }
 
 /**

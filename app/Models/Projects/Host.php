@@ -58,7 +58,12 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * @property bool $browser_resize
  * @property bool $browser_private
  */
-#[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
+#[Fillable([
+    'installation_name',
+    'credential_hash',
+    'start_roots',
+    'arrangement',
+])]
 final class Host extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -114,7 +119,10 @@ final class Host extends Model implements EventSource, ReadableModel
 
     public function recordProtection(ProtectionReport $report): void
     {
-        $this->protection = [...$this->protection, $report->key() => $report->stored()];
+        $this->protection = [
+            ...$this->protection,
+            $report->key() => $report->stored(),
+        ];
         $this->assertSaved($this->save());
         $this->raise(new HostProtectionRecorded($this->id));
     }
@@ -142,7 +150,13 @@ final class Host extends Model implements EventSource, ReadableModel
         $this->browser_resize = $capabilities->shouldResize;
         $this->browser_private = $capabilities->isPrivateEntry;
 
-        if (! $this->isDirty(['browser_input', 'browser_keys', 'browser_paste', 'browser_resize', 'browser_private'])) {
+        if (! $this->isDirty([
+            'browser_input',
+            'browser_keys',
+            'browser_paste',
+            'browser_resize',
+            'browser_private',
+        ])) {
             return;
         }
 

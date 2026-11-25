@@ -21,7 +21,10 @@ final readonly class ProcessEventFacts
 
     public static function partStarted(PartKey $part, int $pid): self
     {
-        return new self('part_started', ['part' => $part->name(), 'pid' => $pid]);
+        return new self('part_started', [
+            'part' => $part->name(),
+            'pid' => $pid,
+        ]);
     }
 
     /**
@@ -34,22 +37,35 @@ final readonly class ProcessEventFacts
 
     public static function partEnded(PartKey $part, PartEnd $end): self
     {
-        return new self('part_ended', ['part' => $part->name(), 'end' => $end->type->value, 'code' => $end->code]);
+        return new self('part_ended', [
+            'part' => $part->name(),
+            'end' => $end->type->value,
+            'code' => $end->code,
+        ]);
     }
 
     public static function partSkipped(PartKey $part, string $controllingResult): self
     {
-        return new self('part_skipped', ['part' => $part->name(), 'because' => $controllingResult]);
+        return new self('part_skipped', [
+            'part' => $part->name(),
+            'because' => $controllingResult,
+        ]);
     }
 
     public static function partStartFailed(PartKey $part, string $reason): self
     {
-        return new self('part_start_failed', ['part' => $part->name(), 'reason' => $reason]);
+        return new self('part_start_failed', [
+            'part' => $part->name(),
+            'reason' => $reason,
+        ]);
     }
 
     public static function partStopped(PartKey $part, string $reason): self
     {
-        return new self('part_stopped', ['part' => $part->name(), 'reason' => $reason]);
+        return new self('part_stopped', [
+            'part' => $part->name(),
+            'reason' => $reason,
+        ]);
     }
 
     public static function partLost(PartKey $part): self

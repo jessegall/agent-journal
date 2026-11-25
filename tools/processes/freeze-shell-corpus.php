@@ -52,9 +52,17 @@ $casesText = implode('', array_map(fn (array $case): string => json_encode($case
 file_put_contents(CORPUS.'/cases.jsonl', $casesText);
 
 $manifest = json_decode((string) file_get_contents(CORPUS.'/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
-$manifest['expectations'] = ['evidence' => ORACLE_EVIDENCE, 'decisions' => count($decisions), 'unsupported_family_counts' => $families];
+$manifest['expectations'] = [
+    'evidence' => ORACLE_EVIDENCE,
+    'decisions' => count($decisions),
+    'unsupported_family_counts' => $families,
+];
 
-foreach (['cases.jsonl', 'shapes.json', 'decisions.jsonl'] as $name) {
+foreach ([
+    'cases.jsonl',
+    'shapes.json',
+    'decisions.jsonl',
+] as $name) {
     $manifest['fixtures'][$name] = hash_file('sha256', CORPUS.'/'.$name);
 }
 file_put_contents(CORPUS.'/manifest.json', json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n");
@@ -70,12 +78,26 @@ function oracleReadings(array $cases): array
     if (! is_executable(ORACLE)) {
         fail('Build the oracle first: go -C tools/shell-oracle build -o bin/shell-oracle .');
     }
-    $process = proc_open([ORACLE], [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes);
+    $process = proc_open([ORACLE], [
+        [
+            'pipe',
+            'r',
+        ],
+        [
+            'pipe',
+            'w',
+        ],
+        STDERR,
+    ], $pipes);
 
     if (! is_resource($process)) {
         fail('The oracle did not start');
     }
-    $input = implode('', array_map(fn (array $case): string => json_encode(['id' => $case['id'], 'source' => $case['source'], 'dialect' => $case['dialect']], JSON_THROW_ON_ERROR)."\n", $cases));
+    $input = implode('', array_map(fn (array $case): string => json_encode([
+        'id' => $case['id'],
+        'source' => $case['source'],
+        'dialect' => $case['dialect'],
+    ], JSON_THROW_ON_ERROR)."\n", $cases));
     fwrite($pipes[0], $input);
     fclose($pipes[0]);
     $output = stream_get_contents($pipes[1]);

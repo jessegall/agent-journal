@@ -31,7 +31,10 @@ final readonly class EngineTickedDelivery
                 $listener = $this->container->make($listenerClass);
                 $this->access->withinMaintenance($listener->maintenanceScope(), fn () => $listener($event));
             } catch (Throwable $failure) {
-                $this->log->error('Engine listener failed', ['listener' => $listenerClass, 'exception' => $failure]);
+                $this->log->error('Engine listener failed', [
+                    'listener' => $listenerClass,
+                    'exception' => $failure,
+                ]);
             }
         }
 

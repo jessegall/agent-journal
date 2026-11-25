@@ -20,7 +20,10 @@ return new class extends Migration
             $table->string('actor_id');
             $table->timestampTz('recorded_at');
 
-            $table->unique(['phase_id', 'receipt_id']);
+            $table->unique([
+                'phase_id',
+                'receipt_id',
+            ]);
         });
     }
 

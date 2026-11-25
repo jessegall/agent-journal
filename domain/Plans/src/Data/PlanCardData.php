@@ -59,7 +59,10 @@ final class PlanCardData extends Data
             'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
             'start' => $card->canStart
-                ? StartPlanData::from(['planId' => (string) $card->id, 'planNumber' => (string) $card->number])
+                ? StartPlanData::from([
+                    'planId' => (string) $card->id,
+                    'planNumber' => (string) $card->number,
+                ])
                 : null,
         ], fn (mixed $fieldValue) => $fieldValue !== null));
     }

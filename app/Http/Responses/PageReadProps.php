@@ -49,7 +49,10 @@ final readonly class PageReadProps
      */
     public static function propName(string $routeName): string
     {
-        return 'read_'.str_replace(['.', '-'], '_', $routeName);
+        return 'read_'.str_replace([
+            '.',
+            '-',
+        ], '_', $routeName);
     }
 
     /**

@@ -35,7 +35,11 @@ final readonly class ExplainCommandController
 
         $held = array_map(fn (HeldPartData $part) => $this->withRequest($part, $call, $commands), $explanation->held);
 
-        return ExplanationData::from([...$explanation->toArray(), 'held' => $held, 'notice' => self::NOTICE]);
+        return ExplanationData::from([
+            ...$explanation->toArray(),
+            'held' => $held,
+            'notice' => self::NOTICE,
+        ]);
     }
 
     private function withRequest(HeldPartData $part, ExplainCommandCall $call, CommandBus $commands): HeldPartData

@@ -24,6 +24,9 @@ final readonly class Everyone implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => self::TYPE, 'version' => self::VERSION];
+        return [
+            'type' => self::TYPE,
+            'version' => self::VERSION,
+        ];
     }
 }

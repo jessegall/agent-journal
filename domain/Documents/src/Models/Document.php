@@ -65,7 +65,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $current_revision_id
  * @property Carbon|null $created_at
  */
-#[Fillable(['creator_type', 'creator_id'])]
+#[Fillable([
+    'creator_type',
+    'creator_id',
+])]
 final class Document extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
@@ -112,7 +115,10 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public static function create(Actor $author): self
     {
-        $document = new self(['creator_type' => $author->actorType(), 'creator_id' => $author->actorId()]);
+        $document = new self([
+            'creator_type' => $author->actorType(),
+            'creator_id' => $author->actorId(),
+        ]);
         $document->assertSaved($document->save());
         $document->raise(new DocumentCreated($document->id, $document->number, ActorContext::of($author)));
 

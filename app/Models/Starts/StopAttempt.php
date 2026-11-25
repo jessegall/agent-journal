@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -22,6 +20,8 @@ use App\Support\ActorIdentity;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\StopAttemptReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -46,13 +46,20 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['stop_id', 'policy_digest', 'workspace_generation', 'condition_hashes', 'state', 'submission_digest'])]
+#[Fillable([
+    'stop_id',
+    'policy_digest',
+    'workspace_generation',
+    'condition_hashes',
+    'state',
+    'submission_digest',
+])]
 final class StopAttempt extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

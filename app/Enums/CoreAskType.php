@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Commands\Reviews\ApproveCodeReview\ApproveCodeReviewCommand;
 use App\Commands\Reviews\MergeReviewedWork\MergeReviewedWorkCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\Command;
 use App\Values\AskTypeKey;
 use App\Values\SubjectType;
@@ -68,6 +68,9 @@ enum CoreAskType: string
      */
     public static function urgentKeys(): array
     {
-        return [self::Question->value, self::Stuck->value];
+        return [
+            self::Question->value,
+            self::Stuck->value,
+        ];
     }
 }

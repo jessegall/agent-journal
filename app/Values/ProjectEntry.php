@@ -30,6 +30,10 @@ final readonly class ProjectEntry
      */
     public function fields(): array
     {
-        return ['name' => $this->name, 'is_folder' => $this->isFolder, 'size' => $this->size];
+        return [
+            'name' => $this->name,
+            'is_folder' => $this->isFolder,
+            'size' => $this->size,
+        ];
     }
 }

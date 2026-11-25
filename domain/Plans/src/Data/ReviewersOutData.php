@@ -18,7 +18,10 @@ final class ReviewersOutData extends Data
 
     public function adding(string $agentId): self
     {
-        return new self(array_values(array_unique([...$this->agentIds, $agentId])));
+        return new self(array_values(array_unique([
+            ...$this->agentIds,
+            $agentId,
+        ])));
     }
 
     public function removing(string $agentId): self

@@ -55,7 +55,11 @@ final readonly class ClaudeDriver
      */
     public function status(string $directory, array $variables = [], array $readFiles = []): ClaudeStatus
     {
-        $process = $this->start(['auth', 'status', '--json'], $directory, $variables, $readFiles);
+        $process = $this->start([
+            'auth',
+            'status',
+            '--json',
+        ], $directory, $variables, $readFiles);
 
         return ClaudeStatus::fromJson($process->finish());
     }

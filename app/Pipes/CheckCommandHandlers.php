@@ -173,7 +173,11 @@ final readonly class CheckCommandHandlers implements Pipe
         );
 
         $fits = $permits->isPublic() && ! $permits->isStatic()
-            && $types === [Actor::class, $model, AccessType::class]
+            && $types === [
+                Actor::class,
+                $model,
+                AccessType::class,
+            ]
             && self::textOf($permits->returnType()) === Response::class;
 
         if (! $fits) {

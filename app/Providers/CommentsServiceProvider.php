@@ -63,7 +63,11 @@ final class CommentsServiceProvider extends ServiceProvider
         $this->loadCoreRoutes('comments/comments.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([CommentPostCommand::class, CommentListCommand::class, CommentLocationCommand::class]);
+            $this->commands([
+                CommentPostCommand::class,
+                CommentListCommand::class,
+                CommentLocationCommand::class,
+            ]);
         }
     }
 }

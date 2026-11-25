@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\StepStatus;
 use App\Values\StepOutcome;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +31,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Table('profile_step_results')]
-#[Fillable(['profile_run_id', 'step_reference', 'status', 'port', 'evidence'])]
+#[Fillable([
+    'profile_run_id',
+    'step_reference',
+    'status',
+    'port',
+    'evidence',
+])]
 final class ProfileStepResult extends Model implements ReadableModel
 {
     use BoundedReads;

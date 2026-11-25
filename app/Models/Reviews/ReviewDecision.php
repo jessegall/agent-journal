@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -16,7 +14,9 @@ use App\Events\Reviews\ReviewDecisionMergeLinked;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -65,7 +65,10 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['decision' => ReviewDecisionType::class, 'repaired_at' => 'datetime'];
+        return [
+            'decision' => ReviewDecisionType::class,
+            'repaired_at' => 'datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------

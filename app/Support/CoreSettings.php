@@ -60,6 +60,10 @@ final class CoreSettings implements SettingsDefinition
 
     public function groups(): array
     {
-        return [$this->general, $this->connectedProjects, ...$this->domainSwitches];
+        return [
+            $this->general,
+            $this->connectedProjects,
+            ...$this->domainSwitches,
+        ];
     }
 }

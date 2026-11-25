@@ -20,7 +20,10 @@ final class StoredResource extends Data
 
     public static function fromResourceRequest(ResourceRequest $resource): self
     {
-        return self::from(['type' => $resource->type, 'target' => $resource->target]);
+        return self::from([
+            'type' => $resource->type,
+            'target' => $resource->target,
+        ]);
     }
 
     public function toResourceRequest(): ResourceRequest

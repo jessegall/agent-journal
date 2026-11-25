@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -16,7 +14,9 @@ use App\Enums\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpOption\Option;
@@ -35,7 +35,13 @@ use PhpOption\Option;
  * @property CarbonImmutable $updated_at
  */
 #[Table('run_outcomes')]
-#[Fillable(['run_id', 'attempt_id', 'result', 'source', 'version'])]
+#[Fillable([
+    'run_id',
+    'attempt_id',
+    'result',
+    'source',
+    'version',
+])]
 final class RunOutcome extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

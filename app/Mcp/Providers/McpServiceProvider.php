@@ -49,7 +49,10 @@ final class McpServiceProvider extends ServiceProvider
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
-        $this->commands([ContractSnapshotCommand::class, RelayCommand::class]);
+        $this->commands([
+            ContractSnapshotCommand::class,
+            RelayCommand::class,
+        ]);
 
         $this->callAfterResolving(
             Schedule::class,
@@ -61,7 +64,10 @@ final class McpServiceProvider extends ServiceProvider
         $limiter->for('journal-mcp', static fn (Request $request) => Limit::perMinute(self::CALLS_PER_MINUTE)
             ->by(Container::getInstance()->make(AgentContext::class)->sessionId)
             ->response(fn (Request $request, array $headers) => new JsonResponse(
-                ['message' => 'Too many calls.', 'retry_after_seconds' => (int) ($headers['Retry-After'] ?? 0)],
+                [
+                    'message' => 'Too many calls.',
+                    'retry_after_seconds' => (int) ($headers['Retry-After'] ?? 0),
+                ],
                 JsonResponse::HTTP_TOO_MANY_REQUESTS,
                 $headers,
             )));

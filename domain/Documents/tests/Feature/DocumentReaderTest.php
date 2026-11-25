@@ -34,8 +34,19 @@ final class DocumentReaderTest extends TestCase
     private const string RETRY_SECTION = "## Retry\nKeep your key.\n";
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
-        'documents', 'document_revisions', 'document_drafts', 'document_closes', 'text_uploads', 'text_upload_chunks',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'number_groups',
+        'documents',
+        'document_revisions',
+        'document_drafts',
+        'document_closes',
+        'text_uploads',
+        'text_upload_chunks',
     ];
 
     public function test_summary_and_sections_have_outline_and_revision_without_returning_the_whole_document(): void
@@ -48,12 +59,27 @@ final class DocumentReaderTest extends TestCase
         )->number;
 
         $summary = $this->read($id, ['view' => 'summary'])->responseFields;
-        $this->assertSame(['1 Guide', '2 Retry', '3 Examples'], $summary['outline']);
+        $this->assertSame([
+            '1 Guide',
+            '2 Retry',
+            '3 Examples',
+        ], $summary['outline']);
         $this->assertSame(self::ABSTRACT, $summary['abstract']);
         $this->assertArrayNotHasKey('body', $summary);
 
-        $section = $this->read($id, ['view' => 'body', 'section' => 'Retry'])->responseFields;
-        $this->assertSame([1, 4, 6], [$section['revision'], $section['line_start'], $section['line_end']]);
+        $section = $this->read($id, [
+            'view' => 'body',
+            'section' => 'Retry',
+        ])->responseFields;
+        $this->assertSame([
+            1,
+            4,
+            6,
+        ], [
+            $section['revision'],
+            $section['line_start'],
+            $section['line_end'],
+        ]);
         $this->assertSame(self::RETRY_SECTION, $section['body']);
     }
 
@@ -67,7 +93,10 @@ final class DocumentReaderTest extends TestCase
         $range = ['view' => 'body', 'line_start' => 2, 'line_end' => 2, 'character_offset' => 0];
 
         $current = $this->read($number, $range);
-        $pinned = $this->read($number, [...$range, 'revision' => 2]);
+        $pinned = $this->read($number, [
+            ...$range,
+            'revision' => 2,
+        ]);
         $this->assertSame(str_repeat('a', 4096), $pinned->responseFields['body']);
         $this->publish($number, 'Replacement.');
 
@@ -81,7 +110,11 @@ final class DocumentReaderTest extends TestCase
         $pinnedCursor = $pinned->nextActions[0]->arguments['continuation'];
         $continued = $this->read($number, ['continuation' => $pinnedCursor]);
 
-        $this->assertSame([2, 2, 4096], [
+        $this->assertSame([
+            2,
+            2,
+            4096,
+        ], [
             $continued->responseFields['revision'],
             $continued->responseFields['line_start'],
             $continued->responseFields['character_offset'],

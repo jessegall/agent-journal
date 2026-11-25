@@ -33,7 +33,13 @@ final readonly class HomeWindowResolver implements PageResolver
             fn (
                 RegisteredPage $one,
                 RegisteredPage $other,
-            ) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key],
+            ) => [
+                $one->page->homePosition,
+                $one->key,
+            ] <=> [
+                $other->page->homePosition,
+                $other->key,
+            ],
         );
 
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));

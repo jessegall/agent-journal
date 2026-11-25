@@ -33,7 +33,11 @@ final readonly class Operation
     {
         return $this->accessTypes !== [] && array_all(
             $this->accessTypes,
-            fn (AccessType $type) => in_array($type, [AccessType::Read, AccessType::Search, AccessType::Network], true),
+            fn (AccessType $type) => in_array($type, [
+                AccessType::Read,
+                AccessType::Search,
+                AccessType::Network,
+            ], true),
         );
     }
 }

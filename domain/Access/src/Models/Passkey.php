@@ -24,7 +24,11 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'credential_id', 'credential'])]
+#[Fillable([
+    'name',
+    'credential_id',
+    'credential',
+])]
 final class Passkey extends PackagePasskey implements ReadableModel
 {
     use BoundedReads;

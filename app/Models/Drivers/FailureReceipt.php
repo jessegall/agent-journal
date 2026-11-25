@@ -27,7 +27,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['event_id', 'failure'])]
+#[Fillable([
+    'event_id',
+    'failure',
+])]
 final class FailureReceipt extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -44,7 +44,10 @@ trait ReadsAssignmentArguments
      */
     final protected function recipient(ToolArguments $arguments): AssigneeIdentity
     {
-        return $this->assignee($arguments->object('recipient', ['type', 'id']));
+        return $this->assignee($arguments->object('recipient', [
+            'type',
+            'id',
+        ]));
     }
 
     /**
@@ -52,11 +55,17 @@ trait ReadsAssignmentArguments
      */
     final protected function expected(ToolArguments $arguments): AssignmentReference
     {
-        $expected = $arguments->object('expected_assignment', ['id', 'holder']);
+        $expected = $arguments->object('expected_assignment', [
+            'id',
+            'holder',
+        ]);
 
         return new AssignmentReference(
             $expected->ulid('id'),
-            $this->assignee($expected->object('holder', ['type', 'id'])),
+            $this->assignee($expected->object('holder', [
+                'type',
+                'id',
+            ])),
         );
     }
 

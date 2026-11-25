@@ -24,7 +24,12 @@ final readonly class ReadOptionStatementPipeline implements CommandReader, Pipel
 
     public string $output = NodeRead::class;
 
-    private const array OPTION_STATEMENTS = ['set', 'shopt', 'setopt', 'unsetopt'];
+    private const array OPTION_STATEMENTS = [
+        'set',
+        'shopt',
+        'setopt',
+        'unsetopt',
+    ];
 
     public static function reads(TokenCursor $cursor): bool
     {

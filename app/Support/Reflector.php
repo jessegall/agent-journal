@@ -556,7 +556,10 @@ final class Reflector implements ReflectedType
      */
     public function lineage(): array
     {
-        return [$this, ...$this->parent()->map(fn (self $parent) => $parent->lineage())->getOrElse([])];
+        return [
+            $this,
+            ...$this->parent()->map(fn (self $parent) => $parent->lineage())->getOrElse([]),
+        ];
     }
 
     /**

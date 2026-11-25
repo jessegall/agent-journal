@@ -23,7 +23,11 @@ use Domain\Plans\Models\Plan;
  */
 final readonly class PlanShareProvider implements ShareRecordProvider
 {
-    private const array SUMMARY_COLUMNS = ['id', 'title', 'state'];
+    private const array SUMMARY_COLUMNS = [
+        'id',
+        'title',
+        'state',
+    ];
 
     public function mayDisclose(RecordIdentity $record): bool
     {

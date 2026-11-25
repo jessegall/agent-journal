@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -67,14 +67,17 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use OrdersById;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
      * @var list<string>
      */
-    protected $hidden = ['directory', 'start_key'];
+    protected $hidden = [
+        'directory',
+        'start_key',
+    ];
 
     /**
      * @return array<string, string>

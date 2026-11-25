@@ -31,7 +31,10 @@ final readonly class ScriptLine
         }
 
         $token = $parts[0][0];
-        [$operand, $offset] = $parts[1] ?? ['', strlen($token)];
+        [$operand, $offset] = $parts[1] ?? [
+            '',
+            strlen($token),
+        ];
 
         return new self(
             $token,

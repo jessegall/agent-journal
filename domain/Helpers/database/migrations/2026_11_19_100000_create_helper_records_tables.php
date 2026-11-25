@@ -22,8 +22,14 @@ return new class extends Migration
             $table->string('designated_profile', 64)->nullable()->unique();
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id']);
-            $table->unique(['helper_actor_type', 'helper_actor_id']);
+            $table->index([
+                'actor_type',
+                'actor_id',
+            ]);
+            $table->unique([
+                'helper_actor_type',
+                'helper_actor_id',
+            ]);
         });
 
         Schema::create('helper_purposes', function (Blueprint $table) {
@@ -37,7 +43,13 @@ return new class extends Migration
             $table->string('label', 200);
             $table->timestampsTz();
 
-            $table->unique(['actor_type', 'actor_id', 'profile_key', 'subject_type', 'subject_id']);
+            $table->unique([
+                'actor_type',
+                'actor_id',
+                'profile_key',
+                'subject_type',
+                'subject_id',
+            ]);
         });
 
         DB::statement("ALTER TABLE helper_purposes ADD CONSTRAINT helper_purposes_subject_matches_type CHECK (
@@ -65,8 +77,15 @@ return new class extends Migration
             $table->string('conversation_reason', 500);
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id']);
-            $table->unique(['actor_type', 'actor_id', 'request_id']);
+            $table->index([
+                'actor_type',
+                'actor_id',
+            ]);
+            $table->unique([
+                'actor_type',
+                'actor_id',
+                'request_id',
+            ]);
         });
 
         Schema::create('helper_notices', function (Blueprint $table) {
@@ -80,7 +99,10 @@ return new class extends Migration
             $table->timestampTz('delivered_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id']);
+            $table->index([
+                'actor_type',
+                'actor_id',
+            ]);
         });
 
         Schema::create('helper_messages', function (Blueprint $table) {
@@ -92,7 +114,10 @@ return new class extends Migration
             $table->text('suggested_command');
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id']);
+            $table->index([
+                'actor_type',
+                'actor_id',
+            ]);
         });
     }
 

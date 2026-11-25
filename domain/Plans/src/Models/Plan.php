@@ -83,7 +83,16 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[UseFactory(PlanFactory::class)]
-#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
+#[Fillable([
+    'title',
+    'brief',
+    'creator_type',
+    'creator_id',
+    'revision',
+    'type',
+    'finish_note',
+    'cancel_reason',
+])]
 final class Plan extends Model implements Assignable, EventSource, Numbered, ReadableModel, Shareable
 {
     use AssignableListing;

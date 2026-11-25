@@ -90,7 +90,10 @@ final class ReportJobLinkTest extends TestCase
     {
         $actor = ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper'));
 
-        return [$actor, HelperIdentity::create($this->parent, $actor, 'writing-helper', 'writing-helper')];
+        return [
+            $actor,
+            HelperIdentity::create($this->parent, $actor, 'writing-helper', 'writing-helper'),
+        ];
     }
 
     private function jobOf(HelperIdentity $identity): HelperJob

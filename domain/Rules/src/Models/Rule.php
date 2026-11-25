@@ -46,7 +46,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['text', 'reason', 'replaces_rule_id', 'proposer_type', 'proposer_id'])]
+#[Fillable([
+    'text',
+    'reason',
+    'replaces_rule_id',
+    'proposer_type',
+    'proposer_id',
+])]
 final class Rule extends Model implements EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
@@ -80,7 +86,10 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['state' => RuleState::class, 'proposer_type' => ActorType::class];
+        return [
+            'state' => RuleState::class,
+            'proposer_type' => ActorType::class,
+        ];
     }
 
     // ----------[ Constructors ]----------

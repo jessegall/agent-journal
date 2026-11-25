@@ -27,7 +27,10 @@ abstract class PlanCascadeTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;
 
-    private const array ROOT_TYPES = ['plans.plan', 'plans.phase'];
+    private const array ROOT_TYPES = [
+        'plans.plan',
+        'plans.phase',
+    ];
 
     /**
      * Takes the request key the cascade's commands run under.
@@ -50,7 +53,10 @@ abstract class PlanCascadeTool extends JournalWriteTool
      */
     final protected function root(ToolArguments $arguments): RecordIdentity
     {
-        $root = $arguments->object('root', ['type', 'id']);
+        $root = $arguments->object('root', [
+            'type',
+            'id',
+        ]);
         $type = $root->text('type');
 
         if (! in_array($type, self::ROOT_TYPES, true)) {

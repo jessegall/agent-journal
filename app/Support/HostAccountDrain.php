@@ -36,7 +36,10 @@ final readonly class HostAccountDrain implements AccountOwnerDrain
         }
 
         $reply = $this->socket->ask(
-            ['drain' => ['account' => $directory, 'accountId' => $accountId]],
+            ['drain' => [
+                'account' => $directory,
+                'accountId' => $accountId,
+            ]],
             DrainReplyData::class,
         );
 

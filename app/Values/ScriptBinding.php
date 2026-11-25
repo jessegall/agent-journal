@@ -20,7 +20,11 @@ final readonly class ScriptBinding implements StoredValue
      */
     public function toArray(): array
     {
-        return ['package_file' => $this->packageFile, 'script' => $this->script, 'digest' => $this->digest];
+        return [
+            'package_file' => $this->packageFile,
+            'script' => $this->script,
+            'digest' => $this->digest,
+        ];
     }
 
     public static function fromJson(string $json): self

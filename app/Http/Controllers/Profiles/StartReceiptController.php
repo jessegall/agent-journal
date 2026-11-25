@@ -34,7 +34,10 @@ final readonly class StartReceiptController
         }
 
         return match ($receipt->disposition) {
-            StartDisposition::Accepted => ['requestId' => $receipt->requestId, 'state' => 'pending'],
+            StartDisposition::Accepted => [
+                'requestId' => $receipt->requestId,
+                'state' => 'pending',
+            ],
             StartDisposition::Started => self::accepted($receipt),
             StartDisposition::Refused, StartDisposition::Failed => self::refused($receipt, $words),
         };

@@ -30,7 +30,14 @@ use Illuminate\Support\Carbon;
  * @property string $approver_id
  * @property Carbon $approved_at
  */
-#[Fillable(['project_key', 'module', 'version', 'digest', 'approver_type', 'approver_id'])]
+#[Fillable([
+    'project_key',
+    'module',
+    'version',
+    'digest',
+    'approver_type',
+    'approver_id',
+])]
 final class ModuleRuleBundle extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -70,7 +77,11 @@ final class ModuleRuleBundle extends Model implements ReadableModel
             'digest' => $bundle->digest(),
         ];
 
-        $approval = new self([...$identity, 'approver_type' => $approver->type->value, 'approver_id' => $approver->id]);
+        $approval = new self([
+            ...$identity,
+            'approver_type' => $approver->type->value,
+            'approver_id' => $approver->id,
+        ]);
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();
 

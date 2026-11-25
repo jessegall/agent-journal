@@ -88,7 +88,12 @@ final readonly class DeclaredType
      */
     public function isScalar(): bool
     {
-        return $this->isNamed() && in_array($this->name, ['int', 'float', 'string', 'bool'], true);
+        return $this->isNamed() && in_array($this->name, [
+            'int',
+            'float',
+            'string',
+            'bool',
+        ], true);
     }
 
     /**

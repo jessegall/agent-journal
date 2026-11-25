@@ -26,7 +26,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property SupervisorRoutes $routes
  * @property array<string, int> $versions
  */
-#[Fillable(['routes', 'versions'])]
+#[Fillable([
+    'routes',
+    'versions',
+])]
 final class SupervisorLink extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
@@ -39,7 +42,10 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
 
     protected function casts(): array
     {
-        return ['routes' => SupervisorRoutesCast::class, 'versions' => 'array'];
+        return [
+            'routes' => SupervisorRoutesCast::class,
+            'versions' => 'array',
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -52,7 +58,10 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
             return $link;
         }
 
-        $link = new self(['routes' => $inherited, 'versions' => []]);
+        $link = new self([
+            'routes' => $inherited,
+            'versions' => [],
+        ]);
         $link->belongTo($actor);
 
         return $link;
@@ -64,7 +73,10 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     {
         $key = AskTypeKey::routeOf($type);
         $this->routes = $routes;
-        $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
+        $this->versions = [
+            ...$this->versions,
+            $key => $this->versionFor($type) + 1,
+        ];
         $this->assertSaved($this->save());
         $this->raise(new SupervisorLinkChanged($this->id));
     }

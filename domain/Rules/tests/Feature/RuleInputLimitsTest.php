@@ -21,7 +21,10 @@ final class RuleInputLimitsTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['rules', 'command_receipts'];
+    private const array TABLES = [
+        'rules',
+        'command_receipts',
+    ];
 
     /**
      * @return iterable<string, array{ProposeRuleCommand, string}>
@@ -33,14 +36,20 @@ final class RuleInputLimitsTest extends TestCase
             'text',
         ];
 
-        yield 'an empty text' => [new ProposeRuleCommand('', 'Reason'), 'text'];
+        yield 'an empty text' => [
+            new ProposeRuleCommand('', 'Reason'),
+            'text',
+        ];
 
         yield 'a long reason' => [
             new ProposeRuleCommand('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)),
             'reason',
         ];
 
-        yield 'an empty reason' => [new ProposeRuleCommand('Text', ''), 'reason'];
+        yield 'an empty reason' => [
+            new ProposeRuleCommand('Text', ''),
+            'reason',
+        ];
     }
 
     #[DataProvider('refusedProposals')]

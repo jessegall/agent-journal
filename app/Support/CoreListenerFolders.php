@@ -9,7 +9,10 @@ namespace App\Support;
  */
 final readonly class CoreListenerFolders
 {
-    private const array FOLDERS = ['Listeners', 'Mcp/Listeners'];
+    private const array FOLDERS = [
+        'Listeners',
+        'Mcp/Listeners',
+    ];
 
     /**
      * @return list<string>

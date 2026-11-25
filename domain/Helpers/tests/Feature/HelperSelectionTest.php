@@ -73,7 +73,10 @@ final class HelperSelectionTest extends TestCase
 
         $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA);
 
-        $this->assertSame([$codex->id, $claude->id], $this->identityIds($candidates));
+        $this->assertSame([
+            $codex->id,
+            $claude->id,
+        ], $this->identityIds($candidates));
         $this->assertSame(LaunchCandidateRank::ExactConversation, $candidates[0]->rank);
         $this->assertTrue($candidates[0]->resumesConversation);
         $this->assertSame(LaunchCandidateRank::SamePurpose, $candidates[1]->rank);
@@ -87,7 +90,10 @@ final class HelperSelectionTest extends TestCase
 
         $candidates = $this->candidates(DefaultDrivers::CODEX, self::LUNA);
 
-        $this->assertSame([$helpers[0]->id, $helpers[1]->id], $this->identityIds($candidates));
+        $this->assertSame([
+            $helpers[0]->id,
+            $helpers[1]->id,
+        ], $this->identityIds($candidates));
     }
 
     public function test_an_independent_review_skips_every_helper_that_saw_the_subject(): void

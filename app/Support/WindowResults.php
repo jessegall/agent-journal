@@ -114,7 +114,11 @@ final readonly class WindowResults implements WindowResultsContract
     {
         $this->log->error(
             "The window {$key} failed: ".$failure::class.": {$failure->getMessage()}",
-            ['key' => $key, 'reader' => $resolver->resolver, 'exception' => $failure],
+            [
+                'key' => $key,
+                'reader' => $resolver->resolver,
+                'exception' => $failure,
+            ],
         );
 
         if (! $this->app->environment('local', 'testing')) {

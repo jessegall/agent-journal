@@ -85,7 +85,10 @@ final readonly class RefusalMapper implements RefusalMapperContract
             RefusalCode::Unavailable,
             "The journal could not complete this call. Correlation id: {$correlationId}.",
             $this->app->environment('local', 'testing')
-                ? ['exception' => $failure::class, 'cause' => $failure->getMessage()]
+                ? [
+                    'exception' => $failure::class,
+                    'cause' => $failure->getMessage(),
+                ]
                 : [],
         );
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -13,6 +12,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -30,7 +30,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $work_assignment_id
  */
 #[Table('claim_authorizations')]
-#[Fillable(['claim_assignment_id', 'basis_type', 'participation_assignment_id', 'work_assignment_id'])]
+#[Fillable([
+    'claim_assignment_id',
+    'basis_type',
+    'participation_assignment_id',
+    'work_assignment_id',
+])]
 final class ClaimAuthorization extends Model implements ReadableModel
 {
     use BoundedReads;

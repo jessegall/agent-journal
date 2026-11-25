@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -19,6 +18,7 @@ use Domain\Tasks\Enums\TaskRunState;
 use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -39,7 +39,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $outcome
  */
 #[Table('task_runs')]
-#[Fillable(['task_id', 'run_number', 'started_by_type', 'started_by_id', 'state', 'outcome'])]
+#[Fillable([
+    'task_id',
+    'run_number',
+    'started_by_type',
+    'started_by_id',
+    'state',
+    'outcome',
+])]
 final class TaskRun extends Model implements Assignable, EventSource, ReadableModel
 {
     use BoundedReads;
@@ -55,7 +62,10 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      */
     protected function casts(): array
     {
-        return ['run_number' => 'integer', 'state' => TaskRunState::class];
+        return [
+            'run_number' => 'integer',
+            'state' => TaskRunState::class,
+        ];
     }
 
     // ----------[ Constructors ]----------

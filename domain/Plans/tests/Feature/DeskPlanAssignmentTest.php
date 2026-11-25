@@ -60,7 +60,10 @@ final class DeskPlanAssignmentTest extends TestCase
             fn () => $this->app->make(DeskSeatService::class)->seat($main->id, ActorIdentity::of($agent)),
         );
 
-        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create([
+            'title' => 'Release',
+            'type' => PlanType::Build,
+        ]);
         $phase = $this->planStructure()->addPhase($plan, 'Working');
         $tasks = [Task::factory()->create(), Task::factory()->create()];
         $this->planStructure()->addTasks($phase, array_map(fn (Task $task) => $task->id, $tasks));
@@ -70,7 +73,11 @@ final class DeskPlanAssignmentTest extends TestCase
             new AssignPlanWorkCommand($plan->assignmentIdentity(), $agent->assigneeIdentity()),
         );
 
-        $records = array_map(fn ($record) => $record->assignmentIdentity(), [$plan, $phase, ...$tasks]);
+        $records = array_map(fn ($record) => $record->assignmentIdentity(), [
+            $plan,
+            $phase,
+            ...$tasks,
+        ]);
         $assignments = AssignmentRecord::query()->forRecords($records)->readExactly(count($records))->get();
 
         $this->assertCount(count($records), $assignments);

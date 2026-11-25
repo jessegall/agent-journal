@@ -44,7 +44,11 @@ $environment = fn (string $codexHome) => [
 ];
 
 // Only the exit of login status is kept: zero is signed in.
-$signedIn = fn (string $codexHome): bool => run_program([$program, 'login', 'status'], $environment($codexHome), $home)->hasSucceeded();
+$signedIn = fn (string $codexHome): bool => run_program([
+    $program,
+    'login',
+    'status',
+], $environment($codexHome), $home)->hasSucceeded();
 
 // The account keeps its sign-in in its own auth.json: the file setting is in its config.toml and the file exists.
 $usesFileStore = function (string $codexHome) use ($compatibility): bool {
@@ -60,15 +64,29 @@ $loadsWorkFolderServer = function (string $workingRoot, string $trusted) use ($p
     $codexHome = empty_folder('config-home');
     file_put_contents($codexHome.'/config.toml', "[projects.\"{$trusted}\"]\ntrust_level = \"trusted\"\n");
 
-    $servers = run_program([$program, 'mcp', 'list'], $environment($codexHome), $workingRoot)->stdout;
+    $servers = run_program([
+        $program,
+        'mcp',
+        'list',
+    ], $environment($codexHome), $workingRoot)->stdout;
 
     return str_contains($servers, 'hostile');
 };
 
-$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)->stdout;
+$version = run_program([
+    $program,
+    '--version',
+], $environment(empty_folder('version')), $home)->stdout;
 $installed = installed_build($program, $version);
-$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)->stdout
-    .run_program([$program, 'exec', '--help'], $environment(empty_folder('exec-help')), $home)->stdout;
+$help = run_program([
+    $program,
+    '--help',
+], $environment(empty_folder('help')), $home)->stdout
+    .run_program([
+        $program,
+        'exec',
+        '--help',
+    ], $environment(empty_folder('exec-help')), $home)->stdout;
 $absentFlags = array_filter($compatibility->startFlags, fn (string $flag) => ! str_contains($help, $flag));
 
 $work = (string) realpath(empty_folder('work'));
@@ -99,7 +117,16 @@ $items = [
 $signedInA = $accountA !== null && $signedIn($accountA);
 $signedInB = $accountB !== null && $signedIn($accountB);
 
-foreach (['a' => [$accountA, $signedInA], 'b' => [$accountB, $signedInB]] as $name => [$account, $isSignedIn]) {
+foreach ([
+    'a' => [
+        $accountA,
+        $signedInA,
+    ],
+    'b' => [
+        $accountB,
+        $signedInB,
+    ],
+] as $name => [$account, $isSignedIn]) {
     $items[] = $account === null
         ? missing("account-{$name}-signed-in", "a journal account {$name} signed in through the host", 'task 254')
         : judged("account-{$name}-signed-in", $isSignedIn, 'signed in', 'not signed in', 'task 254');

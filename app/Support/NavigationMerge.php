@@ -79,7 +79,10 @@ final readonly class NavigationMerge
 
         foreach ($this->listedChildren($navigation) as $child) {
             $listed = count($contributionPaths);
-            $contributionPaths[$listed] = [...$path, $child->key];
+            $contributionPaths[$listed] = [
+                ...$path,
+                $child->key,
+            ];
             array_push($children, ...$this->gathered($child, $path, $listed, $occurrences, $contributionPaths));
         }
 
@@ -112,7 +115,10 @@ final readonly class NavigationMerge
 
                 $this->log->warning(
                     "The navigation item {$key} listed at {$path} was dropped: its key is declared or listed twice.",
-                    ['key' => $key, 'path' => $paths[$contribution]],
+                    [
+                        'key' => $key,
+                        'path' => $paths[$contribution],
+                    ],
                 );
             }
         }

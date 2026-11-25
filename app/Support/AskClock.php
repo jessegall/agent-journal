@@ -42,12 +42,21 @@ final readonly class AskClock
 
             foreach ($queue as $hop) {
                 $ask = $asks[$hop->ask_id];
-                $start = max([$hop->accepted_at, ...array_filter([$free, $answeringDeadline])]);
+                $start = max([
+                    $hop->accepted_at,
+                    ...array_filter([
+                        $free,
+                        $answeringDeadline,
+                    ]),
+                ]);
                 $deadline = $start->add($this->types->get($ask->type_key)->allowance());
                 $answeringDeadline ??= $deadline;
 
                 if ($deadline <= $now || $ask->hasOutlived($now)) {
-                    $deadlines[$hop->id] = [$deadline, $hop];
+                    $deadlines[$hop->id] = [
+                        $deadline,
+                        $hop,
+                    ];
                 }
             }
         }
@@ -88,6 +97,10 @@ final readonly class AskClock
      */
     private static function place(AskHop $hop): array
     {
-        return [CoreAskType::tryFrom($hop->type_key)?->isUrgent() ? 0 : 1, $hop->accepted_at, $hop->id];
+        return [
+            CoreAskType::tryFrom($hop->type_key)?->isUrgent() ? 0 : 1,
+            $hop->accepted_at,
+            $hop->id,
+        ];
     }
 }

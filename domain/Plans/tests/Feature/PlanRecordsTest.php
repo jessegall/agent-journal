@@ -32,7 +32,14 @@ final class PlanRecordsTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'agents', 'assignments'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+        'agents',
+        'assignments',
+    ];
 
     private Plan $build;
 
@@ -47,7 +54,10 @@ final class PlanRecordsTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        $this->build = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $this->build = Plan::factory()->create([
+            'title' => 'Build the release page',
+            'type' => PlanType::Build,
+        ]);
         $read = $this->planStructure()->addPhase($this->build, 'Read');
         $done = Task::factory()->create(['title' => 'Done']);
         $done->finish('Done.');
@@ -58,21 +68,41 @@ final class PlanRecordsTest extends TestCase
             [Task::factory()->create(['title' => 'Open'])->id],
         );
 
-        $this->empty = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        $this->empty = Plan::factory()->create([
+            'title' => 'Compare chat layouts',
+            'type' => PlanType::Research,
+        ]);
     }
 
     public function test_cards_carry_real_progress_the_current_phase_and_an_absent_agent(): void
     {
         $cards = $this->records()->list(new PlanFilters())->cards;
 
-        $this->assertSame([false, false], array_map(fn (PlanCard $card) => $card->isFocused, $cards));
+        $this->assertSame([
+            false,
+            false,
+        ], array_map(fn (PlanCard $card) => $card->isFocused, $cards));
 
         $build = $this->cardOf($cards, $this->build);
         $empty = $this->cardOf($cards, $this->empty);
 
-        $this->assertSame([1, 2, 2], [$build->progress->finished, $build->progress->total, $build->currentPhase]);
+        $this->assertSame([
+            1,
+            2,
+            2,
+        ], [
+            $build->progress->finished,
+            $build->progress->total,
+            $build->currentPhase,
+        ]);
         $this->assertTrue($build->holder->isEmpty());
-        $this->assertSame([0, null], [$empty->progress->total, $empty->currentPhase]);
+        $this->assertSame([
+            0,
+            null,
+        ], [
+            $empty->progress->total,
+            $empty->currentPhase,
+        ]);
     }
 
     public function test_an_assigned_agent_is_named_and_the_plan_its_stack_works_on_comes_first(): void
@@ -101,8 +131,16 @@ final class PlanRecordsTest extends TestCase
         $cards = $this->records()->list(new PlanFilters())->cards;
 
         $this->assertSame(
-            [$this->build->id, 'Planner', true],
-            [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->isFocused],
+            [
+                $this->build->id,
+                'Planner',
+                true,
+            ],
+            [
+                $cards[0]->id,
+                $cards[0]->holder->get()->name,
+                $cards[0]->isFocused,
+            ],
         );
 
         $this->assertTrue($cards[0]->holder->get()->holder()->isSameAs(AssigneeIdentity::of($agent)));
@@ -121,8 +159,18 @@ final class PlanRecordsTest extends TestCase
         $empty = $this->records()->list(new PlanFilters(search: 'nothing like this'));
 
         $this->assertSame(
-            [[], 'nothing like this', 0, 1],
-            [$empty->cards, $empty->filters->search, $empty->total, $empty->page],
+            [
+                [],
+                'nothing like this',
+                0,
+                1,
+            ],
+            [
+                $empty->cards,
+                $empty->filters->search,
+                $empty->total,
+                $empty->page,
+            ],
         );
     }
 
@@ -130,7 +178,15 @@ final class PlanRecordsTest extends TestCase
     {
         $planPage = $this->records()->list(new PlanFilters(page: 99));
 
-        $this->assertSame([1, 1, 2], [$planPage->page, $planPage->lastPage, count($planPage->cards)]);
+        $this->assertSame([
+            1,
+            1,
+            2,
+        ], [
+            $planPage->page,
+            $planPage->lastPage,
+            count($planPage->cards),
+        ]);
     }
 
     public function test_a_selected_plan_stays_readable_outside_the_filter_and_says_so(): void
@@ -143,8 +199,20 @@ final class PlanRecordsTest extends TestCase
             new PlanFilters(search: 'release', selectedPlanId: $this->empty->id),
         )->selection;
 
-        $this->assertSame([$this->build->id, true], [$inside->card?->id, $inside->isInsideFilter]);
-        $this->assertSame([$this->empty->id, false], [$outside->card?->id, $outside->isInsideFilter]);
+        $this->assertSame([
+            $this->build->id,
+            true,
+        ], [
+            $inside->card?->id,
+            $inside->isInsideFilter,
+        ]);
+        $this->assertSame([
+            $this->empty->id,
+            false,
+        ], [
+            $outside->card?->id,
+            $outside->isInsideFilter,
+        ]);
     }
 
     public function test_a_missing_selection_carries_no_title(): void

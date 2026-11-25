@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -15,7 +13,9 @@ use App\Models\Agents\AgentRuntime;
 use App\Values\RecordedEvent;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,7 +33,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $updated_at
  */
 #[Table('runtime_events')]
-#[Fillable(['agent_runtime_id', 'generation', 'sequence', 'event_type', 'driver_request_id'])]
+#[Fillable([
+    'agent_runtime_id',
+    'generation',
+    'sequence',
+    'event_type',
+    'driver_request_id',
+])]
 final class RuntimeEvent extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -99,7 +99,10 @@ final readonly class DomainRegistry
     {
         $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->ui(), $this->all());
 
-        return UiDeclarations::check(array_values([...$coreDeclarations, ...$domainDeclarations]));
+        return UiDeclarations::check(array_values([
+            ...$coreDeclarations,
+            ...$domainDeclarations,
+        ]));
     }
 
     /**
@@ -120,7 +123,10 @@ final readonly class DomainRegistry
      */
     public function skillDeclarations(SkillOwner $core): array
     {
-        return [$core, ...array_map(fn (DomainEntry $entry) => $entry->skillOwner(), $this->all())];
+        return [
+            $core,
+            ...array_map(fn (DomainEntry $entry) => $entry->skillOwner(), $this->all()),
+        ];
     }
 
     /**
@@ -166,7 +172,10 @@ final readonly class DomainRegistry
             ...array_map(fn (DomainEntry $entry): array => $entry->commandRules(), $this->all()),
         );
 
-        return CommandRuleRegistry::from([...$coreRules, ...$domainRules]);
+        return CommandRuleRegistry::from([
+            ...$coreRules,
+            ...$domainRules,
+        ]);
     }
 
     /**
@@ -241,14 +250,20 @@ final readonly class DomainRegistry
         $position = array_search($entry->name, $path, true);
 
         if ($position !== false) {
-            throw DomainCycle::for([...array_slice($path, $position), $entry->name]);
+            throw DomainCycle::for([
+                ...array_slice($path, $position),
+                $entry->name,
+            ]);
         }
 
         foreach ($entry->requires as $requiredClass) {
             self::refuseCycleFrom(
                 $domainsByName,
                 $domainsByName[DomainEntry::nameOf($requiredClass)],
-                [...$path, $entry->name],
+                [
+                    ...$path,
+                    $entry->name,
+                ],
             );
         }
     }

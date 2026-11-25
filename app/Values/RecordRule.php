@@ -18,7 +18,12 @@ final readonly class RecordRule
      * What each placeholder matches: digits, a word with no space or quote, the rest of the line, or the shortest text
      * that lets the literal after it match.
      */
-    private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '[^\s\'"]++', 'rest' => '.*+', 'text' => '.+?'];
+    private const array PLACEHOLDERS = [
+        'int' => '\d++',
+        'word' => '[^\s\'"]++',
+        'rest' => '.*+',
+        'text' => '.+?',
+    ];
 
     private function __construct(
         public RecordRole $role,

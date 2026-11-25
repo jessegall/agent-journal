@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasComments;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignable;
@@ -113,8 +113,8 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
 
     use HasNumber;
     use HasUlids;
-    use OrdersById;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -135,7 +135,11 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'open', 'run_number' => 0, 'revision' => 1];
+    protected $attributes = [
+        'state' => 'open',
+        'run_number' => 0,
+        'revision' => 1,
+    ];
 
     /**
      * @return array<string, string>
@@ -483,7 +487,12 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
         $unique = array_values(array_unique($ids));
 
         return self::query()->whereKey($unique)->readExactly(count($unique))
-            ->get(['id', 'number', 'title', 'state'])->keyBy('id')->all();
+            ->get([
+                'id',
+                'number',
+                'title',
+                'state',
+            ])->keyBy('id')->all();
     }
 
     /**

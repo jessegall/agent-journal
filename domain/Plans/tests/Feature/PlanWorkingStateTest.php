@@ -118,7 +118,11 @@ final class PlanWorkingStateTest extends TestCase
         $state->onPlanProgressChanged(new PlanProgressChanged('plan-2', 40, 9, 9, 3_000));
 
         $this->assertEquals(
-            AgentText::of('plans.working_on', ['plan' => 12, 'finished' => 3, 'total' => 8]),
+            AgentText::of('plans.working_on', [
+                'plan' => 12,
+                'finished' => 3,
+                'total' => 8,
+            ]),
             $state->instruction()->get(),
         );
     }
@@ -129,7 +133,10 @@ final class PlanWorkingStateTest extends TestCase
         $heard = [];
 
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$heard): void {
-            $heard[] = [$changed->hasFinished, $changed->total];
+            $heard[] = [
+                $changed->hasFinished,
+                $changed->total,
+            ];
         });
 
         $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'Work');
@@ -143,7 +150,10 @@ final class PlanWorkingStateTest extends TestCase
             new AddPhaseTasksCommand($phase->id, $phase->refresh()->revision, [Task::factory()->create()->id]),
         );
 
-        $this->assertSame([[0, 1]], $heard);
+        $this->assertSame([[
+            0,
+            1,
+        ]], $heard);
     }
 
     /**
@@ -158,7 +168,10 @@ final class PlanWorkingStateTest extends TestCase
 
     private function plan(): Plan
     {
-        return Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        return Plan::factory()->create([
+            'title' => 'Build the release page',
+            'type' => PlanType::Build,
+        ]);
     }
 
     /**

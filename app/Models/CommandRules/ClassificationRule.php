@@ -39,7 +39,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'scope', 'rule_id', 'active_revision_id', 'active_revision', 'state', 'state_reason'])]
+#[Fillable([
+    'project_key',
+    'scope',
+    'rule_id',
+    'active_revision_id',
+    'active_revision',
+    'state',
+    'state_reason',
+])]
 final class ClassificationRule extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

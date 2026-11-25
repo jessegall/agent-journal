@@ -56,7 +56,10 @@ final readonly class StateEventDispatch
     {
         $admitted = $this->audience->map(fn (StateEventAudience $audience) => $audience->targets)->getOrElse([]);
 
-        return [...$admitted, ...$this->listening];
+        return [
+            ...$admitted,
+            ...$this->listening,
+        ];
     }
 
     /**

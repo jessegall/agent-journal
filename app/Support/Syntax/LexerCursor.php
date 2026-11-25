@@ -180,7 +180,12 @@ final class LexerCursor
 
     private function isNegation(): bool
     {
-        return $this->isAtCommandStart() && in_array($this->at($this->position + 1), [' ', "\t", "\n", ''], true);
+        return $this->isAtCommandStart() && in_array($this->at($this->position + 1), [
+            ' ',
+            "\t",
+            "\n",
+            '',
+        ], true);
     }
 
     /**
@@ -191,7 +196,11 @@ final class LexerCursor
         $operators = ['&&' => TokenType::AndIf, '||' => TokenType::OrIf];
 
         if ($isExtended) {
-            $operators += ['|&' => TokenType::PipeBoth, '&>>' => TokenType::Redirect, '&>' => TokenType::Redirect];
+            $operators += [
+                '|&' => TokenType::PipeBoth,
+                '&>>' => TokenType::Redirect,
+                '&>' => TokenType::Redirect,
+            ];
         }
 
         return $operators + [

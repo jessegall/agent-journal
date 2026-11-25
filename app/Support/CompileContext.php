@@ -120,7 +120,10 @@ final readonly class CompileContext
 
     public function textAction(ParsedStatement $statement): Instruction
     {
-        return $this->textInstruction($statement, ['passed' => $this->next, 'failure' => $this->policy->failure]);
+        return $this->textInstruction($statement, [
+            'passed' => $this->next,
+            'failure' => $this->policy->failure,
+        ]);
     }
 
     /**
@@ -157,7 +160,11 @@ final readonly class CompileContext
         }
 
         $member = $object->members[$condition->member];
-        $this->graph->remember("object:{$object->key}.{$member->name}", [$object->owner, $object->class, $member]);
+        $this->graph->remember("object:{$object->key}.{$member->name}", [
+            $object->owner,
+            $object->class,
+            $member,
+        ]);
     }
 
     private function recordKeyword(ParsedStatement $statement, ScriptStatement $implementation): void
@@ -166,7 +173,11 @@ final readonly class CompileContext
         $registered = $this->keywords->get($keyword->token);
 
         $this->graph->remember('keyword:'.$keyword->token, [
-            $registered->owner, $keyword->form, $keyword->implementation, $keyword->effects, $implementation->flow(),
+            $registered->owner,
+            $keyword->form,
+            $keyword->implementation,
+            $keyword->effects,
+            $implementation->flow(),
         ]);
     }
 

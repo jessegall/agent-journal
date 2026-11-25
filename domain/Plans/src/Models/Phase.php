@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
@@ -49,14 +49,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'revision'])]
+#[Fillable([
+    'title',
+    'revision',
+])]
 final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

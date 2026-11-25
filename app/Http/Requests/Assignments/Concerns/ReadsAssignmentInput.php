@@ -23,8 +23,15 @@ trait ReadsAssignmentInput
     protected function recordRules(): array
     {
         return [
-            'recordType' => ['required', 'string', 'max:100'],
-            'recordId' => ['required', 'ulid'],
+            'recordType' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'recordId' => [
+                'required',
+                'ulid',
+            ],
             'agent' => ['prohibited'],
             'agent_id' => ['prohibited'],
             'session' => ['prohibited'],
@@ -39,8 +46,14 @@ trait ReadsAssignmentInput
     protected function recipientRules(): array
     {
         return [
-            'recipientType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
-            'recipientId' => ['required', 'ulid'],
+            'recipientType' => [
+                'required',
+                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+            ],
+            'recipientId' => [
+                'required',
+                'ulid',
+            ],
         ];
     }
 
@@ -50,9 +63,18 @@ trait ReadsAssignmentInput
     protected function expectedRules(): array
     {
         return [
-            'assignmentId' => ['required', 'ulid'],
-            'holderType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
-            'holderId' => ['required', 'ulid'],
+            'assignmentId' => [
+                'required',
+                'ulid',
+            ],
+            'holderType' => [
+                'required',
+                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+            ],
+            'holderId' => [
+                'required',
+                'ulid',
+            ],
         ];
     }
 

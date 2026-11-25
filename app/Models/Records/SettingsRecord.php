@@ -33,7 +33,11 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Table('settings_records')]
-#[Fillable(['owner', 'revision', 'document'])]
+#[Fillable([
+    'owner',
+    'revision',
+    'document',
+])]
 final class SettingsRecord extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

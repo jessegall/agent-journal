@@ -30,7 +30,14 @@ final class PhaseTimingTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
+    private const array TABLES = [
+        'agents',
+        'tasks',
+        'plans',
+        'phases',
+        'phase_tasks',
+        'assignments',
+    ];
 
     private Agent $agent;
 
@@ -46,8 +53,14 @@ final class PhaseTimingTest extends TestCase
         parent::setUp();
 
         $this->agent = Agent::create('Worker', 'writing-helper');
-        $this->plan = Plan::factory()->create(['title' => 'Phase timing', 'state' => PlanState::Started]);
-        $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
+        $this->plan = Plan::factory()->create([
+            'title' => 'Phase timing',
+            'state' => PlanState::Started,
+        ]);
+        $this->tasks = [
+            Task::factory()->create(['title' => 'First']),
+            Task::factory()->create(['title' => 'Second']),
+        ];
 
         $this->planStructure()->addTasks(
             $this->planStructure()->addPhase($this->plan, 'Build'),
@@ -70,7 +83,10 @@ final class PhaseTimingTest extends TestCase
         $verdict = $this->timingForAgent();
 
         $this->assertFalse($verdict->isAllowed());
-        $this->assertSame([$this->tasks[0]->number, $this->tasks[1]->number], $verdict->unfinishedTasks);
+        $this->assertSame([
+            $this->tasks[0]->number,
+            $this->tasks[1]->number,
+        ], $verdict->unfinishedTasks);
         $this->assertSame('core.shell.phase_timing', $verdict->reason()->key);
     }
 

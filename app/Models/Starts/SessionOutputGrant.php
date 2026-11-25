@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Values\SessionOutputPaths;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +52,10 @@ final class SessionOutputGrant extends Model implements ReadableModel
     /**
      * @var list<string>
      */
-    protected $hidden = ['transcript_path', 'output_directory'];
+    protected $hidden = [
+        'transcript_path',
+        'output_directory',
+    ];
 
     /**
      * @return array<string, string>

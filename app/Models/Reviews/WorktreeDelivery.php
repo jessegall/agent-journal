@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -15,6 +13,8 @@ use App\Models\Agents\ChildClaim;
 use App\Values\DeliveryReceipt;
 use App\Values\DeliverySubmission;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -39,8 +39,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'delivery_id', 'binding_id', 'child_claim_id', 'runtime_generation', 'checkout', 'base_oid', 'delivered_tip',
-    'target_ref', 'expected_target_oid',
+    'delivery_id',
+    'binding_id',
+    'child_claim_id',
+    'runtime_generation',
+    'checkout',
+    'base_oid',
+    'delivered_tip',
+    'target_ref',
+    'expected_target_oid',
 ])]
 final class WorktreeDelivery extends Model implements ReadableModel
 {

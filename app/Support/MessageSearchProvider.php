@@ -38,7 +38,11 @@ final readonly class MessageSearchProvider implements MessageSearch
             admitted: fn () => self::admitted($constraints),
             idColumn: 'id',
             titleColumn: 'body',
-            columns: ['id', 'number', 'body'],
+            columns: [
+                'id',
+                'number',
+                'body',
+            ],
             titleOf: fn (Message $message): string => $message->body,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $messageId): bool => $this->access->admitsOpen($query->reader, $messageId),

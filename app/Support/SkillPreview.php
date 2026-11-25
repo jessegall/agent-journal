@@ -72,7 +72,10 @@ final readonly class SkillPreview
 
         $excluded = array_column(
             array_map(
-                fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason],
+                fn (ExcludedSkill $excluded) => [
+                    'key' => $excluded->key->key,
+                    'reason' => $excluded->reason,
+                ],
                 $selected->excluded,
             ),
             'reason',

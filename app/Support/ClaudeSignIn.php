@@ -34,7 +34,11 @@ final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
 
     public function begin(string $directory): PrivateAccountProcess
     {
-        return $this->claude->start(['auth', 'login', '--claudeai'], $directory);
+        return $this->claude->start([
+            'auth',
+            'login',
+            '--claudeai',
+        ], $directory);
     }
 
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
@@ -98,7 +102,10 @@ final readonly class ClaudeSignIn implements FirstRunSettlement, SignInProtocol
 
     public function signOut(string $directory): void
     {
-        $this->claude->start(['auth', 'logout'], $directory)->finish();
+        $this->claude->start([
+            'auth',
+            'logout',
+        ], $directory)->finish();
     }
 
     /**

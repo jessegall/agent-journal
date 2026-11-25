@@ -41,8 +41,19 @@ final class DocumentSearchTest extends TestCase
     private const string RETRY_LINE = 'Keep your idempotency key.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links', 'number_groups',
-        'documents', 'document_revisions', 'document_drafts', 'document_closes', 'text_uploads', 'text_upload_chunks',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'number_groups',
+        'documents',
+        'document_revisions',
+        'document_drafts',
+        'document_closes',
+        'text_uploads',
+        'text_upload_chunks',
     ];
 
     private const string USER_ID = '01ARZ3NDEKTSV4RRFFQ69G5FZZ';

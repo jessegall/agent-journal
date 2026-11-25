@@ -59,14 +59,22 @@ final class MemoryDomain extends Domain implements
         return [
             new PolicyDefinition(
                 MemoryPolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Read,
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
         ];
     }
 
     public function commands(): array
     {
-        return [SaveMemoryCommand::class, EditMemoryCommand::class, RemoveMemoryCommand::class];
+        return [
+            SaveMemoryCommand::class,
+            EditMemoryCommand::class,
+            RemoveMemoryCommand::class,
+        ];
     }
 
     public function searchables(): array

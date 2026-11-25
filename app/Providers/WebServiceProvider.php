@@ -137,7 +137,11 @@ final class WebServiceProvider extends ServiceProvider
 
         $policies->register(
             'Core',
-            new PolicyDefinition(LayoutPolicy::class, [AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyDefinition(LayoutPolicy::class, [
+                AccessType::Create,
+                AccessType::Edit,
+                AccessType::Delete,
+            ]),
         );
 
         $links->register(['web.layout' => Layout::class]);
@@ -159,9 +163,16 @@ final class WebServiceProvider extends ServiceProvider
         );
 
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
-        $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
+        $broadcast->routes(['middleware' => [
+            'web',
+            'auth',
+            'journal.user',
+        ]]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
-        $events->listen(JobProcessing::class, [PageChangeBroadcastLog::class, 'record']);
+        $events->listen(JobProcessing::class, [
+            PageChangeBroadcastLog::class,
+            'record',
+        ]);
     }
 
     /**
@@ -200,9 +211,9 @@ final class WebServiceProvider extends ServiceProvider
             }
 
             return $this->app->make(Redirector::class)
-                    ->back(303)
-                    ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
-                    ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
+                ->back(303)
+                ->withErrors([self::fieldOf($failure) => $failure->getMessage()])
+                ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
 
         // A coded refusal of a read, such as a page cursor that no longer fits, answers with its own status, so a
@@ -245,6 +256,10 @@ final class WebServiceProvider extends ServiceProvider
      */
     private function refusalAnswer(string $code, string $message, array $fields, int $status): JsonResponse
     {
-        return new JsonResponse(['code' => $code, 'message' => $message, 'fields' => (object) $fields], $status);
+        return new JsonResponse([
+            'code' => $code,
+            'message' => $message,
+            'fields' => (object) $fields,
+        ], $status);
     }
 }

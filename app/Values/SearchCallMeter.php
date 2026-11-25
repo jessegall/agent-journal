@@ -19,7 +19,12 @@ final class SearchCallMeter
 
     public function add(string $sourceKey, int $elapsedMicroseconds, WorkAllowance $budget, string $outcome): void
     {
-        $sofar = $this->sources[$sourceKey] ?? ['elapsed_us' => 0, 'rows' => 0, 'bytes' => 0, 'outcome' => $outcome];
+        $sofar = $this->sources[$sourceKey] ?? [
+            'elapsed_us' => 0,
+            'rows' => 0,
+            'bytes' => 0,
+            'outcome' => $outcome,
+        ];
 
         $this->sources[$sourceKey] = [
             'elapsed_us' => $sofar['elapsed_us'] + $elapsedMicroseconds,

@@ -207,6 +207,9 @@ final readonly class HeartbeatService implements StartHeartbeatsContract
                 ->orWhere(fn (Builder $neverBeat) => $neverBeat
                     ->whereNull('last_heartbeat_at')
                     ->where('created_at', '<=', $cutoff)))
-            ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
+            ->update([
+                'status' => SessionStatus::Silent->value,
+                'silent_since' => $now,
+            ]);
     }
 }

@@ -18,7 +18,10 @@ trait ReadsAssignmentArguments
      */
     protected function recordFields(): array
     {
-        return ['recordType' => (string) $this->argument('type'), 'recordId' => (string) $this->argument('id')];
+        return [
+            'recordType' => (string) $this->argument('type'),
+            'recordId' => (string) $this->argument('id'),
+        ];
     }
 
     /**

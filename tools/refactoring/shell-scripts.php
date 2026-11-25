@@ -15,15 +15,36 @@ declare(strict_types=1);
  */
 final class ShellScript
 {
-    private const array SKIPPED_FOLDERS = ['vendor', 'node_modules', '.git', '.journal', 'storage', 'images', 'testdata'];
+    private const array SKIPPED_FOLDERS = [
+        'vendor',
+        'node_modules',
+        '.git',
+        '.journal',
+        'storage',
+        'images',
+        'testdata',
+    ];
 
     private const string NAME = '[A-Za-z_][A-Za-z0-9_]*';
 
     private const string STATEMENT_START = '(?:^|[;{(]|&&|\|\||\bthen\b|\bdo\b|\belse\b)\s*';
 
-    private const array OTHER_LANGUAGES = ['python3 -c', 'python -c', 'php -r', 'node -e', 'perl -e'];
+    private const array OTHER_LANGUAGES = [
+        'python3 -c',
+        'python -c',
+        'php -r',
+        'node -e',
+        'perl -e',
+    ];
 
-    private const array SENTENCE_WORDS = ['the', 'a', 'an', 'its', 'that', 'which'];
+    private const array SENTENCE_WORDS = [
+        'the',
+        'a',
+        'an',
+        'its',
+        'that',
+        'which',
+    ];
 
     private const int COMMENT_LINE_LIMIT = 3;
 
@@ -241,7 +262,10 @@ final class ShellScript
             $names = [...$names, ...preg_split('/\s+/', trim($read[1])) ?: []];
         }
 
-        return array_values(array_unique(array_diff($names, ['do', 'IFS'])));
+        return array_values(array_unique(array_diff($names, [
+            'do',
+            'IFS',
+        ])));
     }
 
     /**

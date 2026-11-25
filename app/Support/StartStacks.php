@@ -51,7 +51,10 @@ final readonly class StartStacks
         );
 
         $carried = $this->carriedFrames($target);
-        $frames = new FrameRecords([$bottom, ...$carried]);
+        $frames = new FrameRecords([
+            $bottom,
+            ...$carried,
+        ]);
         AgentStackRow::create($target, $frames, $this->types->ticking());
 
         AgentStackRow::lockAuthorizedFor($target)->frames->checkBottom();

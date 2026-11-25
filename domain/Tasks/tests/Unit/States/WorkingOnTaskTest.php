@@ -73,20 +73,36 @@ final class WorkingOnTaskTest extends TestCase
     public function test_a_stop_is_held_back_while_its_claim_holds_and_let_through_once_a_claim_assignment_ended(): void
     {
         $working = $this->working();
-        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), ['claim-1', 'seat-1', 'work-1']));
+        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), [
+            'claim-1',
+            'seat-1',
+            'work-1',
+        ]));
 
         $held = $this->stop($working);
         $working->onAssignmentsEnded(new AssignmentsEnded(['seat-1']));
 
-        $this->assertSame([AnswerType::Deny, AnswerType::Delegate], [$held, $this->stop($working)]);
+        $this->assertSame([
+            AnswerType::Deny,
+            AnswerType::Delegate,
+        ], [
+            $held,
+            $this->stop($working),
+        ]);
         $this->assertTrue($working->isFinished());
     }
 
     public function test_the_late_end_of_an_earlier_claim_leaves_a_resumed_run_held(): void
     {
         $working = $this->working();
-        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), ['claim-1', 'work-1']));
-        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), ['claim-2', 'work-1']));
+        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), [
+            'claim-1',
+            'work-1',
+        ]));
+        $working->onTaskRunClaimed(new TaskRunClaimed('task-42', 1, $this->agent(), [
+            'claim-2',
+            'work-1',
+        ]));
 
         $working->onAssignmentsEnded(new AssignmentsEnded(['claim-1']));
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -14,6 +12,8 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\BindingStartRecorded;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,7 +28,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $runtime_id
  * @property CarbonImmutable|null $created_at
  */
-#[Fillable(['binding_id', 'start_id', 'session_id', 'runtime_id'])]
+#[Fillable([
+    'binding_id',
+    'start_id',
+    'session_id',
+    'runtime_id',
+])]
 final class BindingStart extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

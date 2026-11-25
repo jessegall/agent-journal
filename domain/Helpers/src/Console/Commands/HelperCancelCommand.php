@@ -24,7 +24,10 @@ final class HelperCancelCommand extends Command
 
     public function handle(HelperCalls $helpers): int
     {
-        $call = CancelHelperJobCall::from(['jobId' => (string) $this->option('job'), 'requestKey' => new CallKey()]);
+        $call = CancelHelperJobCall::from([
+            'jobId' => (string) $this->option('job'),
+            'requestKey' => new CallKey(),
+        ]);
 
         if ($this->option('json') === true) {
             return $this->runCall($call);

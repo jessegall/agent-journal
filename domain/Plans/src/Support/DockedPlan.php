@@ -56,9 +56,15 @@ final readonly class DockedPlan implements Dockable
         $progress = new CountedProgress('progress', $this->plan->progress->finished, $this->plan->progress->total);
 
         if ($this->plan->progress->isComplete()) {
-            return [new Subtitle('phase', 'All phases complete'), $progress];
+            return [
+                new Subtitle('phase', 'All phases complete'),
+                $progress,
+            ];
         }
 
-        return [new Subtitle('phase', $this->currentPhaseTitle ?? "Phase {$this->plan->currentPhase}"), $progress];
+        return [
+            new Subtitle('phase', $this->currentPhaseTitle ?? "Phase {$this->plan->currentPhase}"),
+            $progress,
+        ];
     }
 }

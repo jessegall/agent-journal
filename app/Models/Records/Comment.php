@@ -55,7 +55,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $submission_hash
  * @property CarbonImmutable|null $created_at
  */
-#[Fillable(['body', 'submission_key', 'submission_hash'])]
+#[Fillable([
+    'body',
+    'submission_key',
+    'submission_hash',
+])]
 final class Comment extends Model implements EventSource, ReadableModel, Shareable
 {
     use BoundedReads;
@@ -101,7 +105,11 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         string $key,
         string $hash,
     ): self {
-        $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
+        $comment = new self([
+            'body' => $body,
+            'submission_key' => $key,
+            'submission_hash' => $hash,
+        ]);
         $comment->target_type = $target->getMorphClass();
         $comment->target_id = (string) $target->getKey();
         $comment->author_type = $author->type;
@@ -327,7 +335,11 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     #[Scope]
     protected function excerpts(Builder $query, int $characters): void
     {
-        $query->select(['id', 'created_at', 'quote'])->selectRaw('left(body, ?) as excerpt', [$characters]);
+        $query->select([
+            'id',
+            'created_at',
+            'quote',
+        ])->selectRaw('left(body, ?) as excerpt', [$characters]);
     }
 
     /**

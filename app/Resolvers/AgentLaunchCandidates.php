@@ -61,11 +61,14 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
                 continue;
             }
 
-            $ranked[] = [$helper, new RankedLaunchCandidate(
-                $helper->actor,
-                $this->rankOf($helper, in_array($agent->id, $exactAgents, true)),
-                in_array($agent->id, $sawPurpose, true),
-            )];
+            $ranked[] = [
+                $helper,
+                new RankedLaunchCandidate(
+                    $helper->actor,
+                    $this->rankOf($helper, in_array($agent->id, $exactAgents, true)),
+                    in_array($agent->id, $sawPurpose, true),
+                ),
+            ];
         }
 
         usort($ranked, fn (array $first, array $second) => self::compare($first, $second));
@@ -108,7 +111,10 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
             ->pluck('agent_id')
             ->all();
 
-        return array_values(array_unique([...$running, ...$starting]));
+        return array_values(array_unique([
+            ...$running,
+            ...$starting,
+        ]));
     }
 
     /**

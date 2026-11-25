@@ -68,6 +68,9 @@ final readonly class PolicyOverride
             fn (RootRule $existing) => $existing->isSameAs($class),
         )));
 
-        return [...$kept, ...$added];
+        return [
+            ...$kept,
+            ...$added,
+        ];
     }
 }

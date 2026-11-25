@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -16,7 +14,9 @@ use App\Models\Starts\StartRecord;
 use App\Models\Support\HasWorkColumns;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +36,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Table('certified_works')]
-#[Fillable(['work_type', 'work_id', 'certificate', 'agent_session_id', 'worktree'])]
+#[Fillable([
+    'work_type',
+    'work_id',
+    'certificate',
+    'agent_session_id',
+    'worktree',
+])]
 final class CertifiedWork extends Model implements ReadableModel
 {
     use BoundedReads;

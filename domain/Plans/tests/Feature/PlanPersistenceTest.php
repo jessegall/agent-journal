@@ -29,7 +29,10 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_phases_and_their_tasks_keep_their_order(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create([
+            'title' => 'Build the plans page',
+            'type' => PlanType::Build,
+        ]);
         $read = $this->planStructure()->addPhase($plan, 'Read');
         $start = $this->planStructure()->addPhase($plan, 'Start');
         $second = $this->task('Second');
@@ -40,15 +43,28 @@ final class PlanPersistenceTest extends TestCase
         $this->planStructure()->addTasks($start, [$third->id]);
         $this->planStructure()->addTasks($read, [$first->id]);
 
-        $this->assertSame(['Read', 'Start'], $plan->phases()->pluck('title')->all());
-        $this->assertSame([$second->id, $first->id], $read->taskIds());
-        $this->assertSame([$second->id, $first->id, $third->id], $plan->taskIds());
+        $this->assertSame([
+            'Read',
+            'Start',
+        ], $plan->phases()->pluck('title')->all());
+        $this->assertSame([
+            $second->id,
+            $first->id,
+        ], $read->taskIds());
+        $this->assertSame([
+            $second->id,
+            $first->id,
+            $third->id,
+        ], $plan->taskIds());
         $this->assertSame(PlanState::Planned, $plan->fresh()?->state);
     }
 
     public function test_a_task_sits_in_one_phase_at_most(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
+        $plan = Plan::factory()->create([
+            'title' => 'Fix the login redirect',
+            'type' => PlanType::Fix,
+        ]);
         $task = $this->task('Write a failing test');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Reproduce'), [$task->id]);
 
@@ -72,15 +88,32 @@ final class PlanPersistenceTest extends TestCase
         $counts = $this->app->make(TaskProgressCounter::class);
         $this->assertInstanceOf(TaskCounts::class, $counts);
 
-        $progress = $counts->progressOf([$done->id, $started->id, $open->id]);
+        $progress = $counts->progressOf([
+            $done->id,
+            $started->id,
+            $open->id,
+        ]);
 
-        $this->assertSame([1, 1, 0, 3], [$progress->done, $progress->started, $progress->blocked, $progress->total]);
+        $this->assertSame([
+            1,
+            1,
+            0,
+            3,
+        ], [
+            $progress->done,
+            $progress->started,
+            $progress->blocked,
+            $progress->total,
+        ]);
         $this->assertSame(0, $counts->progressOf([])->total);
     }
 
     public function test_every_agent_reads_every_plan(): void
     {
-        Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        Plan::factory()->create([
+            'title' => 'Compare chat layouts',
+            'type' => PlanType::Research,
+        ]);
 
         $this->startRequestAs(TestIds::of(2), TestIds::of(20));
 

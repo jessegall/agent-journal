@@ -43,7 +43,10 @@ final readonly class RunKeyScriptHandler implements CommandHandler
         if ($extra !== [] || $validator->fails()) {
             $unknown = array_map(fn (string $name) => "{$name} is not a parameter", array_values($extra));
 
-            $problems = array_values([...$unknown, ...$validator->errors()->all()]);
+            $problems = array_values([
+                ...$unknown,
+                ...$validator->errors()->all(),
+            ]);
 
             throw KeyScriptRefused::parameters($command->script, $problems);
         }

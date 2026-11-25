@@ -21,7 +21,10 @@ final readonly class CommandPatternSet
 
     public function with(self $other): self
     {
-        return new self([...$this->patterns, ...$other->patterns]);
+        return new self([
+            ...$this->patterns,
+            ...$other->patterns,
+        ]);
     }
 
     /**

@@ -48,7 +48,10 @@ final readonly class ContainerAdmission
 
     public function assertSupported(string $driver): void
     {
-        foreach ([HostCapabilityType::AccountTransport, HostCapabilityType::ContainerRuntime] as $capability) {
+        foreach ([
+            HostCapabilityType::AccountTransport,
+            HostCapabilityType::ContainerRuntime,
+        ] as $capability) {
             $query = new HostCapabilityQuery(
                 $capability,
                 $driver,

@@ -47,14 +47,22 @@ final class TaskCommandsTest extends TestCase
     {
         parent::setUp();
 
-        Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
+        Event::fake([
+            TaskFinished::class,
+            TaskBlocked::class,
+            TaskCancelled::class,
+        ]);
         $this->startUserRequestAs(TestIds::of(7));
     }
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void
     {
         $bus = $this->app->make(CommandBus::class);
-        [$finished, $blocked, $cancelled] = [$this->task('Finish'), $this->task('Block'), $this->task('Cancel')];
+        [$finished, $blocked, $cancelled] = [
+            $this->task('Finish'),
+            $this->task('Block'),
+            $this->task('Cancel'),
+        ];
 
         $bus->run(new StartTaskCommand($blocked->id));
         $bus->run(new FinishTaskCommand($finished->id, 0, 'Done.'));
@@ -62,8 +70,16 @@ final class TaskCommandsTest extends TestCase
         $bus->run(new CancelTaskCommand($cancelled->id, 'Dropped.'));
 
         $this->assertSame(
-            [TaskState::Finished, TaskState::Blocked, TaskState::Cancelled],
-            [$finished->fresh()?->state, $blocked->fresh()?->state, $cancelled->fresh()?->state],
+            [
+                TaskState::Finished,
+                TaskState::Blocked,
+                TaskState::Cancelled,
+            ],
+            [
+                $finished->fresh()?->state,
+                $blocked->fresh()?->state,
+                $cancelled->fresh()?->state,
+            ],
         );
 
         Event::assertDispatchedTimes(TaskFinished::class, 1);
@@ -92,7 +108,13 @@ final class TaskCommandsTest extends TestCase
 
         $this->assertCount(1, $raised);
         $this->assertInstanceOf(TaskFinished::class, $raised[0]);
-        $this->assertSame([$task->id, TaskState::Open], [$raised[0]->taskId, $raised[0]->previousState]);
+        $this->assertSame([
+            $task->id,
+            TaskState::Open,
+        ], [
+            $raised[0]->taskId,
+            $raised[0]->previousState,
+        ]);
         Event::assertNotDispatched(TaskFinished::class);
     }
 

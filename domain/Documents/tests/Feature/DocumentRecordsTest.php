@@ -29,8 +29,18 @@ final class DocumentRecordsTest extends TestCase
     private const string PUBLIC_TEXT = 'Public text.';
 
     private const array TABLES = [
-        'agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'command_receipts', 'links',
-        'document_closes', 'document_drafts', 'document_revisions', 'documents', 'reports', 'number_groups',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'command_receipts',
+        'links',
+        'document_closes',
+        'document_drafts',
+        'document_revisions',
+        'documents',
+        'reports',
+        'number_groups',
     ];
 
     public function test_published_records_are_shared_and_draft_text_belongs_to_the_author_session(): void
@@ -45,7 +55,11 @@ final class DocumentRecordsTest extends TestCase
 
         $links = $this->app->make(IdentityLinks::class);
 
-        foreach ([Document::query()->sole(), DocumentRevision::query()->sole(), Report::query()->sole()] as $record) {
+        foreach ([
+            Document::query()->sole(),
+            DocumentRevision::query()->sole(),
+            Report::query()->sole(),
+        ] as $record) {
             $origins = $links->linkedOfType($record, 'core.agent-session');
             $this->assertSame([$author->session->id], array_column($origins, 'id'));
         }

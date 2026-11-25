@@ -32,7 +32,10 @@ final readonly class HelperWorkRepair implements WorkRepair
 
         $findings = $request->targetRef === null
             ? AgentText::of('helpers.repair', ['findings' => $request->findings])
-            : AgentText::of('helpers.repair_onto', ['target' => $request->targetRef, 'findings' => $request->findings]);
+            : AgentText::of('helpers.repair_onto', [
+                'target' => $request->targetRef,
+                'findings' => $request->findings,
+            ]);
 
         $job->reopenForRepair($this->texts->render($findings));
         $this->guidance->retain($request->worker, $findings, "repair:{$request->source}");

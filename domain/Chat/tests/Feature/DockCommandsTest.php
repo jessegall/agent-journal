@@ -86,7 +86,10 @@ final class DockCommandsTest extends TestCase
             ->doesntExpectOutputToContain('"root"')
             ->assertExitCode(0);
 
-        $this->artisan('dock:remove', ['placement' => $placement->id, '--json' => true])
+        $this->artisan('dock:remove', [
+            'placement' => $placement->id,
+            '--json' => true,
+        ])
             ->expectsOutputToContain('"outcome":"removed"')
             ->assertExitCode(0);
 
@@ -103,7 +106,10 @@ final class DockCommandsTest extends TestCase
 
         $this->runCommandsAs($this->start);
 
-        $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])
+        $this->artisan('dock:add', [
+            'type' => 'tasks.task',
+            'id' => $this->task->id,
+        ])
             ->expectsOutputToContain('name the one to use with --chat')
             ->assertFailed();
 

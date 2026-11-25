@@ -22,6 +22,9 @@ final readonly class ReadCounts
         public int $queriesCompleted = 0,
         public array $modelsByClass = [],
         public array $queriesByConnection = [],
-        public array $queriesByCategory = ['read' => 0, 'write' => 0],
+        public array $queriesByCategory = [
+            'read' => 0,
+            'write' => 0,
+        ],
     ) {}
 }

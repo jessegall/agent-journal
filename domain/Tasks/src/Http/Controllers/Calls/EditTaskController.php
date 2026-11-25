@@ -20,6 +20,9 @@ final readonly class EditTaskController
             new EditTaskCommand($call->taskId, $call->expectedRevision, $call->title, $call->brief),
         );
 
-        return TaskEdited::from(['taskId' => $call->taskId, 'revision' => $revision]);
+        return TaskEdited::from([
+            'taskId' => $call->taskId,
+            'revision' => $revision,
+        ]);
     }
 }

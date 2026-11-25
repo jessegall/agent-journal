@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
-use App\Support\ConsumedPreview;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Records\Link;
+use App\Support\ConsumedPreview;
 use App\Support\RecordIdentity;
-use App\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -38,14 +37,22 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['scope_version', 'link_id', 'source_type', 'source_id', 'target_type', 'target_id', 'invalidated_at'])]
+#[Fillable([
+    'scope_version',
+    'link_id',
+    'source_type',
+    'source_id',
+    'target_type',
+    'target_id',
+    'invalidated_at',
+])]
 final class ShareMember extends Model implements ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
     use Linkable;
+    use OrdersById;
 
     public const string LINK_TYPE = 'core.share-member';
 
@@ -65,6 +72,7 @@ final class ShareMember extends Model implements ReadableModel
     /**
      * Approves each target the preview selected, linked from its source, at the share's current scope version, in one
      * insert.
+     *
      * @return list<string> the ids of the rows written
      */
     public static function createMany(Share $share, ConsumedPreview $consumed): array
@@ -145,7 +153,10 @@ final class ShareMember extends Model implements ReadableModel
     public static function isApprovedInLiveShare(RecordIdentity $record): bool
     {
         $members = self::query()->targeting($record)->stillApproved()->limit(Share::LIVE_LIMIT)->get(
-            ['share_id', 'scope_version'],
+            [
+                'share_id',
+                'scope_version',
+            ],
         );
 
         $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
@@ -185,7 +196,10 @@ final class ShareMember extends Model implements ReadableModel
             ->stillApproved()
             ->fromSource($source)
             ->readAll('a share scope holds at most the preview limit of members')
-            ->get(['target_type', 'target_id']);
+            ->get([
+                'target_type',
+                'target_id',
+            ]);
 
         foreach ($members as $member) {
             $grouped[$member->target_type][] = $member->target;

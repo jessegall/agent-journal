@@ -54,7 +54,10 @@ final readonly class AccountsIndex extends AccountsPage
             ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AddAccountPart', $accounts))]
             : $this->readerOf($accounts, $chosen);
 
-        $adding = LayoutActionData::changing(['add' => '1', 'account' => '']);
+        $adding = LayoutActionData::changing([
+            'add' => '1',
+            'account' => '',
+        ]);
 
         return ListPage::make(
             'Accounts',

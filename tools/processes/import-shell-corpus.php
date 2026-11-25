@@ -26,12 +26,32 @@ const OUTPUT_FOLDER = __DIR__.'/../../tests/Fixtures/Processes/ShellCorpus';
  * The first value of each slot type, so a per-shape case is the same on every run.
  */
 const SLOT_VALUES = [
-    'word' => 'alpha', 'path' => 'src/app/main.py', 'pattern' => "'TODO'", 'number' => '3', 'text' => "'a short note'",
-    'glob' => "'*.py'", 'string' => "'hello'", 'variable' => '$NAME', 'code' => "'print(1)'", 'file' => 'notes.txt',
-    'assignment' => 'NAME=value', 'substitution' => '$(pwd)', 'branch' => 'feature-x', 'revision' => 'HEAD~1', 'empty' => "''",
-    'url' => 'https://example.com/api', 'version' => '1.2.3', 'test name' => 'test_app.py::test_runs', 'range' => '1,20p',
-    'address' => '127.0.0.1', 'date' => '2.weeks.ago', 'number range' => '1-5', 'json' => "'{\"a\": 1}'", 'duration' => '30s',
-    'stdin' => '-', 'email' => 'someone@example.com',
+    'word' => 'alpha',
+    'path' => 'src/app/main.py',
+    'pattern' => "'TODO'",
+    'number' => '3',
+    'text' => "'a short note'",
+    'glob' => "'*.py'",
+    'string' => "'hello'",
+    'variable' => '$NAME',
+    'code' => "'print(1)'",
+    'file' => 'notes.txt',
+    'assignment' => 'NAME=value',
+    'substitution' => '$(pwd)',
+    'branch' => 'feature-x',
+    'revision' => 'HEAD~1',
+    'empty' => "''",
+    'url' => 'https://example.com/api',
+    'version' => '1.2.3',
+    'test name' => 'test_app.py::test_runs',
+    'range' => '1,20p',
+    'address' => '127.0.0.1',
+    'date' => '2.weeks.ago',
+    'number range' => '1-5',
+    'json' => "'{\"a\": 1}'",
+    'duration' => '30s',
+    'stdin' => '-',
+    'email' => 'someone@example.com',
 ];
 
 /**
@@ -40,23 +60,74 @@ const SLOT_VALUES = [
  * @var list<array{string, string}>
  */
 const BOUNDARY_CASES = [
-    ['git status', 'boundary: plain'],
-    ['env NAME=value git status', 'boundary: env wrapper'],
-    ['timeout 30s npm test', 'boundary: timeout wrapper'],
-    ['npm test', 'boundary: plain'],
-    ['nice -n 10 npm test', 'boundary: nice wrapper'],
-    ['git status > out.log', 'boundary: output redirect'],
-    ['git status >> out.log 2>&1', 'boundary: appending redirect with stderr'],
-    ['git diff < notes.txt', 'boundary: input redirect'],
-    ['git log | head -n 3', 'boundary: pipe'],
-    ['git branch -d feature-x', 'boundary: option absent (safe delete)'],
-    ['git branch -D feature-x', 'boundary: option present (forced delete)'],
-    ['git push', 'boundary: option absent'],
-    ['git push --force', 'boundary: option present'],
-    ['rm notes.txt', 'boundary: option absent'],
-    ['rm -rf build/out', 'boundary: option present'],
-    ['sed -n 1,20p notes.txt', 'boundary: option absent (read)'],
-    ['sed -i s/a/b/ notes.txt', 'boundary: option present (edit)'],
+    [
+        'git status',
+        'boundary: plain',
+    ],
+    [
+        'env NAME=value git status',
+        'boundary: env wrapper',
+    ],
+    [
+        'timeout 30s npm test',
+        'boundary: timeout wrapper',
+    ],
+    [
+        'npm test',
+        'boundary: plain',
+    ],
+    [
+        'nice -n 10 npm test',
+        'boundary: nice wrapper',
+    ],
+    [
+        'git status > out.log',
+        'boundary: output redirect',
+    ],
+    [
+        'git status >> out.log 2>&1',
+        'boundary: appending redirect with stderr',
+    ],
+    [
+        'git diff < notes.txt',
+        'boundary: input redirect',
+    ],
+    [
+        'git log | head -n 3',
+        'boundary: pipe',
+    ],
+    [
+        'git branch -d feature-x',
+        'boundary: option absent (safe delete)',
+    ],
+    [
+        'git branch -D feature-x',
+        'boundary: option present (forced delete)',
+    ],
+    [
+        'git push',
+        'boundary: option absent',
+    ],
+    [
+        'git push --force',
+        'boundary: option present',
+    ],
+    [
+        'rm notes.txt',
+        'boundary: option absent',
+    ],
+    [
+        'rm -rf build/out',
+        'boundary: option present',
+    ],
+    [
+        'sed -n 1,20p notes.txt',
+        'boundary: option absent (read)',
+    ],
+    [
+        'sed -i s/a/b/ notes.txt',
+        'boundary: option present (edit)',
+    ],
 ];
 
 /**
@@ -65,43 +136,164 @@ const BOUNDARY_CASES = [
  * @var list<array{string, string, string}>
  */
 const ADVERSARIAL_CASES = [
-    ['', 'bash', 'empty input'],
-    ['   ', 'bash', 'blank input'],
-    ['echo "unclosed', 'bash', 'unclosed double quote'],
-    ["echo 'unclosed", 'bash', 'unclosed single quote'],
-    ['echo done )', 'bash', 'lone closing parenthesis'],
-    ["cat <<'EOF'\nhello\nEOF", 'bash', 'quoted here-document'],
-    ["git status\ngit diff", 'bash', 'two lines'],
-    ['bash -c "git push"', 'bash', 'nested shell'],
-    ['sh -c \'rm -rf build/out\'', 'bash', 'nested shell with a delete'],
-    ['eval "$COMMAND"', 'bash', 'eval of a variable'],
-    ['x=$(git rev-parse HEAD) && echo $x', 'bash', 'command substitution in an assignment'],
-    ['echo "$(cat "$(pwd)/notes.txt")"', 'bash', 'nested substitution inside quotes'],
-    ['echo `git status`', 'bash', 'backtick substitution'],
-    ['(cd src && make)', 'bash', 'subshell'],
-    ['{ git status; git diff; }', 'bash', 'group'],
-    ['git status && git diff || git log', 'bash', 'and then or'],
-    ['git log | grep fix | wc -l > out.log 2>&1', 'bash', 'pipeline with redirects'],
-    ['echo "" \'\' ""', 'bash', 'empty arguments'],
-    ['echo \\$HOME', 'bash', 'escaped dollar'],
-    ['diff <(git show HEAD:a) <(git show HEAD~1:a)', 'bash', 'process substitution'],
-    ['for f in *.py; do wc -l "$f"; done', 'bash', 'for loop'],
-    ['if test -f notes.txt; then cat notes.txt; fi', 'bash', 'if statement'],
-    ['git status &', 'bash', 'background job'],
-    ['print -l ${(f)LINES}', 'zsh', 'zsh parameter flags'],
-    ['echo ${NAME:-default}', 'bash', 'parameter default'],
-    ['find . -name "*.py" -exec rm {} \\;', 'bash', 'find with exec delete'],
-    ['xargs -0 rm < out.log', 'bash', 'xargs delete'],
+    [
+        '',
+        'bash',
+        'empty input',
+    ],
+    [
+        '   ',
+        'bash',
+        'blank input',
+    ],
+    [
+        'echo "unclosed',
+        'bash',
+        'unclosed double quote',
+    ],
+    [
+        "echo 'unclosed",
+        'bash',
+        'unclosed single quote',
+    ],
+    [
+        'echo done )',
+        'bash',
+        'lone closing parenthesis',
+    ],
+    [
+        "cat <<'EOF'\nhello\nEOF",
+        'bash',
+        'quoted here-document',
+    ],
+    [
+        "git status\ngit diff",
+        'bash',
+        'two lines',
+    ],
+    [
+        'bash -c "git push"',
+        'bash',
+        'nested shell',
+    ],
+    [
+        'sh -c \'rm -rf build/out\'',
+        'bash',
+        'nested shell with a delete',
+    ],
+    [
+        'eval "$COMMAND"',
+        'bash',
+        'eval of a variable',
+    ],
+    [
+        'x=$(git rev-parse HEAD) && echo $x',
+        'bash',
+        'command substitution in an assignment',
+    ],
+    [
+        'echo "$(cat "$(pwd)/notes.txt")"',
+        'bash',
+        'nested substitution inside quotes',
+    ],
+    [
+        'echo `git status`',
+        'bash',
+        'backtick substitution',
+    ],
+    [
+        '(cd src && make)',
+        'bash',
+        'subshell',
+    ],
+    [
+        '{ git status; git diff; }',
+        'bash',
+        'group',
+    ],
+    [
+        'git status && git diff || git log',
+        'bash',
+        'and then or',
+    ],
+    [
+        'git log | grep fix | wc -l > out.log 2>&1',
+        'bash',
+        'pipeline with redirects',
+    ],
+    [
+        'echo "" \'\' ""',
+        'bash',
+        'empty arguments',
+    ],
+    [
+        'echo \\$HOME',
+        'bash',
+        'escaped dollar',
+    ],
+    [
+        'diff <(git show HEAD:a) <(git show HEAD~1:a)',
+        'bash',
+        'process substitution',
+    ],
+    [
+        'for f in *.py; do wc -l "$f"; done',
+        'bash',
+        'for loop',
+    ],
+    [
+        'if test -f notes.txt; then cat notes.txt; fi',
+        'bash',
+        'if statement',
+    ],
+    [
+        'git status &',
+        'bash',
+        'background job',
+    ],
+    [
+        'print -l ${(f)LINES}',
+        'zsh',
+        'zsh parameter flags',
+    ],
+    [
+        'echo ${NAME:-default}',
+        'bash',
+        'parameter default',
+    ],
+    [
+        'find . -name "*.py" -exec rm {} \\;',
+        'bash',
+        'find with exec delete',
+    ],
+    [
+        'xargs -0 rm < out.log',
+        'bash',
+        'xargs delete',
+    ],
 ];
 
 /**
  * Families of shell syntax the portable corpus names as not supported, each with the grammar reason.
  */
 const UNSUPPORTED_FAMILIES = [
-    ['family' => 'zsh-glob-qualifiers', 'reason' => 'Zsh glob qualifiers such as *(.) change what a word expands to and are outside the Bash grammar the parser implements.'],
-    ['family' => 'arithmetic-commands', 'reason' => '(( )) and let evaluate expressions, not commands; they are read as one opaque word.'],
-    ['family' => 'coprocesses', 'reason' => 'coproc starts a background command with its own pipes, which the tree does not model.'],
-    ['family' => 'function-definitions', 'reason' => 'A function body runs later under another name; its parts are not commands of this line.'],
+    [
+        'family' => 'zsh-glob-qualifiers',
+        'reason' => 'Zsh glob qualifiers such as *(.) change what a word expands to and are outside the Bash grammar'
+            .' the parser implements.',
+    ],
+    [
+        'family' => 'arithmetic-commands',
+        'reason' => '(( )) and let evaluate expressions, not commands; they are read as one opaque word.',
+    ],
+    [
+        'family' => 'coprocesses',
+        'reason' => 'coproc starts a background command with its own pipes, which the tree does not model.',
+    ],
+    [
+        'family' => 'function-definitions',
+        'reason' => 'A function body runs later under another name; its parts are not commands of this line.',
+    ],
 ];
 
 main($argv);
@@ -119,14 +311,23 @@ function main(array $arguments): void
 
     foreach ($splitterLines as $index => $line) {
         $source = stringField($line, 'line', "splitter line {$index}");
-        $cases->add($source, DIALECT, ['type' => 'splitter-line', 'index' => $index], ['splitter_parts' => $line['parts'] ?? null]);
+        $cases->add($source, DIALECT, [
+            'type' => 'splitter-line',
+            'index' => $index,
+        ], ['splitter_parts' => $line['parts'] ?? null]);
     }
 
     $corrections = readJson($sources['splitter_corrections.json']);
 
     foreach (listOf($corrections, 'splitter_corrections.json') as $index => $correction) {
         $source = stringField($correction, 'line', "correction {$index}");
-        $cases->add($source, DIALECT, ['type' => 'splitter-correction', 'index' => $index], ['corrected_parts' => $correction['parts'] ?? null, 'reason' => $correction['reason'] ?? null]);
+        $cases->add($source, DIALECT, [
+            'type' => 'splitter-correction',
+            'index' => $index,
+        ], [
+            'corrected_parts' => $correction['parts'] ?? null,
+            'reason' => $correction['reason'] ?? null,
+        ]);
     }
 
     $shapesFixture = readJson($sources['generated_forms.json']);
@@ -137,17 +338,32 @@ function main(array $arguments): void
     foreach ($shapes as $index => $shape) {
         $text = stringField($shape, 'form', "shape {$index}");
         $shapeId = 'shape-'.substr(hash('sha256', $text), 0, 12);
-        $shapeRows[] = ['id' => $shapeId, 'program' => stringField($shape, 'program', "shape {$index}"), 'subcommand' => stringField($shape, 'subcommand', "shape {$index}"), 'text' => $text];
+        $shapeRows[] = [
+            'id' => $shapeId,
+            'program' => stringField($shape, 'program', "shape {$index}"),
+            'subcommand' => stringField($shape, 'subcommand', "shape {$index}"),
+            'text' => $text,
+        ];
 
-        foreach (['kept' => true, 'dropped' => false] as $optional => $keep) {
-            $cases->add(filledShape($text, $keep), DIALECT, ['type' => 'shape', 'id' => $shapeId, 'optional' => $optional], []);
+        foreach ([
+            'kept' => true,
+            'dropped' => false,
+        ] as $optional => $keep) {
+            $cases->add(filledShape($text, $keep), DIALECT, [
+                'type' => 'shape',
+                'id' => $shapeId,
+                'optional' => $optional,
+            ], []);
         }
     }
     $chainRows = [];
 
     foreach ($chains as $index => $chain) {
         $parts = listOf($chain, "chain {$index}");
-        $chainRows[] = ['id' => 'chain-'.substr(hash('sha256', implode(' ', $parts)), 0, 12), 'parts' => $parts];
+        $chainRows[] = [
+            'id' => 'chain-'.substr(hash('sha256', implode(' ', $parts)), 0, 12),
+            'parts' => $parts,
+        ];
     }
 
     $differences = readJson($sources['generated_differences.json']);
@@ -159,7 +375,11 @@ function main(array $arguments): void
 
     foreach ($generated as $index => $row) {
         $source = stringField($row, 'source', "generated row {$index}");
-        $cases->add($source, DIALECT, ['type' => 'generated', 'seed' => 7, 'index' => $index], [
+        $cases->add($source, DIALECT, [
+            'type' => 'generated',
+            'seed' => 7,
+            'index' => $index,
+        ], [
             'shapes_say' => $row['forms'] ?? null,
             'version5_read' => $row['observed'] ?? null,
             'known_difference' => $differences[$source] ?? null,
@@ -167,11 +387,19 @@ function main(array $arguments): void
     }
 
     foreach (BOUNDARY_CASES as $index => [$source, $note]) {
-        $cases->add($source, DIALECT, ['type' => 'boundary', 'index' => $index, 'note' => $note], []);
+        $cases->add($source, DIALECT, [
+            'type' => 'boundary',
+            'index' => $index,
+            'note' => $note,
+        ], []);
     }
 
     foreach (ADVERSARIAL_CASES as $index => [$source, $dialect, $note]) {
-        $cases->add($source, $dialect, ['type' => 'adversarial', 'index' => $index, 'note' => $note], []);
+        $cases->add($source, $dialect, [
+            'type' => 'adversarial',
+            'index' => $index,
+            'note' => $note,
+        ], []);
     }
 
     $folder = OUTPUT_FOLDER;
@@ -181,7 +409,12 @@ function main(array $arguments): void
     }
     $files = [
         'cases.jsonl' => $cases->jsonLines(frozenExpectations("{$folder}/cases.jsonl")),
-        'shapes.json' => encode(['schema_version' => SCHEMA_VERSION, 'slot_values' => SLOT_VALUES, 'shapes' => $shapeRows, 'chains' => $chainRows])."\n",
+        'shapes.json' => encode([
+            'schema_version' => SCHEMA_VERSION,
+            'slot_values' => SLOT_VALUES,
+            'shapes' => $shapeRows,
+            'chains' => $chainRows,
+        ])."\n",
         'decisions.jsonl' => '',
     ];
 
@@ -195,7 +428,10 @@ function main(array $arguments): void
         'source' => [
             'repository' => 'agent-journal version 5',
             'revision' => trim((string) shell_exec('git -C '.escapeshellarg($version5).' rev-parse HEAD')),
-            'files' => array_map(fn (string $path): string => hash_file('sha256', $path), [...$sources, 'generated-sample-seed-7.jsonl' => SAMPLE_FILE]),
+            'files' => array_map(fn (string $path): string => hash_file('sha256', $path), [
+                ...$sources,
+                'generated-sample-seed-7.jsonl' => SAMPLE_FILE,
+            ]),
         ],
         'generated' => ['seed' => 7, 'count' => 500, 'random' => 'Go math/rand/v2 PCG(7, 7), exported by a test run of version 5'],
         'defaults' => ['dialect' => DIALECT, 'context' => CONTEXT],
@@ -250,12 +486,27 @@ final class CaseSet
         if (trim($source) === '') {
             $this->emptyInputs++;
         }
-        $key = hash('sha256', json_encode([$source, $dialect, CONTEXT], JSON_THROW_ON_ERROR));
-        $this->cases[$key] ??= ['id' => 'case-'.substr($key, 0, 16), 'source' => $source, 'dialect' => $dialect, 'context' => CONTEXT, 'origins' => [], 'legacy' => [], 'expected' => new stdClass()];
+        $key = hash('sha256', json_encode([
+            $source,
+            $dialect,
+            CONTEXT,
+        ], JSON_THROW_ON_ERROR));
+        $this->cases[$key] ??= [
+            'id' => 'case-'.substr($key, 0, 16),
+            'source' => $source,
+            'dialect' => $dialect,
+            'context' => CONTEXT,
+            'origins' => [],
+            'legacy' => [],
+            'expected' => new stdClass(),
+        ];
         $this->cases[$key]['origins'][] = $origin;
 
         if ($stored !== []) {
-            $this->cases[$key]['legacy'][] = ['origin' => $origin['type'], ...$stored];
+            $this->cases[$key]['legacy'][] = [
+                'origin' => $origin['type'],
+                ...$stored,
+            ];
         }
     }
 
@@ -334,7 +585,12 @@ function sourceFiles(string $version5): array
 {
     $files = [];
 
-    foreach (['splitter_lines.jsonl', 'splitter_corrections.json', 'generated_forms.json', 'generated_differences.json'] as $name) {
+    foreach ([
+        'splitter_lines.jsonl',
+        'splitter_corrections.json',
+        'generated_forms.json',
+        'generated_differences.json',
+    ] as $name) {
         $path = $version5.'/'.SOURCE_FOLDER.'/'.$name;
         $files[$name] = is_file($path) ? $path : fail("Missing version-5 fixture {$name}");
     }

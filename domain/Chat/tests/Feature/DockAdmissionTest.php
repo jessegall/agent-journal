@@ -86,7 +86,13 @@ final class DockAdmissionTest extends TestCase
         $added = $this->runKeyed($this->dockTask(), (string) Str::ulid());
         $present = $this->runKeyed($this->dockTask(), (string) Str::ulid());
 
-        $this->assertSame([DockOutcome::Added, DockOutcome::Present], [$added->outcome, $present->outcome]);
+        $this->assertSame([
+            DockOutcome::Added,
+            DockOutcome::Present,
+        ], [
+            $added->outcome,
+            $present->outcome,
+        ]);
         $this->assertSame($added->placementId, $present->placementId);
         $this->assertSame(1, DockPlacement::query()->count());
     }

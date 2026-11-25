@@ -35,8 +35,16 @@ final class RuleFiltersData extends Data
     public static function rules(): array
     {
         return [
-            'q' => ['nullable', 'string', 'max:200'],
-            'page' => ['sometimes', 'integer', 'min:1'],
+            'q' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'page' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 
@@ -45,7 +53,10 @@ final class RuleFiltersData extends Data
      */
     public function onPage(int $page): self
     {
-        return self::from([...$this->toArray(), 'page' => $page]);
+        return self::from([
+            ...$this->toArray(),
+            'page' => $page,
+        ]);
     }
 
     public function toDomain(): RuleFilters

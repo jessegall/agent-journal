@@ -18,7 +18,10 @@ final readonly class ScopeResolution
     /**
      * The search arguments that page every source the caller may search, offered beside an unresolved answer.
      */
-    public const array DISCOVERY_ACTION = ['discover' => true, 'prefix' => ''];
+    public const array DISCOVERY_ACTION = [
+        'discover' => true,
+        'prefix' => '',
+    ];
 
     /**
      * @param  list<DeclaredSearchable>  $sources

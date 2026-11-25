@@ -13,7 +13,10 @@ use App\Support\StateEvents\StateEventScope;
  */
 final readonly class StateEventBridge
 {
-    public const array LISTENER = [self::class, 'receive'];
+    public const array LISTENER = [
+        self::class,
+        'receive',
+    ];
 
     public function __construct(private StateEventScope $scope, private StateEventDelivery $delivery) {}
 

@@ -265,7 +265,10 @@ final class HelperDispatchTest extends TestCase
 
             $taken = $competing->transaction(fn () => $competing->selectOne(
                 'select pg_try_advisory_xact_lock(?, hashtext(?)) as taken',
-                [7_304_211, $helper->id],
+                [
+                    7_304_211,
+                    $helper->id,
+                ],
             ));
 
             $this->assertFalse($taken->taken);

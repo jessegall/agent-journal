@@ -68,7 +68,10 @@ final readonly class OutageReply
         return match (HookEvent::tryFrom($nativeEvent)) {
             HookEvent::PreToolUse => DriverReplies::denyTool($reason, []),
             HookEvent::UserPromptSubmit => DriverReply::json(
-                BlockBody::from(['decision' => DriverStopDecision::Block, 'reason' => $reason]),
+                BlockBody::from([
+                    'decision' => DriverStopDecision::Block,
+                    'reason' => $reason,
+                ]),
             ),
             default => DriverReply::emptyObject(),
         };

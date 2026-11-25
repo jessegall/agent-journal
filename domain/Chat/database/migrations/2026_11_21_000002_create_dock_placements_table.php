@@ -21,9 +21,20 @@ return new class extends Migration
             $table->timestampTz('assigned_at');
             $table->timestampsTz();
 
-            $table->unique(['inbox_id', 'dockable_type', 'dockable_id']);
-            $table->index(['dockable_type', 'dockable_id']);
-            $table->index(['inbox_id', 'assigned_at', 'id']);
+            $table->unique([
+                'inbox_id',
+                'dockable_type',
+                'dockable_id',
+            ]);
+            $table->index([
+                'dockable_type',
+                'dockable_id',
+            ]);
+            $table->index([
+                'inbox_id',
+                'assigned_at',
+                'id',
+            ]);
         });
     }
 

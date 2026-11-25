@@ -72,10 +72,22 @@ final readonly class ExecutionBudgets
         }
 
         foreach ([
-            'cpuCores' => [$cpuCores, self::MOST_CPU_CORES],
-            'memoryBytes' => [$memoryBytes, self::MOST_MEMORY_BYTES],
-            'processes' => [$processes, self::MOST_PROCESSES],
-            'workspaceBytes' => [$workspaceBytes, self::MOST_WORKSPACE_BYTES],
+            'cpuCores' => [
+                $cpuCores,
+                self::MOST_CPU_CORES,
+            ],
+            'memoryBytes' => [
+                $memoryBytes,
+                self::MOST_MEMORY_BYTES,
+            ],
+            'processes' => [
+                $processes,
+                self::MOST_PROCESSES,
+            ],
+            'workspaceBytes' => [
+                $workspaceBytes,
+                self::MOST_WORKSPACE_BYTES,
+            ],
         ] as $name => [$budgetAmount, $most]) {
             if ($budgetAmount > $most) {
                 throw ExecutionBudgetInvalid::aboveHost($name, $budgetAmount, $most);

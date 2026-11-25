@@ -21,8 +21,20 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\ParentConnectingVisitor;
 use PhpParser\ParserFactory;
 
-const KEY_FOLDERS = ['app', 'domain', 'tests', 'routes', 'database', 'tools'];
-const FILLING_METHODS = ['from', 'collect', 'validateAndCreate', 'optional'];
+const KEY_FOLDERS = [
+    'app',
+    'domain',
+    'tests',
+    'routes',
+    'database',
+    'tools',
+];
+const FILLING_METHODS = [
+    'from',
+    'collect',
+    'validateAndCreate',
+    'optional',
+];
 
 main($argv);
 
@@ -124,7 +136,10 @@ function calledClass(Node\Expr\StaticCall $call): string|null
         return null;
     }
 
-    if (! in_array($call->class->toLowerString(), ['self', 'static'], true)) {
+    if (! in_array($call->class->toLowerString(), [
+        'self',
+        'static',
+    ], true)) {
         return $call->class->toString();
     }
 
@@ -158,7 +173,11 @@ function arrayKeyEdits(Node\Expr $value, array $renamed): array
     foreach ($value->items as $item) {
         if ($item->key instanceof Node\Scalar\String_ && isset($renamed[$item->key->value])) {
             $quote = $item->key->getAttribute('kind') === Node\Scalar\String_::KIND_DOUBLE_QUOTED ? '"' : "'";
-            $edits[] = [$item->key->getStartFilePos(), $item->key->getEndFilePos(), $quote.$renamed[$item->key->value].$quote];
+            $edits[] = [
+                $item->key->getStartFilePos(),
+                $item->key->getEndFilePos(),
+                $quote.$renamed[$item->key->value].$quote,
+            ];
         } elseif ($item->key === null && $item->value instanceof Node\Expr\Array_) {
             // a list of rows, as collect takes it
             array_push($edits, ...arrayKeyEdits($item->value, $renamed));

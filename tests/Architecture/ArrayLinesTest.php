@@ -9,8 +9,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * An array of two or more entries puts each on its own line, unless it is the value of a local variable (user messages
- * 22073, 22083 and 22085). tools/refactoring/array-lines.php lists every other, and --fix splits them.
+ * An array of two or more entries puts each on its own line, unless it is the value of a local variable or a request's
+ * validation rules (user messages 22073, 22083, 22085 and 22100). tools/refactoring/array-lines.php lists every other.
  */
 #[TimeLimit(seconds: 90, reason: 'It parses every PHP file of app, domain and tools.')]
 final class ArrayLinesTest extends TestCase
@@ -26,14 +26,14 @@ final class ArrayLinesTest extends TestCase
         $this->assertSame('', trim($output), self::HOW_TO_FIX.$output);
     }
 
-    public function test_an_argument_a_return_and_a_property_default_are_listed_and_a_local_value_is_not(): void
+    public function test_arguments_returns_and_defaults_are_listed_and_local_values_and_rules_are_not(): void
     {
         $listed = array_map(
             fn (string $line) => (int) explode(':', explode("\t", $line)[0])[1],
             array_filter(explode("\n", $this->checkOutput(self::FIXTURE))),
         );
 
-        $this->assertSame([12, 19, 24], array_values($listed));
+        $this->assertSame([13, 20, 25], array_values($listed));
     }
 
     private function checkOutput(string ...$paths): string

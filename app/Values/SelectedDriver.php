@@ -66,15 +66,24 @@ final readonly class SelectedDriver
         DriverCatalogue $drivers,
     ): array {
         if ($driverKey !== null) {
-            return [self::supported($driverKey, $drivers), DriverSourceType::Explicit];
+            return [
+                self::supported($driverKey, $drivers),
+                DriverSourceType::Explicit,
+            ];
         }
 
         if ($profile?->preferredDriver !== null) {
-            return [$profile->preferredDriver, DriverSourceType::Profile];
+            return [
+                $profile->preferredDriver,
+                DriverSourceType::Profile,
+            ];
         }
 
         if ($parentDriver !== null) {
-            return [self::supported($parentDriver, $drivers), DriverSourceType::ParentSession];
+            return [
+                self::supported($parentDriver, $drivers),
+                DriverSourceType::ParentSession,
+            ];
         }
 
         throw DriverRequired::forStart();

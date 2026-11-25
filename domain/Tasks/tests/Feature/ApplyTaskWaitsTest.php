@@ -57,7 +57,12 @@ final class ApplyTaskWaitsTest extends TestCase
 
         $this->tasks = array_map(
             fn (int $place) => Task::factory()->create(['title' => "Step {$place}"]),
-            [1, 2, 3, 4],
+            [
+                1,
+                2,
+                3,
+                4,
+            ],
         );
 
         $this->startUserRequestAs($this->owner->id);
@@ -71,10 +76,16 @@ final class ApplyTaskWaitsTest extends TestCase
             $this->ids(),
             $this->version(),
             [$this->pair(3, 2)],
-            [$this->pair(1, 0), $this->pair(2, 0)],
+            [
+                $this->pair(1, 0),
+                $this->pair(2, 0),
+            ],
         ));
 
-        $this->assertSame([[$this->tasks[3]->id, $this->tasks[2]->id]], $this->waits());
+        $this->assertSame([[
+            $this->tasks[3]->id,
+            $this->tasks[2]->id,
+        ]], $this->waits());
         $this->assertSame($this->version(), $version);
         $batches = TaskWaitHistory::query()->whereNotNull('batch_id')->pluck('batch_id')->all();
         $this->assertCount(3, $batches);
@@ -150,6 +161,9 @@ final class ApplyTaskWaitsTest extends TestCase
     private function waits(): array
     {
         return TaskWait::query()->orderBy('created_at')->get()
-            ->map(fn (TaskWait $wait) => [$wait->dependent_task_id, $wait->prerequisite_task_id])->all();
+            ->map(fn (TaskWait $wait) => [
+                $wait->dependent_task_id,
+                $wait->prerequisite_task_id,
+            ])->all();
     }
 }

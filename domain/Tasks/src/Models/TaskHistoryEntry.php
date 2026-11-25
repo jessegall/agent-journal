@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Support\ActorIdentity;
@@ -17,7 +15,9 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Values\TaskTransition;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -55,10 +55,10 @@ use Illuminate\Support\Carbon;
 ])]
 final class TaskHistoryEntry extends Model implements ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
 
     public const null UPDATED_AT = null;
 
@@ -115,7 +115,10 @@ final class TaskHistoryEntry extends Model implements ReadableModel
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by(['task_history.task_id', 'task_history.sequence'], 'task_history.id');
+        return ReadOrder::by([
+            'task_history.task_id',
+            'task_history.sequence',
+        ], 'task_history.id');
     }
 
     // ----------[ Accessors ]----------

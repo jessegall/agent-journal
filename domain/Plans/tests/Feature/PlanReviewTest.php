@@ -146,11 +146,17 @@ final class PlanReviewTest extends TestCase
     private function planWithTask(): array
     {
         $plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $task = Task::factory()->create(['title' => 'Read', 'brief' => self::BRIEF]);
+        $task = Task::factory()->create([
+            'title' => 'Read',
+            'brief' => self::BRIEF,
+        ]);
         $this->startUserRequestAs($this->owner->id);
         $this->structure()->addTasks($this->structure()->addPhase($plan, 'Reading'), [$task->id]);
 
-        return [$plan->refresh(), $task];
+        return [
+            $plan->refresh(),
+            $task,
+        ];
     }
 
     private function owner(): ActorIdentity

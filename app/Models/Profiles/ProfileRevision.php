@@ -253,7 +253,10 @@ final class ProfileRevision extends Model implements ReadableModel
 
         self::query()
             ->currentOfUnretiredProfiles()
-            ->select(['profile_revisions.*', 'profiles.key as profile_key'])
+            ->select([
+                'profile_revisions.*',
+                'profiles.key as profile_key',
+            ])
             ->readInChunks(50, function ($revisions) use (&$profiles): void {
                 foreach ($revisions as $revision) {
                     $profiles[] = new SupervisorProfile(

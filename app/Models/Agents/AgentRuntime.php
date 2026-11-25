@@ -75,7 +75,15 @@ use PhpOption\Option;
  * @property Carbon $updated_at
  * @property int $row_version
  */
-#[Fillable(['agent_session_id', 'host_id', 'driver_type', 'driver_key', 'driver_build', 'profile', 'canonical_folder'])]
+#[Fillable([
+    'agent_session_id',
+    'host_id',
+    'driver_type',
+    'driver_key',
+    'driver_build',
+    'profile',
+    'canonical_folder',
+])]
 final class AgentRuntime extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -301,7 +309,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public function hasEnded(): bool
     {
-        return in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
+        return in_array($this->activity, [
+            RuntimeActivity::Stopping,
+            RuntimeActivity::Stopped,
+        ], true);
     }
 
     /**
@@ -352,7 +363,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public function isHeldFromWork(): bool
     {
-        return in_array($this->hold_reason, [HoldReason::Interrupted, HoldReason::NeedsAttention], true);
+        return in_array($this->hold_reason, [
+            HoldReason::Interrupted,
+            HoldReason::NeedsAttention,
+        ], true);
     }
 
     public function isHeldFor(HoldReason $reason): bool
@@ -386,7 +400,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public function isObservedRunningAfter(int $boundary): bool
     {
         return $this->observation_sequence > $boundary
-            && ! in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
+            && ! in_array($this->activity, [
+                RuntimeActivity::Stopping,
+                RuntimeActivity::Stopped,
+            ], true);
     }
 
     public function isAtGeneration(int $processGeneration): bool
@@ -644,7 +661,10 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function notStopping(Builder $query): void
     {
-        $query->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped]);
+        $query->whereNotIn('activity', [
+            RuntimeActivity::Stopping,
+            RuntimeActivity::Stopped,
+        ]);
     }
 
     /**

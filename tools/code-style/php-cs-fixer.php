@@ -26,4 +26,10 @@ return new Config()
     ])
     ->setUsingCache(true)
     ->setCacheFile('storage/framework/cache/php-cs-fixer.cache')
-    ->setFinder(new Finder()->in([dirname(__DIR__, 2).'/app', dirname(__DIR__, 2).'/domain'])->exclude(['resources', 'node_modules']));
+    ->setFinder(new Finder()->in([
+        dirname(__DIR__, 2).'/app',
+        dirname(__DIR__, 2).'/domain',
+    ])->exclude([
+        'resources',
+        'node_modules',
+    ]));

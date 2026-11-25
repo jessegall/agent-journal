@@ -34,7 +34,10 @@ final class RuleReadTool extends JournalReadTool
 
     public function schema(JsonSchema $schema): array
     {
-        return ['rule_id' => $this->recordIdArgument($schema), 'continuation' => $schema->string()];
+        return [
+            'rule_id' => $this->recordIdArgument($schema),
+            'continuation' => $schema->string(),
+        ];
     }
 
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
@@ -45,7 +48,10 @@ final class RuleReadTool extends JournalReadTool
     protected function read(ToolArguments $arguments): ToolResult
     {
         $rule = $this->rules->rule($arguments->ulid('rule_id'));
-        $text = array_filter(['text' => $rule->text, 'reason' => $rule->reason], is_string(...));
+        $text = array_filter([
+            'text' => $rule->text,
+            'reason' => $rule->reason,
+        ], is_string(...));
 
         $card = [
             'rule_id' => $rule->id,
@@ -67,7 +73,10 @@ final class RuleReadTool extends JournalReadTool
         }
 
         if (strlen(json_encode($text, JSON_THROW_ON_ERROR)) <= 4000) {
-            return ToolResult::ok([...$card, ...$text]);
+            return ToolResult::ok([
+                ...$card,
+                ...$text,
+            ]);
         }
 
         $position = $this->fields->start(new Continuation($this->name(), $rule->id, [], 1), $text);

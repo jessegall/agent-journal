@@ -15,7 +15,10 @@ final readonly class AdmitJournalAssignment
     {
         $provider = $this->providers->journalProvider($assignment->record->type);
         $holder = $assignment->recipient;
-        $this->locks->lockShared($current === null ? [$holder] : [$holder, $current->holder]);
+        $this->locks->lockShared($current === null ? [$holder] : [
+            $holder,
+            $current->holder,
+        ]);
         $this->providers->assigneeProvider($holder->type)->requireEligible($holder);
         $provider->requireJournalAssignment($assignment);
 

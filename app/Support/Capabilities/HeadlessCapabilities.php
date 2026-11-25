@@ -32,12 +32,30 @@ final readonly class HeadlessCapabilities implements DriverCapabilities
         $noTerminal = OperationSupport::unsupported(self::NO_TERMINAL);
 
         return [
-            [DriverCapability::Watch, $noTerminal],
-            [DriverCapability::Type, $noTerminal],
-            [DriverCapability::Paste, $noTerminal],
-            [DriverCapability::Resize, $noTerminal],
-            [DriverCapability::PrivateEntry, $noTerminal],
-            [DriverCapability::KeyScripts, $noTerminal],
+            [
+                DriverCapability::Watch,
+                $noTerminal,
+            ],
+            [
+                DriverCapability::Type,
+                $noTerminal,
+            ],
+            [
+                DriverCapability::Paste,
+                $noTerminal,
+            ],
+            [
+                DriverCapability::Resize,
+                $noTerminal,
+            ],
+            [
+                DriverCapability::PrivateEntry,
+                $noTerminal,
+            ],
+            [
+                DriverCapability::KeyScripts,
+                $noTerminal,
+            ],
         ];
     }
 }

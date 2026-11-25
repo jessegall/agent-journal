@@ -22,7 +22,13 @@ use App\Values\UnresolvedFact;
  */
 final readonly class RedirectFacts
 {
-    private const array HARMLESS_ENDPOINTS = ['/dev/null', '/dev/stdin', '/dev/stdout', '/dev/stderr', '-'];
+    private const array HARMLESS_ENDPOINTS = [
+        '/dev/null',
+        '/dev/stdin',
+        '/dev/stdout',
+        '/dev/stderr',
+        '-',
+    ];
 
     /**
      * @return list<ClassFact>
@@ -106,7 +112,10 @@ final readonly class RedirectFacts
         return match ($type) {
             RedirectType::Input => [CommandClass::Read],
             RedirectType::Output, RedirectType::Append, RedirectType::Clobber => [CommandClass::Write],
-            RedirectType::ReadWrite => [CommandClass::Read, CommandClass::Write],
+            RedirectType::ReadWrite => [
+                CommandClass::Read,
+                CommandClass::Write,
+            ],
             RedirectType::DuplicateInput,
             RedirectType::DuplicateOutput,
             RedirectType::Close,

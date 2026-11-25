@@ -18,7 +18,10 @@ final readonly class AssignVariables implements Pipe
     {
         return new StepOutcome(
             ExitStatus::Success->status(),
-            $toRun->context->withEnvironment([...$toRun->context->environment, ...$toRun->assignments()]),
+            $toRun->context->withEnvironment([
+                ...$toRun->context->environment,
+                ...$toRun->assignments(),
+            ]),
         );
     }
 }

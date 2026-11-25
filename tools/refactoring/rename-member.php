@@ -127,8 +127,19 @@ final class DeclaringTypeMarker extends NodeVisitorAbstract
     }
 }
 
-const SEARCHED = ['app', 'domain', 'tests', 'routes', 'bootstrap', 'config', 'database'];
-const SKIPPED = ['vendor', 'node_modules'];
+const SEARCHED = [
+    'app',
+    'domain',
+    'tests',
+    'routes',
+    'bootstrap',
+    'config',
+    'database',
+];
+const SKIPPED = [
+    'vendor',
+    'node_modules',
+];
 
 $arguments = array_slice($argv, 1);
 
@@ -176,7 +187,10 @@ foreach ($renames as $rename) {
         $changes = renameMember($project, $rename, $with);
 
         foreach ($changes['edits'] as $file => $fileEdits) {
-            $editsByFile[$file] = [...$editsByFile[$file] ?? [], ...$fileEdits];
+            $editsByFile[$file] = [
+                ...$editsByFile[$file] ?? [],
+                ...$fileEdits,
+            ];
         }
 
         printf(
@@ -257,7 +271,10 @@ final class ParsedProject
     {
         $isUnder = static fn (string $file): bool => $file === $path || str_starts_with($file, rtrim($path, '/').'/');
 
-        foreach ([$this->searched(), $this->others] as $parsedAlready) {
+        foreach ([
+            $this->searched(),
+            $this->others,
+        ] as $parsedAlready) {
             $inParsed = array_filter($parsedAlready, $isUnder, ARRAY_FILTER_USE_KEY);
 
             if ($inParsed !== []) {
@@ -266,7 +283,10 @@ final class ParsedProject
         }
 
         $parsed = parsedFiles($this->root, [$path]);
-        $this->others = [...$this->others, ...$parsed];
+        $this->others = [
+            ...$this->others,
+            ...$parsed,
+        ];
 
         return $parsed;
     }
@@ -315,7 +335,13 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
 
     if (! in_array(
         $what,
-        ['method', 'property', 'constant', 'variable', 'argument'],
+        [
+            'method',
+            'property',
+            'constant',
+            'variable',
+            'argument',
+        ],
         true,
     ) || $owner === '' || $old === '' || $new === '') {
         throw RenameRefused::malformed();
@@ -328,7 +354,10 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
     if (isset($scope[1])) {
         $line = (int) $scope[1];
 
-        if (! in_array($what, ['variable', 'argument'], true) || ! ctype_digit($scope[1]) || $line < 1 || ! is_file($root.'/'.$path)) {
+        if (! in_array($what, [
+            'variable',
+            'argument',
+        ], true) || ! ctype_digit($scope[1]) || $line < 1 || ! is_file($root.'/'.$path)) {
             throw RenameRefused::malformed();
         }
     }
@@ -337,24 +366,37 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
         // the parameter already carries the new name: only the calls that pass it by its old name are left
         [$function] = parameterScope($project->under($path)[$path]['statements'], $path, $line, $new);
 
-        return ['edits' => namedArgumentEdits($project, $function, $old, $new), 'unresolved' => [], 'strings' => []];
+        return [
+            'edits' => namedArgumentEdits($project, $function, $old, $new),
+            'unresolved' => [],
+            'strings' => [],
+        ];
     }
 
     $files = $what === 'variable' ? $project->under($path) : $project->searched();
     $named = $what === 'variable' ? nameIndex($files)[$old] ?? [] : $project->nodesNamed($old);
     $changes = $what === 'variable'
-        ? ['edits' => variableEdits($files, $old, $new, $line), 'unresolved' => []]
+        ? [
+            'edits' => variableEdits($files, $old, $new, $line),
+            'unresolved' => [],
+        ]
         : memberEdits($files, $named, $project->index(), $what, ltrim($owner, '\\'), $old, $new, $with);
 
     if ($what === 'variable' && $line > 0) {
         [$function] = parameterScope($files[$path]['statements'], $path, $line, $old);
 
         foreach (namedArgumentEdits($project, $function, $old, $new) as $file => $sites) {
-            $changes['edits'][$file] = [...$changes['edits'][$file] ?? [], ...$sites];
+            $changes['edits'][$file] = [
+                ...$changes['edits'][$file] ?? [],
+                ...$sites,
+            ];
         }
     }
 
-    return [...$changes, 'strings' => stringsSpelling($named, $old)];
+    return [
+        ...$changes,
+        'strings' => stringsSpelling($named, $old),
+    ];
 }
 
 /**
@@ -428,7 +470,10 @@ function typeIndex(array $files): array
             if ($type instanceof Node\Stmt\Class_) {
                 $related = array_map(
                     static fn (Node\Name $name) => $name->toString(),
-                    array_values(array_filter([$type->extends, ...$type->implements])),
+                    array_values(array_filter([
+                        $type->extends,
+                        ...$type->implements,
+                    ])),
                 );
             }
 
@@ -566,7 +611,10 @@ function memberEdits(array $files, array $named, array $index, string $what, str
     $static = $what === 'method' && in_array($old, $index[$class]['static'], true);
     $family = [];
 
-    foreach ([$class, ...$with] as $start) {
+    foreach ([
+        $class,
+        ...$with,
+    ] as $start) {
         foreach ($static ? descendantsOf($index, $start) : familyOf($index, $start) as $member) {
             $family[$member] = true;
         }
@@ -614,7 +662,10 @@ function memberEdits(array $files, array $named, array $index, string $what, str
         }
     }
 
-    return ['edits' => $edits, 'unresolved' => $unresolved];
+    return [
+        'edits' => $edits,
+        'unresolved' => $unresolved,
+    ];
 }
 
 /**
@@ -662,7 +713,10 @@ function receiverType(Node\Expr $receiver, array $index): string|null
         $receiver instanceof Node\Expr\Variable && is_string($receiver->name) => variableType($receiver, $receiver->name, $index),
         $receiver instanceof Node\Expr\New_ && $receiver->class instanceof Node\Name => $receiver->class->toString(),
         $receiver instanceof Node\Expr\FuncCall && $receiver->name instanceof Node\Name
-            && in_array($receiver->name->toLowerString(), ['app', 'resolve'], true) => madeClass($receiver),
+            && in_array($receiver->name->toLowerString(), [
+                'app',
+                'resolve',
+            ], true) => madeClass($receiver),
         $receiver instanceof Node\Expr\MethodCall && $receiver->name instanceof Node\Identifier
             && $receiver->name->toString() === 'make' => madeClass($receiver),
         $receiver instanceof Node\Expr\PropertyFetch, $receiver instanceof Node\Expr\NullsafePropertyFetch => memberType(receiverType($receiver->var, $index), $receiver->name, 'propertyTypes', $index),
@@ -693,7 +747,10 @@ function madeClass(Node\Expr\FuncCall|Node\Expr\MethodCall $call): string|null
  */
 function staticClass(Node\Name $name): string|null
 {
-    if (in_array($name->toLowerString(), ['self', 'static'], true)) {
+    if (in_array($name->toLowerString(), [
+        'self',
+        'static',
+    ], true)) {
         return enclosingClass($name);
     }
 
@@ -716,7 +773,10 @@ function memberType(string|null $class, Node $name, string $kind, array $index):
     $line = [$class];
 
     for ($at = 0; $at < count($line); $at++) {
-        $entry = $index[$line[$at]] ?? ['related' => [], $kind => []];
+        $entry = $index[$line[$at]] ?? [
+            'related' => [],
+            $kind => [],
+        ];
 
         if (array_key_exists($name->toString(), $entry[$kind])) {
             return $entry[$kind][$name->toString()];
@@ -794,7 +854,10 @@ function typeName(Node|null $type, string|null $self): string|null
 {
     return match (true) {
         $type instanceof Node\NullableType => typeName($type->type, $self),
-        $type instanceof Node\Name, $type instanceof Node\Identifier => in_array(strtolower($type->toString()), ['self', 'static'], true) ? $self : classTypeName($type),
+        $type instanceof Node\Name, $type instanceof Node\Identifier => in_array(strtolower($type->toString()), [
+            'self',
+            'static',
+        ], true) ? $self : classTypeName($type),
         default => null,
     };
 }
@@ -868,7 +931,11 @@ function memberSites(
     // self, static and parent name the class the code stands in, so they belong to the family only inside one of it
     $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || (in_array(
         $class->toLowerString(),
-        ['self', 'static', 'parent'],
+        [
+            'self',
+            'static',
+            'parent',
+        ],
         true,
     ) && isInsideFamily($node, $family)));
 
@@ -905,7 +972,11 @@ function memberSites(
     }
 
     if (($named instanceof Node\Identifier || $named instanceof Node\VarLikeIdentifier) && $named->toString() === $old) {
-        $sites[] = [$named->getStartFilePos(), $named->getEndFilePos(), $new];
+        $sites[] = [
+            $named->getStartFilePos(),
+            $named->getEndFilePos(),
+            $new,
+        ];
     }
 
     return $sites;
@@ -923,7 +994,11 @@ function staticCallReaches(Node\Expr\StaticCall $call, array $family): bool
         return false;
     }
 
-    if (in_array($call->class->toLowerString(), ['self', 'static', 'parent'], true)) {
+    if (in_array($call->class->toLowerString(), [
+        'self',
+        'static',
+        'parent',
+    ], true)) {
         return isset($family[declaringType($call)]);
     }
 
@@ -941,7 +1016,11 @@ function namedArgumentSites(Node\Expr\New_ $node, string $old, string $new): arr
 
     foreach ($node->args as $argument) {
         if ($argument instanceof Node\Arg && $argument->name?->toString() === $old) {
-            $sites[] = [$argument->name->getStartFilePos(), $argument->name->getEndFilePos(), $new];
+            $sites[] = [
+                $argument->name->getStartFilePos(),
+                $argument->name->getEndFilePos(),
+                $new,
+            ];
         }
     }
 
@@ -984,7 +1063,11 @@ function promotedVariableSites(array $statements, string $old, string $new, arra
         }
 
         foreach ($finder->find($method, static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
-            $sites[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
+            $sites[] = [
+                $variable->getStartFilePos(),
+                $variable->getEndFilePos(),
+                '$'.$new,
+            ];
         }
 
         array_push($sites, ...docSites($method->getDocComment(), $old, $new));
@@ -1009,7 +1092,11 @@ function variableEdits(array $files, string $old, string $new, int $line): array
         $statements = $line > 0 ? parameterScope($file['statements'], $path, $line, $old) : $file['statements'];
 
         foreach ($finder->find($statements, static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
-            $found[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
+            $found[] = [
+                $variable->getStartFilePos(),
+                $variable->getEndFilePos(),
+                '$'.$new,
+            ];
         }
 
         foreach ($finder->find(
@@ -1070,7 +1157,11 @@ function docSites(Doc|null $doc, string $old, string $new): array
     preg_match_all('/\$'.preg_quote($old, '/').'\b/', $doc->getText(), $matches, PREG_OFFSET_CAPTURE);
 
     return array_map(
-        static fn (array $match) => [$doc->getStartFilePos() + $match[1], $doc->getStartFilePos() + $match[1] + strlen($match[0]) - 1, '$'.$new],
+        static fn (array $match) => [
+            $doc->getStartFilePos() + $match[1],
+            $doc->getStartFilePos() + $match[1] + strlen($match[0]) - 1,
+            '$'.$new,
+        ],
         $matches[0],
     );
 }
@@ -1144,7 +1235,10 @@ function namedArgumentEdits(ParsedProject $project, Node\FunctionLike $function,
     $functionName = $function instanceof Node\Stmt\ClassMethod || $function instanceof Node\Stmt\Function_ ? $function->name->toString() : null;
     $classOf = static fn (Node\Expr\New_ $node): string|null => match (true) {
         ! $node->class instanceof Node\Name => null,
-        in_array($node->class->toLowerString(), ['self', 'static'], true) => enclosingClass($node),
+        in_array($node->class->toLowerString(), [
+            'self',
+            'static',
+        ], true) => enclosingClass($node),
         default => $node->class->toString(),
     };
     $callsFunction = static fn (Node $node): bool => match (true) {
@@ -1160,7 +1254,11 @@ function namedArgumentEdits(ParsedProject $project, Node\FunctionLike $function,
         foreach (array_filter($nodes, $callsFunction) as $call) {
             foreach ($call->args as $argument) {
                 if ($argument instanceof Node\Arg && $argument->name?->toString() === $old) {
-                    $edits[$path][] = [$argument->name->getStartFilePos(), $argument->name->getEndFilePos(), $new];
+                    $edits[$path][] = [
+                        $argument->name->getStartFilePos(),
+                        $argument->name->getEndFilePos(),
+                        $new,
+                    ];
                 }
             }
         }
@@ -1211,7 +1309,10 @@ function namesCarriedBy(Node $node): array
         default => [],
     };
 
-    return array_values(array_unique([...$ownNames, ...$argumentNames]));
+    return array_values(array_unique([
+        ...$ownNames,
+        ...$argumentNames,
+    ]));
 }
 
 /**
@@ -1357,134 +1458,330 @@ function testCases(): array
     $renamedMethods = str_replace('open(bool $ready): bool { return $ready; }', 'open(bool $isReady): bool { return $isReady; }', $methods);
 
     return [
-        ['a property, its promoted parameter, accesses and named arguments', [
-            'property',
-            'App\\Ids\\Identity',
-            'kind',
-            'type',
-        ], [],
-            ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
-            ['app/Ids/Identity.php' => str_replace(
-                ['public string $kind', '$this->check($kind)', '@param  string  $kind', '$this->kind', '$other->kind'],
-                ['public string $type', '$this->check($type)', '@param  string  $type', '$this->type', '$other->type'],
-                $identity,
-            ),
+        [
+            'a property, its promoted parameter, accesses and named arguments',
+            [
+                'property',
+                'App\\Ids\\Identity',
+                'kind',
+                'type',
+            ],
+            [],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Use/run.php' => $user,
+            ],
+            [
+                'app/Ids/Identity.php' => str_replace(
+                    [
+                        'public string $kind',
+                        '$this->check($kind)',
+                        '@param  string  $kind',
+                        '$this->kind',
+                        '$other->kind',
+                    ],
+                    [
+                        'public string $type',
+                        '$this->check($type)',
+                        '@param  string  $type',
+                        '$this->type',
+                        '$other->type',
+                    ],
+                    $identity,
+                ),
                 'app/Use/run.php' => str_replace(
-                    ['$one->kind', 'kind: \'a\''],
-                    ['$one->type', 'type: \'a\''],
+                    [
+                        '$one->kind',
+                        'kind: \'a\'',
+                    ],
+                    [
+                        '$one->type',
+                        'type: \'a\'',
+                    ],
                     $user,
-                )], false, []],
-        ['a method and its calls', ['method', 'App\\Ids\\Identity', 'isSameAs', 'matches'], [],
-            ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
+                ),
+            ],
+            false,
+            [],
+        ],
+        [
+            'a method and its calls',
+            [
+                'method',
+                'App\\Ids\\Identity',
+                'isSameAs',
+                'matches',
+            ],
+            [],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Use/run.php' => $user,
+            ],
             [
                 'app/Ids/Identity.php' => str_replace('function isSameAs', 'function matches', $identity),
                 'app/Use/run.php' => str_replace('->isSameAs(', '->matches(', $user),
-            ], false, []],
-        ['a constant and its fetches', ['constant', 'App\\Ids\\Identity', 'KIND_COUNT', 'TYPE_COUNT'], [],
-            ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
+            ],
+            false,
+            [],
+        ],
+        [
+            'a constant and its fetches',
+            [
+                'constant',
+                'App\\Ids\\Identity',
+                'KIND_COUNT',
+                'TYPE_COUNT',
+            ],
+            [],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Use/run.php' => $user,
+            ],
             [
                 'app/Ids/Identity.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $identity),
                 'app/Use/run.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $user),
-            ], false, []],
-        ['a variable in a folder, its parameter and its @param line', ['variable', 'app/Use', 'kind', 'type'], [],
-            ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
+            ],
+            false,
+            [],
+        ],
+        [
+            'a variable in a folder, its parameter and its @param line',
+            [
+                'variable',
+                'app/Use',
+                'kind',
+                'type',
+            ],
+            [],
             [
                 'app/Ids/Identity.php' => $identity,
-                'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user),
-            ], false, []],
-        ['a variable in one file leaves its neighbour alone', ['variable', 'app/Use/one.php', 'count', 'itemCount'], [],
-            ['app/Use/one.php' => $closures, 'app/Use/two.php' => $closures],
+                'app/Use/run.php' => $user,
+            ],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Use/run.php' => str_replace([
+                    '$kind = ',
+                    '? $kind.',
+                ], [
+                    '$type = ',
+                    '? $type.',
+                ], $user),
+            ],
+            false,
+            [],
+        ],
+        [
+            'a variable in one file leaves its neighbour alone',
+            [
+                'variable',
+                'app/Use/one.php',
+                'count',
+                'itemCount',
+            ],
+            [],
+            [
+                'app/Use/one.php' => $closures,
+                'app/Use/two.php' => $closures,
+            ],
             [
                 'app/Use/one.php' => str_replace('$count', '$itemCount', $closures),
                 'app/Use/two.php' => $closures,
-            ], false, []],
-        ['a variable in one closure leaves its neighbour alone', [
-            'variable',
-            'app/Use/one.php:2',
-            'count',
-            'copyCount',
-        ], [],
-            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $renamedClosure], false, []],
-        ['new self in another class with the same property keeps its named argument', [
-            'property',
-            'Gate',
-            'ready',
-            'isReady',
-        ], [],
-            ['app/Use/methods.php' => $methods, 'app/Use/door.php' => $door],
+            ],
+            false,
+            [],
+        ],
+        [
+            'a variable in one closure leaves its neighbour alone',
+            [
+                'variable',
+                'app/Use/one.php:2',
+                'count',
+                'copyCount',
+            ],
+            [],
+            ['app/Use/one.php' => $closures],
+            ['app/Use/one.php' => $renamedClosure],
+            false,
+            [],
+        ],
+        [
+            'new self in another class with the same property keeps its named argument',
+            [
+                'property',
+                'Gate',
+                'ready',
+                'isReady',
+            ],
+            [],
+            [
+                'app/Use/methods.php' => $methods,
+                'app/Use/door.php' => $door,
+            ],
             [
                 'app/Use/methods.php' => str_replace('public bool $ready', 'public bool $isReady', $methods),
                 'app/Use/door.php' => $door,
-            ], false, []],
-        ['a method parameter by its line renames it in that method only', [
-            'variable',
-            'app/Use/methods.php:4',
-            'ready',
-            'isReady',
-        ], [],
-            ['app/Use/methods.php' => $methods, 'app/Use/caller.php' => $caller],
-            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller)], false, []],
-        ['a parameter already renamed has its named arguments follow', [
-            'argument',
-            'app/Use/methods.php:4',
-            'ready',
-            'isReady',
-        ], [],
-            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => $caller],
-            ['app/Use/methods.php' => $renamedMethods, 'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller)], false, []],
-        ['a promoted parameter by its line is refused, as its property is renamed instead', [
-            'variable',
-            'app/Use/methods.php:3',
-            'ready',
-            'isReady',
-        ], [],
-            ['app/Use/methods.php' => $methods], ['app/Use/methods.php' => $methods], true, []],
-        ['a closure rename refuses a malformed line', ['variable', 'app/Use/one.php:line', 'count', 'copyCount'], [],
-            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true, []],
-        ['a closure rename refuses a name outside its parameters', [
-            'variable',
-            'app/Use/one.php:2',
-            'join',
-            'joinText',
-        ], [],
-            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true, []],
-        ['a property another class also declares is renamed on the receivers of its own class', [
-            'property',
-            'App\\Ids\\Identity',
-            'kind',
-            'type',
-        ], [],
+            ],
+            false,
+            [],
+        ],
+        [
+            'a method parameter by its line renames it in that method only',
+            [
+                'variable',
+                'app/Use/methods.php:4',
+                'ready',
+                'isReady',
+            ],
+            [],
+            [
+                'app/Use/methods.php' => $methods,
+                'app/Use/caller.php' => $caller,
+            ],
+            [
+                'app/Use/methods.php' => $renamedMethods,
+                'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller),
+            ],
+            false,
+            [],
+        ],
+        [
+            'a parameter already renamed has its named arguments follow',
+            [
+                'argument',
+                'app/Use/methods.php:4',
+                'ready',
+                'isReady',
+            ],
+            [],
+            [
+                'app/Use/methods.php' => $renamedMethods,
+                'app/Use/caller.php' => $caller,
+            ],
+            [
+                'app/Use/methods.php' => $renamedMethods,
+                'app/Use/caller.php' => str_replace('open(ready:', 'open(isReady:', $caller),
+            ],
+            false,
+            [],
+        ],
+        [
+            'a promoted parameter by its line is refused, as its property is renamed instead',
+            [
+                'variable',
+                'app/Use/methods.php:3',
+                'ready',
+                'isReady',
+            ],
+            [],
+            ['app/Use/methods.php' => $methods],
+            ['app/Use/methods.php' => $methods],
+            true,
+            [],
+        ],
+        [
+            'a closure rename refuses a malformed line',
+            [
+                'variable',
+                'app/Use/one.php:line',
+                'count',
+                'copyCount',
+            ],
+            [],
+            ['app/Use/one.php' => $closures],
+            ['app/Use/one.php' => $closures],
+            true,
+            [],
+        ],
+        [
+            'a closure rename refuses a name outside its parameters',
+            [
+                'variable',
+                'app/Use/one.php:2',
+                'join',
+                'joinText',
+            ],
+            [],
+            ['app/Use/one.php' => $closures],
+            ['app/Use/one.php' => $closures],
+            true,
+            [],
+        ],
+        [
+            'a property another class also declares is renamed on the receivers of its own class',
+            [
+                'property',
+                'App\\Ids\\Identity',
+                'kind',
+                'type',
+            ],
+            [],
             [
                 'app/Ids/Identity.php' => $identity,
                 'app/Ids/Other.php' => $other,
             ],
             [
                 'app/Ids/Identity.php' => str_replace(
-                    ['public string $kind', '$this->check($kind)', '@param  string  $kind', '$this->kind', '$other->kind'],
-                    ['public string $type', '$this->check($type)', '@param  string  $type', '$this->type', '$other->type'],
+                    [
+                        'public string $kind',
+                        '$this->check($kind)',
+                        '@param  string  $kind',
+                        '$this->kind',
+                        '$other->kind',
+                    ],
+                    [
+                        'public string $type',
+                        '$this->check($type)',
+                        '@param  string  $type',
+                        '$this->type',
+                        '$other->type',
+                    ],
                     $identity,
                 ),
                 'app/Ids/Other.php' => $other,
-            ], false, []],
-        ['a method another class also declares is renamed by its receiver, and an unknown receiver is listed', [
-            'method',
-            'App\\Units\\Owner',
-            'own',
-            'claim',
-        ], [],
+            ],
+            false,
+            [],
+        ],
+        [
+            'a method another class also declares is renamed by its receiver, and an unknown receiver is listed',
+            [
+                'method',
+                'App\\Units\\Owner',
+                'own',
+                'claim',
+            ],
+            [],
             $owners,
             [
                 'app/Units/Owner.php' => str_replace('function own', 'function claim', $owners['app/Units/Owner.php']),
                 'app/Units/Store.php' => str_replace('function own', 'function claim', $owners['app/Units/Store.php']),
                 'app/Memories/Memories.php' => $owners['app/Memories/Memories.php'],
                 'app/Use/Work.php' => str_replace(
-                    ['$this->units->own()', '$owner->own()', 'app(Owner::class)->own()'],
-                    ['$this->units->claim()', '$owner->claim()', 'app(Owner::class)->claim()'],
+                    [
+                        '$this->units->own()',
+                        '$owner->own()',
+                        'app(Owner::class)->own()',
+                    ],
+                    [
+                        '$this->units->claim()',
+                        '$owner->claim()',
+                        'app(Owner::class)->claim()',
+                    ],
                     $owners['app/Use/Work.php'],
                 ),
-            ], false, ['app/Use/Work.php:15']],
-        ['a static method is renamed only at the calls of its own class',
-            ['method', 'App\\Ids\\Note', 'keep', 'create'], [],
+            ],
+            false,
+            ['app/Use/Work.php:15'],
+        ],
+        [
+            'a static method is renamed only at the calls of its own class',
+            [
+                'method',
+                'App\\Ids\\Note',
+                'keep',
+                'create',
+            ],
+            [],
             [
                 'app/Ids/Note.php' => "<?php\nnamespace App\\Ids;\nfinal class Note\n{\n    public static function keep(): self\n    {\n        return new self();\n    }\n\n    public static function again(): self\n    {\n        return self::keep();\n    }\n}\n",
                 'app/Ids/Ledger.php' => "<?php\nnamespace App\\Ids;\nfinal class Ledger\n{\n    public static function keep(): self\n    {\n        return self::keep();\n    }\n}\n",
@@ -1494,19 +1791,28 @@ function testCases(): array
                 'app/Ids/Note.php' => "<?php\nnamespace App\\Ids;\nfinal class Note\n{\n    public static function create(): self\n    {\n        return new self();\n    }\n\n    public static function again(): self\n    {\n        return self::create();\n    }\n}\n",
                 'app/Ids/Ledger.php' => "<?php\nnamespace App\\Ids;\nfinal class Ledger\n{\n    public static function keep(): self\n    {\n        return self::keep();\n    }\n}\n",
                 'app/Use/note.php' => "<?php\nuse App\\Ids\\Ledger;\nuse App\\Ids\\Note;\nNote::create();\nLedger::keep();\n",
-            ], false, []],
-        ['naming the other class with --with renames both', [
-            'property',
-            'App\\Ids\\Identity',
-            'kind',
-            'type',
-        ], ['App\\Ids\\Other'],
+            ],
+            false,
+            [],
+        ],
+        [
+            'naming the other class with --with renames both',
+            [
+                'property',
+                'App\\Ids\\Identity',
+                'kind',
+                'type',
+            ],
+            ['App\\Ids\\Other'],
             [
                 'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n",
                 'app/Ids/Identity.php' => $identity,
             ],
             [
                 'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$type = '';\n}\n",
-            ], false, []],
+            ],
+            false,
+            [],
+        ],
     ];
 }

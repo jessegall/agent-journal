@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -15,6 +13,8 @@ use App\Exceptions\CapacityUnavailable;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -31,7 +31,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['start_request_id', 'cpu_cores', 'memory_bytes', 'disk_bytes', 'state'])]
+#[Fillable([
+    'start_request_id',
+    'cpu_cores',
+    'memory_bytes',
+    'disk_bytes',
+    'state',
+])]
 final class CapacityReservation extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -32,6 +30,8 @@ use App\Values\ProviderEligibility;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -74,15 +74,21 @@ use PhpOption\Option;
  * @property-read Environment|null $environment
  */
 #[Fillable([
-    'host_id', 'project_id', 'main_agent_id', 'root_id', 'canonical_root', 'project_label', 'machine_label',
+    'host_id',
+    'project_id',
+    'main_agent_id',
+    'root_id',
+    'canonical_root',
+    'project_label',
+    'machine_label',
     'installation_nonce',
 ])]
 final class ProjectBinding extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -527,7 +533,11 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public static function pageAfter(string|null $cursor): CursorPaginator
     {
-        return self::query()->with(['project', 'environment', 'host'])->oldestFirst()
+        return self::query()->with([
+            'project',
+            'environment',
+            'host',
+        ])->oldestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 

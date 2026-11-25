@@ -60,7 +60,10 @@ final readonly class PublicationPage
         );
 
         return DeclaredLayoutData::of(
-            LayoutPartData::box('publication', 'stack', $header, ...[...$this->standing, $this->content($chosen)]),
+            LayoutPartData::box('publication', 'stack', $header, ...[
+                ...$this->standing,
+                $this->content($chosen),
+            ]),
         );
     }
 

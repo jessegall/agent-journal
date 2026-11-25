@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Inboxes;
 
-use App\Contracts\Messages\MessageParticipant;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Messages\MessageParticipant;
 use App\Enums\ActorType;
-use PhpOption\Option;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Support\ActorIdentity;
@@ -18,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\Option;
 
 /**
  * One actor attached to one inbox, from when it joined until it left.
@@ -29,7 +29,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $joined_at
  * @property CarbonImmutable|null $left_at
  */
-#[Fillable(['inbox_id', 'actor_type', 'actor_id', 'joined_at'])]
+#[Fillable([
+    'inbox_id',
+    'actor_type',
+    'actor_id',
+    'joined_at',
+])]
 final class InboxMember extends Model implements EventSource
 {
     /**
@@ -47,7 +52,10 @@ final class InboxMember extends Model implements EventSource
      */
     protected function casts(): array
     {
-        return ['joined_at' => 'immutable_datetime', 'left_at' => 'immutable_datetime'];
+        return [
+            'joined_at' => 'immutable_datetime',
+            'left_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Queries ]----------
@@ -74,7 +82,11 @@ final class InboxMember extends Model implements EventSource
     public static function join(string $inboxId, ActorIdentity $actor, CarbonImmutable $at): void
     {
         $member = self::query()->active()->ofActor($actor)->firstOrCreate(
-            ['inbox_id' => $inboxId, 'actor_type' => $actor->type->value, 'actor_id' => $actor->id],
+            [
+                'inbox_id' => $inboxId,
+                'actor_type' => $actor->type->value,
+                'actor_id' => $actor->id,
+            ],
             ['joined_at' => $at],
         );
 

@@ -23,7 +23,10 @@ return new class extends Migration
             $table->string('proposer_id', 64)->nullable();
             $table->timestampsTz();
 
-            $table->unique(['number_group_id', 'number']);
+            $table->unique([
+                'number_group_id',
+                'number',
+            ]);
         });
 
         DB::statement('ALTER TABLE rules ADD CONSTRAINT rules_number_positive CHECK (number > 0)');

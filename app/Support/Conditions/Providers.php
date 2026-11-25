@@ -45,7 +45,11 @@ final readonly class Providers implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => self::TYPE, 'version' => self::VERSION, 'keys' => $this->keyTexts()];
+        return [
+            'type' => self::TYPE,
+            'version' => self::VERSION,
+            'keys' => $this->keyTexts(),
+        ];
     }
 
     /**

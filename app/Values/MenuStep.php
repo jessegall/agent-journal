@@ -38,7 +38,12 @@ final readonly class MenuStep implements StoredValue
     public static function fromHost(int $index, array $sent): self
     {
         foreach (array_keys($sent) as $field) {
-            if (! in_array($field, ['fingerprint', 'choose', 'key', 'proof'], true)) {
+            if (! in_array($field, [
+                'fingerprint',
+                'choose',
+                'key',
+                'proof',
+            ], true)) {
                 throw MenuStepRefused::unexpectedField($index, (string) $field);
             }
         }

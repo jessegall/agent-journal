@@ -51,7 +51,13 @@ use PhpOption\Some;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['version', 'frames', 'status', 'closed_at', 'has_ticking_frames'])]
+#[Fillable([
+    'version',
+    'frames',
+    'status',
+    'closed_at',
+    'has_ticking_frames',
+])]
 final class AgentStackRow extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

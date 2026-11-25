@@ -24,7 +24,10 @@ enum TerminalGrantState: string
      */
     public static function holding(): array
     {
-        return [self::Taking, self::Granted];
+        return [
+            self::Taking,
+            self::Granted,
+        ];
     }
 
     public function isHolding(): bool

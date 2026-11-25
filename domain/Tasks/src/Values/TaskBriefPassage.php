@@ -81,7 +81,10 @@ final readonly class TaskBriefPassage
         $lineStart = mb_strrpos($before, "\n");
         $column = $lineStart === false ? $this->characterOffset : $this->characterOffset - $lineStart - 1;
 
-        return [$line, max(0, $column - self::CONTEXT_CHARACTERS)];
+        return [
+            $line,
+            max(0, $column - self::CONTEXT_CHARACTERS),
+        ];
     }
 
     /**

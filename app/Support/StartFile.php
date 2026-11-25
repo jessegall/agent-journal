@@ -19,6 +19,9 @@ final readonly class StartFile
      */
     public function toArray(): array
     {
-        return ['path' => $this->path, 'content' => $this->content];
+        return [
+            'path' => $this->path,
+            'content' => $this->content,
+        ];
     }
 }

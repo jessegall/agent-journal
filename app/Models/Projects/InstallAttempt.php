@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -54,14 +54,21 @@ use Illuminate\Support\Carbon;
  * @property-read Environment|null $environment
  */
 #[Fillable([
-    'reference', 'owner_user_id', 'idempotency_key', 'mode', 'project_id', 'environment_id', 'state', 'version',
+    'reference',
+    'owner_user_id',
+    'idempotency_key',
+    'mode',
+    'project_id',
+    'environment_id',
+    'state',
+    'version',
 ])]
 final class InstallAttempt extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -108,7 +115,10 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 
         // Only two first submissions at once reach this far; the key's unique index keeps them one attempt.
         $attempt = self::query()->createOrFirst(
-            ['owner_user_id' => $userId, 'idempotency_key' => $idempotencyKey],
+            [
+                'owner_user_id' => $userId,
+                'idempotency_key' => $idempotencyKey,
+            ],
             [
                 'reference' => ShortReference::withPrefix('IA'),
                 'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,

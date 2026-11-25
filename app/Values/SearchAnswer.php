@@ -73,7 +73,10 @@ final readonly class SearchAnswer
             return [];
         }
 
-        return array_map(fn (string $key) => ['query' => $this->words, 'within' => $key], $this->narrowerScopes);
+        return array_map(fn (string $key) => [
+            'query' => $this->words,
+            'within' => $key,
+        ], $this->narrowerScopes);
     }
 
     /**

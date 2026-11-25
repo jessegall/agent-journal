@@ -24,6 +24,9 @@ final readonly class Occurrence
      */
     public function chainWithItself(): array
     {
-        return [...$this->chain, $this->event::class];
+        return [
+            ...$this->chain,
+            $this->event::class,
+        ];
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -18,6 +16,8 @@ use App\Exceptions\WorkerAlreadyAssigned;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -35,7 +35,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['holder_type', 'holder_id', 'root_type', 'root_id'])]
+#[Fillable([
+    'holder_type',
+    'holder_id',
+    'root_type',
+    'root_id',
+])]
 final class WorkerReservation extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -120,7 +125,10 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
         $locked = [];
 
         foreach ($keys as $holder) {
-            $reservation = new self(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
+            $reservation = new self([
+                'holder_type' => $holder->type,
+                'holder_id' => $holder->id,
+            ]);
             $reservation->id = $reservation->newUniqueId();
             $reservation->insertIfAbsent();
         }

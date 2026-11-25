@@ -48,7 +48,10 @@ final readonly class ShareRelationSet
      */
     public function with(self $other): self
     {
-        return new self([...$this->relations, ...$other->relations]);
+        return new self([
+            ...$this->relations,
+            ...$other->relations,
+        ]);
     }
 
     /**

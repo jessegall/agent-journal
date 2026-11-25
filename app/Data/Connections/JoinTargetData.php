@@ -39,7 +39,10 @@ final class JoinTargetData extends Data
             'id' => $project->id,
             'label' => $project->label,
             'environments' => array_map(
-                fn (Environment $environment) => ['id' => $environment->id, 'label' => $environment->label],
+                fn (Environment $environment) => [
+                    'id' => $environment->id,
+                    'label' => $environment->label,
+                ],
                 array_values($own),
             ),
         ]);

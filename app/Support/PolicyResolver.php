@@ -102,7 +102,10 @@ final readonly class PolicyResolver
         $grants = [];
         $denials = [];
 
-        foreach ([$project, $profile->override] as $override) {
+        foreach ([
+            $project,
+            $profile->override,
+        ] as $override) {
             $rules = $override->appliedTo($rules);
 
             $grants = [
@@ -195,7 +198,10 @@ final readonly class PolicyResolver
      */
     private function assertKnownOperations(ProposedProfile $profile, PolicyOverride $project): void
     {
-        foreach ([...$project->operationNames(), ...$profile->override->operationNames()] as $operation) {
+        foreach ([
+            ...$project->operationNames(),
+            ...$profile->override->operationNames(),
+        ] as $operation) {
             if (! $this->operations->has($operation)) {
                 throw ProfilePolicyRefused::unknownOperation($profile->key, $operation);
             }

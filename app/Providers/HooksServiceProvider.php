@@ -161,7 +161,10 @@ final class HooksServiceProvider extends ServiceProvider
         $pendingWork->register(PendingAgentMessages::class);
         $actors->registerStackSessions(ActorType::Agent, AgentStackSessions::class);
         $this->loadCoreRoutes('hooks/hooks.php');
-        $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
+        $this->commands([
+            PruneHookHistoryCommand::class,
+            RelayHookCommand::class,
+        ]);
 
         $this->callAfterResolving(
             Schedule::class,
@@ -173,7 +176,12 @@ final class HooksServiceProvider extends ServiceProvider
             static fn () => Container::getInstance()->make(AgentContext::class),
         );
 
-        foreach ([AgentStackRow::class, HookCall::class, FailureReceipt::class, StopAttempt::class] as $model) {
+        foreach ([
+            AgentStackRow::class,
+            HookCall::class,
+            FailureReceipt::class,
+            StopAttempt::class,
+        ] as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }
     }

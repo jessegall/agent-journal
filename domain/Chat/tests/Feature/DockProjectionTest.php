@@ -86,7 +86,10 @@ final class DockProjectionTest extends TestCase
 
     public function test_three_unreadable_batches_give_an_empty_page_and_the_readable_card_comes_next(): void
     {
-        $this->dock(['shown-1', ...array_map(fn (int $number) => "hidden-{$number}", range(1, 150))]);
+        $this->dock([
+            'shown-1',
+            ...array_map(fn (int $number) => "hidden-{$number}", range(1, 150)),
+        ]);
 
         $first = $this->page(null);
         $second = $this->page($first->more);
@@ -107,7 +110,10 @@ final class DockProjectionTest extends TestCase
 
         $this->assertSame(
             array_map(fn (int $number) => sprintf('large-%02d', $number), range(10, 1)),
-            [...$this->names($first), ...$this->names($second)],
+            [
+                ...$this->names($first),
+                ...$this->names($second),
+            ],
         );
     }
 

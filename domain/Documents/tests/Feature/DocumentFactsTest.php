@@ -110,7 +110,12 @@ final class DocumentFactsTest extends TestCase
         $this->bus()->run(new CloseReportCommand('1', 'Read.'));
 
         $this->assertSame(
-            ['DocumentCreated', 'RecordSettled', 'ReportFiled', 'RecordSettled'],
+            [
+                'DocumentCreated',
+                'RecordSettled',
+                'ReportFiled',
+                'RecordSettled',
+            ],
             $this->facts,
         );
 

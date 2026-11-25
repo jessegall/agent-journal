@@ -52,7 +52,10 @@ final readonly class AssignmentBatch
             array_push($finished, ...$this->providers->recordProvider($type)->finishedRecords($assignables));
         }
 
-        return [$group, $finished];
+        return [
+            $group,
+            $finished,
+        ];
     }
 
     /**

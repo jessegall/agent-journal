@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -28,7 +28,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'conversation_id', 'sequence_number', 'event_id', 'observed_at'])]
+#[Fillable([
+    'session_id',
+    'conversation_id',
+    'sequence_number',
+    'event_id',
+    'observed_at',
+])]
 final class ConversationVisit extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -40,7 +46,10 @@ final class ConversationVisit extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['sequence_number' => 'integer', 'observed_at' => 'immutable_datetime'];
+        return [
+            'sequence_number' => 'integer',
+            'observed_at' => 'immutable_datetime',
+        ];
     }
 
     // ----------[ Constructors ]----------

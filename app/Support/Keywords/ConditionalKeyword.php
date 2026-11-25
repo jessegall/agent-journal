@@ -33,6 +33,10 @@ final readonly class ConditionalKeyword implements ScriptStatement
 
     public function flow(): FlowShape
     {
-        return FlowShape::branch(['true', 'false', 'failure']);
+        return FlowShape::branch([
+            'true',
+            'false',
+            'failure',
+        ]);
     }
 }

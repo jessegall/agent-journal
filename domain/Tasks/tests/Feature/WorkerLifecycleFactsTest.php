@@ -42,7 +42,10 @@ final class WorkerLifecycleFactsTest extends TestCase
         $facts = [];
 
         $this->app->make(Dispatcher::class)->listen(
-            [TaskFinished::class, TaskCancelled::class],
+            [
+                TaskFinished::class,
+                TaskCancelled::class,
+            ],
             function (object $fact) use (&$facts): void {
                 $facts[] = $fact::class;
             },

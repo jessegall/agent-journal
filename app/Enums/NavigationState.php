@@ -29,7 +29,11 @@ enum NavigationState: string
      */
     public static function openStates(): array
     {
-        return [self::Open, self::Answering, self::Proving];
+        return [
+            self::Open,
+            self::Answering,
+            self::Proving,
+        ];
     }
 
     public function isOpen(): bool
@@ -51,9 +55,25 @@ enum NavigationState: string
     private function nextStates(): array
     {
         return match ($this) {
-            self::Open => [self::Answering, self::Abandoned, self::Cancelled, self::Expired, self::Interrupted],
-            self::Answering => [self::Proving, self::Abandoned, self::Cancelled, self::Expired, self::Interrupted],
-            self::Proving => [self::Proven, self::Answering, self::Cancelled],
+            self::Open => [
+                self::Answering,
+                self::Abandoned,
+                self::Cancelled,
+                self::Expired,
+                self::Interrupted,
+            ],
+            self::Answering => [
+                self::Proving,
+                self::Abandoned,
+                self::Cancelled,
+                self::Expired,
+                self::Interrupted,
+            ],
+            self::Proving => [
+                self::Proven,
+                self::Answering,
+                self::Cancelled,
+            ],
             self::Proven, self::Abandoned, self::Interrupted, self::Cancelled, self::Expired => [],
         };
     }

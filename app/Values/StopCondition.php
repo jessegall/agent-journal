@@ -60,7 +60,10 @@ final readonly class StopCondition
             'Clean worktree',
             '/opt/journal/bin/journal-check',
             ['worktree-clean'],
-            [AccessType::Read, AccessType::Execute],
+            [
+                AccessType::Read,
+                AccessType::Execute,
+            ],
             'workspace',
             self::DEFAULT_SECONDS,
             self::OUTPUT_BYTES,

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
@@ -78,7 +78,10 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Hidden(['token_digest', 'token_ciphertext'])]
+#[Hidden([
+    'token_digest',
+    'token_ciphertext',
+])]
 #[Fillable(
     [
         'state',
@@ -93,13 +96,13 @@ use PhpOption\Option;
 )]
 final class Share extends Model implements EventSource, Numbered, ReadableModel
 {
-    use OrdersById;
     use BelongsToOneRoot;
     use BoundedReads;
     use FindsForUpdate;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share';
@@ -728,7 +731,12 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function forTokenDigest(string $digest): Option
     {
         return Option::fromValue(
-            self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']),
+            self::query()->openedByDigest($digest)->first([
+                'id',
+                'state',
+                'scope_version',
+                'expires_at',
+            ]),
         );
     }
 
@@ -760,7 +768,10 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         $query->whereIn(
             'state',
-            [ShareState::Pending->value, ShareState::Failed->value],
+            [
+                ShareState::Pending->value,
+                ShareState::Failed->value,
+            ],
         )->where('expires_at', '>', CarbonImmutable::now());
     }
 

@@ -24,7 +24,12 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 {
     use SharesPublishedRecords;
 
-    private const array CARD_COLUMNS = ['id', 'number', 'title', 'filed_at'];
+    private const array CARD_COLUMNS = [
+        'id',
+        'number',
+        'title',
+        'filed_at',
+    ];
 
     public function __construct(private PublicCommentResolver $comments) {}
 

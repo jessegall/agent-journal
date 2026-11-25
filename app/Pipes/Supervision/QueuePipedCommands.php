@@ -17,7 +17,10 @@ use App\Support\Execution\QueuedPart;
  */
 final readonly class QueuePipedCommands implements Pipe
 {
-    private const array FROM_THE_COMMAND_BEFORE = ['pipe', 'r'];
+    private const array FROM_THE_COMMAND_BEFORE = [
+        'pipe',
+        'r',
+    ];
 
     public function handle(PendingStep $toRun): PipedCommands
     {

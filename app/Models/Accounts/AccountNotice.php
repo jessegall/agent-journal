@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -34,13 +34,16 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['driver', 'reason'])]
+#[Fillable([
+    'driver',
+    'reason',
+])]
 final class AccountNotice extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -62,7 +65,10 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      */
     public static function create(string $driver, AccountNoticeReason $reason): self
     {
-        $notice = new self(['driver' => $driver, 'reason' => $reason->value]);
+        $notice = new self([
+            'driver' => $driver,
+            'reason' => $reason->value,
+        ]);
         $notice->assertSaved($notice->save());
         $notice->raise(new AccountNoticeRecorded($notice->driver, $notice->id));
 

@@ -69,7 +69,12 @@ final class TaskStreamTest extends TestCase
         );
 
         $this->assertSame(
-            [1, 1, 1, 1],
+            [
+                1,
+                1,
+                1,
+                1,
+            ],
             array_map(fn (TaskStreamEntryData $entry) => $entry->runNumber, $page->entries),
         );
 

@@ -65,15 +65,24 @@ final readonly class ScriptChecker implements ScriptChecks
     public function catalogueDigest(): string
     {
         $keywords = array_map(
-            fn (RegisteredKeyword $keyword) => [$keyword, $this->keywords->isAvailable($keyword)],
+            fn (RegisteredKeyword $keyword) => [
+                $keyword,
+                $this->keywords->isAvailable($keyword),
+            ],
             $this->keywords->all(),
         );
 
         $objects = array_map(
-            fn (ObjectDefinition $object) => [$object, $this->objects->isAvailable($object)],
+            fn (ObjectDefinition $object) => [
+                $object,
+                $this->objects->isAvailable($object),
+            ],
             $this->objects->all(),
         );
 
-        return hash('sha256', json_encode([$keywords, $objects], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([
+            $keywords,
+            $objects,
+        ], JSON_THROW_ON_ERROR));
     }
 }

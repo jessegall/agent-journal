@@ -20,7 +20,10 @@ final readonly class HostAccountFolders implements AccountFolders
 
     public function make(string $directory): void
     {
-        $this->ask('makeFolder', ['folder' => basename($directory), 'operation' => (string) Str::uuid()]);
+        $this->ask('makeFolder', [
+            'folder' => basename($directory),
+            'operation' => (string) Str::uuid(),
+        ]);
     }
 
     public function remove(string $directory): void

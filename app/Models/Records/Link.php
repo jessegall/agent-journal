@@ -33,7 +33,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Table('links')]
-#[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
+#[Fillable([
+    'source_type',
+    'source_id',
+    'target_type',
+    'target_id',
+])]
 final class Link extends MorphPivot implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -112,10 +117,16 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
         $isSource = $this->source_type === $type && $this->source_id === $id;
 
         if ($isSource) {
-            return [$this->target_type, $this->target_id];
+            return [
+                $this->target_type,
+                $this->target_id,
+            ];
         }
 
-        return [$this->source_type, $this->source_id];
+        return [
+            $this->source_type,
+            $this->source_id,
+        ];
     }
 
     // ----------[ Relations ]----------

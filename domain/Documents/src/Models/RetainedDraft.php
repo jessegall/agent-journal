@@ -33,7 +33,16 @@ use Illuminate\Database\Eloquent\Model;
  * @property ActorType $author_type
  * @property string $author_id
  */
-#[Fillable(['document_id', 'base_revision_number', 'title', 'abstract', 'body', 'reason', 'author_type', 'author_id'])]
+#[Fillable([
+    'document_id',
+    'base_revision_number',
+    'title',
+    'abstract',
+    'body',
+    'reason',
+    'author_type',
+    'author_id',
+])]
 final class RetainedDraft extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

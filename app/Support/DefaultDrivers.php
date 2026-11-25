@@ -32,7 +32,10 @@ final readonly class DefaultDrivers
      */
     public static function familyKeys(): array
     {
-        return [self::CLAUDE_CODE, self::CODEX];
+        return [
+            self::CLAUDE_CODE,
+            self::CODEX,
+        ];
     }
 
     /**
@@ -47,7 +50,12 @@ final readonly class DefaultDrivers
                 ProviderKey::from('anthropic'),
                 'claude',
                 true,
-                ['haiku', 'sonnet', 'opus', 'fable'],
+                [
+                    'haiku',
+                    'sonnet',
+                    'opus',
+                    'fable',
+                ],
             ),
 
             // Codex scopes its hooks per installation, not per thread, so a connected folder cannot run it isolated
@@ -58,7 +66,12 @@ final readonly class DefaultDrivers
                 ProviderKey::from('openai'),
                 'codex',
                 false,
-                ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.2-sol', 'gpt-6.2-astra'],
+                [
+                    'gpt-6-luna',
+                    'gpt-6.1-terra',
+                    'gpt-6.2-sol',
+                    'gpt-6.2-astra',
+                ],
             ),
         ];
     }
@@ -120,7 +133,10 @@ final readonly class DefaultDrivers
             $family,
             $family,
             $capabilities,
-            [DriverCapability::Run, DriverCapability::HookMethods],
+            [
+                DriverCapability::Run,
+                DriverCapability::HookMethods,
+            ],
         );
     }
 }

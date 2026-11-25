@@ -69,7 +69,10 @@ final readonly class TasksShow extends TasksPage
                     'comments',
                     LayoutNativeData::of(
                         'tasks/TaskCommentsTab',
-                        TaskCommentsData::from(['comments' => $reader->comments, 'target' => $reader->label]),
+                        TaskCommentsData::from([
+                            'comments' => $reader->comments,
+                            'target' => $reader->label,
+                        ]),
                     ),
                 )),
                 PublicationTab::deferred('brief', 'Brief', fn () => $brief),
@@ -110,7 +113,10 @@ final readonly class TasksShow extends TasksPage
                 ),
         ];
 
-        foreach (['block' => $reader->actions->mayBlock, 'cancel' => $reader->actions->mayCancel] as $name => $may) {
+        foreach ([
+            'block' => $reader->actions->mayBlock,
+            'cancel' => $reader->actions->mayCancel,
+        ] as $name => $may) {
             if ($may) {
                 $parts[] = LayoutPartData::form(
                     $name,
@@ -149,9 +155,18 @@ final readonly class TasksShow extends TasksPage
         }
 
         foreach ([
-            'block' => ['Blocked because', $reader->blockReason],
-            'result' => ['Result', $reader->resultNote],
-            'cancel' => ['Cancelled because', $reader->cancelReason],
+            'block' => [
+                'Blocked because',
+                $reader->blockReason,
+            ],
+            'result' => [
+                'Result',
+                $reader->resultNote,
+            ],
+            'cancel' => [
+                'Cancelled because',
+                $reader->cancelReason,
+            ],
         ] as $key => [$label, $text]) {
             if (! $text instanceof Optional && $text !== '') {
                 $facts[] = self::factRow($key, $label, $text);
@@ -221,7 +236,10 @@ final readonly class TasksShow extends TasksPage
             'key' => $key,
             'label' => $label,
             'fact' => LayoutFactValueData::of(array_map(
-                fn (string $number) => [$number, route('tasks.task', ['task' => $number], false)],
+                fn (string $number) => [
+                    $number,
+                    route('tasks.task', ['task' => $number], false),
+                ],
                 $numbers,
             )),
         ]);
@@ -229,6 +247,10 @@ final readonly class TasksShow extends TasksPage
 
     private static function factRow(string $key, string $label, string $value): LayoutRowData
     {
-        return LayoutRowData::from(['key' => $key, 'label' => $label, 'value' => $value]);
+        return LayoutRowData::from([
+            'key' => $key,
+            'label' => $label,
+            'value' => $value,
+        ]);
     }
 }

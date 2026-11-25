@@ -48,8 +48,25 @@ final class PrivateAccountProcess
         string $workingDirectory,
         array $readFiles = [],
     ): self {
-        $files = array_map(fn (string $path) => ['file', $path, 'r'], $readFiles);
-        $streams = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']] + $files;
+        $files = array_map(fn (string $path) => [
+            'file',
+            $path,
+            'r',
+        ], $readFiles);
+        $streams = [
+            0 => [
+                'pipe',
+                'r',
+            ],
+            1 => [
+                'pipe',
+                'w',
+            ],
+            2 => [
+                'pipe',
+                'w',
+            ],
+        ] + $files;
         $process = proc_open($arguments, $streams, $pipes, $workingDirectory, $environment);
 
         if (! is_resource($process)) {
@@ -68,7 +85,11 @@ final class PrivateAccountProcess
      */
     public static function holding(string $workingDirectory): self
     {
-        return self::start(['/bin/sh', '-c', 'read -r line'], ['PATH' => '/usr/bin:/bin'], $workingDirectory);
+        return self::start([
+            '/bin/sh',
+            '-c',
+            'read -r line',
+        ], ['PATH' => '/usr/bin:/bin'], $workingDirectory);
     }
 
     /**
@@ -116,7 +137,10 @@ final class PrivateAccountProcess
      */
     public function output(): string
     {
-        foreach ([1, 2] as $stream) {
+        foreach ([
+            1,
+            2,
+        ] as $stream) {
             $this->buffer .= (string) stream_get_contents($this->pipes[$stream]);
         }
 

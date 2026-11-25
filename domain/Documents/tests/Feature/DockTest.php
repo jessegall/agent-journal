@@ -86,8 +86,20 @@ final class DockTest extends TestCase
         $this->assertFalse(Schema::hasTable('record_docks'));
 
         $this->assertEqualsCanonicalizing(
-            [['report', '1'], ['doc', '1']],
-            array_map(fn ($card) => [$card->type, $card->number], $this->dockOf($this->builderSession)->suggestions),
+            [
+                [
+                    'report',
+                    '1',
+                ],
+                [
+                    'doc',
+                    '1',
+                ],
+            ],
+            array_map(fn ($card) => [
+                $card->type,
+                $card->number,
+            ], $this->dockOf($this->builderSession)->suggestions),
         );
     }
 

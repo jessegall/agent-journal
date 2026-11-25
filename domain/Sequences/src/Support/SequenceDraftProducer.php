@@ -23,15 +23,27 @@ final readonly class SequenceDraftProducer implements DraftProducer
         return [
             DraftQuestionData::from([
                 'prompt' => 'What is the sequence for?',
-                'suggestions' => ['Releasing a version', 'Reviewing a change', 'Setting up a project'],
+                'suggestions' => [
+                    'Releasing a version',
+                    'Reviewing a change',
+                    'Setting up a project',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'What are the steps, in order? Separate them with commas.',
-                'suggestions' => ['Plan, build, test', 'Read, change, review', 'Check, fix, check again'],
+                'suggestions' => [
+                    'Plan, build, test',
+                    'Read, change, review',
+                    'Check, fix, check again',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'When is a step done?',
-                'suggestions' => ['Its tests pass', 'Someone checked it', 'Its result is written down'],
+                'suggestions' => [
+                    'Its tests pass',
+                    'Someone checked it',
+                    'Its result is written down',
+                ],
             ]),
         ];
     }

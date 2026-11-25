@@ -44,8 +44,17 @@ final class TaskLogSearchTest extends TestCase
     private const string APPENDED_LINE = 'Driver again.';
 
     private const array TABLES = [
-        'users', 'tasks', 'task_runs', 'task_history', 'task_log_entries', 'agents', 'agent_sessions', 'agent_stacks',
-        'assignments', 'claim_authorizations', 'command_receipts',
+        'users',
+        'tasks',
+        'task_runs',
+        'task_history',
+        'task_log_entries',
+        'agents',
+        'agent_sessions',
+        'agent_stacks',
+        'assignments',
+        'claim_authorizations',
+        'command_receipts',
     ];
 
     public function test_a_log_line_opens_at_its_line_and_task_and_log_hits_both_survive(): void
@@ -109,7 +118,11 @@ final class TaskLogSearchTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTaskCommand($task->id));
 
-        foreach ([self::FIRST_LINE, self::CRASH_LINE, self::LAST_LINE] as $text) {
+        foreach ([
+            self::FIRST_LINE,
+            self::CRASH_LINE,
+            self::LAST_LINE,
+        ] as $text) {
             $bus->run(new LogTaskRunCommand($task->id, 1, $text));
         }
 

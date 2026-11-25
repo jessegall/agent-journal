@@ -44,7 +44,15 @@ use App\Support\SettingsValues;
 final readonly class SettingsIndex extends SettingsPage
 {
     private const array ORDER = [
-        'general', 'connected_projects', 'tasks', 'plans', 'documents', 'sequences', 'memory', 'reminders', 'helpers',
+        'general',
+        'connected_projects',
+        'tasks',
+        'plans',
+        'documents',
+        'sequences',
+        'memory',
+        'reminders',
+        'helpers',
     ];
 
     private const string DOMAIN_SWITCH = 'domain_';
@@ -63,7 +71,10 @@ final readonly class SettingsIndex extends SettingsPage
 
         foreach ($this->catalogue->everyOwner() as $owner) {
             foreach ($owner->groups as $group) {
-                $sections[] = [$this->rank($owner, $group), $this->sectionOf($owner, $group)];
+                $sections[] = [
+                    $this->rank($owner, $group),
+                    $this->sectionOf($owner, $group),
+                ];
             }
         }
 
@@ -125,11 +136,11 @@ final readonly class SettingsIndex extends SettingsPage
 
         if (array_any($rows, fn (SettingData $setting) => $setting->source === SettingSource::Override)) {
             return $section->resettableBy(LayoutFormData::from([
-                    'method' => ActionMethod::Post,
-                    'href' => route('settings.reset', [], false),
-                    'fixed' => $fixed,
-                    'confirmed' => "{$group->label} settings reset",
-                ]));
+                'method' => ActionMethod::Post,
+                'href' => route('settings.reset', [], false),
+                'fixed' => $fixed,
+                'confirmed' => "{$group->label} settings reset",
+            ]));
         }
 
         return $section;
@@ -165,7 +176,10 @@ final readonly class SettingsIndex extends SettingsPage
             return $rows;
         }
 
-        return [...$rows, ...$this->connectionRows()];
+        return [
+            ...$rows,
+            ...$this->connectionRows(),
+        ];
     }
 
     /**

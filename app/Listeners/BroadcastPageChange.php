@@ -36,7 +36,10 @@ final readonly class BroadcastPageChange implements Listener
             )
             : $this->recipients->userIds();
 
-        $this->log->info('A page fact was committed.', ['fact' => $fact::class, 'users' => count($userIds)]);
+        $this->log->info('A page fact was committed.', [
+            'fact' => $fact::class,
+            'users' => count($userIds),
+        ]);
 
         if ($userIds === []) {
             return;

@@ -36,7 +36,10 @@ final readonly class OperationsResolver
         try {
             $operation = $this->operations->operation($requestKey);
         } catch (OperationUnavailable) {
-            return ToolResult::ok(['request_key' => $requestKey, 'state' => self::UNKNOWN], []);
+            return ToolResult::ok([
+                'request_key' => $requestKey,
+                'state' => self::UNKNOWN,
+            ], []);
         }
 
         return $this->page($operation, $offset);
@@ -68,7 +71,10 @@ final readonly class OperationsResolver
         foreach (array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE) as $outcome) {
             $page = [...$pageFields['outcomes'], $outcome];
 
-            if ($pageFields['outcomes'] !== [] && ! $this->budget->doesPayloadFit([...$pageFields, 'outcomes' => $page])) {
+            if ($pageFields['outcomes'] !== [] && ! $this->budget->doesPayloadFit([
+                ...$pageFields,
+                'outcomes' => $page,
+            ])) {
                 break;
             }
 

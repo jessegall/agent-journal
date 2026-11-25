@@ -22,6 +22,9 @@ final readonly class AddLinkController
         $target = $records->identify(RecordReference::parse($call->target));
         $commands->run(new LinkRecordsCommand($source, $target));
 
-        return LinkChanged::from(['source' => $call->source, 'target' => $call->target]);
+        return LinkChanged::from([
+            'source' => $call->source,
+            'target' => $call->target,
+        ]);
     }
 }

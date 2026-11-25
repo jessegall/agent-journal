@@ -49,8 +49,17 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  */
 #[UseFactory(UserFactory::class)]
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Fillable([
+    'name',
+    'email',
+    'password',
+])]
+#[Hidden([
+    'password',
+    'two_factor_secret',
+    'two_factor_recovery_codes',
+    'remember_token',
+])]
 class User extends Authenticatable implements
     AnswersQuestions,
     Assignee,
@@ -61,13 +70,13 @@ class User extends Authenticatable implements
     ReadableModel
 {
     use BoundedReads;
+
     /**
      * @use HasFactory<UserFactory>
      */
     use HasFactory;
 
     use HasUlids;
-
     use InsertsAbsentRows;
     use Linkable;
     use Notifiable;
@@ -159,7 +168,11 @@ class User extends Authenticatable implements
      */
     public static function installOwner(string $name, string $email, string $password): self
     {
-        $owner = new self(['name' => $name, 'email' => $email, 'password' => $password]);
+        $owner = new self([
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
+        ]);
         $owner->setAttribute($owner->getKeyName(), $owner->newUniqueId());
 
         // The inserted row is returned as it is, so its caller sees wasRecentlyCreated; an owner already there is read.

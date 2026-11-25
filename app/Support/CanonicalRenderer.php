@@ -36,7 +36,10 @@ final readonly class CanonicalRenderer
         $this->checkSections($key, $sections);
         $this->assertValidDescription($key, $skill->description());
 
-        $frontMatter = rtrim(Yaml::dump(['name' => $key->key, 'description' => $skill->description()]), "\n");
+        $frontMatter = rtrim(Yaml::dump([
+            'name' => $key->key,
+            'description' => $skill->description(),
+        ]), "\n");
 
         $body = implode('', array_map(fn (SkillSection $section) => <<<SECTION
 
@@ -54,7 +57,10 @@ final readonly class CanonicalRenderer
             # {$skill->name()}{$body}
             MARKDOWN;
 
-        $markdown = rtrim(str_replace(["\r\n", "\r"], "\n", $page), "\n")."\n";
+        $markdown = rtrim(str_replace([
+            "\r\n",
+            "\r",
+        ], "\n", $page), "\n")."\n";
 
         if (! mb_check_encoding($markdown, 'UTF-8')) {
             throw SkillDeclarationInvalid::encoding($key->key);
@@ -100,6 +106,9 @@ final readonly class CanonicalRenderer
 
     private function bodyOf(SkillSection $section, SkillOwner $owner): string
     {
-        return trim(str_replace(["\r\n", "\r"], "\n", $section->body($this->parts, $owner)), "\n");
+        return trim(str_replace([
+            "\r\n",
+            "\r",
+        ], "\n", $section->body($this->parts, $owner)), "\n");
     }
 }

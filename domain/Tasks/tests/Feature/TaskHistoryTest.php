@@ -52,17 +52,41 @@ final class TaskHistoryTest extends TestCase
 
         $this->assertSame(
             [
-                [2, TaskState::Blocked, TaskState::Started, null],
-                [1, TaskState::Started, TaskState::Blocked, 'Waits for the schema.'],
-                [1, TaskState::Open, TaskState::Started, null],
+                [
+                    2,
+                    TaskState::Blocked,
+                    TaskState::Started,
+                    null,
+                ],
+                [
+                    1,
+                    TaskState::Started,
+                    TaskState::Blocked,
+                    'Waits for the schema.',
+                ],
+                [
+                    1,
+                    TaskState::Open,
+                    TaskState::Started,
+                    null,
+                ],
             ],
             array_map(
-                fn (TaskTransition $entry) => [$entry->runNumber, $entry->fromState, $entry->toState, $entry->text],
+                fn (TaskTransition $entry) => [
+                    $entry->runNumber,
+                    $entry->fromState,
+                    $entry->toState,
+                    $entry->text,
+                ],
                 $history->entries,
             ),
         );
 
-        $this->assertSame([3, 2, 1], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
+        $this->assertSame([
+            3,
+            2,
+            1,
+        ], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
     }
 
     public function test_a_history_page_is_bounded_and_continues_before_its_last_entry(): void

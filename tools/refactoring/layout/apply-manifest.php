@@ -25,7 +25,10 @@ $rows = json_decode((string) file_get_contents($manifestPath), true, flags: JSON
 $statePath = $options['state'] ?? $manifestPath.'.state.json';
 $state = is_file($statePath)
     ? json_decode((string) file_get_contents($statePath), true, flags: JSON_THROW_ON_ERROR)
-    : ['moved' => [], 'edits' => []];
+    : [
+        'moved' => [],
+        'edits' => [],
+    ];
 
 if (isset($options['rehearse'])) {
     exit(rehearse($root, $argv));
@@ -80,7 +83,10 @@ if ($classRows !== []) {
     file_put_contents($statePath, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
     if ($failures !== []) {
-        exit(failWith([...$failures, 'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.']));
+        exit(failWith([
+            ...$failures,
+            'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.',
+        ]));
     }
 }
 
@@ -103,7 +109,10 @@ if ($fileRows !== []) {
     file_put_contents($statePath, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
     if ($failures !== []) {
-        exit(failWith([...$failures, 'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.']));
+        exit(failWith([
+            ...$failures,
+            'The rows moved are kept in '.$statePath.'; make the manifest again before a retry.',
+        ]));
     }
 }
 
@@ -193,7 +202,10 @@ function admissionFailures(string $root, array $rows, array $batch, array $state
         }
     }
 
-    foreach ([$paths, $classes] as $names) {
+    foreach ([
+        $paths,
+        $classes,
+    ] as $names) {
         foreach ($names as $name => $sources) {
             if (count($sources) > 1) {
                 $failures[] = "{$name} would be the destination of ".implode(' and ', $sources).' (case-folded clash).';
@@ -249,7 +261,11 @@ function recordEdits(array &$state, array $before, array $after, array $rows): v
 
     foreach (array_keys($after + $before) as $file) {
         if (($before[$file] ?? null) !== ($after[$file] ?? null) && ! in_array($file, $moved, true)) {
-            $state['edits'][$file] = ['prior' => $before[$file] ?? null, 'result' => $after[$file] ?? null, 'move' => 'batch'];
+            $state['edits'][$file] = [
+                'prior' => $before[$file] ?? null,
+                'result' => $after[$file] ?? null,
+                'move' => 'batch',
+            ];
         }
     }
 }
@@ -378,7 +394,10 @@ function trackedBlobs(string $root): array
         unset($blobs[$file]);
     }
 
-    return [...$blobs, ...blobsOf($root, array_values(array_filter($files, fn (string $file) => is_file("{$root}/{$file}"))))];
+    return [
+        ...$blobs,
+        ...blobsOf($root, array_values(array_filter($files, fn (string $file) => is_file("{$root}/{$file}")))),
+    ];
 }
 
 /**

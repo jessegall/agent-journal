@@ -25,7 +25,9 @@ final class ReadReportTool extends PublicationReadTool
         return [
             'report_id' => $this->referenceSchema($schema),
             'view' => $schema->string()->enum([
-                PublicationView::Summary->value, PublicationView::Body->value, PublicationView::Comments->value,
+                PublicationView::Summary->value,
+                PublicationView::Body->value,
+                PublicationView::Comments->value,
             ]),
             ...$this->rangeSchema($schema),
         ];

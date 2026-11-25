@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +18,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property string $encoded_text
  */
-#[Fillable(['upload_id', 'position', 'encoded_text'])]
+#[Fillable([
+    'upload_id',
+    'position',
+    'encoded_text',
+])]
 final class TextUploadChunk extends Model implements ReadableModel
 {
     use BoundedReads;

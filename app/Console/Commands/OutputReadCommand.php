@@ -39,8 +39,14 @@ final class OutputReadCommand extends Command
 
         return $this->runCall(match (true) {
             $this->option('summary') === true => ReadOutputSummaryCall::from(['processRun' => $run]),
-            $this->option('search') !== null => SearchOutputCall::from([...$place, 'text' => $text]),
-            default => ReadOutputTailCall::from([...$place, 'lines' => (int) $this->option('tail')]),
+            $this->option('search') !== null => SearchOutputCall::from([
+                ...$place,
+                'text' => $text,
+            ]),
+            default => ReadOutputTailCall::from([
+                ...$place,
+                'lines' => (int) $this->option('tail'),
+            ]),
         });
     }
 }

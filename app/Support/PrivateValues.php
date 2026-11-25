@@ -46,7 +46,10 @@ final readonly class PrivateValues
             return $claimed;
         }
 
-        return $claimed->withMessage(json_encode([...$fields->toArray(), 'value' => $value], JSON_THROW_ON_ERROR));
+        return $claimed->withMessage(json_encode([
+            ...$fields->toArray(),
+            'value' => $value,
+        ], JSON_THROW_ON_ERROR));
     }
 
     public function discard(string $submissionId): void

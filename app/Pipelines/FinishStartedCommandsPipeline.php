@@ -23,6 +23,9 @@ final readonly class FinishStartedCommandsPipeline implements PipelineDefinition
 
     public function pipes(): array
     {
-        return [PumpPipedCommands::class, FinishPipedCommands::class];
+        return [
+            PumpPipedCommands::class,
+            FinishPipedCommands::class,
+        ];
     }
 }

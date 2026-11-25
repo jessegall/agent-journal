@@ -35,7 +35,10 @@ abstract class PublicationResource extends JournalResource
 
         $arguments = match (true) {
             $continuation !== null => ['continuation' => $continuation],
-            $revision !== null => ['view' => PublicationView::Body->value, 'revision' => $revision],
+            $revision !== null => [
+                'view' => PublicationView::Body->value,
+                'revision' => $revision,
+            ],
             default => ['view' => PublicationView::Body->value],
         };
 

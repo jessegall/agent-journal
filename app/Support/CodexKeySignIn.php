@@ -27,7 +27,10 @@ final readonly class CodexKeySignIn implements SignInProtocol
 
     public function begin(string $directory): PrivateAccountProcess
     {
-        return $this->codex->start(['login', '--with-api-key'], $directory);
+        return $this->codex->start([
+            'login',
+            '--with-api-key',
+        ], $directory);
     }
 
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null

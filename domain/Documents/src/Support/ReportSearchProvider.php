@@ -48,7 +48,11 @@ final readonly class ReportSearchProvider implements SearchProvider
             admitted: fn () => self::admitted($constraints),
             idColumn: 'id',
             titleColumn: 'title',
-            columns: ['id', 'number', 'title'],
+            columns: [
+                'id',
+                'number',
+                'title',
+            ],
             titleOf: fn (Report $report): string => $report->title,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $reportId): bool => $this->access->admitsOpen($query->reader, $reportId),

@@ -18,9 +18,21 @@ trait ReadsRuleFilters
     protected function ruleFilterRules(string $keyPrefix = ''): array
     {
         return [
-            "{$keyPrefix}q" => ['nullable', 'string', 'max:200'],
-            "{$keyPrefix}page" => ['nullable', 'integer', 'min:1'],
-            'rule' => ['nullable', 'string', 'ulid'],
+            "{$keyPrefix}q" => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            "{$keyPrefix}page" => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'rule' => [
+                'nullable',
+                'string',
+                'ulid',
+            ],
         ];
     }
 

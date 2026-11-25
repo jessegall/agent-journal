@@ -18,7 +18,11 @@ final readonly class RuntimeStart
      * The Claude sign-in methods the journal accepts for an account start, as the driver names them: OAuth, a
      * provider token read from a descriptor, and an API key from the account folder's apiKeyHelper.
      */
-    public const array CLAUDE_SIGN_IN_METHODS = ['claude.ai', 'oauth_token', 'api_key_helper'];
+    public const array CLAUDE_SIGN_IN_METHODS = [
+        'claude.ai',
+        'oauth_token',
+        'api_key_helper',
+    ];
 
     /**
      * Whether an account start's turns run in their session sandbox, so a turn reads only its account folder, its

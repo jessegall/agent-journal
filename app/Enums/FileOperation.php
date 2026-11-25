@@ -40,7 +40,10 @@ enum FileOperation: string
             self::Create => [AccessType::Create],
             self::Edit => [AccessType::Edit],
             self::Delete => [AccessType::Delete],
-            self::Write => [AccessType::Create, AccessType::Edit],
+            self::Write => [
+                AccessType::Create,
+                AccessType::Edit,
+            ],
         };
     }
 }

@@ -38,8 +38,14 @@ final readonly class CommandRuleRegistry
     {
         usort(
             $rules,
-            fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()]
-                <=> [$second->id, $second->scope->name()],
+            fn (CommandRule $first, CommandRule $second): int => [
+                $first->id,
+                $first->scope->name(),
+            ]
+                <=> [
+                    $second->id,
+                    $second->scope->name(),
+                ],
         );
 
         $standing = self::withoutReplaced($rules);
@@ -68,7 +74,11 @@ final readonly class CommandRuleRegistry
     {
         $active = $this->activeRules();
 
-        return self::from([...$active, ...$this->held, ...array_values($rules)], $active);
+        return self::from([
+            ...$active,
+            ...$this->held,
+            ...array_values($rules),
+        ], $active);
     }
 
     /**
@@ -81,7 +91,13 @@ final readonly class CommandRuleRegistry
         $active = $this->activeRules();
         $approved = array_merge([], ...array_map(fn (RuleBundle $bundle): array => $bundle->rules, $bundles));
 
-        return self::from([...$active, ...$this->held], [...$active, ...$approved]);
+        return self::from([
+            ...$active,
+            ...$this->held,
+        ], [
+            ...$active,
+            ...$approved,
+        ]);
     }
 
     /**
@@ -121,7 +137,10 @@ final readonly class CommandRuleRegistry
      */
     public function declaredRules(): array
     {
-        return [...$this->activeRules(), ...$this->held];
+        return [
+            ...$this->activeRules(),
+            ...$this->held,
+        ];
     }
 
     /**
@@ -157,7 +176,10 @@ final readonly class CommandRuleRegistry
             }
 
             if ($length > $closestLength) {
-                [$closest, $closestLength] = [$refusals[0], $length];
+                [$closest, $closestLength] = [
+                    $refusals[0],
+                    $length,
+                ];
             }
         }
 

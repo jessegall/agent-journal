@@ -42,7 +42,10 @@ final class GenerateCallsCommand extends Command
         }
 
         if (! $this->option('check')) {
-            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', ...array_keys($generated)]);
+            $processes->newPendingProcess()->path(base_path())->run([
+                'vendor/bin/pint',
+                ...array_keys($generated),
+            ]);
             $this->line(count($generated).' generated files written.');
         }
 
@@ -112,7 +115,10 @@ final class GenerateCallsCommand extends Command
     {
         return $files->scratch(function (FilePath $scratch) use ($source, $processes, $files) {
             $files->write($scratch, $source);
-            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', $files->realPath($scratch)]);
+            $processes->newPendingProcess()->path(base_path())->run([
+                'vendor/bin/pint',
+                $files->realPath($scratch),
+            ]);
 
             return $files->read($scratch);
         }, '.php');

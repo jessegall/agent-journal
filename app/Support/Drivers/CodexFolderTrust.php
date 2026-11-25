@@ -26,13 +26,19 @@ final readonly class CodexFolderTrust
     public static function forWorkingRoot(string $roots, string $folder): self
     {
         $isDirectChild = dirname($folder) === rtrim($roots, '/')
-            && ! in_array(basename($folder), ['.', '..'], true);
+            && ! in_array(basename($folder), [
+                '.',
+                '..',
+            ], true);
 
         if (! $isDirectChild || ! is_dir($folder) || is_link($folder)) {
             throw FolderTrustRefused::outsideWorkingRoots($folder);
         }
 
-        if (array_diff(scandir($folder) ?: [], ['.', '..']) !== []) {
+        if (array_diff(scandir($folder) ?: [], [
+            '.',
+            '..',
+        ]) !== []) {
             throw FolderTrustRefused::notEmpty($folder);
         }
 

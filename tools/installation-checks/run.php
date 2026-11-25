@@ -27,7 +27,10 @@ foreach (array_slice($argv, 1) as $argument) {
     }
 }
 
-[$check, $driver] = [$arguments[0] ?? '', $arguments[1] ?? ''];
+[$check, $driver] = [
+    $arguments[0] ?? '',
+    $arguments[1] ?? '',
+];
 
 if ($check !== 'protected-session' || $driver === '') {
     fwrite(STDERR, "Usage: run.php protected-session <claude-code|codex> [--skip-renewal] [--reuse-session] [--origin=<url>]\n");
@@ -60,7 +63,12 @@ foreach ($outcomes as $outcome) {
 $record = "{$checkout}/storage/acceptance/{$check}-{$driver}-{$startedAt}.json";
 @mkdir(dirname($record), 0o755, true);
 file_put_contents($record, json_encode(
-    ['check' => $check, 'driver' => $driver, 'startedAt' => $startedAt, 'outcomes' => array_map(fn (Outcome $outcome) => $outcome->toArray(), $outcomes)],
+    [
+        'check' => $check,
+        'driver' => $driver,
+        'startedAt' => $startedAt,
+        'outcomes' => array_map(fn (Outcome $outcome) => $outcome->toArray(), $outcomes),
+    ],
     JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR,
 )."\n");
 echo "Written to {$record}\n";

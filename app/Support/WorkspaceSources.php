@@ -77,7 +77,10 @@ final readonly class WorkspaceSources
                 return FolderWorkspace::from($entry);
             }
 
-            return GitWorkspace::from([...$entry, 'volume' => "{$installationName}-workspace-{$environment}"]);
+            return GitWorkspace::from([
+                ...$entry,
+                'volume' => "{$installationName}-workspace-{$environment}",
+            ]);
         } catch (CannotCreateData $incomplete) {
             throw WorkspaceSourcesInvalid::incomplete($environment, $incomplete);
         }

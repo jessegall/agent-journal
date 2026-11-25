@@ -34,6 +34,9 @@ final readonly class PlanReviewDecision
             throw PlanReviewRefused::alreadyDecided($plan->number, $edition->number, $edition->state->value);
         }
 
-        return [$plan, $edition];
+        return [
+            $plan,
+            $edition,
+        ];
     }
 }

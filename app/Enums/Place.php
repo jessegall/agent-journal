@@ -51,7 +51,13 @@ enum Place: string
     public function closedFolders(): array
     {
         return match ($this) {
-            self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
+            self::Project => [
+                '.journal/worktrees',
+                '.git',
+                'vendor',
+                'node_modules',
+                'storage/app/private',
+            ],
             self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
             self::ProcessOutput, self::HookRuntime, self::Releases => [],
         };

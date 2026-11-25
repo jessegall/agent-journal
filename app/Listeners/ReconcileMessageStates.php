@@ -7,8 +7,8 @@ namespace App\Listeners;
 use App\Attributes\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Contracts\Work\AgentStack;
-use App\Models\Agents\Agent;
 use App\Events\Sessions\SessionOpened;
+use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use App\Support\States\Support\AnsweringMessageStateReference;
@@ -31,7 +31,10 @@ final readonly class ReconcileMessageStates implements Listener
         $model = Agent::query()->findOrFail($event->agentId);
         $agent = ActorIdentity::of($model);
 
-        $unread = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->get(['id', 'inbox_id']);
+        $unread = Message::query()->unreadBy($model)->limit(self::MESSAGE_LIMIT)->get([
+            'id',
+            'inbox_id',
+        ]);
 
         foreach ($unread->groupBy('inbox_id') as $inboxId => $messages) {
             $this->stacks->pushFor($agent, ReadingMessageStateReference::forInbox(

@@ -62,7 +62,11 @@ final readonly class TypeOwners
      */
     public function keys(): array
     {
-        $keys = array_values(array_unique([...array_values($this->owners), ...array_values($this->claims), 'shared']));
+        $keys = array_values(array_unique([
+            ...array_values($this->owners),
+            ...array_values($this->claims),
+            'shared',
+        ]));
         sort($keys);
 
         return $keys;

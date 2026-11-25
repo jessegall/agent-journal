@@ -73,7 +73,12 @@ final class SkillPreviewCommand extends Command
         }
 
         $this->line("Skill {$audience['key']} reaches {$audience['audience']}.");
-        $this->table(['Agent', 'Name', 'Outcome', 'Reason'], array_map(array_values(...), $audience['agents']));
+        $this->table([
+            'Agent',
+            'Name',
+            'Outcome',
+            'Reason',
+        ], array_map(array_values(...), $audience['agents']));
 
         return self::SUCCESS;
     }

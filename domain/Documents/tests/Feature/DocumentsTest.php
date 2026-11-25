@@ -55,7 +55,12 @@ final class DocumentsTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
@@ -122,9 +127,18 @@ final class DocumentsTest extends TestCase
 
         $document = $this->app->make(DocumentResolver::class)->show(1);
 
-        $this->assertSame(['Plan for May', 'What we build'], [$document->title, $document->abstract]);
+        $this->assertSame([
+            'Plan for May',
+            'What we build',
+        ], [
+            $document->title,
+            $document->abstract,
+        ]);
 
-        $this->assertSame(['Plan for May', 'What we found'], [
+        $this->assertSame([
+            'Plan for May',
+            'What we found',
+        ], [
             Report::query()->sole()->title,
             Report::query()->sole()->abstract,
         ]);

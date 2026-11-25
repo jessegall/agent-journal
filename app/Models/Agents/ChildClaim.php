@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ChildRole;
 use App\Exceptions\ChildClaimRefused;
@@ -17,6 +15,8 @@ use App\Values\ChildCheckout;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -42,22 +42,33 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'parent_runtime_id', 'parent_generation', 'child_agent_id', 'role', 'binding_id', 'base_oid', 'parent_was_dirty',
-    'parent_claim_id', 'root_runtime_id',
+    'parent_runtime_id',
+    'parent_generation',
+    'child_agent_id',
+    'role',
+    'binding_id',
+    'base_oid',
+    'parent_was_dirty',
+    'parent_claim_id',
+    'root_runtime_id',
 ])]
 final class ChildClaim extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use OrdersById;
     use Linkable;
+    use OrdersById;
 
     /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
-        return ['parent_generation' => 'integer', 'role' => ChildRole::class, 'parent_was_dirty' => 'boolean'];
+        return [
+            'parent_generation' => 'integer',
+            'role' => ChildRole::class,
+            'parent_was_dirty' => 'boolean',
+        ];
     }
 
     // ----------[ Constructors ]----------

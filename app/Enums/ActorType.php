@@ -22,7 +22,10 @@ enum ActorType: string
      */
     public static function requestTypes(): array
     {
-        return [self::Agent, self::User];
+        return [
+            self::Agent,
+            self::User,
+        ];
     }
 
     public function isAgent(): bool

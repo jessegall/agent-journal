@@ -57,7 +57,11 @@ final readonly class PublicationFiles
 
         return new self(
             "{$targets->generationsFolder()}/{$generation->id}/{$publication->id}",
-            [...$skills, ...$driver->supportFiles(), self::MANIFEST => $manifest->text()],
+            [
+                ...$skills,
+                ...$driver->supportFiles(),
+                self::MANIFEST => $manifest->text(),
+            ],
             $manifest,
         );
     }

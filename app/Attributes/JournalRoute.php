@@ -27,6 +27,9 @@ final readonly class JournalRoute
      */
     public function classes(): array
     {
-        return [...$this->type->classes(), ...$this->alsoNeeds];
+        return [
+            ...$this->type->classes(),
+            ...$this->alsoNeeds,
+        ];
     }
 }

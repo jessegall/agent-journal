@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sequences;
 
-use Domain\Sequences\Events\SequenceStarted;
 use App\Concerns\HasStates;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\Command;
@@ -24,6 +23,7 @@ use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Values\PolicyDefinition;
+use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Http\Controllers\ChangeSequenceController;
 use Domain\Sequences\Http\Controllers\DefineSequenceController;
 use Domain\Sequences\Http\Pages\Resolvers\NewSequenceResolver;
@@ -65,11 +65,18 @@ final class SequencesDomain extends Domain implements
         return [
             new PolicyDefinition(
                 SequencePolicy::class,
-                [AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
             new PolicyDefinition(
                 StoredSequencePolicy::class,
-                [AccessType::Read, AccessType::Create, AccessType::Edit],
+                [
+                    AccessType::Read,
+                    AccessType::Create,
+                    AccessType::Edit,
+                ],
             ),
         ];
     }

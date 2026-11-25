@@ -18,7 +18,11 @@ final readonly class AccountUsagePurge
 
     public function forgetAccount(string $accountId): void
     {
-        foreach ([AccountUsageWindow::class, AccountUsageCost::class, AccountUsageTokens::class] as $model) {
+        foreach ([
+            AccountUsageWindow::class,
+            AccountUsageCost::class,
+            AccountUsageTokens::class,
+        ] as $model) {
             $model::ofAccount($accountId)->readInChunks(self::CHUNK_SIZE, function (Collection $rows): void {
                 foreach ($rows as $row) {
                     $row->forget();

@@ -25,7 +25,10 @@ final class ProposedStopConditionData extends Data
         public readonly string $executable,
         public readonly string|null $label = null,
         public readonly array $arguments = [],
-        public readonly array $access = ['read', 'execute'],
+        public readonly array $access = [
+            'read',
+            'execute',
+        ],
         public readonly string $directory = 'workspace',
         public readonly int $timeoutSeconds = StopCondition::DEFAULT_SECONDS,
         public readonly int $outputBytes = StopCondition::OUTPUT_BYTES,

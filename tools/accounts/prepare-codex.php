@@ -28,7 +28,10 @@ $workingRoots = realpath((string) $request['working_roots']);
 $name = (string) $request['root'];
 $transport = TransportProfileType::from($request['transport_profile'] ?? TransportProfileType::Mcp->value);
 
-if ($workingRoots === false || $name === '' || basename($name) !== $name || in_array($name, ['.', '..'], true)) {
+if ($workingRoots === false || $name === '' || basename($name) !== $name || in_array($name, [
+    '.',
+    '..',
+], true)) {
     fwrite(STDERR, "The working roots folder or the root's name is not usable.\n");
     exit(2);
 }

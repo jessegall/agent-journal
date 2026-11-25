@@ -24,7 +24,10 @@ final class DocumentFeedbackTest extends MessagingTestCase
     public function test_asking_an_agent_for_feedback_on_the_document_sends_them_a_message(): void
     {
         $this->actingAs($this->owner)
-            ->post('/documents/docs/1/feedback', ['agent' => $this->builder->agent_id, 'request_key' => 'ask-1'])
+            ->post('/documents/docs/1/feedback', [
+                'agent' => $this->builder->agent_id,
+                'request_key' => 'ask-1',
+            ])
             ->assertRedirect();
 
         $this->assertTrue($this->wasSent('Please give me feedback on doc 1.'));
@@ -47,7 +50,10 @@ final class DocumentFeedbackTest extends MessagingTestCase
     public function test_an_agent_the_reader_cannot_see_is_refused_and_nothing_is_sent(): void
     {
         $this->actingAs($this->owner)
-            ->post('/documents/docs/1/feedback', ['agent' => '01JZZZZZZZZZZZZZZZZZZZZZZZ', 'request_key' => 'ask-3']);
+            ->post('/documents/docs/1/feedback', [
+                'agent' => '01JZZZZZZZZZZZZZZZZZZZZZZZ',
+                'request_key' => 'ask-3',
+            ]);
 
         $this->assertFalse($this->wasSent('Please give me feedback on doc 1.'));
     }

@@ -27,7 +27,10 @@ final readonly class SessionAdvisoryLocks
         $connection->statement("SET lock_timeout = '{$deadline->lockMilliseconds()}ms'");
 
         try {
-            $connection->select('SELECT pg_advisory_lock(?, hashtext(?))', [$namespace, $key]);
+            $connection->select('SELECT pg_advisory_lock(?, hashtext(?))', [
+                $namespace,
+                $key,
+            ]);
         } catch (QueryException $failure) {
             if ($failure->getCode() === self::LOCK_NOT_AVAILABLE) {
                 throw StackLockTimedOut::held($deadline->lockMilliseconds(), $failure);
@@ -45,7 +48,10 @@ final readonly class SessionAdvisoryLocks
 
         $released = $connection->selectOne(
             'SELECT pg_advisory_unlock(?, hashtext(?)) AS released',
-            [$namespace, $key],
+            [
+                $namespace,
+                $key,
+            ],
         );
 
         if ($released?->released !== true) {

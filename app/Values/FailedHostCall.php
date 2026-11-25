@@ -22,6 +22,11 @@ final readonly class FailedHostCall
      */
     public function toArray(): array
     {
-        return ['route' => $this->route, 'status' => $this->status, 'reason' => $this->reason, 'since' => $this->since];
+        return [
+            'route' => $this->route,
+            'status' => $this->status,
+            'reason' => $this->reason,
+            'since' => $this->since,
+        ];
     }
 }

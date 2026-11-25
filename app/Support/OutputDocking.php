@@ -118,6 +118,10 @@ final readonly class OutputDocking implements DockableProvider
             return None::create();
         }
 
-        return Some::create([$pieces[0], (int) $pieces[1], $stream]);
+        return Some::create([
+            $pieces[0],
+            (int) $pieces[1],
+            $stream,
+        ]);
     }
 }

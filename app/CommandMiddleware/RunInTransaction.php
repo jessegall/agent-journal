@@ -30,9 +30,15 @@ final readonly class RunInTransaction implements CommandMiddleware
 {
     private const int ATTEMPTS = 3;
 
-    private const array RETRIED_CODES = ['40001', '40P01'];
+    private const array RETRIED_CODES = [
+        '40001',
+        '40P01',
+    ];
 
-    private const array TIMED_OUT_CODES = ['55P03', '57014'];
+    private const array TIMED_OUT_CODES = [
+        '55P03',
+        '57014',
+    ];
 
     private const string READ_COMMITTED = 'read committed';
 
@@ -82,9 +88,9 @@ final readonly class RunInTransaction implements CommandMiddleware
                 }
 
                 return ScopedReadMeter::ofCurrentScope()->withinSchedule(
-                        'transaction retry',
-                        fn () => $this->attempt($call, $next, $deadline),
-                    );
+                    'transaction retry',
+                    fn () => $this->attempt($call, $next, $deadline),
+                );
             } catch (QueryException $failure) {
                 if (in_array($failure->getCode(), self::TIMED_OUT_CODES, true)) {
                     throw StackLockTimedOut::after($deadline->milliseconds, $failure);

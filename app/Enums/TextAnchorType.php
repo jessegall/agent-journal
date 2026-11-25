@@ -37,9 +37,23 @@ enum TextAnchorType: string
     public function fields(): array
     {
         return match ($this) {
-            self::Section => ['version', 'section'],
-            self::Lines => ['version', 'firstLine', 'lastLine'],
-            self::Quote => ['version', 'firstLine', 'lastLine', 'quote', 'startOffset', 'endOffset'],
+            self::Section => [
+                'version',
+                'section',
+            ],
+            self::Lines => [
+                'version',
+                'firstLine',
+                'lastLine',
+            ],
+            self::Quote => [
+                'version',
+                'firstLine',
+                'lastLine',
+                'quote',
+                'startOffset',
+                'endOffset',
+            ],
         };
     }
 }

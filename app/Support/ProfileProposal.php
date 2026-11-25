@@ -32,7 +32,10 @@ final readonly class ProfileProposal
     /**
      * Feature fields of later work; a proposal naming one is refused as unsupported.
      */
-    private const array UNSUPPORTED_FIELDS = ['script', 'commands'];
+    private const array UNSUPPORTED_FIELDS = [
+        'script',
+        'commands',
+    ];
 
     /**
      * @param  list<BaseOverride>  $baseOverrides
@@ -73,7 +76,10 @@ final readonly class ProfileProposal
      */
     public function withBuiltIns(): self
     {
-        return new self($this->revision, $this->baseOverrides, [...BuiltInProfiles::proposed(), ...$this->profiles]);
+        return new self($this->revision, $this->baseOverrides, [
+            ...BuiltInProfiles::proposed(),
+            ...$this->profiles,
+        ]);
     }
 
     /**

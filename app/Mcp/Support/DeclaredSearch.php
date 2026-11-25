@@ -151,7 +151,11 @@ final readonly class DeclaredSearch
      */
     private static function sourceOf(DeclaredSearchable $source): array
     {
-        return ['key' => $source->qualifiedKey, 'label' => $source->label(), 'display' => $source->display()];
+        return [
+            'key' => $source->qualifiedKey,
+            'label' => $source->label(),
+            'display' => $source->display(),
+        ];
     }
 
     private function owner(): SearchOwner

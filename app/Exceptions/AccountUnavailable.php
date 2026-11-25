@@ -51,6 +51,9 @@ final class AccountUnavailable extends RuntimeException implements CodedRefusal,
      */
     protected function details(): array
     {
-        return ['driver' => $this->driver, 'reason' => $this->reason->value];
+        return [
+            'driver' => $this->driver,
+            'reason' => $this->reason->value,
+        ];
     }
 }

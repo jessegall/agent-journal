@@ -30,7 +30,14 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property Carbon $recorded_at
  */
-#[Fillable(['phase_id', 'operation', 'receipt_id', 'outcome', 'actor_type', 'actor_id'])]
+#[Fillable([
+    'phase_id',
+    'operation',
+    'receipt_id',
+    'outcome',
+    'actor_type',
+    'actor_id',
+])]
 final class PhaseCheck extends Model implements ReadableModel
 {
     use BoundedReads;

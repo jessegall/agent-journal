@@ -95,7 +95,12 @@ final class SharingPages implements NativePartProvider, PageProvider, TypeProvid
      */
     public function nativeParts(): array
     {
-        return ['AuditSection.vue', 'GatewayConfigureForm.vue', 'RuntimeSection.vue', 'ShareControls.vue'];
+        return [
+            'AuditSection.vue',
+            'GatewayConfigureForm.vue',
+            'RuntimeSection.vue',
+            'ShareControls.vue',
+        ];
     }
 
     public function pages(): array

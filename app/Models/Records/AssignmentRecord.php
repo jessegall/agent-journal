@@ -40,7 +40,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Table('assignments')]
-#[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
+#[Fillable([
+    'record_type',
+    'record_id',
+    'holder_type',
+    'holder_id',
+])]
 final class AssignmentRecord extends MorphPivot implements ReadableModel
 {
     use BoundedReads;

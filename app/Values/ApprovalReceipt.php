@@ -18,7 +18,11 @@ final readonly class ApprovalReceipt
      */
     public function toArray(): array
     {
-        return ['rule_id' => $this->ruleId, 'revision' => $this->revision, 'digest' => $this->digest];
+        return [
+            'rule_id' => $this->ruleId,
+            'revision' => $this->revision,
+            'digest' => $this->digest,
+        ];
     }
 
     public static function of(RuleRevision $approved): self

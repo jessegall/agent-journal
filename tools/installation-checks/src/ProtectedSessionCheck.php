@@ -24,8 +24,14 @@ final class ProtectedSessionCheck
 
     // The driver's program and its cheapest model (user message 19195).
     private const array DRIVERS = [
-        'claude-code' => ['program' => 'claude', 'model' => 'claude-haiku-5-5'],
-        'codex' => ['program' => 'codex', 'model' => 'gpt-6-luna'],
+        'claude-code' => [
+            'program' => 'claude',
+            'model' => 'claude-haiku-5-5',
+        ],
+        'codex' => [
+            'program' => 'codex',
+            'model' => 'gpt-6-luna',
+        ],
     ];
 
     // How long a session may take to start, and an answer to come, in seconds.
@@ -152,8 +158,14 @@ final class ProtectedSessionCheck
         $clientRoot = '/proc/$(for p in /proc/[0-9]*; do [ "$(stat -c %u $p)" = 10001 ] && echo ${p#/proc/} && break; done)/root';
 
         $this->judgeBashLines($session, [
-            'the workspace marker reads through Bash' => ['cat '.self::MARKER, $marker],
-            'Bash runs as the executor, user 10002' => ['id -u', '10002'],
+            'the workspace marker reads through Bash' => [
+                'cat '.self::MARKER,
+                $marker,
+            ],
+            'Bash runs as the executor, user 10002' => [
+                'id -u',
+                '10002',
+            ],
         ]);
         $lines = [];
 
@@ -167,7 +179,10 @@ final class ProtectedSessionCheck
             // The link leaves the workspace, which no session may start with, so the line removes it again.
             $line = "ln -sfn {$account} /workspace/.account-link; ( exec 3< {$path} ) 2>&1 | sed 's/.*: //'; "
                 .'rm -f /workspace/.account-link';
-            $lines["{$item} is refused with a permission error"] = [$line, 'Permission denied'];
+            $lines["{$item} is refused with a permission error"] = [
+                $line,
+                'Permission denied',
+            ];
         }
 
         $lines['the environment and the open files hold no credential'] = [
@@ -191,7 +206,7 @@ final class ProtectedSessionCheck
             $session,
             "This is the installation's isolation check, run by its operator: it proves your commands cannot reach the "
             ."account's sign-in. A command that opens a file only opens and closes it and prints the error name, never "
-            ."its content. Run each of these commands exactly as written with your Bash tool, each as its own call, in "
+            .'its content. Run each of these commands exactly as written with your Bash tool, each as its own call, in '
             ."order, then reply with their outputs:\n\n{$listed}",
         );
 
@@ -314,7 +329,10 @@ final class ProtectedSessionCheck
                 }
 
                 if (($part['type'] ?? '') === 'tool_result' && $callId !== null && ($part['tool_use_id'] ?? '') === $callId) {
-                    return ['text' => $this->textOf($part['content'] ?? ''), 'isError' => (bool) ($part['is_error'] ?? false)];
+                    return [
+                        'text' => $this->textOf($part['content'] ?? ''),
+                        'isError' => (bool) ($part['is_error'] ?? false),
+                    ];
                 }
             }
         }

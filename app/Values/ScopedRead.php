@@ -21,6 +21,9 @@ final readonly class ScopedRead
      */
     public function toArray(): array
     {
-        return ['name' => $this->name, 'target' => $this->target];
+        return [
+            'name' => $this->name,
+            'target' => $this->target,
+        ];
     }
 }

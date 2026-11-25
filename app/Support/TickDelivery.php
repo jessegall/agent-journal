@@ -94,7 +94,11 @@ final readonly class TickDelivery
                 $now = $passNow->addMicroseconds($elapsedMicroseconds);
 
                 if ($this->tick($current->get(), $now, $this->deltaFor($current->get(), $start, $now, $checkpoints))) {
-                    $settled[] = [$current->get(), $now, $start];
+                    $settled[] = [
+                        $current->get(),
+                        $now,
+                        $start,
+                    ];
                 }
 
                 $anyTicked = true;
@@ -138,14 +142,21 @@ final readonly class TickDelivery
         } catch (WorkOccurrenceStale $stale) {
             $this->log->info(
                 'Engine tick of finished work dropped',
-                ['frame' => $candidate->frameId, 'reason' => $stale->getMessage()],
+                [
+                    'frame' => $candidate->frameId,
+                    'reason' => $stale->getMessage(),
+                ],
             );
 
             return true;
         } catch (Throwable $failure) {
             $this->log->error(
                 'Engine tick failed',
-                ['frame' => $candidate->frameId, 'state' => $candidate->state::class, 'exception' => $failure],
+                [
+                    'frame' => $candidate->frameId,
+                    'state' => $candidate->state::class,
+                    'exception' => $failure,
+                ],
             );
 
             return false;

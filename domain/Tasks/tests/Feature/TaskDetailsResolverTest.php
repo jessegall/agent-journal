@@ -75,7 +75,10 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $desk = $this->app->make(DeskService::class)->openNamed('team', 'Team', 1, false);
         $runner = $this->start('Runner');
-        $task = Task::factory()->create(['title' => 'Split work', 'brief' => self::BRIEF]);
+        $task = Task::factory()->create([
+            'title' => 'Split work',
+            'brief' => self::BRIEF,
+        ]);
         $this->asUser();
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -97,7 +100,12 @@ final class TaskDetailsResolverTest extends TestCase
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
 
         $this->assertSame(
-            [$runner->agent_id, 'Runner', 1, TaskState::Started],
+            [
+                $runner->agent_id,
+                'Runner',
+                1,
+                TaskState::Started,
+            ],
             [
                 $details->execution?->actorId,
                 $details->execution?->actorLabel,

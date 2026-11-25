@@ -24,6 +24,9 @@ final readonly class CodexStatus
     {
         $isSignedIn = $this->exitCode === 0 && $this->hasAuthFile && str_starts_with(trim($this->output), $wording);
 
-        return new SignInVerification($isSignedIn, SignInIdentity::unproved(), in_array($this->exitCode, [0, 1], true));
+        return new SignInVerification($isSignedIn, SignInIdentity::unproved(), in_array($this->exitCode, [
+            0,
+            1,
+        ], true));
     }
 }

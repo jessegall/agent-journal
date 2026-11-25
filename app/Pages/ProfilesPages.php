@@ -87,7 +87,10 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
      */
     public function nativeParts(): array
     {
-        return ['AccountsWindow.vue', 'AddAccountPart.vue'];
+        return [
+            'AccountsWindow.vue',
+            'AddAccountPart.vue',
+        ];
     }
 
     public function pages(): array

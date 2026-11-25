@@ -28,7 +28,13 @@ final readonly class ReadSite
                 && ! str_starts_with($file, $basePath.'/app/Reads/');
 
             if ($isApplicationCode) {
-                $shape = (string) preg_replace(['/\s+/', '/\((\?\s*,\s*)+\?\)/'], [' ', '(?)'], trim($query));
+                $shape = (string) preg_replace([
+                    '/\s+/',
+                    '/\((\?\s*,\s*)+\?\)/',
+                ], [
+                    ' ',
+                    '(?)',
+                ], trim($query));
 
                 return new self(
                     substr($file, strlen($basePath) + 1).':'.($frame['line'] ?? 0),

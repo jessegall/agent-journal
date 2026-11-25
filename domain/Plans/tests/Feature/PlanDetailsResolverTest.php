@@ -44,7 +44,10 @@ final class PlanDetailsResolverTest extends TestCase
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
     {
-        $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => self::BRIEF]);
+        $plan = Plan::factory()->create([
+            'title' => 'Counted plan',
+            'brief' => self::BRIEF,
+        ]);
         $tasks = Task::factory()->count(3)->create();
         $tasks[0]->finish('Done.');
 
@@ -59,7 +62,13 @@ final class PlanDetailsResolverTest extends TestCase
         $card = $this->app->make(PlanResolver::class)->list(new PlanFilters(search: 'Counted plan'))->cards[0];
 
         $this->assertEquals($card->progress, $details->progress);
-        $this->assertSame([1, 3], [$details->progress->finished, $details->progress->total]);
+        $this->assertSame([
+            1,
+            3,
+        ], [
+            $details->progress->finished,
+            $details->progress->total,
+        ]);
         $this->assertSame(self::BRIEF, $details->brief);
         $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
@@ -113,12 +122,26 @@ final class PlanDetailsResolverTest extends TestCase
         ];
 
         $phase = $this->planStructure()->addPhase($plan, 'Work');
-        $this->planStructure()->addTasks($phase, [$second->id, $first->id]);
+        $this->planStructure()->addTasks($phase, [
+            $second->id,
+            $first->id,
+        ]);
 
         $read = $this->app->make(PlanDetailsResolver::class)->phase($phase->id);
 
-        $this->assertSame([$second->id, $first->id], $read->taskIds);
-        $this->assertSame([$plan->id, 'Work', 2], [$read->planId, $read->title, $read->revision]);
+        $this->assertSame([
+            $second->id,
+            $first->id,
+        ], $read->taskIds);
+        $this->assertSame([
+            $plan->id,
+            'Work',
+            2,
+        ], [
+            $read->planId,
+            $read->title,
+            $read->revision,
+        ]);
     }
 
     private function planStructure(): PlanStructure

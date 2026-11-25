@@ -93,6 +93,9 @@ final readonly class PublicationLists
             )),
         ])] : [];
 
-        return ToolResult::ok(['cards' => $entries, 'page' => $position->offset], $next);
+        return ToolResult::ok([
+            'cards' => $entries,
+            'page' => $position->offset,
+        ], $next);
     }
 }

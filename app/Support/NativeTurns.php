@@ -51,7 +51,10 @@ final readonly class NativeTurns implements NativeTurnRecords
         $this->transaction->run(fn () => DriverRequest::query()
             ->where('agent_runtime_id', $runtime->id)
             ->where('operation', DriverOperation::Wake)
-            ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying])
+            ->whereIn('progress', [
+                RequestProgress::Staged,
+                RequestProgress::Applying,
+            ])
             ->lockForUpdate()
             ->get()
             ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($activityAt)));

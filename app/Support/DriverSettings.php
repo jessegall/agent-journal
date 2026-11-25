@@ -21,7 +21,13 @@ final readonly class DriverSettings
      *
      * @var list<string>
      */
-    public const array EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+    public const array EFFORTS = [
+        'low',
+        'medium',
+        'high',
+        'xhigh',
+        'max',
+    ];
 
     public function __construct(private DriverRequests $requests) {}
 

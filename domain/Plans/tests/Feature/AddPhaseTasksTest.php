@@ -29,7 +29,12 @@ final class AddPhaseTasksTest extends TestCase
     /**
      * The bus commits AddPhaseTasksCommand for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+    ];
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
@@ -39,16 +44,25 @@ final class AddPhaseTasksTest extends TestCase
         );
 
         $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            Plan::factory()->create([
+                'title' => 'Build',
+                'type' => PlanType::Build,
+            ]),
             'Read',
         );
 
         $first = Task::factory()->create(['title' => 'First'])->id;
         $second = Task::factory()->create(['title' => 'Second'])->id;
 
-        $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$second, $first]));
+        $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [
+            $second,
+            $first,
+        ]));
 
-        $this->assertSame([$second, $first], $phase->taskIds());
+        $this->assertSame([
+            $second,
+            $first,
+        ], $phase->taskIds());
     }
 
     public function test_one_missing_task_refuses_the_whole_addition(): void
@@ -59,7 +73,10 @@ final class AddPhaseTasksTest extends TestCase
         );
 
         $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            Plan::factory()->create([
+                'title' => 'Build',
+                'type' => PlanType::Build,
+            ]),
             'Read',
         );
 
@@ -67,7 +84,10 @@ final class AddPhaseTasksTest extends TestCase
 
         try {
             $this->app->make(CommandBus::class)->run(
-                new AddPhaseTasksCommand($phase->id, 1, [$real, TestIds::of(999999)]),
+                new AddPhaseTasksCommand($phase->id, 1, [
+                    $real,
+                    TestIds::of(999999),
+                ]),
             );
 
             $this->fail('A missing task was added.');
@@ -84,14 +104,20 @@ final class AddPhaseTasksTest extends TestCase
         );
 
         $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build]),
+            Plan::factory()->create([
+                'title' => 'Build',
+                'type' => PlanType::Build,
+            ]),
             'Read',
         );
 
         $task = Task::factory()->create(['title' => 'Twice'])->id;
 
         try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [$task, $task]));
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [
+                $task,
+                $task,
+            ]));
             $this->fail('A task named twice was added.');
         } catch (TaskAlreadyInAPhase $refusal) {
             $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal);

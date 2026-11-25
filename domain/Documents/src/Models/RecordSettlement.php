@@ -31,7 +31,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $revision_number
  * @property CarbonImmutable $settled_at
  */
-#[Fillable(['parent_type', 'parent_id', 'actor_type', 'actor_id', 'reason', 'revision_number', 'settled_at'])]
+#[Fillable([
+    'parent_type',
+    'parent_id',
+    'actor_type',
+    'actor_id',
+    'reason',
+    'revision_number',
+    'settled_at',
+])]
 final class RecordSettlement extends Model implements ReadableModel
 {
     use BoundedReads;

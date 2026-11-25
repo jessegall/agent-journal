@@ -21,8 +21,15 @@ final class LoginTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.user'])->get('/login-test/journal', fn () => 'inside');
-        $this->owner = User::factory()->create(['email' => 'owner@journal.local', 'password' => 'secret-password']);
+        Route::middleware([
+            'web',
+            'auth',
+            'journal.user',
+        ])->get('/login-test/journal', fn () => 'inside');
+        $this->owner = User::factory()->create([
+            'email' => 'owner@journal.local',
+            'password' => 'secret-password',
+        ]);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }
 
@@ -39,7 +46,10 @@ final class LoginTest extends TestCase
 
     public function test_local_development_fills_the_form_with_the_local_account_and_no_other_environment_does(): void
     {
-        config(['web.local_sign_in' => ['email' => 'owner@journal.local', 'password' => 'password']]);
+        config(['web.local_sign_in' => [
+            'email' => 'owner@journal.local',
+            'password' => 'password',
+        ]]);
 
         $this->app->detectEnvironment(fn () => 'local');
 
@@ -56,7 +66,10 @@ final class LoginTest extends TestCase
 
     public function test_the_owner_signs_in_lands_on_plans_and_signs_out(): void
     {
-        $this->post('/login', ['email' => 'owner@journal.local', 'password' => 'secret-password'])->assertRedirect('/');
+        $this->post('/login', [
+            'email' => 'owner@journal.local',
+            'password' => 'secret-password',
+        ])->assertRedirect('/');
         $this->assertAuthenticatedAs($this->owner);
         $this->get('/login-test/journal')->assertOk();
 
@@ -66,7 +79,10 @@ final class LoginTest extends TestCase
 
     public function test_a_wrong_password_shows_the_framework_validation(): void
     {
-        $this->from('/login')->post('/login', ['email' => 'owner@journal.local', 'password' => 'wrong'])
+        $this->from('/login')->post('/login', [
+            'email' => 'owner@journal.local',
+            'password' => 'wrong',
+        ])
             ->assertRedirect('/login')
             ->assertSessionHasErrors('email');
 
@@ -77,7 +93,11 @@ final class LoginTest extends TestCase
     {
         $this->post(
             '/register',
-            ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'secret-password'],
+            [
+                'name' => 'Someone',
+                'email' => 'someone@example.com',
+                'password' => 'secret-password',
+            ],
         )->assertNotFound();
 
         $this->get('/user/two-factor-qr-code')->assertNotFound();

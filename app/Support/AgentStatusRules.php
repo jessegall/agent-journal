@@ -203,7 +203,10 @@ final class AgentStatusRules
             array_unshift($switch, StatusAction::of(StatusActionType::Stop));
         }
 
-        $workingActions = $evidence->canStop ? [...$switch, StatusAction::of(StatusActionType::Interrupt)] : $switch;
+        $workingActions = $evidence->canStop ? [
+            ...$switch,
+            StatusAction::of(StatusActionType::Interrupt),
+        ] : $switch;
 
         if ($evidence->processStart?->isStarting() === true) {
             if (self::isWakeRefused($evidence->request)) {
@@ -281,7 +284,10 @@ final class AgentStatusRules
     private static function isWakeRefused(DriverRequestStatus|null $request): bool
     {
         return $request?->operation === DriverOperation::Wake
-            && in_array($request->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
+            && in_array($request->progress, [
+                RequestProgress::Failed,
+                RequestProgress::Unavailable,
+            ], true);
     }
 
     private static function failedRequest(AgentEvidence $evidence, DriverRequestStatus $request): AgentStatus
@@ -368,7 +374,10 @@ final class AgentStatusRules
             new StatusOperation($launch->requestId, 'start', $launch->version(), 1),
             null,
             null,
-            [...$primary, StatusAction::of(StatusActionType::Dismiss)],
+            [
+                ...$primary,
+                StatusAction::of(StatusActionType::Dismiss),
+            ],
         );
     }
 
@@ -437,7 +446,10 @@ final class AgentStatusRules
             $operation,
             $commandOutcome,
             $evidence->runtime?->observationAgeSeconds,
-            [...$actions, ...$dismiss],
+            [
+                ...$actions,
+                ...$dismiss,
+            ],
             $evidence->processStart === ProcessStartState::Running,
         );
     }

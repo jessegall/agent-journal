@@ -17,7 +17,10 @@ final readonly class CommandPattern
 
     public static function exact(string $program, string ...$words): self
     {
-        return new self([basename($program), ...array_values($words)]);
+        return new self([
+            basename($program),
+            ...array_values($words),
+        ]);
     }
 
     /**
@@ -25,7 +28,10 @@ final readonly class CommandPattern
      */
     public function matches(array $argv): bool
     {
-        return $argv !== [] && [basename($argv[0]), ...array_slice($argv, 1)] === $this->words;
+        return $argv !== [] && [
+            basename($argv[0]),
+            ...array_slice($argv, 1),
+        ] === $this->words;
     }
 
     /**

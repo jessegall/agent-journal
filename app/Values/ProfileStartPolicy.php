@@ -18,7 +18,12 @@ final readonly class ProfileStartPolicy
 
     public const string HELPER_IMAGE = 'journal-helper';
 
-    public const array FIELDS = ['preferredDriver', 'access', 'stopConditions', 'execution'];
+    public const array FIELDS = [
+        'preferredDriver',
+        'access',
+        'stopConditions',
+        'execution',
+    ];
 
     /**
      * @param  string|null  $preferredDriver  the driver family a start preselects; any start may choose another

@@ -18,6 +18,9 @@ final readonly class RejectProposalController
     {
         $rejected = $commands->run(new RejectRuleProposalCommand($call->proposal, $call->reason));
 
-        return ProposalStateChanged::from(['proposalId' => $rejected, 'state' => 'rejected']);
+        return ProposalStateChanged::from([
+            'proposalId' => $rejected,
+            'state' => 'rejected',
+        ]);
     }
 }

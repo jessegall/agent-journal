@@ -9,7 +9,6 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\ActorType;
 use App\Models\Inboxes\InboxMember;
-use App\Support\ActorIdentity;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Support\ChatInboxes;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +28,10 @@ final readonly class CloseChatController
     ): RedirectResponse {
         $chats->assertManages($input->inboxId);
 
-        foreach ([...InboxMember::attachedTo([$input->inboxId], ActorType::User), ...InboxMember::attachedTo([$input->inboxId], ActorType::Agent)] as $member) {
+        foreach ([
+            ...InboxMember::attachedTo([$input->inboxId], ActorType::User),
+            ...InboxMember::attachedTo([$input->inboxId], ActorType::Agent),
+        ] as $member) {
             $commands->run(new LeaveInboxCommand($input->inboxId, $member));
         }
 

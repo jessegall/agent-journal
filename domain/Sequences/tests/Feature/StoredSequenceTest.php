@@ -40,7 +40,10 @@ final class StoredSequenceTest extends TestCase
         $run = SequenceRun::create('Release', ['tests']);
         $run->sequence()->associate($sequence)->save();
 
-        $sequence->change('Release', 'Ship a version', [self::step('tests'), self::step('merge')]);
+        $sequence->change('Release', 'Ship a version', [
+            self::step('tests'),
+            self::step('merge'),
+        ]);
 
         $this->assertSame(2, $sequence->fresh()?->version);
         $this->assertSame(['tests'], $run->fresh()?->steps);

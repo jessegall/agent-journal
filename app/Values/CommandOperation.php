@@ -20,7 +20,10 @@ final readonly class CommandOperation
      */
     public function name(): string
     {
-        return implode(' ', [$this->program->family, ...$this->subcommands]);
+        return implode(' ', [
+            $this->program->family,
+            ...$this->subcommands,
+        ]);
     }
 
     public function isSameOperation(self $other): bool

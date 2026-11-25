@@ -19,7 +19,10 @@ final readonly class ReaderApproval implements StoredValue
      */
     public function toArray(): array
     {
-        return ['reader_revision_id' => $this->readerRevisionId, 'proof_id' => $this->proofId];
+        return [
+            'reader_revision_id' => $this->readerRevisionId,
+            'proof_id' => $this->proofId,
+        ];
     }
 
     public static function fromJson(string $json): self

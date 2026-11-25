@@ -93,7 +93,11 @@ final class FileTree extends NodeVisitorAbstract
             $this->importStatements[] = $node;
 
             foreach ($node->uses as $use) {
-                $this->imports[] = ['item' => $use, 'statement' => $node, 'prefix' => $node instanceof GroupUse ? $node->prefix->toString() : ''];
+                $this->imports[] = [
+                    'item' => $use,
+                    'statement' => $node,
+                    'prefix' => $node instanceof GroupUse ? $node->prefix->toString() : '',
+                ];
             }
 
             $this->importDepth++;
@@ -144,7 +148,12 @@ $moves = [];
 
 foreach (file($listPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
     [$old, $new, $oldPath, $newPath, $mode] = array_pad(preg_split('/\s+/', trim($line)) ?: [], 5, '');
-    $moves[ltrim($old, '\\')] = ['class' => ltrim($new, '\\'), 'from' => $oldPath, 'to' => $newPath, 'merge' => $mode === 'merge'];
+    $moves[ltrim($old, '\\')] = [
+        'class' => ltrim($new, '\\'),
+        'from' => $oldPath,
+        'to' => $newPath,
+        'merge' => $mode === 'merge',
+    ];
 }
 
 $renames = array_map(fn (array $move) => $move['class'], $moves);
@@ -168,7 +177,10 @@ foreach ($listed as $file) {
     $source = (string) file_get_contents("{$root}/{$file}");
 
     try {
-        $trees[$file] = [$source, FileTree::of($parser, $file, $source)];
+        $trees[$file] = [
+            $source,
+            FileTree::of($parser, $file, $source),
+        ];
     } catch (Throwable) {
         $unparsed[] = $file;
     }
@@ -197,12 +209,18 @@ foreach ($trees as $file => [$source, $tree]) {
         $failures[] = "{$file} still names {$left}";
     }
 
-    $trees[$file] = [$result, $after];
+    $trees[$file] = [
+        $result,
+        $after,
+    ];
     $rewritten[$file] = $result;
 }
 
 if ($failures !== []) {
-    exit(fail(['Nothing was written:', ...$failures]));
+    exit(fail([
+        'Nothing was written:',
+        ...$failures,
+    ]));
 }
 
 foreach ($rewritten as $file => $result) {
@@ -279,7 +297,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
     $shortRenames = [];
 
     if ($movedTo !== null && $tree->namespace?->name !== null && $newNamespace !== $oldNamespace) {
-        $edits[] = [$tree->namespace->name->getStartFilePos(), $tree->namespace->name->getEndFilePos(), $newNamespace];
+        $edits[] = [
+            $tree->namespace->name->getStartFilePos(),
+            $tree->namespace->name->getEndFilePos(),
+            $newNamespace,
+        ];
     }
 
     // A move that renames the class renames its declaration too.
@@ -287,7 +309,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         $target = $renames[ltrim("{$oldNamespace}\\{$declaration->name}", '\\')] ?? null;
 
         if ($target !== null && shortName($target) !== $declaration->name->toString()) {
-            $edits[] = [$declaration->name->getStartFilePos(), $declaration->name->getEndFilePos(), shortName($target)];
+            $edits[] = [
+                $declaration->name->getStartFilePos(),
+                $declaration->name->getEndFilePos(),
+                shortName($target),
+            ];
         }
     }
 
@@ -299,7 +325,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
 
         // An import of a class in the moved file's own new namespace says nothing there: the statement goes.
         if ($movedTo !== null && $prefix === '' && count($statement->uses) === 1 && $use->alias === null && namespaceOf($target) === $newNamespace) {
-            $edits[] = [$statement->getStartFilePos(), lineEnd($source, $statement->getEndFilePos()), ''];
+            $edits[] = [
+                $statement->getStartFilePos(),
+                lineEnd($source, $statement->getEndFilePos()),
+                '',
+            ];
 
             continue;
         }
@@ -308,7 +338,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
             continue;
         }
 
-        $edits[] = [$use->name->getStartFilePos(), $use->name->getEndFilePos(), $prefix !== '' ? relativeTo($target, $prefix) : $target];
+        $edits[] = [
+            $use->name->getStartFilePos(),
+            $use->name->getEndFilePos(),
+            $prefix !== '' ? relativeTo($target, $prefix) : $target,
+        ];
 
         if ($use->alias === null && shortName($target) !== shortName($full)) {
             $shortRenames[strtolower(shortName($full))] = shortName($target);
@@ -324,7 +358,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
 
         if ($name->isFullyQualified() || str_contains($written, '\\')) {
             if ($target !== $resolved) {
-                $edits[] = [$start, $end, '\\'.$target];
+                $edits[] = [
+                    $start,
+                    $end,
+                    '\\'.$target,
+                ];
             }
 
             continue;
@@ -334,7 +372,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
 
         if (isset($imported[$local])) {
             if (isset($shortRenames[$local])) {
-                $edits[] = [$start, $end, $shortRenames[$local]];
+                $edits[] = [
+                    $start,
+                    $end,
+                    $shortRenames[$local],
+                ];
             }
 
             continue;
@@ -343,7 +385,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         // Named bare through its namespace: it still resolves only when it ends up in the file's new namespace.
         if (namespaceOf($target) === $newNamespace || in_array($written, $tree->declared, true)) {
             if (shortName($target) !== $written && namespaceOf($target) === $newNamespace) {
-                $edits[] = [$start, $end, shortName($target)];
+                $edits[] = [
+                    $start,
+                    $end,
+                    shortName($target),
+                ];
             }
 
             continue;
@@ -352,7 +398,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         $needed[$target] = true;
 
         if (shortName($target) !== $written) {
-            $edits[] = [$start, $end, shortName($target)];
+            $edits[] = [
+                $start,
+                $end,
+                shortName($target),
+            ];
         }
     }
 
@@ -361,7 +411,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         $renamed = renamedText($text, $renames, $paths);
 
         if ($renamed !== $text) {
-            $edits[] = [$string->getStartFilePos(), $string->getEndFilePos(), $renamed];
+            $edits[] = [
+                $string->getStartFilePos(),
+                $string->getEndFilePos(),
+                $renamed,
+            ];
         }
     }
 
@@ -375,7 +429,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         );
 
         if ($renamed !== $comment->getText()) {
-            $edits[] = [$comment->getStartFilePos(), $comment->getEndFilePos(), $renamed];
+            $edits[] = [
+                $comment->getStartFilePos(),
+                $comment->getEndFilePos(),
+                $renamed,
+            ];
         }
 
         // A docblock type that names a class bare through the file's own namespace needs an import once the class
@@ -404,7 +462,11 @@ function rewriteFile(string $source, FileTree $tree, array $renames, array $path
         if ($anchor !== null) {
             // After the last import statement, or after the namespace name's semicolon when there is none.
             $at = $tree->importStatements === [] ? strpos($source, ';', $anchor->getEndFilePos()) : $anchor->getEndFilePos();
-            $edits[] = [$at + 1, $at, $tree->importStatements === [] ? "\n{$lines}" : $lines];
+            $edits[] = [
+                $at + 1,
+                $at,
+                $tree->importStatements === [] ? "\n{$lines}" : $lines,
+            ];
         }
     }
 

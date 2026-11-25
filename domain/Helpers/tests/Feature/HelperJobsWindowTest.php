@@ -35,7 +35,10 @@ final class HelperJobsWindowTest extends TestCase
 
         $root = $this->read()->root;
 
-        $this->assertSame(['title', 'none'], $this->keysOf($root));
+        $this->assertSame([
+            'title',
+            'none',
+        ], $this->keysOf($root));
         $this->assertSame(self::NO_JOBS_TEXT, $root->children[1]->text);
     }
 
@@ -49,7 +52,11 @@ final class HelperJobsWindowTest extends TestCase
         $queries = count(DB::getQueryLog());
         DB::disableQueryLog();
 
-        $this->assertSame(['title', 'open', 'jobs'], $this->keysOf($root));
+        $this->assertSame([
+            'title',
+            'open',
+            'jobs',
+        ], $this->keysOf($root));
         $this->assertSame(self::ONE_OPEN_TEXT, $root->children[1]->text);
         $this->assertSame(['Read the plan'], array_map(fn ($row) => $row->label, $root->children[2]->rows));
         $this->assertLessThanOrEqual(2, $queries);

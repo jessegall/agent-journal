@@ -17,10 +17,26 @@ trait ReadsOutlinePages
     protected function outlinePageRules(): array
     {
         return [
-            'phases_after' => ['nullable', 'integer', 'min:0'],
-            'phase' => ['nullable', 'integer', 'min:1'],
-            'tasks_after' => ['nullable', 'integer', 'min:0'],
-            'revision' => ['nullable', 'integer', 'min:0'],
+            'phases_after' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'phase' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'tasks_after' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+            'revision' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

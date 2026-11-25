@@ -32,7 +32,10 @@ final class CommandTypeProposeCommand extends Command
 
         return $this->runCall(ProposeRuleCall::from([
             'commandRequest' => (string) $this->argument('request'),
-            'declaration' => [...$declaration, 'evidence' => (string) $this->option('evidence')],
+            'declaration' => [
+                ...$declaration,
+                'evidence' => (string) $this->option('evidence'),
+            ],
             'requestKey' => $this->requestKey(),
         ]));
     }

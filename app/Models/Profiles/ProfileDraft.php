@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -14,6 +12,8 @@ use App\Exceptions\ProfileDraftRefused;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,7 +25,11 @@ use Illuminate\Support\Str;
  * @property string|null $current_revision_id
  * @property ProfileDraftRevision|null $currentRevision
  */
-#[Fillable(['profile_key', 'revision', 'current_revision_id'])]
+#[Fillable([
+    'profile_key',
+    'revision',
+    'current_revision_id',
+])]
 final class ProfileDraft extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -81,7 +85,10 @@ final class ProfileDraft extends Model implements ReadableModel
     public static function of(ProfileKey $profile): self
     {
         return self::query()->with('currentRevision')->ofProfile($profile)->first()
-            ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
+            ?? new self([
+                'profile_key' => $profile->key,
+                'revision' => 0,
+            ]);
     }
 
     /**
@@ -98,7 +105,10 @@ final class ProfileDraft extends Model implements ReadableModel
 
         foreach ($profiles as $profile) {
             $draft = new self();
-            $draft->setRawAttributes(['id' => (string) Str::ulid(), 'profile_key' => $profile]);
+            $draft->setRawAttributes([
+                'id' => (string) Str::ulid(),
+                'profile_key' => $profile,
+            ]);
             $draft->insertIfAbsent();
         }
 

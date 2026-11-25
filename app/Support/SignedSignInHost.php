@@ -75,7 +75,10 @@ final readonly class SignedSignInHost implements SignInHost
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
     {
-        $body = (string) json_encode(['address' => $challenge->address, 'code' => $challenge->code]);
+        $body = (string) json_encode([
+            'address' => $challenge->address,
+            'code' => $challenge->code,
+        ]);
         $this->send('profiles.sign-in-host.challenge', ['attempt' => $claimed->attemptId], $body);
     }
 
@@ -107,7 +110,10 @@ final readonly class SignedSignInHost implements SignInHost
 
     public function notifyCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void
     {
-        $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $accountCheck->value]);
+        $body = (string) json_encode([
+            'generation' => $claimed->generation,
+            'result' => $accountCheck->value,
+        ]);
         $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
     }
 
@@ -150,8 +156,14 @@ final readonly class SignedSignInHost implements SignInHost
         ]);
 
         [$route, $parameters] = match ($claimed->target) {
-            CleanupTarget::Account => ['profiles.account-host.cleanup', ['account' => $claimed->id]],
-            CleanupTarget::SignInAttempt => ['profiles.sign-in-host.cleanup', ['attempt' => $claimed->id]],
+            CleanupTarget::Account => [
+                'profiles.account-host.cleanup',
+                ['account' => $claimed->id],
+            ],
+            CleanupTarget::SignInAttempt => [
+                'profiles.sign-in-host.cleanup',
+                ['attempt' => $claimed->id],
+            ],
         };
 
         $this->send($route, $parameters, $body);

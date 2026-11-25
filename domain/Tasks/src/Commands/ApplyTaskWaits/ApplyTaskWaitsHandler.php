@@ -39,13 +39,19 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
      */
     public function handle(ApplyTaskWaitsCommand $command): string
     {
-        $locked = $this->lock->lockAll([...$command->taskIds, ...$this->tasksNamed($command)]);
+        $locked = $this->lock->lockAll([
+            ...$command->taskIds,
+            ...$this->tasksNamed($command),
+        ]);
 
         if ($this->version->current($command->taskIds) !== $command->baseVersion) {
             throw TaskGraphChanged::since($command->baseVersion);
         }
 
-        foreach ([...$command->removed, ...$command->added] as $pair) {
+        foreach ([
+            ...$command->removed,
+            ...$command->added,
+        ] as $pair) {
             $dependent = $locked[$pair->dependentTaskId];
 
             if (! $this->rules->mayChange($dependent)) {
@@ -95,8 +101,14 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
     private function tasksNamed(ApplyTaskWaitsCommand $command): array
     {
         return array_merge(...array_map(
-            fn (TaskWaitPair $pair) => [$pair->dependentTaskId, $pair->prerequisiteTaskId],
-            [...$command->removed, ...$command->added],
+            fn (TaskWaitPair $pair) => [
+                $pair->dependentTaskId,
+                $pair->prerequisiteTaskId,
+            ],
+            [
+                ...$command->removed,
+                ...$command->added,
+            ],
         ));
     }
 }

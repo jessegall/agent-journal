@@ -19,7 +19,6 @@ use App\Support\Sources\DockDefinition;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Illuminate\Container\Container;
 
-
 /**
  * What a dock or an undock checks before it touches the dock: the chat the actor is a member of, named by its inbox,
  * then the source through its registered owner, readable now and of the type it was registered as, apart from any
@@ -59,7 +58,10 @@ final readonly class DockRequests
     public function joinedChats(): array
     {
         return array_values($this->chats->joined()->limit(InboxMember::ATTACHED_LIMIT)->get()
-            ->map(fn (Inbox $inbox) => ['value' => $inbox->id, 'label' => $inbox->label])
+            ->map(fn (Inbox $inbox) => [
+                'value' => $inbox->id,
+                'label' => $inbox->label,
+            ])
             ->all());
     }
 
@@ -123,6 +125,4 @@ final readonly class DockRequests
         $provider = $this->container->make($definition->provider);
         $definition->assertOwns($provider->requireReadable($definition, $source->id));
     }
-
-
 }

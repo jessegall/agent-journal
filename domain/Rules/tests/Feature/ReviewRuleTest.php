@@ -40,7 +40,10 @@ final class ReviewRuleTest extends TestCase
     {
         parent::setUp();
 
-        Event::fake([RuleApproved::class, RuleDenied::class]);
+        Event::fake([
+            RuleApproved::class,
+            RuleDenied::class,
+        ]);
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),

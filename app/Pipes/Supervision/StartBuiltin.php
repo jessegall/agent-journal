@@ -17,7 +17,10 @@ final readonly class StartBuiltin implements Pipe
 {
     public function handle(QueuedPart $queued): BuiltinCall
     {
-        [$name, $arguments] = [$queued->argv()[0], array_slice($queued->argv(), 1)];
+        [$name, $arguments] = [
+            $queued->argv()[0],
+            array_slice($queued->argv(), 1),
+        ];
         $command = BuiltinCommand::tryFrom($name)
             ?? throw SupervisorRefused::unsupportedBuiltin($name, 'it has no adapter');
         $queued->state->events->startedInside($queued->part, gethostname() ?: 'unknown');

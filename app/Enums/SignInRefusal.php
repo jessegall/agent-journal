@@ -21,7 +21,12 @@ enum SignInRefusal: string
      */
     public static function fromProvider(string|null $words): self
     {
-        foreach ([self::RejectedCredential, self::NoCredit, self::RateLimited, self::Unreachable] as $refusal) {
+        foreach ([
+            self::RejectedCredential,
+            self::NoCredit,
+            self::RateLimited,
+            self::Unreachable,
+        ] as $refusal) {
             if ($words !== null && preg_match($refusal->pattern(), $words) === 1) {
                 return $refusal;
             }

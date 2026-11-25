@@ -38,7 +38,10 @@ final readonly class DeviceCommandController
             'environment' => $overview->environmentLabel,
             'count' => $overview->tasks->count,
             'tasks' => array_map(
-                fn (EnvironmentTask $task) => ['number' => $task->number, 'title' => $task->title],
+                fn (EnvironmentTask $task) => [
+                    'number' => $task->number,
+                    'title' => $task->title,
+                ],
                 $overview->tasks->tasks,
             ),
         ], JsonResponse::HTTP_OK, ['Cache-Control' => 'no-store, private']);

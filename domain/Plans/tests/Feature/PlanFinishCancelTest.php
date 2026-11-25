@@ -60,12 +60,20 @@ final class PlanFinishCancelTest extends TestCase
         $this->owner = $owner;
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($owner->id), new OwnerAuthority('test'));
-        Event::fake([PlanStarted::class, PlanFinished::class, PlanCancelled::class]);
+        Event::fake([
+            PlanStarted::class,
+            PlanFinished::class,
+            PlanCancelled::class,
+        ]);
     }
 
     public function test_finishing_a_plan_with_an_open_task_is_refused_with_the_count(): void
     {
-        $plan = $this->startedPlan([TaskState::Finished, TaskState::Open, TaskState::Blocked]);
+        $plan = $this->startedPlan([
+            TaskState::Finished,
+            TaskState::Open,
+            TaskState::Blocked,
+        ]);
 
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Done.')),
@@ -79,13 +87,24 @@ final class PlanFinishCancelTest extends TestCase
 
     public function test_finishing_a_plan_whose_tasks_are_done_records_the_note_and_the_done_state(): void
     {
-        $plan = $this->startedPlan([TaskState::Finished, TaskState::Cancelled]);
+        $plan = $this->startedPlan([
+            TaskState::Finished,
+            TaskState::Cancelled,
+        ]);
 
         $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Shipped.'));
 
         $this->assertSame(
-            [PlanState::Done, 'Shipped.', 2],
-            [$plan->fresh()?->state, $plan->fresh()?->finish_note, $plan->fresh()?->revision],
+            [
+                PlanState::Done,
+                'Shipped.',
+                2,
+            ],
+            [
+                $plan->fresh()?->state,
+                $plan->fresh()?->finish_note,
+                $plan->fresh()?->revision,
+            ],
         );
 
         Event::assertDispatchedTimes(PlanFinished::class, 1);
@@ -98,7 +117,10 @@ final class PlanFinishCancelTest extends TestCase
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
-        $plan = $this->startedPlan([TaskState::Open, TaskState::Started]);
+        $plan = $this->startedPlan([
+            TaskState::Open,
+            TaskState::Started,
+        ]);
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $plan->assignmentIdentity(),
@@ -110,12 +132,21 @@ final class PlanFinishCancelTest extends TestCase
         $this->bus()->run(new CancelPlanCommand($plan->id, 1, 'Superseded.'));
 
         $this->assertSame(
-            [PlanState::Cancelled, 'Superseded.'],
-            [$plan->fresh()?->state, $plan->fresh()?->cancel_reason],
+            [
+                PlanState::Cancelled,
+                'Superseded.',
+            ],
+            [
+                $plan->fresh()?->state,
+                $plan->fresh()?->cancel_reason,
+            ],
         );
 
         $this->assertSame(
-            [TaskState::Open, TaskState::Started],
+            [
+                TaskState::Open,
+                TaskState::Started,
+            ],
             Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('state')->all(),
         );
 

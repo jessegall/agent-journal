@@ -27,8 +27,14 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
     {
         return SupportSnapshot::allowingAllBut([
             ...HeadlessCapabilities::unsupportedWithoutTerminal(),
-            [DriverCapability::ExactResume, OperationSupport::unsupported(self::NO_EXACT_RESUME)],
-            [DriverCapability::RunContained, OperationSupport::unsupported(self::NOT_CONTAINABLE)],
+            [
+                DriverCapability::ExactResume,
+                OperationSupport::unsupported(self::NO_EXACT_RESUME),
+            ],
+            [
+                DriverCapability::RunContained,
+                OperationSupport::unsupported(self::NOT_CONTAINABLE),
+            ],
         ]);
     }
 }

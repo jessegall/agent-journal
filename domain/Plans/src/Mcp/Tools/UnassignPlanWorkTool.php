@@ -22,7 +22,10 @@ final class UnassignPlanWorkTool extends PlanCascadeTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return ['root' => $this->rootSchema($schema), 'expected_assignment' => $this->expectedSchema($schema)];
+        return [
+            'root' => $this->rootSchema($schema),
+            'expected_assignment' => $this->expectedSchema($schema),
+        ];
     }
 
     protected function command(ToolArguments $arguments): UnassignPlanWorkCommand

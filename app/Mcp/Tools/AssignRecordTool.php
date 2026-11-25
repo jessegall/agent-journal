@@ -22,7 +22,10 @@ final class AssignRecordTool extends AssignmentWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return [...$this->recordSchema($schema), 'recipient' => $this->assigneeSchema($schema)];
+        return [
+            ...$this->recordSchema($schema),
+            'recipient' => $this->assigneeSchema($schema),
+        ];
     }
 
     protected function command(ToolArguments $arguments): AssignRecordCommand

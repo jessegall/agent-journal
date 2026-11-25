@@ -55,7 +55,10 @@ final class SequenceRunsListTest extends TestCase
         $running = $this->runFor($first);
         $cancelled = $this->runFor($first);
         $cancelled->cancel();
-        $query = http_build_query(['actor' => $first->text(), 'page' => 1]);
+        $query = http_build_query([
+            'actor' => $first->text(),
+            'page' => 1,
+        ]);
 
         $list = $this->pageOf("/sequences/runs?{$query}");
         $run = $this->pageOf("/sequences/runs/{$running->number}?{$query}");
@@ -99,7 +102,10 @@ final class SequenceRunsListTest extends TestCase
 
     private function runFor(ActorIdentity $follower): SequenceRun
     {
-        $run = SequenceRun::create('Release', ['Read the brief.', 'Run the tests.']);
+        $run = SequenceRun::create('Release', [
+            'Read the brief.',
+            'Run the tests.',
+        ]);
         $run->startFor($follower, (string) Str::uuid());
 
         return $run;

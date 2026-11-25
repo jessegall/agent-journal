@@ -32,7 +32,10 @@ final readonly class PolicyGrant
      */
     public function toArray(): array
     {
-        return ['policy' => $this->policy, 'access' => $this->access->value];
+        return [
+            'policy' => $this->policy,
+            'access' => $this->access->value,
+        ];
     }
 
     /**
@@ -47,7 +50,10 @@ final readonly class PolicyGrant
         $access = is_string($fields['access'] ?? null) ? AccessType::tryFrom($fields['access']) : null;
         $policy = $fields['policy'] ?? null;
 
-        if ($keys !== ['access', 'policy'] || $access === null || ! is_string($policy)
+        if ($keys !== [
+            'access',
+            'policy',
+        ] || $access === null || ! is_string($policy)
             || ! Reflector::factory()->isSubclassOf($policy, Policy::class)) {
             throw GrantShapeInvalid::for($keys);
         }

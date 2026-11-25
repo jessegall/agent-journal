@@ -29,7 +29,12 @@ final class StateMethods
     /**
      * The types a hook method returns, and so the only ones an event method may return besides void.
      */
-    private const array HOOK_ANSWER_TYPES = [AnswerPart::class, Command::class, Event::class, StateReference::class];
+    private const array HOOK_ANSWER_TYPES = [
+        AnswerPart::class,
+        Command::class,
+        Event::class,
+        StateReference::class,
+    ];
 
     /**
      * @var array<class-string<AgentState>, array{
@@ -216,7 +221,13 @@ final class StateMethods
             }
         }
 
-        return ['methods' => [...$methods, ...$events], 'events' => $events];
+        return [
+            'methods' => [
+                ...$methods,
+                ...$events,
+            ],
+            'events' => $events,
+        ];
     }
 
     private function isHookOverride(ReflectedMethod $method, ReflectedMethod $hook): bool

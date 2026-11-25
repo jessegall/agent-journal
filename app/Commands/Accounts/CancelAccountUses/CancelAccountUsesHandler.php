@@ -35,6 +35,9 @@ final readonly class CancelAccountUsesHandler implements CommandHandler
         return ProcessStart::supervised()
             ->onAccount($account)
             ->where('state', ProcessStartState::Pending->value)
-            ->update(['state' => ProcessStartState::Cancelled->value, 'ended_at' => CarbonImmutable::now()]);
+            ->update([
+                'state' => ProcessStartState::Cancelled->value,
+                'ended_at' => CarbonImmutable::now(),
+            ]);
     }
 }

@@ -54,7 +54,10 @@ final readonly class TransactionalRecordLinker implements RecordLinker
 
         usort(
             $ordered,
-            fn (Model $one, Model $other) => [$one->getMorphClass(), (string) $one->getKey()] <=> [
+            fn (Model $one, Model $other) => [
+                $one->getMorphClass(),
+                (string) $one->getKey(),
+            ] <=> [
                 $other->getMorphClass(),
                 (string) $other->getKey(),
             ],
@@ -63,7 +66,10 @@ final readonly class TransactionalRecordLinker implements RecordLinker
         self::lock($ordered[0]);
         self::lock($ordered[1]);
 
-        return [$from, $to];
+        return [
+            $from,
+            $to,
+        ];
     }
 
     private static function lock(Model $record): void

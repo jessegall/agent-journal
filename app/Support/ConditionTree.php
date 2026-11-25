@@ -131,7 +131,10 @@ final readonly class ConditionTree
             }
 
             foreach (is_array($node) && is_array($node['children'] ?? null) ? $node['children'] : [] as $child) {
-                $pending[] = [$child, $level + 1];
+                $pending[] = [
+                    $child,
+                    $level + 1,
+                ];
             }
         }
     }
@@ -191,7 +194,10 @@ final readonly class ConditionTree
      */
     private function requirementOf(string $key, ConditionNode $node): AccessRequirement
     {
-        [$policy, $access] = str_contains($key, ':') ? explode(':', $key, 2) : [$key, ''];
+        [$policy, $access] = str_contains($key, ':') ? explode(':', $key, 2) : [
+            $key,
+            '',
+        ];
         $accessType = AccessType::tryFrom($access);
 
         $definition = array_find(
@@ -248,7 +254,10 @@ final readonly class ConditionTree
      */
     private function named(ConditionNode $node): SkillCondition
     {
-        $node->requireShape($node->version, ['key', 'parameters']);
+        $node->requireShape($node->version, [
+            'key',
+            'parameters',
+        ]);
         $key = $node->field('key', 'is not an owner-prefixed key such as plans.active-plan');
         $parameters = $node->hasField('parameters') ? $node->field('parameters', 'is not an object') : [];
 

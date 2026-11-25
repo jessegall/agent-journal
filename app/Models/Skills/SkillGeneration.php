@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -35,13 +35,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['catalogue_digest', 'registration_digest', 'entries', 'state', 'error_reason'])]
+#[Fillable([
+    'catalogue_digest',
+    'registration_digest',
+    'entries',
+    'state',
+    'error_reason',
+])]
 final class SkillGeneration extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.skill-generation';
@@ -134,7 +140,11 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     private function assertContentUnedited(): void
     {
-        if ($this->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
+        if ($this->isDirty([
+            'entries',
+            'catalogue_digest',
+            'registration_digest',
+        ])) {
             throw SkillGenerationImmutable::for($this->id);
         }
     }

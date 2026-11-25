@@ -40,7 +40,11 @@ final readonly class PlanSearchProvider implements SearchProvider
             admitted: fn () => self::admitted($constraints),
             idColumn: 'id',
             titleColumn: 'title',
-            columns: ['id', 'number', 'title'],
+            columns: [
+                'id',
+                'number',
+                'title',
+            ],
             titleOf: fn (Plan $plan): string => $plan->title,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $planId): bool => $this->access->admitsOpen($query->reader, $planId),

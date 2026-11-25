@@ -74,7 +74,13 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
         $ref = "refs/journal/repair/{$source}";
 
         $fetch = $this->git(
-            ['fetch', '--no-tags', '--quiet', $this->repository, "{$commit}:{$ref}"],
+            [
+                'fetch',
+                '--no-tags',
+                '--quiet',
+                $this->repository,
+                "{$commit}:{$ref}",
+            ],
             $certified->worktree,
         );
 
@@ -94,7 +100,12 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
     {
         $ref = $work->importRef;
 
-        if (! $this->git(['rev-parse', '--verify', '--quiet', $ref])->successful()) {
+        if (! $this->git([
+            'rev-parse',
+            '--verify',
+            '--quiet',
+            $ref,
+        ])->successful()) {
             $fetch = $this->git([
                 'fetch',
                 '--no-tags',
@@ -110,14 +121,25 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
             }
         }
 
-        $commits = $this->git(['rev-list', '--reverse', $ref, '--not', 'HEAD'])->output();
+        $commits = $this->git([
+            'rev-list',
+            '--reverse',
+            $ref,
+            '--not',
+            'HEAD',
+        ])->output();
 
         return array_values(array_filter(explode("\n", trim($commits))));
     }
 
     private function revision(string $name): string
     {
-        return trim($this->git(['rev-parse', '--verify', '--quiet', $name])->output());
+        return trim($this->git([
+            'rev-parse',
+            '--verify',
+            '--quiet',
+            $name,
+        ])->output());
     }
 
     /**
@@ -129,8 +151,16 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
             ->newPendingProcess()
             ->path($folder ?? $this->repository)
             ->timeout(self::STEP_SECONDS_LIMIT)
-            ->env(['GIT_CONFIG_NOSYSTEM' => '1', 'GIT_CONFIG_GLOBAL' => '/dev/null', 'GIT_TERMINAL_PROMPT' => '0'])
-            ->run(['git', ...$this->settings(), ...$arguments]);
+            ->env([
+                'GIT_CONFIG_NOSYSTEM' => '1',
+                'GIT_CONFIG_GLOBAL' => '/dev/null',
+                'GIT_TERMINAL_PROMPT' => '0',
+            ])
+            ->run([
+                'git',
+                ...$this->settings(),
+                ...$arguments,
+            ]);
     }
 
     /**
@@ -138,6 +168,9 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
      */
     private function settings(): array
     {
-        return array_merge(...array_map(fn (string $setting) => ['-c', $setting], self::SAFE_SETTINGS));
+        return array_merge(...array_map(fn (string $setting) => [
+            '-c',
+            $setting,
+        ], self::SAFE_SETTINGS));
     }
 }

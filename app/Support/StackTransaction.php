@@ -129,7 +129,10 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
                 fn () => $this->database->rollBack(),
             );
         } catch (QueryException $failure) {
-            if (in_array($failure->getCode(), [self::LOCK_NOT_AVAILABLE, self::QUERY_CANCELED], true)) {
+            if (in_array($failure->getCode(), [
+                self::LOCK_NOT_AVAILABLE,
+                self::QUERY_CANCELED,
+            ], true)) {
                 throw StackLockTimedOut::after($deadline->milliseconds, $failure);
             }
 

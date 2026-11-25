@@ -114,12 +114,22 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
      */
     public function nativeParts(): array
     {
-        return ['BundleApprovals.vue', 'RequestWindow.vue', 'RunView.vue'];
+        return [
+            'BundleApprovals.vue',
+            'RequestWindow.vue',
+            'RunView.vue',
+        ];
     }
 
     public function pages(): array
     {
-        return [$this->listPage(), $this->requestPage(), $this->runsPage(), $this->runPage(), $this->runOutcomePage()];
+        return [
+            $this->listPage(),
+            $this->requestPage(),
+            $this->runsPage(),
+            $this->runPage(),
+            $this->runOutcomePage(),
+        ];
     }
 
     /**

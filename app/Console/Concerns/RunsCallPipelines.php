@@ -141,7 +141,10 @@ trait RunsCallPipelines
             return [];
         }
 
-        return [(int) $span[1], (int) $span[2]];
+        return [
+            (int) $span[1],
+            (int) $span[2],
+        ];
     }
 
     /**

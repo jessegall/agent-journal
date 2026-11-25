@@ -129,7 +129,10 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['lifecycle' => 'queued', 'capture_state' => 'recording'];
+    protected $attributes = [
+        'lifecycle' => 'queued',
+        'capture_state' => 'recording',
+    ];
 
     /**
      * @return array<string, string>
@@ -428,7 +431,10 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
      */
     public function composeDockCard(CardContext $context): DockCard
     {
-        $parts = $this->parts->sortBy(['syntax_node', 'attempt']);
+        $parts = $this->parts->sortBy([
+            'syntax_node',
+            'attempt',
+        ]);
         $last = $parts->last();
         $title = $last === null ? 'Process run' : "Run of {$last->operation}";
         $ended = self::areAllPartsFinal($parts);

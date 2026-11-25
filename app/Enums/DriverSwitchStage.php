@@ -26,7 +26,12 @@ enum DriverSwitchStage: string
      */
     public function isFinal(): bool
     {
-        return in_array($this, [self::Refused, self::Confirmed, self::LaunchFailed, self::Cancelled], true);
+        return in_array($this, [
+            self::Refused,
+            self::Confirmed,
+            self::LaunchFailed,
+            self::Cancelled,
+        ], true);
     }
 
     /**
@@ -52,7 +57,10 @@ enum DriverSwitchStage: string
      */
     public function isUnconfirmed(): bool
     {
-        return in_array($this, [self::StopUnconfirmed, self::StartUnconfirmed], true);
+        return in_array($this, [
+            self::StopUnconfirmed,
+            self::StartUnconfirmed,
+        ], true);
     }
 
     /**
@@ -61,7 +69,12 @@ enum DriverSwitchStage: string
      */
     public function blocksWriter(): bool
     {
-        return in_array($this, [self::Stopping, self::StopUnconfirmed, self::Starting, self::StartUnconfirmed], true);
+        return in_array($this, [
+            self::Stopping,
+            self::StopUnconfirmed,
+            self::Starting,
+            self::StartUnconfirmed,
+        ], true);
     }
 
     public function mayMoveTo(self $next): bool
@@ -75,13 +88,37 @@ enum DriverSwitchStage: string
     private function followers(): array
     {
         return match ($this) {
-            self::Requested => [self::Preflighted, self::Refused, self::Cancelled],
-            self::Preflighted => [self::Stopping, self::Cancelled],
-            self::Stopping => [self::Stopped, self::StopUnconfirmed],
-            self::StopUnconfirmed => [self::Stopped, self::Cancelled],
-            self::Stopped => [self::Starting, self::LaunchFailed, self::Cancelled],
-            self::Starting => [self::Confirmed, self::StartUnconfirmed, self::LaunchFailed],
-            self::StartUnconfirmed => [self::Confirmed, self::LaunchFailed],
+            self::Requested => [
+                self::Preflighted,
+                self::Refused,
+                self::Cancelled,
+            ],
+            self::Preflighted => [
+                self::Stopping,
+                self::Cancelled,
+            ],
+            self::Stopping => [
+                self::Stopped,
+                self::StopUnconfirmed,
+            ],
+            self::StopUnconfirmed => [
+                self::Stopped,
+                self::Cancelled,
+            ],
+            self::Stopped => [
+                self::Starting,
+                self::LaunchFailed,
+                self::Cancelled,
+            ],
+            self::Starting => [
+                self::Confirmed,
+                self::StartUnconfirmed,
+                self::LaunchFailed,
+            ],
+            self::StartUnconfirmed => [
+                self::Confirmed,
+                self::LaunchFailed,
+            ],
             self::LaunchFailed => [self::Stopped],
             self::Refused, self::Confirmed, self::Cancelled => [],
         };

@@ -26,6 +26,10 @@ final readonly class Authorize
      */
     public function auditFields(): array
     {
-        return ['policy' => $this->policy, 'model' => $this->policy::model(), 'access' => $this->access->value];
+        return [
+            'policy' => $this->policy,
+            'model' => $this->policy::model(),
+            'access' => $this->access->value,
+        ];
     }
 }

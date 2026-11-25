@@ -78,7 +78,10 @@ final class HelperContextTest extends TestCase
             false,
         );
 
-        foreach ([$started, $compacted] as $lines) {
+        foreach ([
+            $started,
+            $compacted,
+        ] as $lines) {
             $context = implode("\n", array_map(
                 fn (ContextLine $line) => $this->app->make(AgentTexts::class)->render($line->text),
                 $lines,

@@ -26,7 +26,13 @@ final class TaskCommentsTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['comments', 'users', 'tasks', 'agents', 'command_receipts'];
+    private const array TABLES = [
+        'comments',
+        'users',
+        'tasks',
+        'agents',
+        'command_receipts',
+    ];
 
     private User $owner;
 

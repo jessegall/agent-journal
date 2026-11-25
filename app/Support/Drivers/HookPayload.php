@@ -134,7 +134,10 @@ final class HookPayload extends Data
             ? [ProtectedFileRead::patternFolder($searched, $pattern)]
             : [];
 
-        return ProtectedFileRead::inFolder($folder, [$searched, ...$patternFolder]);
+        return ProtectedFileRead::inFolder($folder, [
+            $searched,
+            ...$patternFolder,
+        ]);
     }
 
     public function isSessionStart(): bool

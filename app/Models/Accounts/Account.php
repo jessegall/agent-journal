@@ -83,7 +83,10 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['account_protocol', 'label'])]
+#[Fillable([
+    'account_protocol',
+    'label',
+])]
 final class Account extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -97,7 +100,11 @@ final class Account extends Model implements EventSource, ReadableModel
     /**
      * @var list<string>
      */
-    protected $hidden = ['directory', 'live_writer_attempt_id', 'operation_id'];
+    protected $hidden = [
+        'directory',
+        'live_writer_attempt_id',
+        'operation_id',
+    ];
 
     /**
      * @return array<string, string>
@@ -473,7 +480,10 @@ final class Account extends Model implements EventSource, ReadableModel
 
     public function isBeingRemoved(): bool
     {
-        return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
+        return in_array($this->state, [
+            AccountState::Removing,
+            AccountState::Removed,
+        ], true);
     }
 
     /**

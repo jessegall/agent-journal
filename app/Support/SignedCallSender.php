@@ -25,7 +25,11 @@ use TypeError;
  */
 final readonly class SignedCallSender implements CallSender
 {
-    private const array PROXY_STATUSES = [502, 503, 504];
+    private const array PROXY_STATUSES = [
+        502,
+        503,
+        504,
+    ];
 
     public function __construct(private AgentRequestClient $client, private AgentClientSettings $settings) {}
 

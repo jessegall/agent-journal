@@ -135,8 +135,14 @@ final class SettleAndRecoverTest extends TestCase
         );
 
         $this->assertSame(
-            [AttentionState::Active, AttentionState::Active],
-            [Document::query()->sole()->attention, Report::query()->sole()->attention],
+            [
+                AttentionState::Active,
+                AttentionState::Active,
+            ],
+            [
+                Document::query()->sole()->attention,
+                Report::query()->sole()->attention,
+            ],
         );
     }
 
@@ -201,12 +207,26 @@ final class SettleAndRecoverTest extends TestCase
         $result = $this->bus()->run(new RecoverDocumentCommand($draft->target(), '  Agent gone.  '));
         $close = DocumentClose::query()->sole();
 
-        $this->assertSame([2, true], [$result->revisionNumber, $result->published]);
+        $this->assertSame([
+            2,
+            true,
+        ], [
+            $result->revisionNumber,
+            $result->published,
+        ]);
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
 
         $this->assertSame(
-            [CloseCause::Recovery, TestIds::of(1), 'Agent gone.'],
-            [$close->cause, $close->closer_id, $close->reason],
+            [
+                CloseCause::Recovery,
+                TestIds::of(1),
+                'Agent gone.',
+            ],
+            [
+                $close->cause,
+                $close->closer_id,
+                $close->reason,
+            ],
         );
 
         $this->assertSame(1, $this->bus()->run(new OpenDocumentCommand('1'))->version);
@@ -233,10 +253,19 @@ final class SettleAndRecoverTest extends TestCase
         DB::transaction(fn () => $this->endSession(8, 80));
 
         $this->assertSame(0, DocumentDraft::query()->count());
-        $this->assertSame(['2', '1'], [$this->documents()->show(1)->revision, $this->documents()->show(2)->revision]);
+        $this->assertSame([
+            '2',
+            '1',
+        ], [
+            $this->documents()->show(1)->revision,
+            $this->documents()->show(2)->revision,
+        ]);
 
         $this->assertSame(
-            [CloseCause::Lifecycle, CloseCause::Lifecycle],
+            [
+                CloseCause::Lifecycle,
+                CloseCause::Lifecycle,
+            ],
             DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all(),
         );
     }

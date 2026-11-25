@@ -62,7 +62,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon $filed_at
  * @property AttentionState $attention
  */
-#[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
+#[Fillable([
+    'title',
+    'abstract',
+    'body',
+    'creator_type',
+    'creator_id',
+    'filed_at',
+])]
 final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
@@ -164,7 +171,10 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
      */
     private function assertOnlyAttentionEdited(): void
     {
-        if (array_diff(array_keys($this->getDirty()), ['attention', 'updated_at']) !== []) {
+        if (array_diff(array_keys($this->getDirty()), [
+            'attention',
+            'updated_at',
+        ]) !== []) {
             throw RecordImmutable::for('report');
         }
     }

@@ -47,6 +47,9 @@ final readonly class ScriptParameter implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['name' => $this->name, 'value' => $this->parameterText];
+        return [
+            'name' => $this->name,
+            'value' => $this->parameterText,
+        ];
     }
 }

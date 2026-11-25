@@ -22,7 +22,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $source
  * @property array<string, mixed> $commands
  */
-#[Fillable(['profile_key', 'revision', 'source', 'commands', 'author_type', 'author_id'])]
+#[Fillable([
+    'profile_key',
+    'revision',
+    'source',
+    'commands',
+    'author_type',
+    'author_id',
+])]
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -36,7 +43,11 @@ final class ProfileDraftRevision extends Model implements ReadableModel
 
     protected function casts(): array
     {
-        return ['revision' => 'integer', 'commands' => 'array', 'author_type' => ActorType::class];
+        return [
+            'revision' => 'integer',
+            'commands' => 'array',
+            'author_type' => ActorType::class,
+        ];
     }
 
     // ----------[ Constructors ]----------

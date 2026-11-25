@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\ShareAuditActor;
@@ -33,13 +33,18 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $reason_code
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['type', 'actor_type', 'actor_id', 'reason_code'])]
+#[Fillable([
+    'type',
+    'actor_type',
+    'actor_id',
+    'reason_code',
+])]
 final class ShareAudit extends Model implements ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
 
     public const string LINK_TYPE = 'core.share-audit';
 

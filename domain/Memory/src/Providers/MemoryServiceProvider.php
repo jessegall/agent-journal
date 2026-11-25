@@ -37,7 +37,12 @@ final class MemoryServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');
 
         $this->commands(
-            [MemorySaveCommand::class, MemoryEditCommand::class, MemoryRemoveCommand::class, MemoryListCommand::class],
+            [
+                MemorySaveCommand::class,
+                MemoryEditCommand::class,
+                MemoryRemoveCommand::class,
+                MemoryListCommand::class,
+            ],
         );
 
         $links->register([

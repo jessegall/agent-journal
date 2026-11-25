@@ -46,7 +46,10 @@ final readonly class UiManifest
         $root = $this->files->realPath($base);
         $components = $this->components($base, $root);
         $folders = $this->domainFolders($root);
-        $hash = substr(sha1((string) json_encode([$components, $folders])), 0, 12);
+        $hash = substr(sha1((string) json_encode([
+            $components,
+            $folders,
+        ])), 0, 12);
 
         $artifacts = [
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
@@ -89,7 +92,10 @@ final readonly class UiManifest
                 ],
             ),
             'resources/js/generated/domain-roots.json' => json_encode(
-                ['hash' => $hash, 'owners' => $folders],
+                [
+                    'hash' => $hash,
+                    'owners' => $folders,
+                ],
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
             )."\n",
             'bootstrap/cache/ui-components.php' => <<<'TEXT'
@@ -153,7 +159,10 @@ final readonly class UiManifest
         $checks = [];
 
         foreach ($this->declarations->pages() as $page) {
-            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = [
+            $checks['accepts_'.str_replace([
+                '.',
+                '-',
+            ], '_', $page->key)] = [
                 'type' => '{ data: '.$this->propTypes->dataTypeOf($page).' }',
                 'path' => '../../../'.$this->fromRoot($root, $page->componentFile),
             ];
@@ -328,6 +337,9 @@ final readonly class UiManifest
             $shared++;
         }
 
-        return implode('/', [...array_fill(0, count($from) - $shared, '..'), ...array_slice($to, $shared)]);
+        return implode('/', [
+            ...array_fill(0, count($from) - $shared, '..'),
+            ...array_slice($to, $shared),
+        ]);
     }
 }

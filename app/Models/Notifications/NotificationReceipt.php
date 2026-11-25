@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Notifications;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -15,6 +14,7 @@ use App\Events\Messages\NotificationReceiptRead;
 use App\Events\Messages\NotificationReceiptRevealed;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,7 +37,11 @@ use PhpOption\Option;
  * @property-read NotificationOccurrence $occurrence
  */
 #[Table('notification_receipts')]
-#[Fillable(['occurrence_id', 'scope_id', 'sequence'])]
+#[Fillable([
+    'occurrence_id',
+    'scope_id',
+    'sequence',
+])]
 final class NotificationReceipt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

@@ -27,7 +27,10 @@ final readonly class SecurityOptions
      */
     public static function make(string|null $seccomp, string|null $apparmor, string $profilesFolder): self
     {
-        foreach ([$seccomp, $apparmor] as $profile) {
+        foreach ([
+            $seccomp,
+            $apparmor,
+        ] as $profile) {
             self::assertPlain($profile, $profilesFolder);
         }
 

@@ -26,6 +26,10 @@ final readonly class Outcome
      */
     public function toArray(): array
     {
-        return ['item' => $this->item, 'passed' => $this->isPassed, 'reason' => $this->reason];
+        return [
+            'item' => $this->item,
+            'passed' => $this->isPassed,
+            'reason' => $this->reason,
+        ];
     }
 }

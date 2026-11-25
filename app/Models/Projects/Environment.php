@@ -27,7 +27,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $label
  * @property CarbonImmutable|null $created_at
  */
-#[Fillable(['project_id', 'label'])]
+#[Fillable([
+    'project_id',
+    'label',
+])]
 final class Environment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

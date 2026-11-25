@@ -18,6 +18,9 @@ final readonly class EditPlanController
     {
         $command = new EditPlanCommand($call->planId, $call->expectedRevision, $call->title, $call->brief, $call->type);
 
-        return PlanEdited::from(['planId' => $call->planId, 'revision' => $commands->run($command)]);
+        return PlanEdited::from([
+            'planId' => $call->planId,
+            'revision' => $commands->run($command),
+        ]);
     }
 }

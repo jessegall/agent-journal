@@ -105,7 +105,10 @@ final readonly class StringSetting implements Setting
     public function catalogueConstraints(): CatalogueConstraints|Optional
     {
         return StringConstraintsData::from(
-            ['minimumLength' => $this->minimumLength, 'maximumLength' => $this->maximumLength],
+            [
+                'minimumLength' => $this->minimumLength,
+                'maximumLength' => $this->maximumLength,
+            ],
         );
     }
 }

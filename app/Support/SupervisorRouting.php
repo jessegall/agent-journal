@@ -67,7 +67,10 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
 
         $this->requireAcyclic(
             $profiles,
-            [...SupervisorLink::graphRoutes(), SupervisorTarget::forActor($command->actor)->key => $routes],
+            [
+                ...SupervisorLink::graphRoutes(),
+                SupervisorTarget::forActor($command->actor)->key => $routes,
+            ],
         );
 
         $link->change($routes, $type);
@@ -139,7 +142,10 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     {
         $profiles = [];
 
-        foreach ([...$this->profiles->supervisorProfiles(), ...$proposed] as $profile) {
+        foreach ([
+            ...$this->profiles->supervisorProfiles(),
+            ...$proposed,
+        ] as $profile) {
             $profiles[SupervisorTarget::forProfile($profile->key)->key] = $profile;
         }
 

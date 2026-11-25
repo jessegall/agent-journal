@@ -11,10 +11,10 @@ declare(strict_types=1);
  *   php tools/refactoring/layout/capture-baseline.php
  */
 
-use App\Support\CoreListenerFolders;
 use App\Mcp\Support\McpCatalogue;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\CommandName;
+use App\Support\CoreListenerFolders;
 use App\Support\Reflector;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Routing\Route;
@@ -28,12 +28,20 @@ require $root.'/vendor/autoload.php';
 $snapshots = [];
 $app = require $root.'/bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
-$snapshots['boot-normal'] = ['booted' => $app->isBooted(), 'providers' => sortedKeys($app->getLoadedProviders())];
+$snapshots['boot-normal'] = [
+    'booted' => $app->isBooted(),
+    'providers' => sortedKeys($app->getLoadedProviders()),
+];
 
 $pairs = json_decode((string) file_get_contents(__DIR__.'/baseline-pairs.json'), true, flags: JSON_THROW_ON_ERROR)['pairs'];
 $snapshots['operation-names'] = sorted(array_map(fn (array $pair) => CommandName::of($pair['command']), $pairs));
 $snapshots['command-pairs'] = array_map(
-    fn (array $pair) => [$pair['owner'], CommandName::of($pair['command']), $pair['command'], $pair['handler']],
+    fn (array $pair) => [
+        $pair['owner'],
+        CommandName::of($pair['command']),
+        $pair['command'],
+        $pair['handler'],
+    ],
     $pairs,
 );
 
@@ -76,7 +84,10 @@ $snapshots['mcp-resources'] = sorted(array_map(
 
 $sharing = require $root.'/bootstrap/sharing.php';
 $sharing->make(Kernel::class)->bootstrap();
-$snapshots['boot-sharing'] = ['booted' => $sharing->isBooted(), 'providers' => sortedKeys($sharing->getLoadedProviders())];
+$snapshots['boot-sharing'] = [
+    'booted' => $sharing->isBooted(),
+    'providers' => sortedKeys($sharing->getLoadedProviders()),
+];
 $snapshots['routes-sharing'] = routesOf($sharing->make(Router::class));
 
 $expected = [

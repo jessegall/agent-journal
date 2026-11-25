@@ -15,6 +15,9 @@ final readonly class DockLink implements JsonSerializable
 
     public function jsonSerialize(): mixed
     {
-        return ['page' => $this->page, 'href' => $this->href];
+        return [
+            'page' => $this->page,
+            'href' => $this->href,
+        ];
     }
 }

@@ -46,7 +46,10 @@ final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
 
     public function set(Actor $actor, AuthoritySource $authority): void
     {
-        $this->installed = [[ActorContext::of($actor), $authority]];
+        $this->installed = [[
+            ActorContext::of($actor),
+            $authority,
+        ]];
     }
 
     public function clear(): void

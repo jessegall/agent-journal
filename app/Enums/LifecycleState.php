@@ -25,15 +25,33 @@ enum LifecycleState: string
     public function canMoveTo(self $next): bool
     {
         return in_array($next, match ($this) {
-            self::Queued => [self::Running, self::SpawnFailed, self::Skipped, self::Stopped],
-            self::Running => [self::Draining, self::Stopped, self::Lost],
-            self::Draining => [self::Ended, self::Lost],
+            self::Queued => [
+                self::Running,
+                self::SpawnFailed,
+                self::Skipped,
+                self::Stopped,
+            ],
+            self::Running => [
+                self::Draining,
+                self::Stopped,
+                self::Lost,
+            ],
+            self::Draining => [
+                self::Ended,
+                self::Lost,
+            ],
             self::Ended, self::Stopped, self::Lost, self::SpawnFailed, self::Skipped => [],
         }, true);
     }
 
     public function isFinal(): bool
     {
-        return in_array($this, [self::Ended, self::Stopped, self::Lost, self::SpawnFailed, self::Skipped], true);
+        return in_array($this, [
+            self::Ended,
+            self::Stopped,
+            self::Lost,
+            self::SpawnFailed,
+            self::Skipped,
+        ], true);
     }
 }

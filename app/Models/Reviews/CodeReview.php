@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -25,7 +23,9 @@ use App\Support\RecordIdentity;
 use App\Values\AskReference;
 use App\Values\HelperImportReceipt;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -75,9 +75,9 @@ final class CodeReview extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
-    use OrdersById;
     use HasWorkColumns;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -90,7 +90,10 @@ final class CodeReview extends Model implements EventSource, ReadableModel
      */
     protected function casts(): array
     {
-        return ['state' => CodeReviewState::class, 'import_attempts' => 'integer'];
+        return [
+            'state' => CodeReviewState::class,
+            'import_attempts' => 'integer',
+        ];
     }
 
     // ----------[ Mutations ]----------

@@ -142,7 +142,10 @@ final class SharingSupervisor
         } catch (GatewayOpenFailed $failure) {
             $this->log->error(
                 "A share gateway did not open: {$failure->getMessage()}",
-                ['operation' => $operation->operationId, 'exception' => $failure],
+                [
+                    'operation' => $operation->operationId,
+                    'exception' => $failure,
+                ],
             );
 
             return GatewayOutcome::Failed;

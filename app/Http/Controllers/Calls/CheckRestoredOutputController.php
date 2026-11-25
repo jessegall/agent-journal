@@ -20,7 +20,10 @@ final readonly class CheckRestoredOutputController
 
         return RestoreChecked::from([
             'capture' => array_map(
-                fn (string $partId, string $state) => ['partId' => $partId, 'state' => $state],
+                fn (string $partId, string $state) => [
+                    'partId' => $partId,
+                    'state' => $state,
+                ],
                 array_keys($captures),
                 array_values($captures),
             ),

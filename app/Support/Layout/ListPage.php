@@ -173,7 +173,10 @@ final readonly class ListPage
             $parts[] = LayoutPartData::collection('views', 'choices', $this->views);
         }
 
-        foreach ([$this->search, $this->creation] as $part) {
+        foreach ([
+            $this->search,
+            $this->creation,
+        ] as $part) {
             if ($part instanceof LayoutPartData) {
                 $parts[] = $part;
             }

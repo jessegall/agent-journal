@@ -88,7 +88,10 @@ final class WorkingOnTaskState extends AgentState
      */
     public function instruction(): Option
     {
-        return new Some(AgentText::of('tasks.working_on', ['task' => $this->number, 'run' => $this->runNumber]));
+        return new Some(AgentText::of('tasks.working_on', [
+            'task' => $this->number,
+            'run' => $this->runNumber,
+        ]));
     }
 
     // ----------[ Lifecycle ]----------

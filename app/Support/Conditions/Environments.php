@@ -39,6 +39,10 @@ final readonly class Environments implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => self::TYPE, 'version' => self::VERSION, 'keys' => $this->keys];
+        return [
+            'type' => self::TYPE,
+            'version' => self::VERSION,
+            'keys' => $this->keys,
+        ];
     }
 }

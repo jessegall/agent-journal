@@ -26,7 +26,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['process_run_id', 'sequence', 'type', 'payload'])]
+#[Fillable([
+    'process_run_id',
+    'sequence',
+    'type',
+    'payload',
+])]
 final class ProcessEvent extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -40,7 +45,10 @@ final class ProcessEvent extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['sequence' => 'integer', 'payload' => 'array'];
+        return [
+            'sequence' => 'integer',
+            'payload' => 'array',
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -54,7 +62,12 @@ final class ProcessEvent extends Model implements ReadableModel
 
         if ($existing === null) {
             return self::query()->create(
-                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $fields],
+                [
+                    'process_run_id' => $run->id,
+                    'sequence' => $sequence,
+                    'type' => $type,
+                    'payload' => $fields,
+                ],
             );
         }
 
@@ -69,7 +82,11 @@ final class ProcessEvent extends Model implements ReadableModel
                 'process_run_id' => $run->id,
                 'sequence' => $next,
                 'type' => self::OPERATIONAL_ERROR,
-                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $fields],
+                'payload' => [
+                    'conflicts_with' => $sequence,
+                    'type' => $type,
+                    'payload' => $fields,
+                ],
             ],
         );
     }

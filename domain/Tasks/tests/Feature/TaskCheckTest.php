@@ -101,8 +101,16 @@ final class TaskCheckTest extends TestCase
         $check = TaskCheck::query()->where('task_id', $task->id)->sole();
 
         $this->assertSame(
-            [$ownReceipt, 'passed', 1],
-            [$check->result_receipt_id, $check->outcome, $check->run_number],
+            [
+                $ownReceipt,
+                'passed',
+                1,
+            ],
+            [
+                $check->result_receipt_id,
+                $check->outcome,
+                $check->run_number,
+            ],
         );
 
         Event::assertDispatchedTimes(TaskCheckRecorded::class, 1);
@@ -110,8 +118,16 @@ final class TaskCheckTest extends TestCase
         $proofs = $this->app->make(TaskProofResolver::class)->proofsOf($task->id, null, 10)->proofs;
 
         $this->assertSame(
-            [['acme verify', 'passed', 1]],
-            array_map(fn (TaskProof $proof) => [$proof->operation, $proof->outcome, $proof->runNumber], $proofs),
+            [[
+                'acme verify',
+                'passed',
+                1,
+            ]],
+            array_map(fn (TaskProof $proof) => [
+                $proof->operation,
+                $proof->outcome,
+                $proof->runNumber,
+            ], $proofs),
         );
     }
 

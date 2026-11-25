@@ -52,8 +52,14 @@ final class TaskActionsPageTest extends TestCase
             ->where(self::READER.'.3.children.1.key', 'cancel'));
 
         $this->act('start')->assertStatus(303)->assertSessionHasNoErrors();
-        $this->act('block', ['run' => 1, 'reason' => '   '])->assertSessionHasErrors('reason');
-        $this->act('block', ['run' => 1, 'reason' => 'Waits for the schema.'])->assertSessionHasNoErrors();
+        $this->act('block', [
+            'run' => 1,
+            'reason' => '   ',
+        ])->assertSessionHasErrors('reason');
+        $this->act('block', [
+            'run' => 1,
+            'reason' => 'Waits for the schema.',
+        ])->assertSessionHasNoErrors();
 
         $this->assertSame(TaskState::Blocked, $this->task->refresh()->state);
     }
@@ -66,10 +72,23 @@ final class TaskActionsPageTest extends TestCase
         $bus->run(new BlockTaskCommand($this->task->id, 1, 'Waits.'));
         $bus->run(new StartTaskCommand($this->task->id));
 
-        $this->act('cancel', ['reason' => 'Dropped.', 'revision' => 1, 'run' => 1])->assertSessionHasErrors();
-        $this->act('block', ['run' => 1, 'reason' => 'From an older tab.'])->assertSessionHasErrors();
+        $this->act('cancel', [
+            'reason' => 'Dropped.',
+            'revision' => 1,
+            'run' => 1,
+        ])->assertSessionHasErrors();
+        $this->act('block', [
+            'run' => 1,
+            'reason' => 'From an older tab.',
+        ])->assertSessionHasErrors();
 
-        $this->assertSame([TaskState::Started, 2], [$this->task->refresh()->state, $this->task->run_number]);
+        $this->assertSame([
+            TaskState::Started,
+            2,
+        ], [
+            $this->task->refresh()->state,
+            $this->task->run_number,
+        ]);
     }
 
     /**

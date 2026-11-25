@@ -89,7 +89,10 @@ final readonly class DetailPage
      */
     public function part(string $chosen = ''): LayoutPartData
     {
-        return LayoutPartData::box('detail', 'reader', ...[...$this->head(), ...$this->body($chosen)]);
+        return LayoutPartData::box('detail', 'reader', ...[
+            ...$this->head(),
+            ...$this->body($chosen),
+        ]);
     }
 
     /**

@@ -43,6 +43,9 @@ final class ReadTextCall extends Data implements JournalCall
             return TextSelection::from(['section' => $this->section]);
         }
 
-        return TextSelection::from(['firstLine' => $this->firstLine ?? 1, 'lastLine' => $this->lastLine]);
+        return TextSelection::from([
+            'firstLine' => $this->firstLine ?? 1,
+            'lastLine' => $this->lastLine,
+        ]);
     }
 }

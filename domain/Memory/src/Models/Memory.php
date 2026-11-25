@@ -37,7 +37,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['text', 'weight', 'revision'])]
+#[Fillable([
+    'text',
+    'weight',
+    'revision',
+])]
 final class Memory extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;

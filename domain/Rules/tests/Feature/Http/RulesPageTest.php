@@ -25,7 +25,10 @@ final class RulesPageTest extends TestCase
     /**
      * The bus commits the RulesPageTest commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['rules', 'users'];
+    private const array TABLES = [
+        'rules',
+        'users',
+    ];
 
     private User $owner;
 
@@ -64,7 +67,15 @@ final class RulesPageTest extends TestCase
             ->where('page.data.root.children.0.children.0.text', 'Rules (1)')
             ->where(
                 'page.data.root.children.0.children.1.field',
-                ['name' => 'q', 'value' => 'phase', 'clears' => ['page', 'rule'], 'options' => []],
+                [
+                    'name' => 'q',
+                    'value' => 'phase',
+                    'clears' => [
+                        'page',
+                        'rule',
+                    ],
+                    'options' => [],
+                ],
             )
             ->where('page.data.root.children.1.children.0.children.0.rows.0.key', (string) $this->proposed->id)
             ->where('page.data.root.children.1.children.0.children.0.rows.0.isCurrent', true)
@@ -132,7 +143,12 @@ final class RulesPageTest extends TestCase
 
     public function test_a_missing_rule_and_a_malformed_id_are_not_found(): void
     {
-        foreach ([TestIds::of(999999), 'abc', '0', '9223372036854775808'] as $id) {
+        foreach ([
+            TestIds::of(999999),
+            'abc',
+            '0',
+            '9223372036854775808',
+        ] as $id) {
             $this->actingAs($this->owner)->patch("/rules/{$id}/approve")->assertNotFound();
         }
 

@@ -70,10 +70,22 @@ final readonly class SharesShow extends SharingPage
     {
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
-                LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $share->state->value]),
-                LayoutRowData::from(['key' => 'record', 'label' => 'Record', 'value' => $share->root_type]),
+                LayoutRowData::from([
+                    'key' => 'state',
+                    'label' => 'State',
+                    'value' => $share->state->value,
+                ]),
+                LayoutRowData::from([
+                    'key' => 'record',
+                    'label' => 'Record',
+                    'value' => $share->root_type,
+                ]),
                 LayoutRowData::from(
-                    ['key' => 'gateway', 'label' => 'Gateway', 'value' => $share->gatewayKey() ?? 'None yet'],
+                    [
+                        'key' => 'gateway',
+                        'label' => 'Gateway',
+                        'value' => $share->gatewayKey() ?? 'None yet',
+                    ],
                 ),
             ]),
             LayoutPartData::time('expires', 'Expires', $share->expires_at->toIso8601String()),
@@ -83,7 +95,10 @@ final readonly class SharesShow extends SharingPage
             ? LayoutPartData::notice('members', 'empty', 'No linked record is shared with it.')
             : LayoutPartData::collection('members', 'list', array_map(
                 fn (ShareMemberData $member) => LayoutRowData::from(
-                    ['key' => $member->targetId, 'label' => $member->targetType],
+                    [
+                        'key' => $member->targetId,
+                        'label' => $member->targetType,
+                    ],
                 ),
                 $members,
             ));

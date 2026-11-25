@@ -36,7 +36,12 @@ final class SequenceRunPageTest extends TestCase
     public function test_the_index_lists_the_stored_sequences_and_a_chosen_one_shows_its_numbered_steps_and_no_runs(): void
     {
         $sequence = Sequence::create('Release', 'Ship a version', [
-            new SequenceStep(...['id' => 'tests', 'title' => 'Tests', 'runsWhen' => 'held', 'doneWhen' => 'green']),
+            new SequenceStep(...[
+                'id' => 'tests',
+                'title' => 'Tests',
+                'runsWhen' => 'held',
+                'doneWhen' => 'green',
+            ]),
         ]);
 
         $run = SequenceRun::create('Release', ['Run the tests']);
@@ -67,7 +72,10 @@ final class SequenceRunPageTest extends TestCase
 
     public function test_a_run_nobody_follows_yet_opens_from_its_sequence(): void
     {
-        $run = SequenceRun::create('Release', ['Read the brief.', 'Run the tests.']);
+        $run = SequenceRun::create('Release', [
+            'Read the brief.',
+            'Run the tests.',
+        ]);
 
         $this->actingAs($this->owner)->get("/sequences/runs/{$run->number}")->assertOk();
     }

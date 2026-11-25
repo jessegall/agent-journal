@@ -38,9 +38,15 @@ final class TaskPoolsTest extends TestCase
 
         $keys = array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE));
 
-        $tasksPools = array_values(array_intersect($keys, ['tasks.open', 'tasks.named']));
+        $tasksPools = array_values(array_intersect($keys, [
+            'tasks.open',
+            'tasks.named',
+        ]));
 
-        $this->assertSame(['tasks.open', 'tasks.named'], $tasksPools);
+        $this->assertSame([
+            'tasks.open',
+            'tasks.named',
+        ], $tasksPools);
         $this->assertSame('Tasks', $providers->poolOwner('tasks.open'));
         $this->assertSame('Tasks', $providers->poolOwner('tasks.named'));
         $this->assertInstanceOf(OpenTaskPoolFactory::class, $providers->poolFactory('tasks.open'));
@@ -85,11 +91,19 @@ final class TaskPoolsTest extends TestCase
         $third = Task::factory()->create()->id;
 
         $members = $this->app->make(NamedTaskPoolFactory::class)
-            ->open(new PoolReference('tasks.named', null, [$third, $first, $second]), $this->builder)
+            ->open(new PoolReference('tasks.named', null, [
+                $third,
+                $first,
+                $second,
+            ]), $this->builder)
             ->members();
 
         $this->assertSame(PoolMembersType::Ordered, $members->type);
-        $this->assertSame([$third, $first, $second], $members->ids->ids);
+        $this->assertSame([
+            $third,
+            $first,
+            $second,
+        ], $members->ids->ids);
     }
 
     public function test_a_named_pool_refuses_a_list_that_does_not_fit(): void
@@ -97,7 +111,10 @@ final class TaskPoolsTest extends TestCase
         $factory = $this->app->make(NamedTaskPoolFactory::class);
         $task = Task::factory()->create()->id;
 
-        $this->assertThrows(fn () => new PoolReference('tasks.named', null, [$task, $task]), InvalidRecordIds::class);
+        $this->assertThrows(fn () => new PoolReference('tasks.named', null, [
+            $task,
+            $task,
+        ]), InvalidRecordIds::class);
 
         $this->assertThrows(
             fn () => new PoolReference(
@@ -110,7 +127,10 @@ final class TaskPoolsTest extends TestCase
 
         $this->assertThrows(
             fn () => $factory->validate(
-                new PoolReference('tasks.named', null, [$task, TestIds::of(99)]),
+                new PoolReference('tasks.named', null, [
+                    $task,
+                    TestIds::of(99),
+                ]),
                 $this->builder,
             ),
             TaskMissing::class,
@@ -134,7 +154,10 @@ final class TaskPoolsTest extends TestCase
     {
         $kept = Task::factory()->create()->id;
         $gone = Task::factory()->create();
-        $reference = new PoolReference('tasks.named', null, [$kept, $gone->id]);
+        $reference = new PoolReference('tasks.named', null, [
+            $kept,
+            $gone->id,
+        ]);
         $gone->delete();
 
         $this->expectException(TaskMissing::class);

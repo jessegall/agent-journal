@@ -44,7 +44,10 @@ final class ReadTally
     /**
      * @var array{read: int, write: int}
      */
-    private array $queriesByCategory = ['read' => 0, 'write' => 0];
+    private array $queriesByCategory = [
+        'read' => 0,
+        'write' => 0,
+    ];
 
     public function addQuery(string $connection, bool $writes): void
     {

@@ -35,7 +35,18 @@ final readonly class Containers
             $code = str_replace("{{{$name}}}", $value, $code);
         }
 
-        $output = $this->run(['docker', 'compose', 'exec', '-T', 'app', 'php', 'artisan', 'tinker', '--execute', $code]);
+        $output = $this->run([
+            'docker',
+            'compose',
+            'exec',
+            '-T',
+            'app',
+            'php',
+            'artisan',
+            'tinker',
+            '--execute',
+            $code,
+        ]);
         $lines = array_values(array_filter(explode("\n", trim($output))));
 
         return json_decode((string) end($lines), true, 32, JSON_THROW_ON_ERROR);
@@ -49,7 +60,14 @@ final readonly class Containers
     {
         // Between two turns the host replaces the container, so a moment with none is waited through.
         for ($attempt = 0; $attempt < 30; $attempt++) {
-            $names = $this->agentDaemon(['ps', '--all', '--filter', "label=journal.session={$sessionId}", '--format', '{{.Names}}']);
+            $names = $this->agentDaemon([
+                'ps',
+                '--all',
+                '--filter',
+                "label=journal.session={$sessionId}",
+                '--format',
+                '{{.Names}}',
+            ]);
 
             // The daemon lists the newest container first.
             $newest = strtok($names, "\n");
@@ -85,7 +103,12 @@ final readonly class Containers
      */
     public function executor(string $sessionId, string $line): string
     {
-        return $this->run(['php', 'tools/accounts/isolation-probe.php', 'executor', $sessionId], $line);
+        return $this->run([
+            'php',
+            'tools/accounts/isolation-probe.php',
+            'executor',
+            $sessionId,
+        ], $line);
     }
 
     /**
@@ -93,7 +116,13 @@ final readonly class Containers
      */
     public function probe(string $step, string $sessionId, string $program): string
     {
-        return $this->run(['php', 'tools/accounts/isolation-probe.php', $step, $sessionId, "--program={$program}"]);
+        return $this->run([
+            'php',
+            'tools/accounts/isolation-probe.php',
+            $step,
+            $sessionId,
+            "--program={$program}",
+        ]);
     }
 
     /**
@@ -101,7 +130,15 @@ final readonly class Containers
      */
     private function agentDaemon(array $arguments): string
     {
-        return $this->run(['docker', 'compose', 'exec', '-T', 'agent-docker', 'docker', ...$arguments]);
+        return $this->run([
+            'docker',
+            'compose',
+            'exec',
+            '-T',
+            'agent-docker',
+            'docker',
+            ...$arguments,
+        ]);
     }
 
     /**

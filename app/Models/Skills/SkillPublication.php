@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -72,10 +72,10 @@ use Illuminate\Support\Carbon;
 ])]
 final class SkillPublication extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**
@@ -375,7 +375,11 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     {
         $publications = self::query()
             ->ofSessions($sessionIds)
-            ->inAnyState([PublicationState::Pending, PublicationState::Preparing, PublicationState::Delivered])
+            ->inAnyState([
+                PublicationState::Pending,
+                PublicationState::Preparing,
+                PublicationState::Delivered,
+            ])
             ->newestFirst()
             ->readExactly(max(1, 2 * count($sessionIds)))
             ->get()
@@ -405,7 +409,11 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function settled(int $limit): array
     {
         $settled = self::query()
-            ->inAnyState([PublicationState::Delivered, PublicationState::Failed, PublicationState::Superseded])
+            ->inAnyState([
+                PublicationState::Delivered,
+                PublicationState::Failed,
+                PublicationState::Superseded,
+            ])
             ->newestFirst()
             ->readExactly($limit)
             ->get();
@@ -421,7 +429,10 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
     public static function open(int $limit): array
     {
         $open = self::query()
-            ->inAnyState([PublicationState::Pending, PublicationState::Preparing])
+            ->inAnyState([
+                PublicationState::Pending,
+                PublicationState::Preparing,
+            ])
             ->oldestFirst()
             ->readExactly($limit)
             ->get();

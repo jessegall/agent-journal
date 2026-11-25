@@ -36,7 +36,13 @@ final class TaskAuthoringTest extends TestCase
 
     private const string TITLE_NEEDED_WITHOUT_BRIEF = 'title: The title field is required when brief is not present.';
 
-    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks'];
+    private const array TABLES = [
+        'tasks',
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+    ];
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
 
@@ -61,21 +67,50 @@ final class TaskAuthoringTest extends TestCase
         $taskId = $this->app->make(CommandBus::class)->run(new CreateTaskCommand('Write the brief', 'What it asks.'));
         $task = Task::query()->findOrFail($taskId);
 
-        $this->assertSame(['Write the brief', 'What it asks.', 1], [$task->title, $task->brief, $task->revision]);
-        $this->assertSame([ActorType::User, TestIds::of(7)], [$task->creator_type, $task->creator_id]);
+        $this->assertSame([
+            'Write the brief',
+            'What it asks.',
+            1,
+        ], [
+            $task->title,
+            $task->brief,
+            $task->revision,
+        ]);
+        $this->assertSame([
+            ActorType::User,
+            TestIds::of(7),
+        ], [
+            $task->creator_type,
+            $task->creator_id,
+        ]);
     }
 
     public function test_describe_changes_only_title_brief_and_revision(): void
     {
-        $task = Task::factory()->create(['title' => 'Old', 'brief' => 'Old brief']);
+        $task = Task::factory()->create([
+            'title' => 'Old',
+            'brief' => 'Old brief',
+        ]);
 
         $task->describe('New', 'New brief');
 
         $fresh = $task->fresh();
 
         $this->assertSame(
-            ['New', 'New brief', 2, TaskState::Open, 0],
-            [$fresh?->title, $fresh?->brief, $fresh?->revision, $fresh?->state, $fresh?->run_number],
+            [
+                'New',
+                'New brief',
+                2,
+                TaskState::Open,
+                0,
+            ],
+            [
+                $fresh?->title,
+                $fresh?->brief,
+                $fresh?->revision,
+                $fresh?->state,
+                $fresh?->run_number,
+            ],
         );
     }
 
@@ -84,7 +119,13 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::factory()->create();
 
         $task->start(ActorIdentity::system());
-        $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
+        $this->assertSame([
+            1,
+            TaskState::Started,
+        ], [
+            $task->run_number,
+            $task->state,
+        ]);
 
         $task->block('Waits on the schema.');
         $task->start(ActorIdentity::system());
@@ -92,8 +133,20 @@ final class TaskAuthoringTest extends TestCase
         $fresh = $task->fresh();
 
         $this->assertSame(
-            [2, TaskState::Finished, 'Waits on the schema.', 'Built and tested.', 1],
-            [$fresh?->run_number, $fresh?->state, $fresh?->block_reason, $fresh?->result_note, $fresh?->revision],
+            [
+                2,
+                TaskState::Finished,
+                'Waits on the schema.',
+                'Built and tested.',
+                1,
+            ],
+            [
+                $fresh?->run_number,
+                $fresh?->state,
+                $fresh?->block_reason,
+                $fresh?->result_note,
+                $fresh?->revision,
+            ],
         );
     }
 
@@ -104,8 +157,14 @@ final class TaskAuthoringTest extends TestCase
         $task->cancel('No longer needed.');
 
         $this->assertSame(
-            [TaskState::Cancelled, 'No longer needed.'],
-            [$task->fresh()?->state, $task->fresh()?->cancel_reason],
+            [
+                TaskState::Cancelled,
+                'No longer needed.',
+            ],
+            [
+                $task->fresh()?->state,
+                $task->fresh()?->cancel_reason,
+            ],
         );
     }
 
@@ -131,7 +190,10 @@ final class TaskAuthoringTest extends TestCase
     public function test_an_edit_with_neither_title_nor_brief_is_refused_naming_the_title(): void
     {
         $this->actAsUser();
-        $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+        $task = Task::factory()->create([
+            'title' => 'First',
+            'brief' => 'First brief',
+        ]);
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 1)),
@@ -155,8 +217,16 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::query()->findOrFail($taskId);
 
         $this->assertSame(
-            [ActorType::Agent, $start->agent->id, TaskState::Open],
-            [$task->creator_type, $task->creator_id, $task->state],
+            [
+                ActorType::Agent,
+                $start->agent->id,
+                TaskState::Open,
+            ],
+            [
+                $task->creator_type,
+                $task->creator_id,
+                $task->state,
+            ],
         );
 
         $this->assertSame(1, Task::query()->count());
@@ -165,7 +235,10 @@ final class TaskAuthoringTest extends TestCase
     public function test_a_stale_revision_is_a_conflict_and_the_newer_text_stays(): void
     {
         $start = TestStart::start();
-        $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+        $task = Task::factory()->create([
+            'title' => 'First',
+            'brief' => 'First brief',
+        ]);
         $task->describe('Second', 'Second brief');
 
         $this->signed($start, '/agent/tasks/edit', [
@@ -175,26 +248,44 @@ final class TaskAuthoringTest extends TestCase
             'request_key' => bin2hex(random_bytes(8)),
         ])->assertConflict();
 
-        $this->assertSame(['Second', 2], [$task->fresh()?->title, $task->fresh()?->revision]);
+        $this->assertSame([
+            'Second',
+            2,
+        ], [
+            $task->fresh()?->title,
+            $task->fresh()?->revision,
+        ]);
     }
 
     public function test_the_agent_route_and_the_bus_give_the_same_edit(): void
     {
         $start = TestStart::start();
-        $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+        $task = Task::factory()->create([
+            'title' => 'First',
+            'brief' => 'First brief',
+        ]);
 
         $this->signed($start, '/agent/tasks/edit', [
             'task_id' => $task->id,
             'expected_revision' => 1,
             'brief' => 'Route brief',
             'request_key' => bin2hex(random_bytes(8)),
-        ])->assertOk()->assertJson(['task_id' => $task->id, 'revision' => 2]);
+        ])->assertOk()->assertJson([
+            'task_id' => $task->id,
+            'revision' => 2,
+        ]);
 
         $this->actAsUser();
         $revision = $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 2, brief: 'Bus brief'));
 
         $this->assertSame(3, $revision);
-        $this->assertSame(['First', 'Bus brief'], [$task->fresh()?->title, $task->fresh()?->brief]);
+        $this->assertSame([
+            'First',
+            'Bus brief',
+        ], [
+            $task->fresh()?->title,
+            $task->fresh()?->brief,
+        ]);
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(new EditTaskCommand($task->id, 2, title: 'Late')),

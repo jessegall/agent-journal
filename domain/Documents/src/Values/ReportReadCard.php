@@ -18,6 +18,10 @@ final readonly class ReportReadCard
      */
     public function toArray(): array
     {
-        return ['report_id' => $this->number, 'record_id' => $this->id, 'state' => $this->state->value];
+        return [
+            'report_id' => $this->number,
+            'record_id' => $this->id,
+            'state' => $this->state->value,
+        ];
     }
 }

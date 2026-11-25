@@ -83,7 +83,10 @@ final readonly class RuleApprovals
         $others = array_values(array_filter($active, fn (CommandRule $other): bool => ! $other->isSameRuleAs($rule)));
 
         try {
-            $this->rules->withRules(...[...$others, $rule]);
+            $this->rules->withRules(...[
+                ...$others,
+                $rule,
+            ]);
         } catch (CommandRuleConflict $conflict) {
             throw ApprovalRefused::conflict($conflict, $this->texts);
         }

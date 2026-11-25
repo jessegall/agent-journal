@@ -23,15 +23,25 @@ final readonly class AccountDraftProducer implements DraftProducer
         return [
             DraftQuestionData::from([
                 'prompt' => 'Which driver is the account for?',
-                'suggestions' => ['Claude Code', 'Codex'],
+                'suggestions' => [
+                    'Claude Code',
+                    'Codex',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'How does it sign in?',
-                'suggestions' => ['A subscription, in the browser', 'An API key'],
+                'suggestions' => [
+                    'A subscription, in the browser',
+                    'An API key',
+                ],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'What should it be called?',
-                'suggestions' => ['Work', 'Personal', 'Team key'],
+                'suggestions' => [
+                    'Work',
+                    'Personal',
+                    'Team key',
+                ],
             ]),
         ];
     }

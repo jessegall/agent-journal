@@ -31,7 +31,10 @@ final class RulePageChangeTest extends TestCase
     /**
      * The bus commits the RulesPageTest commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['rules', 'users'];
+    private const array TABLES = [
+        'rules',
+        'users',
+    ];
 
     public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
     {

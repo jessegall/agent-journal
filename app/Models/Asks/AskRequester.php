@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['actor_type', 'actor_id'])]
+#[Fillable([
+    'actor_type',
+    'actor_id',
+])]
 final class AskRequester extends Model implements ReadableModel
 {
     use BoundedReads;

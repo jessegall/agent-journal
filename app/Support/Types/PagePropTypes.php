@@ -89,7 +89,10 @@ final readonly class PagePropTypes
     {
         $imports = [];
 
-        foreach ([...$this->declarations->pages(), ...$this->declarations->sections()] as $declaration) {
+        foreach ([
+            ...$this->declarations->pages(),
+            ...$this->declarations->sections(),
+        ] as $declaration) {
             $imports[$this->owners->ownerOf(
                 $declaration->resolver->dataClass,
             )][] = $this->dataName($declaration->resolver->dataClass);

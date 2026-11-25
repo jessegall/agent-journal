@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -14,6 +12,8 @@ use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\ProjectCreated;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -28,7 +28,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['key', 'label'])]
+#[Fillable([
+    'key',
+    'label',
+])]
 final class Project extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

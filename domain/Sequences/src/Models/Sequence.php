@@ -33,7 +33,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'summary', 'steps'])]
+#[Fillable([
+    'name',
+    'summary',
+    'steps',
+])]
 final class Sequence extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -44,7 +48,10 @@ final class Sequence extends Model implements EventSource, ReadableModel
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['version' => 1, 'summary' => ''];
+    protected $attributes = [
+        'version' => 1,
+        'summary' => '',
+    ];
 
     /**
      * @return array<string, string>

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Questions;
 
-use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
-use App\Contracts\Records\AuthoredModel;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Records\AuthoredModel;
+use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Enums\QuestionType;
 use App\Events\Questions\QuestionAnswered;
@@ -37,7 +37,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $created_at
  */
 #[Fillable([
-    'inbox_id', 'sender_type', 'sender_id', 'target_type', 'target_id', 'text', 'type', 'options', 'answer',
+    'inbox_id',
+    'sender_type',
+    'sender_id',
+    'target_type',
+    'target_id',
+    'text',
+    'type',
+    'options',
+    'answer',
     'answered_at',
 ])]
 final class Question extends Model implements AuthoredModel, EventSource, ReadableModel

@@ -40,7 +40,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['event_id', 'input_digest', 'answer', 'steps'])]
+#[Fillable([
+    'event_id',
+    'input_digest',
+    'answer',
+    'steps',
+])]
 final class HookCall extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;

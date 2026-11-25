@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
-use App\Concerns\OrdersById;
 use App\Casts\GatewaySettingsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -39,13 +39,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['gateway_key', 'configuration_version', 'settings', 'is_default', 'disabled_at'])]
+#[Fillable([
+    'gateway_key',
+    'configuration_version',
+    'settings',
+    'is_default',
+    'disabled_at',
+])]
 final class ShareGatewayConfiguration extends Model implements EventSource, ReadableModel
 {
-    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-gateway-configuration';

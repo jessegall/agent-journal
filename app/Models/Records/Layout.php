@@ -28,7 +28,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'name', 'shape'])]
+#[Fillable([
+    'user_id',
+    'name',
+    'shape',
+])]
 final class Layout extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -51,7 +55,11 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     public static function create(int|string $userId, string $name, LayoutShape $shape): self
     {
-        return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape->toArray()]);
+        return self::query()->create([
+            'user_id' => $userId,
+            'name' => $name,
+            'shape' => $shape->toArray(),
+        ]);
     }
 
     // ----------[ Mutations ]----------
@@ -61,7 +69,10 @@ final class Layout extends Model implements EventSource, ReadableModel
      */
     public function saveNameAndShape(string $name, LayoutShape $shape): void
     {
-        $this->update(['name' => $name, 'shape' => $shape->toArray()]);
+        $this->update([
+            'name' => $name,
+            'shape' => $shape->toArray(),
+        ]);
         $this->raise(new LayoutSaved($this->id));
     }
 

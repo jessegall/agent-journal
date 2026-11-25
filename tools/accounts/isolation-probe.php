@@ -38,7 +38,10 @@ const CREDENTIALS = [
     'codex' => '/home/journal/.account/auth.json',
 ];
 
-[$step, $session] = [$argv[1] ?? '', $argv[2] ?? ''];
+[$step, $session] = [
+    $argv[1] ?? '',
+    $argv[2] ?? '',
+];
 $program = 'claude';
 
 foreach (array_slice($argv, 3) as $option) {
@@ -56,7 +59,10 @@ if ($session === '' || ! array_key_exists($program, CREDENTIALS)) {
 $line = $step === 'executor' ? trim((string) stream_get_contents(STDIN)) : '';
 $docker = preg_split('/\s+/', trim((string) (getenv('JOURNAL_AGENT_DOCKER') ?: 'docker compose exec -T agent-docker docker')));
 
-$daemon = fn (string ...$arguments): string => (string) shell_exec(implode(' ', array_map('escapeshellarg', [...$docker, ...$arguments])));
+$daemon = fn (string ...$arguments): string => (string) shell_exec(implode(' ', array_map('escapeshellarg', [
+    ...$docker,
+    ...$arguments,
+])));
 $specFile = dirname(__DIR__, 2)."/storage/acceptance/sessions/{$session}.json";
 $container = strtok($daemon('ps', '--all', '--filter', "label=journal.session={$session}", '--format', '{{.Names}}'), "\n") ?: '';
 
@@ -75,20 +81,52 @@ if ($container !== '') {
 
 $isRunning = $container !== '' && $spec['State']['Running'] === true;
 $image = (string) $spec['Image'];
-$mounts = array_merge(...array_map(fn (array $mount): array => ['--mount', implode(',', array_filter([
-    'type='.$mount['Type'],
-    'src='.($mount['Type'] === 'volume' ? $mount['Name'] : $mount['Source']),
-    'dst='.$mount['Destination'],
-    $mount['RW'] ? null : 'readonly',
-]))], $spec['Mounts'] ?? []));
+$mounts = array_merge(...array_map(fn (array $mount): array => [
+    '--mount',
+    implode(',', array_filter([
+        'type='.$mount['Type'],
+        'src='.($mount['Type'] === 'volume' ? $mount['Name'] : $mount['Source']),
+        'dst='.$mount['Destination'],
+        $mount['RW'] ? null : 'readonly',
+    ])),
+], $spec['Mounts'] ?? []));
 $entry = $isRunning
-    ? ['exec', '-i', '-u', '10001', $container]
-    : ['run', '--rm', '-i', '-u', '10001', '--network', 'none', ...$mounts, '--entrypoint', 'sh', $image, '-c'];
+    ? [
+        'exec',
+        '-i',
+        '-u',
+        '10001',
+        $container,
+    ]
+    : [
+        'run',
+        '--rm',
+        '-i',
+        '-u',
+        '10001',
+        '--network',
+        'none',
+        ...$mounts,
+        '--entrypoint',
+        'sh',
+        $image,
+        '-c',
+    ];
 
 // Runs a shell line inside the container as the program's user and answers its exit code and output; a value the
 // line needs comes through standard input, never through its arguments, so no process listing shows it.
 $inContainer = function (string $line, string $input = '') use ($docker, $entry, $isRunning): ProgramRun {
-    $command = $isRunning ? [...$docker, ...$entry, 'sh', '-c', $line] : [...$docker, ...$entry, $line];
+    $command = $isRunning ? [
+        ...$docker,
+        ...$entry,
+        'sh',
+        '-c',
+        $line,
+    ] : [
+        ...$docker,
+        ...$entry,
+        $line,
+    ];
     $streams = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']];
     $process = proc_open($command, $streams, $pipes, null, ['PATH' => (string) getenv('PATH')]);
 
@@ -147,7 +185,7 @@ switch ($step) {
         echo "removed the canary, the marker and the workspace link\n";
         break;
 
-    // The newest transcript the program wrote under its account folder, one JSON line per entry.
+        // The newest transcript the program wrote under its account folder, one JSON line per entry.
     case 'transcript':
         echo $inContainer('newest=$(ls -t $(find /home/journal/.account -name "*.jsonl" -path "*projects*") | head -n 1)'
             .' && cat "$newest"')->stdout;
@@ -177,7 +215,13 @@ switch ($step) {
         $bridge = [...$docker, 'run', '--rm', ...$limits, '--entrypoint', '/opt/journal/bin/journal-init', $image];
         $printed = (string) shell_exec(implode(' ', array_map(
             'escapeshellarg',
-            [...$bridge, '--', '/opt/journal/shell/bash', '-c', $line],
+            [
+                ...$bridge,
+                '--',
+                '/opt/journal/shell/bash',
+                '-c',
+                $line,
+            ],
         )).' 2>&1');
         echo implode("\n", array_filter(explode("\n", $printed), fn (string $printedLine): bool => $printedLine !== 'journal-init: ready'));
         break;

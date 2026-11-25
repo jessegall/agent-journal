@@ -53,7 +53,10 @@ final class TaskBriefPassageTest extends TestCase
         $this->assertStringContainsString(self::PHRASE, $hit->snippet);
 
         $open = $this->app->make(TaskSearchAccess::class)->openAction($task->id, $hit->location);
-        $this->assertSame(['task_id' => $task->id, 'passage' => $hit->location->id], $open->arguments);
+        $this->assertSame([
+            'task_id' => $task->id,
+            'passage' => $hit->location->id,
+        ], $open->arguments);
 
         $passage = TaskBriefPassage::fromId($hit->location->id);
         $this->startTestAgentRequest(1, 1);
@@ -94,7 +97,10 @@ final class TaskBriefPassageTest extends TestCase
         $edge = TaskSearchProvider::SEGMENT_CHARACTER_LIMIT - 8;
         $brief = str_repeat('a', $edge).' '.self::PHRASE.' '.str_repeat('b', 3000);
 
-        return Task::factory()->create(['title' => 'Housekeeping', 'brief' => $brief]);
+        return Task::factory()->create([
+            'title' => 'Housekeeping',
+            'brief' => $brief,
+        ]);
     }
 
     /**

@@ -160,7 +160,10 @@ function remove_folder(string $folder): void
         return;
     }
 
-    foreach (array_diff((array) scandir($folder), ['.', '..']) as $name) {
+    foreach (array_diff((array) scandir($folder), [
+        '.',
+        '..',
+    ]) as $name) {
         $path = $folder.'/'.$name;
 
         if (is_dir($path) && ! is_link($path)) {
@@ -232,7 +235,12 @@ function protected_host_items(string|null $hostAgent, string|null $hostState, st
  */
 function item(string $id, string $result, string $reason, string $consumer): array
 {
-    return ['item' => $id, 'result' => $result, 'reason' => $reason, 'consumer' => $consumer];
+    return [
+        'item' => $id,
+        'result' => $result,
+        'reason' => $reason,
+        'consumer' => $consumer,
+    ];
 }
 
 /**

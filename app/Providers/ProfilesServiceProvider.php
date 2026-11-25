@@ -133,12 +133,18 @@ final class ProfilesServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             ProfileAdministrationPolicy::class,
-            [AccessType::Create, AccessType::Edit],
+            [
+                AccessType::Create,
+                AccessType::Edit,
+            ],
         ));
 
         // A switch's replacement starts as the journal once the old session's stop is proven, on the account the
         // owner chose when they asked for the switch.
-        foreach ([ProfileAdministrationPolicy::class, AccountPolicy::class] as $policy) {
+        foreach ([
+            ProfileAdministrationPolicy::class,
+            AccountPolicy::class,
+        ] as $policy) {
             $systemEntries->allow('driver switch', $policy);
         }
 
@@ -149,7 +155,12 @@ final class ProfilesServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             AccountPolicy::class,
-            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+            [
+                AccessType::Read,
+                AccessType::Create,
+                AccessType::Edit,
+                AccessType::Delete,
+            ],
         ));
 
         $this->scopeAccountsToOwner($events);

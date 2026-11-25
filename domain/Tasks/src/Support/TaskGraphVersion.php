@@ -19,7 +19,10 @@ final readonly class TaskGraphVersion
      */
     public function of(array $tasks, array $waits): string
     {
-        $states = array_values(array_map(fn (Task $task) => [$task->id, $task->state->value], $tasks));
+        $states = array_values(array_map(fn (Task $task) => [
+            $task->id,
+            $task->state->value,
+        ], $tasks));
 
         $edges = array_map(
             fn (TaskWait $wait) => [
@@ -34,7 +37,10 @@ final readonly class TaskGraphVersion
         sort($states);
         sort($edges);
 
-        return hash('sha256', json_encode([$states, $edges], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([
+            $states,
+            $edges,
+        ], JSON_THROW_ON_ERROR));
     }
 
     /**

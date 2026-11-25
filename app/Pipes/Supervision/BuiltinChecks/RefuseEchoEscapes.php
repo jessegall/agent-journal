@@ -14,7 +14,10 @@ use App\Support\Execution\PlannedRun;
  */
 final readonly class RefuseEchoEscapes implements Pipe
 {
-    private const array ESCAPE_FLAGS = ['-e', '-E'];
+    private const array ESCAPE_FLAGS = [
+        '-e',
+        '-E',
+    ];
 
     public function handle(PlannedRun $run): PlannedRun
     {

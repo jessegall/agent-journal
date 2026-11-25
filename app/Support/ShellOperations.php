@@ -110,8 +110,15 @@ final readonly class ShellOperations
     {
         return match ($redirect->type) {
             RedirectType::Input => [AccessType::Read],
-            RedirectType::Output, RedirectType::Append, RedirectType::Clobber => [AccessType::Create, AccessType::Edit],
-            RedirectType::ReadWrite => [AccessType::Read, AccessType::Create, AccessType::Edit],
+            RedirectType::Output, RedirectType::Append, RedirectType::Clobber => [
+                AccessType::Create,
+                AccessType::Edit,
+            ],
+            RedirectType::ReadWrite => [
+                AccessType::Read,
+                AccessType::Create,
+                AccessType::Edit,
+            ],
             RedirectType::DuplicateInput, RedirectType::DuplicateOutput, RedirectType::Close,
             RedirectType::HereDocument, RedirectType::HereString => [],
         };

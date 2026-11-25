@@ -9,7 +9,10 @@ namespace App\Support\Run;
  */
 final readonly class ChildEnvironment
 {
-    private const array SECRET_VARIABLES = ['JOURNAL_START_TOKEN', 'JOURNAL_EVENT_KEY'];
+    private const array SECRET_VARIABLES = [
+        'JOURNAL_START_TOKEN',
+        'JOURNAL_EVENT_KEY',
+    ];
 
     /**
      * @return array<string, string>

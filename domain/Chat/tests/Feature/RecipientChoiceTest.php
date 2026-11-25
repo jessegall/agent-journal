@@ -100,7 +100,10 @@ final class RecipientChoiceTest extends TestCase
 
         $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id));
 
-        return [$agent->id, $session->id];
+        return [
+            $agent->id,
+            $session->id,
+        ];
     }
 
     private function destinationShownFor(User $owner, string $agentId): string

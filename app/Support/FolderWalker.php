@@ -123,7 +123,10 @@ final readonly class FolderWalker
             throw FolderLoop::at($step->path->label());
         }
 
-        return [...$entered, $identity => true];
+        return [
+            ...$entered,
+            $identity => true,
+        ];
     }
 
     /**
@@ -139,7 +142,10 @@ final readonly class FolderWalker
             throw FileUnreadable::at($folder->label());
         }
 
-        return array_values(array_diff($names, ['.', '..']));
+        return array_values(array_diff($names, [
+            '.',
+            '..',
+        ]));
     }
 
     /**

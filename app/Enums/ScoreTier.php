@@ -23,7 +23,11 @@ enum ScoreTier: int
      */
     public static function titleTiers(): array
     {
-        return [self::ExactTitle, self::TitlePrefix, self::TitleContains];
+        return [
+            self::ExactTitle,
+            self::TitlePrefix,
+            self::TitleContains,
+        ];
     }
 
     /**

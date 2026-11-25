@@ -4,55 +4,54 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\InstallInboxesCommand;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Assignments\AssignmentDestinationResolver;
 use App\Contracts\Assignments\AssignmentRegistration;
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Inboxes\InboxDestinationResolver;
+use App\Contracts\Inboxes\InboxMemberPolicies;
+use App\Contracts\Inboxes\InboxRegistration;
+use App\Contracts\Inboxes\InboxResolver;
 use App\Contracts\Inboxes\MainInbox;
 use App\Contracts\Inboxes\MainInboxTakeover;
+use App\Contracts\Notifications\Notifications;
+use App\Contracts\Notifications\NotificationTargets;
 use App\Contracts\Processes\RunClaims;
+use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Sharing\SharedHolders;
+use App\Enums\AccessType;
 use App\Enums\ActorType;
 use App\Models\Inboxes\Inbox;
+use App\Models\Messages\Message;
+use App\Models\Questions\Question;
+use App\Policies\MessageAdministrationPolicy;
+use App\Policies\MessagePolicy;
 use App\Support\ActorDestinationProvider;
 use App\Support\AssigneeDefinition;
 use App\Support\AttachedInboxes;
 use App\Support\CoreInboxes;
 use App\Support\DestinationRegistry;
+use App\Support\EngineListenerSet;
 use App\Support\InboxAssignees;
 use App\Support\InboxDestinationProvider;
 use App\Support\InboxRunClaims;
-use App\Support\MainInboxHandover;
-use App\Support\MainInboxNavigation;
-use App\Support\PersonalInboxResolver;
-use App\Support\PersonalInboxes;
-use App\Support\RegisteredAssignmentDestinations;
-use App\Support\RegisteredInboxDestinations;
-use App\Concerns\LoadsCoreRoutes;
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Bus\RequestSource;
-use App\Contracts\Inboxes\InboxMemberPolicies;
-use App\Contracts\Agents\AgentNotices;
-use App\Contracts\Inboxes\InboxRegistration;
-use App\Contracts\Inboxes\InboxResolver;
-use App\Contracts\Notifications\Notifications;
-use App\Contracts\Notifications\NotificationTargets;
-use App\Contracts\Records\RecordProviderRegistration;
-use App\Enums\AccessType;
-use App\Models\Messages\Message;
-use App\Models\Questions\Question;
-use App\Policies\MessageAdministrationPolicy;
-use App\Policies\MessagePolicy;
-use App\Support\EngineListenerSet;
 use App\Support\JournalAgentNotices;
 use App\Support\Links\MessageLinkRecords;
 use App\Support\LinkTypeRegistry;
+use App\Support\MainInboxHandover;
+use App\Support\MainInboxNavigation;
 use App\Support\NotificationChangeRetentionService;
 use App\Support\NotificationTargetRegistry;
+use App\Support\PersonalInboxes;
+use App\Support\PersonalInboxResolver;
 use App\Support\RecipientNotifications;
+use App\Support\RegisteredAssignmentDestinations;
+use App\Support\RegisteredInboxDestinations;
 use App\Support\RegisteredInboxes;
 use App\Values\AnswerBudget;
 use App\Values\PolicyDefinition;
@@ -119,15 +118,25 @@ final class CommunicationServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,
-            [AccessType::Read, AccessType::Create, AccessType::Edit],
+            [
+                AccessType::Read,
+                AccessType::Create,
+                AccessType::Edit,
+            ],
         ));
 
         $policies->register('Core', new PolicyDefinition(
             MessageAdministrationPolicy::class,
-            [AccessType::Read, AccessType::Edit],
+            [
+                AccessType::Read,
+                AccessType::Edit,
+            ],
         ));
 
-        $links->register([Message::LINK_TYPE => Message::class, Question::LINK_TYPE => Question::class]);
+        $links->register([
+            Message::LINK_TYPE => Message::class,
+            Question::LINK_TYPE => Question::class,
+        ]);
         $inboxes->register(Inbox::NAMED_PROVIDER, CoreInboxes::class);
         $inboxes->register(Inbox::PERSONAL_PROVIDER, CoreInboxes::class);
         $this->commands([InstallInboxesCommand::class]);

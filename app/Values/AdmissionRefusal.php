@@ -60,7 +60,10 @@ final readonly class AdmissionRefusal
 
     public function heldIn(string $requestId, string $next): self
     {
-        return clone ($this, ['requestId' => $requestId, 'next' => $next]);
+        return clone ($this, [
+            'requestId' => $requestId,
+            'next' => $next,
+        ]);
     }
 
     private static function redacted(string $source): string

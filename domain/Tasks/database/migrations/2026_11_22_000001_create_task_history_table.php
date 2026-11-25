@@ -23,8 +23,15 @@ return new class extends Migration
             $table->unsignedInteger('sequence');
             $table->timestampTz('created_at');
 
-            $table->unique(['task_id', 'sequence']);
-            $table->index(['task_id', 'sequence', 'id']);
+            $table->unique([
+                'task_id',
+                'sequence',
+            ]);
+            $table->index([
+                'task_id',
+                'sequence',
+                'id',
+            ]);
         });
     }
 

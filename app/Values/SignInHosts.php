@@ -17,12 +17,19 @@ final readonly class SignInHosts
 
     public static function anthropic(): self
     {
-        return new self(['claude.ai', 'claude.com', 'anthropic.com']);
+        return new self([
+            'claude.ai',
+            'claude.com',
+            'anthropic.com',
+        ]);
     }
 
     public static function openAi(): self
     {
-        return new self(['auth.openai.com', 'chatgpt.com']);
+        return new self([
+            'auth.openai.com',
+            'chatgpt.com',
+        ]);
     }
 
     public function admits(string $address): bool

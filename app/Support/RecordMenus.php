@@ -59,7 +59,10 @@ final readonly class RecordMenus implements RecordMenusContract
         uksort($grouped, fn (int|string $one, int|string $other) => [
             $itemsByGroup[$one][0]->menuItem->position,
             (string) $one,
-        ] <=> [$itemsByGroup[$other][0]->menuItem->position, (string) $other]);
+        ] <=> [
+            $itemsByGroup[$other][0]->menuItem->position,
+            (string) $other,
+        ]);
 
         return LayoutMenuData::from([
             'key' => $menu->key,
@@ -85,7 +88,10 @@ final readonly class RecordMenus implements RecordMenusContract
         usort($items, fn (RegisteredMenuItem $one, RegisteredMenuItem $other) => [
             $one->menuItem->position,
             $one->key,
-        ] <=> [$other->menuItem->position, $other->key]);
+        ] <=> [
+            $other->menuItem->position,
+            $other->key,
+        ]);
 
         return $items;
     }

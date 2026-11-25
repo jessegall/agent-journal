@@ -25,7 +25,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $delivered_at
  * @property Question $question
  */
-#[Fillable(['question_id', 'agent_id', 'delivered_at'])]
+#[Fillable([
+    'question_id',
+    'agent_id',
+    'delivered_at',
+])]
 final class QuestionAnswerNotice extends Model implements EventSource
 {
     use HasUlids;

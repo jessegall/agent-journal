@@ -16,7 +16,10 @@ use App\Support\Compatibility\DriverCompatibility;
  */
 final readonly class CodexAccountSettings implements AccountSettingsFiller
 {
-    private const array OTHER_CREDENTIALS = ['OPENAI_API_KEY', 'CODEX_API_KEY'];
+    private const array OTHER_CREDENTIALS = [
+        'OPENAI_API_KEY',
+        'CODEX_API_KEY',
+    ];
 
     public function fill(
         AccountStartSettings $settings,

@@ -16,7 +16,16 @@ use App\Values\AgentText;
  */
 final readonly class ReservedWordReader implements CommandReader, Pipe
 {
-    private const array RESERVED_OUT_OF_PLACE = ['then', 'elif', 'else', 'fi', 'do', 'done', 'esac', 'in'];
+    private const array RESERVED_OUT_OF_PLACE = [
+        'then',
+        'elif',
+        'else',
+        'fi',
+        'do',
+        'done',
+        'esac',
+        'in',
+    ];
 
     public static function reads(TokenCursor $cursor): bool
     {

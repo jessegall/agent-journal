@@ -69,7 +69,10 @@ final readonly class EmittedHit
             'label' => $this->sourceLabel,
             'title' => $this->title,
             'snippet' => $this->snippet,
-            'reference' => ['type' => $this->reference->type, 'id' => $this->reference->id],
+            'reference' => [
+                'type' => $this->reference->type,
+                'id' => $this->reference->id,
+            ],
             'location' => $this->location === null ? null : [
                 'id' => $this->location->id,
                 'label' => $this->location->label,

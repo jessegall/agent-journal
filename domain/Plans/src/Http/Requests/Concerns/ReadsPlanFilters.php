@@ -20,10 +20,25 @@ trait ReadsPlanFilters
     protected function planFilterRules(): array
     {
         return [
-            'q' => ['nullable', 'string', 'max:200'],
-            'page' => ['nullable', 'integer', 'min:1'],
-            'plan' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
-            'state' => ['nullable', Rule::enum(PlanStateGroup::class)],
+            'q' => [
+                'nullable',
+                'string',
+                'max:200',
+            ],
+            'page' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'plan' => [
+                'nullable',
+                'string',
+                'regex:/^[1-9][0-9]{0,18}$/',
+            ],
+            'state' => [
+                'nullable',
+                Rule::enum(PlanStateGroup::class),
+            ],
         ];
     }
 

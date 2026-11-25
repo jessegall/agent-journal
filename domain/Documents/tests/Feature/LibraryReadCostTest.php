@@ -151,7 +151,11 @@ final class LibraryReadCostTest extends TestCase
             )->{'QUERY PLAN'};
         });
 
-        foreach (['title', 'abstract', 'body'] as $column) {
+        foreach ([
+            'title',
+            'abstract',
+            'body',
+        ] as $column) {
             $this->assertStringContainsString(
                 sprintf(self::INDEX_NAME, $column),
                 $plan,
@@ -191,7 +195,10 @@ final class LibraryReadCostTest extends TestCase
 
         return array_values(
             array_map(
-                fn (array $query) => ['query' => (string) $query['query'], 'bindings' => (array) $query['bindings']],
+                fn (array $query) => [
+                    'query' => (string) $query['query'],
+                    'bindings' => (array) $query['bindings'],
+                ],
                 DB::getQueryLog(),
             ),
         );

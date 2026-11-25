@@ -131,7 +131,11 @@ final class HelpersDomain extends Domain implements
         return [
             new PolicyDefinition(
                 HelperPolicy::class,
-                [AccessType::Create, AccessType::Edit, AccessType::Delegate],
+                [
+                    AccessType::Create,
+                    AccessType::Edit,
+                    AccessType::Delegate,
+                ],
             ),
         ];
     }

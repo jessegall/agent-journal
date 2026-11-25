@@ -63,7 +63,10 @@ final readonly class DriverRequests
             ->where('agent_runtime_id', $request->agent_runtime_id)
             ->where('operation', $request->operation)
             ->where('sequence', '<', $request->sequence)
-            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged])
+            ->whereIn('progress', [
+                RequestProgress::Accepted,
+                RequestProgress::Staged,
+            ])
             ->lockForUpdate()
             ->get()
             ->each(fn (DriverRequest $earlier) => $earlier->supersede());

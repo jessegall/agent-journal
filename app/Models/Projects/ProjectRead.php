@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
@@ -26,7 +24,9 @@ use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -58,14 +58,18 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Table('project_reads')]
-#[Fillable(['type', 'path', 'state'])]
+#[Fillable([
+    'type',
+    'path',
+    'state',
+])]
 final class ProjectRead extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
-    use OrdersById;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     /**

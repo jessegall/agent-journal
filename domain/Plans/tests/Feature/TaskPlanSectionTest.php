@@ -22,7 +22,12 @@ final class TaskPlanSectionTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
+    private const array TABLES = [
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+    ];
 
     public function test_a_task_in_phase_two_names_its_plan_and_phase_and_a_loose_task_names_none(): void
     {
@@ -37,8 +42,18 @@ final class TaskPlanSectionTest extends TestCase
         $outside = $this->section()->read(SlotContext::record($loose->id));
 
         $this->assertSame(
-            [(string) $plan->number, 'Build the release page', '2', 'Write'],
-            [$inPlan->planNumber, $inPlan->planTitle, $inPlan->phaseNumber, $inPlan->phaseTitle],
+            [
+                (string) $plan->number,
+                'Build the release page',
+                '2',
+                'Write',
+            ],
+            [
+                $inPlan->planNumber,
+                $inPlan->planTitle,
+                $inPlan->phaseNumber,
+                $inPlan->phaseTitle,
+            ],
         );
 
         $this->assertInstanceOf(Optional::class, $outside->planNumber);

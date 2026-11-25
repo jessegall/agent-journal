@@ -46,7 +46,10 @@ final readonly class CodexSignIn implements SignInProtocol
         $process->send(self::message([
             'method' => 'initialize',
             'id' => 0,
-            'params' => ['clientInfo' => ['name' => 'journal', 'version' => '6']],
+            'params' => ['clientInfo' => [
+                'name' => 'journal',
+                'version' => '6',
+            ]],
         ]));
 
         $process->send(self::message(['method' => 'initialized']));
@@ -102,7 +105,11 @@ final readonly class CodexSignIn implements SignInProtocol
             return new SignInVerification(false, SignInIdentity::unproved());
         }
 
-        $process->send(self::message(['method' => 'account/read', 'id' => self::ACCOUNT_REQUEST, 'params' => []]));
+        $process->send(self::message([
+            'method' => 'account/read',
+            'id' => self::ACCOUNT_REQUEST,
+            'params' => [],
+        ]));
         $process->waitFor(fn (string $output) => self::answerIn($output, self::ACCOUNT_REQUEST) !== null);
         $account = self::accountIn($process->output());
         $status = $this->verify($directory);
@@ -136,7 +143,10 @@ final readonly class CodexSignIn implements SignInProtocol
             return null;
         }
 
-        return ['address' => $start->verificationUrl, 'code' => $start->userCode];
+        return [
+            'address' => $start->verificationUrl,
+            'code' => $start->userCode,
+        ];
     }
 
     /**

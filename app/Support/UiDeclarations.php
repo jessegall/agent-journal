@@ -342,7 +342,10 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     {
         $actions = [];
 
-        foreach ([...array_values($pages), ...array_values($sections)] as $guard) {
+        foreach ([
+            ...array_values($pages),
+            ...array_values($sections),
+        ] as $guard) {
             foreach ($guard->declaredActions() as $action) {
                 $registered = RegisteredAction::of($guard->owner, $action, $guard);
 
@@ -407,7 +410,11 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         $routes = [];
 
         foreach ($this->pages as $page) {
-            $routes[] = [$page->key, 'GET', $page->owner->key.'/'.$page->path->shape()];
+            $routes[] = [
+                $page->key,
+                'GET',
+                $page->owner->key.'/'.$page->path->shape(),
+            ];
         }
 
         foreach ($this->actions as $action) {
@@ -443,7 +450,10 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
     {
         $seen = [];
 
-        foreach ([...array_values($this->pages), ...array_values($this->sections)] as $declaration) {
+        foreach ([
+            ...array_values($this->pages),
+            ...array_values($this->sections),
+        ] as $declaration) {
             if (array_key_exists($declaration->propName, $seen)) {
                 throw UiKeyRepeated::propName($declaration->propName, $seen[$declaration->propName], $declaration->key);
             }

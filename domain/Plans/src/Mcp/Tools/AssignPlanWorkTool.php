@@ -22,7 +22,10 @@ final class AssignPlanWorkTool extends PlanCascadeTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
-        return ['root' => $this->rootSchema($schema), 'recipient' => $this->assigneeSchema($schema)];
+        return [
+            'root' => $this->rootSchema($schema),
+            'recipient' => $this->assigneeSchema($schema),
+        ];
     }
 
     protected function command(ToolArguments $arguments): AssignPlanWorkCommand

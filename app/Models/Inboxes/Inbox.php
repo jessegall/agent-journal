@@ -39,7 +39,13 @@ use PhpOption\Option;
  * @property int $last_message_number
  */
 #[Table('inboxes')]
-#[Fillable(['provider_key', 'provider_id', 'name', 'label', 'forwards_members'])]
+#[Fillable([
+    'provider_key',
+    'provider_id',
+    'name',
+    'label',
+    'forwards_members',
+])]
 final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, ReadableModel
 {
     use BoundedReads;
@@ -66,7 +72,10 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      */
     protected function casts(): array
     {
-        return ['forwards_members' => 'boolean', 'last_message_number' => 'integer'];
+        return [
+            'forwards_members' => 'boolean',
+            'last_message_number' => 'integer',
+        ];
     }
 
     // ----------[ Constructors ]----------
@@ -221,7 +230,10 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
     #[Scope]
     protected function ownedByCore(Builder $query): void
     {
-        $query->whereIn('provider_key', [self::NAMED_PROVIDER, self::PERSONAL_PROVIDER]);
+        $query->whereIn('provider_key', [
+            self::NAMED_PROVIDER,
+            self::PERSONAL_PROVIDER,
+        ]);
     }
 
     /**
