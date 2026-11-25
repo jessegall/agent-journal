@@ -16,6 +16,8 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
             <directory>domain/*/tests/Feature</directory>
+            <directory>tests/Commands</directory>
+            <directory>domain/*/tests/Commands</directory>
         </testsuite>
         <testsuite name="Architecture">
             <directory>tests/Architecture</directory>

@@ -183,7 +183,7 @@ final class StateScenario
 
         Assert::assertNotSame([], $own, "The state {$this->state->typeKey} is not on the stack.");
 
-        return $own[array_key_last($own)];
+        return $own[count($own) - 1];
     }
 
     /**

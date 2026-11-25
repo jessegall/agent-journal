@@ -35,7 +35,7 @@ final class CoreBootsNoDomainTest extends TestCase
         $domainListeners = [];
 
         foreach ($listeners as $event => $eventListeners) {
-            foreach ($eventListeners as $listener) {
+            foreach (self::listedOf($eventListeners) as $listener) {
                 $name = self::listenerClass($listener);
 
                 if (str_starts_with($name, 'Domain\\')) {
@@ -45,6 +45,20 @@ final class CoreBootsNoDomainTest extends TestCase
         }
 
         $this->assertSame([], $domainListeners);
+    }
+
+    /**
+     * The listeners of one event, whether the dispatcher keeps a list of them or a single one.
+     *
+     * @return list<mixed>
+     */
+    private static function listedOf(mixed $eventListeners): array
+    {
+        if (is_array($eventListeners) && array_is_list($eventListeners)) {
+            return $eventListeners;
+        }
+
+        return [$eventListeners];
     }
 
     /**
