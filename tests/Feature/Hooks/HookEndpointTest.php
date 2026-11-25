@@ -31,10 +31,6 @@ final class HookEndpointTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const string STILL_NEEDS_WORK = 'Task %d still needs work';
-
-    private const string ADMISSION_PREFIX = 'journal process run --admission ';
-
     private const string SECRET_DETAIL = 'secret detail';
 
     /**

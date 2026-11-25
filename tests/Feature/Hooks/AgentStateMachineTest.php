@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookDeadlineExpired;
 use App\Exceptions\HookDigestChanged;
@@ -16,7 +15,6 @@ use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Values\CompactionDetails;
-use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
@@ -32,8 +30,6 @@ use Tests\TestCase;
 final class AgentStateMachineTest extends TestCase
 {
     use CommittedHookStack;
-
-    private const string ADMISSION_PREFIX = 'journal process run --admission ';
 
     /**
      * The domains this test uses beside core.
@@ -151,18 +147,5 @@ final class AgentStateMachineTest extends TestCase
     private function stopReply(): Closure
     {
         return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts);
-    }
-
-    /**
-     * @return Closure(HookAnswer, AgentTexts): DriverReply
-     */
-    private function shellReply(RewriteSupport $rewrites): Closure
-    {
-        return fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::shell(
-            $answer,
-            new DriverToolInput(['command' => 'composer test', 'description' => 'Run the tests']),
-            $rewrites,
-            $texts,
-        );
     }
 }

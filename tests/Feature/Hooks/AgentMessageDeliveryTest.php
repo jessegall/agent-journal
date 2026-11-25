@@ -23,11 +23,7 @@ use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\PromptDetails;
 use App\Support\PendingWorkSources;
 use App\Support\References\StateReference;
-use App\Support\StateEvents\StateEventDispatch;
-use App\Support\StateEvents\StateEventScope;
-use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\MessageState;
-use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -89,13 +85,6 @@ final class AgentMessageDeliveryTest extends TestCase
         $this->assertSame(MessageState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
-    }
-
-    private function captureFor(StackTarget $target): StateEventDispatch
-    {
-        $scope = $this->app->make(StateEventScope::class);
-
-        return $scope->admit([$target], fn () => $scope->capture(new NoteWritten()));
     }
 
     private function answerPrompt(string $callId): string
