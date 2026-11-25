@@ -241,7 +241,7 @@ final class StartTaskTest extends TestCase
 
     public function test_the_start_and_its_repeat_each_name_the_actor_that_started_the_task(): void
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -261,7 +261,7 @@ final class StartTaskTest extends TestCase
 
     public function test_the_plan_holding_the_task_at_its_start_is_the_one_told_after_the_commit(): void
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -279,7 +279,7 @@ final class StartTaskTest extends TestCase
 
     public function test_a_task_in_no_phase_tells_no_plan(): void
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -294,7 +294,7 @@ final class StartTaskTest extends TestCase
 
     public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
@@ -314,7 +314,7 @@ final class StartTaskTest extends TestCase
 
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void
     {
-        $agent = Agent::create('Worker', 'main-agent', $this->localProject());
+        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
 
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())

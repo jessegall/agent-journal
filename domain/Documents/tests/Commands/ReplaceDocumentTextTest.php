@@ -17,7 +17,6 @@ use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -123,7 +122,7 @@ final class ReplaceDocumentTextTest extends TestCase
 
     public function test_signed_text_replacement_accepts_the_old_and_new_wire_fields(): void
     {
-        $author = TestStart::start('writing-helper');
+        $author = $this->journal->signedStart('Writer', 'writing-helper');
         $author->startRequest($this->app);
         $commands = $this->app->make(CommandBus::class);
         $document = $commands->run(new CreateDocumentCommand('Design', 'Current design.', 'Original text.'));

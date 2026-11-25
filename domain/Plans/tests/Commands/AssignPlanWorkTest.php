@@ -173,8 +173,8 @@ final class AssignPlanWorkTest extends TestCase
     public function test_the_commands_say_they_covered_the_whole_plan(): void
     {
         $owner = $this->journal->ownerUser();
-        $this->main = TestStart::start('main-agent');
-        $this->helper = TestStart::start('read-only-helper');
+        $this->main = $this->journal->signedStart('Main agent', 'main-agent');
+        $this->helper = $this->journal->signedStart('Reader', 'read-only-helper');
         $plan = Plan::factory()->create([
             'title' => 'Release',
             'type' => PlanType::Build,

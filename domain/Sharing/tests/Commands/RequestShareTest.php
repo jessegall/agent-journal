@@ -9,7 +9,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\RecordIdentity;
@@ -203,11 +202,10 @@ final class RequestShareTest extends TestCase
 
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->ownerUser();
         $this->document = Document::query()->where('number', 1)->sole();
 
-        $start = TestStart::start();
+        $start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->relayAgentCommands($start);
 
         $this->artisan('share:request', [

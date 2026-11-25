@@ -20,7 +20,6 @@ use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -86,12 +85,12 @@ final class CloseReportTest extends TestCase
 
     public function test_a_reviewer_files_links_comments_and_closes_without_changing_the_findings(): void
     {
-        $writer = TestStart::start('writing-helper');
+        $writer = $this->journal->signedStart('Writer', 'writing-helper');
         $writer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
         $source = $bus->run(new CreateDocumentCommand('Source', 'Design under review.', 'Published design.'));
 
-        $reviewer = TestStart::start('read-only-helper');
+        $reviewer = $this->journal->signedStart('Reader', 'read-only-helper');
         $reviewer->startRequest($this->app);
         $findings = str_pad('', 300 * 1024, 'Finding and evidence. ');
 

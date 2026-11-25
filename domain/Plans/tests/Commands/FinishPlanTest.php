@@ -153,10 +153,9 @@ final class FinishPlanTest extends TestCase
 
     public function test_an_agent_builds_starts_reads_and_finishes_a_plan_across_the_two_surfaces(): void
     {
-        $owner = User::factory()->create();
+        $owner = $this->journal->ownerUser();
         $this->ownerId = $owner->id;
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestStart::start();
+        $this->caller = $this->journal->signedStart('Main agent', 'main-agent');
 
         $this->caller->openStack($this->app);
 

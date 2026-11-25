@@ -12,7 +12,6 @@ use App\Exceptions\StackLockTimedOut;
 use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
@@ -301,8 +300,7 @@ final class CreateShareTest extends TestCase
 
     public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->ownerUser();
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser($this->owner->id),

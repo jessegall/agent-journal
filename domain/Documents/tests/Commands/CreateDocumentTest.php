@@ -324,7 +324,7 @@ final class CreateDocumentTest extends TestCase
 
         return $this->journal->inboxes()->post(
             $inbox,
-            Agent::create('Sender', 'main-agent', $this->localProject()),
+            $this->journal->idleAgent('Sender', 'main-agent')->agentCalled('Sender'),
             "Private plan\nDetails.",
         );
     }

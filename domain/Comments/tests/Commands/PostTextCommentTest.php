@@ -18,7 +18,6 @@ use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
 use App\Support\IdListPage;
@@ -220,8 +219,7 @@ final class PostTextCommentTest extends TestCase
 
     public function test_a_note_page_is_read_and_takes_its_first_text_comment_beside_a_whole_record_one(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->ownerUser();
         $this->journal->actAsUserId($owner->id);
 
         $page = $this->noteTarget(NotePage::written(<<<'TEXT'
@@ -265,8 +263,7 @@ final class PostTextCommentTest extends TestCase
 
     public function test_a_note_snapshot_is_read_but_takes_no_comment(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->ownerUser();
         $this->journal->actAsUserId($owner->id);
 
         $snapshot = $this->noteTarget(NoteSnapshot::written(<<<'TEXT'
@@ -314,8 +311,7 @@ final class PostTextCommentTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->ownerUser();
         $this->journal->actAsUserId($owner->id);
     }
 

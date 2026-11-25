@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Commands;
 
 use App\Exceptions\CommandInputInvalid;
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;
 use Domain\Memory\Models\Memory;
@@ -117,10 +115,9 @@ final class SaveMemoryTest extends TestCase
 
     public function test_an_agent_saves_a_memory_and_reads_it_back(): void
     {
-        $user = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
-        $this->owner = TestStart::start('read-only-helper');
-        $this->other = TestStart::start('read-only-helper');
+        $user = $this->journal->ownerUser();
+        $this->owner = $this->journal->signedStart('Reader', 'read-only-helper');
+        $this->other = $this->journal->signedStart('Other reader', 'read-only-helper');
 
         $this->journal->relayAgentCommands($this->owner);
 
@@ -147,10 +144,9 @@ final class SaveMemoryTest extends TestCase
 
     public function test_another_agent_cannot_edit_remove_or_list_the_memory(): void
     {
-        $user = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
-        $this->owner = TestStart::start('read-only-helper');
-        $this->other = TestStart::start('read-only-helper');
+        $user = $this->journal->ownerUser();
+        $this->owner = $this->journal->signedStart('Reader', 'read-only-helper');
+        $this->other = $this->journal->signedStart('Other reader', 'read-only-helper');
 
         $this->journal->relayAgentCommands($this->owner);
         $this->artisan('memory:save', ['text' => self::MEMORY_TEXT])->assertExitCode(0);

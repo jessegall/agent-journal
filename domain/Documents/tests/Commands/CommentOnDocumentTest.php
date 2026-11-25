@@ -33,7 +33,6 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -233,7 +232,7 @@ final class CommentOnDocumentTest extends TestCase
 
     public function test_an_agent_comments_as_itself(): void
     {
-        $agent = Agent::create('Commenter', 'read-only-helper', $this->localProject());
+        $agent = $this->journal->idleAgent('Commenter', 'read-only-helper')->agentCalled('Commenter');
         $this->journal->actAsAgentIds($agent->id, TestIds::of(9));
 
         $this->comment('From an agent.', WholeRecord::Record);
@@ -266,7 +265,7 @@ final class CommentOnDocumentTest extends TestCase
 
     public function test_the_signed_comment_route_posts_on_the_document(): void
     {
-        $author = TestStart::start();
+        $author = $this->journal->signedStart('Main agent', 'main-agent');
         $author->startRequest($this->app);
 
         $document = $this->app->make(CommandBus::class)->run(

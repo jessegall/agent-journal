@@ -8,7 +8,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
 use App\Support\RequestKey;
@@ -163,8 +162,7 @@ final class DockSourceTest extends TestCase
 
     public function test_mcp_docks_lists_and_undocks_with_the_receipts_and_safe_facts_of_journal_dock(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->ownerUser();
 
         $caller = $this->startInConversation('main-agent');
         $add = ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'dock-add'];
@@ -201,8 +199,7 @@ final class DockSourceTest extends TestCase
 
     public function test_a_helper_without_the_dock_grant_is_refused_on_mcp_and_on_the_journal(): void
     {
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->owner = $this->journal->ownerUser();
 
         $helper = $this->startInConversation('read-only-helper');
 
@@ -226,9 +223,8 @@ final class DockSourceTest extends TestCase
 
     public function test_an_agent_docks_lists_and_removes_a_record_and_a_retried_add_answers_its_first_receipt(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->start = TestStart::start();
+        $owner = $this->journal->ownerUser();
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->inboxes()->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
 
         $this->journal->relayAgentCommands($this->start);
@@ -261,9 +257,8 @@ final class DockSourceTest extends TestCase
 
     public function test_an_agent_in_several_conversations_names_one_before_anything_is_docked(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->start = TestStart::start();
+        $owner = $this->journal->ownerUser();
+        $this->start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->inboxes()->pairChat(ActorIdentity::of($owner), ActorIdentity::of($this->start->agent));
 
         $this->journal->inboxes()->pairChat(
@@ -316,9 +311,8 @@ final class DockSourceTest extends TestCase
     {
         $this->createNotesTables();
         $this->installNotesModule();
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->agent = TestStart::start();
+        $this->owner = $this->journal->ownerUser();
+        $this->agent = $this->journal->signedStart('Main agent', 'main-agent');
 
         $this->chatInboxId = $this->journal->inboxes()->pairChat(
             ActorIdentity::of($this->owner),
@@ -392,7 +386,7 @@ final class DockSourceTest extends TestCase
 
     private function startInConversation(string $profile): TestStart
     {
-        $start = TestStart::start($profile);
+        $start = $this->journal->signedStart("Started {$profile}", $profile);
         $this->journal->inboxes()->pairChat(ActorIdentity::of($this->owner), ActorIdentity::of($start->agent));
 
         return $start;
