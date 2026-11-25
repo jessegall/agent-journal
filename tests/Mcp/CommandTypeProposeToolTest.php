@@ -4,29 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
+use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Mcp\Tools\CommandTypeProposeTool;
-use Tests\Support\Entries\Attributes\Generated;
+use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
+use Tests\Support\Processes\HoldsCommandRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of the tool CommandTypeProposeTool, as the generator wrote it.
+ * An agent proposes a rule for its held line from a declaration file: the tool sends the one propose command and shows the proposal it made; a read-only helper does not see the tool.
  */
-#[Generated]
 #[TestsMcpTool(CommandTypeProposeTool::class)]
 final class CommandTypeProposeToolTest extends McpToolEntryTestCase
 {
+    use HoldsCommandRequests;
+
     protected function arrange(TestJournal $journal): ToolCall
     {
-        throw EntryTestNeedsArrangement::for('CommandTypeProposeTool', [
-            'the argument request',
-            'the argument declaration_file',
-            'the argument request_key',
-            'the expected commands',
-            'the sink replies',
-        ]);
+        $start = $journal->owner()->signedStart('Runner');
+        $request = $this->heldRequest($journal, $start);
+        $file = $this->declarationFile('propose-1');
+        $receipt = $journal->runAsStart($start, new ProposeRuleDeclarationCommand($request, $file));
+
+        return ToolCall::by($start)
+            ->arguments(['request' => $request, 'declaration_file' => $file, 'request_key' => 'propose-2'])
+            ->reply(ProposeRuleDeclarationCommand::class, $receipt)
+            ->expects(ExpectedCommand::of(ProposeRuleDeclarationCommand::class, [
+                'commandRequestId' => $request,
+                'declarationFile' => $file,
+            ]))
+            ->hiddenFromProfile('read-only-helper');
     }
 }
