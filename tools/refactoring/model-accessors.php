@@ -169,7 +169,11 @@ function returnsModel(string $source, ClassMethod $method): bool
 
         $full = importedName($source, $part);
 
-        return class_exists($full) && is_subclass_of($full, Model::class);
+        if (! Reflector::exists($full)) {
+            return false;
+        }
+
+        return Reflector::of($full)->isSubclassOf(Model::class);
     });
 }
 
@@ -199,7 +203,13 @@ function isObjectPart(string $source, string $part): bool
 
     $full = importedName($source, preg_replace('/<.*$/', '', ltrim($part, '\\')));
 
-    return (class_exists($full) || interface_exists($full)) && ! is_subclass_of($full, Model::class) && ! enum_exists($full);
+    if (! Reflector::exists($full)) {
+        return false;
+    }
+
+    $type = Reflector::of($full);
+
+    return ! $type->isTrait() && ! $type->isEnum() && ! $type->isSubclassOf(Model::class);
 }
 
 /**
@@ -217,7 +227,11 @@ function isScalarPart(string $source, string $part): bool
 
     $full = importedName($source, $enum[1]);
 
-    return enum_exists($full) && new ReflectionEnum($full)->isBacked();
+    if (! Reflector::exists($full)) {
+        return false;
+    }
+
+    return Reflector::of($full)->backingType()->isDefined();
 }
 
 /**

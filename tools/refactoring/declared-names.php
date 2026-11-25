@@ -7,6 +7,7 @@ declare(strict_types=1);
  * variable, with whether it names an action, a question or a thing (name-grammar.php).
  */
 
+use App\Support\Reflector;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -290,8 +291,19 @@ function parentsOf(ClassLike $type): array
 function overridesVendor(string $method, array $parents): bool
 {
     foreach ($parents as $parent) {
-        if ((class_exists($parent) || interface_exists($parent)) && method_exists($parent, $method)
-            && preg_match('/^(App|Domain|Tests|Database)\\\\/', new ReflectionMethod($parent, $method)->getDeclaringClass()->getName()) !== 1) {
+        if (! Reflector::exists($parent)) {
+            continue;
+        }
+
+        $type = Reflector::of($parent);
+
+        if (! $type->hasMethod($method)) {
+            continue;
+        }
+
+        $declaring = $type->method($method)->declaringClass()->name();
+
+        if (preg_match('/^(App|Domain|Tests|Database)\\\\/', $declaring) !== 1) {
             return true;
         }
     }

@@ -28,7 +28,8 @@ final class PipelineRulesTest extends TestCase
      * The verbs a pipeline's name may start with; a new pipeline that does something else adds its verb here.
      */
     private const array VERBS = [
-        'Analyse', 'Answer', 'Build', 'Cast', 'Check', 'Count', 'Find', 'Read', 'Resolve', 'Run', 'Scan', 'Write',
+        'Analyse', 'Answer', 'Build', 'Cast', 'Check', 'Count', 'Execute', 'Find', 'Finish', 'Read', 'Resolve', 'Run',
+        'Scan', 'Supervise', 'Write',
     ];
 
     /**

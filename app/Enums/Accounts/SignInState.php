@@ -44,7 +44,7 @@ enum SignInState: string
     }
 
     /**
-     * Whether the attempt still waits for the person to sign in: its process starts or shows the sign-in page.
+     * Whether the attempt still waits for the user to sign in: its process starts or shows the sign-in page.
      */
     public function isAwaitingSignIn(): bool
     {

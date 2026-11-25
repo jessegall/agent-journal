@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RecordCommentsPartData } from '@generated/types/documents';
-import CommentsPanel from '@domain/comments/components/CommentsPanel.vue';
+import CommentsPanel from '@domain/comments/components/comments/CommentsPanel.vue';
 
 /**
  * A record's comments as a native part of its layout: the kit's panel with its composer.

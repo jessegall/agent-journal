@@ -16,9 +16,9 @@ final readonly class WordLines
 {
     /**
      * The user is never a human, a person or people, in a name or in a text. Personal, as in a personal desk,
-     * impersonate and the grammar term third-person pass.
+     * impersonate and the grammar term third person pass.
      */
-    public const string USER_WORDS = '/(?<![A-Za-z])(?<!third-)(person|people|human)(?!al)|(Person|People|Human)(?!al)'
+    public const string USER_WORDS = '/(?<![A-Za-z])(?<!third-)(?<!third )(person|people|human)(?!al)|(?<!Third)(Person|People|Human)(?!al)'
         .'|PERSON(?!AL)|PEOPLE|HUMAN/';
 
     /**
