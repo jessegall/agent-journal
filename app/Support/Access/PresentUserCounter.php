@@ -7,7 +7,7 @@ namespace App\Support\Access;
 use App\Contracts\Actors\ActiveActorCounter;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Presence\UserPresences;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use Carbon\CarbonImmutable;
 
 /**
@@ -21,9 +21,9 @@ final readonly class PresentUserCounter implements ActiveActorCounter
         private UserPresences $presences,
     ) {}
 
-    public static function type(): ActorType
+    public static function type(): string
     {
-        return ActorType::User;
+        return User::storedType();
     }
 
     public function count(CarbonImmutable $observedAt): int

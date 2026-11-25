@@ -13,6 +13,6 @@ trait NamesRecipient
 {
     public function recipient(): AssigneeIdentity
     {
-        return new AssigneeIdentity($this->recipientType->value, strtolower($this->recipientId));
+        return new AssigneeIdentity($this->recipientType, strtolower($this->recipientId));
     }
 }

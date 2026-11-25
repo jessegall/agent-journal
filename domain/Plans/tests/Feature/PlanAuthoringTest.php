@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
@@ -100,7 +100,7 @@ final class PlanAuthoringTest extends TestCase
         );
 
         $this->assertSame([
-            ActorType::Agent,
+            Agent::storedType(),
             $this->start->agent->id,
         ], [
             $plan->creator_type,

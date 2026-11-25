@@ -9,7 +9,6 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\LabeledInbox;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -80,7 +79,7 @@ final class ChatWindowTest extends TestCase
             ->session;
 
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
-        $this->agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
+        $this->agentInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id))->inboxId();
     }
 
     public function test_home_selects_the_idle_main_agent_and_offers_a_headless_helper_no_terminal(): void

@@ -65,7 +65,7 @@ trait PrintsComments
         string $anchorDescription,
     ): CommandReport {
         return $report
-            ->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}")
+            ->line("{$comment->authorType} {$comment->authorId}  {$comment->createdAt}")
             ->line("  {$anchorDescription}")
             ->line('  '.str_replace("\n", "\n  ", $comment->body));
     }

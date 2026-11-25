@@ -121,7 +121,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
 
     private function workingActor(ActorIdentity $actor): Agent
     {
-        if (! $actor->type->isAgent()) {
+        if (! $actor->isAgent()) {
             throw SupervisorRouteRefused::actorUnavailable();
         }
 

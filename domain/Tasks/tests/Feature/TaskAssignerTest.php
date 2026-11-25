@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Assignments\AssignmentPool;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
@@ -39,8 +39,8 @@ final class TaskAssignerTest extends TestCase
     {
         parent::setUp();
 
-        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
-        $this->reviewer = new ActorIdentity(ActorType::Agent, TestIds::of(8));
+        $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
+        $this->reviewer = ActorIdentity::ofClass(Agent::class, TestIds::of(8));
         $this->startUserRequestAs(TestIds::of(1));
     }
 

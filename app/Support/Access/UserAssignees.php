@@ -9,13 +9,12 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Assignments\AssigneeProvider;
 use App\Contracts\Messages\AdmittedRecipients;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssigneeUnavailable;
+use App\Models\Access\User;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
 use App\Support\IdListPage;
-use App\Models\Access\User;
 
 /**
  * Users as holders of work: only a user the journal admits now may receive work, and names are display names, never
@@ -87,7 +86,7 @@ final readonly class UserAssignees implements AssigneeProvider
         $shownIds = array_slice($ids, 0, $page->limit);
 
         return new AssigneeList(
-            $this->names(array_map(fn (string $id) => new AssigneeIdentity(ActorType::User->value, $id), $shownIds)),
+            $this->names(array_map(fn (string $id) => new AssigneeIdentity(User::storedType(), $id), $shownIds)),
             $this->nextAfterId($shownIds, count($ids) > $page->limit),
         );
     }

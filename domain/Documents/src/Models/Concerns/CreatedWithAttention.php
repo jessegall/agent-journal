@@ -31,6 +31,6 @@ trait CreatedWithAttention
     #[Scope]
     protected function ownedBy(Builder $query, Actor $actor): void
     {
-        $query->where('creator_type', $actor->actorType()->value)->where('creator_id', $actor->actorId());
+        $query->where('creator_type', $actor->actorType())->where('creator_id', $actor->actorId());
     }
 }

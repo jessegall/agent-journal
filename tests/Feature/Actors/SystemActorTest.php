@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\InvalidActorText;
 use App\Models\Access\User;
 use App\Support\ActorIdentity;
@@ -40,7 +39,7 @@ final class SystemActorTest extends TestCase
             SimulatedFailure::class,
         );
 
-        $this->assertSame(ActorType::System, $inside);
-        $this->assertSame(ActorType::User, $store->actor()->actorType());
+        $this->assertSame(SystemActor::storedType(), $inside);
+        $this->assertSame(User::storedType(), $store->actor()->actorType());
     }
 }

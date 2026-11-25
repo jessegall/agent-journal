@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Chat\Support;
 
 use App\Contracts\Sessions\AgentDirectory;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\DockSourceUnavailable;
 use App\Exceptions\StackTargetRefused;
+use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
@@ -46,7 +46,7 @@ final readonly class DockRequests
             throw ChatUnavailable::notAttached($agentId);
         }
 
-        return Inbox::query()->findOrFail($this->chats->pairWith(new ActorIdentity(ActorType::Agent, $agent->agentId)));
+        return Inbox::query()->findOrFail($this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId)));
     }
 
     /**

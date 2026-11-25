@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\ActorVisibilityProvider;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\CrossOwnerReadRefused;
+use App\Models\Agents\Agent;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +29,7 @@ final readonly class AgentVisibility implements ActorVisibilityProvider
      */
     public function readAcrossOwners(Builder $query, string $scope): void
     {
-        throw CrossOwnerReadRefused::forActor(ActorType::Agent->value);
+        throw CrossOwnerReadRefused::forActor(Agent::storedType());
     }
 
     public function canReadAcrossOwners(): bool

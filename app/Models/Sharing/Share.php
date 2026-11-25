@@ -12,7 +12,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sharing\ShareState;
 use App\Events\Sharing\ShareActivated;
 use App\Events\Sharing\ShareCreated;
@@ -58,7 +57,7 @@ use PhpOption\Option;
  * @property string $root_type
  * @property string $root_id
  * @property ?string $owner_user_id
- * @property ?ActorType $requester_type
+ * @property ?string $requester_type
  * @property ?string $requester_id
  * @property ?string $share_gateway_configuration_id
  * @property ?int $configuration_version
@@ -120,7 +119,6 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     {
         return [
             'state' => ShareState::class,
-            'requester_type' => ActorType::class,
             'configuration_version' => 'integer',
             'scope_version' => 'integer',
             'token_ciphertext' => 'encrypted',
@@ -825,7 +823,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     #[Scope]
     protected function requestedBy(Builder $query, ActorIdentity $requester): void
     {
-        $query->where('requester_type', $requester->type->value)->where('requester_id', $requester->id);
+        $query->where('requester_type', $requester->type)->where('requester_id', $requester->id);
     }
 
     /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
@@ -63,7 +63,7 @@ final class DockSectionTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $session = $this->startedMainAgentSession();
         $this->inboxOf(ActorIdentity::of($owner));
-        $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id));
+        $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id));
         $task = Task::factory()->create(['title' => 'Ship the dock']);
         $window = ConversationRequest::queryFor($session->agent_id);
 
@@ -88,13 +88,13 @@ final class DockSectionTest extends TestCase
 
         $message = $this->askBetween(
             $this->inboxOf(ActorIdentity::of($owner)),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id)),
+            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id)),
             "Build ready\nAll checks passed.",
         );
 
         $inboxId = $this->pairChat(
             ActorIdentity::of($owner),
-            new ActorIdentity(ActorType::Agent, $session->agent_id),
+            ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->inbox_id;
 
         $dock = ['inboxId' => $inboxId, 'type' => Message::linkType(), 'id' => $message->id];

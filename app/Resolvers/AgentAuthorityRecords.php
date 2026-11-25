@@ -7,9 +7,9 @@ namespace App\Resolvers;
 use App\Contracts\Authorization\AgentAuthority;
 use App\Contracts\Authorization\TargetAuthorizer;
 use App\Enums\Agents\AccessType;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssignmentDenied;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\ActorIdentity;
@@ -24,7 +24,7 @@ final readonly class AgentAuthorityRecords implements AgentAuthority
 
     public function requireDispatcher(string $agentId): void
     {
-        $caller = new ActorIdentity(ActorType::Agent, $agentId);
+        $caller = ActorIdentity::ofClass(Agent::class, $agentId);
 
         try {
             $this->lifecycle->lockShared($agentId);

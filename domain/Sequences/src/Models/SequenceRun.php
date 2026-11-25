@@ -12,7 +12,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Runs\Tone;
 use App\Enums\Web\Alignment;
 use App\Exceptions\CrossOwnerReadRefused;
@@ -104,7 +103,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
             return ActorIdentity::system();
         }
 
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+        return ActorIdentity::fromStored($this->actor_type, $this->actor_id);
     }
 
     /**
@@ -115,7 +114,7 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     #[Scope]
     protected function followedBy(Builder $query, ActorIdentity $actor): void
     {
-        $query->where($query->qualifyColumn('actor_type'), $actor->type->value)
+        $query->where($query->qualifyColumn('actor_type'), $actor->type)
             ->where($query->qualifyColumn('actor_id'), $actor->id);
     }
 

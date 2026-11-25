@@ -53,7 +53,7 @@ final class ReportJobDiscrepancy extends Model implements ReadableModel
         $discrepancy = new self();
         $discrepancy->report_id = $reportId;
         $discrepancy->owner_reference = $ownerReference;
-        $discrepancy->filer_type = $filer->type->value;
+        $discrepancy->filer_type = $filer->type;
         $discrepancy->filer_id = $filer->id;
         $discrepancy->reason = $reason;
 

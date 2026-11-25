@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AgentNotAvailable;
 use App\Exceptions\AssigneeUnavailable;
 use App\Models\Access\User;
@@ -58,11 +57,11 @@ final class AssigneesTest extends TestCase
         $sameId = $this->owner->id;
         Agent::query()->whereKey($this->builder->id)->update(['id' => $sameId]);
 
-        $user = $registry->assigneeProvider(ActorType::User->value)->requireEligible(
-            new AssigneeIdentity(ActorType::User->value, $sameId),
+        $user = $registry->assigneeProvider(User::storedType())->requireEligible(
+            new AssigneeIdentity(User::storedType(), $sameId),
         );
-        $agent = $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
-            new AssigneeIdentity(ActorType::Agent->value, $sameId),
+        $agent = $registry->assigneeProvider(Agent::storedType())->requireEligible(
+            new AssigneeIdentity(Agent::storedType(), $sameId),
         );
 
         $this->assertInstanceOf(User::class, $user);
@@ -76,20 +75,20 @@ final class AssigneesTest extends TestCase
         $this->builder->retireAt(CarbonImmutable::now());
 
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(
+            fn () => $registry->assigneeProvider(User::storedType())->requireEligible(
                 AssigneeIdentity::of($stranger),
             ),
             AssigneeUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
+            fn () => $registry->assigneeProvider(Agent::storedType())->requireEligible(
                 AssigneeIdentity::of($this->builder),
             ),
             AssigneeUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
-                new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999)),
+            fn () => $registry->assigneeProvider(Agent::storedType())->requireEligible(
+                new AssigneeIdentity(Agent::storedType(), TestIds::of(999999)),
             ),
             AssigneeUnavailable::class,
         );
@@ -102,14 +101,14 @@ final class AssigneesTest extends TestCase
         $retired = Agent::create('Gone', 'read-only-helper');
         $retired->retireAt(CarbonImmutable::now());
 
-        $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new IdListPage(null, 1));
-        $secondPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(
+        $firstPage = $registry->assigneeProvider(Agent::storedType())->eligible(new IdListPage(null, 1));
+        $secondPage = $registry->assigneeProvider(Agent::storedType())->eligible(
             new IdListPage($firstPage->nextAfterId, 1),
         );
-        $names = $registry->assigneeProvider(ActorType::Agent->value)->names(
+        $names = $registry->assigneeProvider(Agent::storedType())->names(
             [AssigneeIdentity::of($retired), AssigneeIdentity::of($this->builder)],
         );
-        $users = $registry->assigneeProvider(ActorType::User->value)->eligible(new IdListPage());
+        $users = $registry->assigneeProvider(User::storedType())->eligible(new IdListPage());
 
         $this->assertSame(['Builder'], array_map(fn ($name) => $name->name, $firstPage->assignees));
         $this->assertSame(['Reviewer'], array_map(fn ($name) => $name->name, $secondPage->assignees));

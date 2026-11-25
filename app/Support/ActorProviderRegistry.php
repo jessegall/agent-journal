@@ -10,12 +10,14 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\ActorProvider;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\ActorResolver;
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\ActorVisibilityProvider;
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\RecipientActor;
+use App\Contracts\Actors\StoredActor;
 use App\Contracts\Work\ActorStackSessionProvider;
 use App\Contracts\Work\ActorStackSessions;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorProviderMissing;
 use App\Exceptions\ActorProviderRepeated;
 use App\Exceptions\ActorUnavailable;
@@ -36,8 +38,14 @@ final class ActorProviderRegistry implements
     ActorProviderRegistration,
     ActorResolver,
     ActorStackSessions,
+    ActorTypes,
     ActorVisibility
 {
+    /**
+     * @var array<string, class-string<StoredActor>>
+     */
+    private array $actorClasses = [];
+
     /**
      * @var Registry<class-string<ActorProvider>>
      */
@@ -75,19 +83,38 @@ final class ActorProviderRegistry implements
     }
 
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<ActorProvider>  $class
      */
-    public function register(ActorType $type, string $class): void
+    public function register(string $actorClass, string $class): void
     {
-        $this->providers->put($type->value, $class);
+        $type = $actorClass::storedType();
+        $this->providers->put($type, $class);
+        $this->actorClasses[$type] = $actorClass;
+    }
+
+    public function types(): array
+    {
+        return array_map(strval(...), array_keys($this->actorClasses));
+    }
+
+    public function requestTypes(): array
+    {
+        $types = array_keys(array_filter(
+            $this->actorClasses,
+            fn (string $actorClass) => is_subclass_of($actorClass, RecipientActor::class),
+        ));
+
+        return array_map(strval(...), $types);
     }
 
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<ActorLabelProvider>  $class
      */
-    public function registerLabels(ActorType $type, string $class): void
+    public function registerLabels(string $actorClass, string $class): void
     {
-        $this->labelProviders->put($type->value, $class);
+        $this->labelProviders->put($actorClass::storedType(), $class);
     }
 
     /**
@@ -100,7 +127,7 @@ final class ActorProviderRegistry implements
         $idsByType = [];
 
         foreach ($actors as $actor) {
-            $idsByType[$actor->type->value][$actor->id] = $actor->id;
+            $idsByType[$actor->type][$actor->id] = $actor->id;
         }
 
         $namesByType = [];
@@ -114,11 +141,12 @@ final class ActorProviderRegistry implements
     }
 
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<ActorVisibilityProvider>  $class
      */
-    public function registerVisibility(ActorType $type, string $class): void
+    public function registerVisibility(string $actorClass, string $class): void
     {
-        $this->visibilityProviders->put($type->value, $class);
+        $this->visibilityProviders->put($actorClass::storedType(), $class);
     }
 
     /**
@@ -135,7 +163,7 @@ final class ActorProviderRegistry implements
             return;
         }
 
-        $type = $actors->actor()->actorType()->value;
+        $type = $actors->actor()->actorType();
 
         if ($this->visibilityProviders->has($type)) {
             Container::getInstance()->make($this->visibilityProviders->get($type))->ownRead($query, $ownerScope);
@@ -153,7 +181,7 @@ final class ActorProviderRegistry implements
     public function readAcrossOwners(Builder $query, string $scope): void
     {
         $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
-        $providerClass = $this->visibilityProviders->get($type->value);
+        $providerClass = $this->visibilityProviders->get($type);
 
         Container::getInstance()->make($providerClass)->readAcrossOwners($query, $scope);
     }
@@ -162,7 +190,7 @@ final class ActorProviderRegistry implements
     {
         $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
 
-        return Container::getInstance()->make($this->visibilityProviders->get($type->value))->canReadAcrossOwners();
+        return Container::getInstance()->make($this->visibilityProviders->get($type))->canReadAcrossOwners();
     }
 
     /**
@@ -182,7 +210,7 @@ final class ActorProviderRegistry implements
             return;
         }
 
-        $type = $actors->actor()->actorType()->value;
+        $type = $actors->actor()->actorType();
 
         if (! $this->visibilityProviders->has($type)) {
             $query->whereKey([]);
@@ -194,11 +222,12 @@ final class ActorProviderRegistry implements
     }
 
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<ActorStackSessionProvider>  $class
      */
-    public function registerStackSessions(ActorType $type, string $class): void
+    public function registerStackSessions(string $actorClass, string $class): void
     {
-        $this->stackSessionProviders->put($type->value, $class);
+        $this->stackSessionProviders->put($actorClass::storedType(), $class);
     }
 
     /**
@@ -214,7 +243,7 @@ final class ActorProviderRegistry implements
             return [];
         }
 
-        $sessions = $this->stackSessionsOf($actors->actor()->actorType()->value)
+        $sessions = $this->stackSessionsOf($actors->actor()->actorType())
             ->map(fn (ActorStackSessionProvider $provider) => $provider->admittableSessions())
             ->getOrElse([]);
 
@@ -225,14 +254,14 @@ final class ActorProviderRegistry implements
 
     public function sessionsOf(ActorIdentity $actor): array
     {
-        return $this->stackSessionsOf($actor->type->value)
+        return $this->stackSessionsOf($actor->type)
             ->map(fn (ActorStackSessionProvider $provider) => $provider->sessionsOf($actor))
             ->getOrElse([]);
     }
 
     public function get(ActorIdentity $identity): Actor
     {
-        $providerClass = $this->providers->find($identity->type->value)
+        $providerClass = $this->providers->find($identity->type)
             ->getOrThrow(ActorUnavailable::forIdentity($identity));
 
         return Container::getInstance()->make($providerClass)->actor($identity);

@@ -36,7 +36,7 @@ final readonly class AskAttention
 
     public function offerNext(ActorIdentity $holder): void
     {
-        if (! $holder->type->isAgent()) {
+        if (! $holder->isAgent()) {
             return;
         }
 
@@ -77,7 +77,7 @@ final readonly class AskAttention
 
     private function wake(ActorIdentity $actor, AttentionOrigin $origin): string
     {
-        if (! $actor->type->isAgent()) {
+        if (! $actor->isAgent()) {
             return self::CARD;
         }
 

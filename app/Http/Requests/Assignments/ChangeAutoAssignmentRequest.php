@@ -6,6 +6,7 @@ namespace App\Http\Requests\Assignments;
 
 use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,9 +21,9 @@ final class ChangeAutoAssignmentRequest extends FormRequest
     /**
      * @return array<string, list<mixed>>
      */
-    public function rules(): array
+    public function rules(ActorTypes $actorTypes): array
     {
-        return [...$this->keyRules(), ...$this->poolRules(), ...$this->revisionRules()];
+        return [...$this->keyRules($actorTypes), ...$this->poolRules(), ...$this->revisionRules()];
     }
 
     public function enableCommand(RecordResolver $records): EnableAutoAssignmentCommand

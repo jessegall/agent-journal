@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Skills\SkillCondition;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\SkillRevisionImmutable;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
@@ -33,7 +32,7 @@ use Spatie\LaravelData\DataCollection;
  * @property DataCollection<int, SkillSection> $sections
  * @property array $condition
  * @property int $condition_version
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property ?string $source_key
  * @property ?string $source_digest
@@ -64,7 +63,6 @@ final class SkillRevision extends Model implements ReadableModel
             'sections' => DataCollection::class.':'.SkillSection::class,
             'condition' => 'array',
             'condition_version' => 'integer',
-            'author_type' => ActorType::class,
         ];
     }
 

@@ -23,7 +23,7 @@ final class AutoAssignmentMissing extends RuntimeException implements CodedRefus
         $actor = $key->actor;
 
         return new self(
-            "The {$actor->type->value} {$actor->id} has no auto-assignment of {$key->assignableType}; enable it first.",
+            "The {$actor->type} {$actor->id} has no auto-assignment of {$key->assignableType}; enable it first.",
         );
     }
 

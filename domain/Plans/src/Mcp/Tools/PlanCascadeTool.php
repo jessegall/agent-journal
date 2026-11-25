@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp\Tools;
 
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\RequestKey;
 use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -35,7 +36,7 @@ abstract class PlanCascadeTool extends JournalWriteTool
     /**
      * Takes the request key the cascade's commands run under.
      */
-    public function __construct(private readonly RequestKey $key) {}
+    public function __construct(private readonly RequestKey $key, protected readonly ActorTypes $actorTypes) {}
 
     /**
      * The schema of the root argument: a plan or a phase, by type and id.

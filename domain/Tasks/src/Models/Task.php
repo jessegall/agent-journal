@@ -17,7 +17,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Work\Focusable;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\PoolMembersType;
 use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
@@ -73,7 +72,7 @@ use PhpOption\Some;
  * @property int $number
  * @property string $title
  * @property string $brief
- * @property ActorType $creator_type
+ * @property string $creator_type
  * @property string $creator_id
  * @property int $revision
  * @property TaskState $state
@@ -133,7 +132,6 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
     {
         return [
             'state' => TaskState::class,
-            'creator_type' => ActorType::class,
             'revision' => 'integer',
             'run_number' => 'integer',
         ];

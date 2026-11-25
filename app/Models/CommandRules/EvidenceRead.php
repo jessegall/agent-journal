@@ -67,7 +67,7 @@ final class EvidenceRead extends Model implements ReadableModel
         $reads = array_map(function (EvidenceRange $range) use ($run, $reader): self {
             $read = new self();
             $read->project_key = $run->project_key;
-            $read->actor_type = $reader->type->value;
+            $read->actor_type = $reader->type;
             $read->actor_id = $reader->id;
             $read->process_run_id = $run->id;
             $read->part_run_id = $range->partRunId;
@@ -101,7 +101,7 @@ final class EvidenceRead extends Model implements ReadableModel
     protected function ofRunReadBy(Builder $query, ProcessRun $run, ActorIdentity $reader): void
     {
         $query->where('process_run_id', $run->id)
-            ->where('actor_type', $reader->type->value)
+            ->where('actor_type', $reader->type)
             ->where('actor_id', $reader->id);
     }
 }

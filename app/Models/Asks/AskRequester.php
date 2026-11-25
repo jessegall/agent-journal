@@ -40,7 +40,7 @@ final class AskRequester extends Model implements ReadableModel
 
         $requester->setRawAttributes([
             $requester->getKeyName() => $requester->newUniqueId(),
-            'actor_type' => $actor->type->value,
+            'actor_type' => $actor->type,
             'actor_id' => $actor->id,
         ]);
 

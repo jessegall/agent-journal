@@ -4,27 +4,22 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Support\Access\UserActivity;
-use App\Policies\EnvironmentAccessPolicy;
-use App\Enums\Agents\AccessType;
-use App\Values\PolicyDefinition;
-use App\Support\ActivityDefinition;
-use App\Support\AssigneeDefinition;
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Assignments\AssignmentRegistration;
+use App\Actions\Access\CreateNewUser;
+use App\Actions\Access\ResetUserPassword;
 use App\Contracts\Actors\ActiveActorRegistration;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
+use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Reflection\TypeReflections;
-use App\Enums\Assignments\ActorType;
-use App\Actions\Access\CreateNewUser;
-use App\Actions\Access\ResetUserPassword;
+use App\Enums\Agents\AccessType;
 use App\Models\Access\Passkey;
 use App\Models\Access\User;
+use App\Policies\EnvironmentAccessPolicy;
 use App\Resolvers\CurrentUserRecords;
 use App\Support\Access\AccessSettings;
 use App\Support\Access\AdmittedUsers;
@@ -32,10 +27,14 @@ use App\Support\Access\EnvironmentChatEligibility;
 use App\Support\Access\OwnerAdmission;
 use App\Support\Access\OwnerAuthorizerProvider;
 use App\Support\Access\PresentUserCounter;
+use App\Support\Access\UserActivity;
 use App\Support\Access\UserActors;
 use App\Support\Access\UserAssignees;
 use App\Support\Access\UserLabels;
 use App\Support\Access\UserVisibility;
+use App\Support\ActivityDefinition;
+use App\Support\AssigneeDefinition;
+use App\Values\PolicyDefinition;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -79,13 +78,13 @@ class AccessServiceProvider extends ServiceProvider
         AssignmentRegistration $assignments,
         PolicyCatalogue $policies,
     ): void {
-        $actors->register(ActorType::User, UserActors::class);
-        $assignments->registerAssignees(new AssigneeDefinition(ActorType::User->value, UserAssignees::class));
-        $assignments->registerActivity(new ActivityDefinition(ActorType::User, UserActivity::class));
+        $actors->register(User::class, UserActors::class);
+        $assignments->registerAssignees(new AssigneeDefinition(User::storedType(), UserAssignees::class));
+        $assignments->registerActivity(new ActivityDefinition(User::storedType(), UserActivity::class));
         $policies->register('Core', new PolicyDefinition(EnvironmentAccessPolicy::class, [AccessType::Edit]));
-        $authorizers->register(ActorType::User, OwnerAuthorizerProvider::class);
-        $actors->registerLabels(ActorType::User, UserLabels::class);
-        $actors->registerVisibility(ActorType::User, UserVisibility::class);
+        $authorizers->register(User::class, OwnerAuthorizerProvider::class);
+        $actors->registerLabels(User::class, UserLabels::class);
+        $actors->registerVisibility(User::class, UserVisibility::class);
         $presentActors->register(PresentUserCounter::class);
         $this->configureActions();
         $this->configureRateLimiting();

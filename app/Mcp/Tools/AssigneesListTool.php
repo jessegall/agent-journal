@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Assignments\AssigneeResolver;
-use App\Enums\Assignments\ActorType;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
@@ -34,13 +34,14 @@ final class AssigneesListTool extends JournalReadTool
     public function __construct(
         private readonly AssigneeResolver $assignees,
         private readonly Continuations $continuations,
+        private readonly ActorTypes $actorTypes,
     ) {}
 
     public function schema(JsonSchema $schema): array
     {
         return [
             'type' => $schema->string()->enum(
-                array_map(fn (ActorType $type): string => $type->value, ActorType::requestTypes()),
+                $this->actorTypes->requestTypes(),
             )->required(),
             'after_id' => $this->optionalRecordIdArgument($schema),
             'limit' => $this->wholeNumberArgument($schema, 1, IdListPage::LARGEST_LIMIT),
@@ -50,7 +51,7 @@ final class AssigneesListTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $type = $arguments->enum('type', ActorType::class);
+        $type = $arguments->oneOf('type', $this->actorTypes->requestTypes());
         $cursor = $arguments->continuation();
 
         $filters = $cursor === null
@@ -58,19 +59,19 @@ final class AssigneesListTool extends JournalReadTool
                 'after_id' => $arguments->optionalText('after_id'),
                 'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, IdListPage::LARGEST_LIMIT),
             ]
-            : $this->continuations->open($cursor, $this->name(), $type->value)->filters;
+            : $this->continuations->open($cursor, $this->name(), $type)->filters;
 
         $assigneePage = $this->assignees->eligible(
-            $type->value,
+            $type,
             new IdListPage($filters['after_id'], $filters['limit']),
         );
 
         $nextActions = $assigneePage->nextAfterId === null ? [] : [new NextAction($this->name(), [
-            'type' => $type->value,
+            'type' => $type,
             'continuation' => $this->continuations->issue(
                 new Continuation(
                     $this->name(),
-                    $type->value,
+                    $type,
                     [
                         'after_id' => $assigneePage->nextAfterId,
                         'limit' => $filters['limit'],
@@ -81,7 +82,7 @@ final class AssigneesListTool extends JournalReadTool
         ])];
 
         return ToolResult::ok([
-            'type' => $type->value,
+            'type' => $type,
             'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $assigneePage->assignees),
         ], $nextActions);
     }

@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
@@ -161,6 +161,6 @@ final class PlanReviewTest extends TestCase
 
     private function owner(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::User, $this->owner->id);
+        return ActorIdentity::ofClass(User::class, $this->owner->id);
     }
 }

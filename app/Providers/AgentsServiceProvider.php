@@ -53,7 +53,6 @@ use App\Contracts\Sessions\StartReservations;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\Agents\AccessType;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentPurpose;
 use App\Enums\Files\Place;
 use App\Exceptions\AgentContextMissing;
@@ -347,14 +346,14 @@ final class AgentsServiceProvider extends ServiceProvider
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);
         $systemEntries->allow('driver switch', AgentPolicy::class);
-        $actors->register(ActorType::Agent, AgentActors::class);
-        $actors->registerLabels(ActorType::Agent, AgentLabels::class);
-        $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
+        $actors->register(Agent::class, AgentActors::class);
+        $actors->registerLabels(Agent::class, AgentLabels::class);
+        $actors->registerVisibility(Agent::class, AgentVisibility::class);
         $this->loadCoreRoutes('agents/agents.php');
         $this->loadCoreRoutes('agents/host.php');
         $this->loadCoreRoutes('agents/releases.php');
 
-        $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
+        $assignments->registerAssignees(new AssigneeDefinition(Agent::storedType(), AgentAssignees::class));
 
         $assignments->registerOwner(self::OWNER, []);
 
@@ -366,7 +365,7 @@ final class AgentsServiceProvider extends ServiceProvider
         );
 
         $pendingWork->register(PendingNavigationWork::class);
-        $assignments->registerActivity(new ActivityDefinition(ActorType::Agent, AgentActivity::class));
+        $assignments->registerActivity(new ActivityDefinition(Agent::storedType(), AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);
     }
 }

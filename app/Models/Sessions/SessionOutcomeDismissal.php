@@ -42,7 +42,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
     public static function create(ActorIdentity $viewer, SessionRequest $start, StartDisposition $version): void
     {
         $dismissal = new self();
-        $dismissal->viewer_type = $viewer->type->value;
+        $dismissal->viewer_type = $viewer->type;
         $dismissal->viewer_id = $viewer->id;
         $dismissal->agent_id = $start->agent_id;
         $dismissal->request_id = $start->request_id;
@@ -79,7 +79,7 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
     #[Scope]
     protected function dismissedBy(Builder $query, ActorIdentity $viewer): void
     {
-        $query->where('viewer_type', $viewer->type->value)->where('viewer_id', $viewer->id);
+        $query->where('viewer_type', $viewer->type)->where('viewer_id', $viewer->id);
     }
 
     /**

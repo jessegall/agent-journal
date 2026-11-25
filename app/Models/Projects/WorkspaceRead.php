@@ -151,7 +151,7 @@ final class WorkspaceRead extends Model implements EventSource, ReadableModel
     {
         $read = new self();
         $read->read_reference = $reference->key;
-        $read->actor_type = $actor->type->value;
+        $read->actor_type = $actor->type;
         $read->actor_id = $actor->id;
         $read->work = $work->key;
         $read->setAttribute($read->getKeyName(), $read->newUniqueId());

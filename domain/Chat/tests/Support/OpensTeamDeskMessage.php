@@ -7,8 +7,8 @@ namespace Domain\Chat\Tests\Support;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
 use App\Support\Access\AccessSettings;
@@ -64,7 +64,7 @@ trait OpensTeamDeskMessage
     {
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeatService::class)
-                ->seat($this->desk->id, new ActorIdentity(ActorType::Agent, $agentId)),
+                ->seat($this->desk->id, ActorIdentity::ofClass(Agent::class, $agentId)),
         );
     }
 
@@ -76,7 +76,7 @@ trait OpensTeamDeskMessage
 
         $this->app->make(AssignmentTransaction::class)->run(function () use ($seat, $agentId): void {
             $current = $this->app->make(AssignmentStore::class)->lockCurrent($seat->assignmentIdentity())->get();
-            $successor = new ActorIdentity(ActorType::Agent, $agentId);
+            $successor = ActorIdentity::ofClass(Agent::class, $agentId);
 
             $this->app->make(DeskSeatService::class)
                 ->replace(new SeatChange($this->desk->id, $seat->id, $current->reference, $successor));

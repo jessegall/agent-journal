@@ -12,11 +12,11 @@ use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
 use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
 use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
 use App\Commands\CommandRules\StartSample\StartSampleCommand;
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Records\RecordRole;
 use App\Enums\Runs\RunMode;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\Runs\PartRun;
@@ -137,7 +137,7 @@ trait RunsAcmeRequests
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
     {
-        $actor = new ActorIdentity(ActorType::Agent, $this->start->agent->id);
+        $actor = ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
         $projectKey = (string) config('processes.project_key');
         $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));

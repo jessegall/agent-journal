@@ -10,7 +10,6 @@ use App\Commands\Sharing\RequestShare\RequestShareCommand;
 use App\Commands\Sharing\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sharing\GatewayOperationType;
 use App\Enums\Sharing\ShareAuditType;
 use App\Enums\Sharing\ShareState;
@@ -19,6 +18,7 @@ use App\Events\Sharing\ShareRequested;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\ShareQuotaReached;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareAudit;
 use App\Models\Sharing\ShareGatewayConfiguration;
@@ -126,12 +126,12 @@ final class ShareProposalTest extends TestCase
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
         $this->assertSame(
-            [ActorType::Agent, $this->start->agent->id],
+            [Agent::storedType(), $this->start->agent->id],
             [$proposal->requester_type, $proposal->requester_id],
         );
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
-        $this->assertSame([ShareAuditType::Created, ActorType::Agent], [$audit->type, $audit->actor_type]);
+        $this->assertSame([ShareAuditType::Created, Agent::storedType()], [$audit->type, $audit->actor_type]);
     }
 
     public function test_a_repeated_request_with_the_same_key_makes_one_proposal(): void
@@ -265,7 +265,7 @@ final class ShareProposalTest extends TestCase
         $first = Share::create(
             $this->root,
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-            new ShareProposal(new ActorIdentity(ActorType::Agent, $this->start->agent->id)),
+            new ShareProposal(ActorIdentity::ofClass(Agent::class, $this->start->agent->id)),
         );
         $now = CarbonImmutable::now();
         $rows = [];
@@ -278,7 +278,7 @@ final class ShareProposalTest extends TestCase
                 'state' => ShareState::Proposed->value,
                 'root_type' => $this->root->type,
                 'root_id' => $this->root->id,
-                'requester_type' => ActorType::Agent->value,
+                'requester_type' => Agent::storedType(),
                 'requester_id' => $this->start->agent->id,
                 'scope_version' => 0,
                 'expires_at' => $now->addDays(Share::PROPOSAL_DAYS),

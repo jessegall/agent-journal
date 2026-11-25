@@ -7,7 +7,6 @@ namespace App\Models\Profiles;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Support\ActorIdentity;
 use App\Values\ScriptSource;
@@ -20,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $profile_key
  * @property int $revision
  * @property ScriptSource $script_source
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property Carbon $created_at
  */
@@ -38,7 +37,6 @@ final class ProfileDraftRevision extends Model implements ReadableModel
         return [
             'revision' => 'integer',
             'script_source' => ScriptSource::class,
-            'author_type' => ActorType::class,
         ];
     }
 

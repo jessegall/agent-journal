@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Inboxes\MainInbox;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Drivers\NavigationRequest;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
@@ -27,7 +27,7 @@ final readonly class MainInboxNavigation implements MainInbox
 
     public function occupant(): Option
     {
-        return Option::fromValue(InboxMember::attachedTo([Inbox::main()->id], ActorType::Agent)[0] ?? null);
+        return Option::fromValue(InboxMember::attachedTo([Inbox::main()->id], Agent::class)[0] ?? null);
     }
 
     public function receive(NavigationRequest $request): void

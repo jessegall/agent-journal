@@ -10,7 +10,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
@@ -32,10 +31,10 @@ use Illuminate\Support\Carbon;
  * @property string $document_id
  * @property int $base_revision_number
  * @property int $result_revision_number
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property CloseCause $cause
- * @property ?ActorType $closer_type
+ * @property ?string $closer_type
  * @property ?string $closer_id
  * @property ?string $reason
  * @property bool $published
@@ -55,8 +54,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'author_type' => ActorType::class,
-            'closer_type' => ActorType::class,
             'cause' => CloseCause::class,
             'published' => 'boolean',
             'base_revision_number' => 'integer',

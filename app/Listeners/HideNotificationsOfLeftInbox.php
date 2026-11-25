@@ -25,7 +25,7 @@ final readonly class HideNotificationsOfLeftInbox implements Listener
             $hidden = $this->journal->runAsJournal(
                 CommandEntry::EngineMaintenance,
                 self::TRUSTED_ENTRY,
-                new HideLeftInboxNotificationsCommand($event->actor->type->value, $event->actor->id, $event->inboxId),
+                new HideLeftInboxNotificationsCommand($event->actor->type, $event->actor->id, $event->inboxId),
             );
         } while ($hidden === HideLeftInboxNotificationsCommand::BATCH);
     }

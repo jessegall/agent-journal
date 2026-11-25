@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\ActorTypes;
+use App\Contracts\Actors\StoredActor;
 use App\Contracts\Authorization\AuthorizerProvider;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AuthorizerProviderMissing;
 use App\Exceptions\AuthorizerProviderRepeated;
 use Illuminate\Container\Container;
@@ -31,21 +32,22 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
     }
 
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<AuthorizerProvider>  $class
      */
-    public function register(ActorType $type, string $class): void
+    public function register(string $actorClass, string $class): void
     {
-        $this->providers->put($type->value, $class);
+        $this->providers->put($actorClass::storedType(), $class);
     }
 
     /**
      * @throws AuthorizerProviderMissing
      */
-    public function get(ActorType $type): AuthorizerProvider
+    public function get(string $type): AuthorizerProvider
     {
         // The registry outlives a request under Octane; the provider comes from the request's own container, so it
         // reads that request's actor, never the one of the request that booted the registry.
-        return Container::getInstance()->make($this->providers->get($type->value));
+        return Container::getInstance()->make($this->providers->get($type));
     }
 
     /**
@@ -53,10 +55,10 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
      *
      * @throws AuthorizerProviderMissing
      */
-    public function requireEveryType(): void
+    public function requireEveryType(ActorTypes $types): void
     {
-        foreach (ActorType::cases() as $type) {
-            $this->providers->get($type->value);
+        foreach ($types->types() as $type) {
+            $this->providers->get($type);
         }
     }
 }

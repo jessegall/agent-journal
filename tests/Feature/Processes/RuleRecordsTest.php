@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\ClassificationState;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
@@ -14,6 +13,8 @@ use App\Exceptions\ClassificationRuleRefused;
 use App\Exceptions\RevisionImmutable;
 use App\Exceptions\RuleProposalRefused;
 use App\Exceptions\RuleRevisionInvalid;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleProposalRevision;
@@ -257,11 +258,11 @@ final class RuleRecordsTest extends TestCase
 
     private function agent(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, '01jd8x0g9m3qz6v4k2t7r5w1ce');
+        return ActorIdentity::ofClass(Agent::class, '01jd8x0g9m3qz6v4k2t7r5w1ce');
     }
 
     private function user(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::User, '01jd8x0g9m3qz6v4k2t7r5w1cf');
+        return ActorIdentity::ofClass(User::class, '01jd8x0g9m3qz6v4k2t7r5w1cf');
     }
 }

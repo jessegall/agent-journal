@@ -215,7 +215,7 @@ final readonly class FileWindowResolver implements PageResolver
 
     private static function authorOf(TextCommentView $comment): ActorIdentity
     {
-        return new ActorIdentity($comment->comment->authorType, $comment->comment->authorId);
+        return ActorIdentity::fromStored($comment->comment->authorType, $comment->comment->authorId);
     }
 
     /**

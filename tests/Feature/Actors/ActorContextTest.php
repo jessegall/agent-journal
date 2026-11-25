@@ -6,9 +6,9 @@ namespace Tests\Feature\Actors;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
@@ -37,7 +37,7 @@ final class ActorContextTest extends TestCase
     {
         $this->actAs(TestActors::user(7));
         $this->assertSame(
-            [ActorType::User, TestIds::of(7)],
+            [User::storedType(), TestIds::of(7)],
             [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id],
         );
 
@@ -56,7 +56,7 @@ final class ActorContextTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
-        $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
+        $this->assertSame([Agent::storedType(), TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->assertFalse($actors->hasActor());
@@ -85,6 +85,6 @@ final class ActorContextTest extends TestCase
             ),
         );
 
-        $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actor->type, $actor->id]);
+        $this->assertSame([Agent::storedType(), TestIds::of(3)], [$actor->type, $actor->id]);
     }
 }

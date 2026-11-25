@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Memory\Tests\Feature;
 
 use App\Contracts\Actors\AgentTexts;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Hooks\HookEvent;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
@@ -42,7 +42,7 @@ final class MemoryContextTest extends TestCase
         parent::setUp();
 
         $this->memory = Memory::create(
-            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            ActorIdentity::ofClass(Agent::class, TestIds::of(1)),
             'Run migrate:fresh after a create-migration edit.',
             6,
         );

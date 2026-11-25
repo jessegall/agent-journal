@@ -11,9 +11,9 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Messages\InboxPermission;
+use App\Events\Access\EnvironmentUserGrantRevoked;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use App\Events\Access\EnvironmentUserGrantRevoked;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -75,7 +75,7 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
         $grant = new self();
         $grant->user_id = $user->id;
         $grant->environment_key = $environmentId ?? self::LOCAL_ENVIRONMENT;
-        $grant->granted_by_type = $grantedBy->type->value;
+        $grant->granted_by_type = $grantedBy->type;
         $grant->granted_by_id = $grantedBy->id;
         $grant->granted_at = $at;
 

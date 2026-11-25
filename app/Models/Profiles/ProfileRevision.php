@@ -9,7 +9,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Profiles\InstancePolicy;
 use App\Enums\Profiles\ModelTier;
 use App\Exceptions\ProfileMissing;
@@ -50,7 +49,7 @@ use Illuminate\Support\Carbon;
  * @property ScriptSource $script_source
  * @property ?array $compiled_script
  * @property ?string $script_definition_digest
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property Carbon $created_at
  * @property mixed $script attribute
@@ -81,7 +80,6 @@ final class ProfileRevision extends Model implements ReadableModel
             'instances' => InstancePolicy::class,
             'script_source' => ScriptSource::class,
             'compiled_script' => 'array',
-            'author_type' => ActorType::class,
         ];
     }
 

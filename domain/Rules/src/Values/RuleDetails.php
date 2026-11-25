@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Values;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Rules\Enums\RuleState;
 
 /**
@@ -19,7 +18,7 @@ final readonly class RuleDetails
         public string $text,
         public RuleState $state,
         public string|null $reason,
-        public ActorType|null $proposerType,
+        public string|null $proposerType,
         public string|null $proposerId,
         public int|null $replacesRuleNumber,
     ) {}

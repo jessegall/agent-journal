@@ -73,7 +73,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
         $ruleProposalRevision->payload = $proposed->rule;
         $ruleProposalRevision->evidence = $proposed->evidence;
         $ruleProposalRevision->examples = RuleExample::collect($proposed->examples, DataCollection::class);
-        $ruleProposalRevision->author_type = $author->type->value;
+        $ruleProposalRevision->author_type = $author->type;
         $ruleProposalRevision->author_id = $author->id;
         $ruleProposalRevision->save();
 

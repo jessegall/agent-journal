@@ -10,7 +10,6 @@ use App\Concerns\Linkable;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\TextVersionUnavailable;
 use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
@@ -37,7 +36,7 @@ use Illuminate\Support\Carbon;
  * @property string $title
  * @property string $abstract
  * @property string $body
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property ?CarbonImmutable $closed_at
  * @property ?Carbon $created_at
@@ -57,7 +56,6 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     protected function casts(): array
     {
         return [
-            'author_type' => ActorType::class,
             'closed_at' => 'immutable_datetime',
         ];
     }
@@ -77,7 +75,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         string $title,
         string $abstract,
         string $body,
-        ActorType $authorType,
+        string $authorType,
         string $authorId,
     ): self {
         $revision = new self();
@@ -205,7 +203,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     #[Scope]
     protected function ownedBy(Builder $query, Actor $actor): void
     {
-        $query->where('author_type', $actor->actorType()->value)->where('author_id', $actor->actorId());
+        $query->where('author_type', $actor->actorType())->where('author_id', $actor->actorId());
     }
 
     /**

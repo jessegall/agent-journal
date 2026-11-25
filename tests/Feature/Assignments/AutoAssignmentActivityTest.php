@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentProviders;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
@@ -15,6 +14,7 @@ use App\Support\Access\UserActivity;
 use App\Support\ActorIdentity;
 use App\Support\AgentActivity;
 use App\Support\AgentSessions;
+use App\Support\SystemActor;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
@@ -33,7 +33,7 @@ final class AutoAssignmentActivityTest extends TestCase
     {
         $agent = Agent::create('Builder', 'writing-helper');
         $actor = ActorIdentity::of($agent);
-        $activity = $this->app->make(AssignmentProviders::class)->activity(ActorType::Agent);
+        $activity = $this->app->make(AssignmentProviders::class)->activity(Agent::storedType());
 
         $this->assertInstanceOf(AgentActivity::class, $activity);
         $this->assertFalse($activity->mayTakeWork($actor));
@@ -61,7 +61,7 @@ final class AutoAssignmentActivityTest extends TestCase
         $owner = User::factory()->create();
         $other = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $activity = $this->app->make(AssignmentProviders::class)->activity(ActorType::User);
+        $activity = $this->app->make(AssignmentProviders::class)->activity(User::storedType());
 
         $this->assertInstanceOf(UserActivity::class, $activity);
         $this->assertTrue($activity->mayTakeWork(ActorIdentity::of($owner)));
@@ -73,7 +73,7 @@ final class AutoAssignmentActivityTest extends TestCase
     {
         $this->expectException(AssignmentTypeUnavailable::class);
 
-        $this->app->make(AssignmentProviders::class)->activity(ActorType::Engine);
+        $this->app->make(AssignmentProviders::class)->activity(SystemActor::storedType());
     }
 
     private function runningSession(Agent $agent): AgentSession

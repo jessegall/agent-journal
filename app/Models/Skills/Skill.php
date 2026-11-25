@@ -11,7 +11,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Events\Skills\SkillsChanged;
 use App\Exceptions\SkillOwnerRequired;
 use App\Exceptions\SkillRetired;
@@ -32,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $number_group_id
  * @property int $number
  * @property string $key
- * @property ActorType $owner_type
+ * @property string $owner_type
  * @property string $owner_id
  * @property ?string $environment
  * @property ?string $current_revision_id
@@ -55,7 +54,6 @@ final class Skill extends Model implements EventSource, Numbered, ReadableModel
     protected function casts(): array
     {
         return [
-            'owner_type' => ActorType::class,
             'number' => 'integer',
             'retired_at' => 'immutable_datetime',
         ];

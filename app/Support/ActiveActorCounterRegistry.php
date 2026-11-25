@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActiveActorCounter;
 use App\Contracts\Actors\ActiveActorRegistration;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActiveActorCounterMissing;
 use App\Exceptions\ActiveActorCounterRepeated;
 use Illuminate\Container\Container;
@@ -25,8 +24,8 @@ final class ActiveActorCounterRegistry implements ActiveActorRegistration
     public function __construct()
     {
         $this->counters = Registry::once(
-            fn (string $type) => ActiveActorCounterMissing::for(ActorType::from($type)),
-            fn (string $type) => ActiveActorCounterRepeated::for(ActorType::from($type)),
+            fn (string $type) => ActiveActorCounterMissing::for($type),
+            fn (string $type) => ActiveActorCounterRepeated::for($type),
         );
     }
 
@@ -37,19 +36,19 @@ final class ActiveActorCounterRegistry implements ActiveActorRegistration
      */
     public function register(string $class): void
     {
-        $this->counters->put($class::type()->value, $class);
+        $this->counters->put($class::type(), $class);
     }
 
-    public function has(ActorType $type): bool
+    public function has(string $type): bool
     {
-        return $this->counters->has($type->value);
+        return $this->counters->has($type);
     }
 
     /**
      * @throws ActiveActorCounterMissing
      */
-    public function get(ActorType $type): ActiveActorCounter
+    public function get(string $type): ActiveActorCounter
     {
-        return Container::getInstance()->make($this->counters->get($type->value));
+        return Container::getInstance()->make($this->counters->get($type));
     }
 }

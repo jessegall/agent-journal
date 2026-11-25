@@ -8,8 +8,9 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Contracts\Messages\MessageParticipant;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Messages\InboxPermission;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
@@ -50,8 +51,8 @@ final readonly class ChatPages
     {
         $viewer = ActorIdentity::of($this->actors->actor());
         $members = [
-            ...InboxMember::attachedTo([$inbox->id], ActorType::User),
-            ...InboxMember::attachedTo([$inbox->id], ActorType::Agent),
+            ...InboxMember::attachedTo([$inbox->id], User::class),
+            ...InboxMember::attachedTo([$inbox->id], Agent::class),
         ];
         $names = $this->labels->labelsFor($members);
         $drivers = $this->agentDrivers->driversOf($members);

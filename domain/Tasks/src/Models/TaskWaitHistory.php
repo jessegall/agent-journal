@@ -7,7 +7,6 @@ namespace Domain\Tasks\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskWaitChange;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -21,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property string $dependent_task_id
  * @property string $prerequisite_task_id
  * @property TaskWaitChange $change
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property ?string $reason
  * @property ?string $batch_id
@@ -43,7 +42,6 @@ final class TaskWaitHistory extends Model implements ReadableModel
     {
         return [
             'change' => TaskWaitChange::class,
-            'actor_type' => ActorType::class,
         ];
     }
 

@@ -91,7 +91,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         $permit->source_digest = hash('sha256', $line->line);
         $permit->classification_digest = $line->classificationDigest;
         $permit->approved_classes = $line->approvedClasses;
-        $permit->runner_type = $runner->type->value;
+        $permit->runner_type = $runner->type;
         $permit->runner_id = $runner->id;
         $permit->byte_cap = $limits->byteCap;
         $permit->seconds_cap = $limits->secondsCap;
@@ -141,7 +141,7 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
      */
     public function assertUsable(ActorIdentity $runner, string $requestId, string $classificationDigest): void
     {
-        if ($this->runner_type !== $runner->type->value || $this->runner_id !== $runner->id) {
+        if ($this->runner_type !== $runner->type || $this->runner_id !== $runner->id) {
             throw EvidencePermitRefused::otherActor();
         }
 

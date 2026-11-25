@@ -99,7 +99,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
         $proposal->program = $proposed->rule->programFamily();
         $proposal->operation = $proposed->rule->operation();
         $proposal->state = ProposalState::Draft;
-        $proposal->author_type = $author->type->value;
+        $proposal->author_type = $author->type;
         $proposal->author_id = $author->id;
         $proposal->request_id = $requestId;
         $proposal->payload_digest = $proposed->digest();
@@ -164,7 +164,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
 
     public function isAuthoredBy(ActorIdentity $actor): bool
     {
-        return $this->author_type === $actor->type->value && $this->author_id === $actor->id;
+        return $this->author_type === $actor->type && $this->author_id === $actor->id;
     }
 
     // ----------[ Relations ]----------
@@ -291,7 +291,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function requestedBy(Builder $query, ActorIdentity $author, string $requestId): void
     {
-        $query->where('author_type', $author->type->value)
+        $query->where('author_type', $author->type)
             ->where('author_id', $author->id)
             ->where('request_id', $requestId);
     }

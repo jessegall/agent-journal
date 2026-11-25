@@ -128,7 +128,7 @@ final readonly class DocumentPages implements DocumentReader
             'revisions' => $page->map(fn (DocumentRevision $revision) => [
                 'revision' => $revision->number,
                 'title' => TextPreview::within($revision->title, 100),
-                'author_type' => $revision->author_type->value,
+                'author_type' => $revision->author_type,
                 'author_id' => $revision->author_id,
             ])->all(),
         ], $next);

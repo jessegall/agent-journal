@@ -102,7 +102,7 @@ final readonly class TaskWaitRecords implements TaskWaitResolver
             $wait->waived_at === null ? null : CarbonImmutable::parse($wait->waived_at),
             $wait->waived_by_type === null || $wait->waived_by_id === null
                 ? null
-                : new ActorIdentity($wait->waived_by_type, $wait->waived_by_id),
+                : ActorIdentity::fromStored($wait->waived_by_type, $wait->waived_by_id),
         );
     }
 }

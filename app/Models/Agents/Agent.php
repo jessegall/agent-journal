@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Contracts\Actors\RecipientActor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
@@ -15,7 +16,6 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Drivers\DriverType;
 use App\Events\Sessions\AgentDriverTypePreferred;
 use App\Events\Sessions\AgentRetired;
@@ -55,7 +55,8 @@ final class Agent extends Model implements
     EventSource,
     MessageReceiver,
     MessageSender,
-    ReadableModel
+    ReadableModel,
+    RecipientActor
 {
     use BoundedReads;
     use HasUlids;
@@ -159,9 +160,14 @@ final class Agent extends Model implements
         return AssigneeIdentity::of($this);
     }
 
-    public function actorType(): ActorType
+    public static function storedType(): string
     {
-        return ActorType::Agent;
+        return 'agent';
+    }
+
+    public function actorType(): string
+    {
+        return self::storedType();
     }
 
     /**

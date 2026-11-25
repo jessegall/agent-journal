@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Contracts\Actors\ActorTypes;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -21,6 +22,8 @@ use Illuminate\JsonSchema\Types\Type;
 abstract class AssignmentWriteTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;
+
+    public function __construct(protected readonly ActorTypes $actorTypes) {}
 
     /**
      * @return array<string, Type>

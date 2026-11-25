@@ -6,9 +6,9 @@ namespace App\Support\Access;
 
 use App\Contracts\Inboxes\InboxEligibility;
 use App\Enums\Messages\InboxPermission;
-use App\Support\ActorIdentity;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
+use App\Support\ActorIdentity;
 
 /**
  * Chat eligibility from environment grants: the owner holds every permission without one, any other user what its
@@ -20,7 +20,7 @@ final readonly class EnvironmentChatEligibility implements InboxEligibility
 
     public function lockAdmission(ActorIdentity $user, string|null $environmentId): void
     {
-        if (! $user->type->isUser()) {
+        if (! $user->isUser()) {
             return;
         }
 
@@ -71,7 +71,7 @@ final readonly class EnvironmentChatEligibility implements InboxEligibility
 
     private function isActiveUser(ActorIdentity $user): bool
     {
-        return $user->type->isUser()
+        return $user->isUser()
             && User::query()->whereKey($user->id)->whereNull('disabled_at')->exists();
     }
 

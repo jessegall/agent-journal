@@ -15,7 +15,6 @@ use App\Enums\Accounts\CleanupProblem;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInState;
 use App\Enums\Accounts\SignInType;
-use App\Enums\Assignments\ActorType;
 use App\Events\Accounts\SignInAttemptAnswerAccepted;
 use App\Events\Accounts\SignInAttemptClaimed;
 use App\Events\Accounts\SignInAttemptCleanupApplied;
@@ -51,7 +50,7 @@ use Illuminate\Support\Str;
  * @property string $id
  * @property string $account_protocol
  * @property SignInMethod $method
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property ?string $fingerprint
  * @property ?string $account_id
@@ -107,7 +106,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         return [
             'method' => SignInMethod::class,
-            'actor_type' => ActorType::class,
             'state' => SignInState::class,
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
@@ -138,7 +136,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ? $accountOrDriver->account_protocol
             : $accountOrDriver;
         $attempt->method = $method;
-        $attempt->actor_type = $starter->type->value;
+        $attempt->actor_type = $starter->type;
         $attempt->actor_id = $starter->id;
 
         if ($accountOrDriver instanceof Account) {

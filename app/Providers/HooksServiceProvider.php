@@ -27,7 +27,7 @@ use App\Contracts\Work\StackTransactionRunner;
 use App\Contracts\Work\UserStack;
 use App\Contracts\Work\WorkProgress;
 use App\Declarations\StateMethods;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
@@ -159,7 +159,7 @@ final class HooksServiceProvider extends ServiceProvider
         PendingWorkSources $pendingWork,
     ): void {
         $pendingWork->register(PendingAgentMessages::class);
-        $actors->registerStackSessions(ActorType::Agent, AgentStackSessions::class);
+        $actors->registerStackSessions(Agent::class, AgentStackSessions::class);
         $this->loadCoreRoutes('hooks/hooks.php');
         $this->commands([
             PruneHookHistoryCommand::class,

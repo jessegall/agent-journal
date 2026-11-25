@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -79,7 +78,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
         $identity = new self();
         $identity->profile_key = $profileKey;
         $identity->profile_base = $profileBase;
-        $identity->helper_actor_type = $helper->type->value;
+        $identity->helper_actor_type = $helper->type;
         $identity->helper_actor_id = $helper->id;
         $identity->belongTo($parent);
         $identity->save();
@@ -126,7 +125,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      */
     protected function helperActor(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->helper_actor_type, $this->helper_actor_id));
     }
 
     // ----------[ Asserts ]----------
@@ -176,7 +175,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function representing(Builder $query, ActorIdentity $helper): void
     {
-        $query->where('helper_actor_type', $helper->type->value)->where('helper_actor_id', $helper->id);
+        $query->where('helper_actor_type', $helper->type)->where('helper_actor_id', $helper->id);
     }
 
     /**

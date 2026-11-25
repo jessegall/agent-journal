@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Plans\Calls;
 
 use App\Contracts\Domains\CallSender;
-use App\Enums\Assignments\ActorType;
 use App\Support\CallKey;
 use Domain\Plans\Data\AssignedPlanListData;
 use Domain\Plans\Data\PlanWorkResultData;
@@ -50,7 +49,7 @@ final readonly class PlanCalls
     public function assignPlanWork(
         string $rootType,
         string $rootId,
-        ActorType $recipientType,
+        string $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
         string|null $rootPlan = null,
@@ -156,9 +155,9 @@ final readonly class PlanCalls
         string $rootType,
         string $rootId,
         string $assignmentId,
-        ActorType $holderType,
+        string $holderType,
         string $holderId,
-        ActorType $recipientType,
+        string $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
         string|null $rootPlan = null,
@@ -194,7 +193,7 @@ final readonly class PlanCalls
         string $rootType,
         string $rootId,
         string $assignmentId,
-        ActorType $holderType,
+        string $holderType,
         string $holderId,
         CallKey $requestKey = new CallKey(),
         string|null $rootPlan = null,

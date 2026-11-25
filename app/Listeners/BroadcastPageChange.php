@@ -8,8 +8,8 @@ use App\Contracts\Events\InboxScopedFact;
 use App\Contracts\Events\Listener;
 use App\Contracts\Messages\AdmittedRecipients;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\Assignments\ActorType;
 use App\Events\Web\PageChanged;
+use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -32,7 +32,7 @@ final readonly class BroadcastPageChange implements Listener
         $userIds = $fact instanceof InboxScopedFact
             ? array_map(
                 fn (ActorIdentity $user) => $user->id,
-                InboxMember::attachedTo([$fact->scopedInboxId()], ActorType::User),
+                InboxMember::attachedTo([$fact->scopedInboxId()], User::class),
             )
             : $this->recipients->userIds();
 

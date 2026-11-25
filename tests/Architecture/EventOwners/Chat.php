@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\Assignments\ActorType;
 use App\Events\Messages\MessageReactionAdded;
 use App\Events\Messages\MessageReactionWithdrawn;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Domain\Chat\Events\ChatReconciled;
 use Domain\Chat\Events\ChatReconcileMarked;
@@ -46,7 +46,7 @@ return [
         'owner' => 'MessageReaction::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageReactionAdded('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
+        'sample' => fn () => new MessageReactionAdded('inbox', 'message', ActorIdentity::ofClass(User::class, 'user')),
     ],
     ConversationClosed::class => [
         'role' => EventRole::RowFact,
@@ -60,14 +60,14 @@ return [
         'owner' => 'Conversation::transferTo',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ConversationTransferred('conversation', new ActorIdentity(ActorType::User, 'user')),
+        'sample' => fn () => new ConversationTransferred('conversation', ActorIdentity::ofClass(User::class, 'user')),
     ],
     MessageReactionWithdrawn::class => [
         'role' => EventRole::RowFact,
         'owner' => 'MessageReaction::withdraw',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageReactionWithdrawn('inbox', 'message', new ActorIdentity(ActorType::User, 'user')),
+        'sample' => fn () => new MessageReactionWithdrawn('inbox', 'message', ActorIdentity::ofClass(User::class, 'user')),
     ],
     DirectChatRemoved::class => [
         'role' => EventRole::RowFact,

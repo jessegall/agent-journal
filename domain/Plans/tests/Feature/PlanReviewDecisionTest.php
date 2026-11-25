@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Domain\Plans\Commands\ApprovePlanReview\ApprovePlanReviewCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
@@ -66,7 +66,7 @@ final class PlanReviewDecisionTest extends TestCase
     public function test_approving_the_open_review_records_one_receipt_that_a_replay_returns(): void
     {
         $this->runCommand(
-            new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]),
+            new RequestPlanReviewCommand($this->plan->id, [ActorIdentity::ofClass(User::class, $this->owner->id)]),
         );
 
         $key = (string) Str::uuid();
@@ -87,7 +87,7 @@ final class PlanReviewDecisionTest extends TestCase
     public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
     {
         $this->runCommand(
-            new RequestPlanReviewCommand($this->plan->id, [new ActorIdentity(ActorType::User, $this->owner->id)]),
+            new RequestPlanReviewCommand($this->plan->id, [ActorIdentity::ofClass(User::class, $this->owner->id)]),
         );
 
         $this->runCommand(new WithdrawPlanReviewCommand($this->plan->id));

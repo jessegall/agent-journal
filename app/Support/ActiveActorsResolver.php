@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Time\ServerClock;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActiveActorsUnavailable;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Values\ActiveActorsSnapshot;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
@@ -32,8 +33,8 @@ final readonly class ActiveActorsResolver
 
                 return new ActiveActorsSnapshot(
                     $observedAt,
-                    $this->count(ActorType::Agent, $observedAt),
-                    $this->count(ActorType::User, $observedAt),
+                    $this->count(Agent::storedType(), $observedAt),
+                    $this->count(User::storedType(), $observedAt),
                 );
             });
         } catch (Throwable $cause) {
@@ -41,7 +42,7 @@ final readonly class ActiveActorsResolver
         }
     }
 
-    private function count(ActorType $type, CarbonImmutable $observedAt): int
+    private function count(string $type, CarbonImmutable $observedAt): int
     {
         if (! $this->counters->has($type)) {
             return 0;

@@ -34,7 +34,7 @@ final readonly class ReceiptCaller
      */
     public function limit(Builder $query): void
     {
-        $query->where($query->qualifyColumn('author_type'), $this->actor->type->value)
+        $query->where($query->qualifyColumn('author_type'), $this->actor->type)
             ->where($query->qualifyColumn('author_id'), $this->actor->id)
             ->where($query->qualifyColumn('session_id'), $this->sessionId);
     }
@@ -49,7 +49,7 @@ final readonly class ReceiptCaller
      */
     public function limitReadable(Builder $query): void
     {
-        $query->where($query->qualifyColumn('author_type'), $this->actor->type->value)
+        $query->where($query->qualifyColumn('author_type'), $this->actor->type)
             ->where($query->qualifyColumn('author_id'), $this->actor->id)
             ->where(fn (Builder $sessions) => $sessions
                 ->where($query->qualifyColumn('session_id'), $this->sessionId)
@@ -64,7 +64,7 @@ final readonly class ReceiptCaller
     public function columns(): array
     {
         return [
-            'author_type' => $this->actor->type->value,
+            'author_type' => $this->actor->type,
             'author_id' => $this->actor->id,
             'session_id' => $this->sessionId,
         ];

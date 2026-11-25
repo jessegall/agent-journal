@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models\Support;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Closure;
 use Illuminate\Container\Container;
@@ -44,7 +43,7 @@ trait BelongsToOneActor
      */
     public function belongTo(ActorIdentity $actor): void
     {
-        $this->setAttribute('actor_type', $actor->type->value);
+        $this->setAttribute('actor_type', $actor->type);
         $this->setAttribute('actor_id', $actor->id);
     }
 
@@ -53,9 +52,10 @@ trait BelongsToOneActor
      */
     public function owningActor(): ActorIdentity
     {
-        $type = ActorType::from((string) $this->getAttribute('actor_type'));
-
-        return new ActorIdentity($type, (string) $this->getAttribute('actor_id'));
+        return ActorIdentity::fromStored(
+            (string) $this->getAttribute('actor_type'),
+            (string) $this->getAttribute('actor_id'),
+        );
     }
 
     /**
@@ -80,7 +80,7 @@ trait BelongsToOneActor
     {
         $query->withoutGlobalScope(static::ownerScope())->where(
             $query->qualifyColumn('actor_type'),
-            $actor->type->value,
+            $actor->type,
         )->where($query->qualifyColumn('actor_id'), $actor->id);
     }
 

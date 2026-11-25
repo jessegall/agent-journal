@@ -60,7 +60,7 @@ final class DocumentCommentsPartData extends Data
                     $view->comment->id,
                     $view->anchor->firstLine,
                     $view->anchor->lastLine,
-                    "{$view->comment->authorType->value} {$view->comment->authorId}",
+                    "{$view->comment->authorType} {$view->comment->authorId}",
                     $view->comment->body,
                 ),
                 array_filter(

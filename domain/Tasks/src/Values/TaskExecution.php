@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Enums\TaskState;
 use PhpOption\Option;
 
@@ -18,7 +17,7 @@ final readonly class TaskExecution
      * @param  Option<string>  $focusedBy  the name of the agent whose focus the task is in
      */
     public function __construct(
-        public ActorType $actorType,
+        public string $actorType,
         public string $actorId,
         public string|null $actorLabel,
         public int $runNumber,

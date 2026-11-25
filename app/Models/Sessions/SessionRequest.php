@@ -12,7 +12,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Refusals\StartRefusal;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\HostRefusal;
@@ -149,7 +148,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
         $sessionRequest = new self();
         $sessionRequest->request_id = $request->requestId;
         $sessionRequest->agent_id = $request->agentId;
-        $sessionRequest->actor_type = $requester->type->value;
+        $sessionRequest->actor_type = $requester->type;
         $sessionRequest->actor_id = $requester->id;
         $sessionRequest->driver_key = (string) $pin->registration->key;
         $sessionRequest->family = $pin->registration->family;
@@ -294,7 +293,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
 
     public function wasRequestedBy(ActorIdentity $actor): bool
     {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id)->isSameAs($actor);
+        return ActorIdentity::fromStored($this->actor_type, $this->actor_id)->isSameAs($actor);
     }
 
     // ----------[ Accessors ]----------
@@ -496,7 +495,7 @@ final class SessionRequest extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function requestedBy(Builder $query, ActorIdentity $requester): void
     {
-        $query->where('actor_type', $requester->type->value)->where('actor_id', $requester->id);
+        $query->where('actor_type', $requester->type)->where('actor_id', $requester->id);
     }
 
     /**

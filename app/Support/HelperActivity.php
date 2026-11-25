@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Activity\ActivityLog;
 use App\Enums\Agents\ActivityType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 
 /**
@@ -29,7 +28,7 @@ final readonly class HelperActivity
     private function record(string $actorAgentId, ActivityType $type, string $helperAgentId): void
     {
         $this->activity->record(
-            new ActorIdentity(ActorType::Agent, $actorAgentId),
+            ActorIdentity::ofClass(Agent::class, $actorAgentId),
             $type,
             Agent::query()->findOrFail($helperAgentId)->name,
         );

@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssigneeResolver;
 use App\Contracts\Assignments\AssignmentResolver;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorContextMissing;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
@@ -111,7 +110,7 @@ final class AssignmentResolversTest extends TestCase
     public function test_names_come_from_each_actor_types_owner(): void
     {
         $names = $this->app->make(AssigneeResolver::class)->names([$this->helper, AssigneeIdentity::of($this->owner)]);
-        $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User->value, new IdListPage());
+        $users = $this->app->make(AssigneeResolver::class)->eligible(User::storedType(), new IdListPage());
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

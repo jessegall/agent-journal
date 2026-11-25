@@ -8,12 +8,14 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sharing\ShareAuditActor;
 use App\Enums\Sharing\ShareAuditType;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\ShareAuditEntry;
+use App\Support\SystemActor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property ?string $share_id
  * @property ShareAuditType $type
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property ?string $reason_code
  * @property Carbon $created_at
@@ -58,7 +60,6 @@ final class ShareAudit extends Model implements ReadableModel
     {
         return [
             'type' => ShareAuditType::class,
-            'actor_type' => ActorType::class,
         ];
     }
 
@@ -114,9 +115,9 @@ final class ShareAudit extends Model implements ReadableModel
         }
 
         return match ($this->actor_type) {
-            ActorType::User => ShareAuditActor::Owner,
-            ActorType::Agent => ShareAuditActor::Agent,
-            ActorType::System => ShareAuditActor::System,
+            User::storedType() => ShareAuditActor::Owner,
+            Agent::storedType() => ShareAuditActor::Agent,
+            SystemActor::storedType() => ShareAuditActor::System,
         };
     }
 

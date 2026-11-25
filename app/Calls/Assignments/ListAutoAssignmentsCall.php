@@ -7,7 +7,6 @@ namespace App\Calls\Assignments;
 use App\Attributes\Endpoint;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentPageData;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
@@ -24,7 +23,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class ListAutoAssignmentsCall extends Data implements JournalCall
 {
     public function __construct(
-        public ActorType $actorType,
+        public string $actorType,
         #[Ulid]
         public string $actorId,
         #[Ulid]

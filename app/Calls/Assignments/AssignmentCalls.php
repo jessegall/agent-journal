@@ -10,7 +10,6 @@ use App\Data\Assignments\AutoAssignmentChangeData;
 use App\Data\Assignments\AutoAssignmentPageData;
 use App\Data\Assignments\AutoAssignmentStatusData;
 use App\Data\Assignments\RecordHolderData;
-use App\Enums\Assignments\ActorType;
 use App\Support\CallKey;
 
 /**
@@ -23,7 +22,7 @@ final readonly class AssignmentCalls
     public function assignRecord(
         string $recordType,
         string $recordId,
-        ActorType $recipientType,
+        string $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
     ): AssignmentResultData {
@@ -40,7 +39,7 @@ final readonly class AssignmentCalls
      * @param  list<string>  $records
      */
     public function configureAutoAssignment(
-        ActorType $actorType,
+        string $actorType,
         string $actorId,
         string $assignableType,
         string $pool,
@@ -64,7 +63,7 @@ final readonly class AssignmentCalls
     }
 
     public function disableAutoAssignment(
-        ActorType $actorType,
+        string $actorType,
         string $actorId,
         string $assignableType,
         int $expectedRevision,
@@ -83,7 +82,7 @@ final readonly class AssignmentCalls
      * @param  list<string>  $records
      */
     public function enableAutoAssignment(
-        ActorType $actorType,
+        string $actorType,
         string $actorId,
         string $assignableType,
         string $pool,
@@ -115,7 +114,7 @@ final readonly class AssignmentCalls
     }
 
     public function listAutoAssignments(
-        ActorType $actorType,
+        string $actorType,
         string $actorId,
         string|null $after = null,
     ): AutoAssignmentPageData {
@@ -130,9 +129,9 @@ final readonly class AssignmentCalls
         string $recordType,
         string $recordId,
         string $assignmentId,
-        ActorType $holderType,
+        string $holderType,
         string $holderId,
-        ActorType $recipientType,
+        string $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
     ): AssignmentResultData {
@@ -159,7 +158,7 @@ final readonly class AssignmentCalls
     }
 
     public function showAutoAssignment(
-        ActorType $actorType,
+        string $actorType,
         string $actorId,
         string $assignableType,
     ): AutoAssignmentStatusData {
@@ -174,7 +173,7 @@ final readonly class AssignmentCalls
         string $recordType,
         string $recordId,
         string $assignmentId,
-        ActorType $holderType,
+        string $holderType,
         string $holderId,
         CallKey $requestKey = new CallKey(),
     ): AssignmentResultData {

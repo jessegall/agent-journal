@@ -20,7 +20,7 @@ final class AgentRetirementDenied extends RuntimeException implements CodedRefus
         return new self(
             sprintf(
                 'The %s %s may not retire agent %s; only the owner, or a main agent retiring an agent that is not a main agent, may.',
-                $caller->type->value,
+                $caller->type,
                 $caller->id,
                 $agentId,
             ),

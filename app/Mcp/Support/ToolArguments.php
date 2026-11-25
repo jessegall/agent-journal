@@ -399,6 +399,24 @@ final readonly class ToolArguments
     }
 
     /**
+     * A text argument that must be one of the values given.
+     *
+     * @param  list<string>  $values
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function oneOf(string $name, array $values): string
+    {
+        $argument = $this->arguments[$name] ?? null;
+
+        if (! is_string($argument) || ! in_array($argument, $values, true)) {
+            throw ToolArgumentInvalid::for($name, 'one of '.implode(', ', $values));
+        }
+
+        return $argument;
+    }
+
+    /**
      * @template T of BackedEnum
      *
      * @param  class-string<T>  $type

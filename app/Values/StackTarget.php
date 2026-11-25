@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**
@@ -27,7 +27,7 @@ final readonly class StackTarget
      */
     public function actorIdentity(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, $this->agentId);
+        return ActorIdentity::ofClass(Agent::class, $this->agentId);
     }
 
     /**

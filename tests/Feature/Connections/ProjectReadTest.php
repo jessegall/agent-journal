@@ -6,12 +6,12 @@ namespace Tests\Feature\Connections;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Enums\Projects\ProjectReadState;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\ProjectReadRefused;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
@@ -202,7 +202,7 @@ final class ProjectReadTest extends TestCase
 
     private function requester(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::User, '01jqzr0000000000000000user');
+        return ActorIdentity::ofClass(User::class, '01jqzr0000000000000000user');
     }
 
     private function claim(): TestResponse

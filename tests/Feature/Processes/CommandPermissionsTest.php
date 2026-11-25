@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\CommandClass;
+use App\Models\Access\User;
 use App\Models\Profiles\PermissionRevocation;
 use App\Support\ActorIdentity;
 use App\Values\CommandClassSet;
@@ -74,7 +74,7 @@ final class CommandPermissionsTest extends TestCase
             $main->source,
             CommandClassSet::of(CommandClass::Delete),
             CommandPatternSet::of(),
-            new ActorIdentity(ActorType::User, 'owner'),
+            ActorIdentity::ofClass(User::class, 'owner'),
         );
 
         $narrowed = PermissionRevocation::narrow($main);

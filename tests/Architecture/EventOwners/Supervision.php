@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Assignments\ActorType;
 use App\Events\Asks\AskAccepted;
 use App\Events\Asks\AskAnsweredLate;
 use App\Events\Asks\AskClosed;
@@ -12,6 +11,7 @@ use App\Events\Asks\AskHopAssigned;
 use App\Events\Asks\AskHopAttentionRecorded;
 use App\Events\Asks\AskHopWakeRecorded;
 use App\Events\Asks\SupervisorLinkChanged;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -26,7 +26,7 @@ return [
         'owner' => 'AskHop::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AskHopAssigned('ask', 'hop', 'merge.ready', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new AskHopAssigned('ask', 'hop', 'merge.ready', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     AskClosed::class => [
         'role' => EventRole::RowFact,

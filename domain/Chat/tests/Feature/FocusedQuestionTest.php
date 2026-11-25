@@ -7,8 +7,8 @@ namespace Domain\Chat\Tests\Feature;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;
@@ -94,7 +94,7 @@ final class FocusedQuestionTest extends TestCase
             );
         }
 
-        $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
+        $reviewerInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $reviewer[0]))->inboxId();
         $this->app->forgetScopedInstances();
         $this->startRequestAs($reviewer[0], $reviewer[1]);
 
@@ -154,13 +154,13 @@ final class FocusedQuestionTest extends TestCase
 
     private function builderIdentity(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, $this->builder[0]);
+        return ActorIdentity::ofClass(Agent::class, $this->builder[0]);
     }
 
     private function receiptOf(ActorIdentity $actor, string $messageId): NotificationReceipt
     {
         $scope = NotificationScope::query()
-            ->where('recipient_type', $actor->type->value)
+            ->where('recipient_type', $actor->type)
             ->where('recipient_id', $actor->id)
             ->sole();
 

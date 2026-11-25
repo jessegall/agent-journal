@@ -7,7 +7,6 @@ namespace Domain\Chat\Models;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Messages\Message;
 use App\Models\Questions\Question;
@@ -87,7 +86,7 @@ final class ChatMessage extends Model implements EventSource
         $entry->source_id = $source->getKey();
         $entry->type = $type;
         $entry->group_number = self::groupAfter($latest, $author, $at);
-        $entry->author_type = $author->type->value;
+        $entry->author_type = $author->type;
         $entry->author_id = $author->id;
         $entry->assertSaved($entry->save());
 
@@ -117,7 +116,7 @@ final class ChatMessage extends Model implements EventSource
      */
     protected function author(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->author_type), $this->author_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->author_type, $this->author_id));
     }
 
     // ----------[ Relations ]----------
@@ -167,7 +166,7 @@ final class ChatMessage extends Model implements EventSource
      */
     private function isSameAuthor(ActorIdentity $author): bool
     {
-        return $this->author_type === $author->type->value && $this->author_id === $author->id;
+        return $this->author_type === $author->type && $this->author_id === $author->id;
     }
 
     /**

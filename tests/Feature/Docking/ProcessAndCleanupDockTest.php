@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Docking;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\OutputStream;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidenceRead;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -165,7 +165,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $this->dock(Note::linkType(), $note->id);
         $elsewhere = $this->pairChat(
             ActorIdentity::of($this->agent->agent),
-            new ActorIdentity(ActorType::Agent, 'another-agent'),
+            ActorIdentity::ofClass(Agent::class, 'another-agent'),
         );
         $this->callMcpTool($this->agent, 'dock_add', [
             'type' => Note::linkType(),

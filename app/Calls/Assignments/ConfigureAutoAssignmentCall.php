@@ -11,7 +11,6 @@ use App\Calls\Assignments\Concerns\NamesAutoAssignment;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentChangeData;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Support\CallKey;
@@ -48,7 +47,7 @@ final class ConfigureAutoAssignmentCall extends Data implements JournalCall
      * @param  list<string>  $records
      */
     public function __construct(
-        public ActorType $actorType,
+        public string $actorType,
         #[Ulid]
         public string $actorId,
         #[Max(100)]

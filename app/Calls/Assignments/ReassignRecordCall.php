@@ -11,7 +11,6 @@ use App\Calls\Assignments\Concerns\NamesRecipient;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AssignmentResultData;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Support\CallKey;
@@ -51,10 +50,10 @@ final class ReassignRecordCall extends Data implements JournalCall
         public string $recordId,
         #[Ulid]
         public string $assignmentId,
-        public ActorType $holderType,
+        public string $holderType,
         #[Ulid]
         public string $holderId,
-        public ActorType $recipientType,
+        public string $recipientType,
         #[Ulid]
         public string $recipientId,
         #[LiteralTypeScriptType('string')]

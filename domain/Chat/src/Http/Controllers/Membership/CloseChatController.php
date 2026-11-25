@@ -7,7 +7,8 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Support\ChatInboxes;
@@ -29,8 +30,8 @@ final readonly class CloseChatController
         $chats->assertManages($input->inboxId);
 
         foreach ([
-            ...InboxMember::attachedTo([$input->inboxId], ActorType::User),
-            ...InboxMember::attachedTo([$input->inboxId], ActorType::Agent),
+            ...InboxMember::attachedTo([$input->inboxId], User::class),
+            ...InboxMember::attachedTo([$input->inboxId], Agent::class),
         ] as $member) {
             $commands->run(new LeaveInboxCommand($input->inboxId, $member));
         }

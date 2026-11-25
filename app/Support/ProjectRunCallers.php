@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Processes\ProcessRunCallers;
-use App\Enums\Assignments\ActorType;
 use App\Models\Runs\ProcessRun;
 use PhpOption\None;
 use PhpOption\Option;
@@ -26,6 +25,6 @@ final readonly class ProjectRunCallers implements ProcessRunCallers
             return None::create();
         }
 
-        return Some::create(new ActorIdentity(ActorType::from($run->actor_type), $run->actor_id));
+        return Some::create(ActorIdentity::fromStored($run->actor_type, $run->actor_id));
     }
 }

@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Work\AgentFocuses;
 use App\Contracts\Work\Focusable;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentFocus;
 use PhpOption\None;
 use PhpOption\Option;
@@ -48,7 +48,7 @@ final readonly class StoredAgentFocuses implements AgentFocuses
         $focusers = [];
 
         foreach (AgentFocus::query()->onRecords($records)->limit(count($records))->get() as $focus) {
-            $focusers[$focus->record->reference()] = new ActorIdentity(ActorType::Agent, $focus->agent_id);
+            $focusers[$focus->record->reference()] = ActorIdentity::ofClass(Agent::class, $focus->agent_id);
         }
 
         return $focusers;

@@ -96,7 +96,7 @@ final class InboxMessageSchemaTest extends TestCase
             'inbox_id' => $message->source_inbox_id,
             'sequence' => 1,
             'type' => 'message',
-            'actor_type' => $this->author->type->value,
+            'actor_type' => $this->author->type,
             'actor_id' => $this->author->id,
             'created_at' => now(),
         ]);
@@ -107,7 +107,7 @@ final class InboxMessageSchemaTest extends TestCase
                 'destination_inbox_id' => $message->source_inbox_id,
                 'timeline_event_id' => $eventId,
                 'read_at' => now(),
-                'read_by_type' => $this->author->type->value,
+                'read_by_type' => $this->author->type,
                 'read_by_id' => $this->author->id,
                 'read_participation_assignment_id' => TestIds::of(1),
             ]),

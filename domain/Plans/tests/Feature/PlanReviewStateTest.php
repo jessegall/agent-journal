@@ -6,7 +6,8 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -40,8 +41,8 @@ final class PlanReviewStateTest extends TestCase
         $this->actAsUser();
 
         $this->app->make(CommandBus::class)->run(new RequestPlanReviewCommand($plan->id, [
-            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
-            new ActorIdentity(ActorType::User, TestIds::of(7)),
+            ActorIdentity::ofClass(Agent::class, TestIds::of(1)),
+            ActorIdentity::ofClass(User::class, TestIds::of(7)),
         ]));
 
         $this->assertSame([ReviewPlanStateReference::TYPE_KEY], $this->frameTypes());
@@ -54,7 +55,7 @@ final class PlanReviewStateTest extends TestCase
         $this->actAsUser();
 
         $this->app->make(CommandBus::class)->run(new RequestPlanReviewCommand($plan->id, [
-            new ActorIdentity(ActorType::User, TestIds::of(7)),
+            ActorIdentity::ofClass(User::class, TestIds::of(7)),
         ]));
 
         $this->assertSame([], $this->frameTypes());

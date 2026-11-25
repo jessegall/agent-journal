@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Contracts\Assignments\Assignable;
@@ -54,7 +54,7 @@ final class Note extends Model implements Assignable, Commentable, Dockable, Num
 
     public function saveFor(string $agentId): void
     {
-        $this->belongTo(new ActorIdentity(ActorType::Agent, $agentId));
+        $this->belongTo(ActorIdentity::ofClass(Agent::class, $agentId));
         $this->save();
     }
 
@@ -63,7 +63,7 @@ final class Note extends Model implements Assignable, Commentable, Dockable, Num
      */
     public function isWrittenBy(ActorIdentity $actor): bool
     {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+        return $this->actor_type === $actor->type && $this->actor_id === $actor->id;
     }
 
     public function assignmentIdentity(): RecordIdentity

@@ -6,11 +6,11 @@ namespace Tests\Feature\Sharing;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sharing\GatewayOperationType;
 use App\Enums\Sharing\ShareState;
 use App\Http\Controllers\RevealShareLinkController;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Records\Link;
 use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
@@ -181,7 +181,7 @@ final class ShareManagementPagesTest extends TestCase
         $proposal = Share::create(
             $this->plan->shareIdentity(),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-            new ShareProposal(new ActorIdentity(ActorType::Agent, $this->owner->id)),
+            new ShareProposal(ActorIdentity::ofClass(Agent::class, $this->owner->id)),
         );
         $this->savePreview();
 
@@ -208,7 +208,7 @@ final class ShareManagementPagesTest extends TestCase
             Share::create(
                 $this->plan->shareIdentity(),
                 CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-                new ShareProposal(new ActorIdentity(ActorType::Agent, $this->owner->id)),
+                new ShareProposal(ActorIdentity::ofClass(Agent::class, $this->owner->id)),
             );
         }
 

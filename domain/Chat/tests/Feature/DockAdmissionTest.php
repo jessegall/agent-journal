@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Command;
@@ -75,7 +75,7 @@ final class DockAdmissionTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->agentId = $this->startedMainAgentSession()->agent_id;
-        $this->pairChat(ActorIdentity::of($this->owner), new ActorIdentity(ActorType::Agent, $this->agentId));
+        $this->pairChat(ActorIdentity::of($this->owner), ActorIdentity::ofClass(Agent::class, $this->agentId));
         $this->task = Task::factory()->create(['title' => 'Ship the dock']);
         $this->startUserRequestAs($this->owner->id);
         $this->conversationId = $this->app->make(DockRequests::class)->conversationWith($this->agentId)->inbox_id;
@@ -161,8 +161,8 @@ final class DockAdmissionTest extends TestCase
     public function test_a_conversation_the_user_takes_no_part_in_is_refused(): void
     {
         $strangers = $this->pairChat(
-            new ActorIdentity(ActorType::Agent, 'agent-one'),
-            new ActorIdentity(ActorType::Agent, 'agent-two'),
+            ActorIdentity::ofClass(Agent::class, 'agent-one'),
+            ActorIdentity::ofClass(Agent::class, 'agent-two'),
         );
 
         $this->expectException(ConversationUnavailable::class);

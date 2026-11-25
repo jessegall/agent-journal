@@ -6,11 +6,11 @@ namespace Tests\Feature\Processes;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestState;
 use App\Enums\Processes\OutputStream;
 use App\Enums\Runs\RunMode;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -156,7 +156,7 @@ final class ReaderProposalTest extends TestCase
     private function sampleRun(): ProcessRun
     {
         $run = ProcessRun::create(
-            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
+            ActorIdentity::ofClass(Agent::class, $this->start->agent->id),
             TestRunAdmissions::of(
                 admissionId: 'sample',
                 mode: RunMode::Evidence,

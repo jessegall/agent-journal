@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Values\TaskProof;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -21,7 +20,7 @@ final class TaskProofData extends Data
         public readonly string $id,
         public readonly string $operation,
         public readonly int $runNumber,
-        public readonly ActorType $producerType,
+        public readonly string $producerType,
         public readonly string $producerId,
         public readonly string $processRunId,
         public readonly string $registeredAt,

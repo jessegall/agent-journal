@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
 use App\Support\MarkdownText;
@@ -31,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $abstract
  * @property string $body
  * @property string $reason
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -49,7 +48,7 @@ final class RetainedDraft extends Model implements EventSource, ReadableModel
 
     protected function casts(): array
     {
-        return ['author_type' => ActorType::class];
+        return [];
     }
 
     protected static function booted(): void

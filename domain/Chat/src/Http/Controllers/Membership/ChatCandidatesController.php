@@ -6,7 +6,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 
 use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Inboxes\InboxEligibility;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\ChatInput;
@@ -32,10 +32,10 @@ final readonly class ChatCandidatesController
         $chats->assertManages($input->inboxId);
         $members = array_map(
             fn (ActorIdentity $member) => $member->id,
-            InboxMember::attachedTo([$input->inboxId], ActorType::User),
+            InboxMember::attachedTo([$input->inboxId], User::class),
         );
         $candidates = array_values(array_map(
-            fn (string $userId) => new ActorIdentity(ActorType::User, $userId),
+            fn (string $userId) => ActorIdentity::ofClass(User::class, $userId),
             array_diff($eligibility->invitableUserIds(null, self::CANDIDATE_LIMIT), $members),
         ));
         $names = $labels->labelsFor($candidates);

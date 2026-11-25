@@ -17,7 +17,6 @@ use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Enums\Assignments\ActorType;
 use App\Models\Records\Comment;
 use App\Models\Support\Accessor;
 use App\Support\ActorContext;
@@ -58,7 +57,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $number_group_id
  * @property int $number
- * @property ActorType $creator_type
+ * @property string $creator_type
  * @property string $creator_id
  * @property AttentionState $attention
  * @property ?string $current_revision_id
@@ -105,7 +104,6 @@ final class Document extends Model implements Commentable, Dockable, EventSource
     protected function casts(): array
     {
         return [
-            'creator_type' => ActorType::class,
             'attention' => AttentionState::class,
         ];
     }

@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Feature;
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\MessageAttention;
@@ -62,7 +61,7 @@ final class ChatSwitchTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
 
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
-        $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
+        $agentInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id))->inboxId();
         $this->startUserRequestAs($owner->id);
         $this->runOnBus(new DisableSettingGroupCommand(new GroupReference('Core', 'domain_chat'), 0));
         $this->app->forgetScopedInstances();

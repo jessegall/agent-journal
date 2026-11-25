@@ -6,7 +6,6 @@ namespace App\Commands\Notifications\HideLeftInboxNotifications;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Bus\CommandHandler;
-use App\Enums\Assignments\ActorType;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
@@ -27,7 +26,7 @@ final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
 
     public function handle(HideLeftInboxNotificationsCommand $command): int
     {
-        $recipient = new ActorIdentity(ActorType::from($command->recipientType), $command->recipientId);
+        $recipient = ActorIdentity::fromStored($command->recipientType, $command->recipientId);
 
         $hidden = NotificationScope::findFor($this->scopes->keyFor($recipient), $recipient)
             ->map(fn (NotificationScope $scope) => $this->hideOfInbox($scope, $recipient, $command->inboxId))
@@ -45,7 +44,7 @@ final readonly class HideLeftInboxNotificationsHandler implements CommandHandler
         $receipts = NotificationReceipt::visibleWithTargetIn(
             $scope->id,
             QuestionNotificationKeys::target(),
-            Question::query()->ofInbox($inboxId)->withTargetType($recipient->type->value)
+            Question::query()->ofInbox($inboxId)->withTargetType($recipient->type)
                 ->ofTarget($recipient->id)->keys(),
             HideLeftInboxNotificationsCommand::BATCH,
         );

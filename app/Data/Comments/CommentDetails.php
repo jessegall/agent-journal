@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Comments;
 
-use App\Enums\Assignments\ActorType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,7 +15,7 @@ final class CommentDetails extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly ActorType $authorType,
+        public readonly string $authorType,
         public readonly string $authorId,
         public readonly string $createdAt,
         public readonly string $body,

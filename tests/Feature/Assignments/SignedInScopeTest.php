@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorStore;
 use App\Support\AssigneeIdentity;
@@ -28,7 +28,7 @@ final class SignedInScopeTest extends TestCase
 
         AssignmentRecord::createForFreeRecord(
             TestActors::record('tasks.task', 1),
-            new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)),
+            new AssigneeIdentity(Agent::storedType(), TestIds::of(2)),
         );
     }
 

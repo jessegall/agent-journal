@@ -12,7 +12,6 @@ use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
@@ -245,7 +244,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public function actor(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+        return ActorIdentity::fromStored($this->actor_type, $this->actor_id);
     }
 
     /**

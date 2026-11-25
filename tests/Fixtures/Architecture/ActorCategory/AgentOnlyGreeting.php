@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Architecture\ActorCategory;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**
@@ -14,7 +14,7 @@ final readonly class AgentOnlyGreeting
 {
     public function greet(ActorIdentity $actor): string
     {
-        if ($actor->type === ActorType::Agent) {
+        if ($actor->type === Agent::storedType()) {
             return 'Hello, agent.';
         }
 

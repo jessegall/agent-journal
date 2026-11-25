@@ -7,7 +7,6 @@ namespace App\Exceptions;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
@@ -30,9 +29,9 @@ final class AssignmentTypeUnavailable extends RuntimeException implements CodedR
         return new self("No pool {$key} exists here.");
     }
 
-    public static function forActorType(ActorType $type): self
+    public static function forActorType(string $type): self
     {
-        return new self("An actor of type {$type->value} cannot hold records here.");
+        return new self("An actor of type {$type} cannot hold records here.");
     }
 
     protected function status(): int

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Commands\Questions\AskQuestion\AskQuestionCommand;
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Questions\QuestionType;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -26,14 +26,13 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Description('Ask an actor attached to an inbox a question: open, or a choice between two or more options.')]
 final class QuestionAskTool extends MessageWriteTool
 {
+    public function __construct(private readonly ActorTypes $actorTypes) {}
+
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'inbox_id' => $this->recordIdArgument($schema),
-            'target_type' => $schema->string()->enum([
-                ActorType::User->value,
-                ActorType::Agent->value,
-            ])->required(),
+            'target_type' => $schema->string()->enum($this->actorTypes->requestTypes())->required(),
             'target_id' => $schema->string()->required(),
             'text' => $schema->string()->required(),
             'type' => $schema->string()->enum(array_column(QuestionType::cases(), 'value'))->required(),
@@ -43,9 +42,11 @@ final class QuestionAskTool extends MessageWriteTool
 
     protected function command(ToolArguments $arguments): Command
     {
+        $targetType = $arguments->oneOf('target_type', $this->actorTypes->requestTypes());
+
         return new AskQuestionCommand(
             $arguments->text('inbox_id'),
-            new ActorIdentity($arguments->enum('target_type', ActorType::class), $arguments->text('target_id')),
+            ActorIdentity::fromText("{$targetType}:{$arguments->text('target_id')}"),
             $arguments->text('text'),
             $arguments->enum('type', QuestionType::class),
             $arguments->optionalList('options'),

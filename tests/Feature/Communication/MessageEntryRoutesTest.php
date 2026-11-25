@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
@@ -52,7 +52,7 @@ final class MessageEntryRoutesTest extends MessagingTestCase
     public function test_an_agent_reads_and_replies_through_the_chat_tools(): void
     {
         $caller = TestStart::start();
-        $callerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $caller->agent->id))->inboxId();
+        $callerInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $caller->agent->id))->inboxId();
         $questionId = $this->ownerAsks($callerInboxId, self::QUESTION);
 
         $showing = $this->callMcpTool($caller, 'messages_read', ['message_id' => $questionId, 'view' => 'context']);

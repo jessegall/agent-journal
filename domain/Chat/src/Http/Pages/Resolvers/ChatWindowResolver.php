@@ -10,10 +10,10 @@ use App\Contracts\Navigation\PageResolver;
 use App\Contracts\Navigation\SlotSections;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Accounts\EligibleAccountsData;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
+use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
@@ -164,7 +164,7 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $inboxId = $this->chats->pairWith(new ActorIdentity(ActorType::Agent, $agent->agentId));
+        $inboxId = $this->chats->pairWith(ActorIdentity::ofClass(Agent::class, $agent->agentId));
 
         return $this->pages->pageFor($agent, Inbox::query()->findOrFail($inboxId), $this->request->dockToken());
     }

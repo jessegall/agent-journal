@@ -6,9 +6,9 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Messages\DismissalType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
@@ -58,8 +58,8 @@ final class HistoryPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $builder = $this->startMainAgent('Builder');
         $reviewer = $this->startMainAgent('Reviewer');
-        $builderInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $builder[0]))->inboxId();
-        $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
+        $builderInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $builder[0]))->inboxId();
+        $reviewerInboxId = $this->inboxOf(ActorIdentity::ofClass(Agent::class, $reviewer[0]))->inboxId();
         $this->startRequestAs($reviewer[0], $reviewer[1]);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 

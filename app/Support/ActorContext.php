@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\Actor;
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user
@@ -14,7 +15,7 @@ use App\Enums\Assignments\ActorType;
 final readonly class ActorContext implements Actor
 {
     private function __construct(
-        public ActorType $type,
+        public string $type,
         public string $id,
     ) {}
 
@@ -28,7 +29,7 @@ final readonly class ActorContext implements Actor
 
     public static function forAgent(string $agentId): self
     {
-        return new self(ActorType::Agent, $agentId);
+        return new self(Agent::storedType(), $agentId);
     }
 
     /**
@@ -36,17 +37,17 @@ final readonly class ActorContext implements Actor
      */
     public static function forUser(string $userId): self
     {
-        return new self(ActorType::User, $userId);
+        return new self(User::storedType(), $userId);
     }
 
-    public function actorType(): ActorType
+    public function actorType(): string
     {
         return $this->type;
     }
 
     public function isAgent(): bool
     {
-        return $this->type->isAgent();
+        return $this->type === Agent::storedType();
     }
 
     public function actorId(): string

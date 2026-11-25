@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\Assignments\ActorType;
 use LogicException;
 
 final class ActiveActorCounterRepeated extends LogicException
 {
-    public static function for(ActorType $type): self
+    public static function for(string $type): self
     {
-        return new self("A counter of present {$type->value} actors is already registered.");
+        return new self("A counter of present {$type} actors is already registered.");
     }
 }

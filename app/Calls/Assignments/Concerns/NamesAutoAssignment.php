@@ -15,7 +15,7 @@ trait NamesAutoAssignment
     public function key(): AutoAssignmentKey
     {
         return new AutoAssignmentKey(
-            new ActorIdentity($this->actorType, strtolower($this->actorId)),
+            ActorIdentity::fromStored($this->actorType, strtolower($this->actorId)),
             $this->assignableType,
         );
     }

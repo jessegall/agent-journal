@@ -6,8 +6,8 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Enums\Assignments\ActorType;
 use App\Events\Web\PageChanged;
+use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
@@ -35,7 +35,7 @@ final readonly class BroadcastDockedSourceChange implements Listener
         $source = new DockIdentity($fact->dockType(), $fact->dockId());
         $userIds = array_map(
             fn (ActorIdentity $user) => $user->id,
-            InboxMember::attachedTo($this->docked->inboxesDocking($source), ActorType::User),
+            InboxMember::attachedTo($this->docked->inboxesDocking($source), User::class),
         );
 
         if ($userIds === []) {

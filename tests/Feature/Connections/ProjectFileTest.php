@@ -8,7 +8,6 @@ use App\Commands\Comments\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Projects\ProjectReadType;
 use App\Exceptions\InvalidTextRange;
 use App\Exceptions\RecordUnavailable;
@@ -169,7 +168,7 @@ final class ProjectFileTest extends TestCase
             $this->binding,
             ProjectReadType::File,
             self::PATH,
-            new ActorIdentity(ActorType::User, '01jqzr0000000000000000user'),
+            ActorIdentity::ofClass(User::class, '01jqzr0000000000000000user'),
         );
 
         $this->hostCall($this->host, "/host/reports/project-reads/{$read->id}", [

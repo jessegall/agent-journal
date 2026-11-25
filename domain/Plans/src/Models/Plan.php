@@ -15,7 +15,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;
@@ -67,7 +66,7 @@ use PhpOption\Option;
  * @property int $number
  * @property string $title
  * @property string $brief
- * @property ActorType $creator_type
+ * @property string $creator_type
  * @property string $creator_id
  * @property int $revision
  * @property PlanType $type
@@ -139,7 +138,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         return [
             'type' => PlanType::class,
             'state' => PlanState::class,
-            'creator_type' => ActorType::class,
             'revision' => 'integer',
             'total_tasks' => 'integer',
             'finished_tasks' => 'integer',

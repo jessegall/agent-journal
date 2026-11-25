@@ -23,7 +23,7 @@ final readonly class ListAutoAssignmentsController
         AutoAssignmentAccess $access,
         AutoAssignmentResolver $assignments,
     ): AutoAssignmentPageData {
-        $actor = new ActorIdentity($call->actorType, strtolower($call->actorId));
+        $actor = ActorIdentity::fromStored($call->actorType, strtolower($call->actorId));
         $access->assertMayRead($actors->actor(), $actor);
         $page = new IdListPage($call->after === null ? null : strtolower($call->after));
 

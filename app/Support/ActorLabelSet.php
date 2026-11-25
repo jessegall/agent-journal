@@ -19,6 +19,6 @@ final readonly class ActorLabelSet
      */
     public function nameOf(ActorIdentity $actor): string|null
     {
-        return $this->namesByType[$actor->type->value][$actor->id] ?? null;
+        return $this->namesByType[$actor->type][$actor->id] ?? null;
     }
 }

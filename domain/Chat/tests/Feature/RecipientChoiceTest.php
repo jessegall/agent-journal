@@ -8,7 +8,6 @@ use App\Commands\Desks\InstallDesks\InstallDesksCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
@@ -84,7 +83,7 @@ final class RecipientChoiceTest extends TestCase
     {
         $conversation = Conversation::query()->where('inbox_id', $inboxId)->sole();
 
-        return DirectChat::findFor($conversation)?->holds(new ActorIdentity(ActorType::Agent, $agentId)) === true;
+        return DirectChat::findFor($conversation)?->holds(ActorIdentity::ofClass(Agent::class, $agentId)) === true;
     }
 
     /**
@@ -98,7 +97,7 @@ final class RecipientChoiceTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
-        $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id));
+        $this->inboxOf(ActorIdentity::ofClass(Agent::class, $agent->id));
 
         return [
             $agent->id,

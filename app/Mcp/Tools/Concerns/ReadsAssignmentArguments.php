@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools\Concerns;
 
-use App\Enums\Assignments\ActorType;
-use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
@@ -23,7 +21,7 @@ trait ReadsAssignmentArguments
     final protected function assigneeSchema(JsonSchema $schema): ObjectType
     {
         return $schema->object([
-            'type' => $schema->string()->enum(array_column(ActorType::requestTypes(), 'value'))->required(),
+            'type' => $schema->string()->enum($this->actorTypes->requestTypes())->required(),
             'id' => $this->recordIdArgument($schema),
         ])->withoutAdditionalProperties()->required();
     }
@@ -71,12 +69,8 @@ trait ReadsAssignmentArguments
 
     private function assignee(ToolArguments $arguments): AssigneeIdentity
     {
-        $type = $arguments->enum('type', ActorType::class);
+        $type = $arguments->oneOf('type', $this->actorTypes->requestTypes());
 
-        if (! in_array($type, ActorType::requestTypes(), true)) {
-            throw ToolArgumentInvalid::for('type', 'an agent or user');
-        }
-
-        return new AssigneeIdentity($type->value, $arguments->ulid('id'));
+        return new AssigneeIdentity($type, $arguments->ulid('id'));
     }
 }

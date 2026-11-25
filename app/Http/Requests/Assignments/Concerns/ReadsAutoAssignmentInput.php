@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Records\RecordResolver;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
@@ -24,12 +24,12 @@ trait ReadsAutoAssignmentInput
     /**
      * @return array<string, list<mixed>>
      */
-    protected function keyRules(): array
+    protected function keyRules(ActorTypes $actorTypes): array
     {
         return [
             'actorType' => [
                 'required',
-                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+                Rule::in($actorTypes->requestTypes()),
             ],
             'actorId' => [
                 'required',
@@ -93,8 +93,8 @@ trait ReadsAutoAssignmentInput
     public function key(): AutoAssignmentKey
     {
         return new AutoAssignmentKey(
-            new ActorIdentity(
-                ActorType::from($this->string('actorType')->toString()),
+            ActorIdentity::fromStored(
+                $this->string('actorType')->toString(),
                 $this->string('actorId')->lower()->toString(),
             ),
             $this->string('assignableType')->toString(),

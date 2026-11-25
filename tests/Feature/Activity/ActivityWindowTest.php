@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Activity;
 
 use App\Enums\Agents\ActivityType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
@@ -49,7 +48,7 @@ final class ActivityWindowTest extends TestCase
     public function test_the_newest_page_is_sent_oldest_first_and_before_reads_the_page_older_than_it(): void
     {
         $agent = Agent::create('Builder', 'main-agent');
-        $actor = new ActorIdentity(ActorType::Agent, $agent->id);
+        $actor = ActorIdentity::ofClass(Agent::class, $agent->id);
         $entries = [];
 
         for ($minute = 0; $minute <= ActivityEntry::READ_ENTRY_LIMIT; $minute++) {

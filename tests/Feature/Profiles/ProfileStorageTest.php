@@ -8,10 +8,10 @@ use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;
 use App\Exceptions\ProfileRevisionImmutable;
+use App\Models\Access\User;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
 use App\Support\ProposedProfile;
@@ -66,7 +66,7 @@ final class ProfileStorageTest extends TestCase
         $this->activate($this->reviewer('Review the change.', null));
 
         $revision = ProfileRevision::numbered(Profile::byKey(ProfileKey::from('journal-reviewer')), 1);
-        $this->assertSame([ActorType::User, TestIds::of(7)], [$revision->author_type, $revision->author_id]);
+        $this->assertSame([User::storedType(), TestIds::of(7)], [$revision->author_type, $revision->author_id]);
     }
 
     public function test_a_revision_refuses_to_change(): void

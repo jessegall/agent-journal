@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\InvalidActorText;
 use App\Support\ActorIdentity;
 use App\Support\ActorStore;
+use App\Support\SystemActor;
 use Tests\TestCase;
 
 /**
@@ -25,7 +25,7 @@ final class SystemActorBoundaryTest extends TestCase
 
         $type = $store->actAsSystem('test', fn () => $this->app->make(CurrentActor::class)->actor()->actorType());
 
-        $this->assertSame(ActorType::System, $type);
+        $this->assertSame(SystemActor::storedType(), $type);
         $this->assertFalse($store->hasActor());
     }
 

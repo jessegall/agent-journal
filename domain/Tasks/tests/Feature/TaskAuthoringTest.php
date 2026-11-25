@@ -6,8 +6,9 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\CommandInputInvalid;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
@@ -77,7 +78,7 @@ final class TaskAuthoringTest extends TestCase
             $task->revision,
         ]);
         $this->assertSame([
-            ActorType::User,
+            User::storedType(),
             TestIds::of(7),
         ], [
             $task->creator_type,
@@ -218,7 +219,7 @@ final class TaskAuthoringTest extends TestCase
 
         $this->assertSame(
             [
-                ActorType::Agent,
+                Agent::storedType(),
                 $start->agent->id,
                 TaskState::Open,
             ],

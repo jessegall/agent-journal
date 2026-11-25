@@ -10,10 +10,10 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sessions\StopCheckState;
 use App\Events\Sessions\StopCheckCertified;
 use App\Events\Sessions\StopCheckSettled;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\Accessor;
 use App\Models\Support\AgentSessionScope;
@@ -181,7 +181,7 @@ final class StopCheck extends Model implements EventSource, ReadableModel
         $sessionId = self::query()->withoutGlobalScope(AgentSessionScope::class)->findOrFail($attempt->attemptId)
             ->session_id;
 
-        return new ActorIdentity(ActorType::Agent, AgentSession::byId($sessionId)->agent_id);
+        return ActorIdentity::ofClass(Agent::class, AgentSession::byId($sessionId)->agent_id);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Runs\CaptureState;
 use App\Enums\Runs\RunLogicalResult;
 use App\Events\Processes\BundleActivated;
@@ -38,6 +37,7 @@ use App\Events\Processes\RuleRejected;
 use App\Events\Processes\RuleRetired;
 use App\Events\Processes\RunChanged;
 use App\Events\Processes\RunOutcomeRecorded;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -52,7 +52,7 @@ return [
         'owner' => 'ProcessRun::recordHeartbeat',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ProcessRunOutlasted('run', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new ProcessRunOutlasted('run', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     BundleActivated::class => [
         'role' => EventRole::CommandFact,

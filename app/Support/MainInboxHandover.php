@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Inboxes\MainInboxTakeover;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Assignments\ActorType;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
@@ -26,7 +25,7 @@ final readonly class MainInboxHandover implements MainInboxTakeover
         $starter = ActorIdentity::of($agent);
         $now = $this->clock->now();
 
-        foreach (InboxMember::attachedTo([$main->id], ActorType::Agent) as $previous) {
+        foreach (InboxMember::attachedTo([$main->id], Agent::class) as $previous) {
             if (! $previous->isSameAs($starter)) {
                 InboxMember::leave($main->id, $previous, $now);
                 Agent::withId($previous->id)->forAll(fn (Agent $fenced) => $fenced->fenceRuntimes());

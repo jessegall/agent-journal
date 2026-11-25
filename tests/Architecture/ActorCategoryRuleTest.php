@@ -20,13 +20,15 @@ final class ActorCategoryRuleTest extends TestCase
 {
     private const string HOW_TO_FIX = 'Ask whether the actor may do the thing (an ability), never what kind it is.';
 
-    private const string ACTOR_TYPE_FINDING = 'chooses behaviour by an ActorType case';
+    private const string ACTOR_TYPE_FINDING = 'chooses behaviour by the stored type of an actor class';
 
     /**
-     * Where an ActorType case stays allowed, each with why it chooses no behaviour; the list only shrinks.
+     * Where a stored type stays allowed, each with why it chooses no behaviour; the list only shrinks.
      */
     private const array ALLOWED = [
         'app/Models/Sharing/ShareAudit.php' => 'maps the kind of actor to the label an audit line shows',
+        'app/Support/ActorIdentity.php' => 'answers whether a reference points at an agent or a user, and keeps the journal out of text from outside',
+        'app/Support/ActorContext.php' => 'answers whether the actor of the request is an agent, as a reference does',
     ];
 
     public function test_no_code_chooses_behaviour_by_the_type_of_actor(): void

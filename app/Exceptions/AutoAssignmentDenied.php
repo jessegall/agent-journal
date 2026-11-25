@@ -20,12 +20,12 @@ final class AutoAssignmentDenied extends RuntimeException implements CodedRefusa
 
     public static function forRead(Actor $actor): self
     {
-        return new self("The {$actor->actorType()->value} {$actor->actorId()} may not read this auto-assignment.");
+        return new self("The {$actor->actorType()} {$actor->actorId()} may not read this auto-assignment.");
     }
 
     public static function forWrite(Actor $actor): self
     {
-        return new self("The {$actor->actorType()->value} {$actor->actorId()} may not change this auto-assignment.");
+        return new self("The {$actor->actorType()} {$actor->actorId()} may not change this auto-assignment.");
     }
 
     protected function status(): int

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Values;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 
@@ -25,7 +24,7 @@ final readonly class PlanDetails
         public PlanType $type,
         public PlanState $state,
         public int $revision,
-        public ActorType $creatorType,
+        public string $creatorType,
         public string $creatorId,
         public PlanProgress $progress,
         public int|null $currentPhase,

@@ -267,7 +267,7 @@ final readonly class SkillAuthoringService
         return array_map(fn (SkillRevision $revision) => new SkillRevisionRow(
             revision: $revision->revision,
             name: $revision->name,
-            author: "{$revision->author_type->value}:{$revision->author_id}",
+            author: "{$revision->author_type}:{$revision->author_id}",
             copiedFrom: $revision->source_key,
             savedAt: $revision->created_at->toIso8601String(),
         ), SkillRevision::historyOf($skill, $rows));

@@ -32,7 +32,7 @@ final readonly class ActorScope implements Scope
 
         $builder->where(
             $model->qualifyColumn('actor_type'),
-            $actor->actorType()->value,
+            $actor->actorType(),
         )->where($model->qualifyColumn('actor_id'), $actor->actorId());
     }
 }

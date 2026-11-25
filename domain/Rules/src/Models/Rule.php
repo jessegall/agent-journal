@@ -12,7 +12,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\TextSearch;
@@ -38,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property RuleState $state
  * @property ?string $reason
  * @property ?string $replaces_rule_id
- * @property ?ActorType $proposer_type
+ * @property ?string $proposer_type
  * @property ?string $proposer_id
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -74,7 +73,6 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
     {
         return [
             'state' => RuleState::class,
-            'proposer_type' => ActorType::class,
         ];
     }
 
@@ -169,7 +167,7 @@ final class Rule extends Model implements EventSource, Numbered, ReadableModel
             return;
         }
 
-        $proposer = new ActorIdentity($this->proposer_type, (string) $this->proposer_id);
+        $proposer = ActorIdentity::fromStored($this->proposer_type, (string) $this->proposer_id);
 
         if ($proposer->isSameAs($approver)) {
             throw RuleSelfApproval::forRule();

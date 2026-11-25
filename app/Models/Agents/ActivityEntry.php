@@ -94,7 +94,7 @@ final class ActivityEntry extends Model implements ReadableModel
         array $found = [],
     ): self {
         $entry = new self();
-        $entry->actor_type = $actor->type->value;
+        $entry->actor_type = $actor->type;
         $entry->actor_id = $actor->id;
         $entry->environment_id = $environmentId;
         $entry->level = $type->defaultLevel();

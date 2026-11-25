@@ -11,7 +11,6 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Data\Comments\CommentDetails;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Comments\WholeRecord;
 use App\Enums\Records\TextAnchorType;
 use App\Events\Comments\CommentPosted;
@@ -36,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $target_type
  * @property string $target_id
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property ?string $author_session_id
  * @property string $body
@@ -71,7 +70,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     protected function casts(): array
     {
         return [
-            'author_type' => ActorType::class,
             'section_number' => 'integer',
             'first_line' => 'integer',
             'last_line' => 'integer',
@@ -341,7 +339,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
     {
         $query->where(
             'author_type',
-            $author->type->value,
+            $author->type,
         )->where('author_id', $author->id)->where('author_session_id', $sessionId)->where('submission_key', $key);
     }
 }

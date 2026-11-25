@@ -17,7 +17,7 @@ trait TakesPartInMessages
 {
     public function participantType(): string
     {
-        return $this->actorType()->value;
+        return $this->actorType();
     }
 
     public function participantId(): string
@@ -30,7 +30,7 @@ trait TakesPartInMessages
      */
     public function inboxMemberships(): HasMany
     {
-        return $this->hasMany(InboxMember::class, 'actor_id')->where('actor_type', $this->actorType()->value);
+        return $this->hasMany(InboxMember::class, 'actor_id')->where('actor_type', $this->actorType());
     }
 
     public function inbox(): Inbox

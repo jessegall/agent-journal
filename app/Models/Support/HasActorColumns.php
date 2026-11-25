@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +24,7 @@ trait HasActorColumns
         $type = $query->qualifyColumn('actor_type');
         $id = $query->qualifyColumn('actor_id');
 
-        $query->where($type, $actor->type->value)->where($id, $actor->id);
+        $query->where($type, $actor->type)->where($id, $actor->id);
     }
 
     /**
@@ -35,7 +34,7 @@ trait HasActorColumns
     {
         $columns = $this->getAttributes();
 
-        return new ActorIdentity(ActorType::from((string) $columns['actor_type']), (string) $columns['actor_id']);
+        return ActorIdentity::fromStored((string) $columns['actor_type'], (string) $columns['actor_id']);
     }
 
     /**

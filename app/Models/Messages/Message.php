@@ -13,7 +13,6 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
@@ -93,7 +92,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
      */
     protected function sender(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->sender_type, $this->sender_id));
     }
 
     // ----------[ Relations ]----------

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\AgentChatAccessService;
 use App\Support\ChatInboxes;
@@ -80,7 +80,7 @@ final class AgentChatAdmissionTest extends MessagingTestCase
     {
         return $this->app->make(ChatInboxes::class)->isActiveMember(
             new ChatInbox($this->inboxId, 'Design'),
-            new ActorIdentity(ActorType::Agent, $agentId),
+            ActorIdentity::ofClass(Agent::class, $agentId),
         );
     }
 }

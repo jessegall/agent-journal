@@ -6,8 +6,8 @@ namespace Tests\Feature\Activity;
 
 use App\Enums\Agents\ActivityLevel;
 use App\Enums\Agents\ActivityType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Agents\ActivityEntry;
+use App\Models\Agents\Agent;
 use App\Support\ActivityRetentionService;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
@@ -90,6 +90,6 @@ final class ActivityEntryTest extends TestCase
 
     private function agent(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, '01jqzr00000000000000000agent');
+        return ActorIdentity::ofClass(Agent::class, '01jqzr00000000000000000agent');
     }
 }

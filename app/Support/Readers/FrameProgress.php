@@ -14,7 +14,7 @@ final readonly class FrameProgress implements WorkProgress
 {
     public function enteredAt(ActorIdentity $actor, WorkReference $work): CarbonImmutable|null
     {
-        if (! $actor->type->isAgent()) {
+        if (! $actor->isAgent()) {
             return null;
         }
 

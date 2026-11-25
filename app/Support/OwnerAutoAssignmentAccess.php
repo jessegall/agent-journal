@@ -70,7 +70,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
         ActorIdentity $target,
         AutoAssignmentDenied $denial,
     ): void {
-        if (! $target->type->isAgent()) {
+        if (! $target->isAgent()) {
             throw $denial;
         }
 

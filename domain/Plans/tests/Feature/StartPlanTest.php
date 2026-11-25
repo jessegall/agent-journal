@@ -6,8 +6,8 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\ActorContextMissing;
+use App\Models\Access\User;
 use App\Support\ActorContext;
 use App\Support\StackTransaction;
 use App\Values\OwnerAuthority;
@@ -70,7 +70,7 @@ final class StartPlanTest extends TestCase
             PlanStarted::class,
             fn (
                 PlanStarted $event,
-            ) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User,
+            ) => $event->planId === $this->plan->id && $event->startedBy->type === User::storedType(),
         );
     }
 

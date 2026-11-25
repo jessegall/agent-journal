@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Values\StackTarget;
 use Domain\Sequences\Enums\SequenceRunState;
@@ -46,20 +46,20 @@ return [
         'owner' => ['SequenceRun::startFor', 'SequenceRun::advance'],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SequenceStepReached('run', new ActorIdentity(ActorType::Agent, 'agent'), 1),
+        'sample' => fn () => new SequenceStepReached('run', ActorIdentity::ofClass(Agent::class, 'agent'), 1),
     ],
     SequenceStepEnded::class => [
         'role' => EventRole::RowFact,
         'owner' => 'SequenceRun::advance',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SequenceStepEnded('run', new ActorIdentity(ActorType::Agent, 'agent'), 1),
+        'sample' => fn () => new SequenceStepEnded('run', ActorIdentity::ofClass(Agent::class, 'agent'), 1),
     ],
     SequenceEnded::class => [
         'role' => EventRole::RowFact,
         'owner' => ['SequenceRun::advance', 'SequenceRun::cancel'],
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SequenceEnded('run', new ActorIdentity(ActorType::Agent, 'agent'), SequenceRunState::Finished),
+        'sample' => fn () => new SequenceEnded('run', ActorIdentity::ofClass(Agent::class, 'agent'), SequenceRunState::Finished),
     ],
 ];

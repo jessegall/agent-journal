@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Search\SearchSurface;
+use App\Models\Access\User;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\SearchQuery;
@@ -38,12 +38,12 @@ final class MemorySearchProviderTest extends TestCase
     public function test_an_actor_finds_its_own_memory_by_its_words_and_never_another_actors(): void
     {
         $own = Memory::create(
-            new ActorIdentity(ActorType::User, self::OWNER_ID),
+            ActorIdentity::ofClass(User::class, self::OWNER_ID),
             self::WORDS.' after the tests pass',
             5,
         );
 
-        Memory::create(new ActorIdentity(ActorType::User, self::OTHER_ID), self::WORDS.' tonight', 5);
+        Memory::create(ActorIdentity::ofClass(User::class, self::OTHER_ID), self::WORDS.' tonight', 5);
 
         $ownerFinds = $this->search(self::OWNER_ID);
         $strangerFinds = $this->search('01ARZ3NDEKTSV4RRFFQ69G5FA3');

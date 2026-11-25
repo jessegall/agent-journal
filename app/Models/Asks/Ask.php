@@ -267,7 +267,7 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
 
         $ask->setRawAttributes([
             'id' => $reference->id,
-            'actor_type' => $requester->type->value,
+            'actor_type' => $requester->type,
             'actor_id' => $requester->id,
             'type_key' => $type->key,
             'origin' => $origin->value,

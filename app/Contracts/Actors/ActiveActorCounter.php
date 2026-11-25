@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Contracts\Actors;
 
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 
 /**
@@ -15,7 +14,7 @@ interface ActiveActorCounter
     /**
      * The type of actor this counter counts.
      */
-    public static function type(): ActorType;
+    public static function type(): string;
 
     /**
      * How many actors of this counter's type were active at the moment observed.

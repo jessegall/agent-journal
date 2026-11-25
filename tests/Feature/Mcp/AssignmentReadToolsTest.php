@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Contracts\Assignments\AssigneeResolver;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
@@ -105,11 +105,11 @@ final class AssignmentReadToolsTest extends TestCase
                 fn (
                     string $type,
                     IdListPage $page,
-                ): bool => $type === ActorType::Agent->value && $page->afterId === $afterId && $page->limit === 20,
+                ): bool => $type === Agent::storedType() && $page->afterId === $afterId && $page->limit === 20,
             )
             ->andReturn(
                 new AssigneeList(
-                    [new AssigneeName(new AssigneeIdentity(ActorType::Agent->value, $nextAfterId), 'Worker')],
+                    [new AssigneeName(new AssigneeIdentity(Agent::storedType(), $nextAfterId), 'Worker')],
                     $nextAfterId,
                 ),
             );
@@ -118,7 +118,7 @@ final class AssignmentReadToolsTest extends TestCase
                 fn (
                     string $type,
                     IdListPage $page,
-                ): bool => $type === ActorType::Agent->value && $page->afterId === $nextAfterId && $page->limit === 20,
+                ): bool => $type === Agent::storedType() && $page->afterId === $nextAfterId && $page->limit === 20,
             )
             ->andReturn(new AssigneeList([], null));
         $this->app->scoped(AssigneeResolver::class, fn (): AssigneeResolver => $resolver);

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\OutputStream;
 use App\Mcp\Tools\OutputsReadTool;
+use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
@@ -48,7 +48,7 @@ final class StoredOutputReadTest extends TestCase
         ProcessOutputDisk::fake();
         $this->start = TestStart::start();
         $this->run = ProcessRun::create(
-            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
+            ActorIdentity::ofClass(Agent::class, $this->start->agent->id),
             TestRunAdmissions::of(admissionId: 'stored-output'),
         );
         $part = PartRun::create($this->run, new PartKey(1, 1, 'tool'));

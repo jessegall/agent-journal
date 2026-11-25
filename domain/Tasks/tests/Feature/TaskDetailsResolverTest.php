@@ -7,7 +7,6 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\ReadView;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -88,7 +87,7 @@ final class TaskDetailsResolverTest extends TestCase
 
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeatService::class)->seat(
             $desk->id,
-            new ActorIdentity(ActorType::Agent, $runner->agent_id),
+            ActorIdentity::ofClass(Agent::class, $runner->agent_id),
         ));
 
         $this->actAs($runner);

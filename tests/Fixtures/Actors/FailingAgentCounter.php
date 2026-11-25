@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Actors;
 
+use App\Models\Agents\Agent;
 use App\Contracts\Actors\ActiveActorCounter;
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 use Tests\Support\Exceptions\SimulatedFailure;
 
@@ -14,9 +14,9 @@ use Tests\Support\Exceptions\SimulatedFailure;
  */
 final class FailingAgentCounter implements ActiveActorCounter
 {
-    public static function type(): ActorType
+    public static function type(): string
     {
-        return ActorType::Agent;
+        return Agent::storedType();
     }
 
     public function count(CarbonImmutable $observedAt): int

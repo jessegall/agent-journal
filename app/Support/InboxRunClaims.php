@@ -7,7 +7,6 @@ namespace App\Support;
 use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\ResponsibilityWriter;
 use App\Contracts\Processes\RunClaims;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\RunClaimRefused;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
@@ -105,7 +104,7 @@ final readonly class InboxRunClaims implements RunClaims
 
         $member = InboxMember::activeOf(
             $work->holder()->id,
-            new ActorIdentity(ActorType::from($claimant->type), $claimant->id),
+            ActorIdentity::fromStored($claimant->type, $claimant->id),
         )->getOrThrow(RunClaimRefused::notTheHolder($run->id));
         $claim = $this->responsibilities->assign($run, $claimant)->reference;
         $proof = ClaimAuthorization::forInboxRun($claim, $member, $work->reference);
@@ -115,6 +114,6 @@ final readonly class InboxRunClaims implements RunClaims
 
     private static function claimantOf(Assignment $claim): ActorIdentity
     {
-        return new ActorIdentity(ActorType::from($claim->holder()->type), $claim->holder()->id);
+        return ActorIdentity::fromStored($claim->holder()->type, $claim->holder()->id);
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockIdentity;
@@ -72,7 +72,7 @@ final class DockProjectionTest extends TestCase
 
         $this->conversation = $this->pairChat(
             ActorIdentity::of($this->owner),
-            new ActorIdentity(ActorType::Agent, $agentId),
+            ActorIdentity::ofClass(Agent::class, $agentId),
         );
 
         $this->app->make(DockRegistration::class)->register(

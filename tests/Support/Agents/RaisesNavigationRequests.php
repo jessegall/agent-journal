@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Navigation\NavigationReason;
+use App\Models\Access\User;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\ActorIdentity;
@@ -43,7 +43,7 @@ trait RaisesNavigationRequests
 
         return NavigationRequest::create(
             $stalled,
-            new ActorIdentity(ActorType::User, 'owner'),
+            ActorIdentity::ofClass(User::class, 'owner'),
             $uncertainty,
             $operationKey,
             CarbonImmutable::now()->addMinutes(30),

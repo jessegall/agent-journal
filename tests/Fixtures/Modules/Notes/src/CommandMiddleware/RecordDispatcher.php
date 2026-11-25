@@ -19,7 +19,7 @@ final readonly class RecordDispatcher implements CommandMiddleware
     public function handle(CommandCall $call, Closure $next): mixed
     {
         $dispatcher = $call->command()->dispatchedBy();
-        $this->trail->add("dispatched by {$dispatcher->type->value}:{$dispatcher->id}");
+        $this->trail->add("dispatched by {$dispatcher->type}:{$dispatcher->id}");
 
         return $next($call);
     }

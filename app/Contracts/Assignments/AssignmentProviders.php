@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Contracts\Assignments;
 
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentProviderInvalid;
 use App\Exceptions\AssignmentTypeInternal;
 use App\Exceptions\AssignmentTypeUnavailable;
@@ -60,7 +59,7 @@ interface AssignmentProviders
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */
-    public function activity(ActorType $type): AutoAssignmentActivity;
+    public function activity(string $type): AutoAssignmentActivity;
 
     /**
      * @throws AssignmentTypeUnavailable

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentOutcomeType;
 use App\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Exceptions\InvalidRecordIdentity;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentGroup;
@@ -108,7 +108,7 @@ final class AssignmentValuesTest extends TestCase
         $task = TestActors::record('tasks.task', 12);
         $assignment = new Assignment(
             $task,
-            new AssignmentReference(TestIds::of(42), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7))),
+            new AssignmentReference(TestIds::of(42), new AssigneeIdentity(Agent::storedType(), TestIds::of(7))),
         );
         $set = new AssignmentSet([$assignment]);
 

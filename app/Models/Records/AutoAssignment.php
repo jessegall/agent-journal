@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Events\Assignments\AutoAssignmentConfigured;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Support\HasActorColumns;
@@ -33,7 +32,7 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 
 /**
  * @property string $id
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property string $assignable_type
  * @property bool $enabled
@@ -59,7 +58,6 @@ final class AutoAssignment extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'actor_type' => ActorType::class,
             'enabled' => 'boolean',
             'pool' => PoolReference::class,
             'size' => 'integer',

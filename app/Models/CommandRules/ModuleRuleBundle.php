@@ -63,7 +63,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         $approval->module = $bundle->module;
         $approval->version = $bundle->version;
         $approval->digest = $bundle->digest();
-        $approval->approver_type = $approver->type->value;
+        $approval->approver_type = $approver->type;
         $approval->approver_id = $approver->id;
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();

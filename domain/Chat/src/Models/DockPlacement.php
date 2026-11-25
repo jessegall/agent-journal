@@ -70,7 +70,7 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
         $placement->dockable_type = $source->type;
         $placement->dockable_id = $source->id;
         $placement->presentation = $presentation;
-        $placement->assigned_by_type = $assignedBy->type->value;
+        $placement->assigned_by_type = $assignedBy->type;
         $placement->assigned_by_id = $assignedBy->id;
         $placement->assigned_at = CarbonImmutable::now();
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
-use App\Enums\Assignments\ActorType;
+use App\Contracts\Actors\ActorTypes;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\RecordIdentity;
@@ -43,12 +43,12 @@ trait ReadsAssignmentInput
     /**
      * @return array<string, list<mixed>>
      */
-    protected function recipientRules(): array
+    protected function recipientRules(ActorTypes $actorTypes): array
     {
         return [
             'recipientType' => [
                 'required',
-                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+                Rule::in($actorTypes->requestTypes()),
             ],
             'recipientId' => [
                 'required',
@@ -60,7 +60,7 @@ trait ReadsAssignmentInput
     /**
      * @return array<string, list<mixed>>
      */
-    protected function expectedRules(): array
+    protected function expectedRules(ActorTypes $actorTypes): array
     {
         return [
             'assignmentId' => [
@@ -69,7 +69,7 @@ trait ReadsAssignmentInput
             ],
             'holderType' => [
                 'required',
-                Rule::enum(ActorType::class)->only(ActorType::requestTypes()),
+                Rule::in($actorTypes->requestTypes()),
             ],
             'holderId' => [
                 'required',

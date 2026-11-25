@@ -133,7 +133,7 @@ final readonly class PlanReadResult
             'state' => $plan->state->value,
             'revision' => $plan->revision,
             'creator' => [
-                'type' => $plan->creatorType->value,
+                'type' => $plan->creatorType,
                 'id' => $plan->creatorId,
             ],
             'progress' => [

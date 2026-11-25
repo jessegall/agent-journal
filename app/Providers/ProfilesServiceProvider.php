@@ -25,7 +25,6 @@ use App\Contracts\Sessions\ProfileRules;
 use App\Contracts\Sessions\ProfileSelections;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Agents\AccessType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\AccountUsageCost;
@@ -33,6 +32,7 @@ use App\Models\Accounts\AccountUsageTokens;
 use App\Models\Accounts\AccountUsageWindow;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
+use App\Models\Agents\Agent;
 use App\Models\Profiles\Profile;
 use App\Models\Support\AccountOwnerScope;
 use App\Policies\AccountPolicy;
@@ -170,7 +170,7 @@ final class ProfilesServiceProvider extends ServiceProvider
             fn (Schedule $schedule) => $schedule->command('accounts:reconcile')->everyMinute()->withoutOverlapping(),
         );
 
-        $authorizers->register(ActorType::Agent, ProfileAuthorizerProvider::class);
+        $authorizers->register(Agent::class, ProfileAuthorizerProvider::class);
         $this->loadCoreRoutes('profiles/web.php');
         $this->loadCoreRoutes('profiles/sign-in-host.php');
     }

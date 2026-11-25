@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 
 /**
@@ -16,7 +15,7 @@ final readonly class TaskLogLine
     public function __construct(
         public string $id,
         public int $runNumber,
-        public ActorType $actorType,
+        public string $actorType,
         public string $actorId,
         public string $text,
         public int $sequence,

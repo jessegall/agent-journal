@@ -7,8 +7,8 @@ namespace App\Commands\Runs\RevokeRunOutcomeAccess;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Notifications\Notifications;
 use App\Data\Notifications\NotificationTarget;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\RunOutcomeAccessRefused;
+use App\Models\Access\User;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\RunNotificationTarget;
 use App\Support\ActorIdentity;
@@ -32,7 +32,7 @@ final readonly class RevokeRunOutcomeAccessHandler implements CommandHandler
             return;
         }
 
-        $user = new ActorIdentity(ActorType::User, $run->outcome_user_id);
+        $user = ActorIdentity::ofClass(User::class, $run->outcome_user_id);
         $run->revokeOutcomeUser();
         $this->notifications->withdraw(new NotificationTarget(RunNotificationTarget::KEY, $run->id), $user);
     }

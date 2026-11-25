@@ -21,7 +21,7 @@ final class SharingNotAllowed extends RuntimeException implements CodedRefusal, 
     public static function forActor(Actor $actor): self
     {
         return new self(
-            "Only the journal's owner manages shares; {$actor->actorType()->value} {$actor->actorId()} may not.",
+            "Only the journal's owner manages shares; {$actor->actorType()} {$actor->actorId()} may not.",
         );
     }
 

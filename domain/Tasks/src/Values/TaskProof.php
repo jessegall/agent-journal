@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 
 /**
@@ -17,7 +16,7 @@ final readonly class TaskProof
         public string $id,
         public string $operation,
         public int $runNumber,
-        public ActorType $producerType,
+        public string $producerType,
         public string $producerId,
         public string $processRunId,
         public string|null $receiptId,

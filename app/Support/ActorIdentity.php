@@ -6,8 +6,10 @@ namespace App\Support;
 
 use App\Concerns\ComparesTypeAndId;
 use App\Contracts\Actors\Actor;
-use App\Enums\Assignments\ActorType;
+use App\Contracts\Actors\StoredActor;
 use App\Exceptions\InvalidActorText;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 
 /**
  * Who an actor is, by type and id, apart from any request or session: user 3 and agent 3 are different actors.
@@ -16,14 +18,53 @@ final readonly class ActorIdentity
 {
     use ComparesTypeAndId;
 
-    public function __construct(
-        public ActorType $type,
+    private function __construct(
+        public string $type,
         public string $id,
     ) {}
 
     public static function of(Actor $actor): self
     {
         return new self($actor->actorType(), $actor->actorId());
+    }
+
+    /**
+     * The actor of a class by its id, when only the id is at hand.
+     *
+     * @param  class-string<StoredActor>  $class
+     */
+    public static function ofClass(string $class, string $id): self
+    {
+        return new self($class::storedType(), $id);
+    }
+
+    /**
+     * An actor written as type:id, such as agent:01jd8x0g9m3qz6v4k2t7r5w1ce, as a command line takes it. Text from
+     * outside never names the journal itself.
+     *
+     * @throws InvalidActorText
+     */
+    public static function fromText(string $text): self
+    {
+        if (preg_match('/^([a-z-]+):([0-9a-hjkmnp-tv-z]{26})$/i', $text, $parts) !== 1) {
+            throw InvalidActorText::for($text);
+        }
+
+        $type = strtolower($parts[1]);
+
+        if ($type === SystemActor::storedType()) {
+            throw InvalidActorText::for($text);
+        }
+
+        return new self($type, strtolower($parts[2]));
+    }
+
+    /**
+     * The actor a row's two columns point at, its type and its id, as the journal wrote them.
+     */
+    public static function fromStored(string $type, string $id): self
+    {
+        return new self($type, $id);
     }
 
     /**
@@ -35,25 +76,11 @@ final readonly class ActorIdentity
     }
 
     /**
-     * An actor written as type:id, such as agent:01jd8x0g9m3qz6v4k2t7r5w1ce, as a command line takes it.
-     *
-     * @throws InvalidActorText
-     */
-    public static function fromText(string $text): self
-    {
-        if (preg_match('/^(agent|user):([0-9a-hjkmnp-tv-z]{26})$/i', $text, $parts) !== 1) {
-            throw InvalidActorText::for($text);
-        }
-
-        return new self(ActorType::from($parts[1]), strtolower($parts[2]));
-    }
-
-    /**
-     * This actor as the text fromText reads back, such as agent:01j...
+     * This actor as text, such as agent:01j..., as a command line takes it
      */
     public function text(): string
     {
-        return "{$this->type->value}:{$this->id}";
+        return "{$this->type}:{$this->id}";
     }
 
     /**
@@ -64,7 +91,7 @@ final readonly class ActorIdentity
     public function asFields(string $prefix): array
     {
         return [
-            "{$prefix}Type" => $this->type->value,
+            "{$prefix}Type" => $this->type,
             "{$prefix}Id" => $this->id,
         ];
     }
@@ -77,7 +104,7 @@ final readonly class ActorIdentity
     public function asColumns(string $prefix): array
     {
         return [
-            "{$prefix}_type" => $this->type->value,
+            "{$prefix}_type" => $this->type,
             "{$prefix}_id" => $this->id,
         ];
     }
@@ -88,18 +115,18 @@ final readonly class ActorIdentity
     public function toArray(): array
     {
         return [
-            'type' => $this->type->value,
+            'type' => $this->type,
             'id' => $this->id,
         ];
     }
 
     public function isUser(): bool
     {
-        return $this->type->isUser();
+        return $this->type === User::storedType();
     }
 
     public function isAgent(): bool
     {
-        return $this->type->isAgent();
+        return $this->type === Agent::storedType();
     }
 }

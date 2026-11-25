@@ -7,7 +7,6 @@ namespace App\Models\Skills;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -18,7 +17,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property string $request_id
  * @property string $input_digest
@@ -40,7 +39,6 @@ final class SkillRequest extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'actor_type' => ActorType::class,
         ];
     }
 

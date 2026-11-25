@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ReadOrder;
@@ -29,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string $task_id
  * @property ?string $task_run_id
  * @property ?int $run_number
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property TaskState $from_state
  * @property TaskState $to_state
@@ -55,7 +54,6 @@ final class TaskHistoryEntry extends Model implements ReadableModel
     {
         return [
             'run_number' => 'integer',
-            'actor_type' => ActorType::class,
             'from_state' => TaskState::class,
             'to_state' => TaskState::class,
             'sequence' => 'integer',

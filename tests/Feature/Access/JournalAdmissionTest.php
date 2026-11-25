@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Access;
 
 use App\Contracts\Admission\JournalAdmission;
-use App\Enums\Assignments\ActorType;
-use App\Models\Agents\Agent;
-use App\Support\ActorContext;
-use Database\Factories\UserFactory;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\Access\OwnerAdmission;
-use Tests\TestCase;
+use App\Support\ActorContext;
+use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
 
 final class JournalAdmissionTest extends TestCase
 {
@@ -32,7 +31,7 @@ final class JournalAdmissionTest extends TestCase
             'journal.user',
         ])->get(
             '/access-test/actor',
-            fn (ActorContext $actor) => "{$actor->type->value} {$actor->id}",
+            fn (ActorContext $actor) => "{$actor->type} {$actor->id}",
         );
     }
 
@@ -76,13 +75,13 @@ final class JournalAdmissionTest extends TestCase
 
         $this->assertInstanceOf(OwnerAdmission::class, $admission);
         $this->assertSame([
-            ActorType::User,
+            User::storedType(),
             $owner->id,
         ], [
             $owner->actorType(),
             $owner->actorId(),
         ]);
-        $this->assertSame(ActorType::Agent, $agent->actorType());
+        $this->assertSame(Agent::storedType(), $agent->actorType());
         $this->assertTrue($admission->admits($owner));
         $this->assertFalse($admission->admits($agent));
     }

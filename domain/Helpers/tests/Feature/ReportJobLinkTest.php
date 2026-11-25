@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Sessions\ModelSelectionType;
 use App\Enums\Sessions\StartDisposition;
@@ -117,7 +116,7 @@ final class ReportJobLinkTest extends TestCase
 
     private function start(string $ownerReference, ActorIdentity $agent): SessionRequestDetails
     {
-        $this->assertSame(ActorType::Agent, $agent->type);
+        $this->assertSame(Agent::storedType(), $agent->type);
 
         return new SessionRequestDetails(
             (string) Str::ulid(),

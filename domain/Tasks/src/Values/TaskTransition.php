@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 
@@ -18,7 +17,7 @@ final readonly class TaskTransition
     public function __construct(
         public string $id,
         public int|null $runNumber,
-        public ActorType $actorType,
+        public string $actorType,
         public string $actorId,
         public TaskState $fromState,
         public TaskState $toState,

@@ -6,13 +6,13 @@ namespace Tests\Feature\Engine;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Time\MonotonicClock;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\RepeatedReadRefused;
 use App\Support\DatabaseClock;
 use App\Support\EnginePass;
 use App\Support\EngineSettings;
 use App\Support\OperationDeadline;
 use App\Support\ScopedReadMeter;
+use App\Support\SystemActor;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -63,7 +63,7 @@ final class EnginePassTest extends TestCase
             fn () => $this->app->make(CurrentActor::class)->actor()->type,
         );
 
-        $this->assertSame(ActorType::Engine, $inside);
+        $this->assertSame(SystemActor::storedType(), $inside);
         $this->assertFalse($this->app->make(CurrentActor::class)->hasActor());
     }
 

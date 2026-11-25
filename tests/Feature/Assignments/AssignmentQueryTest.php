@@ -8,8 +8,8 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignedWorkProvider;
 use App\Contracts\Assignments\AssignedWorkResolver;
 use App\Contracts\Assignments\AssignmentQuery;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentTypeUnavailable;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Resolvers\RegisteredAssignedWork;
 use App\Support\AssigneeIdentity;
@@ -49,8 +49,8 @@ final class AssignmentQueryTest extends TestCase
     {
         parent::setUp();
 
-        $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
-        $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
+        $this->builder = new AssigneeIdentity(Agent::storedType(), TestIds::of(7));
+        $this->reviewer = new AssigneeIdentity(Agent::storedType(), TestIds::of(8));
         $this->startTestUserRequest(1);
     }
 

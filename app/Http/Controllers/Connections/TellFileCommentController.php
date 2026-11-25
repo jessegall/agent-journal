@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Connections;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Inboxes\InboxDestinationResolver;
-use App\Enums\Assignments\ActorType;
 use App\Http\Requests\Connections\TellFileCommentRequest;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +22,7 @@ final readonly class TellFileCommentController
         InboxDestinationResolver $inboxes,
         CommandBus $commands,
     ): RedirectResponse {
-        $agent = AssigneeIdentity::ofActorIdentity(new ActorIdentity(ActorType::Agent, $request->agentId()));
+        $agent = AssigneeIdentity::ofActorIdentity(ActorIdentity::ofClass(Agent::class, $request->agentId()));
 
         $commands->run($request->command($inboxes->resolve($agent)->inboxId()));
 

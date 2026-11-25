@@ -7,10 +7,10 @@ namespace Tests\Feature\Processes;
 use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
 use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
 use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\LifecycleState;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -56,7 +56,7 @@ final class StaleAdmissionTest extends TestCase
     {
         config(['processes.runner' => true]);
         $start = TestStart::start();
-        $queued = $this->admit(new ActorIdentity(ActorType::Agent, $start->agent->id), 'printf queued');
+        $queued = $this->admit(ActorIdentity::ofClass(Agent::class, $start->agent->id), 'printf queued');
         $this->asUser(new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
 
         $this->asUser(new RetireCommandRuleCommand(ClassificationRule::query()->sole()->id, 1, 'not needed'));

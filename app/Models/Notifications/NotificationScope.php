@@ -9,11 +9,11 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Events\Messages\NotificationsChanged;
 use App\Events\Messages\NotificationsMarkAllAdvanced;
 use App\Events\Messages\NotificationsMarkAllFinished;
 use App\Events\Messages\NotificationsMarkAllStarted;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -70,7 +70,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     {
         $scope = new self();
         $scope->scope_key = $key;
-        $scope->recipient_type = $recipient->type->value;
+        $scope->recipient_type = $recipient->type;
         $scope->recipient_id = $recipient->id;
         $scope->next_sequence = 1;
         $scope->mutation_version = 0;
@@ -202,7 +202,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     protected function ofRecipient(Builder $query, string $key, ActorIdentity $recipient): void
     {
         $query->where('scope_key', $key)
-            ->where('recipient_type', $recipient->type->value)
+            ->where('recipient_type', $recipient->type)
             ->where('recipient_id', $recipient->id);
     }
 
@@ -214,6 +214,6 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     #[Scope]
     protected function ofUsers(Builder $query): void
     {
-        $query->where('recipient_type', ActorType::User->value);
+        $query->where('recipient_type', User::storedType());
     }
 }

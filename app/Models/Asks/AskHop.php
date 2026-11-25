@@ -77,7 +77,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
     {
         $hop = new self();
         $hop->ask_id = $ask->id;
-        $hop->actor_type = $holder->type->value;
+        $hop->actor_type = $holder->type;
         $hop->actor_id = $holder->id;
         $hop->type_key = $ask->type_key->key;
         $hop->version = $ask->version;
@@ -118,7 +118,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
 
     public function isHeldByAgent(): bool
     {
-        return $this->actor()->type->isAgent();
+        return $this->actor()->isAgent();
     }
 
     // ----------[ Transformers ]----------

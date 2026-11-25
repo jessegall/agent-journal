@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Runs\RunMode;
 use App\Exceptions\EvidencePermitRefused;
+use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
@@ -70,7 +70,7 @@ final class EvidencePermitTest extends TestCase
         $expired = $this->permit();
         $expired->expire();
         $this->assertRefused(fn () => $evidence->start($expired, $this->agent(), 'first'));
-        $stranger = new ActorIdentity(ActorType::Agent, 'another-agent');
+        $stranger = ActorIdentity::ofClass(Agent::class, 'another-agent');
         $this->assertRefused(fn () => $evidence->start($this->permit(), $stranger, 'first'));
     }
 
@@ -92,7 +92,7 @@ final class EvidencePermitTest extends TestCase
 
     private function agent(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, $this->start->agent->id);
+        return ActorIdentity::ofClass(Agent::class, $this->start->agent->id);
     }
 
     private function assertRefused(callable $attempt): void

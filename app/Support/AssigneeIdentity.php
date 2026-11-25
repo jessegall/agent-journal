@@ -18,11 +18,11 @@ final readonly class AssigneeIdentity
 
     public static function of(Actor $actor): self
     {
-        return new self($actor->actorType()->value, $actor->actorId());
+        return new self($actor->actorType(), $actor->actorId());
     }
 
     public static function ofActorIdentity(ActorIdentity $actor): self
     {
-        return new self($actor->type->value, $actor->id);
+        return new self($actor->type, $actor->id);
     }
 }

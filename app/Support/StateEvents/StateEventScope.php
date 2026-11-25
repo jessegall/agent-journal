@@ -153,7 +153,7 @@ final class StateEventScope
         $actor = $this->actors->actor();
 
         $session = $this->session->context()->filter(
-            fn (AgentContext $context) => $actor->type->isAgent() && $context->actorId() === $actor->id,
+            fn (AgentContext $context) => $actor->isAgent() && $context->actorId() === $actor->id,
         );
 
         return [new StateEventAudience($actor, $this->actors->authority(), $targets, $session, $grant)];

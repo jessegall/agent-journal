@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignmentTransaction;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\AssignmentRetryExhausted;
 use App\Exceptions\AssignmentTransactionRequired;
+use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
@@ -49,8 +49,8 @@ final class AssignmentStoreTest extends TestCase
         parent::setUp();
 
         $this->task = TestActors::record('tasks.task', 12);
-        $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
-        $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
+        $this->builder = new AssigneeIdentity(Agent::storedType(), TestIds::of(7));
+        $this->reviewer = new AssigneeIdentity(Agent::storedType(), TestIds::of(8));
         $this->startTestUserRequest(1);
     }
 

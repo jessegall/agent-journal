@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -25,7 +26,7 @@ final class TestActors
 
     public static function userIdentity(int $number): ActorIdentity
     {
-        return new ActorIdentity(ActorType::User, TestIds::of($number));
+        return ActorIdentity::ofClass(User::class, TestIds::of($number));
     }
 
     public static function record(string $alias, int $number): RecordIdentity
@@ -35,7 +36,7 @@ final class TestActors
 
     public static function agentIdentity(int $number): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, TestIds::of($number));
+        return ActorIdentity::ofClass(Agent::class, TestIds::of($number));
     }
 
     /**

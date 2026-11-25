@@ -28,7 +28,7 @@ final readonly class SearchOwner
     {
         return implode("\n", [
             $this->sessionId,
-            $this->actor->type->value,
+            $this->actor->type,
             $this->actor->id,
             $this->environmentId,
             $this->tool,
@@ -42,7 +42,7 @@ final readonly class SearchOwner
     public function principal(): string
     {
         return hash('sha256', implode("\n", [
-            $this->actor->type->value,
+            $this->actor->type,
             $this->actor->id,
             $this->environmentId,
         ]));

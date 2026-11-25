@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Models\Inboxes;
 
 use App\Concerns\RaisesEvents;
+use App\Contracts\Actors\StoredActor;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageParticipant;
-use App\Enums\Assignments\ActorType;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
 use App\Support\ActorIdentity;
@@ -78,7 +78,7 @@ final class InboxMember extends Model implements EventSource
 
         $member = new self();
         $member->inbox_id = $inboxId;
-        $member->actor_type = $actor->type->value;
+        $member->actor_type = $actor->type;
         $member->actor_id = $actor->id;
         $member->joined_at = $at;
         $member->assertSaved($member->save());
@@ -119,22 +119,25 @@ final class InboxMember extends Model implements EventSource
     }
 
     /**
-     * The actors of one type attached to any of the inboxes now, each once.
+     * The actors of one class attached to any of the inboxes now, each once.
      *
      * @param  list<string>  $inboxIds
+     * @param  class-string<StoredActor>  $actorClass
      * @return list<ActorIdentity>
      */
-    public static function attachedTo(array $inboxIds, ActorType $type): array
+    public static function attachedTo(array $inboxIds, string $actorClass): array
     {
-        return self::query()
+        $type = $actorClass::storedType();
+
+        $actorIds = self::query()
             ->active()
             ->ofInboxes($inboxIds)
             ->ofActorType($type)
             ->distinct()
             ->pluck('actor_id')
-            ->map(fn (string $actorId) => new ActorIdentity($type, $actorId))
-            ->values()
             ->all();
+
+        return array_map(fn (string $actorId) => ActorIdentity::fromStored($type, $actorId), array_values($actorIds));
     }
 
     // ----------[ Scopes ]----------
@@ -195,9 +198,9 @@ final class InboxMember extends Model implements EventSource
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofActorType(Builder $query, ActorType $type): void
+    protected function ofActorType(Builder $query, string $type): void
     {
-        $query->where('actor_type', $type->value);
+        $query->where('actor_type', $type);
     }
 
     /**

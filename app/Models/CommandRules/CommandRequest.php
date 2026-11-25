@@ -76,7 +76,7 @@ final class CommandRequest extends Model implements ReadableModel
     {
         $commandRequest = new self();
         $commandRequest->project_key = $projectKey;
-        $commandRequest->actor_type = $actor->type->value;
+        $commandRequest->actor_type = $actor->type;
         $commandRequest->actor_id = $actor->id;
         $commandRequest->operation = $command->operation;
         $commandRequest->binding_digest = $command->bindingDigest;

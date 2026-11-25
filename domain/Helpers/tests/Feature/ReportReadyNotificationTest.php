@@ -81,7 +81,7 @@ final class ReportReadyNotificationTest extends TestCase
     private function targetsOf(ActorIdentity $parent): array
     {
         $scope = NotificationScope::query()
-            ->where('recipient_type', $parent->type->value)
+            ->where('recipient_type', $parent->type)
             ->where('recipient_id', $parent->id)
             ->sole();
 

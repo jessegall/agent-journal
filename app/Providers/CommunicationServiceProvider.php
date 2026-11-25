@@ -8,6 +8,7 @@ use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\InstallInboxesCommand;
 use App\Contracts\Actors\ActorInboxResolver;
 use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Agents\AgentNotices;
 use App\Contracts\Assignments\AssignmentDestinationResolver;
 use App\Contracts\Assignments\AssignmentRegistration;
@@ -25,7 +26,6 @@ use App\Contracts\Processes\RunClaims;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Sharing\SharedHolders;
 use App\Enums\Agents\AccessType;
-use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Policies\MessageAdministrationPolicy;
@@ -100,6 +100,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         NotificationTargetRegistry $notificationTargets,
         InboxMemberPolicies $inboxMembers,
         EngineListenerSet $engineListeners,
+        ActorTypes $actorTypes,
     ): void {
         $inboxMembers->allow(MessagePolicy::class);
         $readGrant = ReadEntitlement::grant(MessagePolicy::class);
@@ -135,9 +136,11 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->commands([InstallInboxesCommand::class]);
         $destinations->register(Inbox::ASSIGNEE_TYPE, InboxDestinationProvider::class);
 
-        foreach (ActorType::cases() as $actorType) {
-            $destinations->register($actorType->value, ActorDestinationProvider::class);
-        }
+        $this->app->booted(function () use ($destinations, $actorTypes): void {
+            foreach ($actorTypes->types() as $actorType) {
+                $destinations->register($actorType, ActorDestinationProvider::class);
+            }
+        });
 
         $assignments->registerAssignees(new AssigneeDefinition(Inbox::ASSIGNEE_TYPE, InboxAssignees::class));
 

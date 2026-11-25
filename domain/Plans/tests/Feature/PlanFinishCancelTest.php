@@ -6,7 +6,6 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
@@ -124,7 +123,7 @@ final class PlanFinishCancelTest extends TestCase
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $plan->assignmentIdentity(),
-            new AssigneeIdentity(ActorType::User->value, $this->owner->id),
+            new AssigneeIdentity(User::storedType(), $this->owner->id),
         );
 
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();

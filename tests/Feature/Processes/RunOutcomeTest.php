@@ -7,7 +7,6 @@ namespace Tests\Feature\Processes;
 use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
 use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessHandler;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Assignments\ActorType;
 use App\Enums\CommandRules\StepType;
 use App\Enums\Runs\RunEventType;
 use App\Enums\Runs\RunLogicalResult;
@@ -15,6 +14,7 @@ use App\Enums\Runs\RunRequestIntent;
 use App\Enums\Runs\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Listeners\NotifyRunOutcome;
+use App\Models\Access\User;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Models\Runs\ProcessRun;
@@ -189,7 +189,7 @@ final class RunOutcomeTest extends TestCase
     private function actAs(ActorIdentity $actor): void
     {
         $this->app->forgetScopedInstances();
-        $context = $actor->type === ActorType::User
+        $context = $actor->type === User::storedType()
             ? ActorContext::forUser($actor->id)
             : ActorContext::forAgent($actor->id);
         $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));

@@ -8,7 +8,6 @@ use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\CommandReplacementRefused;
 use App\Exceptions\CommandResultChanged;
@@ -258,7 +257,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $messageId = $this->app->make(CommandBus::class)->run(new SendMessageCommand(
             $this->inboxOf(TestActors::userIdentity(1))->inboxId(),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId(),
+            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->inboxId(),
             "  Trim me  \n",
         ));
 
@@ -276,7 +275,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $command = new SendMessageCommand(
             $this->inboxOf(TestActors::userIdentity(1))->inboxId(),
-            $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId(),
+            $this->inboxOf(ActorIdentity::ofClass(Agent::class, $session->agent_id))->inboxId(),
             'Hello',
         );
 

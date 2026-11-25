@@ -42,7 +42,7 @@ final class SkillRevisionsCommand extends Command
                     fn (SkillRevision $revision) => [
                         $revision->revision,
                         $revision->name,
-                        "{$revision->author_type->value}:{$revision->author_id}",
+                        "{$revision->author_type}:{$revision->author_id}",
                         $revision->source_key ?? '',
                         $revision->created_at->toIso8601String(),
                     ],

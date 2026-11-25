@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Events\PlanReviewEditionApproved;
@@ -26,11 +25,11 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $plan_id
  * @property int $number
- * @property ActorType $requested_by_type
+ * @property string $requested_by_type
  * @property string $requested_by_id
  * @property int $plan_revision
  * @property PlanReviewState $state
- * @property ?ActorType $decided_by_type
+ * @property ?string $decided_by_type
  * @property ?string $decided_by_id
  * @property ?Carbon $decided_at
  * @property ?string $decision_reason
@@ -53,10 +52,8 @@ final class PlanReviewEdition extends Model implements EventSource, ReadableMode
     {
         return [
             'number' => 'integer',
-            'requested_by_type' => ActorType::class,
             'plan_revision' => 'integer',
             'state' => PlanReviewState::class,
-            'decided_by_type' => ActorType::class,
             'decided_at' => 'datetime',
             'is_historical' => 'boolean',
         ];

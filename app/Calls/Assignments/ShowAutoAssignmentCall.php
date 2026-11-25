@@ -8,7 +8,6 @@ use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesAutoAssignment;
 use App\Contracts\Domains\JournalCall;
 use App\Data\Assignments\AutoAssignmentStatusData;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\CallEffect;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -28,7 +27,7 @@ final class ShowAutoAssignmentCall extends Data implements JournalCall
     use NamesAutoAssignment;
 
     public function __construct(
-        public ActorType $actorType,
+        public string $actorType,
         #[Ulid]
         public string $actorId,
         #[Max(100)]

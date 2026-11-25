@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\Actor;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 
@@ -38,9 +38,9 @@ final readonly class AgentContext implements Actor
         return $this->lastHeartbeatAt === null || $this->lastHeartbeatAt->lessThan($cutoff);
     }
 
-    public function actorType(): ActorType
+    public function actorType(): string
     {
-        return ActorType::Agent;
+        return Agent::storedType();
     }
 
     public function actorId(): string

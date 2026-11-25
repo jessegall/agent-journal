@@ -57,7 +57,7 @@ final class PhaseCheck extends Model implements ReadableModel
         $check->receipt_id = $receipt->receiptId;
         $check->operation = $receipt->operation;
         $check->outcome = $receipt->outcome->value;
-        $check->actor_type = $recorder->type->value;
+        $check->actor_type = $recorder->type;
         $check->actor_id = $recorder->id;
 
         $check->setAttribute($check->getKeyName(), $check->newUniqueId());

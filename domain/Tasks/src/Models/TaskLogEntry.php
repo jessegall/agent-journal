@@ -10,7 +10,6 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ReadOrder;
@@ -30,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string $task_id
  * @property string $task_run_id
  * @property int $run_number
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property string $text
  * @property int $sequence
@@ -54,7 +53,6 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     {
         return [
             'run_number' => 'integer',
-            'actor_type' => ActorType::class,
             'sequence' => 'integer',
         ];
     }

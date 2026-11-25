@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskStreamEntryType;
 use Domain\Tasks\Values\TaskLogLine;
@@ -24,7 +23,7 @@ final class TaskStreamEntryData extends Data
         public readonly string $id,
         public readonly TaskStreamEntryType $type,
         public readonly string $at,
-        public readonly ActorType $actorType,
+        public readonly string $actorType,
         public readonly string $actorId,
         public readonly int|Optional $runNumber = new Optional(),
         public readonly string|Optional $text = new Optional(),

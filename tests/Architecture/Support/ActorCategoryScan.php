@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Enums\Assignments\ActorType;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
@@ -18,7 +16,7 @@ use PhpParser\Node\Stmt\Case_;
 use PhpParser\NodeFinder;
 
 /**
- * Finds where code chooses behaviour by the kind of actor: an ActorType case compared or matched on, a call
+ * Finds where code chooses behaviour by the kind of actor: an actor class's stored type compared or matched on, a call
  * of a removed identity-category helper, and a use of a removed role or actor attribute. Each finding is the file and
  * line with what was found.
  */
@@ -47,7 +45,7 @@ final class ActorCategoryScan
         $findings = [];
 
         foreach ($finder->find($file->statements, self::choosesByActorType(...)) as $node) {
-            $findings[] = self::at($file, $node, 'chooses behaviour by an ActorType case');
+            $findings[] = self::at($file, $node, 'chooses behaviour by the stored type of an actor class');
         }
 
         foreach ($finder->find($file->statements, self::callsRemovedHelper(...)) as $node) {
@@ -81,9 +79,9 @@ final class ActorCategoryScan
 
     private static function isActorTypeCase(Node $node): bool
     {
-        return $node instanceof ClassConstFetch
-            && $node->class instanceof Name
-            && $node->class->toString() === ActorType::class;
+        return $node instanceof StaticCall
+            && $node->name instanceof Identifier
+            && $node->name->toString() === 'storedType';
     }
 
     private static function callsRemovedHelper(Node $node): bool

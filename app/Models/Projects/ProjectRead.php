@@ -120,7 +120,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
         $read->binding_id = $binding->id;
         $read->type = $type;
         $read->path = $path;
-        $read->actor_type = $requester->type->value;
+        $read->actor_type = $requester->type;
         $read->actor_id = $requester->id;
         $read->state = ProjectReadState::Pending;
         $read->is_truncated = false;

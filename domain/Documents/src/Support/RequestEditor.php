@@ -28,6 +28,6 @@ final readonly class RequestEditor
         $editor = $this->editor();
 
         return $draft->isEditedBy($editor)
-            && (! $editor->type->isAgent() || $this->provenance->isFromCurrentSession($draft));
+            && (! $editor->isAgent() || $this->provenance->isFromCurrentSession($draft));
     }
 }

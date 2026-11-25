@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -56,7 +55,7 @@ final class ChatHostTest extends TestCase
 
         $chatInboxId = $this->pairChat(
             ActorIdentity::of($owner),
-            new ActorIdentity(ActorType::Agent, $session->agent_id),
+            ActorIdentity::ofClass(Agent::class, $session->agent_id),
         )->inbox_id;
 
         $window = ConversationRequest::queryFor($session->agent_id);

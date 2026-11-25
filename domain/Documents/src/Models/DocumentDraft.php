@@ -9,7 +9,7 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Support\MarkdownText;
@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
  * @property string $id
  * @property string $document_id
  * @property string $token
- * @property ActorType $author_type
+ * @property string $author_type
  * @property string $author_id
  * @property int $base_revision_number
  * @property int $version
@@ -58,7 +58,6 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'author_type' => ActorType::class,
             'base_revision_number' => 'integer',
             'version' => 'integer',
             'opened_at' => 'immutable_datetime',
@@ -151,7 +150,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
      */
     protected function holderLabel(): Attribute
     {
-        return Accessor::get(fn () => "{$this->author_type->value} {$this->author_id}");
+        return Accessor::get(fn () => "{$this->author_type} {$this->author_id}");
     }
 
     // ----------[ Relations ]----------
@@ -174,7 +173,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function heldByAgent(Builder $query, string $agentId): void
     {
-        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId);
+        $query->where('author_type', Agent::storedType())->where('author_id', $agentId);
     }
 
     /**
@@ -216,7 +215,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withAuthorType(Builder $query, ActorType $authorType): void
+    protected function withAuthorType(Builder $query, string $authorType): void
     {
         $query->where('author_type', $authorType);
     }

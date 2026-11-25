@@ -40,7 +40,7 @@ final readonly class RecordViews
             $revision->abstract,
             $revision->body,
             (string) $revision->number,
-            $document->creator_type->value,
+            $document->creator_type,
             $document->creator_id,
             $document->attention,
             (string) $document->created_at?->toIso8601String(),
@@ -58,7 +58,7 @@ final readonly class RecordViews
             'title' => $revision->title,
             'abstract' => $revision->abstract,
             'body' => $revision->body,
-            'authorType' => $revision->author_type->value,
+            'authorType' => $revision->author_type,
             'authorId' => $revision->author_id,
             'closedAt' => (string) $revision->closed_at?->toIso8601String(),
             'isHistorical' => DocumentRevision::findCurrentOf($document)->number !== $revision->number,
@@ -71,7 +71,7 @@ final readonly class RecordViews
     public static function settlementCard(RecordSettlement $settlement): SettlementCard
     {
         return SettlementCard::from([
-            'actorType' => $settlement->actor_type->value,
+            'actorType' => $settlement->actor_type,
             'actorId' => $settlement->actor_id,
             'reason' => $settlement->reason,
             'revision' => $settlement->revision_number === null ? null : (string) $settlement->revision_number,
@@ -150,7 +150,7 @@ final readonly class RecordViews
         return RevisionCard::from([
             'number' => (string) $revision->number,
             'title' => $revision->title,
-            'authorType' => $revision->author_type->value,
+            'authorType' => $revision->author_type,
             'authorId' => $revision->author_id,
             'closedAt' => (string) $revision->closed_at?->toIso8601String(),
         ]);
@@ -197,7 +197,7 @@ final readonly class RecordViews
             $report->title,
             $report->abstract,
             $report->body,
-            $report->creator_type->value,
+            $report->creator_type,
             $report->creator_id,
             $report->attention,
             $report->filed_at->toIso8601String(),

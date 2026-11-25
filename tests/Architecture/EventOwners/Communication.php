@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\IntervalRole;
 use App\Enums\LeaveReason;
 use App\Enums\MessageBatchState;
@@ -51,6 +50,8 @@ use App\Events\Messages\SpeechOpportunityReleased;
 use App\Events\Messages\SpeechOpportunityReserved;
 use App\Events\Messages\SpeechOpportunitySettled;
 use App\Events\Messages\UserPresenceConfirmed;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
 
@@ -72,21 +73,21 @@ return [
         'owner' => 'Message::createChat',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ChatMessageAccepted('message', new ActorIdentity(ActorType::User, 'user'), 'inbox'),
+        'sample' => fn () => new ChatMessageAccepted('message', ActorIdentity::ofClass(User::class, 'user'), 'inbox'),
     ],
     ChatMessageOffered::class => [
         'role' => EventRole::RowFact,
         'owner' => 'SpeechOpportunity::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ChatMessageOffered('inbox', 'message', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new ChatMessageOffered('inbox', 'message', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     ChatMemberJoined::class => [
         'role' => EventRole::RowFact,
         'owner' => 'InboxInterval::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ChatMemberJoined('interval', 'inbox', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new ChatMemberJoined('interval', 'inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     ChatMemberLeft::class => [
         'role' => EventRole::RowFact,
@@ -96,7 +97,7 @@ return [
         'sample' => fn () => new ChatMemberLeft(
             'interval',
             'inbox',
-            new ActorIdentity(ActorType::Agent, 'agent'),
+            ActorIdentity::ofClass(Agent::class, 'agent'),
             LeaveReason::Left,
         ),
     ],
@@ -108,7 +109,7 @@ return [
         'sample' => fn () => new ChatRoleChanged(
             'interval',
             'inbox',
-            new ActorIdentity(ActorType::User, 'user'),
+            ActorIdentity::ofClass(User::class, 'user'),
             IntervalRole::Owner,
         ),
     ],
@@ -153,7 +154,7 @@ return [
         'sample' => fn () => new SpeechOpportunitySettled(
             'opportunity',
             'root',
-            new ActorIdentity(ActorType::Agent, 'agent'),
+            ActorIdentity::ofClass(Agent::class, 'agent'),
             SpeechOpportunityState::Spent,
         ),
     ],
@@ -169,7 +170,7 @@ return [
         'owner' => 'Message::answerWith',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageAnswered('message', 'reply', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new MessageAnswered('message', 'reply', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     MessageClaimReleased::class => [
         'role' => EventRole::CommandFact,
@@ -183,21 +184,21 @@ return [
         'owner' => 'Message::dismissBy',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageDismissed('message', new ActorIdentity(ActorType::Agent, 'agent'), DismissalType::Declined),
+        'sample' => fn () => new MessageDismissed('message', ActorIdentity::ofClass(Agent::class, 'agent'), DismissalType::Declined),
     ],
     MessageRead::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Message::acknowledge',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageRead('message', 'inbox', new ActorIdentity(ActorType::Agent, 'agent')),
+        'sample' => fn () => new MessageRead('message', 'inbox', ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     MessageSent::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Message::createDesk',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageSent('message', new ActorIdentity(ActorType::Agent, 'agent'), 'source', 'destination'),
+        'sample' => fn () => new MessageSent('message', ActorIdentity::ofClass(Agent::class, 'agent'), 'source', 'destination'),
     ],
     MessageClaimed::class => [
         'role' => EventRole::CommandFact,

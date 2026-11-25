@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Access;
 
+use App\Contracts\Actors\RecipientActor;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -13,7 +14,6 @@ use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
 use App\Contracts\Questions\AnswersQuestions;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\InboxMember;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
@@ -68,7 +68,8 @@ class User extends Authenticatable implements
     MessageSender,
     MustVerifyEmail,
     PasskeyUser,
-    ReadableModel
+    ReadableModel,
+    RecipientActor
 {
     use BoundedReads;
 
@@ -156,9 +157,14 @@ class User extends Authenticatable implements
         return AssigneeIdentity::of($this);
     }
 
-    public function actorType(): ActorType
+    public static function storedType(): string
     {
-        return ActorType::User;
+        return 'user';
+    }
+
+    public function actorType(): string
+    {
+        return self::storedType();
     }
 
     // ----------[ Calculations ]----------

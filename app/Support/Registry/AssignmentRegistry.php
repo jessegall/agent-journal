@@ -14,7 +14,6 @@ use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Assignments\AutoAssigner;
 use App\Contracts\Assignments\AutoAssignmentActivity;
 use App\Contracts\Assignments\JournalAssignableProvider;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;
 use App\Exceptions\AssignmentProviderInvalid;
@@ -119,7 +118,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         );
 
         $this->activities = Registry::once(
-            fn (string $type) => AssignmentTypeUnavailable::forActorType(ActorType::from($type)),
+            fn (string $type) => AssignmentTypeUnavailable::forActorType($type),
             AssigneeTypeRepeated::for(...),
         );
     }
@@ -229,7 +228,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerActivity(ActivityDefinition $definition): void
     {
-        $type = $definition->type->value;
+        $type = $definition->type;
 
         if (! Reflector::factory()->isSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
             throw AssignmentProviderInvalid::forActivity($type, $definition->activityClass);
@@ -288,9 +287,9 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */
-    public function activity(ActorType $type): AutoAssignmentActivity
+    public function activity(string $type): AutoAssignmentActivity
     {
-        return $this->build($this->activities->get($type->value), AutoAssignmentActivity::class);
+        return $this->build($this->activities->get($type), AutoAssignmentActivity::class);
     }
 
     /**

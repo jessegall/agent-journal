@@ -9,8 +9,8 @@ use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Bus\ResultReceipts;
 use App\Contracts\Processes\ProcessRunCallers;
 use App\Enums\Accounts\CommandEntry;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Runs\AssessmentOutcome;
+use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;
 use Carbon\CarbonImmutable;
@@ -68,7 +68,7 @@ final class TaskCheckTest extends TestCase
 
         $this->callersAre([
             $own => ActorIdentity::of($this->owner),
-            $other => new ActorIdentity(ActorType::User, TestIds::of(9)),
+            $other => ActorIdentity::ofClass(User::class, TestIds::of(9)),
         ]);
 
         $this->startUserRequestAs($this->owner->id);

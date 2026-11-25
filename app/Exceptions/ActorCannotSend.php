@@ -15,6 +15,6 @@ final class ActorCannotSend extends RuntimeException implements CommandRefusal
 {
     public static function forIdentity(ActorIdentity $identity): self
     {
-        return new self("{$identity->type->value} {$identity->id} cannot send messages.");
+        return new self("{$identity->type} {$identity->id} cannot send messages.");
     }
 }

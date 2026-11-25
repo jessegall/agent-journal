@@ -8,7 +8,6 @@ use App\Attributes\Endpoint;
 use App\Calls\Assignments\Concerns\NamesExpectedAssignment;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\JournalCall;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Support\CallKey;
@@ -44,7 +43,7 @@ final class UnassignPlanWorkCall extends Data implements JournalCall
         public string $rootId,
         #[Ulid]
         public string $assignmentId,
-        public ActorType $holderType,
+        public string $holderType,
         #[Ulid]
         public string $holderId,
         #[LiteralTypeScriptType('string')]

@@ -6,8 +6,8 @@ namespace Domain\Rules\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Assignments\ActorType;
 use App\Exceptions\CommandAdmissionRefused;
+use App\Models\Agents\Agent;
 use App\Support\ActorContext;
 use App\Values\OwnerAuthority;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
@@ -59,7 +59,7 @@ final class RuleProposalTest extends TestCase
             [
                 RuleState::Proposed,
                 'The old one is too vague.',
-                ActorType::Agent,
+                Agent::storedType(),
                 $start->agent->id,
                 $old->number,
             ],

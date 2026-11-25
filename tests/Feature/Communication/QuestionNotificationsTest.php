@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Desks\CreateDesk\CreateDeskCommand;
 use App\Commands\Desks\ReleaseSeat\ReleaseSeatCommand;
+use App\Commands\Messages\AskMessage\AskMessageCommand;
 use App\Commands\Messages\RequireMessageAnswer\RequireMessageAnswerCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
@@ -133,7 +133,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
     private function unreadOf(ActorIdentity $actor): int
     {
         return (int) NotificationScope::query()
-            ->where('recipient_type', $actor->type->value)
+            ->where('recipient_type', $actor->type)
             ->where('recipient_id', $actor->id)
             ->sum('unread_count');
     }

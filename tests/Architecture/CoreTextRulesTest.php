@@ -9,23 +9,13 @@ use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\DomainFiles;
 
 /**
- * Rules over the text of every Core file: a desk is never an actor, no code chooses behaviour by actor type, no
- * interface carries a binding, and Core names no domain. A planted file that breaks a rule is caught.
+ * Rules over the text of every Core file: a desk is never an actor, no interface carries a binding, and Core names
+ * no domain; ActorCategoryRuleTest keeps code from choosing by the type of actor. A planted file that breaks a rule is caught.
  */
 final class CoreTextRulesTest extends TestCase
 {
-    /**
-     * The two places where agent and user truly differ: only an agent's run is shown in its chat, and only an agent
-     * holds a worker reservation.
-     */
-    private const array ACTOR_TYPE_DECISIONS = [
-        'app/Models/Runs/ProcessRun.php',
-        'app/Support/WriteAssignments.php',
-    ];
-
     private const array RULES = [
         'a desk implements Actor (a desk is not an actor)' => 'implementsActor',
-        'compares an actor type (rule 39)' => 'comparesActorType',
         'binds an interface with #[Bind]' => 'bindsInterface',
         'names a domain from Core (rule 26)' => 'namesDomain',
     ];
@@ -36,10 +26,6 @@ final class CoreTextRulesTest extends TestCase
 
         foreach ($this->files() as $path => $source) {
             foreach (self::RULES as $rule => $check) {
-                if ($check === 'comparesActorType' && in_array($path, self::ACTOR_TYPE_DECISIONS, true)) {
-                    continue;
-                }
-
                 foreach ($this->{$check}($source) as $line) {
                     $broken[] = "{$path}:{$line} {$rule}";
                 }
@@ -74,11 +60,6 @@ final class CoreTextRulesTest extends TestCase
             }
 
             TEXT, [2]],
-            'a branch on actor type' => ['comparesActorType', <<<'TEXT'
-            <?php
-            if ($type === ActorType::Agent) {}
-
-            TEXT, [2]],
             'a bound interface' => ['bindsInterface', <<<'TEXT'
             <?php
             #[Bind(Seats::class)]
@@ -99,14 +80,6 @@ final class CoreTextRulesTest extends TestCase
     private function implementsActor(string $source): array
     {
         return $this->linesMatching($source, '/^final (readonly )?class \w*Desk\w* .*implements .*\bActor\b/');
-    }
-
-    /**
-     * @return list<int>
-     */
-    private function comparesActorType(string $source): array
-    {
-        return $this->linesMatching($source, '/(===|!==)\s*ActorType::|ActorType::\w+\s*(===|!==)/');
     }
 
     /**

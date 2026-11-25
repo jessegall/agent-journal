@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Chat\Models\DockPlacement;
@@ -102,7 +102,7 @@ final class DockCommandsTest extends TestCase
 
     public function test_an_agent_in_several_conversations_names_one_before_anything_is_docked(): void
     {
-        $this->pairChat(ActorIdentity::of($this->start->agent), new ActorIdentity(ActorType::Agent, 'another-agent'));
+        $this->pairChat(ActorIdentity::of($this->start->agent), ActorIdentity::ofClass(Agent::class, 'another-agent'));
 
         $this->runCommandsAs($this->start);
 

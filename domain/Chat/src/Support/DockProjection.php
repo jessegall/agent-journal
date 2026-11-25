@@ -64,7 +64,7 @@ final readonly class DockProjection
     ): DockPageData {
         $actor = $this->actors->actor();
         $identity = ActorIdentity::of($actor);
-        $viewer = "{$identity->type->value}:{$identity->id}";
+        $viewer = "{$identity->type}:{$identity->id}";
         $inboxKey = $inbox === null ? self::UNOPENED_CHAT : $inbox->id;
         $first = DockCursor::start($viewer, $inboxKey);
         $end = DockCursor::end($viewer, $inboxKey);

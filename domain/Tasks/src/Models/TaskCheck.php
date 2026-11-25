@@ -10,7 +10,6 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\PublishedResult;
@@ -32,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $task_run_id
  * @property int $run_number
  * @property string $operation
- * @property ActorType $caller_type
+ * @property string $caller_type
  * @property string $caller_id
  * @property string $process_run_id
  * @property ?string $result_receipt_id
@@ -58,7 +57,6 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     {
         return [
             'run_number' => 'integer',
-            'caller_type' => ActorType::class,
             'bound_at' => 'datetime',
         ];
     }

@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Support\Accessor;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\SettlementCard;
@@ -25,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $parent_type
  * @property string $parent_id
- * @property ActorType $actor_type
+ * @property string $actor_type
  * @property string $actor_id
  * @property string $reason
  * @property ?int $revision_number
@@ -43,7 +42,6 @@ final class RecordSettlement extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'actor_type' => ActorType::class,
             'revision_number' => 'integer',
             'settled_at' => 'immutable_datetime',
         ];

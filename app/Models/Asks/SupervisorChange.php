@@ -50,7 +50,7 @@ final class SupervisorChange extends Model implements ReadableModel
     ): void {
         $supervisorChange = new self();
         $supervisorChange->supervisor_link_id = $link->id;
-        $supervisorChange->actor_type = $author->type->value;
+        $supervisorChange->actor_type = $author->type;
         $supervisorChange->actor_id = $author->id;
         $supervisorChange->route = AskTypeKey::routeOf($type);
         $supervisorChange->previous_target = $previous->key;

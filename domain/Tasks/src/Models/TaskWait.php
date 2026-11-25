@@ -10,7 +10,6 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitChange;
@@ -26,10 +25,10 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $dependent_task_id
  * @property string $prerequisite_task_id
- * @property ActorType $created_by_type
+ * @property string $created_by_type
  * @property string $created_by_id
  * @property ?Carbon $waived_at
- * @property ?ActorType $waived_by_type
+ * @property ?string $waived_by_type
  * @property ?string $waived_by_id
  * @property ?string $waive_reason
  * @property ?Carbon $created_at
@@ -49,9 +48,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'created_by_type' => ActorType::class,
             'waived_at' => 'datetime',
-            'waived_by_type' => ActorType::class,
         ];
     }
 

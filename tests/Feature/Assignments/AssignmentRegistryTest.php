@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Assignments\AssignableProvider;
 use App\Contracts\Assignments\AssigneeProvider;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Assignments\AssignmentPurpose;
 use App\Exceptions\AssigneeTypeRepeated;
 use App\Exceptions\AssignmentProviderInvalid;
@@ -15,6 +14,7 @@ use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\AssigneeDefinition;
 use App\Support\LinkTypeRegistry;
 use App\Support\Registry\AssignmentRegistry;
@@ -73,7 +73,7 @@ final class AssignmentRegistryTest extends TestCase
         $this->assertThrows(
             fn () => $this->registry->registerAssignees(
                 new AssigneeDefinition(
-                    ActorType::User->value,
+                    User::storedType(),
                     self::class, // @phpstan-ignore argument.type
                 ),
             ),
@@ -86,14 +86,14 @@ final class AssignmentRegistryTest extends TestCase
         $provider = $this->createStub(AssigneeProvider::class);
         $this->app->instance($provider::class, $provider);
         $this->registry->registerAssignees(
-            new AssigneeDefinition(ActorType::User->value, $provider::class),
+            new AssigneeDefinition(User::storedType(), $provider::class),
         );
 
-        $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User->value));
+        $this->assertSame($provider, $this->registry->assigneeProvider(User::storedType()));
         $this->expectException(AssigneeTypeRepeated::class);
 
         $this->registry->registerAssignees(
-            new AssigneeDefinition(ActorType::User->value, $provider::class),
+            new AssigneeDefinition(User::storedType(), $provider::class),
         );
     }
 
@@ -101,7 +101,7 @@ final class AssignmentRegistryTest extends TestCase
     {
         $this->assertThrows(fn () => $this->registry->recordProvider('tests.record'), AssignmentTypeUnavailable::class);
         $this->assertThrows(
-            fn () => $this->registry->assigneeProvider(ActorType::Agent->value),
+            fn () => $this->registry->assigneeProvider(Agent::storedType()),
             AssignmentTypeUnavailable::class,
         );
     }

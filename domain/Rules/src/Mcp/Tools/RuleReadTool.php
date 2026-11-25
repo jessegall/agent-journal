@@ -58,7 +58,7 @@ final class RuleReadTool extends JournalReadTool
             'number' => $rule->number,
             'state' => $rule->state->value,
             'proposer' => $rule->proposerType === null ? null : [
-                'type' => $rule->proposerType->value,
+                'type' => $rule->proposerType,
                 'id' => $rule->proposerId,
             ],
             'replaces_rule_number' => $rule->replacesRuleNumber,

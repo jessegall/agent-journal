@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Enums\Assignments\ActorType;
+use App\Contracts\Actors\ActorTypes;
 use App\Support\ActorIdentity;
 use App\Support\IdListPage;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,10 +18,10 @@ final class ListAutoAssignmentsRequest extends FormRequest
     /**
      * @return array<string, list<mixed>>
      */
-    public function rules(): array
+    public function rules(ActorTypes $actorTypes): array
     {
         return [
-            'actorType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
+            'actorType' => ['required', Rule::in($actorTypes->requestTypes())],
             'actorId' => ['required', 'ulid'],
             'after' => ['nullable', 'ulid'],
         ];
@@ -29,8 +29,8 @@ final class ListAutoAssignmentsRequest extends FormRequest
 
     public function actor(): ActorIdentity
     {
-        return new ActorIdentity(
-            ActorType::from($this->string('actorType')->toString()),
+        return ActorIdentity::fromStored(
+            $this->string('actorType')->toString(),
             $this->string('actorId')->lower()->toString(),
         );
     }

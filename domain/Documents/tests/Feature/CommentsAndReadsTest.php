@@ -13,7 +13,6 @@ use App\Contracts\Records\RecordResolver;
 use App\Data\Comments\RecordCommentView;
 use App\Data\Comments\TextCommentLocation;
 use App\Data\Comments\TextCommentView;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Comments\WholeRecord;
 use App\Exceptions\AnchorMismatch;
 use App\Models\Agents\Agent;
@@ -216,7 +215,7 @@ final class CommentsAndReadsTest extends TestCase
 
         $comment = $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment;
         $this->assertSame([
-            ActorType::Agent,
+            Agent::storedType(),
             $agent->id,
         ], [
             $comment->authorType,

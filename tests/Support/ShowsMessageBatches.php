@@ -8,7 +8,7 @@ use App\Commands\Messages\AcknowledgeMessageBatch\AcknowledgeMessageBatchCommand
 use App\Commands\Messages\ClaimSpeech\ClaimSpeechCommand;
 use App\Contracts\Sessions\CurrentSession;
 use App\Data\Messages\MessageBatchItemData;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorIdentity;
 use App\Support\MessageBatchService;
@@ -44,7 +44,7 @@ trait ShowsMessageBatches
         $sessionId = $this->app->make(CurrentSession::class)->sessionId();
         $session = AgentSession::query()->findOrFail($sessionId);
         $batch = $this->app->make(MessageBatchService::class)->next(
-            new ActorIdentity(ActorType::Agent, $session->agent_id),
+            ActorIdentity::ofClass(Agent::class, $session->agent_id),
             $sessionId,
             1,
             'claiming-turn',

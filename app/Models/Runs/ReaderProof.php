@@ -67,7 +67,7 @@ final class ReaderProof extends Model implements ReadableModel
         $readerProof->reader_revision_id = $reader->id;
         $readerProof->rule_proposal_revision_id = $declaration->id;
         $readerProof->proven_branches = ProvenBranch::collect($branches, DataCollection::class);
-        $readerProof->actor_type = $prover->type->value;
+        $readerProof->actor_type = $prover->type;
         $readerProof->actor_id = $prover->id;
         $readerProof->save();
 

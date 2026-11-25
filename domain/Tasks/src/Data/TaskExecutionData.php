@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Values\TaskExecution;
 use Spatie\LaravelData\Data;
@@ -17,7 +16,7 @@ use Spatie\LaravelData\Data;
 final class TaskExecutionData extends Data
 {
     public function __construct(
-        public readonly ActorType $actorType,
+        public readonly string $actorType,
         public readonly string $actorId,
         public readonly string|null $actorLabel,
         public readonly int $runNumber,
@@ -41,6 +40,6 @@ final class TaskExecutionData extends Data
     public function label(): string
     {
         return "run {$this->runNumber} by ".($this->actorLabel
-            ?? "{$this->actorType->value} {$this->actorId}").", {$this->state->value}";
+            ?? "{$this->actorType} {$this->actorId}").", {$this->state->value}";
     }
 }

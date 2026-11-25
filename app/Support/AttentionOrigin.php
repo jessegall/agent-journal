@@ -83,6 +83,6 @@ final readonly class AttentionOrigin
 
     public function keyFor(ActorIdentity $actor): string
     {
-        return hash('sha256', "attention:{$this->type}:{$this->id}:{$actor->type->value}:{$actor->id}");
+        return hash('sha256', "attention:{$this->type}:{$this->id}:{$actor->type}:{$actor->id}");
     }
 }

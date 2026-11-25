@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Navigation\MenuEntryState;
 use App\Enums\Navigation\NavigationCompletion;
+use App\Models\Access\User;
 use App\Models\Drivers\MenuEntry;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
@@ -115,7 +115,7 @@ final class MenuEntryTest extends TestCase
         $source = $this->raise($this->stalledScript(), 'raise-1');
 
         return MenuEntry::create(
-            new ActorIdentity(ActorType::User, 'owner'),
+            ActorIdentity::ofClass(User::class, 'owner'),
             $source,
             $this->steps(),
             NavigationCompletion::Goal,

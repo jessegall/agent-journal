@@ -15,12 +15,12 @@ final class QuestionRefused extends RuntimeException implements CommandRefusal
 {
     public static function targetCannotAnswer(ActorIdentity $target): self
     {
-        return new self("The {$target->type->value} {$target->id} cannot be asked a question.");
+        return new self("The {$target->type} {$target->id} cannot be asked a question.");
     }
 
     public static function targetNotInInbox(ActorIdentity $target): self
     {
-        return new self("The {$target->type->value} {$target->id} is not attached to the inbox.");
+        return new self("The {$target->type} {$target->id} is not attached to the inbox.");
     }
 
     public static function choiceNeedsOptions(): self

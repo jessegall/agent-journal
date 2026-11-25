@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
-use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Sequences\Models\SequenceRun;
@@ -97,7 +97,7 @@ final class SequenceRunsListTest extends TestCase
 
     private function agent(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, strtolower((string) Str::ulid()));
+        return ActorIdentity::ofClass(Agent::class, strtolower((string) Str::ulid()));
     }
 
     private function runFor(ActorIdentity $follower): SequenceRun

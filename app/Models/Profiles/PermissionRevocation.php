@@ -66,7 +66,7 @@ final class PermissionRevocation extends Model implements ReadableModel
         $permissionRevocation->permission_source = $source;
         $permissionRevocation->revoked_classes = array_map(fn (CommandClass $class) => $class->value, $classes->classes);
         $permissionRevocation->revoked_patterns = array_map(fn (CommandPattern $pattern) => new RevokedPatternData($pattern->words), $patterns->patterns);
-        $permissionRevocation->revoked_by_type = $by->type->value;
+        $permissionRevocation->revoked_by_type = $by->type;
         $permissionRevocation->revoked_by_id = $by->id;
         $permissionRevocation->revoked_at = CarbonImmutable::now();
         $permissionRevocation->save();

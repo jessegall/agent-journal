@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Actors\ActiveActorCounter;
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;
 
@@ -16,9 +16,9 @@ final readonly class AgentSessionCounter implements ActiveActorCounter
 {
     public function __construct(private PresenceWindow $window) {}
 
-    public static function type(): ActorType
+    public static function type(): string
     {
-        return ActorType::Agent;
+        return Agent::storedType();
     }
 
     public function count(CarbonImmutable $observedAt): int

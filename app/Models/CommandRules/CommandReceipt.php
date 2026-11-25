@@ -105,7 +105,7 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
         $now = CarbonImmutable::now();
 
         $receipt = new self();
-        $receipt->author_type = $caller->actor->type->value;
+        $receipt->author_type = $caller->actor->type;
         $receipt->author_id = $caller->actor->id;
         $receipt->session_id = $caller->sessionId;
         $receipt->contract_major = self::CONTRACT_MAJOR;

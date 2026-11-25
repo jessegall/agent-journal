@@ -86,7 +86,7 @@ final readonly class PublicationPages
             ...$card->toArray(),
             'comment' => [
                 'id' => $comment->id,
-                'author_type' => $comment->authorType->value,
+                'author_type' => $comment->authorType,
                 'author_id' => $comment->authorId,
                 'created_at' => $comment->createdAt,
             ],

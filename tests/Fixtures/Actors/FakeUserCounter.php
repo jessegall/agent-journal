@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Actors;
 
+use App\Models\Access\User;
 use App\Contracts\Actors\ActiveActorCounter;
-use App\Enums\Assignments\ActorType;
 use Carbon\CarbonImmutable;
 
 /**
@@ -18,9 +18,9 @@ final class FakeUserCounter implements ActiveActorCounter
      */
     public array $observedAt = [];
 
-    public static function type(): ActorType
+    public static function type(): string
     {
-        return ActorType::User;
+        return User::storedType();
     }
 
     public function count(CarbonImmutable $observedAt): int

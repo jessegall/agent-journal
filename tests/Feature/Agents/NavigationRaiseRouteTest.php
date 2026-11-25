@@ -8,11 +8,11 @@ use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\MainSeatTakeover;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Navigation\MenuEntryState;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
+use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
@@ -350,7 +350,7 @@ final class NavigationRaiseRouteTest extends TestCase
     {
         $screen = new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7);
         $uncertainty = new NavigationUncertainty(NavigationReason::LabelMissing, 2, self::FINGERPRINT, $screen);
-        $owner = new ActorIdentity(ActorType::User, 'owner');
+        $owner = ActorIdentity::ofClass(User::class, 'owner');
 
         return NavigationRequest::create($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
     }

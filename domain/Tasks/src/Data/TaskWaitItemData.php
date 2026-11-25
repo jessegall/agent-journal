@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Enums\Assignments\ActorType;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWaitTargetType;
 use Domain\Tasks\Values\TaskWaitLink;
@@ -27,7 +26,7 @@ final class TaskWaitItemData extends Data
         public readonly string|Optional $title = new Optional(),
         public readonly TaskState|Optional $state = new Optional(),
         public readonly string|Optional $waivedAt = new Optional(),
-        public readonly ActorType|Optional $waivedByType = new Optional(),
+        public readonly string|Optional $waivedByType = new Optional(),
         public readonly string|Optional $waivedById = new Optional(),
         public readonly string|Optional $waiveReason = new Optional(),
     ) {}

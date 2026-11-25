@@ -6,7 +6,6 @@ namespace Tests\Feature\Connections;
 
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Chat\ActorDesks;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Connections\FileWindowState;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Http\Pages\Resolvers\FileWindowResolver;
@@ -136,7 +135,7 @@ final class FileWindowTest extends TestCase
         $this->readyFolder();
         $agent = ProjectBinding::query()->firstOrFail()->main_agent_id;
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(ActorDesks::class)->provision(new ActorIdentity(ActorType::User, $this->owner->id), 'Own'),
+            fn () => $this->app->make(ActorDesks::class)->provision(ActorIdentity::ofClass(User::class, $this->owner->id), 'Own'),
         );
         $key = ['Idempotency-Key' => (string) Str::ulid()];
         $message = [

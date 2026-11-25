@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 
 /**
@@ -18,7 +18,7 @@ trait HasBuilderAgent
 
     protected function setUpHasBuilderAgent(): void
     {
-        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
+        $this->builder = ActorIdentity::ofClass(Agent::class, TestIds::of(7));
         $this->startUserRequestAs(TestIds::of(1));
     }
 }

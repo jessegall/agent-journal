@@ -78,7 +78,7 @@ final class ReaderRevision extends Model implements ReadableModel
         $readerRevision->operation = $request->operation;
         $readerRevision->contract_label = $contractLabel;
         $readerRevision->definition = $definition->toArray();
-        $readerRevision->actor_type = $author->type->value;
+        $readerRevision->actor_type = $author->type;
         $readerRevision->actor_id = $author->id;
         $readerRevision->save();
 

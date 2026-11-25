@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Assignments\ActorType;
+use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 
 /**
@@ -20,13 +20,13 @@ final readonly class AgentDrivers
     {
         $agentIds = array_values(array_map(
             fn (ActorIdentity $actor) => $actor->id,
-            array_filter($actors, fn (ActorIdentity $actor) => $actor->type->isAgent()),
+            array_filter($actors, fn (ActorIdentity $actor) => $actor->isAgent()),
         ));
 
         $drivers = [];
 
         foreach (AgentSession::runningDriversOf($agentIds) as $agentId => $driver) {
-            $drivers[ActorType::Agent->value.':'.$agentId] = $driver;
+            $drivers[Agent::storedType().':'.$agentId] = $driver;
         }
 
         return $drivers;

@@ -10,6 +10,7 @@ use App\Contracts\Actors\ActorLabels;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\ActorResolver;
 use App\Contracts\Actors\ActorRunner;
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -23,7 +24,6 @@ use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Presence\UserPresences;
 use App\Contracts\Time\ServerClock;
 use App\Contracts\Work\ActorStackSessions;
-use App\Enums\Assignments\ActorType;
 use App\Support\ActiveActorCounterRegistry;
 use App\Support\ActorContext;
 use App\Support\ActorProviderRegistry;
@@ -36,6 +36,7 @@ use App\Support\JournalVisibility;
 use App\Support\PresenceWindow;
 use App\Support\RegisteredInboxMemberPolicies;
 use App\Support\RegisteredPolicies;
+use App\Support\SystemActor;
 use App\Support\SystemActors;
 use App\Support\SystemAuthorizerProvider;
 use App\Support\SystemEntryPolicies;
@@ -83,18 +84,22 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->alias(ActorProviderRegistry::class, ActorLabels::class);
         $this->app->alias(ActorProviderRegistry::class, ActorVisibility::class);
         $this->app->alias(ActorProviderRegistry::class, ActorStackSessions::class);
+        $this->app->alias(ActorProviderRegistry::class, ActorTypes::class);
         $this->app->singleton(AuthorizerProviderRegistry::class);
         $this->app->alias(AuthorizerProviderRegistry::class, AuthorizerProviderRegistration::class);
         $this->app->scoped(CurrentAuthorizer::class, CurrentActorAuthorizer::class);
         $this->app->scoped(TargetAuthorizer::class, TargetActorAuthorizer::class);
     }
 
-    public function boot(ActorProviderRegistration $actors, AuthorizerProviderRegistry $authorizers): void
-    {
-        $actors->register(ActorType::System, SystemActors::class);
-        $actors->registerVisibility(ActorType::System, JournalVisibility::class);
-        $authorizers->register(ActorType::System, SystemAuthorizerProvider::class);
-        $this->app->booted(fn () => $authorizers->requireEveryType());
+    public function boot(
+        ActorProviderRegistration $actors,
+        AuthorizerProviderRegistry $authorizers,
+        ActorTypes $types,
+    ): void {
+        $actors->register(SystemActor::class, SystemActors::class);
+        $actors->registerVisibility(SystemActor::class, JournalVisibility::class);
+        $authorizers->register(SystemActor::class, SystemAuthorizerProvider::class);
+        $this->app->booted(fn () => $authorizers->requireEveryType($types));
         $this->loadCoreRoutes('actors/actors.php');
     }
 }

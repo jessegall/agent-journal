@@ -7,9 +7,9 @@ namespace Tests\Feature\Processes;
 use App\Calls\Processes\ProcessCalls;
 use App\Contracts\Bus\CommandClassifier;
 use App\Contracts\Files\Files;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\LifecycleState;
+use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;
@@ -148,7 +148,7 @@ final class ProcessChannelTest extends TestCase
         );
 
         return ProcessRun::create(
-            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
+            ActorIdentity::ofClass(Agent::class, $this->start->agent->id),
             TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder),
         );
     }

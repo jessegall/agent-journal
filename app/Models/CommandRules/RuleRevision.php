@@ -107,7 +107,7 @@ final class RuleRevision extends Model implements ReadableModel
         $ruleRevision->digest = $approved->digest();
         $ruleRevision->author_type = $proposed->author_type;
         $ruleRevision->author_id = $proposed->author_id;
-        $ruleRevision->approver_type = $approver->type->value;
+        $ruleRevision->approver_type = $approver->type;
         $ruleRevision->approver_id = $approver->id;
         $ruleRevision->save();
 

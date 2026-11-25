@@ -60,7 +60,7 @@ final readonly class NotificationDelivery
 
         foreach ($recipients as $recipient) {
             $key = $this->scopes->keyFor($recipient);
-            $distinct["{$key}\0{$recipient->type->value}\0{$recipient->id}"] = [
+            $distinct["{$key}\0{$recipient->type}\0{$recipient->id}"] = [
                 $key,
                 $recipient,
             ];

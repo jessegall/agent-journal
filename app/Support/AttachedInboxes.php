@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Sharing\SharedHolders;
-use App\Enums\Assignments\ActorType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 
@@ -14,18 +14,18 @@ use App\Models\Inboxes\InboxMember;
  */
 final readonly class AttachedInboxes implements SharedHolders
 {
+    public function __construct(private ActorTypes $actorTypes) {}
+
     public function sharedWith(AssigneeIdentity $member): array
     {
-        $type = ActorType::tryFrom($member->type);
-
-        if ($type === null) {
+        if (! in_array($member->type, $this->actorTypes->types(), true)) {
             return [];
         }
 
         return [
             Inbox::ASSIGNEE_TYPE => InboxMember::query()
                 ->active()
-                ->ofActor(new ActorIdentity($type, $member->id))
+                ->ofActor(ActorIdentity::fromStored($member->type, $member->id))
                 ->inboxIds(),
         ];
     }

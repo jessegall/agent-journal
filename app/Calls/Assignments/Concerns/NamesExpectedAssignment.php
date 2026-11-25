@@ -14,7 +14,7 @@ trait NamesExpectedAssignment
 {
     public function expected(): AssignmentReference
     {
-        $holder = new AssigneeIdentity($this->holderType->value, strtolower($this->holderId));
+        $holder = new AssigneeIdentity($this->holderType, strtolower($this->holderId));
 
         return new AssignmentReference(strtolower($this->assignmentId), $holder);
     }

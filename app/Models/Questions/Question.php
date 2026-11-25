@@ -10,7 +10,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\AuthoredModel;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Questions\QuestionType;
 use App\Events\Questions\QuestionAnswered;
 use App\Events\Questions\QuestionAsked;
@@ -76,9 +75,9 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     ): self {
         $question = new self();
         $question->inbox_id = $inboxId;
-        $question->sender_type = $sender->type->value;
+        $question->sender_type = $sender->type;
         $question->sender_id = $sender->id;
-        $question->target_type = $target->type->value;
+        $question->target_type = $target->type;
         $question->target_id = $target->id;
         $question->text = $text;
         $question->type = $type;
@@ -129,7 +128,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      */
     protected function sender(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->sender_type, $this->sender_id));
     }
 
     /**
@@ -137,7 +136,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
      */
     protected function target(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->target_type), $this->target_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->target_type, $this->target_id));
     }
 
     // ----------[ Asserts ]----------

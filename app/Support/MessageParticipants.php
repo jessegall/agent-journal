@@ -28,7 +28,7 @@ final readonly class MessageParticipants
             return $model;
         }
 
-        throw MessageParticipantRefused::cannotSend($actor->actorType()->value);
+        throw MessageParticipantRefused::cannotSend($actor->actorType());
     }
 
     /**
@@ -42,6 +42,6 @@ final readonly class MessageParticipants
             return $model;
         }
 
-        throw MessageParticipantRefused::cannotRead($actor->actorType()->value);
+        throw MessageParticipantRefused::cannotRead($actor->actorType());
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Enums\Assignments\ActorType;
 use App\Enums\Sharing\GatewayEndpointState;
 use App\Enums\Sharing\ShareAuditActor;
 use App\Enums\Sharing\ShareAuditType;
@@ -63,7 +62,7 @@ final class ShareAuditViewTest extends TestCase
         ShareAudit::create(
             $this->share,
             ShareAuditType::Created,
-            new ActorIdentity(ActorType::User, $this->owner->id),
+            ActorIdentity::ofClass(User::class, $this->owner->id),
             null,
         );
         ShareAudit::create($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);

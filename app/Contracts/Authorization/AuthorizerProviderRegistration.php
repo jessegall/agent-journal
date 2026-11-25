@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Authorization;
 
-use App\Enums\Assignments\ActorType;
+use App\Contracts\Actors\StoredActor;
 use App\Exceptions\AuthorizerProviderRepeated;
 
 /**
@@ -13,9 +13,10 @@ use App\Exceptions\AuthorizerProviderRepeated;
 interface AuthorizerProviderRegistration
 {
     /**
+     * @param  class-string<StoredActor>  $actorClass
      * @param  class-string<AuthorizerProvider>  $providerClass
      *
      * @throws AuthorizerProviderRepeated
      */
-    public function register(ActorType $type, string $providerClass): void;
+    public function register(string $actorClass, string $providerClass): void;
 }

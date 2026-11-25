@@ -9,7 +9,6 @@ use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\CaptureState;
 use App\Enums\Runs\LifecycleState;
@@ -26,6 +25,8 @@ use App\Events\Processes\ProcessRunOutlasted;
 use App\Events\Processes\ProcessRunStopped;
 use App\Events\Processes\ProcessRunUpdateCounted;
 use App\Exceptions\RetryRefused;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
 use App\Support\ActorIdentity;
 use App\Support\Cards\DockCard;
@@ -156,7 +157,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $run->working_folder = $admission->workingFolder;
         $run->plan = $admission->plan;
         $run->request_intent = $admission->intent;
-        $run->responsible_type = $admission->intent->isRequested() ? $actor->type->value : null;
+        $run->responsible_type = $admission->intent->isRequested() ? $actor->type : null;
         $run->responsible_id = $admission->intent->isRequested() ? $actor->id : null;
         $run->outcome_user_id = $admission->outcomeUserId;
         $run->attempt_id = $run->newUniqueId();
@@ -248,7 +249,7 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
     private function outlastsAQuickCommand(): bool
     {
         return $this->shown_at === null
-            && $this->actor_type === ActorType::Agent->value
+            && ActorIdentity::fromStored($this->actor_type, $this->actor_id)->isAgent()
             && $this->started_at?->addSeconds(self::QUICK_COMMAND_SECOND_LIMIT)->isPast() === true;
     }
 
@@ -476,11 +477,11 @@ final class ProcessRun extends Model implements Dockable, EventSource, ReadableM
         $audience = [];
 
         if ($this->responsible_type !== null && $this->responsible_id !== null) {
-            $audience[] = new ActorIdentity(ActorType::from($this->responsible_type), $this->responsible_id);
+            $audience[] = ActorIdentity::fromStored($this->responsible_type, $this->responsible_id);
         }
 
         if ($audience !== [] && $this->outcome_user_id !== null) {
-            $audience[] = new ActorIdentity(ActorType::User, $this->outcome_user_id);
+            $audience[] = ActorIdentity::ofClass(User::class, $this->outcome_user_id);
         }
 
         return $audience;

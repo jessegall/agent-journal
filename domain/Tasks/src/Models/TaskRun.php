@@ -10,7 +10,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
-use App\Enums\Assignments\ActorType;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
@@ -69,7 +68,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
         $run = new self();
         $run->task_id = $task->id;
         $run->run_number = $number;
-        $run->started_by_type = $starter->type->value;
+        $run->started_by_type = $starter->type;
         $run->started_by_id = $starter->id;
         $run->state = TaskRunState::Running;
 
@@ -116,7 +115,7 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      */
     protected function starter(): Attribute
     {
-        return Accessor::get(fn () => new ActorIdentity(ActorType::from($this->started_by_type), $this->started_by_id));
+        return Accessor::get(fn () => ActorIdentity::fromStored($this->started_by_type, $this->started_by_id));
     }
 
     // ----------[ Asserts ]----------

@@ -31,7 +31,7 @@ final class AutoAssignmentFactData extends Data
 
         return self::from([
             'id' => $fact->id,
-            'actorType' => $actor->type->value,
+            'actorType' => $actor->type,
             'actorId' => $actor->id,
             'assignableType' => $fact->key->assignableType,
             'isEnabled' => $fact->isEnabled,
