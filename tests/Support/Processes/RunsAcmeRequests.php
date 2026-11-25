@@ -61,7 +61,7 @@ trait RunsAcmeRequests
     private function openAcmeRequest(): void
     {
         ProcessOutputDisk::fake();
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Acme agent');
         $this->requestId = $this->journal->actAsAgentIds(
             $this->start->agent->id,
             $this->start->session->id,

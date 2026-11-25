@@ -17,6 +17,6 @@ trait RunsDirectLines
     {
         ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
-        $this->start = TestStart::start();
+        $this->start = $this->journal->signedStart('Line runner');
     }
 }
