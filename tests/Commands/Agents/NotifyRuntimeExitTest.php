@@ -10,6 +10,7 @@ use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\RequestProgress;
+use App\Enums\Navigation\NavigationStatus;
 use App\Enums\Runs\RuntimeActivity;
 use App\Enums\Sessions\SessionStatus;
 use App\Models\Agents\Agent;
@@ -17,11 +18,13 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
+use App\Support\DriverRequestEndings;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\DriverReceipt;
-use Tests\Support\Agents\OpensLedgerRuntimes;
+use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Engine\RunsEnginePasses;
 use Tests\TestCase;
 
 /**
@@ -31,7 +34,8 @@ use Tests\TestCase;
 final class NotifyRuntimeExitTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensLedgerRuntimes;
+    use RaisesNavigationRequests;
+    use RunsEnginePasses;
 
     private const array TABLES = [
         'agents',
@@ -47,6 +51,7 @@ final class NotifyRuntimeExitTest extends TestCase
         'active_accounts',
         'session_processes',
         'links',
+        'navigation_requests',
     ];
 
     public function test_a_verified_exit_ends_the_session(): void
@@ -98,6 +103,18 @@ final class NotifyRuntimeExitTest extends TestCase
 
         $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
         $this->assertSame(RequestProgress::Applied, $stop->fresh()?->progress);
+    }
+
+    public function test_a_runtime_that_ends_cancels_the_request_of_its_key_script(): void
+    {
+        $stalled = $this->stalledScript();
+        $navigation = $this->raise($stalled, 'raise-1');
+
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit(
+            AgentRuntime::query()->findOrFail($stalled->agent_runtime_id),
+        );
+
+        $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
     }
 
     private function notifyExit(EnrolledHost $host, OpenedRuntime $opened): void

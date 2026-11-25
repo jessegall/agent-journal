@@ -13,6 +13,7 @@ use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationAnswerer;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
+use App\Enums\Navigation\NavigationStatus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
@@ -36,6 +37,7 @@ use App\Values\NavigationUncertainty;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Closure;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
@@ -441,6 +443,35 @@ final class RaiseNavigationTest extends TestCase
             ->save($navigation, [new MenuStep(self::FINGERPRINT, 'GPT-7', null, null)]));
         $this->assertSame(MenuEntryStatus::Superseded, $stale->fresh()?->status);
         $this->assertSame(MenuEntryStatus::Current, $saved->status);
+    }
+
+    public function test_a_raised_request_carries_its_script_goal_runtime_and_screen(): void
+    {
+        $stalled = $this->stalledScript();
+
+        $navigation = $this->raise($stalled, 'raise-1');
+
+        $this->assertSame(NavigationStatus::Open, $navigation->status);
+        $this->assertSame([$stalled->id, $stalled->agent_runtime_id], [
+            $navigation->driver_request_id,
+            $navigation->agent_runtime_id,
+        ]);
+        $this->assertSame(['claude-code', '2.1.323'], [$navigation->family, $navigation->build]);
+        $this->assertEquals($stalled->scriptGoal(), $navigation->goal);
+        $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->fresh()?->screen->rows);
+        $this->assertSame(['Model: GPT-5', '❯ GPT-6'], $navigation->raise_rows);
+        $this->assertSame(1, $navigation->row_version);
+    }
+
+    public function test_the_same_raise_is_one_row_and_a_second_open_request_is_refused_by_the_database(): void
+    {
+        $stalled = $this->stalledScript();
+        $first = $this->raise($stalled, 'raise-1');
+
+        $this->assertSame($first->id, $this->raise($stalled, 'raise-1')->id);
+
+        $this->expectException(UniqueConstraintViolationException::class);
+        $this->raise($stalled, 'raise-2');
     }
 
     /**

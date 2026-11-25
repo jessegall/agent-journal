@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\Commands\Navigation;
 
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
+use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\DriverOperation;
+use App\Enums\Navigation\NavigationKey;
 use App\Enums\Navigation\NavigationStatus;
 use App\Exceptions\NavigationAnswerRefused;
 use App\Models\Agents\Agent;
@@ -17,9 +19,14 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
+use App\Support\EnrolledHost;
 use App\Support\MainInboxTakeover;
+use App\Support\NavigationRounds;
 use App\Values\NavigationAnswer;
+use App\Values\NavigationRound;
 use App\Values\OwnerAuthority;
+use Illuminate\Testing\TestResponse;
+use Tests\Fixtures\Agents\RecordedAttention;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestStartAuthority;
@@ -46,12 +53,14 @@ final class AnswerNavigationTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
-        'inboxes', 'inbox_members',
+        'inboxes',
+        'inbox_members',
         'assignments',
         'command_receipts',
         'accounts',
         'active_accounts',
         'session_processes',
+        'menu_entries',
     ];
 
     private Agent $main;
@@ -124,6 +133,46 @@ final class AnswerNavigationTest extends TestCase
         }
     }
 
+    public function test_a_round_is_appended_once_and_claimed_with_its_keys(): void
+    {
+        $attention = new RecordedAttention();
+        $this->app->bind(ActorAttention::class, fn () => $attention);
+
+        [$host, $navigation] = $this->stalled();
+        $round = NavigationRound::keys($navigation->id, $navigation->row_version, 7, [NavigationKey::Down]);
+
+        $first = $this->append($navigation, $round);
+        $again = $this->append($navigation, $round);
+
+        $this->assertSame($first->id, $again->id);
+        $claimed = collect(
+            $this->journal->hostCall(
+                $host,
+                'POST',
+                '/host/claim?limit=10&wait=0&watched_version=0',
+            )->assertOk()->json('requests'),
+        )
+            ->firstWhere('requestId', $first->id);
+        $this->assertSame(['navigate', $navigation->id, ['down']], [
+            $claimed['operation'],
+            $claimed['navigationRequestId'],
+            $claimed['navigationRound']['keys'],
+        ]);
+    }
+
+    public function test_the_screen_after_a_round_becomes_the_current_screen(): void
+    {
+        $attention = new RecordedAttention();
+        $this->app->bind(ActorAttention::class, fn () => $attention);
+
+        [$host, $navigation] = $this->stalled();
+        $round = $this->append($navigation, NavigationRound::choose($navigation->id, 1, 7, 'GPT-6'));
+
+        $this->notify($host, $round, isProofSeen: false)->assertNoContent();
+
+        $this->assertSame(['Model: GPT-6'], $navigation->fresh()?->screen->rows);
+    }
+
     private function answer(NavigationRequest $navigation, NavigationAnswer $answer): AnswerNavigationCommand
     {
         $generation = $navigation->screen->generation;
@@ -152,5 +201,51 @@ final class AnswerNavigationTest extends TestCase
     private function roundCount(NavigationRequest $navigation): int
     {
         return DriverRequest::query()->where('navigation_request_id', $navigation->id)->count();
+    }
+
+    private function append(NavigationRequest $navigation, NavigationRound $round): DriverRequest
+    {
+        return $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $this->app->make(NavigationRounds::class)->append($navigation, $round),
+        );
+    }
+
+    /**
+     * A key script stalled on a newly opened runtime, with its navigation request raised.
+     *
+     * @return array{EnrolledHost, NavigationRequest}
+     */
+    private function stalled(string $build = '2.1.323'): array
+    {
+        [$host, $opened] = $this->openRuntime(build: $build);
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
+        $stalled = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
+
+        return [$host, $this->raise($stalled, 'raise-1')];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $steps
+     */
+    private function notify(
+        EnrolledHost $host,
+        DriverRequest $round,
+        bool $isProofSeen,
+        array $steps = [],
+    ): TestResponse {
+        return $this->journal->hostCall($host, 'POST', '/host/reports/request', [
+            'request_id' => $round->id,
+            'attempt' => $round->fresh()?->attempt_version,
+            'progress' => 'applied',
+            'actual_binding' => 'navigation',
+            'outcome' => null,
+            'navigation' => [
+                'rows' => ['Model: GPT-6'],
+                'highlight' => -1,
+                'generation' => 8,
+                'has_observed_proof' => $isProofSeen,
+                ...($steps === [] ? [] : ['steps' => $steps]),
+            ],
+        ]);
     }
 }
