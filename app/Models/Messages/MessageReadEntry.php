@@ -118,12 +118,12 @@ final class MessageReadEntry extends Model implements EventSource
      * The rows of any of the given messages.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $messageIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofMessages(Builder $query, array|Builder|Closure $messageIds): void
+    protected function ofMessages(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('message_id', $messageIds);
+        $query->whereIn('message_id', $ids);
     }
 
     /**

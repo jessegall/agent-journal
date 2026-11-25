@@ -149,8 +149,8 @@ final class ResultReceipt extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofPartRun(Builder $query, string $partRunId): void
+    protected function ofPartRun(Builder $query, string $runId): void
     {
-        $query->where('part_run_id', $partRunId);
+        $query->where('part_run_id', $runId);
     }
 }

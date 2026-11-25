@@ -282,12 +282,12 @@ final class AskHop extends Model implements EventSource, ReadableModel
      * The hops of the asks.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $askIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofAsks(Builder $query, array $askIds): void
+    protected function ofAsks(Builder $query, array $ids): void
     {
-        $query->whereIn('ask_hops.ask_id', $askIds);
+        $query->whereIn('ask_hops.ask_id', $ids);
     }
 
     /**

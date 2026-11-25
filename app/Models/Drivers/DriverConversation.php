@@ -165,12 +165,12 @@ final class DriverConversation extends Model implements ReadableModel
      * The rows of any of the given agents.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('agent_id', $agentIds);
+        $query->whereIn('agent_id', $ids);
     }
 
     /**
@@ -179,9 +179,9 @@ final class DriverConversation extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withContextReference(Builder $query, string $contextReference): void
+    protected function withContextReference(Builder $query, string $reference): void
     {
-        $query->where('context_reference', $contextReference);
+        $query->where('context_reference', $reference);
     }
 
     /**
@@ -190,9 +190,9 @@ final class DriverConversation extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withResumeProtocol(Builder $query, string $resumeProtocol): void
+    protected function withResumeProtocol(Builder $query, string $protocol): void
     {
-        $query->where('resume_protocol', $resumeProtocol);
+        $query->where('resume_protocol', $protocol);
     }
 
     /**

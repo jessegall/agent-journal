@@ -538,12 +538,12 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * The sessions of the agents.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('agent_id', $agentIds);
+        $query->whereIn('agent_id', $ids);
     }
 
     /**
@@ -608,12 +608,12 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * The sessions started under any of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function helpersOfAny(Builder $query, array|Builder|Closure $sessionIds): void
+    protected function helpersOfAny(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('parent_session_id', $sessionIds);
+        $query->whereIn('parent_session_id', $ids);
     }
 
     /**
@@ -692,7 +692,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function withAgentAndCurrentConversation(Builder $query): void
     {
-        $query->with(['agent', 'currentConversation']);
+        $query->with([
+            'agent',
+            'currentConversation',
+        ]);
     }
 
     /**
@@ -703,7 +706,10 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function withSessionTokenAndAgent(Builder $query): void
     {
-        $query->with(['sessionToken', 'agent']);
+        $query->with([
+            'sessionToken',
+            'agent',
+        ]);
     }
 
     /**

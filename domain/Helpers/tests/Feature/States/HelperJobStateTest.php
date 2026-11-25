@@ -42,11 +42,20 @@ final class HelperJobStateTest extends TestCase
      */
     public static function endings(): iterable
     {
-        yield 'held' => [new HelperJobHeld('job-2'), new HelperJobHeld(self::JOB)];
+        yield 'held' => [
+            new HelperJobHeld('job-2'),
+            new HelperJobHeld(self::JOB),
+        ];
 
-        yield 'finished' => [new HelperJobFinished('job-2', 'report 1'), new HelperJobFinished(self::JOB, 'report 1')];
+        yield 'finished' => [
+            new HelperJobFinished('job-2', 'report 1'),
+            new HelperJobFinished(self::JOB, 'report 1'),
+        ];
 
-        yield 'cancelled' => [new HelperJobCancelled('job-2'), new HelperJobCancelled(self::JOB)];
+        yield 'cancelled' => [
+            new HelperJobCancelled('job-2'),
+            new HelperJobCancelled(self::JOB),
+        ];
     }
 
     #[DataProvider('endings')]

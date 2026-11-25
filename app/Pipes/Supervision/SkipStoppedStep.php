@@ -14,10 +14,10 @@ use App\Support\Execution\StepOutcome;
  */
 final readonly class SkipStoppedStep implements Pipe
 {
-    public function handle(PendingStep $toRun): StepOutcome
+    public function handle(PendingStep $run): StepOutcome
     {
-        $toRun->state->skipEveryPart($toRun->step, 'the run was stopped: '.$toRun->state->stop->reason());
+        $run->state->skipEveryPart($run->step, 'the run was stopped: '.$run->state->stop->reason());
 
-        return new StepOutcome(ExitStatus::Interrupted->status(), $toRun->context);
+        return new StepOutcome(ExitStatus::Interrupted->status(), $run->context);
     }
 }

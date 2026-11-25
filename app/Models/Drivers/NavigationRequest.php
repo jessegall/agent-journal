@@ -426,9 +426,9 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofDriverRequest(Builder $query, string $driverRequestId): void
+    protected function ofDriverRequest(Builder $query, string $requestId): void
     {
-        $query->where('driver_request_id', $driverRequestId);
+        $query->where('driver_request_id', $requestId);
     }
 
     /**
@@ -451,7 +451,10 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     #[Scope]
     protected function withDriverRequestAndRuntime(Builder $query): void
     {
-        $query->with(['driverRequest', 'runtime']);
+        $query->with([
+            'driverRequest',
+            'runtime',
+        ]);
     }
 
     /**

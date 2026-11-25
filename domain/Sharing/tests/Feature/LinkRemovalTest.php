@@ -7,27 +7,27 @@ namespace Domain\Sharing\Tests\Feature;
 use App\Contracts\Work\UnitOfWork;
 use App\Models\Agents\Agent;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareMember;
 use App\Support\GatewaySettings;
 use App\Support\LinkRemoval;
 use App\Support\RecordIdentity;
+use App\Support\ShareRecordCard;
+use Carbon\CarbonImmutable;
+use Closure;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareLinkedCandidate;
-use App\Support\ShareRecordCard;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
-use Closure;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use RuntimeException;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Removing a link ends the share approval that rested on it, in the same transaction: a rolled-back removal leaves
@@ -120,7 +120,10 @@ final class LinkRemovalTest extends TestCase
         );
         $candidates = new ShareCandidates(
             new ShareRecordCard($this->identityOf($this->source), 'Source', '1'),
-            [$approved, $other],
+            [
+                $approved,
+                $other,
+            ],
         );
 
         $this->assertSame([$other], $candidates->notSharedYet(ShareMember::approvedLinkIdsOf($share)));

@@ -27,7 +27,10 @@ return Application::configure(basePath: dirname(__DIR__, 3))
     })
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->use([GuardShareRequest::class, SecureShareResponse::class]);
+        $middleware->use([
+            GuardShareRequest::class,
+            SecureShareResponse::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Every failure, a refusal that renders itself included, ends as one of the fixed pages.

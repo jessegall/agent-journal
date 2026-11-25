@@ -625,12 +625,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      * The bindings of the environments; every project's with none named.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $environmentIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function inEnvironmentsWhenNamed(Builder $query, array $environmentIds): void
+    protected function inEnvironmentsWhenNamed(Builder $query, array $ids): void
     {
-        $query->when($environmentIds !== [], fn (Builder $named) => $named->whereIn('environment_id', $environmentIds));
+        $query->when($ids !== [], fn (Builder $named) => $named->whereIn('environment_id', $ids));
     }
 
     /**

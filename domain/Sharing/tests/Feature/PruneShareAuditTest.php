@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Support\ActorIdentity;
+use App\Support\AuditPruning;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use App\Support\ActorIdentity;
-use App\Support\AuditPruning;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Pruning the share audit: public reads go after 30 days and the steps of a share's life 365 days after it ended,
@@ -50,14 +50,32 @@ final class PruneShareAuditTest extends TestCase
 
         $this->assertEquals(new AuditPruning(4, false), $this->prune());
 
-        $this->assertSame([[1, 1, 0], [0, 0, 2]], [$this->totalsOf($live), $this->totalsOf($ended)]);
+        $this->assertSame([
+            [
+                1,
+                1,
+                0,
+            ],
+            [
+                0,
+                0,
+                2,
+            ],
+        ], [
+            $this->totalsOf($live),
+            $this->totalsOf($ended),
+        ]);
         $this->assertNotNull($live->fresh()?->last_pruned_at);
         $this->assertSame(1, ShareAudit::query()->where('type', ShareAuditType::AuditPruned->value)->count());
         $this->assertSame(2, ShareAudit::query()->whereNotNull('share_id')->count());
 
         $this->assertEquals(new AuditPruning(0, false), $this->prune());
         $this->assertSame(1, ShareAudit::query()->where('type', ShareAuditType::AuditPruned->value)->count());
-        $this->assertSame([1, 1, 0], $this->totalsOf($live));
+        $this->assertSame([
+            1,
+            1,
+            0,
+        ], $this->totalsOf($live));
     }
 
     private function audit(Share $share, ShareAuditType $type): void
@@ -84,6 +102,10 @@ final class PruneShareAuditTest extends TestCase
     {
         $fresh = Share::query()->findOrFail($share->id);
 
-        return [$fresh->pruned_allowed_reads, $fresh->pruned_denied_reads, $fresh->pruned_lifecycle_rows];
+        return [
+            $fresh->pruned_allowed_reads,
+            $fresh->pruned_denied_reads,
+            $fresh->pruned_lifecycle_rows,
+        ];
     }
 }

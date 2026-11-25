@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
+use App\Models\CommandRules\CommandReceipt;
+use App\Support\Access\AccessSettings;
+use App\Support\GatewayConfiguration;
+use App\Support\RequestKey;
+use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\GatewayNotSetUp;
 use Domain\Sharing\Exceptions\GatewaySecretRefused;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
-use App\Models\Access\User;
-use App\Models\CommandRules\CommandReceipt;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use App\Support\Access\AccessSettings;
-use App\Support\GatewayConfiguration;
-use App\Support\RequestKey;
 use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -28,7 +29,6 @@ use Tests\Support\Sharing\UnconfiguredShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner configures a gateway as numbered settings revisions: a second revision leaves earlier shares on the first,
@@ -64,10 +64,22 @@ final class ConfigureShareGatewayTest extends TestCase
         );
         $second = $this->configure(FakeShareGateway::KEY, true);
 
-        $this->assertSame([1, 2], [$first->configurationVersion, $second->configurationVersion]);
+        $this->assertSame([
+            1,
+            2,
+        ], [
+            $first->configurationVersion,
+            $second->configurationVersion,
+        ]);
         $this->assertSame(
-            [$first->configurationId, 1],
-            [$share->fresh()?->share_gateway_configuration_id, $share->fresh()?->configuration_version],
+            [
+                $first->configurationId,
+                1,
+            ],
+            [
+                $share->fresh()?->share_gateway_configuration_id,
+                $share->fresh()?->configuration_version,
+            ],
         );
         $this->assertTrue(ShareGatewayConfiguration::query()->findOrFail($second->configurationId)->is_default);
         $this->assertSame(2, ShareAudit::query()->where('type', ShareAuditType::GatewayChanged->value)->count());

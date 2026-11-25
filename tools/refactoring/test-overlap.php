@@ -48,7 +48,10 @@ function main(array $arguments): void
         $paths[] = $argument;
     }
 
-    $tests = testFacts($paths === [] ? ['tests', ...glob('domain/*/tests') ?: []] : $paths);
+    $tests = testFacts($paths === [] ? [
+        'tests',
+        ...glob('domain/*/tests') ?: [],
+    ] : $paths);
 
     echo implode('', array_map(fn (string $line) => $line."\n", [
         ...overlaps($tests, $threshold),
@@ -168,7 +171,10 @@ function candidatePairs(array $tests): array
 
         for ($first = 0; $first < $count; $first++) {
             for ($second = $first + 1; $second < $count; $second++) {
-                $pairs["{$names[$first]}|{$names[$second]}"] = [$names[$first], $names[$second]];
+                $pairs["{$names[$first]}|{$names[$second]}"] = [
+                    $names[$first],
+                    $names[$second],
+                ];
             }
         }
     }
@@ -216,7 +222,10 @@ function isCommandTest(string $name): bool
  */
 function jaccard(array $first, array $second): float
 {
-    $union = count(array_unique([...$first, ...$second]));
+    $union = count(array_unique([
+        ...$first,
+        ...$second,
+    ]));
 
     if ($union === 0) {
         return 0.0;

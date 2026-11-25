@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Support\Access\AccessSettings;
+use App\Support\GatewayConfiguration;
+use App\Support\RecordIdentity;
+use App\Support\RequestKey;
+use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -21,15 +26,11 @@ use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Support\Access\AccessSettings;
-use App\Support\GatewayConfiguration;
-use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareGatewayRegistry;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareSummary;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
@@ -40,7 +41,6 @@ use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * A preview without a named gateway pins the current default; switching the default leaves earlier shares on their
@@ -82,7 +82,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
             Share::query()->findOrFail($earlier->shareId)->share_gateway_configuration_id,
         );
         $this->assertSame(
-            [$second->configurationId, 2],
+            [
+                $second->configurationId,
+                2,
+            ],
             [
                 Share::query()->findOrFail($later->shareId)->share_gateway_configuration_id,
                 Share::query()->findOrFail($later->shareId)->configuration_version,
@@ -99,7 +102,11 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
         ShareGatewayEndpoint::create($configuration, 1, self::RUN)->moveTo(GatewayEndpointState::Open);
 
-        foreach ([1, 2, 3] as $number) {
+        foreach ([
+            1,
+            2,
+            3,
+        ] as $number) {
             $share = TestShares::grantForADay(TestActors::record('binders.binder', $number), $configuration);
             $share->activate();
         }

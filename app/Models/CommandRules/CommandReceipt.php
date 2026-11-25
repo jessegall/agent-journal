@@ -236,8 +236,6 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    // ----------[ Queries ]----------
-
     /**
      * The request keys of those receipts the current caller may read back, keyed by receipt id; another caller's
      * receipts are left out.
@@ -253,6 +251,8 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
 
         return self::query()->whereKey($ids)->pluck('request_key', 'id')->all();
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The caller's receipt of the command under the key, read without a lock, if it has one.
@@ -336,9 +336,9 @@ final class CommandReceipt extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withContractMajor(Builder $query, int $contractMajor): void
+    protected function withContractMajor(Builder $query, int $major): void
     {
-        $query->where('contract_major', $contractMajor);
+        $query->where('contract_major', $major);
     }
 
     /**

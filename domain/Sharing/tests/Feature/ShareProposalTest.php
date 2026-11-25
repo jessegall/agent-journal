@@ -4,39 +4,40 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Exceptions\CommandAdmissionRefused;
+use App\Models\Access\User;
+use App\Models\Agents\Agent;
+use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
+use App\Support\ActorIdentity;
+use App\Support\RecordIdentity;
+use App\Support\RequestKey;
+use App\Values\OwnerAuthority;
+use Carbon\CarbonImmutable;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Models\Document;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Events\ShareCreated;
 use Domain\Sharing\Events\ShareRequested;
-use App\Exceptions\CommandAdmissionRefused;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
-use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use Domain\Sharing\Support\ProposalStatusResolver;
-use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareProposalStatus;
-use App\Values\OwnerAuthority;
-use Carbon\CarbonImmutable;
-use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
-use Domain\Documents\Models\Document;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -46,7 +47,6 @@ use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * An agent proposes sharing a document it may read and learns only the proposal's number and state; it may not create
@@ -122,16 +122,31 @@ final class ShareProposalTest extends TestCase
         $proposal = Share::query()->sole();
 
         $this->assertEquals(new ShareProposalStatus($proposal->number, ShareState::Proposed), $status);
-        $this->assertSame(['number', 'state'], array_keys(get_object_vars($status)));
+        $this->assertSame([
+            'number',
+            'state',
+        ], array_keys(get_object_vars($status)));
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
         $this->assertSame(
-            [Agent::storedType(), $this->start->agent->id],
-            [$proposal->requester_type, $proposal->requester_id],
+            [
+                Agent::storedType(),
+                $this->start->agent->id,
+            ],
+            [
+                $proposal->requester_type,
+                $proposal->requester_id,
+            ],
         );
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
-        $this->assertSame([ShareAuditType::Created, Agent::storedType()], [$audit->type, $audit->actor_type]);
+        $this->assertSame([
+            ShareAuditType::Created,
+            Agent::storedType(),
+        ], [
+            $audit->type,
+            $audit->actor_type,
+        ]);
     }
 
     public function test_a_repeated_request_with_the_same_key_makes_one_proposal(): void
@@ -165,8 +180,14 @@ final class ShareProposalTest extends TestCase
     public function test_the_owner_approves_a_proposal_into_a_pending_grant(): void
     {
         $facts = [];
-        Event::listen([ShareRequested::class, ShareCreated::class], function (object $fact) use (&$facts): void {
-            $facts[] = [$fact::class, $fact->share->state];
+        Event::listen([
+            ShareRequested::class,
+            ShareCreated::class,
+        ], function (object $fact) use (&$facts): void {
+            $facts[] = [
+                $fact::class,
+                $fact->share->state,
+            ];
         });
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $proposal = Share::query()->sole();
@@ -186,7 +207,13 @@ final class ShareProposalTest extends TestCase
         );
         $granted = Share::query()->findOrFail($proposal->id);
 
-        $this->assertSame([$proposal->id, ShareState::Pending], [$summary->shareId, $summary->state]);
+        $this->assertSame([
+            $proposal->id,
+            ShareState::Pending,
+        ], [
+            $summary->shareId,
+            $summary->state,
+        ]);
         $this->assertSame($this->owner->id, $granted->owner_user_id);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $granted->scope_version);
         $this->assertNotNull($granted->token_digest);
@@ -206,7 +233,16 @@ final class ShareProposalTest extends TestCase
         );
 
         $this->assertSame(
-            [[ShareRequested::class, ShareState::Proposed], [ShareCreated::class, ShareState::Pending]],
+            [
+                [
+                    ShareRequested::class,
+                    ShareState::Proposed,
+                ],
+                [
+                    ShareCreated::class,
+                    ShareState::Pending,
+                ],
+            ],
             $facts,
         );
 

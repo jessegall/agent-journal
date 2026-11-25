@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Enums\GatewayAddressCheck;
-use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayOperation;
+use Domain\Sharing\Enums\GatewayAddressCheck;
+use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Domain\Sharing\Gateways\Support\GatewayChildren;
 use Domain\Sharing\Gateways\Support\GatewayStarts;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Process\Factory as Processes;
 use Illuminate\Process\FakeInvokedProcess;
 use Tests\Support\Sharing\FakeShareGateway;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The one start every gateway opens through: a confirmed address keeps the program for the run under its endpoint
@@ -42,12 +42,22 @@ final class GatewayStartsTest extends TestCase
         $endpoint = $this->app->make(
             GatewayStarts::class,
         )->open('fake', $this->operation(), $child, function () use (&$looks): GatewayAddressCheck {
-            return ++$looks < 2 ? GatewayAddressCheck::Waiting : GatewayAddressCheck::Confirmed;
+            if (++$looks < 2) {
+                return GatewayAddressCheck::Waiting;
+            }
+
+            return GatewayAddressCheck::Confirmed;
         });
 
         $this->assertSame(
-            ['run-1:3', FakeShareGateway::PUBLIC_ORIGIN],
-            [$endpoint->processReference, $endpoint->publicOrigin],
+            [
+                'run-1:3',
+                FakeShareGateway::PUBLIC_ORIGIN,
+            ],
+            [
+                $endpoint->processReference,
+                $endpoint->publicOrigin,
+            ],
         );
         $this->assertFalse($child->hasReceivedSignal(15));
 

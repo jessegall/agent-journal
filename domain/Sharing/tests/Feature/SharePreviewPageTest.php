@@ -8,21 +8,21 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\SharePreview;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\GatewaySettings;
-use Domain\Sharing\Support\ShareSelectedTarget;
 use App\Values\OwnerAuthority;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\SharePreview;
+use Domain\Sharing\Support\ShareSelectedTarget;
+use Domain\Sharing\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner's share preview page: a plan's page offers Share to the owner, the preview lists the plan's linked
@@ -74,7 +74,10 @@ final class SharePreviewPageTest extends TestCase
 
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create([
+            'title' => 'Version 6',
+            'type' => PlanType::Build,
+        ]);
         Link::createForModels($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(

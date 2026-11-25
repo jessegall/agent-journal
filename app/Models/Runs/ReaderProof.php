@@ -103,8 +103,8 @@ final class ReaderProof extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofReaderRevision(Builder $query, string $readerRevisionId): void
+    protected function ofReaderRevision(Builder $query, string $revisionId): void
     {
-        $query->where('reader_revision_id', $readerRevisionId);
+        $query->where('reader_revision_id', $revisionId);
     }
 }

@@ -113,7 +113,11 @@ function returnsScalar(ClassMethod $method): bool
     $names = array_map(fn (mixed $part) => $part instanceof Identifier ? $part->toLowerString() : '', $parts);
     $scalars = array_diff($names, ['null']);
 
-    $isScalar = fn (string $name) => in_array($name, ['string', 'int', 'float'], true);
+    $isScalar = fn (string $name) => in_array($name, [
+        'string',
+        'int',
+        'float',
+    ], true);
 
     return $scalars !== [] && array_all($scalars, $isScalar);
 }
@@ -148,7 +152,10 @@ function sectionOf(ClassMethod $method, string $body): string
         ! $method->isPublic() => 'Internals',
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',
-        in_array($returns, ['void', 'never'], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
+        in_array($returns, [
+            'void',
+            'never',
+        ], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
         returnsBool($method) => 'Predicates',
         returnsScalar($method) => 'Calculations',
         default => 'Transformers',
@@ -286,7 +293,10 @@ function isOwnAssert(Node\Stmt $statement): bool
 {
     $call = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
     $isOwn = $call instanceof Node\Expr\MethodCall && $call->var instanceof Node\Expr\Variable && $call->var->name === 'this'
-        || $call instanceof StaticCall && $call->class instanceof Name && in_array($call->class->toLowerString(), ['self', 'static'], true);
+        || $call instanceof StaticCall && $call->class instanceof Name && in_array($call->class->toLowerString(), [
+            'self',
+            'static',
+        ], true);
 
     return $isOwn && $call->name instanceof Identifier && str_starts_with($call->name->toString(), 'assert');
 }
@@ -300,9 +310,16 @@ function readRowOf(Node\Stmt $statement): string|null
     $assign = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
     $read = $assign instanceof Node\Expr\Assign ? $assign->expr : null;
     $isRowRead = $read instanceof Node\Expr\MethodCall && $read->name instanceof Identifier
-        && in_array($read->name->toString(), ['first', 'find'], true);
+        && in_array($read->name->toString(), [
+            'first',
+            'find',
+        ], true);
 
-    return $isRowRead && $assign->var instanceof Node\Expr\Variable && is_string($assign->var->name) ? $assign->var->name : null;
+    if ($isRowRead && $assign->var instanceof Node\Expr\Variable && is_string($assign->var->name)) {
+        return $assign->var->name;
+    }
+
+    return null;
 }
 
 /**
@@ -438,7 +455,10 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
     }
 
     $returnsNothing = $method->returnType instanceof Identifier
-        && in_array($method->returnType->toLowerString(), ['void', 'never'], true);
+        && in_array($method->returnType->toLowerString(), [
+            'void',
+            'never',
+        ], true);
 
     $givesObject = ! returnsBool($method) && ! returnsScalar($method) && ! $returnsNothing;
 

@@ -40,10 +40,10 @@ final readonly class UserVisibility implements ActorVisibilityProvider
 
     /**
      * @param  Builder<covariant Model>  $query
-     * @param  Closure(Builder<covariant Model>): void  $ownRowsScope
+     * @param  Closure(Builder<covariant Model>): void  $scope
      */
-    public function ownRows(Builder $query, Closure $ownRowsScope): void
+    public function ownRows(Builder $query, Closure $scope): void
     {
-        $ownRowsScope($query);
+        $scope($query);
     }
 }

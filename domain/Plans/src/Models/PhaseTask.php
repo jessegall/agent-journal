@@ -174,12 +174,12 @@ final class PhaseTask extends Pivot implements ReadableModel
      * The tasks of the phases.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $phaseIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofPhases(Builder $query, array|Builder|Closure $phaseIds): void
+    protected function ofPhases(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('phase_id', $phaseIds);
+        $query->whereIn('phase_id', $ids);
     }
 
     /**
@@ -208,12 +208,12 @@ final class PhaseTask extends Pivot implements ReadableModel
      * The rows of any of the given tasks.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $taskIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofTasks(Builder $query, array|Builder|Closure $taskIds): void
+    protected function ofTasks(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('task_id', $taskIds);
+        $query->whereIn('task_id', $ids);
     }
 
     /**

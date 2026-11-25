@@ -52,7 +52,10 @@ function main(array $paths): void
             $accessors = [...$accessors, ...accessorsOf($nodes)];
 
             foreach (typedReads($nodes) as $read) {
-                $reads[] = [$file, ...$read];
+                $reads[] = [
+                    $file,
+                    ...$read,
+                ];
             }
         }
     }
@@ -127,7 +130,11 @@ function typedReads(array $nodes): array
                 $type = $types[$fetch->var->name] ?? null;
 
                 if ($type !== null && preg_match('/[A-Z]/', $name) === 1) {
-                    $reads[] = [$fetch->getStartLine(), $type, $name];
+                    $reads[] = [
+                        $fetch->getStartLine(),
+                        $type,
+                        $name,
+                    ];
                 }
             }
         }

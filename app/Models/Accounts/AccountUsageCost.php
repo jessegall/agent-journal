@@ -171,9 +171,9 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function observedInMonthOf(Builder $query, CarbonImmutable $monthStart): void
+    protected function observedInMonthOf(Builder $query, CarbonImmutable $start): void
     {
-        $query->where('observed_at', '>=', $monthStart)->where('observed_at', '<', $monthStart->addMonth());
+        $query->where('observed_at', '>=', $start)->where('observed_at', '<', $start->addMonth());
     }
 
     /**

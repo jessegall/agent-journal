@@ -184,8 +184,8 @@ final class RuleRevision extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofRuleProposalRevision(Builder $query, string $ruleProposalRevisionId): void
+    protected function ofRuleProposalRevision(Builder $query, string $revisionId): void
     {
-        $query->where('rule_proposal_revision_id', $ruleProposalRevisionId);
+        $query->where('rule_proposal_revision_id', $revisionId);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
@@ -20,13 +21,12 @@ use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The supervisor's three committed steps: it claims an operation under a 90-second lease, reports its outcome under
@@ -97,7 +97,10 @@ final class GatewayRuntimeTest extends TestCase
         $this->assertThrows(fn () => $this->health(self::FIRST_RUN, 1), GatewayRunStale::class);
         $this->assertThrows(fn () => $this->claim(self::FIRST_RUN), GatewayRunStale::class);
         $this->assertSame(
-            [2, GatewayEndpointState::Opening],
+            [
+                2,
+                GatewayEndpointState::Opening,
+            ],
             [
                 $taken?->operation->endpointVersion,
                 ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state,
@@ -141,7 +144,13 @@ final class GatewayRuntimeTest extends TestCase
 
         $this->assertSame(ShareState::Revoked, $this->share->fresh()?->state);
         $close = $this->claim(self::FIRST_RUN);
-        $this->assertSame([GatewayOperationType::Close, 1], [$close?->type, $close?->operation->endpointVersion]);
+        $this->assertSame([
+            GatewayOperationType::Close,
+            1,
+        ], [
+            $close?->type,
+            $close?->operation->endpointVersion,
+        ]);
         $this->assertSame(GatewayEndpointState::Closing, ShareGatewayEndpoint::query()->sole()->state);
 
         $this->outcome(self::FIRST_RUN, $close, GatewayOutcome::Succeeded);

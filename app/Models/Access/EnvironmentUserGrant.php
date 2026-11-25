@@ -106,8 +106,6 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
 
     // ----------[ Internals ]----------
 
-    // ----------[ Scopes ]----------
-
     /**
      * @param  Builder<self>  $query
      */
@@ -116,6 +114,8 @@ final class EnvironmentUserGrant extends Model implements EventSource, ReadableM
     {
         $query->where('user_id', $userId)->inEnvironment($environmentId);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The grants that allow the permission.

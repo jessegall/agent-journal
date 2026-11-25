@@ -774,12 +774,12 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * The rows of any of the given agent runtimes.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentRuntimeIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofAgentRuntimes(Builder $query, array|Builder|Closure $agentRuntimeIds): void
+    protected function ofAgentRuntimes(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('agent_runtime_id', $agentRuntimeIds);
+        $query->whereIn('agent_runtime_id', $ids);
     }
 
     /**
@@ -788,9 +788,9 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofAgentRuntime(Builder $query, string $agentRuntimeId): void
+    protected function ofAgentRuntime(Builder $query, string $runtimeId): void
     {
-        $query->where('agent_runtime_id', $agentRuntimeId);
+        $query->where('agent_runtime_id', $runtimeId);
     }
 
     /**
@@ -833,9 +833,9 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofNavigationRequest(Builder $query, string $navigationRequestId): void
+    protected function ofNavigationRequest(Builder $query, string $requestId): void
     {
-        $query->where('navigation_request_id', $navigationRequestId);
+        $query->where('navigation_request_id', $requestId);
     }
 
     /**

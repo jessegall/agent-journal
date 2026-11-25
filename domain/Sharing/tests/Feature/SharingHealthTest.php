@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Feature;
 
 use Domain\Sharing\Models\ShareInstallation;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\Support\RefreshHookDatabase;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The share service's health check: unhealthy while nothing answers on the listener port or no supervisor holds the
@@ -28,7 +28,10 @@ final class SharingHealthTest extends TestCase
         $server = stream_socket_server('tcp://127.0.0.1:0');
         $this->assertNotFalse($server);
         $port = (int) substr((string) stream_socket_get_name($server, false), strlen('127.0.0.1:'));
-        config(['sharing.listener.host' => '127.0.0.1', 'sharing.listener.port' => $port]);
+        config([
+            'sharing.listener.host' => '127.0.0.1',
+            'sharing.listener.port' => $port,
+        ]);
 
         $this->assertSame(1, $this->health(), self::NO_SUPERVISOR);
 

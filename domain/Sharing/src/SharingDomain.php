@@ -7,16 +7,18 @@ namespace Domain\Sharing;
 use App\Contracts\Authorization\PolicyProvider;
 use App\Contracts\Bus\CommandProvider;
 use App\Contracts\Drivers\NativePartProvider;
+use App\Contracts\Navigation\PageProvider;
+use App\Contracts\Records\TypeProvider;
+use App\Declarations\ActionRoute;
+use App\Declarations\Page;
 use App\Enums\Agents\AccessType;
+use App\Enums\Navigation\Icon;
+use App\Enums\Sharing\ShareRelationType;
 use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Values\PolicyDefinition;
-use Domain\Sharing\Policies\ShareRequestPolicy;
-use Domain\Sharing\Policies\SharingPolicy;
-use App\Contracts\Navigation\PageProvider;
-use App\Contracts\Records\TypeProvider;
 use Domain\Sharing\Data\GatewayConfigurePartData;
 use Domain\Sharing\Data\GatewayRevisionData;
 use Domain\Sharing\Data\RootShareData;
@@ -32,15 +34,11 @@ use Domain\Sharing\Data\SharePreviewData;
 use Domain\Sharing\Data\ShareProposalStatusData;
 use Domain\Sharing\Data\ShareRowData;
 use Domain\Sharing\Data\ShareRuntimeData;
-use App\Declarations\ActionRoute;
-use App\Declarations\Page;
-use App\Enums\Navigation\Icon;
 use Domain\Sharing\Enums\GatewayEndpointState;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareAuditActor;
 use Domain\Sharing\Enums\ShareAuditType;
-use App\Enums\Sharing\ShareRelationType;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Http\Controllers\ApproveShareRequestController;
 use Domain\Sharing\Http\Controllers\ConfigureShareGatewayController;
@@ -56,6 +54,8 @@ use Domain\Sharing\Http\Pages\Resolvers\GatewaySettingsResolver;
 use Domain\Sharing\Http\Pages\Resolvers\ShareDetailResolver;
 use Domain\Sharing\Http\Pages\Resolvers\ShareListResolver;
 use Domain\Sharing\Http\Pages\Resolvers\SharePreviewResolver;
+use Domain\Sharing\Policies\ShareRequestPolicy;
+use Domain\Sharing\Policies\SharingPolicy;
 use Domain\Sharing\Support\SharingOwnerCheck;
 
 /**
@@ -97,7 +97,10 @@ final class SharingDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyDefinition(SharingPolicy::class, [AccessType::Create, AccessType::Edit]),
+            new PolicyDefinition(SharingPolicy::class, [
+                AccessType::Create,
+                AccessType::Edit,
+            ]),
             new PolicyDefinition(ShareRequestPolicy::class, [AccessType::Create]),
         ];
     }

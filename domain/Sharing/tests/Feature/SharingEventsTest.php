@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Support\Access\AccessSettings;
+use App\Support\RequestKey;
+use App\Values\OwnerAuthority;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;
 use Domain\Sharing\Enums\ShareState;
@@ -19,10 +22,8 @@ use Domain\Sharing\Events\ShareRevoked;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
-use App\Support\Access\AccessSettings;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
-use App\Support\RequestKey;
-use App\Values\OwnerAuthority;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
@@ -33,7 +34,6 @@ use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Sharing's lifecycle events reach a listener only after the transition committed, carry the share's id, gateway
@@ -94,7 +94,10 @@ final class SharingEventsTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
-        Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {
+        Event::listen([
+            ShareActivated::class,
+            ShareRevoked::class,
+        ], function (object $event): void {
             $this->received[] = $event;
         });
     }
@@ -117,7 +120,12 @@ final class SharingEventsTest extends TestCase
         $this->assertCount(1, $this->received);
         $this->assertInstanceOf(ShareActivated::class, $this->received[0]);
         $this->assertSame(
-            [$this->share->id, $this->configuration->id, ShareState::Active, Share::FIRST_SCOPE_VERSION],
+            [
+                $this->share->id,
+                $this->configuration->id,
+                ShareState::Active,
+                Share::FIRST_SCOPE_VERSION,
+            ],
             [
                 $this->received[0]->share->shareId,
                 $this->received[0]->share->configurationId,

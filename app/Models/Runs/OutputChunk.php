@@ -87,9 +87,9 @@ final class OutputChunk extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofPartRun(Builder $query, string $partRunId): void
+    protected function ofPartRun(Builder $query, string $runId): void
     {
-        $query->where('part_run_id', $partRunId);
+        $query->where('part_run_id', $runId);
     }
 
     /**
@@ -107,12 +107,12 @@ final class OutputChunk extends Model implements ReadableModel
      * The rows of any of the given part runs.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $partRunIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofPartRuns(Builder $query, array|Builder|Closure $partRunIds): void
+    protected function ofPartRuns(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('part_run_id', $partRunIds);
+        $query->whereIn('part_run_id', $ids);
     }
 
     /**

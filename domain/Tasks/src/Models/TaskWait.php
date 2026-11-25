@@ -235,12 +235,12 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      * The waits of the waiting tasks.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $dependentIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofDependents(Builder $query, array $dependentIds): void
+    protected function ofDependents(Builder $query, array $ids): void
     {
-        $query->whereIn('dependent_task_id', $dependentIds);
+        $query->whereIn('dependent_task_id', $ids);
     }
 
     /**

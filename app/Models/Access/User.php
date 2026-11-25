@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Access;
 
-use App\Contracts\Actors\RecipientActor;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Concerns\TakesPartInMessages;
+use App\Contracts\Actors\RecipientActor;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
@@ -157,17 +157,12 @@ class User extends Authenticatable implements
         return AssigneeIdentity::of($this);
     }
 
-    public static function storedType(): string
-    {
-        return 'user';
-    }
+    // ----------[ Calculations ]----------
 
     public function actorType(): string
     {
         return self::storedType();
     }
-
-    // ----------[ Calculations ]----------
 
     public function actorId(): string
     {
@@ -175,6 +170,11 @@ class User extends Authenticatable implements
     }
 
     // ----------[ Queries ]----------
+
+    public static function storedType(): string
+    {
+        return 'user';
+    }
 
     /**
      * The installation's owner account, made the first time and found by its email after that.

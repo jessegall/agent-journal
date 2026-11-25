@@ -522,12 +522,12 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The publications of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array|Builder|Closure $sessionIds): void
+    protected function ofSessions(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('session_id', $sessionIds);
+        $query->whereIn('session_id', $ids);
     }
 
     /**
@@ -546,12 +546,12 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
      * The rows of any of the given open keys.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $openKeys
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $keys
      */
     #[Scope]
-    protected function withAnyOpenKey(Builder $query, array|Builder|Closure $openKeys): void
+    protected function withAnyOpenKey(Builder $query, array|Builder|Closure $keys): void
     {
-        $query->whereIn('open_key', $openKeys);
+        $query->whereIn('open_key', $keys);
     }
 
     /**

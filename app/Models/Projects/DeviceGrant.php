@@ -371,12 +371,12 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      * The grants of the bindings.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $bindingIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofBindings(Builder $query, array $bindingIds): void
+    protected function ofBindings(Builder $query, array $ids): void
     {
-        $query->whereIn('binding_id', $bindingIds);
+        $query->whereIn('binding_id', $ids);
     }
 
     /**

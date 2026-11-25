@@ -313,12 +313,12 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      * The phases of the plans.
      *
      * @param  Builder<self>  $query
-     * @param  array<int, int|string>  $planIds
+     * @param  array<int, int|string>  $ids
      */
     #[Scope]
-    protected function ofPlans(Builder $query, array $planIds): void
+    protected function ofPlans(Builder $query, array $ids): void
     {
-        $query->whereIn('plan_id', $planIds);
+        $query->whereIn('plan_id', $ids);
     }
 
     /**

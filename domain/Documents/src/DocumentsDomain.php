@@ -162,7 +162,10 @@ final class DocumentsDomain extends Domain implements
 
     public function requires(): array
     {
-        return [ChatDomain::class, CommentsDomain::class];
+        return [
+            ChatDomain::class,
+            CommentsDomain::class,
+        ];
     }
 
     public function exports(): Exports

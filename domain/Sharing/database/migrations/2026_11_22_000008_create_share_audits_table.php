@@ -19,7 +19,11 @@ return new class extends Migration
             $table->string('reason_code')->nullable();
             $table->timestampTz('created_at');
 
-            $table->index(['share_id', 'type', 'created_at']);
+            $table->index([
+                'share_id',
+                'type',
+                'created_at',
+            ]);
         });
     }
 

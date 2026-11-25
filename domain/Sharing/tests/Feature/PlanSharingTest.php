@@ -8,21 +8,21 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
 use App\Models\Records\Link;
-use Domain\Sharing\Support\MeteredShareBudget;
 use App\Support\ShareContentRead;
-use Domain\Sharing\Support\ShareLinkedCandidate;
 use App\Support\ShareRecordRegistry;
-use Domain\Sharing\Support\ShareScope;
 use App\Values\OwnerAuthority;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareLinkedCandidate;
+use Domain\Sharing\Support\ShareScope;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * A plan is shared as a summary root: it previews with its title, its linked document is a candidate read through the
@@ -64,7 +64,10 @@ final class PlanSharingTest extends TestCase
 
         TEXT));
         $document = Document::query()->where('number', 1)->sole();
-        $plan = Plan::factory()->create(['title' => self::PLAN_TITLE, 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create([
+            'title' => self::PLAN_TITLE,
+            'type' => PlanType::Build,
+        ]);
         $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
         Link::createForModels($plan, $document);
 

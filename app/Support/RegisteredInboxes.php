@@ -30,13 +30,13 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         $this->providers = Registry::once(InboxUnavailable::forId(...), InboxProviderInvalid::repeated(...));
     }
 
-    public function register(string $providerKey, string $providerClass): void
+    public function register(string $providerKey, string $class): void
     {
-        if (! Reflector::factory()->isSubclassOf($providerClass, InboxProvider::class)) {
-            throw InboxProviderInvalid::notAProvider($providerKey, $providerClass);
+        if (! Reflector::factory()->isSubclassOf($class, InboxProvider::class)) {
+            throw InboxProviderInvalid::notAProvider($providerKey, $class);
         }
 
-        $this->providers->put($providerKey, $providerClass);
+        $this->providers->put($providerKey, $class);
     }
 
     public function resolve(string $inboxId): LabeledInbox

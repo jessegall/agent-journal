@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Messages\DismissalType;
-use App\Enums\Messages\WakeState;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Messages\MessageAnswered;
 use App\Events\Messages\MessageAnswerRequired;
@@ -19,7 +18,6 @@ use App\Events\Messages\NotificationsMarkAllFinished;
 use App\Events\Messages\NotificationsMarkAllStarted;
 use App\Events\Messages\NotificationsWithdrawn;
 use App\Events\Messages\UserPresenceConfirmed;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
 use Tests\Architecture\Support\EventRole;
@@ -63,7 +61,7 @@ return [
         'owner' => 'Message::createDesk',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new MessageSent('message', ActorIdentity::ofClass(Agent::class, 'agent'), 'source', 'destination'),
+        'sample' => fn () => new MessageSent('message', 'inbox', 1, null, ActorIdentity::ofClass(Agent::class, 'agent')),
     ],
     NotificationsChanged::class => [
         'role' => EventRole::RowFact,

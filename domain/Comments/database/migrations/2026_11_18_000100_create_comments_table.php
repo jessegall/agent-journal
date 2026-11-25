@@ -32,7 +32,11 @@ return new class extends Migration
             $table->string('submission_hash');
             $table->timestampTz('created_at');
 
-            $table->index(['target_type', 'target_id', 'id']);
+            $table->index([
+                'target_type',
+                'target_id',
+                'id',
+            ]);
         });
 
         // One submission key per author and session; a user has no session, so NULLS NOT DISTINCT keeps the key unique

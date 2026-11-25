@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature\States;
 
 use App\Enums\Hooks\AnswerType;
-use App\Models\Agents\Agent;
 use App\Events\Hooks\HelperReportedOnRecord;
 use App\Events\Hooks\HelperSentOnRecord;
+use App\Models\Agents\Agent;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanReviewState;
 use Domain\Plans\Events\PlanReviewDecided;
@@ -93,7 +93,10 @@ final class ReviewPlanStateTest extends TestCase
      */
     private function helper(int $number): void
     {
-        $agent = new Agent()->forceFill(['name' => "Reviewer {$number}", 'profile_key' => 'journal-plan-reviewer']);
+        $agent = new Agent()->forceFill([
+            'name' => "Reviewer {$number}",
+            'profile_key' => 'journal-plan-reviewer',
+        ]);
         $agent->id = TestIds::of($number);
         $agent->save();
     }

@@ -25,7 +25,13 @@ require_once __DIR__.'/models.php';
 require_once __DIR__.'/php-parse.php';
 
 /** The parents and contracts of a class that keeps or casts a row's columns. */
-const COLUMN_CLASSES = ['Model', 'Pivot', 'MorphPivot', 'Authenticatable', 'CastsAttributes'];
+const COLUMN_CLASSES = [
+    'Model',
+    'Pivot',
+    'MorphPivot',
+    'Authenticatable',
+    'CastsAttributes',
+];
 
 main(array_slice($argv, 1));
 
@@ -127,5 +133,8 @@ function digestedJson(NodeFinder $finder, ClassMethod $method): array
 function isJsonCall(Node $node): bool
 {
     return $node instanceof FuncCall && $node->name instanceof Node\Name
-        && in_array($node->name->getLast(), ['json_encode', 'json_decode'], true);
+        && in_array($node->name->getLast(), [
+            'json_encode',
+            'json_decode',
+        ], true);
 }

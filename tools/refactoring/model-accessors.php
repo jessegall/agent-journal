@@ -153,7 +153,10 @@ function returnsModel(string $source, ClassMethod $method): bool
     $parts = array_diff(explode('|', ltrim($type, '?')), ['null']);
 
     return array_any($parts, function (string $part) use ($source): bool {
-        if (preg_match('/^\w+$/', $part) !== 1 || in_array($part, ['self', 'static'], true)) {
+        if (preg_match('/^\w+$/', $part) !== 1 || in_array($part, [
+            'self',
+            'static',
+        ], true)) {
             return false;
         }
 
@@ -226,7 +229,10 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && $method->params === []
         && givesAccessorValue($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && in_array(sectionOf($method, $body), ['Calculations', 'Transformers'], true)
+        && in_array(sectionOf($method, $body), [
+            'Calculations',
+            'Transformers',
+        ], true)
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')

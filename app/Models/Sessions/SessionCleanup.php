@@ -169,9 +169,9 @@ final class SessionCleanup extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofStartRequest(Builder $query, string $startRequestId): void
+    protected function ofStartRequest(Builder $query, string $requestId): void
     {
-        $query->where('start_request_id', $startRequestId);
+        $query->where('start_request_id', $requestId);
     }
 
     /**

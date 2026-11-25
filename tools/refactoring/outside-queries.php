@@ -36,11 +36,50 @@ ini_set('memory_limit', '4G');
  * reads, which name rows by their identity as find does; no filter on another column.
  */
 const ALLOWED_READS = [
-    'first', 'firstOr', 'firstOrFail', 'firstOption', 'sole', 'find', 'findOr', 'findOrFail', 'findMany', 'get',
-    'exists', 'doesntExist', 'count', 'max', 'min', 'sum', 'avg', 'pluck', 'value', 'cursor', 'paginate',
-    'simplePaginate', 'cursorPaginate', 'chunk', 'chunkById', 'each', 'lazy', 'lazyById', 'readLimit', 'readUpTo',
-    'readExactly', 'readAll', 'readInChunks', 'readRelationCompletely', 'lockForUpdate', 'sharedLock', 'getModels',
-    'whereKey', 'whereKeyNot', 'limit', 'lock', 'when', 'keys', 'excludingKeys',
+    'first',
+    'firstOr',
+    'firstOrFail',
+    'firstOption',
+    'sole',
+    'find',
+    'findOr',
+    'findOrFail',
+    'findMany',
+    'get',
+    'exists',
+    'doesntExist',
+    'count',
+    'max',
+    'min',
+    'sum',
+    'avg',
+    'pluck',
+    'value',
+    'cursor',
+    'paginate',
+    'simplePaginate',
+    'cursorPaginate',
+    'chunk',
+    'chunkById',
+    'each',
+    'lazy',
+    'lazyById',
+    'readLimit',
+    'readUpTo',
+    'readExactly',
+    'readAll',
+    'readInChunks',
+    'readRelationCompletely',
+    'lockForUpdate',
+    'sharedLock',
+    'getModels',
+    'whereKey',
+    'whereKeyNot',
+    'limit',
+    'lock',
+    'when',
+    'keys',
+    'excludingKeys',
 ];
 
 /**
@@ -48,9 +87,36 @@ const ALLOWED_READS = [
  * works on what it read, not on the query.
  */
 const ENDING_READS = [
-    'first', 'firstOr', 'firstOrFail', 'firstOption', 'sole', 'find', 'findOr', 'findOrFail', 'findMany', 'get',
-    'exists', 'doesntExist', 'count', 'max', 'min', 'sum', 'avg', 'pluck', 'value', 'paginate', 'simplePaginate',
-    'cursorPaginate', 'getModels', 'cursor', 'update', 'delete', 'insert', 'upsert', 'increment', 'decrement',
+    'first',
+    'firstOr',
+    'firstOrFail',
+    'firstOption',
+    'sole',
+    'find',
+    'findOr',
+    'findOrFail',
+    'findMany',
+    'get',
+    'exists',
+    'doesntExist',
+    'count',
+    'max',
+    'min',
+    'sum',
+    'avg',
+    'pluck',
+    'value',
+    'paginate',
+    'simplePaginate',
+    'cursorPaginate',
+    'getModels',
+    'cursor',
+    'update',
+    'delete',
+    'insert',
+    'upsert',
+    'increment',
+    'decrement',
 ];
 
 /** The builder calls that filter, order, join or shape a query, which a relation read from outside never makes. */
@@ -59,8 +125,16 @@ const BUILDER_FILTER = '/^(where|orWhere|orderBy|latest|oldest|select|limit|take
 
 /** The relation types a model method returns, which make a chain from it a query of the related model. */
 const RELATION_TYPES = [
-    'HasMany', 'HasOne', 'BelongsTo', 'BelongsToMany', 'MorphMany', 'MorphOne', 'MorphTo', 'MorphToMany',
-    'HasManyThrough', 'HasOneThrough',
+    'HasMany',
+    'HasOne',
+    'BelongsTo',
+    'BelongsToMany',
+    'MorphMany',
+    'MorphOne',
+    'MorphTo',
+    'MorphToMany',
+    'HasManyThrough',
+    'HasOneThrough',
 ];
 
 main(array_slice($argv, 1));
@@ -175,7 +249,11 @@ function faultOfChain(MethodCall $last, array $scopes, array $relations, array $
         && $root->name->toString() === 'query') {
         $model = ltrim($root->class->toString(), '\\');
 
-        if (in_array($model, ['self', 'static', 'parent'], true)) {
+        if (in_array($model, [
+            'self',
+            'static',
+            'parent',
+        ], true)) {
             return null;
         }
     } elseif ($calls !== [] && $calls[0]->name instanceof Node\Identifier && isset($relations[$calls[0]->name->toString()])) {

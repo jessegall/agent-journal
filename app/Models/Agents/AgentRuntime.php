@@ -629,12 +629,12 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * The runtimes of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $sessionIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array|Builder|Closure $sessionIds): void
+    protected function ofSessions(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('agent_session_id', $sessionIds);
+        $query->whereIn('agent_session_id', $ids);
     }
 
     /**
@@ -690,21 +690,21 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofAgentSession(Builder $query, string $agentSessionId): void
+    protected function ofAgentSession(Builder $query, string $sessionId): void
     {
-        $query->where('agent_session_id', $agentSessionId);
+        $query->where('agent_session_id', $sessionId);
     }
 
     /**
      * The rows of any of the given hosts.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $hostIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofHosts(Builder $query, array|Builder|Closure $hostIds): void
+    protected function ofHosts(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('host_id', $hostIds);
+        $query->whereIn('host_id', $ids);
     }
 
     /**

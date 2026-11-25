@@ -96,16 +96,16 @@ final class InboxMember extends Model implements EventSource
     /**
      * Which of these membership rows are still active.
      *
-     * @param  list<string>  $memberIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function activeIdsAmong(array $memberIds): array
+    public static function activeIdsAmong(array $ids): array
     {
-        if ($memberIds === []) {
+        if ($ids === []) {
             return [];
         }
 
-        return array_values(self::query()->active()->whereKey($memberIds)->pluck('id')->all());
+        return array_values(self::query()->active()->whereKey($ids)->pluck('id')->all());
     }
 
     /**
@@ -186,12 +186,12 @@ final class InboxMember extends Model implements EventSource
      * The members of the inboxes.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $inboxIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofInboxes(Builder $query, array $inboxIds): void
+    protected function ofInboxes(Builder $query, array $ids): void
     {
-        $query->whereIn('inbox_id', $inboxIds);
+        $query->whereIn('inbox_id', $ids);
     }
 
     /**

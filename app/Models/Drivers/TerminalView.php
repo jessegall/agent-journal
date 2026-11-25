@@ -273,9 +273,9 @@ final class TerminalView extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofAgentRuntime(Builder $query, string $agentRuntimeId): void
+    protected function ofAgentRuntime(Builder $query, string $runtimeId): void
     {
-        $query->where('agent_runtime_id', $agentRuntimeId);
+        $query->where('agent_runtime_id', $runtimeId);
     }
 
     /**

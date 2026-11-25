@@ -22,7 +22,10 @@ return new class extends Migration
             $table->timestampTz('invalidated_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['share_id', 'scope_version']);
+            $table->index([
+                'share_id',
+                'scope_version',
+            ]);
             $table->index('link_id');
         });
     }

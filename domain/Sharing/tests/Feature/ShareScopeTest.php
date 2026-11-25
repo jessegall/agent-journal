@@ -6,22 +6,22 @@ namespace Domain\Sharing\Tests\Feature;
 
 use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RecordUnavailable;
-use Domain\Sharing\Exceptions\ShareScopeTooLarge;
 use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
-use Domain\Sharing\Support\MeteredShareBudget;
 use App\Support\RecordIdentity;
-use Domain\Sharing\Support\ShareLinkedCandidate;
 use App\Support\ShareRecordRegistry;
-use Domain\Sharing\Support\ShareScope;
 use Carbon\CarbonImmutable;
+use Domain\Sharing\Exceptions\ShareScopeTooLarge;
+use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareLinkedCandidate;
+use Domain\Sharing\Support\ShareScope;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Fixtures\Domains\Binders\BinderShareProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Scope discovery for a preview: linked targets are read by their own providers in batches, so queries grow with
@@ -35,7 +35,11 @@ final class ShareScopeTest extends TestCase
 
     private const string FEWER_LINKS = 'Share a record with fewer links';
 
-    private const array TARGET_TYPES = ['binders.sheet', 'binders.card', 'binders.tab'];
+    private const array TARGET_TYPES = [
+        'binders.sheet',
+        'binders.card',
+        'binders.tab',
+    ];
 
     protected function setUp(): void
     {
@@ -132,9 +136,18 @@ final class ShareScopeTest extends TestCase
         for ($number = 0; $number < $count; $number++) {
             $target = [self::TARGET_TYPES[$number % 3], TestIds::of($firstNumber + $number)];
             [$source, $other] = $number % 2 === 0 ? [
-                [$root->type, $root->id],
+                [
+                    $root->type,
+                    $root->id,
+                ],
                 $target,
-            ] : [$target, [$root->type, $root->id]];
+            ] : [
+                $target,
+                [
+                    $root->type,
+                    $root->id,
+                ],
+            ];
             $rows[] = [
                 'id' => strtolower((string) str()->ulid()),
                 'source_type' => $source[0],

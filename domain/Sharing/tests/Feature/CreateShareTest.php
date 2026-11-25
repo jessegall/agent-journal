@@ -4,36 +4,37 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Bus\CommandBus;
+use App\Exceptions\RequestKeyConflict;
+use App\Exceptions\RequestKeyMissing;
+use App\Models\CommandRules\CommandReceipt;
+use App\Models\Records\Link;
+use App\Support\Access\AccessSettings;
+use App\Support\RecordIdentity;
+use App\Support\RequestKey;
+use App\Support\ShareRecordRegistry;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareState;
-use App\Exceptions\RequestKeyConflict;
-use App\Exceptions\RequestKeyMissing;
 use Domain\Sharing\Exceptions\ShareDurationInvalid;
 use Domain\Sharing\Exceptions\SharePreviewRefused;
 use Domain\Sharing\Exceptions\ShareQuotaReached;
-use App\Models\CommandRules\CommandReceipt;
-use App\Models\Records\Link;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
-use App\Support\Access\AccessSettings;
-use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareLinkResolver;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
@@ -44,7 +45,6 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner creates a share from a fresh preview under a request key: it holds a new token, the selected members at
@@ -78,7 +78,10 @@ final class CreateShareTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
 
-        foreach ([101, 102] as $number) {
+        foreach ([
+            101,
+            102,
+        ] as $number) {
             Link::createForColumns($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
@@ -137,7 +140,11 @@ final class CreateShareTest extends TestCase
             FakeShareGateway::PUBLIC_ORIGIN,
             (string) json_encode($receipt->getAttributes()),
         );
-        $this->assertSame(['shareId', 'number', 'state'], array_keys(get_object_vars($summary)));
+        $this->assertSame([
+            'shareId',
+            'number',
+            'state',
+        ], array_keys(get_object_vars($summary)));
     }
 
     public function test_a_repeat_with_the_same_key_returns_the_same_share_and_a_changed_payload_conflicts(): void
@@ -183,7 +190,10 @@ final class CreateShareTest extends TestCase
 
     public function test_a_duration_outside_one_minute_to_thirty_days_is_refused_with_no_rows_left(): void
     {
-        foreach ([0, 43_201] as $index => $minutes) {
+        foreach ([
+            0,
+            43_201,
+        ] as $index => $minutes) {
             $saved = $this->preview([TestIds::of(101)]);
 
             $this->assertThrows(

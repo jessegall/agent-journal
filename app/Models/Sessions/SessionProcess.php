@@ -410,24 +410,24 @@ final class SessionProcess extends Model implements EventSource, ReadableModel
      * The starts of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $sessionIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array $sessionIds): void
+    protected function ofSessions(Builder $query, array $ids): void
     {
-        $query->whereIn('session_id', $sessionIds);
+        $query->whereIn('session_id', $ids);
     }
 
     /**
      * The starts of the agents.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array $agentIds): void
+    protected function ofAgents(Builder $query, array $ids): void
     {
-        $query->whereIn('agent_id', $agentIds);
+        $query->whereIn('agent_id', $ids);
     }
 
     /**

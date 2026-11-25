@@ -50,7 +50,10 @@ final class SupervisorRoutes extends Data
      */
     public function targets(): array
     {
-        return [$this->default, ...array_map(fn (SupervisorOverride $override) => $override->target, $this->overrides)];
+        return [
+            $this->default,
+            ...array_map(fn (SupervisorOverride $override) => $override->target, $this->overrides),
+        ];
     }
 
     public function targetFor(AskTypeKey $type): SupervisorTarget

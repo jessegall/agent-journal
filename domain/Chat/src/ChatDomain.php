@@ -69,7 +69,10 @@ final class ChatDomain extends Domain implements
      */
     public function requires(): array
     {
-        return [SequencesDomain::class, QuestionsDomain::class];
+        return [
+            SequencesDomain::class,
+            QuestionsDomain::class,
+        ];
     }
 
     public function exports(): Exports

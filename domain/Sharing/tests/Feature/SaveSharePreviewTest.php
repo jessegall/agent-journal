@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
-use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
-use Domain\Sharing\Exceptions\SharePreviewRefused;
 use App\Exceptions\SharingNotAllowed;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\SharePreview;
 use App\Support\Access\AccessSettings;
 use App\Support\GatewaySettings;
-use Domain\Sharing\Support\MeteredShareBudget;
 use App\Support\RecordIdentity;
+use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
+use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
+use Domain\Sharing\Exceptions\SharePreviewRefused;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\SharePreview;
+use Domain\Sharing\Support\MeteredShareBudget;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareCandidates;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSelectedTarget;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
@@ -29,7 +30,6 @@ use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner saves a preview of a root with some of its linked candidates and gets a checksum; anyone else is refused,
@@ -61,20 +61,30 @@ final class SaveSharePreviewTest extends TestCase
         );
         $this->root = TestActors::record('binders.binder', 1);
 
-        foreach ([101, 102, 103] as $number) {
+        foreach ([
+            101,
+            102,
+            103,
+        ] as $number) {
             Link::createForColumns($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
 
     public function test_the_owner_saves_a_preview_of_two_of_three_candidates_with_its_checksum(): void
     {
-        $saved = $this->save([TestIds::of(101), TestIds::of(103)]);
+        $saved = $this->save([
+            TestIds::of(101),
+            TestIds::of(103),
+        ]);
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
         $this->assertCount(3, $saved->candidates->linked);
         $this->assertSame($preview->checksum, $saved->checksum);
         $this->assertSame(
-            [TestIds::of(101), TestIds::of(103)],
+            [
+                TestIds::of(101),
+                TestIds::of(103),
+            ],
             array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
         );
         $this->assertSame($this->configuration->configuration_version, $preview->configuration_version);
@@ -116,7 +126,10 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_a_changed_publication_version_a_wrong_checksum_and_another_owner_are_refused(): void
     {
-        $saved = $this->save([TestIds::of(101), TestIds::of(102)]);
+        $saved = $this->save([
+            TestIds::of(101),
+            TestIds::of(102),
+        ]);
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
         $this->assertThrows(

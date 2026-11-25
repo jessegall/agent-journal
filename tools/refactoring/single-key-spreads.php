@@ -162,14 +162,22 @@ function namesLocal(Node $target, Variable $local): bool
 function ownMethodCalled(Node $value): string|null
 {
     if ($value instanceof MethodCall && $value->var instanceof Variable && $value->var->name === 'this') {
-        return $value->name instanceof Identifier ? $value->name->toString() : null;
+        if ($value->name instanceof Identifier) {
+            return $value->name->toString();
+        }
+
+        return null;
     }
 
     if ($value instanceof StaticCall && $value->class instanceof Name && in_array($value->class->toLowerString(), [
         'self',
         'static',
     ], true)) {
-        return $value->name instanceof Identifier ? $value->name->toString() : null;
+        if ($value->name instanceof Identifier) {
+            return $value->name->toString();
+        }
+
+        return null;
     }
 
     return null;

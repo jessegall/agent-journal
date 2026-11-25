@@ -4,32 +4,33 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use Domain\Sharing\Enums\ShareAuditType;
-use Domain\Sharing\Enums\ShareState;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareAudit;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareMember;
 use App\Support\Access\AccessSettings;
 use App\Support\GatewaySettings;
 use App\Support\OperationDeadline;
-use Domain\Sharing\Support\ReadPermits;
 use App\Support\RecordIdentity;
-use Domain\Sharing\Support\SharedPage;
-use Domain\Sharing\Support\ShareGrant;
-use Domain\Sharing\Support\ShareSelectedTarget;
-use Domain\Sharing\Support\ShareToken;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
+use Domain\Sharing\Enums\ShareAuditType;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareAudit;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareMember;
+use Domain\Sharing\Support\ReadPermits;
+use Domain\Sharing\Support\SharedPage;
+use Domain\Sharing\Support\ShareGrant;
+use Domain\Sharing\Support\ShareSelectedTarget;
+use Domain\Sharing\Support\ShareToken;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -37,7 +38,6 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 use Throwable;
 
 /**
@@ -88,7 +88,10 @@ final class ReadShareTest extends TestCase
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create([
+            'title' => 'Version 6',
+            'type' => PlanType::Build,
+        ]);
         Link::createForModels($this->plan, $this->document);
         $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -103,12 +106,20 @@ final class ReadShareTest extends TestCase
 
         $this->assertTrue($page->isAllowed);
         $this->assertSame(
-            ['Design', '1', <<<'TEXT'
-            # Goal
-            Ship it.
-
-            TEXT],
-            [$page->title, $page->publicationVersion, $page->body],
+            [
+                'Design',
+                '1',
+                <<<'TEXT'
+                # Goal
+                Ship it.
+    
+                TEXT,
+            ],
+            [
+                $page->title,
+                $page->publicationVersion,
+                $page->body,
+            ],
         );
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
     }
@@ -131,7 +142,10 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($denied->isAllowed);
         $this->assertSame('', $denied->body);
-        $this->assertSame([ShareAuditType::ReadDenied, ShareAuditType::ReadDenied], $this->auditTypes());
+        $this->assertSame([
+            ShareAuditType::ReadDenied,
+            ShareAuditType::ReadDenied,
+        ], $this->auditTypes());
     }
 
     public function test_a_plan_reads_its_approved_linked_document_and_an_unapproved_step_is_denied(): void
@@ -202,7 +216,10 @@ final class ReadShareTest extends TestCase
 
         foreach ($documents as $document) {
             $link = $links->sole(
-                fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true),
+                fn (Link $link) => in_array($document->id, [
+                    $link->target_id,
+                    $link->source_id,
+                ], true),
             );
             ShareMember::createMany(
                 $share,

@@ -99,11 +99,11 @@ final class UserPresence extends Model implements EventSource, ReadableModel
      * The rows of any of the given users.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $userIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofUsers(Builder $query, array|Builder|Closure $userIds): void
+    protected function ofUsers(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('user_id', $userIds);
+        $query->whereIn('user_id', $ids);
     }
 }

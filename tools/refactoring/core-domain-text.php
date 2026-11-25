@@ -66,7 +66,14 @@ function coreFiles(string $root): array
     ];
     $files = [];
 
-    foreach (['app', 'config', 'routes', 'database', 'bootstrap', 'resources/js'] as $folder) {
+    foreach ([
+        'app',
+        'config',
+        'routes',
+        'database',
+        'bootstrap',
+        'resources/js',
+    ] as $folder) {
         if (! is_dir("{$root}/{$folder}")) {
             continue;
         }

@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Feature;
 
-use Domain\Comments\Commands\PostComment\PostCommentCommand;
-use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\TextResolver;
-use Domain\Comments\Contracts\CommentResolver;
 use App\Contracts\Records\RecordResolver;
-use Domain\Comments\Data\RecordCommentLocation;
-use Domain\Comments\Data\RecordCommentView;
 use App\Exceptions\TargetHasNoText;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use Domain\Comments\Models\Comment;
 use App\Support\Access\AccessSettings;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;
+use Domain\Comments\Commands\PostComment\PostCommentCommand;
+use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\RecordCommentLocation;
+use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Models\Comment;
+use Domain\Comments\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
-use Domain\Comments\Tests\TestCase;
 
 /**
  * A record with no text at all, a note of the Notes fixture, takes comments about the whole record through Core alone,
@@ -49,7 +49,12 @@ final class WholeRecordCommentTest extends TestCase
 
     private const string NOTE_LABEL = 'note %d';
 
-    private const array TABLES = ['comments', 'users', 'agents', 'number_groups'];
+    private const array TABLES = [
+        'comments',
+        'users',
+        'agents',
+        'number_groups',
+    ];
 
     private User $owner;
 

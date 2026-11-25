@@ -165,12 +165,12 @@ final class SessionPolicy extends Model implements ReadableModel
      * The policies of the sessions.
      *
      * @param  Builder<self>  $query
-     * @param  list<array-key>  $sessionIds
+     * @param  list<array-key>  $ids
      */
     #[Scope]
-    protected function ofSessions(Builder $query, array $sessionIds): void
+    protected function ofSessions(Builder $query, array $ids): void
     {
-        $query->whereIn('session_id', $sessionIds);
+        $query->whereIn('session_id', $ids);
     }
 
     /**

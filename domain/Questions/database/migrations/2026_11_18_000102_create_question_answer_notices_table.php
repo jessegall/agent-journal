@@ -17,7 +17,11 @@ return new class extends Migration
             $table->timestampTz('delivered_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['agent_id', 'delivered_at', 'id']);
+            $table->index([
+                'agent_id',
+                'delivered_at',
+                'id',
+            ]);
         });
     }
 };

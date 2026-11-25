@@ -31,16 +31,43 @@ require_once __DIR__.'/php-parse.php';
 ini_set('memory_limit', '2G');
 
 /** The builder calls that match a column against one value or a set of values. */
-const EQUALITY_CALLS = ['where', 'whereIn', 'whereNotIn', 'whereNull', 'whereNotNull', 'whereKey', 'whereKeyNot'];
+const EQUALITY_CALLS = [
+    'where',
+    'whereIn',
+    'whereNotIn',
+    'whereNull',
+    'whereNotNull',
+    'whereKey',
+    'whereKeyNot',
+];
 
 /** The builder calls that bound a column to a range. */
-const RANGE_CALLS = ['whereBetween', 'whereNotBetween', 'whereDate', 'whereTime', 'whereColumn', 'whereLike'];
+const RANGE_CALLS = [
+    'whereBetween',
+    'whereNotBetween',
+    'whereDate',
+    'whereTime',
+    'whereColumn',
+    'whereLike',
+];
 
 /** The builder calls that order on a column, with the column each takes when it names none. */
-const ORDER_CALLS = ['orderBy' => null, 'orderByDesc' => null, 'latest' => 'created_at', 'oldest' => 'created_at'];
+const ORDER_CALLS = [
+    'orderBy' => null,
+    'orderByDesc' => null,
+    'latest' => 'created_at',
+    'oldest' => 'created_at',
+];
 
 /** The comparison operators of a three-part where that still match one value. */
-const EQUAL_OPERATORS = ['=', '==', '!=', '<>', 'is', 'is not'];
+const EQUAL_OPERATORS = [
+    '=',
+    '==',
+    '!=',
+    '<>',
+    'is',
+    'is not',
+];
 
 /**
  * The columns one query or scope uses: those it matches exactly, and those it bounds or orders on.
@@ -58,8 +85,14 @@ final class ColumnUse
 
     public function add(self $other): void
     {
-        $this->equal = array_values(array_unique([...$this->equal, ...$other->equal]));
-        $this->ranged = array_values(array_unique([...$this->ranged, ...$other->ranged]));
+        $this->equal = array_values(array_unique([
+            ...$this->equal,
+            ...$other->equal,
+        ]));
+        $this->ranged = array_values(array_unique([
+            ...$this->ranged,
+            ...$other->ranged,
+        ]));
     }
 
     /**
@@ -71,7 +104,10 @@ final class ColumnUse
     {
         $ranged = array_values(array_diff($this->ranged, $this->equal));
 
-        return array_values(array_filter([...$this->equal, $ranged[0] ?? null]));
+        return array_values(array_filter([
+            ...$this->equal,
+            $ranged[0] ?? null,
+        ]));
     }
 }
 
@@ -122,7 +158,11 @@ function qualifiedColumnOf(Node|null $expression): string|null
         && $expression->name->toString() === 'qualifyColumn';
     $column = $isQualified ? ($expression->getArgs()[0]->value ?? null) : null;
 
-    return $column instanceof Node\Scalar\String_ ? $column->value : null;
+    if ($column instanceof Node\Scalar\String_) {
+        return $column->value;
+    }
+
+    return null;
 }
 
 /**
@@ -153,7 +193,11 @@ function columnOf(MethodCall $call, string $table, array $qualified = []): strin
     if (str_contains($column, '.')) {
         [$owner, $column] = explode('.', $column, 2);
 
-        return $owner === $table ? $column : null;
+        if ($owner === $table) {
+            return $column;
+        }
+
+        return null;
     }
 
     return $column;
@@ -281,7 +325,14 @@ function rootModelOf(MethodCall $call, string $ownClass): string|null
 
     $class = $root->class->toString();
 
-    return in_array($class, ['self', 'static'], true) ? $ownClass : ltrim($class, '\\');
+    if (in_array($class, [
+        'self',
+        'static',
+    ], true)) {
+        return $ownClass;
+    }
+
+    return ltrim($class, '\\');
 }
 
 /**
@@ -353,18 +404,30 @@ function declaredIndexOf(MethodCall $call, string $name): array
 {
     $first = $call->getArgs()[0]->value ?? null;
 
-    if (in_array($name, ['index', 'unique', 'primary'], true) && $first instanceof Node\Expr\Array_) {
+    if (in_array($name, [
+        'index',
+        'unique',
+        'primary',
+    ], true) && $first instanceof Node\Expr\Array_) {
         return array_values(array_filter(array_map(
             fn ($item) => $item?->value instanceof Node\Scalar\String_ ? $item->value->value : null,
             $first->items,
         )));
     }
 
-    if (in_array($name, ['index', 'unique', 'primary'], true) && $first instanceof Node\Scalar\String_ && $call->var instanceof Node\Expr\Variable) {
+    if (in_array($name, [
+        'index',
+        'unique',
+        'primary',
+    ], true) && $first instanceof Node\Scalar\String_ && $call->var instanceof Node\Expr\Variable) {
         return [$first->value];
     }
 
-    if (in_array($name, ['index', 'unique', 'primary'], true) && $call->var instanceof MethodCall) {
+    if (in_array($name, [
+        'index',
+        'unique',
+        'primary',
+    ], true) && $call->var instanceof MethodCall) {
         $column = $call->var;
 
         while ($column instanceof MethodCall && ! $column->var instanceof Node\Expr\Variable) {
@@ -373,11 +436,24 @@ function declaredIndexOf(MethodCall $call, string $name): array
 
         $named = $column instanceof MethodCall ? ($column->getArgs()[0]->value ?? null) : null;
 
-        return $named instanceof Node\Scalar\String_ ? [$named->value] : [];
+        if ($named instanceof Node\Scalar\String_) {
+            return [$named->value];
+        }
+
+        return [];
     }
 
-    if (in_array($name, ['morphs', 'ulidMorphs', 'uuidMorphs', 'nullableMorphs', 'nullableUlidMorphs'], true) && $first instanceof Node\Scalar\String_) {
-        return ["{$first->value}_type", "{$first->value}_id"];
+    if (in_array($name, [
+        'morphs',
+        'ulidMorphs',
+        'uuidMorphs',
+        'nullableMorphs',
+        'nullableUlidMorphs',
+    ], true) && $first instanceof Node\Scalar\String_) {
+        return [
+            "{$first->value}_type",
+            "{$first->value}_id",
+        ];
     }
 
     if ($name === 'id' && $call->var instanceof Node\Expr\Variable) {

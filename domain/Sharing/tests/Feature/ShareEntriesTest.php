@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
+use App\Support\ActorContext;
+use App\Support\CommandRegistry;
+use App\Values\OwnerAuthority;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Models\Document;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
@@ -13,26 +22,17 @@ use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
 use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\ShareState;
-use App\Models\Access\User;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Support\CommandRegistry;
-use App\Values\OwnerAuthority;
-use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
-use Domain\Documents\Models\Document;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The entries to sharing: an agent proposes a share and reads its status over signed calls and the agent CLI, and is
@@ -104,9 +104,16 @@ final class ShareEntriesTest extends TestCase
         $request = $this->signed(
             $start,
             '/agent/sharing/request',
-            ['alias' => 'doc', 'number' => '1', 'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001'],
+            [
+                'alias' => 'doc',
+                'number' => '1',
+                'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001',
+            ],
         )->assertOk();
-        $this->assertSame(['number', 'state'], array_keys((array) $request->json()));
+        $this->assertSame([
+            'number',
+            'state',
+        ], array_keys((array) $request->json()));
         $this->assertSame('proposed', $request->json('state'));
 
         $proposal = Share::query()->sole();
@@ -114,7 +121,10 @@ final class ShareEntriesTest extends TestCase
         $proposal->save();
 
         $status = $this->signed($start, '/agent/sharing/status', [])->assertOk();
-        $this->assertSame([['number' => $proposal->number, 'state' => 'active']], $status->json('proposals'));
+        $this->assertSame([[
+            'number' => $proposal->number,
+            'state' => 'active',
+        ]], $status->json('proposals'));
         $this->assertStringNotContainsString('http', (string) $status->getContent());
     }
 
@@ -123,7 +133,11 @@ final class ShareEntriesTest extends TestCase
         $start = TestStart::start();
         $this->runCommandsAs($start);
 
-        $this->artisan('share:request', ['alias' => 'doc', 'number' => '1', '--json' => true])
+        $this->artisan('share:request', [
+            'alias' => 'doc',
+            'number' => '1',
+            '--json' => true,
+        ])
             ->expectsOutputToContain('"state":"proposed"')
             ->doesntExpectOutputToContain('http')
             ->assertExitCode(0);
@@ -151,7 +165,10 @@ final class ShareEntriesTest extends TestCase
 
         $this->artisan(
             'share:create',
-            ['preview' => $preview->id, '--minutes' => '60'],
+            [
+                'preview' => $preview->id,
+                '--minutes' => '60',
+            ],
         )->expectsOutputToContain('is pending')->assertExitCode(0);
         $share = Share::query()->sole();
         $this->artisan('share:list')->expectsOutputToContain($share->id)->doesntExpectOutputToContain(
@@ -192,7 +209,10 @@ final class ShareEntriesTest extends TestCase
             $this->assertTrue($registry->isExported($command), $command);
         }
 
-        foreach ([ExpireSharesCommand::class, ReadShareCommand::class] as $command) {
+        foreach ([
+            ExpireSharesCommand::class,
+            ReadShareCommand::class,
+        ] as $command) {
             $this->assertFalse($registry->isExported($command), $command);
         }
     }

@@ -188,9 +188,9 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofCommandRequest(Builder $query, string $commandRequestId): void
+    protected function ofCommandRequest(Builder $query, string $requestId): void
     {
-        $query->where('command_request_id', $commandRequestId);
+        $query->where('command_request_id', $requestId);
     }
 
     /**

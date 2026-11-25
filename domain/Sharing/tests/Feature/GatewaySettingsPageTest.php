@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Enums\ShareState;
 use App\Models\Access\User;
+use App\Support\Access\AccessSettings;
+use Carbon\CarbonImmutable;
+use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use App\Support\Access\AccessSettings;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -22,7 +23,6 @@ use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner's gateway settings page: it lists every registered gateway and revision with why it is not ready and
@@ -77,7 +77,10 @@ final class GatewaySettingsPageTest extends TestCase
         $this->configure(
             'tunler',
             'https://journal.tunler.test',
-            [['name' => 'tunler-login', 'value' => self::SECRET]],
+            [[
+                'name' => 'tunler-login',
+                'value' => self::SECRET,
+            ]],
         )->assertStatus(303);
         $this->configure('ngrok', 'https://journal.ngrok.test', [])->assertStatus(303);
 

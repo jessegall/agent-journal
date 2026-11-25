@@ -198,14 +198,14 @@ final class ActorProviderRegistry implements
      * nothing.
      *
      * @param  Builder<covariant Model>  $query
-     * @param  Closure(Builder<covariant Model>): void  $ownRowsScope
+     * @param  Closure(Builder<covariant Model>): void  $scope
      */
-    public function ownRows(Builder $query, Closure $ownRowsScope): void
+    public function ownRows(Builder $query, Closure $scope): void
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
         if (! $actors->hasActor()) {
-            $ownRowsScope($query);
+            $scope($query);
 
             return;
         }
@@ -218,7 +218,7 @@ final class ActorProviderRegistry implements
             return;
         }
 
-        Container::getInstance()->make($this->visibilityProviders->get($type))->ownRows($query, $ownRowsScope);
+        Container::getInstance()->make($this->visibilityProviders->get($type))->ownRows($query, $scope);
     }
 
     /**

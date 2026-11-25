@@ -6,19 +6,19 @@ namespace Domain\Sharing\Tests\Feature;
 
 use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\ReadPermitMissing;
+use App\Support\GatewaySettings;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Exceptions\ShareLinkRefused;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
-use App\Support\GatewaySettings;
 use Domain\Sharing\Support\ReadPermits;
 use Domain\Sharing\Support\ShareGrant;
 use Domain\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * Read permits: a valid token yields a permit taken once by its reference, an expired share still yields one so its
@@ -53,7 +53,13 @@ final class ReadPermitsTest extends TestCase
 
         $permit = $permits->issue($this->token->token);
 
-        $this->assertSame([$this->share->id, Share::FIRST_SCOPE_VERSION], [$permit->shareId, $permit->scopeVersion]);
+        $this->assertSame([
+            $this->share->id,
+            Share::FIRST_SCOPE_VERSION,
+        ], [
+            $permit->shareId,
+            $permit->scopeVersion,
+        ]);
         $this->assertSame($permit, $permits->take($permit->reference));
         $this->assertThrows(fn () => $permits->take($permit->reference), ReadPermitMissing::class);
     }

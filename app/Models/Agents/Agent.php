@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
-use App\Contracts\Actors\RecipientActor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Concerns\TakesPartInMessages;
+use App\Contracts\Actors\RecipientActor;
 use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageReceiver;
@@ -160,16 +160,6 @@ final class Agent extends Model implements
         return AssigneeIdentity::of($this);
     }
 
-    public static function storedType(): string
-    {
-        return 'agent';
-    }
-
-    public function actorType(): string
-    {
-        return self::storedType();
-    }
-
     /**
      * The runtime of the current session, when that session runs under a driver that can be woken.
      *
@@ -188,12 +178,22 @@ final class Agent extends Model implements
 
     // ----------[ Calculations ]----------
 
+    public function actorType(): string
+    {
+        return self::storedType();
+    }
+
     public function actorId(): string
     {
         return $this->id;
     }
 
     // ----------[ Queries ]----------
+
+    public static function storedType(): string
+    {
+        return 'agent';
+    }
 
     /**
      * The agent with this id, if there is one.

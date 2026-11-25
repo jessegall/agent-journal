@@ -398,9 +398,9 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofHelperPurpose(Builder $query, string $helperPurposeId): void
+    protected function ofHelperPurpose(Builder $query, string $purposeId): void
     {
-        $query->where('helper_purpose_id', $helperPurposeId);
+        $query->where('helper_purpose_id', $purposeId);
     }
 
     /**
@@ -409,8 +409,8 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofHelperIdentity(Builder $query, string $helperIdentityId): void
+    protected function ofHelperIdentity(Builder $query, string $identityId): void
     {
-        $query->where('helper_identity_id', $helperIdentityId);
+        $query->where('helper_identity_id', $identityId);
     }
 }

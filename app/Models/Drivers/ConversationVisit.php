@@ -102,12 +102,12 @@ final class ConversationVisit extends Model implements ReadableModel
      * The rows of any of the given conversations.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $conversationIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofConversations(Builder $query, array|Builder|Closure $conversationIds): void
+    protected function ofConversations(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('conversation_id', $conversationIds);
+        $query->whereIn('conversation_id', $ids);
     }
 
     /**

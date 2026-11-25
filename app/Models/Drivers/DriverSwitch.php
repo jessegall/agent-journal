@@ -377,12 +377,12 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
      * The rows of any of the given agents.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $agentIds
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $ids
      */
     #[Scope]
-    protected function ofAgents(Builder $query, array|Builder|Closure $agentIds): void
+    protected function ofAgents(Builder $query, array|Builder|Closure $ids): void
     {
-        $query->whereIn('agent_id', $agentIds);
+        $query->whereIn('agent_id', $ids);
     }
 
     /**

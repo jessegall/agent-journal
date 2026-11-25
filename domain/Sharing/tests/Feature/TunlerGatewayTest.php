@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayOperation;
-use Domain\Sharing\Gateways\Tunler\TunlerGateway;
 use App\Support\GatewaySettings;
 use App\Support\PublicAddresses;
+use Domain\Sharing\Exceptions\GatewayOpenFailed;
+use Domain\Sharing\Gateways\Tunler\TunlerGateway;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Http\Client\Request;
 use Illuminate\Process\Factory as Processes;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The Tunler gateway against fixture outputs of the tunler program, with no real account: the setup check names each
@@ -71,7 +71,10 @@ final class TunlerGatewayTest extends TestCase
         $this->assertTrue($this->gateway()->setupCheck($this->configuration())->isComplete());
 
         $this->processes->fake(
-            ['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}'],
+            [
+                '*version*' => 'tunler 1.3.9',
+                '*status*' => '{"logged_in": false, "host": "other.test"}',
+            ],
         );
         config(['sharing.tunler.subdomain' => null]);
 
@@ -102,7 +105,13 @@ final class TunlerGatewayTest extends TestCase
 
         $endpoint = $this->gateway()->open($this->operation());
 
-        $this->assertSame([self::ORIGIN, 'run-1:1'], [$endpoint->publicOrigin, $endpoint->processReference]);
+        $this->assertSame([
+            self::ORIGIN,
+            'run-1:1',
+        ], [
+            $endpoint->publicOrigin,
+            $endpoint->processReference,
+        ]);
         $this->processes->assertRan(
             fn ($process) => str_contains(implode(' ', (array) $process->command), '8090 --domain=docs --inspect=0'),
         );

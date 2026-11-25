@@ -370,12 +370,12 @@ final class PartRun extends Model implements EventSource, ReadableModel
      * The parts of the runs.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $runIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofRuns(Builder $query, array $runIds): void
+    protected function ofRuns(Builder $query, array $ids): void
     {
-        $query->whereIn('process_run_id', $runIds);
+        $query->whereIn('process_run_id', $ids);
     }
 
     /**
@@ -428,9 +428,9 @@ final class PartRun extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofProcessRun(Builder $query, string $processRunId): void
+    protected function ofProcessRun(Builder $query, string $runId): void
     {
-        $query->where('process_run_id', $processRunId);
+        $query->where('process_run_id', $runId);
     }
 
     /**

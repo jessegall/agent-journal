@@ -6,26 +6,27 @@ namespace Domain\Sharing\Tests\Feature;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use Domain\Sharing\Enums\GatewayOperationType;
-use Domain\Sharing\Enums\ShareState;
-use Domain\Sharing\Http\Controllers\RevealShareLinkController;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\Link;
-use Domain\Sharing\Models\Share;
-use Domain\Sharing\Models\ShareGatewayConfiguration;
-use Domain\Sharing\Models\ShareGatewayOperation;
-use Domain\Sharing\Models\SharePreview;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use Domain\Sharing\Support\ShareProposal;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Sharing\Enums\GatewayOperationType;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Http\Controllers\RevealShareLinkController;
+use Domain\Sharing\Models\Share;
+use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Models\ShareGatewayOperation;
+use Domain\Sharing\Models\SharePreview;
+use Domain\Sharing\Support\ShareProposal;
+use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Support\SessionKey;
@@ -34,7 +35,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TimeLimits\TimeLimit;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner's share management pages: confirm a saved preview into a share, find it in the list, reveal its address
@@ -93,7 +93,10 @@ final class ShareManagementPagesTest extends TestCase
 
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create([
+            'title' => 'Version 6',
+            'type' => PlanType::Build,
+        ]);
         Link::createForModels($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
@@ -144,7 +147,10 @@ final class ShareManagementPagesTest extends TestCase
         $this->actingAs($this->owner)
             ->postJson(
                 $this->rootPath().'/shares',
-                ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+                [
+                    'previewId' => $preview->id,
+                    'previewChecksum' => $preview->checksum,
+                ],
             )
             ->assertUnprocessable()
             ->assertJsonPath('code', 'invalid-input')
@@ -161,7 +167,10 @@ final class ShareManagementPagesTest extends TestCase
         $this->write(
             'post',
             "/sharing/shares/{$share->id}/scope",
-            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+            [
+                'previewId' => $preview->id,
+                'previewChecksum' => $preview->checksum,
+            ],
         )->assertStatus(303);
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, Share::query()->findOrFail($share->id)->scope_version);
 
@@ -193,7 +202,10 @@ final class ShareManagementPagesTest extends TestCase
         $this->write(
             'post',
             "/sharing/shares/{$proposal->id}/approval",
-            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+            [
+                'previewId' => $preview->id,
+                'previewChecksum' => $preview->checksum,
+            ],
         )
             ->assertRedirect("/sharing/shares/{$proposal->id}");
 
@@ -258,7 +270,11 @@ final class ShareManagementPagesTest extends TestCase
         $this->write(
             'post',
             $this->rootPath().'/shares',
-            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum, 'minutes' => 60],
+            [
+                'previewId' => $preview->id,
+                'previewChecksum' => $preview->checksum,
+                'minutes' => 60,
+            ],
         )->assertStatus(303);
 
         return Share::query()->sole();

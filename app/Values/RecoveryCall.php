@@ -28,6 +28,9 @@ final class RecoveryCall extends Data
             return [];
         }
 
-        return ['next_action' => ['tool' => $recovery->tool, 'arguments' => (object) $recovery->arguments]];
+        return ['next_action' => [
+            'tool' => $recovery->tool,
+            'arguments' => (object) $recovery->arguments,
+        ]];
     }
 }

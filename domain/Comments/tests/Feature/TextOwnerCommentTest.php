@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Feature;
 
-use Domain\Comments\Commands\PostComment\PostCommentCommand;
-use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\TextResolver;
-use Domain\Comments\Contracts\CommentResolver;
-use Domain\Comments\Data\RecordCommentView;
-use Domain\Comments\Data\TextCommentView;
-use Domain\Comments\Exceptions\TargetNotCommentable;
 use App\Models\Access\User;
-use Domain\Comments\Models\Comment;
 use App\Support\Access\AccessSettings;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use App\Values\PageSize;
 use App\Values\TextRange;
+use Domain\Comments\Commands\PostComment\PostCommentCommand;
+use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;
+use Domain\Comments\Contracts\CommentResolver;
+use Domain\Comments\Data\RecordCommentView;
+use Domain\Comments\Data\TextCommentView;
+use Domain\Comments\Exceptions\TargetNotCommentable;
+use Domain\Comments\Models\Comment;
+use Domain\Comments\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
-use Domain\Comments\Tests\TestCase;
 
 /**
  * A record outside Documents with text in versions, a note page, is read through Core and takes its first text
@@ -40,7 +40,11 @@ final class TextOwnerCommentTest extends TestCase
 
     private const string SECOND_LINE = 'Second line.';
 
-    private const array TABLES = ['comments', 'users', 'number_groups'];
+    private const array TABLES = [
+        'comments',
+        'users',
+        'number_groups',
+    ];
 
     protected function setUp(): void
     {
@@ -69,7 +73,13 @@ final class TextOwnerCommentTest extends TestCase
 
         TEXT));
 
-        $this->assertSame(['1', 4], [$this->text()->version($page)->id, $this->text()->version($page)->lineCount]);
+        $this->assertSame([
+            '1',
+            4,
+        ], [
+            $this->text()->version($page)->id,
+            $this->text()->version($page)->lineCount,
+        ]);
         $this->assertSame(
             ['Plan'],
             array_map(

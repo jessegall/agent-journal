@@ -177,9 +177,9 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofRun(Builder $query, string $taskId, int $runNumber): void
+    protected function ofRun(Builder $query, string $taskId, int $number): void
     {
-        $query->where('task_id', $taskId)->where('run_number', $runNumber);
+        $query->where('task_id', $taskId)->where('run_number', $number);
     }
 
     /**

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use Domain\Sharing\Enums\ShareAuditType;
 use App\Enums\Sharing\ShareRelationType;
-use Domain\Sharing\Enums\ShareState;
 use App\Support\CommandGrammar;
 use App\Support\GatewayConfiguration;
 use App\Support\GatewayEndpoint;
@@ -15,19 +13,21 @@ use App\Support\GatewayOperation;
 use App\Support\GatewaySettings;
 use App\Support\GatewaySetupCheck;
 use App\Support\RecordIdentity;
-use Domain\Sharing\Support\ShareCandidates;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
-use Domain\Sharing\Support\ShareLinkedCandidate;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecordDefinition;
 use App\Support\ShareRecords;
 use App\Support\ShareRelation;
 use App\Support\ShareRelationRead;
 use App\Support\ShareRelationSet;
-use Domain\Sharing\Support\ShareSelectedTarget;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use Domain\Sharing\Enums\ShareAuditType;
+use Domain\Sharing\Enums\ShareState;
+use Domain\Sharing\Support\ShareCandidates;
+use Domain\Sharing\Support\ShareLinkedCandidate;
+use Domain\Sharing\Support\ShareSelectedTarget;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -43,9 +43,19 @@ final class SharingValuesTest extends TestCase
         $terminal = array_values(array_filter(ShareState::cases(), fn (ShareState $state) => $state->isTerminal()));
         $retryable = array_values(array_filter(ShareState::cases(), fn (ShareState $state) => $state->mayRetry()));
 
-        $this->assertSame([ShareState::Pending, ShareState::Active, ShareState::Failed], $live);
-        $this->assertSame([ShareState::Revoked, ShareState::Expired], $terminal);
-        $this->assertSame([ShareState::Pending, ShareState::Failed], $retryable);
+        $this->assertSame([
+            ShareState::Pending,
+            ShareState::Active,
+            ShareState::Failed,
+        ], $live);
+        $this->assertSame([
+            ShareState::Revoked,
+            ShareState::Expired,
+        ], $terminal);
+        $this->assertSame([
+            ShareState::Pending,
+            ShareState::Failed,
+        ], $retryable);
     }
 
     public function test_the_twelve_audit_types_split_into_reads_and_life_steps(): void
@@ -53,7 +63,10 @@ final class SharingValuesTest extends TestCase
         $reads = array_values(array_filter(ShareAuditType::cases(), fn (ShareAuditType $type) => $type->isRead()));
 
         $this->assertCount(12, ShareAuditType::cases());
-        $this->assertSame([ShareAuditType::ReadAllowed, ShareAuditType::ReadDenied], $reads);
+        $this->assertSame([
+            ShareAuditType::ReadAllowed,
+            ShareAuditType::ReadDenied,
+        ], $reads);
     }
 
     public function test_relation_sets_are_built_owned_linked_empty_or_together(): void
@@ -65,7 +78,10 @@ final class SharingValuesTest extends TestCase
         $this->assertEquals([$records], ShareRelationSet::linked('records', 'share-linked-record')->relations);
         $this->assertSame([], ShareRelationSet::none()->relations);
         $this->assertEquals(
-            [$comments, $records],
+            [
+                $comments,
+                $records,
+            ],
             ShareRelationSet::owned('comments', 'share-comment')->with(
                 ShareRelationSet::linked('records', 'share-linked-record'),
             )->relations,
@@ -88,13 +104,19 @@ final class SharingValuesTest extends TestCase
     public static function values(): iterable
     {
         foreach ([
-            ShareRelation::class, ShareRelationSet::class, ShareRecordDefinition::class, ShareRecordCard::class,
+            ShareRelation::class,
+            ShareRelationSet::class,
+            ShareRecordDefinition::class,
+            ShareRecordCard::class,
             ShareRecords::class,
             ShareCandidates::class,
             ShareLinkedCandidate::class,
             ShareSelection::class,
             ShareTargetRead::class,
-            ShareRelationRead::class, ShareContentRead::class, SharedContent::class, GatewayConfiguration::class,
+            ShareRelationRead::class,
+            ShareContentRead::class,
+            SharedContent::class,
+            GatewayConfiguration::class,
             GatewayOperation::class,
             GatewayEndpoint::class,
             GatewaySetupCheck::class,

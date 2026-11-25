@@ -49,6 +49,22 @@ const BARE_NAMES = [
 ];
 
 /**
+ * The words a yes or no answer opens with: the names rule wants them kept, so they are never dropped.
+ */
+const QUESTION_WORDS = [
+    'is',
+    'has',
+    'can',
+    'should',
+    'was',
+    'were',
+    'does',
+    'did',
+    'will',
+    'allows',
+];
+
+/**
  * @return list<string>
  */
 function phpFiles(string $path): array
@@ -201,6 +217,7 @@ foreach (array_values(array_diff(array_slice($argv, 1), ['--fix'])) as $path) {
                     $name = (string) $param->var->name;
                     $short = shortened($name);
                     $isAmbiguous = $short === null || in_array($short, BARE_NAMES, true)
+                        || in_array(leadingWord($name), QUESTION_WORDS, true)
                         || in_array($short, $names, true) || $shortenings[$short] > 1
                         || ! contextSays(leadingWord($name), $className, $method->name->toString(), $parameters);
 

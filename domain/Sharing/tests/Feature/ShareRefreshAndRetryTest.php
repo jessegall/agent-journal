@@ -4,31 +4,32 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
+use App\Contracts\Bus\CommandBus;
+use App\Models\Records\Link;
+use App\Support\Access\AccessSettings;
+use App\Support\RecordIdentity;
+use App\Support\RequestKey;
+use App\Support\ShareRecordRegistry;
+use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
 use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
 use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
-use App\Contracts\Bus\CommandBus;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Enums\ShareState;
 use Domain\Sharing\Exceptions\ShareRefreshRefused;
 use Domain\Sharing\Exceptions\ShareRetryRefused;
-use App\Models\Records\Link;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayOperation;
 use Domain\Sharing\Models\ShareMember;
-use App\Support\Access\AccessSettings;
-use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareProposal;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareSummary;
-use Carbon\CarbonImmutable;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
@@ -37,7 +38,6 @@ use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The owner replaces a live share's members from a fresh preview of its own root at the next scope version, keeping
@@ -67,7 +67,10 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
 
-        foreach ([101, 102] as $number) {
+        foreach ([
+            101,
+            102,
+        ] as $number) {
             Link::createForColumns($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
@@ -85,9 +88,15 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->assertSame($share->id, $summary->shareId);
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, $refreshed->scope_version);
         $this->assertSame(
-            [[TestIds::of(102), Share::FIRST_SCOPE_VERSION + 1]],
+            [[
+                TestIds::of(102),
+                Share::FIRST_SCOPE_VERSION + 1,
+            ]],
             ShareMember::query()->readAll('one member')->get()->map(
-                fn (ShareMember $member) => [$member->target_id, $member->scope_version],
+                fn (ShareMember $member) => [
+                    $member->target_id,
+                    $member->scope_version,
+                ],
             )->all(),
         );
         $this->assertSame($share->token_digest, $refreshed->token_digest);
@@ -146,7 +155,11 @@ final class ShareRefreshAndRetryTest extends TestCase
             new ShareProposal(TestActors::agentIdentity(5)),
         );
 
-        foreach ([$expired, $revoked, $proposal] as $share) {
+        foreach ([
+            $expired,
+            $revoked,
+            $proposal,
+        ] as $share) {
             $this->assertThrows(
                 fn () => $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key)),
                 ShareRetryRefused::class,

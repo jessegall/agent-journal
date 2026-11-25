@@ -19,7 +19,10 @@ return new class extends Migration
             $table->timestampTz('disabled_at')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['gateway_key', 'configuration_version']);
+            $table->unique([
+                'gateway_key',
+                'configuration_version',
+            ]);
         });
     }
 

@@ -86,11 +86,11 @@ final class SessionOutcomeDismissal extends Model implements ReadableModel
      * The dismissals of the start requests.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $requestIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function ofRequests(Builder $query, array $requestIds): void
+    protected function ofRequests(Builder $query, array $ids): void
     {
-        $query->whereIn('request_id', $requestIds);
+        $query->whereIn('request_id', $ids);
     }
 }

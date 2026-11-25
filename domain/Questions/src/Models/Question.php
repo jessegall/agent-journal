@@ -126,16 +126,20 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
 
     /**
      * The question as another domain shows it: its first line and its inbox.
+     *
+     * @return Attribute<QuestionSummary, never>
      */
-    public function summary(): QuestionSummary
+    protected function summary(): Attribute
     {
-        $firstLine = strtok($this->text, "\n");
+        return Accessor::get(function () {
+            $firstLine = strtok($this->text, "\n");
 
-        if ($firstLine === false) {
-            return new QuestionSummary($this->id, $this->text, $this->inbox_id);
-        }
+            if ($firstLine === false) {
+                return new QuestionSummary($this->id, $this->text, $this->inbox_id);
+            }
 
-        return new QuestionSummary($this->id, $firstLine, $this->inbox_id);
+            return new QuestionSummary($this->id, $firstLine, $this->inbox_id);
+        });
     }
 
     // ----------[ Accessors ]----------

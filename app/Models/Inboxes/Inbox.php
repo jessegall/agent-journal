@@ -252,11 +252,11 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
      * The rows of any of the given provider keys.
      *
      * @param  Builder<self>  $query
-     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $providerKeys
+     * @param  array<array-key, string>|Builder<covariant Model>|Closure  $keys
      */
     #[Scope]
-    protected function withAnyProviderKey(Builder $query, array|Builder|Closure $providerKeys): void
+    protected function withAnyProviderKey(Builder $query, array|Builder|Closure $keys): void
     {
-        $query->whereIn('provider_key', $providerKeys);
+        $query->whereIn('provider_key', $keys);
     }
 }
