@@ -14,7 +14,7 @@ use App\Exceptions\InvalidMenuDeclaration;
 final readonly class RegisteredMenuItem
 {
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public MenuItem $menuItem,
         public string $key,
         public RegisteredMenu $menu,
@@ -26,7 +26,7 @@ final readonly class RegisteredMenuItem
      * @param  array<string, RegisteredPage>  $pages  by full key
      * @param  array<string, RegisteredAction>  $actions  by route name
      */
-    public static function of(DomainUi $owner, MenuItem $item, array $menus, array $pages, array $actions): self
+    public static function of(DomainClient $owner, MenuItem $item, array $menus, array $pages, array $actions): self
     {
         $key = $owner->fullKey('menu item', $item->key);
 
@@ -68,7 +68,7 @@ final readonly class RegisteredMenuItem
      * @param  array<string, RegisteredAction>  $actions
      */
     private static function targetOf(
-        DomainUi $owner,
+        DomainClient $owner,
         string $key,
         MenuItem $item,
         array $pages,

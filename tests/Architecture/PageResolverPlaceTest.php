@@ -12,7 +12,8 @@ use Tests\Architecture\Support\DomainFiles;
  */
 final class PageResolverPlaceTest extends TestCase
 {
-    private const string UI_RESOLVER = '/\bclass\s+\w+[^{]*\bimplements\b[^{]*\b(?:PageResolver|SectionResolver)\b/';
+    private const string CLIENT_RESOLVER
+        = '/\bclass\s+\w+[^{]*\bimplements\b[^{]*\b(?:PageResolver|SectionResolver)\b/';
 
     public function test_every_page_and_section_resolver_lives_under_http(): void
     {
@@ -21,7 +22,9 @@ final class PageResolverPlaceTest extends TestCase
         foreach (DomainFiles::in([app_path(), ...glob(base_path('domain/*/src')) ?: []]) as $file) {
             $relative = str_replace(base_path().'/', '', $file);
 
-            if (! str_contains($relative, '/Http/') && self::declaresUiResolver((string) file_get_contents($file))) {
+            if (! str_contains($relative, '/Http/') && self::declaresClientResolver(
+                (string) file_get_contents($file),
+            )) {
                 $outside[] = $relative;
             }
         }
@@ -34,14 +37,14 @@ final class PageResolverPlaceTest extends TestCase
         $this->assertSame(
             [true, false],
             [
-                self::declaresUiResolver('final readonly class HomeWindowResolver implements PageResolver {}'),
-                self::declaresUiResolver('final readonly class TaskRecords implements TaskResolver {}'),
+                self::declaresClientResolver('final readonly class HomeWindowResolver implements PageResolver {}'),
+                self::declaresClientResolver('final readonly class TaskRecords implements TaskResolver {}'),
             ],
         );
     }
 
-    private static function declaresUiResolver(string $source): bool
+    private static function declaresClientResolver(string $source): bool
     {
-        return preg_match(self::UI_RESOLVER, $source) === 1;
+        return preg_match(self::CLIENT_RESOLVER, $source) === 1;
     }
 }

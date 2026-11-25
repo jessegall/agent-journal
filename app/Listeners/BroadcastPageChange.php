@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Contracts\Events\InboxScopedFact;
 use App\Contracts\Events\Listener;
 use App\Contracts\Messages\AdmittedRecipients;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
@@ -27,7 +27,7 @@ final readonly class BroadcastPageChange implements Listener
         private LoggerInterface $log,
     ) {}
 
-    public function handle(UserInterfaceUpdater $fact): void
+    public function handle(ClientUpdate $fact): void
     {
         $userIds = $fact instanceof InboxScopedFact
             ? array_map(

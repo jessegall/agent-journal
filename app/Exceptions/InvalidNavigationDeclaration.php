@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * A navigation item that the application refuses to start with.
  */
-final class InvalidNavigationDeclaration extends UiDeclarationError
+final class InvalidNavigationDeclaration extends ClientDeclarationError
 {
     public static function nothingToOpen(string $label): self
     {

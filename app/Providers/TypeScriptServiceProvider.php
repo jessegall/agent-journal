@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Support\ClientDeclarations;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\Types\DomainTypeWriter;
 use App\Support\Types\HiddenAwareDataTransformer;
 use App\Support\Types\TypeOwners;
-use App\Support\UiDeclarations;
 use App\Support\Wire\DockNodeTypes;
 use App\Support\Wire\PartMap;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\LaravelDataTypeScriptTransformerExtension;
@@ -33,7 +33,10 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
 
         $this->app->singleton(
             TypeOwners::class,
-            fn () => TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class)),
+            fn () => TypeOwners::of(
+$this->app->make(DomainRegistry::class),
+ $this->app->make(ClientDeclarations::class),
+),
         );
     }
 

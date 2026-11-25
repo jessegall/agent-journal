@@ -84,7 +84,7 @@ RUN composer dump-autoload --optimize
 # frontend build below cached, since a copy from another stage is compared by content.
 FROM console AS frontend-sources
 
-RUN php artisan journal:ui-manifest \
+RUN php artisan journal:client-manifest \
     && php artisan wayfinder:generate --with-form \
     && php -d memory_limit=512M artisan typescript:transform \
     && mkdir /frontend \

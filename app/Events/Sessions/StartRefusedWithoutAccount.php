@@ -6,7 +6,7 @@ namespace App\Events\Sessions;
 
 use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Events\ListenerFailureLog;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Enums\Accounts\AccountNoticeReason;
 use App\Enums\Sessions\StartUnavailableReason;
 
@@ -14,7 +14,7 @@ use App\Enums\Sessions\StartUnavailableReason;
  * A start of an agent was refused because no account could run its driver; it names the driver and a safe
  * reason, never an account.
  */
-final readonly class StartRefusedWithoutAccount extends SessionEvent implements AccountNoticeCause, ListenerFailureLog, UserInterfaceUpdater
+final readonly class StartRefusedWithoutAccount extends SessionEvent implements AccountNoticeCause, ClientUpdate, ListenerFailureLog
 {
     public function __construct(
         public string $agentId,

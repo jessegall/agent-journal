@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\Web\DeclaredPageRequest;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use App\Support\Web\DeclaredRouteKey;
 use App\Support\Web\PageProps;
 use Illuminate\Routing\Route;
@@ -18,7 +18,7 @@ use Inertia\ResponseFactory;
 final readonly class PageController
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private ResponseFactory $inertia,
     ) {}
 

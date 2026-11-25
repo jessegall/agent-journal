@@ -10,13 +10,13 @@ namespace App\Declarations;
 final readonly class RegisteredMenu
 {
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public string $key,
         public string $label,
         public string|null $recordParameter,
     ) {}
 
-    public static function of(DomainUi $owner, Menu $menu): self
+    public static function of(DomainClient $owner, Menu $menu): self
     {
         return new self($owner, $owner->fullKey('menu', $menu->key), $menu->label, $menu->recordParameter);
     }

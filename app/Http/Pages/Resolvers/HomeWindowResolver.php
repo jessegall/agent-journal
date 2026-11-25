@@ -8,7 +8,7 @@ use App\Contracts\Navigation\PageResolver;
 use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
 use App\Declarations\RegisteredPage;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use App\Support\Views\LayoutsView;
 
 /**
@@ -18,7 +18,7 @@ use App\Support\Views\LayoutsView;
 final readonly class HomeWindowResolver implements PageResolver
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private LayoutsView $layouts,
     ) {}
 

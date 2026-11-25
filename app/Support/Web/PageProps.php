@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Web;
 
-use App\Contracts\Navigation\UiOwnerAvailability;
+use App\Contracts\Navigation\ClientOwnerAvailability;
 use App\Contracts\Navigation\WindowResults;
 use App\Contracts\Reads\ReaderRequests;
 use App\Data\Pages\UnavailableWindow;
@@ -12,7 +12,7 @@ use App\Declarations\RegisteredPage;
 use App\Declarations\RegisteredSection;
 use App\Enums\Web\PageDestination;
 use App\Http\Requests\Web\DeclaredPageRequest;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Inertia\ResponseFactory;
@@ -29,12 +29,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final readonly class PageProps
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private WindowResults $windowResults,
         private ReaderRequests $readers,
         private SlotContexts $contexts,
         private ResponseFactory $inertia,
-        private UiOwnerAvailability $owners,
+        private ClientOwnerAvailability $owners,
     ) {}
 
     /**

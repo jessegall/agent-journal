@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Models\Runs\ProcessRun;
 use App\Support\Sources\Contracts\DockSourceChanged;
 use App\Values\PartProjection;
@@ -13,7 +13,7 @@ use App\Values\PartProjection;
  * A run changed after its change was stored: its next update number, and the parts that changed with the reading each
  * now shows. A client that sees a gap in the numbers reloads the run's snapshot.
  */
-final readonly class RunChanged extends ProcessEvent implements DockSourceChanged, UserInterfaceUpdater
+final readonly class RunChanged extends ProcessEvent implements ClientUpdate, DockSourceChanged
 {
     /**
      * @param  list<PartProjection>  $parts

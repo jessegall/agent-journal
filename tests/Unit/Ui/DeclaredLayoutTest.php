@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\Page;
 use App\Declarations\Section;
 use App\Enums\Layouts\LayoutTag;
@@ -25,10 +25,10 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use PHPUnit\Framework\TestCase;
 use Spatie\LaravelData\Optional;
-use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
-use Tests\Fixtures\UiDeclarations\RecentNotesResolver;
-use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
-use Tests\Fixtures\UiDeclarations\ShelfSectionLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
+use Tests\Fixtures\ClientDeclarations\RecentNotesResolver;
+use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\ShelfSectionLayoutResolver;
 
 /**
  * A page a domain declares as a layout: its reader must return a layout, and a layout that breaks the catalogue of
@@ -46,7 +46,7 @@ final class DeclaredLayoutTest extends TestCase
 
         $this->assertTrue($page->isDeclared);
         $this->assertSame(DeclaredLayoutData::class, $page->dataClass);
-        $this->assertSame(DomainUi::DECLARED_LAYOUT, $page->component);
+        $this->assertSame(DomainClient::DECLARED_LAYOUT, $page->component);
         $this->assertSame('shelf', $page->path);
 
         $this->assertSame(
@@ -71,7 +71,7 @@ final class DeclaredLayoutTest extends TestCase
         $section = Section::layout('lent', 'Lent', 'library.inspector', SlotContextType::Nothing, ShelfSectionLayoutResolver::class);
 
         $this->assertTrue($section->isDeclared);
-        $this->assertSame(DomainUi::DECLARED_LAYOUT, $section->component);
+        $this->assertSame(DomainClient::DECLARED_LAYOUT, $section->component);
 
         $this->expectException(InvalidSectionDeclaration::class);
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Web;
 
 use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Navigation\UiOwnerAvailability;
-use App\Support\UiDeclarations;
+use App\Contracts\Navigation\ClientOwnerAvailability;
+use App\Support\ClientDeclarations;
 use Illuminate\Contracts\Container\Container;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -17,10 +17,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final readonly class PageVisibility
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private CurrentActor $actors,
         private Container $container,
-        private UiOwnerAvailability $owners,
+        private ClientOwnerAvailability $owners,
     ) {}
 
     public function assertVisible(string $key): void

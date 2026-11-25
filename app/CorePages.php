@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Pages\ConnectionsPages;
 use App\Pages\ProcessPages;
 use App\Pages\ProfilesPages;
@@ -18,7 +18,7 @@ use App\Pages\WebPages;
 final class CorePages
 {
     /**
-     * @return list<DomainUi>
+     * @return list<DomainClient>
      */
     public static function declarations(): array
     {

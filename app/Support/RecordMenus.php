@@ -22,9 +22,9 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 final readonly class RecordMenus implements RecordMenusContract
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private VisibilityChecks $visibility,
-        private UiOwnerAvailability $owners,
+        private ClientOwnerAvailability $owners,
         private UrlGenerator $urls,
     ) {}
 

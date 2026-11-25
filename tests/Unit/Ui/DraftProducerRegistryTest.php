@@ -7,7 +7,7 @@ namespace Tests\Unit\Ui;
 use App\Exceptions\DraftProducerMissing;
 use App\Exceptions\DraftProducerRepeated;
 use App\Support\DraftProducers;
-use Tests\Fixtures\UiDeclarations\StubDraftProducer;
+use Tests\Fixtures\ClientDeclarations\StubDraftProducer;
 use Tests\TestCase;
 
 /**

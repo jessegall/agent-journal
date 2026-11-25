@@ -26,7 +26,7 @@ use App\Data\Connections\ReleaseOfferData;
 use App\Data\Connections\ReleaseTargetData;
 use App\Data\Connections\SupportRecordRowData;
 use App\Data\Connections\TerminalSignInRowData;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\Agents\ChildRole;
@@ -144,8 +144,8 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
     /**
      * The Connections pages under their own key, connections, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Connections', 'connections');
+        return DomainClient::ofCore($this, 'Connections', 'connections');
     }
 }

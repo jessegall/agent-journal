@@ -7,9 +7,9 @@ namespace Tests\Support\Entries;
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\Command;
 use App\Http\Controllers\Web\PageController;
+use App\Support\ClientDeclarations;
 use App\Support\EnrolledHost;
 use App\Support\ReflectedType;
-use App\Support\UiDeclarations;
 use App\Support\Web\DeclaredRouteKey;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -209,7 +209,7 @@ abstract class RouteEntryTestCase extends TestCase
             return;
         }
 
-        $component = $this->app->make(UiDeclarations::class)->page(DeclaredRouteKey::of($route))->componentName();
+        $component = $this->app->make(ClientDeclarations::class)->page(DeclaredRouteKey::of($route))->componentName();
         $response->assertInertia(fn (AssertableInertia $page) => $page->component($component, false));
     }
 }

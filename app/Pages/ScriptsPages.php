@@ -17,7 +17,7 @@ use App\Data\Profiles\ProfileStepData;
 use App\Data\Profiles\ScriptKeywordData;
 use App\Data\Profiles\ScriptObjectData;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\Page;
 use App\Enums\CommandRules\SyntaxForm;
 use App\Enums\Navigation\Icon;
@@ -85,8 +85,8 @@ final class ScriptsPages implements PageProvider, TypeProvider
     /**
      * The script pages under their own key, scripts, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Scripts', 'scripts');
+        return DomainClient::ofCore($this, 'Scripts', 'scripts');
     }
 }

@@ -29,7 +29,7 @@ use App\Data\Accounts\SignInReceiptData;
 use App\Data\Accounts\StartAccountData;
 use App\Data\Profiles\ScriptDiagnostic;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Section;
@@ -207,8 +207,8 @@ final class ProfilesPages implements NativePartProvider, NavigationProvider, Pag
     /**
      * The account pages under their own key, accounts, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Accounts', 'profiles');
+        return DomainClient::ofCore($this, 'Accounts', 'profiles');
     }
 }

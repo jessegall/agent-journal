@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domains;
 
 use App\Contracts\Bus\PipelineRunner;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Exceptions\InvalidListener;
 use App\Listeners\BroadcastPageChange;
 use App\Providers\DomainEventServiceProvider;
@@ -35,7 +35,7 @@ use Tests\TestCase;
 final class ListenerPolicyTest extends TestCase
 {
     /**
-     * Plans, whose exported user interface events the test expands.
+     * Plans, whose exported client events the test expands.
      */
     protected static function bootedDomains(): array
     {
@@ -71,12 +71,12 @@ final class ListenerPolicyTest extends TestCase
         $policy->discover([MessageSent::class => [HearsMessage::class.'@handle']]);
     }
 
-    public function test_a_listener_of_the_user_interface_marker_hears_each_exported_ui_event_instead(): void
+    public function test_a_listener_of_the_client_marker_hears_each_exported_client_event_instead(): void
     {
         $policy = $this->policyFor($this->app->make(DomainRegistry::class));
-        $expanded = $policy->discover([UserInterfaceUpdater::class => [BroadcastPageChange::class.'@handle']]);
+        $expanded = $policy->discover([ClientUpdate::class => [BroadcastPageChange::class.'@handle']]);
 
-        $this->assertArrayNotHasKey(UserInterfaceUpdater::class, $expanded);
+        $this->assertArrayNotHasKey(ClientUpdate::class, $expanded);
         $this->assertSame([BroadcastPageChange::class.'@handle'], $expanded[PlanProgressChanged::class]);
     }
 

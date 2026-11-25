@@ -8,7 +8,7 @@ use App\Contracts\Navigation\PresentsLayout;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredPage;
 use App\Enums\Web\PageDestination;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use Illuminate\Support\Str;
 
 /**
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 final readonly class PagePropTypes
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private TypeOwners $owners,
         private ReflectorFactory $reflector,
     ) {}

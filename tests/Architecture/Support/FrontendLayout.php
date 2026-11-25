@@ -31,7 +31,7 @@ final readonly class FrontendLayout
     ) {}
 
     /**
-     * The project's layout, its owners read from the roots file the UI manifest writes.
+     * The project's layout, its owners read from the roots file the client manifest writes.
      */
     public static function ofProject(string $project): self
     {

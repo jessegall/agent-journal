@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Events;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use DateTimeImmutable;
 use Domain\Sharing\Contracts\ShareGatewayEvent;
 
@@ -13,7 +13,7 @@ use Domain\Sharing\Contracts\ShareGatewayEvent;
  * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages
  * reread on it.
  */
-final readonly class ShareGatewayChanged extends ShareEvent implements ShareGatewayEvent, UserInterfaceUpdater
+final readonly class ShareGatewayChanged extends ShareEvent implements ClientUpdate, ShareGatewayEvent
 {
     public function __construct(
         public string $configurationId,

@@ -28,7 +28,7 @@ use App\Data\Processes\RuntimeEntryData;
 use App\Data\Sharing\SharedData;
 use App\Data\Terminals\TerminalWindowData;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Declarations\Slot;
@@ -266,8 +266,8 @@ final class WebPages implements NativePartProvider, NavigationProvider, PageProv
     /**
      * Web's pages under its own key, web, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Web', 'web');
+        return DomainClient::ofCore($this, 'Web', 'web');
     }
 }

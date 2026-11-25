@@ -20,7 +20,7 @@ final readonly class RegisteredNavigation
      * @param  list<RegisteredNavigation>  $children
      */
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public NavigationItem $navigationItem,
         public string $key,
         public RegisteredPage|null $page,
@@ -30,7 +30,7 @@ final readonly class RegisteredNavigation
     /**
      * @param  array<string, RegisteredPage>  $pages  the pages of every installed domain by full key
      */
-    public static function of(DomainUi $owner, NavigationItem $item, array $pages): self
+    public static function of(DomainClient $owner, NavigationItem $item, array $pages): self
     {
         $key = $owner->fullKey('navigation', $item->key);
 
@@ -73,7 +73,7 @@ final readonly class RegisteredNavigation
      * @param  array<string, RegisteredPage>  $pages
      */
     private static function checkedPage(
-        DomainUi $owner,
+        DomainClient $owner,
         string $key,
         NavigationItem $item,
         array $pages,

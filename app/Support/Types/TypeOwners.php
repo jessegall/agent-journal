@@ -6,8 +6,8 @@ namespace App\Support\Types;
 
 use App\Contracts\Actors\Actor;
 use App\Exceptions\TypeOwnerRepeated;
+use App\Support\ClientDeclarations;
 use App\Support\DomainRegistry;
-use App\Support\UiDeclarations;
 use Illuminate\Support\Str;
 
 /**
@@ -25,7 +25,7 @@ final readonly class TypeOwners
     /**
      * @throws TypeOwnerRepeated when two page owners claim one class, or one owner two types of the same name
      */
-    public static function of(DomainRegistry $registry, UiDeclarations $declarations): self
+    public static function of(DomainRegistry $registry, ClientDeclarations $declarations): self
     {
         // Core's root namespace, read from one of the types Core publishes.
         $coreRoot = implode('\\', array_slice(explode('\\', Actor::class), 0, 1)).'\\';
@@ -78,7 +78,7 @@ final readonly class TypeOwners
      *
      * @return array<string, string>
      */
-    private static function claims(UiDeclarations $declarations): array
+    private static function claims(ClientDeclarations $declarations): array
     {
         $claims = [];
 

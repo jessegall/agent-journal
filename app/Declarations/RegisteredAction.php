@@ -11,7 +11,7 @@ namespace App\Declarations;
 final readonly class RegisteredAction
 {
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public ActionRoute $action,
         public string $routeName,
         public RoutePath $path,
@@ -19,7 +19,7 @@ final readonly class RegisteredAction
         public RegisteredPage|RegisteredSection $guard,
     ) {}
 
-    public static function of(DomainUi $owner, ActionRoute $action, RegisteredPage|RegisteredSection $guard): self
+    public static function of(DomainClient $owner, ActionRoute $action, RegisteredPage|RegisteredSection $guard): self
     {
         $routeName = $owner->fullKey('action', $action->name);
         $path = RoutePath::of($routeName, $action->path);

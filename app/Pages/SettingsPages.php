@@ -28,7 +28,7 @@ use App\Data\Settings\StringConstraintsData;
 use App\Data\Settings\StringValueData;
 use App\Data\Settings\ToggleGroupAvailabilityData;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\NavigationItem;
 use App\Declarations\Page;
 use App\Enums\Navigation\Icon;
@@ -107,8 +107,8 @@ final class SettingsPages implements NavigationProvider, PageProvider, TypeProvi
     /**
      * The settings page under its own key, settings, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Settings', 'settings');
+        return DomainClient::ofCore($this, 'Settings', 'settings');
     }
 }

@@ -24,7 +24,7 @@ final readonly class NavigationRecords implements NavigationRecordsContract
 {
     public function __construct(
         private NavigationMerge $merge,
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private Container $container,
         private UrlGenerator $urls,
         private LoggerInterface $log,

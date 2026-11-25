@@ -27,5 +27,5 @@ interface ChangesWhatUsersSee {}
 /**
  * A fact after which open pages refresh.
  */
-interface UserInterfaceUpdater {}
+interface ClientUpdate {}
 ```

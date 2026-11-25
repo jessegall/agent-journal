@@ -65,11 +65,11 @@ final readonly class BuildRules
                 $build,
             ),
             $this->build(
-                'core.php.artisan-ui-manifest',
+                'core.php.artisan-client-manifest',
                 ProgramSpellings::php(),
                 [
                     'artisan',
-                    'journal:ui-manifest',
+                    'journal:client-manifest',
                 ],
                 ArgumentGrammar::none(),
                 $build,

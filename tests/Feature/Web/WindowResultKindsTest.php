@@ -19,8 +19,8 @@ use Closure;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Spatie\LaravelData\Data;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\ShelfDomain;
+use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
 use Tests\TestCase;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Exceptions\UiResolverInvalid;
+use App\Exceptions\ClientResolverInvalid;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
@@ -35,7 +35,7 @@ final readonly class ResolverDefinition
      * @param  class-string<Data>  $dataClass
      */
     public static function of(
-        DomainUi $owner,
+        DomainClient $owner,
         string $declaration,
         string $resolver,
         string $interface,
@@ -50,7 +50,7 @@ final readonly class ResolverDefinition
         $requests = array_values(array_filter(array_map(self::requestOf(...), $parameters)));
 
         if (count($requests) > 1) {
-            throw UiResolverInvalid::manyRequests($declaration, $resolver);
+            throw ClientResolverInvalid::manyRequests($declaration, $resolver);
         }
 
         return new self($resolver, $dataClass, $requests[0] ?? null);

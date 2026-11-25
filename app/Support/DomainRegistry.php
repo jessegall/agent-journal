@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Bus\PipelineRunner;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\ToggleGroup;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Exceptions\DomainCycle;
@@ -98,11 +98,11 @@ final readonly class DomainRegistry
      * The pages, navigation and sections every domain declares through PageProvider, NavigationProvider and
      * SectionProvider, checked together with Core's own; a domain that declares none of them adds nothing.
      */
-    public function uiDeclarations(DomainUi ...$coreDeclarations): UiDeclarations
+    public function clientDeclarations(DomainClient ...$coreDeclarations): ClientDeclarations
     {
-        $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->ui(), $this->all());
+        $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->client(), $this->all());
 
-        return UiDeclarations::check(array_values([
+        return ClientDeclarations::check(array_values([
             ...$coreDeclarations,
             ...$domainDeclarations,
         ]));

@@ -13,8 +13,8 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\WindowResults;
 use Closure;
 use Spatie\LaravelData\Data;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
+use Tests\Fixtures\ClientDeclarations\Shelf\ShelfDomain;
+use Tests\Fixtures\ClientDeclarations\ShelfLayoutResolver;
 use Tests\TestCase;
 
 /**

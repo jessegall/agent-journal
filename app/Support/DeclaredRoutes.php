@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Declarations\DomainUi;
-use App\Exceptions\UiPrefixUnavailable;
+use App\Declarations\DomainClient;
+use App\Exceptions\ClientPrefixUnavailable;
 use App\Http\Controllers\Web\PageController;
 use App\Support\Web\DeclaredRouteKey;
 use App\Values\FolderEntry;
@@ -19,7 +19,7 @@ use Illuminate\Routing\Router;
  */
 final readonly class DeclaredRoutes
 {
-    public function __construct(private UiDeclarations $declarations) {}
+    public function __construct(private ClientDeclarations $declarations) {}
 
     public function register(Router $router): void
     {
@@ -72,7 +72,7 @@ final readonly class DeclaredRoutes
             );
 
             if ($taken !== [] && ! $prefixes[$taken[0]]->owns((string) $route->getControllerClass())) {
-                throw UiPrefixUnavailable::usedByRoute($taken[0], $route->uri());
+                throw ClientPrefixUnavailable::usedByRoute($taken[0], $route->uri());
             }
         }
 
@@ -85,7 +85,7 @@ final readonly class DeclaredRoutes
 
         foreach (array_keys($prefixes) as $prefix) {
             if (in_array($prefix, $publicNames, true)) {
-                throw UiPrefixUnavailable::usedByPublicFile($prefix);
+                throw ClientPrefixUnavailable::usedByPublicFile($prefix);
             }
         }
     }
@@ -98,7 +98,7 @@ final readonly class DeclaredRoutes
     /**
      * Each domain prefix with the domain that owns it.
      *
-     * @return array<string, DomainUi>
+     * @return array<string, DomainClient>
      */
     private function prefixes(): array
     {

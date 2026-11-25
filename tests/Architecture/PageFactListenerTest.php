@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Listeners\BroadcastPageChange;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreListenerFolders;
@@ -29,7 +29,7 @@ final class PageFactListenerTest extends TestCase
             new CatalogueReflectorFactory(),
             app_path(),
         );
-        $events = $ownership->eventsOf(UserInterfaceUpdater::class);
+        $events = $ownership->eventsOf(ClientUpdate::class);
         $unheard = array_values(array_filter(
             $events,
             fn (string $event) => ! self::names($listeners[$event] ?? [], BroadcastPageChange::class),

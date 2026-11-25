@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Responses;
 
-use App\Contracts\Navigation\UiOwnerAvailability;
+use App\Contracts\Navigation\ClientOwnerAvailability;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\RegisteredAction;
 use App\Enums\Settings\ActionMethod;
 use App\Exceptions\PageReadParameterMissing;
+use App\Support\ClientDeclarations;
 use App\Support\ReflectedParameter;
 use App\Support\ReflectedType;
-use App\Support\UiDeclarations;
 use App\Support\Web\PageVisibility;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,8 +35,8 @@ final readonly class PageReadProps
     public const string QUERY = 'read';
 
     public function __construct(
-        private UiDeclarations $declarations,
-        private UiOwnerAvailability $owners,
+        private ClientDeclarations $declarations,
+        private ClientOwnerAvailability $owners,
         private PageVisibility $visibility,
         private ResponseFactory $inertia,
         private Container $container,

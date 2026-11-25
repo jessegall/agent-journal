@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * A menu item that the application refuses to start with.
  */
-final class InvalidMenuDeclaration extends UiDeclarationError
+final class InvalidMenuDeclaration extends ClientDeclarationError
 {
     public static function menuMissing(string $owner, string $item, string $menu): self
     {

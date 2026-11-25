@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
@@ -28,7 +28,7 @@ final readonly class BroadcastDockedSourceChange implements Listener
 
     public function handle(DockSourceChanged $fact): void
     {
-        if ($fact instanceof UserInterfaceUpdater) {
+        if ($fact instanceof ClientUpdate) {
             return;
         }
 

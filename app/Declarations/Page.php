@@ -91,7 +91,7 @@ final class Page
             $key,
             $resolver,
             $result,
-            DomainUi::DECLARED_LAYOUT,
+            DomainClient::DECLARED_LAYOUT,
             FloatSize::standard(),
             isDeclared: true,
         );

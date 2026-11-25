@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Events;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Support\ActorContext;
 
 /**
  * A plan was cancelled, and who cancelled it. Raised only once the change has committed.
  */
-final readonly class PlanCancelled extends PlanEvent implements UserInterfaceUpdater
+final readonly class PlanCancelled extends PlanEvent implements ClientUpdate
 {
     public function __construct(
         public string $planId,

@@ -76,7 +76,7 @@ final class Section
         SlotContextType $takes,
         string $resolver,
     ): self {
-        $section = self::make($key, $title, $slot, $takes, $resolver, DomainUi::DECLARED_LAYOUT);
+        $section = self::make($key, $title, $slot, $takes, $resolver, DomainClient::DECLARED_LAYOUT);
 
         if ($section->dataClass !== DeclaredLayoutData::class) {
             throw InvalidSectionDeclaration::readerReturnsNoLayout($key, $resolver);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Events;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Support\ActorContext;
 
 /**
@@ -13,7 +13,7 @@ use App\Support\ActorContext;
  * the filing's transaction; its listener is named as text so Documents does not depend on Helpers.
  */
 #[TransactionListenerConsent]
-final readonly class ReportFiled extends DocumentEvent implements UserInterfaceUpdater
+final readonly class ReportFiled extends DocumentEvent implements ClientUpdate
 {
     public function __construct(
         public string $reportId,

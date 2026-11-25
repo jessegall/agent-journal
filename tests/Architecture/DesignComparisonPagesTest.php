@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Declarations\RegisteredNavigation;
 use App\Declarations\RegisteredPage;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 
 /**
  * Every page of the app is listed in tools/design-compare/pages.json with its comparison views, or with the reason the
@@ -21,7 +21,7 @@ final class DesignComparisonPagesTest extends TestCase
 
     public function test_every_sidebar_page_is_listed_and_every_listed_page_exists(): void
     {
-        $declarations = $this->app->make(UiDeclarations::class);
+        $declarations = $this->app->make(ClientDeclarations::class);
         $sidebarPages = array_values(array_filter(array_map(
             fn (RegisteredNavigation $item) => $item->page?->key,
             $declarations->navigation(),

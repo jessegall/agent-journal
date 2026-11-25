@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * A section that the application refuses to start with.
  */
-final class InvalidSectionDeclaration extends UiDeclarationError
+final class InvalidSectionDeclaration extends ClientDeclarationError
 {
     public static function resolverReturnsNoData(string $section, string $resolver): self
     {

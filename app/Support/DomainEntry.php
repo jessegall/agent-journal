@@ -27,7 +27,7 @@ use App\Contracts\Skills\SkillConditionProvider;
 use App\Contracts\Skills\SkillProvider;
 use App\Contracts\Work\IncomingWork;
 use App\Contracts\Work\IncomingWorkProvider;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\Menu;
 use App\Declarations\MenuItem;
 use App\Declarations\NavigationItem;
@@ -381,11 +381,11 @@ final readonly class DomainEntry
     }
 
     /**
-     * The pages, navigation and sections this domain declares, as Core's UI reads them.
+     * The pages, navigation and sections this domain declares, as Core's client declarations read them.
      */
-    public function ui(): DomainUi
+    public function client(): DomainClient
     {
-        return DomainUi::of($this->domain, $this->name, $this->namespace, $this->scriptFolder());
+        return DomainClient::of($this->domain, $this->name, $this->namespace, $this->scriptFolder());
     }
 
     /**
@@ -405,8 +405,8 @@ final readonly class DomainEntry
         array $sidebarGroups = [],
         array $menus = [],
         array $menuItems = [],
-    ): DomainUi {
-        return DomainUi::declaring(
+    ): DomainClient {
+        return DomainClient::declaring(
             $this->name,
             $this->namespace,
             $this->scriptFolder(),

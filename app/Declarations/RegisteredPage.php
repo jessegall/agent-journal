@@ -6,7 +6,7 @@ namespace App\Declarations;
 
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Contracts\Navigation\PageResolver;
-use App\Exceptions\UiSlotMismatch;
+use App\Exceptions\ClientSlotMismatch;
 
 /**
  * A checked page of an installed domain: its full key, which is also its route name, its URI under the domain's
@@ -23,7 +23,7 @@ final readonly class RegisteredPage
      * @param  array<string, Slot>  $slots  the page's slots by full key
      */
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public Page $page,
         public string $key,
         public RoutePath $path,
@@ -34,7 +34,7 @@ final readonly class RegisteredPage
         public array $slots,
     ) {}
 
-    public static function of(DomainUi $owner, Page $page): self
+    public static function of(DomainClient $owner, Page $page): self
     {
         $key = $owner->fullKey('page', $page->key);
         $path = RoutePath::of($key, $page->path);
@@ -85,7 +85,7 @@ final readonly class RegisteredPage
      * @param  list<Slot>  $slots
      * @return array<string, Slot>
      */
-    private static function checkedSlots(DomainUi $owner, string $page, RoutePath $path, array $slots): array
+    private static function checkedSlots(DomainClient $owner, string $page, RoutePath $path, array $slots): array
     {
         $checked = [];
 
@@ -93,7 +93,7 @@ final readonly class RegisteredPage
             $slotKey = $owner->fullKey('slot', $slot->key);
 
             if ($slot->recordParameter !== null && ! $path->hasParameter($slot->recordParameter)) {
-                throw UiSlotMismatch::parameterMissing($page, $slotKey, $slot->recordParameter);
+                throw ClientSlotMismatch::parameterMissing($page, $slotKey, $slot->recordParameter);
             }
 
             $checked[$slotKey] = $slot;

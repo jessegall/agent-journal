@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
-use App\Console\Commands\GenerateUiManifest;
+use App\Console\Commands\GenerateClientManifest;
 use App\Contracts\Actors\CurrentUserResolver;
 use App\Contracts\Assignments\AutoAssignmentAccess;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Drivers\InstalledVersion as InstalledVersionContract;
 use App\Contracts\Files\Files;
+use App\Contracts\Navigation\ClientOwnerAvailability as ClientOwnerAvailabilityContract;
 use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Navigation\DraftProducers as DraftProducersContract;
 use App\Contracts\Navigation\NavigationRecords as NavigationRecordsContract;
 use App\Contracts\Navigation\RecordMenus as RecordMenusContract;
 use App\Contracts\Navigation\SlotSections;
-use App\Contracts\Navigation\UiOwnerAvailability as UiOwnerAvailabilityContract;
 use App\Contracts\Navigation\WindowResults as WindowResultsContract;
 use App\Contracts\Reads\ReaderRequests as ReaderRequestsContract;
 use App\Contracts\Refusals\CodedRefusal;
@@ -33,6 +33,9 @@ use App\Models\Records\Layout;
 use App\Models\Support\CurrentUserScope;
 use App\Policies\LayoutPolicy;
 use App\Policies\PresencePolicy;
+use App\Support\ClientComponentFinder;
+use App\Support\ClientDeclarations;
+use App\Support\ClientOwnerAvailability;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
 use App\Support\DraftProducers;
@@ -46,9 +49,6 @@ use App\Support\ProtectedViews;
 use App\Support\ReaderRequests;
 use App\Support\RecordMenus;
 use App\Support\RefusalReason;
-use App\Support\UiComponentFinder;
-use App\Support\UiDeclarations;
-use App\Support\UiOwnerAvailability;
 use App\Support\UserChannel;
 use App\Support\WindowResults;
 use App\Values\FilePath;
@@ -99,21 +99,21 @@ final class WebServiceProvider extends ServiceProvider
 
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);
-        $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);
+        $this->app->bind(ClientOwnerAvailabilityContract::class, ClientOwnerAvailability::class);
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);
 
         $this->app->singleton(
-            UiDeclarations::class,
-            fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()),
+            ClientDeclarations::class,
+            fn ($app) => $app->make(DomainRegistry::class)->clientDeclarations(...CorePages::declarations()),
         );
 
-        $this->app->bind(SlotSections::class, UiDeclarations::class);
-        $this->app->bind(DeclaredPages::class, UiDeclarations::class);
+        $this->app->bind(SlotSections::class, ClientDeclarations::class);
+        $this->app->bind(DeclaredPages::class, ClientDeclarations::class);
 
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
-        $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(
-            $app->make(UiDeclarations::class),
+        $this->app->bind('inertia.view-finder', fn ($app) => new ClientComponentFinder(
+            $app->make(ClientDeclarations::class),
             new FileViewFinder(
                 $app['files'],
                 $app['config']->get('inertia.pages.paths'),
@@ -153,7 +153,7 @@ final class WebServiceProvider extends ServiceProvider
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));
 
         $this->loadCoreRoutes('web/web.php');
-        $this->commands([GenerateUiManifest::class]);
+        $this->commands([GenerateClientManifest::class]);
         $router->aliasMiddleware('journal.visible', CheckPageVisibility::class);
 
         if (! $this->app->routesAreCached()) {

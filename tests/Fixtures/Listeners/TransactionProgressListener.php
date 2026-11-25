@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 
 /**
  * A Core listener the command's transaction requires.
@@ -13,5 +13,5 @@ use App\Contracts\Navigation\UserInterfaceUpdater;
 #[InCommandTransaction]
 final class TransactionProgressListener
 {
-    public function handle(UserInterfaceUpdater $event): void {}
+    public function handle(ClientUpdate $event): void {}
 }

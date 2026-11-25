@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Exceptions\UiPathInvalid;
+use App\Exceptions\ClientPathInvalid;
 
 /**
  * A declared path relative to its domain's prefix, checked to be normalised: lower-case segments or {name}
@@ -28,14 +28,14 @@ final readonly class RoutePath
     public static function of(string $declaration, string $path): self
     {
         if ($path !== '' && preg_match('#^'.self::SEGMENT.'(?:/'.self::SEGMENT.')*$#', $path) !== 1) {
-            throw UiPathInvalid::notNormalised($declaration, $path);
+            throw ClientPathInvalid::notNormalised($declaration, $path);
         }
 
         preg_match_all('/\{([a-z0-9_]+)\}/', $path, $matches);
         $parameters = $matches[1];
 
         if (count(array_unique($parameters)) !== count($parameters)) {
-            throw UiPathInvalid::parameterTwice($declaration, $path);
+            throw ClientPathInvalid::parameterTwice($declaration, $path);
         }
 
         return new self($path, $parameters);

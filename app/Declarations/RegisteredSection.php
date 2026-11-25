@@ -6,7 +6,7 @@ namespace App\Declarations;
 
 use App\Contracts\Authorization\VisibilityCheck;
 use App\Contracts\Navigation\SectionResolver;
-use App\Exceptions\UiSlotMismatch;
+use App\Exceptions\ClientSlotMismatch;
 
 /**
  * A checked section of an installed domain, joined to the page whose slot it fills: its full key, its reader, its
@@ -15,7 +15,7 @@ use App\Exceptions\UiSlotMismatch;
 final readonly class RegisteredSection
 {
     private function __construct(
-        public DomainUi $owner,
+        public DomainClient $owner,
         public Section $section,
         public string $key,
         public RegisteredPage $host,
@@ -25,13 +25,13 @@ final readonly class RegisteredSection
         public string $propName,
     ) {}
 
-    public static function of(DomainUi $owner, Section $section, RegisteredPage $host): self
+    public static function of(DomainClient $owner, Section $section, RegisteredPage $host): self
     {
         $key = $owner->fullKey('section', $section->key);
         $slot = $host->slots[$section->slot];
 
         if ($slot->takes !== $section->takes) {
-            throw UiSlotMismatch::takes($key, $section->slot, $slot->takes->value, $section->takes->value);
+            throw ClientSlotMismatch::takes($key, $section->slot, $slot->takes->value, $section->takes->value);
         }
 
         if ($section->visibility !== null) {

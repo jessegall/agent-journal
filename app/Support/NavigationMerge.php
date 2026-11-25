@@ -17,11 +17,11 @@ use Psr\Log\LoggerInterface;
 final readonly class NavigationMerge
 {
     public function __construct(
-        private UiDeclarations $declarations,
+        private ClientDeclarations $declarations,
         private VisibilityChecks $visibility,
         private Container $container,
         private LoggerInterface $log,
-        private UiOwnerAvailability $owners,
+        private ClientOwnerAvailability $owners,
     ) {}
 
     public function index(): NavigationIndex

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
@@ -85,7 +85,7 @@ final class DomainImportsTest extends TestCase
     {
         $owners = [];
 
-        foreach ($this->app->make(UiDeclarations::class)->owners() as $owner) {
+        foreach ($this->app->make(ClientDeclarations::class)->owners() as $owner) {
             $folder = realpath($owner->scriptFolder);
 
             if ($folder !== false && is_dir($folder)) {

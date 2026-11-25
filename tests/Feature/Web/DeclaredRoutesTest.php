@@ -12,17 +12,17 @@ use App\Enums\Navigation\Icon;
 use App\Enums\Profiles\SlotContextType;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
+use App\Support\ClientDeclarations;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
-use App\Support\UiDeclarations;
 use Illuminate\Routing\Router;
-use Tests\Fixtures\UiDeclarations\Desk\DeskDomain;
-use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
-use Tests\Fixtures\UiDeclarations\Desk\SaveDraft;
-use Tests\Fixtures\UiDeclarations\Library\AddBook;
-use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
-use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
-use Tests\Fixtures\UiDeclarations\Library\NobodySees;
+use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
+use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;
+use Tests\Fixtures\ClientDeclarations\Desk\SaveDraft;
+use Tests\Fixtures\ClientDeclarations\Library\AddBook;
+use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
+use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
+use Tests\Fixtures\ClientDeclarations\Library\NobodySees;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -44,7 +44,7 @@ final class DeclaredRoutesTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         $declarations = $this->declarations();
-        $this->app->instance(UiDeclarations::class, $declarations);
+        $this->app->instance(ClientDeclarations::class, $declarations);
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);
         $router->getRoutes()->refreshNameLookups();
@@ -68,7 +68,7 @@ final class DeclaredRoutesTest extends TestCase
         $this->actingAs($this->owner)->post('/library/hidden/books')->assertNotFound();
     }
 
-    private function declarations(): UiDeclarations
+    private function declarations(): ClientDeclarations
     {
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
@@ -93,6 +93,6 @@ final class DeclaredRoutesTest extends TestCase
                 ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
         ]);
 
-        return UiDeclarations::check([$library, $desk]);
+        return ClientDeclarations::check([$library, $desk]);
     }
 }

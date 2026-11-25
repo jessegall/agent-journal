@@ -6,7 +6,7 @@ namespace App\Events\Sessions;
 
 use App\Contracts\Accounts\AccountNoticeCause;
 use App\Contracts\Events\ListenerFailureLog;
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Enums\Accounts\AccountNoticeReason;
 use App\Enums\Drivers\DriverFailure;
 use App\Support\RecordIdentity;
@@ -15,7 +15,7 @@ use App\Support\RecordIdentity;
  * A start's driver reported that a request failed, and why in its checked vocabulary, with the account by identity
  * and the sign-in generation its start ran in when it ran on one; the driver's own error text stays private.
  */
-final readonly class DriverFailed extends SessionEvent implements AccountNoticeCause, ListenerFailureLog, UserInterfaceUpdater
+final readonly class DriverFailed extends SessionEvent implements AccountNoticeCause, ClientUpdate, ListenerFailureLog
 {
     public function __construct(
         public string $agentId,

@@ -1,6 +1,6 @@
 // Checks that each domain's browser code imports only what it may: its own files, @domain/<itself>, @kit, its own
 // generated types and routes, and packages. Web, the shell, may also use @/. The owners and their folders come from
-// resources/js/generated/domain-roots.json, written by php artisan journal:ui-manifest from the same registry.
+// resources/js/generated/domain-roots.json, written by php artisan journal:client-manifest from the same registry.
 // Usage: node scripts/check-domain-imports.mjs [roots.json] [project root]
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';

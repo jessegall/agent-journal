@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Support\ActorContext;
 
 /**
  * A document was published with its first revision. It carries ids and the number, never the text.
  */
-final readonly class DocumentCreated extends DocumentEvent implements UserInterfaceUpdater
+final readonly class DocumentCreated extends DocumentEvent implements ClientUpdate
 {
     public function __construct(
         public string $documentId,

@@ -38,3 +38,4 @@ variant	say what it is: driver type for headless or terminal
 launch	an agent or session is started, never launched: say start, and session start for the noun (user 22350)
 prelaunch	say prestart: what runs before a session starts (user 22350)
 relaunch	say restart (user 22350)
+ui	say client: what the browser shows is the client (user 24540)

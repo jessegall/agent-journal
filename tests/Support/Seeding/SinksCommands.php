@@ -165,10 +165,10 @@ trait SinksCommands
     {
         foreach ($this->dispatched() as $sunk) {
             Assert::assertContains(
-$sunk->name(),
- $declared,
- "{$sender} sent {$sunk->name()}: declare it with #[Dispatches].",
-);
+                $sunk->name(),
+                $declared,
+                "{$sender} sent {$sunk->name()}: declare it with #[Dispatches].",
+            );
         }
 
         return $this;

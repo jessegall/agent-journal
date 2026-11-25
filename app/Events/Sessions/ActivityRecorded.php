@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 
 /**
  * An agent's activity was recorded, so open Activity windows read their feed again.
  */
-final readonly class ActivityRecorded extends SessionEvent implements UserInterfaceUpdater
+final readonly class ActivityRecorded extends SessionEvent implements ClientUpdate
 {
     public function __construct(public string $entryId) {}
 }

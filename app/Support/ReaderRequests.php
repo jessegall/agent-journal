@@ -9,7 +9,7 @@ use App\Contracts\Navigation\SectionResolver;
 use App\Contracts\Reads\ReaderRequests as ReaderRequestsContract;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Declarations\ResolverDefinition;
-use App\Exceptions\UiResolverInvalid;
+use App\Exceptions\ClientResolverInvalid;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -45,7 +45,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
             return $built;
         }
 
-        throw UiResolverInvalid::notA(
+        throw ClientResolverInvalid::notA(
             $key,
             $resolver->resolver,
             PageResolver::class,
@@ -63,7 +63,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
             return $built;
         }
 
-        throw UiResolverInvalid::notA(
+        throw ClientResolverInvalid::notA(
             $key,
             $resolver->resolver,
             SectionResolver::class,

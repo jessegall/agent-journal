@@ -9,9 +9,9 @@ namespace App\Declarations;
  */
 final readonly class RegisteredSidebarGroup
 {
-    private function __construct(public DomainUi $owner, public string $key, public string $label) {}
+    private function __construct(public DomainClient $owner, public string $key, public string $label) {}
 
-    public static function of(DomainUi $owner, SidebarGroup $group): self
+    public static function of(DomainClient $owner, SidebarGroup $group): self
     {
         return new self($owner, $owner->fullKey('sidebar group', $group->key), $group->label);
     }

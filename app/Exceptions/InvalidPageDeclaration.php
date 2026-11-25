@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * A page, one of its slots or one of its pane options that the application refuses to start with.
  */
-final class InvalidPageDeclaration extends UiDeclarationError
+final class InvalidPageDeclaration extends ClientDeclarationError
 {
     public static function resolverReturnsNoData(string $page, string $resolver): self
     {

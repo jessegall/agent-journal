@@ -30,7 +30,7 @@ use App\Data\Processes\RunWindowData;
 use App\Data\Processes\SampleData;
 use App\Data\Profiles\ProposalData;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainUi;
+use App\Declarations\DomainClient;
 use App\Declarations\Page;
 use App\Enums\CommandRules\AdmissionRefusalCode;
 use App\Enums\CommandRules\AnalysisLimit;
@@ -220,9 +220,9 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
     /**
      * The processes pages under their own key, processes, as checked with the domains' declarations.
      */
-    public function declarations(): DomainUi
+    public function declarations(): DomainClient
     {
-        return DomainUi::ofCore($this, 'Processes', 'processes');
+        return DomainClient::ofCore($this, 'Processes', 'processes');
     }
 
     private function listPage(): Page

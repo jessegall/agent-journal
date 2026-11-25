@@ -51,7 +51,7 @@ through the same routes, props and navigation as the domains'.
 - **Navigation** items link to the domain's own pages with exact route and query values; a children reader lists records
   as items, checked like static ones, and a key met twice is refused.
 
-Every declaration is checked when the application starts (`UiDeclarations::check`): repeated keys or paths, a route
+Every declaration is checked when the application starts (`ClientDeclarations::check`): repeated keys or paths, a route
 value that does not fit, a missing component, a slot that does not exist or takes another context, and a domain prefix
 another route or a public folder already uses all stop the start-up.
 
@@ -76,7 +76,7 @@ A page or window component takes one required prop, `data`, typed with the reade
 
 ## Build and deploy
 
-`npm run types:generate` runs, in this order: `php artisan journal:ui-manifest`, `php artisan wayfinder:generate
+`npm run types:generate` runs, in this order: `php artisan journal:client-manifest`, `php artisan wayfinder:generate
 --with-form`, `php artisan typescript:transform`. The build, the check and the type check run it first, then the import
 check. A component expecting other Data than its reader returns fails `vue-tsc` through `ui-prop-checks.ts`.
 

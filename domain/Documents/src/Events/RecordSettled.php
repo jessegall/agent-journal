@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Contracts\Navigation\UserInterfaceUpdater;
+use App\Contracts\Navigation\ClientUpdate;
 use App\Support\Sources\Contracts\DockSourceChanged;
 
 /**
  * A document or report was settled as needing no more attention. It carries ids only.
  */
-final readonly class RecordSettled extends DocumentEvent implements DockSourceChanged, UserInterfaceUpdater
+final readonly class RecordSettled extends DocumentEvent implements ClientUpdate, DockSourceChanged
 {
     public function __construct(public string $recordType, public string $recordId) {}
 

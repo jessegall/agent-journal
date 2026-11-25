@@ -6,7 +6,7 @@ namespace App\Support\Docking;
 
 use App\Support\Cards\DestinationArgument;
 use App\Support\Cards\DockDestination;
-use App\Support\UiDeclarations;
+use App\Support\ClientDeclarations;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use PhpOption\None;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 final readonly class DeclaredPageRoutes
 {
-    public function __construct(private Router $router, private UiDeclarations $declarations) {}
+    public function __construct(private Router $router, private ClientDeclarations $declarations) {}
 
     /**
      * @return Option<DockDestination>
