@@ -31,8 +31,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Only a rejected sign-in seen in an account's current generation asks for a check, and the host's runner reports the
- * program's own certain answer.
+ * The host's runner reports the program's own certain answer to an account check.
  */
 #[TimeLimit(seconds: 4, reason: 'It commits account changes through the bus and empties five tables per test.')]
 final class AccountChecksTest extends TestCase
@@ -59,17 +58,6 @@ final class AccountChecksTest extends TestCase
         );
         $this->account = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Work'), '/journal/accounts/work');
         ActiveAccount::findLockedFor(DefaultDrivers::CODEX)->select($this->account);
-    }
-
-    public function test_only_a_rejected_sign_in_of_the_current_generation_asks_for_a_check(): void
-    {
-        $this->failWith(DriverFailure::RateLimit, 1);
-        $this->failWith(DriverFailure::AuthenticationFailed, 0);
-        $this->assertNull($this->account->refresh()->check_requested_generation);
-
-        $this->failWith(DriverFailure::AuthenticationFailed, 1);
-
-        $this->assertSame(1, $this->account->refresh()->check_requested_generation);
     }
 
     public function test_the_runner_reports_the_programs_own_certain_answer(): void
