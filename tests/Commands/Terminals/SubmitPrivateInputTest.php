@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Tests\Commands\Terminals;
 
 use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
-use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Data\Terminals\TerminalControlData;
 use App\Enums\Drivers\DriverOperation;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
 use App\Support\PrivateValues;
-use App\Values\BrowserInputCapabilities;
 use App\Values\PrivateSubmission;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
+use Tests\Support\Terminals\TakesTerminalControl;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -35,6 +31,7 @@ final class SubmitPrivateInputTest extends TestCase
     use OpensTerminalRuntimes;
     use RunsTrustedCommands;
     use SendsHostCalls;
+    use TakesTerminalControl;
 
     private const array TABLES = [
         'agents',
@@ -70,24 +67,5 @@ final class SubmitPrivateInputTest extends TestCase
         $this->assertStringContainsString($secret, (string) $claimed->message);
         $this->assertStringNotContainsString($secret, (string) $again->message);
         $this->assertSame(0, DriverRequest::query()->where('message', 'like', '%'.$secret.'%')->count());
-    }
-
-    private function controllableRuntime(): AgentRuntime
-    {
-        $host = $this->enrolledHost();
-        $everyInput = new BrowserInputCapabilities(true, true, true, true, true);
-        Host::query()->whereKey($host->hostId)->sole()->advertiseBrowserInput($everyInput);
-
-        return $this->runtimeOn($host->hostId);
-    }
-
-    private function openInterest(AgentRuntime $runtime): string
-    {
-        return $this->asOwner(new OpenTerminalViewCommand($runtime->session->agent_id, (string) Str::ulid()))->readInterestId;
-    }
-
-    private function take(AgentRuntime $runtime, string $interest): TerminalControlData
-    {
-        return $this->asOwner(new TakeTerminalControlCommand($runtime->session->agent_id, $interest, (string) Str::ulid()));
     }
 }

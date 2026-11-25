@@ -292,10 +292,6 @@ final class AgentDriverLedgerTest extends TestCase
     }
 
     /**
-     * A host that could not start a turn, such as a prompt its screen did not let in, reports it staged and tries no
-     * more: the journal takes the request back and offers it again once its wait has passed.
-     */
-    /**
      * The host reports a turn's end as it saw it; the journal judges a result marked an error as a failed turn.
      */
     public function test_a_turn_whose_result_is_an_error_is_judged_failed(): void
@@ -317,17 +313,6 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
-    /**
-     * A turn that runs past the journal's limit is interrupted on the next engine pass, once, and its runtime held.
-     */
-    /**
-     * The host reports plain facts and the journal chooses the hold: an account that is not signed in, and a stop the
-     * host could not prove, each leave the runtime needing attention.
-     */
-    /**
-     * The journal's hold is the only one: an interrupted runtime is offered no new work until a user releases it, and
-     * then it is.
-     */
     public function test_an_interrupt_holds_the_runtime_at_once(): void
     {
         [, $opened] = $this->openRuntime();
@@ -347,10 +332,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->deliver($opened, 'after-stop', 'Too late');
     }
 
-    /**
-     * A host keeps the runtime of every session it ever ran, so a claim reads only those with a request waiting, and
-     * more than a page of their requests when they hold that many.
-     */
     public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
     {
         [$host, $fixedValues] = $this->claimedProtectedStart();
@@ -549,14 +530,6 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
-    /**
-     * An idle runtime reports nothing between two turns, so its last report grew stale after a
-     * minute and its session read as Status unknown though nothing was wrong.
-     */
-    /**
-     * A page learns that a session's state changed from the host's report itself, so its header
-     * never waits for a reload; a beat that only keeps a fresh report fresh says nothing.
-     */
     public function test_a_verified_exit_ends_the_session(): void
     {
         [$host, $opened] = $this->openRuntime();
