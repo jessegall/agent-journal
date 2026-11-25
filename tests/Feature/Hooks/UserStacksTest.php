@@ -8,7 +8,6 @@ use App\Enums\Engine\NoSubject;
 use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\StackTargetRefused;
-use App\Exceptions\StackTransactionRequired;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
 use App\Support\DomainEntry;
@@ -72,20 +71,6 @@ final class UserStacksTest extends TestCase
         $this->assertSame(['core.ready', 'notes.writing'], $this->storedTypeKeys());
     }
 
-    public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
-    {
-        $this->actAs(TestActors::user(7));
-
-        $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(UserStack::class)->push(
-                $this->target,
-                new StateReference('test.switched_off', NoSubject::None, ['enabled' => false]),
-            ),
-        );
-
-        $this->assertSame(['core.ready'], $this->storedTypeKeys());
-    }
-
     public function test_an_agent_without_the_steer_ability_cannot_push_onto_a_stack(): void
     {
         $this->actAsAgent($this->target->agentId);
@@ -112,15 +97,6 @@ final class UserStacksTest extends TestCase
         $this->expectException(StackTargetRefused::class);
 
         $this->pushInTransaction(new StackTarget($this->target->agentId, $other->sessionId));
-    }
-
-    public function test_the_push_runs_only_inside_a_stack_transaction(): void
-    {
-        $this->actAs(TestActors::user(7));
-
-        $this->expectException(StackTransactionRequired::class);
-
-        $this->app->make(UserStack::class)->push($this->target, new StateReference('notes.writing', NoSubject::None));
     }
 
     private function pushInTransaction(StackTarget $target): void

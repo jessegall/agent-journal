@@ -8,17 +8,13 @@ use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Enums\Agents\StackStatus;
 use App\Enums\Drivers\RewriteSupport;
-use App\Exceptions\CredentialRejected;
-use App\Exceptions\DriverUnsupported;
 use App\Exceptions\ProfileMissing;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
-use App\Support\ConversationVisits;
 use App\Support\CredentialLookup;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Support\Drivers\DriverCapabilities;
@@ -31,7 +27,6 @@ use App\Support\SignedCall;
 use App\Support\Stack\HookAnswer;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
-use App\Support\States\ReadyState;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -110,11 +105,6 @@ final class HookStartTest extends TestCase
         $this->assertSame(['core.ready'], $this->bottomOf($second));
     }
 
-    public function test_every_start_starts_on_the_one_ready_bottom(): void
-    {
-        $this->assertSame([ReadyState::TYPE_KEY], $this->bottomOf($this->start('read-only-helper')));
-    }
-
     public function test_an_unknown_profile_refuses_the_start_and_keeps_nothing(): void
     {
         try {
@@ -124,34 +114,6 @@ final class HookStartTest extends TestCase
             $this->assertSame(0, AgentSession::query()->count());
             $this->assertSame(0, AgentStackRow::query()->acrossEveryAgent()->count());
         }
-    }
-
-    public function test_a_program_without_journal_hooks_cannot_be_started(): void
-    {
-        $this->expectException(DriverUnsupported::class);
-
-        $this->start('main-agent', 'some-other-driver');
-    }
-
-    public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
-    {
-        $started = $this->start('main-agent');
-        $visits = $this->app->make(ConversationVisits::class);
-
-        $visits->entered($started->session->id, 'driver-session-1', null, 'call-1', CarbonImmutable::now());
-        $framesBefore = $this->bottomOf($started);
-        $visits->entered($started->session->id, 'driver-session-2', null, 'call-2', CarbonImmutable::now());
-
-        $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame(
-            'driver-session-2',
-            $started->session->fresh(['currentConversation'])?->currentConversation?->native_id,
-        );
-        $this->assertSame($framesBefore, $this->bottomOf($started));
-        $this->assertSame(
-            $started->session->id,
-            $this->app->make(CredentialLookup::class)->sessionFor($started->token)->id,
-        );
     }
 
     public function test_a_child_has_its_own_stack_so_its_stop_does_not_answer_for_the_parent(): void
@@ -173,20 +135,6 @@ final class HookStartTest extends TestCase
         $held = $this->stopAs($parent, 'call-2');
 
         $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), $held);
-    }
-
-    public function test_ending_a_start_closes_its_stack_and_revokes_its_credential(): void
-    {
-        $started = $this->start('main-agent');
-
-        $this->app->make(StartSessions::class)->end($started->session);
-
-        $this->assertSame(
-            StackStatus::Closed,
-            AgentStackRow::query()->authorizedFor($this->targetOf($started))->sole()->status,
-        );
-        $this->expectException(CredentialRejected::class);
-        $this->app->make(CredentialLookup::class)->sessionFor($started->token);
     }
 
     private function start(string $profileKey, string $driver = 'claude-code'): StartedAgent

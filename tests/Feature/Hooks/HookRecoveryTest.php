@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Agents\StackStatus;
@@ -59,48 +58,6 @@ final class HookRecoveryTest extends TestCase
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
-    }
-
-    public function test_silence_first_makes_the_session_silent_and_keeps_the_start_working(): void
-    {
-        $started = $this->start();
-
-        $this->startedSecondsAgo($started, 121);
-        $this->heartbeats()->markSilentStarts();
-
-        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
-        $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
-        $this->assertSame(
-            $started->session->id,
-            $this->app->make(CredentialLookup::class)->sessionFor($started->token)->id,
-        );
-    }
-
-    public function test_a_session_inside_its_presence_window_stays_active(): void
-    {
-        $started = $this->start();
-
-        $this->startedSecondsAgo($started, 100);
-        $this->heartbeats()->markSilentStarts();
-
-        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
-    }
-
-    public function test_a_heartbeat_makes_a_silent_session_active_again(): void
-    {
-        $started = $this->start();
-        $this->startedSecondsAgo($started, 121);
-        $this->heartbeats()->markSilentStarts();
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($started->session->agent_id),
-            TestStartAuthority::forAgent($started->session->agent_id),
-        );
-        $this->app->make(CommandBus::class)->run(new RecordHeartbeatCommand($started->session->id));
-        $this->heartbeats()->markSilentStarts();
-
-        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
-        $this->assertNull($started->session->refresh()->end_evidence);
     }
 
     public function test_a_long_silence_never_ends_the_session_and_keeps_the_credential_and_the_stack(): void

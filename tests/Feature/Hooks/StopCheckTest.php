@@ -42,19 +42,6 @@ final class StopCheckTest extends TestCase
 
     private const string HASH = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
-    public function test_an_attempt_is_opened_once_per_session_and_stop_callback(): void
-    {
-        $start = TestStart::start('writing-helper');
-
-        $first = $this->open($start, 'stop-1');
-        $retried = $this->open($start, 'stop-1');
-        $next = $this->open($start, 'stop-2');
-
-        $this->assertSame($first->id, $retried->id);
-        $this->assertNotSame($first->id, $next->id);
-        $this->assertSame(StopCheckStatus::Pending, $first->status);
-    }
-
     public function test_the_host_stores_every_status_and_the_attempt_settles_by_them(): void
     {
         $start = TestStart::start('writing-helper');

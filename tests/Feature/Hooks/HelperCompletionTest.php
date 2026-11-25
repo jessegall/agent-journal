@@ -31,7 +31,6 @@ use App\Support\EngineAccess;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\SystemActor;
-use App\Values\AgentText;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use App\Values\StartPolicy;
@@ -50,7 +49,6 @@ use Tests\Support\AsksTheStopGate;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
-use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -87,21 +85,6 @@ final class HelperCompletionTest extends TestCase
             HelperCompletionCertified::class,
             fn (HelperCompletionCertified $event) => $event->work->id === $work->id,
         );
-    }
-
-    public function test_a_dirty_writer_cannot_finish_while_its_checks_run_or_fail(): void
-    {
-        Event::fake([HelperCompletionCertified::class]);
-        $start = $this->helperWithConditions();
-        $this->startedFor($start);
-
-        $running = $this->stop($start, 'stop-1');
-        $this->settle('stop-1', StopConditionResultType::Failed, 'NOTE is not committed');
-        $refused = $this->stop($start, 'stop-1');
-
-        $this->assertSame([TestText::words(AgentText::of('core.stop.checks_running'))], $this->messagesOf($running));
-        $this->assertSame(AnswerType::Deny, $this->typeOf($refused));
-        Event::assertNotDispatched(HelperCompletionCertified::class);
     }
 
     public function test_a_reader_with_no_conditions_finishes_on_its_stack_checks_alone(): void

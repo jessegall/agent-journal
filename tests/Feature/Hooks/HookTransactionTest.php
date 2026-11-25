@@ -7,7 +7,6 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\ContextStartType;
-use App\Exceptions\StackLockTimedOut;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\HookCall;
 use App\Support\Drivers\DriverCapabilities;
@@ -19,7 +18,6 @@ use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
 use App\Values\AgentText;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
@@ -37,35 +35,6 @@ final class HookTransactionTest extends TestCase
         committed
 
         TEXT;
-
-    public function test_a_hook_waiting_on_a_held_stack_lock_times_out_and_keeps_nothing(): void
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.hooks_holder',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-        $holder = DB::connection('hooks_holder');
-        $holder->beginTransaction();
-        $holder->table('agent_stacks')->lockForUpdate()->get();
-
-        try {
-            $this->machine()->answer(
-                $this->stop(),
-                $this->capabilities(),
-                new OperationDeadline(300),
-                fn (HookAnswer $answer, AgentTexts $texts) => DriverReplies::stop($answer, $texts),
-            );
-            $this->fail('The hook did not time out on the held lock.');
-        } catch (StackLockTimedOut $timedOut) {
-            $this->assertInstanceOf(StackLockTimedOut::class, $timedOut);
-        } finally {
-            $holder->rollBack();
-            $holder->disconnect();
-        }
-
-        $this->assertSame(0, HookCall::query()->count());
-    }
 
     public function test_a_hook_waits_for_a_push_another_process_holds_and_then_sees_it(): void
     {

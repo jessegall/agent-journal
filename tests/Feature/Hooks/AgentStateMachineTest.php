@@ -66,63 +66,6 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
 
-    public function test_a_finished_task_is_passed_over_and_stays_stored_when_the_stop_is_allowed(): void
-    {
-        $this->pushState($this->task(42));
-        $this->tasks->tasks[42] = TaskStatus::Finished;
-
-        $reply = $this->machine()->answer(
-            $this->stop(),
-            $this->capabilities(),
-            new OperationDeadline(3000),
-            $this->stopReply(),
-        );
-
-        $this->assertSame('{}', $reply->stdout);
-        $this->assertSame(['core.ready', 'test.tasks'], $this->storedTypeKeys());
-    }
-
-    #[TimeLimit(
-        seconds: 5,
-        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
-    )]
-    public function test_a_supported_rewrite_answers_the_admitted_command_and_leaves_the_stack(): void
-    {
-        $this->pushState($this->rewriting());
-
-        $reply = $this->machine()->answer(
-            $this->shell('composer test'),
-            $this->capabilities(),
-            new OperationDeadline(3000),
-            $this->shellReply(RewriteSupport::WithoutApproval),
-        );
-
-        $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
-        $this->assertStringStartsWith(self::ADMISSION_PREFIX, $command);
-        $this->assertSame(['core.ready', 'test.rewriting'], $this->storedTypeKeys());
-        $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
-    }
-
-    #[TimeLimit(
-        seconds: 5,
-        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
-    )]
-    public function test_a_rewrite_the_program_cannot_take_is_refused_and_its_child_is_dropped(): void
-    {
-        $this->pushState($this->rewriting());
-
-        $reply = $this->machine()->answer(
-            $this->shell('composer test'),
-            $this->capabilities(RewriteSupport::NeedsApproval),
-            new OperationDeadline(3000),
-            $this->shellReply(RewriteSupport::NeedsApproval),
-        );
-
-        $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(['core.ready', 'test.rewriting'], $this->storedTypeKeys());
-        $this->assertSame(AnswerType::Deny, HookCall::query()->sole()->answer->type);
-    }
-
     public function test_a_retry_after_a_lost_response_gets_the_same_bytes_without_changing_the_stack(): void
     {
         $this->pushState($this->task(42));

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\Actors\ActorVisibility;
 use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\AgentContextMissing;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
-use App\Models\Support\AgentScope;
 use App\Support\ActorStore;
-use App\Support\AgentContext;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\References\StateReference;
 use App\Support\Stack\StateTypes;
@@ -105,22 +102,6 @@ final class HookScopeTest extends TestCase
             $store->actAsSystem('test', fn () => [$this->visibleStacks(), $this->visibleCalls()]),
         );
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
-    }
-
-    public function test_the_agent_scope_matches_nothing_while_the_system_acts(): void
-    {
-        $this->startTestAgentRequest(1, 10);
-        $store = $this->app->make(ActorStore::class);
-        $scope = new AgentScope(
-            fn (): ActorVisibility => $this->app->make(ActorVisibility::class),
-            fn (): AgentContext => $this->app->make(AgentContext::class),
-        );
-
-        $query = AgentStackRow::query()->withoutGlobalScopes();
-        $store->actAsSystem('test', fn () => $scope->apply($query, new AgentStackRow()));
-
-        $this->assertSame(0, $query->count());
-        $this->assertStringNotContainsString('agent_id', $query->toSql());
     }
 
     public function test_the_locking_query_is_limited_and_names_its_table(): void

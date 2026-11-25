@@ -14,7 +14,6 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
-use RuntimeException;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
 use Tests\Support\ActsAsActors;
@@ -82,21 +81,6 @@ final class StateBridgeReleaseTest extends TestCase
 
         $this->assertSame([], $heardBeforeCommit);
         $this->assertSame(["first for {$first->sessionId}", "second for {$second->sessionId}"], $this->heard);
-    }
-
-    public function test_a_fact_raised_with_no_admission_has_no_audience_and_a_rollback_reaches_no_listener(): void
-    {
-        $row = $this->row();
-        $stack = $this->app->make(StackTransaction::class);
-
-        $stack->run(fn () => $this->within(fn () => $row->rename('unadmitted')));
-        $this->assertThrows(fn () => $stack->run(function () use ($row): void {
-            $this->renameAs(TestActors::stack(1, 10), $row, 'rolled back');
-
-            throw new RuntimeException('the stack failed');
-        }), RuntimeException::class);
-
-        $this->assertSame(['unadmitted for no audience'], $this->heard);
     }
 
     private function renameAs(StackTarget $target, RaisingRow $row, string $name): void

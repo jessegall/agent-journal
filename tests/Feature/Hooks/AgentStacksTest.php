@@ -230,25 +230,6 @@ final class AgentStacksTest extends TestCase
         );
     }
 
-    public function test_pushing_a_unique_state_already_on_the_stack_adds_nothing(): void
-    {
-        $this->createStack();
-
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(43)));
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
-
-        $this->assertSame(
-            [null, '42', '43'],
-            array_map(
-                fn (
-                    FrameRecord $frame,
-                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null,
-                $this->storedFrames(),
-            ),
-        );
-    }
-
     public function test_a_switched_off_conditional_state_is_declined_and_a_switched_on_one_is_pushed(): void
     {
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {

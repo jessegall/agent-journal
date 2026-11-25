@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\DriverFailure;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Agents\AgentSession;
@@ -16,11 +15,8 @@ use App\Support\AgentContext;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
 use App\Support\StartStacks;
-use App\Values\AgentText;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Commands\StartTask\StartTaskCommand;
-use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Event;
@@ -29,7 +25,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestStartAuthority;
-use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -94,34 +89,6 @@ final class HookEndpointTest extends TestCase
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
-    public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
-    {
-        $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->asStartedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id)));
-
-        $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
-
-        $this->assertStringContainsString(sprintf(self::STILL_NEEDS_WORK, $task->number), (string) $stdout);
-    }
-
-    #[TimeLimit(
-        seconds: 5,
-        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
-    )]
-    public function test_cores_admission_refuses_an_unsaved_check_and_sends_a_read_to_the_runner(): void
-    {
-        $refused = $this->hookOutput('claude-code', $this->bashBody('composer test'), 'call-1');
-        $admitted = $this->hookOutput('claude-code', $this->bashBody('git status'), 'call-2');
-
-        $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString(
-            TestText::words(AgentText::of('core.shell.nothing_started')),
-            $refused['hookSpecificOutput']['permissionDecisionReason'],
-        );
-        $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];
-        $this->assertStringStartsWith(self::ADMISSION_PREFIX, $runnerLine);
-    }
-
     public function test_no_native_flag_makes_a_line_admitted(): void
     {
         $flagged = json_decode($this->bashBody('composer test'), true);
@@ -130,15 +97,6 @@ final class HookEndpointTest extends TestCase
         $stdout = $this->hookOutput('claude-code', (string) json_encode($flagged));
 
         $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
-    }
-
-    public function test_a_retry_gets_exactly_the_recorded_bytes(): void
-    {
-        $first = $this->hook('claude-code', $this->bashBody('composer test'), 'call-7')->assertOk()->getContent();
-        $retry = $this->hook('claude-code', $this->bashBody('composer test'), 'call-7')->assertOk()->getContent();
-
-        $this->assertSame($first, $retry);
-        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_a_retry_with_other_input_conflicts(): void

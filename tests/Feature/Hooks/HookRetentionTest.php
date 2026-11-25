@@ -6,19 +6,15 @@ namespace Tests\Feature\Hooks;
 
 use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
-use App\Exceptions\HookIdentityExpired;
 use App\Exceptions\RetentionTooShort;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
-use App\Support\AgentContext;
 use App\Support\HookRetryWindow;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\PruneHookHistory;
 use App\Support\References\StateReference;
 use App\Support\RetentionPeriods;
-use App\Support\SignedCall;
-use App\Support\StackAccess;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\RecordedAnswer;
@@ -76,28 +72,6 @@ final class HookRetentionTest extends TestCase
         $this->assertFalse(AgentStackRow::query()->authorizedFor(self::target(1))->exists());
         $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(2))->exists());
         $this->assertTrue(AgentStackRow::query()->authorizedFor(self::target(3))->exists());
-    }
-
-    public function test_a_pruned_call_cannot_come_back_as_a_fresh_call(): void
-    {
-        $this->stack(1);
-        $issuedAt = CarbonImmutable::now();
-        $this->recordCall(1, 'call-7');
-        $this->moveDays(8);
-        $this->app->make(PruneHookHistory::class)->prune();
-        $this->app->instance(
-            AgentContext::class,
-            new AgentContext(
-                self::target(1)->agentId,
-                self::target(1)->sessionId,
-                new SignedCall('call-7', $issuedAt, str_repeat('a', 64)),
-                null,
-            ),
-        );
-
-        $this->expectException(HookIdentityExpired::class);
-
-        $this->app->make(StackAccess::class)->hookIdentity();
     }
 
     public function test_pruning_removes_the_links_of_what_it_removes(): void

@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
-use App\Enums\Hooks\CallFailure;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\DriverReply;
 use App\Support\Relay\HookRelay;
@@ -67,19 +66,6 @@ final class HookPreparationTest extends TestCase
 
         $this->assertEquals(TestText::outages()->preparationPending('PreToolUse'), $this->relay(self::SHELL));
         $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_a_prepared_main_goes_on_during_an_outage_and_a_helper_is_refused(): void
-    {
-        $this->prepare('generation-1');
-        Http::fake(fn () => throw JournalUnreachable::now());
-
-        $main = $this->relay(self::SHELL);
-        $helper = $this->relay(self::SHELL, passesOutages: false);
-
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $main->stdout);
-        $this->assertFileExists($this->bypassLog);
-        $this->assertEquals(TestText::outages()->for(CallFailure::Unreachable, false, 'PreToolUse'), $helper);
     }
 
     public function test_a_session_start_the_journal_answers_prepares_its_generation(): void

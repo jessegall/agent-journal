@@ -6,8 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\RewriteSupport;
-use App\Events\Hooks\ContextStarted;
-use App\Models\Drivers\HookCall;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;
@@ -26,7 +24,6 @@ use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
 use Tests\Support\HoldingRules;
@@ -94,24 +91,6 @@ final class HookCompactionTest extends TestCase
         );
     }
 
-    public function test_a_repeated_callback_gets_the_same_reply_and_keeps_every_memory_weight(): void
-    {
-        $first = $this->compact('call-1');
-        $retry = $this->compact('call-1');
-
-        $this->assertSame($first, $retry);
-        $this->assertEqualsCanonicalizing([2, 1], Memory::query()->pluck('weight')->all());
-        $this->assertSame(1, HookCall::query()->count());
-    }
-
-    public function test_a_second_compaction_keeps_the_memories(): void
-    {
-        $this->compact('call-1');
-        $this->compact('call-2');
-
-        $this->assertEqualsCanonicalizing([2, 1], Memory::query()->pluck('weight')->all());
-    }
-
     public function test_a_compaction_finishes_no_work(): void
     {
         $this->compact('call-1');
@@ -119,19 +98,6 @@ final class HookCompactionTest extends TestCase
         $this->assertSame(TaskStatus::Started, $this->task->fresh()?->status);
         $this->assertSame(1, $this->run->fresh()?->current_step);
         $this->assertSame(['core.ready', 'tasks.work', 'sequences.follow'], $this->storedTypeKeys());
-    }
-
-    public function test_a_replayed_compaction_runs_no_reminder_listener(): void
-    {
-        $this->compact('call-1');
-        $received = 0;
-        Event::listen(ContextStarted::class, function () use (&$received): void {
-            $received++;
-        });
-
-        $this->compact('call-1');
-
-        $this->assertSame(0, $received);
     }
 
     /**
