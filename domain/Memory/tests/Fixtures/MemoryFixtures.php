@@ -30,6 +30,14 @@ final class MemoryFixtures
         return $this;
     }
 
+    /**
+     * The memory the naming verb makes, given back at once instead of read back by its name.
+     */
+    public function createMemory(string $name, string $agent, string $text, int $weight = 5): Memory
+    {
+        return $this->memory($name, $agent, $text, $weight)->memoryCalled($name);
+    }
+
     public function memoryCalled(string $name): Memory
     {
         return $this->aliases->model(Memory::class, $name);

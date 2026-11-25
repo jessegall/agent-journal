@@ -30,8 +30,7 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
     {
         $start = $journal->owner()->signedStart('Builder');
         $reminder = $journal->fixtures(ReminderFixtures::class)
-            ->reminder('Check', 'Builder', CarbonImmutable::now()->addHour())
-            ->reminderCalled('Check');
+            ->createReminder('Check', 'Builder', CarbonImmutable::now()->addHour());
 
         return ToolCall::by($start)
             ->arguments([

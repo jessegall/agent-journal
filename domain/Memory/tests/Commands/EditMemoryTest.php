@@ -36,8 +36,7 @@ final class EditMemoryTest extends TestCase
             ->actAs('Keeper');
 
         $this->memory = $this->journal->fixtures(MemoryFixtures::class)
-            ->memory('Note', 'Keeper', 'First words.', 4)
-            ->memoryCalled('Note');
+            ->createMemory('Note', 'Keeper', 'First words.', 4);
     }
 
     public function test_an_edit_changes_the_text_and_weight_and_moves_the_revision_on(): void

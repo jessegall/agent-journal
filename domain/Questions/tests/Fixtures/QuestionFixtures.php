@@ -56,6 +56,23 @@ final class QuestionFixtures
         return $this;
     }
 
+    /**
+     * The question the naming verb makes, given back at once instead of read back by its name.
+     *
+     * @param  list<string>  $options
+     */
+    public function createQuestion(
+        string $name,
+        Inbox $inbox,
+        string $asker,
+        string $target,
+        string $prompt = 'Which database?',
+        QuestionType $type = QuestionType::Open,
+        array $options = [],
+    ): Question {
+        return $this->question($name, $inbox, $asker, $target, $prompt, $type, $options)->questionCalled($name);
+    }
+
     public function questionCalled(string $name): Question
     {
         return $this->aliases->model(Question::class, $name);

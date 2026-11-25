@@ -36,6 +36,18 @@ final class ReminderFixtures
         return $this;
     }
 
+    /**
+     * The reminder the naming verb makes, given back at once instead of read back by its name.
+     */
+    public function createReminder(
+        string $name,
+        string $owner,
+        CarbonImmutable $dueAt,
+        string|null $title = null,
+    ): Reminder {
+        return $this->reminder($name, $owner, $dueAt, $title)->reminderCalled($name);
+    }
+
     public function reminderCalled(string $name): Reminder
     {
         return $this->aliases->model(Reminder::class, $name);

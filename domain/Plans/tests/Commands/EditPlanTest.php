@@ -33,8 +33,7 @@ final class EditPlanTest extends TestCase
         $this->journal->owner();
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
-            ->plan('First', 'First brief', PlanType::Build)
-            ->planCalled('First');
+            ->createPlan('First', 'First brief', PlanType::Build);
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void

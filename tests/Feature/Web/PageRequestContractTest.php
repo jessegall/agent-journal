@@ -126,14 +126,13 @@ final class PageRequestContractTest extends TestCase
             '/journal/accounts/recorded',
         );
         $question = $this->journal->fixtures(QuestionFixtures::class)
-            ->question(
+            ->createQuestion(
                 'Plan order',
                 $this->journal->inboxes()->personal(ActorReference::of($owner)),
                 'Owner',
                 'Owner',
                 'Which plan first?',
-            )
-            ->questionCalled('Plan order');
+            );
         $attempt = SignInAttempt::create(
             ActorReference::of($owner),
             $account,

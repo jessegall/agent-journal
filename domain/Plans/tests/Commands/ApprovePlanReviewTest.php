@@ -53,10 +53,10 @@ final class ApprovePlanReviewTest extends TestCase
 
         $this->journal->owner();
 
-        $this->task = $this->journal->fixtures(TaskFixtures::class)->task(
+        $this->task = $this->journal->fixtures(TaskFixtures::class)->createTask(
             'Write',
             'Write the page.',
-        )->taskCalled('Write');
+        );
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')

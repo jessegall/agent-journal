@@ -51,6 +51,14 @@ trait ArrangesProcessRuns
         return $this;
     }
 
+    /**
+     * The run the naming verb admits and the runner takes, given back at once instead of read back by its name.
+     */
+    public function createProcessRun(string $name, string $line): ProcessRun
+    {
+        return $this->processRun($name, $line)->processRunCalled($name);
+    }
+
     public function processRunCalled(string $name): ProcessRun
     {
         $id = $this->processRunIds[$name] ?? throw FixtureRefused::missingAlias('process run', $name, self::OWNER);

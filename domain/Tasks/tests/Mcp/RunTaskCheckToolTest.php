@@ -31,7 +31,7 @@ final class RunTaskCheckToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
         $tasks = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->startRun('Ship the dock', 'Builder');
         $task = $tasks->taskCalled('Ship the dock');
-        $check = $journal->actAs('Builder')->processRun('Check', 'cat composer.json')->processRunCalled('Check');
+        $check = $journal->actAs('Builder')->createProcessRun('Check', 'cat composer.json');
 
         return ToolCall::by($start)
             ->arguments([

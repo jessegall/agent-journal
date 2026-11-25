@@ -107,14 +107,13 @@ final class AnswerQuestionTest extends TestCase
     private function asked(QuestionType $type, array $options = []): Question
     {
         return $this->journal->fixtures(QuestionFixtures::class)
-            ->question(
+            ->createQuestion(
                 'Database',
                 $this->journal->sharedInboxOf('Owner', 'Planner'),
                 'Planner',
                 'Owner',
                 type: $type,
                 options: $options,
-            )
-            ->questionCalled('Database');
+            );
     }
 }
