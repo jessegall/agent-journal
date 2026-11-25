@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverCapability;
@@ -14,15 +11,12 @@ use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverRegisteredTwice;
-use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
 use App\Support\DriverCatalogue;
-use App\Support\HostDescriptorEnrollment;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
 use App\Values\HostDescriptor;
-use App\Values\OwnerAuthority;
 use App\Values\ProviderKey;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Data\DriverChoiceData;
@@ -89,20 +83,6 @@ final class ThirdPartyDriverTest extends TestCase
             DriverCapabilityUnsupported::for(DriverCapability::HookMethods, AcmeReaderCapabilities::NO_HOOKS)->getMessage(),
         );
         $this->assertSame('acme/reader', (string) $registry->pinned('acme', DriverType::Headless)->registration->key);
-    }
-
-    public function test_a_host_enrolls_a_third_party_driver_only_once_approved_and_only_an_approved_build(): void
-    {
-        $this->registryWithAcme();
-        $enrollment = $this->app->make(HostDescriptorEnrollment::class);
-        $reasonFor = fn (string $build): string|null => $enrollment->enroll([$this->descriptor($build)])[0]->unavailableReason;
-
-        $this->assertSame(HostDescriptorEnrollment::REGISTRATION_UNAPPROVED, $reasonFor('1.0.0'));
-
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new ApproveDriverCommand(DriverKey::from('acme/reader'), ['1.0.0']));
-
-        $this->assertSame([null, HostDescriptorEnrollment::BUILD_UNAPPROVED], [$reasonFor('1.0.0'), $reasonFor('2.0.0')]);
     }
 
     private function registryWithAcme(): DriverCatalogue

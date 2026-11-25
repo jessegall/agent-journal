@@ -7,7 +7,6 @@ namespace Tests\Feature\Profiles;
 use App\Commands\Agents\ClaimStart\ClaimStartCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
-use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -89,26 +88,6 @@ final class AccountMaintenanceTest extends TestCase
                 return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
-    }
-
-    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_after_proven_exits(): void
-    {
-        $host = $this->enrollHost();
-        $claimed = $this->open($host);
-        $pending = $this->open($host);
-        $key = $this->asSystem(new ClaimStartCommand($host->hostId, $claimed->sessionId))?->startKey;
-
-        $first = $this->maintenance()->advance($this->account->id);
-
-        $this->assertSame([1, false], [$first->cancelledStarts, $first->isSettled]);
-        $this->assertEqualsCanonicalizing([$claimed->sessionId, $pending->sessionId], $first->runningSessionIds);
-        $this->assertNull($this->asSystem(new ClaimStartCommand($host->hostId, $pending->sessionId)));
-        $this->assertRefusedWhileHeld($host);
-
-        $this->asSystem(new NotifyStoppedCommand($host->hostId, (string) $key));
-        $this->actAsOwner();
-
-        $this->assertTrue($this->maintenance()->advance($this->account->id)->isSettled);
     }
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void

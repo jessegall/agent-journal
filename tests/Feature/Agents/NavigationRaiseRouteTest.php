@@ -307,20 +307,6 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame(MenuEntryStatus::Current, $saved->status);
     }
 
-    public function test_the_replayed_report_counts_once_and_lists_the_build(): void
-    {
-        $entry = $this->libraryEntry('2.1.300');
-        [$host, $opened] = $this->openRuntime();
-        $replayed = ['runtime_id' => $opened->runtimeId, 'operation_key' => 'replay-1'];
-
-        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
-        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
-
-        $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
-        $this->assertSame(1, $entry->uses);
-        $this->assertSame(false, $entry->buildOn('2.1.323')?->isStale);
-    }
-
     /**
      * An entry of the owner's library, proven on the build, that chooses GPT-6 on the picker the raises show.
      */

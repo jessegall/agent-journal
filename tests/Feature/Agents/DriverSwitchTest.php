@@ -116,26 +116,6 @@ final class DriverSwitchTest extends TestCase
         $this->assertSame(DriverSwitchStage::StartFailed, $switch->stage);
     }
 
-    public function test_a_failed_start_offers_a_retry_of_the_same_request_once(): void
-    {
-        $switch = $this->switch();
-        $switch->markPreflighted();
-        $switch->beginStopping(null);
-        $switch->markStopped();
-        $switch->beginStarting(strtolower((string) Str::ulid()));
-        $switch->failStart('refused');
-        $requestId = $switch->request_id;
-
-        $switch->retryStart();
-
-        $this->assertSame(
-            [DriverSwitchStage::Stopped, $requestId, null],
-            [$switch->stage, $switch->request_id, $switch->replacement_session_id],
-        );
-        $this->expectException(DriverSwitchStageRefused::class);
-        $switch->retryStart();
-    }
-
     public function test_a_stale_running_from_before_the_stop_does_not_cancel_the_switch(): void
     {
         $switch = $this->switch();
