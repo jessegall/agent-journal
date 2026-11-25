@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/comments';
+import type { CommentList, RecordCommentView, TextCommentView } from '@generated/types/comments';
 import type { RecordReadsData } from '@/generated/types/documents';
-import Button from '@/components/kit/Button.vue';
+import Button from '@kit/Button';
 import CommentComposer from './CommentComposer.vue';
 import CommentItem from './CommentItem.vue';
 import CommentLocation from './CommentLocation.vue';
 import { clearCommentThread, type CommentThread } from './commentThreads';
-import { onReconnected } from '@/composables/retainedPages';
+import { onReconnected } from '@kit/retainedPages';
 
 /**
  * A record's comments, oldest first, read on a page at a time, and the form that writes one. The record's version is

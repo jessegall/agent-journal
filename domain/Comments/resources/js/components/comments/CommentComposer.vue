@@ -2,15 +2,15 @@
 import { ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import type { RecordReadsData } from '@/generated/types/documents';
-import type { Section } from '@/generated/types/core';
+import type { Section } from '@kit/CoreTypes';
 import { post } from '@generated/routes/comments';
-import Button from '@/components/kit/Button.vue';
-import SwitchItem from '@/components/kit/SwitchItem.vue';
-import { formSendingHooks } from '@/composables/usePageChanges';
-import SourcePane from '@/components/text/SourcePane.vue';
-import TextComposer from '@/components/text/TextComposer.vue';
-import { describeRange, subjectFields, type CommentSubject, type TextRangeChoice } from '@/components/text/textRange';
-import { renderedLineRange } from '@/components/text/useRenderedSelection';
+import Button from '@kit/Button';
+import SwitchItem from '@kit/SwitchItem';
+import { formSendingHooks } from '@kit/usePageChanges';
+import SourcePane from '@kit/SourcePane';
+import TextComposer from '@kit/TextComposer';
+import { describeRange, subjectFields, type CommentSubject, type TextRangeChoice } from '@kit/textRange';
+import { renderedLineRange } from '@kit/useRenderedSelection';
 import { clearCommentThread, type CommentThread } from './commentThreads';
 
 /**

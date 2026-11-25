@@ -42,8 +42,8 @@ vi.mock('@inertiajs/vue3', () => ({
     },
 }));
 vi.mock('@generated/routes/comments', () => ({ post: { url: () => '/comments' } }));
-vi.mock('@/composables/usePageChanges', () => ({ formSendingHooks: () => ({ onStart: () => {}, onFinish: () => {} }) }));
-vi.mock('@/components/text/SourcePane.vue', () => ({ default: { template: '<div />' } }));
+vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({ onStart: () => {}, onFinish: () => {} }) }));
+vi.mock('@kit/SourcePane', () => ({ default: { template: '<div />' } }));
 
 const { default: CommentComposer } = await import('./CommentComposer.vue');
 const { commentThreadOf } = await import('./commentThreads');

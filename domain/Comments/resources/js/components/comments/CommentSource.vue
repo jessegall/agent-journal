@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TextCommentLocation } from '@/generated/types/comments';
+import type { TextCommentLocation } from '@generated/types/comments';
 
 /**
  * The source lines a text comment points at, from the version it was left on, numbered as in the whole text, with

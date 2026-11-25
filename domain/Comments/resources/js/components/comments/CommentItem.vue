@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { RecordCommentView, TextCommentView } from '@/generated/types/comments';
-import SwitchItem from '@/components/kit/SwitchItem.vue';
-import TextLink from '@/components/kit/TextLink.vue';
+import type { RecordCommentView, TextCommentView } from '@generated/types/comments';
+import SwitchItem from '@kit/SwitchItem';
+import TextLink from '@kit/TextLink';
 
 /**
  * One comment in a list: who left it and when, what it is about, and its text. A whole-record comment offers to open
