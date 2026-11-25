@@ -175,7 +175,7 @@ final class RuleProposalCommandsTest extends TestCase
     {
         $rule = AcmeDeclarations::verify()->toArray();
         $rule['purpose'] = 'harmless';
-        $rule['contracts'][0]['exits'][0]['status'] = 300;
+        $rule['contracts'][0]['exits']['branches'][0]['status'] = 300;
         $declaration = ['request_id' => 'import-1', 'evidence' => '', 'examples' => [], 'rule' => $rule];
         $file = json_encode(['declarations' => [$declaration]]);
 

@@ -188,11 +188,15 @@ final readonly class RuleDeclarations
                 'string',
             ],
             "{$each}.examples.*.classes" => [
+                'required',
+                'array',
+            ],
+            "{$each}.examples.*.classes.classes" => [
                 'present',
                 'array',
                 'list',
             ],
-            "{$each}.examples.*.classes.*" => [Rule::enum(CommandClass::class)],
+            "{$each}.examples.*.classes.classes.*" => [Rule::enum(CommandClass::class)],
             ...$this->ruleFields("{$each}.rule"),
         ];
     }
@@ -274,11 +278,15 @@ final readonly class RuleDeclarations
                 'min:0',
             ],
             "{$rule}.classes" => [
+                'required',
+                'array',
+            ],
+            "{$rule}.classes.classes" => [
                 'present',
                 'array',
                 'list',
             ],
-            "{$rule}.classes.*" => [Rule::enum(CommandClass::class)],
+            "{$rule}.classes.classes.*" => [Rule::enum(CommandClass::class)],
             "{$rule}.purpose" => [
                 'required',
                 Rule::enum(CommandType::class),
@@ -421,21 +429,25 @@ final readonly class RuleDeclarations
                 Rule::enum(EmptySelection::class),
             ],
             "{$contract}.exits" => [
+                'required',
+                'array',
+            ],
+            "{$contract}.exits.branches" => [
                 'present',
                 'array',
                 'list',
             ],
-            "{$contract}.exits.*.status" => [
+            "{$contract}.exits.branches.*.status" => [
                 'required',
                 'integer',
                 'between:0,255',
                 'distinct',
             ],
-            "{$contract}.exits.*.outcome" => [
+            "{$contract}.exits.branches.*.outcome" => [
                 'required',
                 Rule::enum(Outcome::class),
             ],
-            "{$contract}.exits.*.requires" => [
+            "{$contract}.exits.branches.*.requires" => [
                 'required',
                 'string',
             ],
@@ -455,6 +467,10 @@ final readonly class RuleDeclarations
                 'string',
             ],
             "{$contract}.reader" => [
+                'required',
+                'array',
+            ],
+            "{$contract}.reader.revision" => [
                 'present',
                 'string',
             ],

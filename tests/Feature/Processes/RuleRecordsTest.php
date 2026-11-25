@@ -78,7 +78,7 @@ final class RuleRecordsTest extends TestCase
         $this->assertSame(1, $pending->current_revision);
         $this->assertSame(self::OPERATION, $pending->operation);
         $this->assertSame('acme', $pending->program);
-        $this->assertEquals(RuleScope::project(), $pending->scope);
+        $this->assertSame(RuleScope::project()->toArray(), $pending->scope->toArray());
     }
 
     public function test_a_proposal_revision_stores_the_typed_rule_with_its_contract_and_examples(): void
@@ -90,9 +90,10 @@ final class RuleRecordsTest extends TestCase
         $revision = RuleProposalRevision::query()->ofProject(self::PROJECT)->where('rule_proposal_id', $proposal->id)
             ->firstOrFail();
 
-        $this->assertEquals($rule, $revision->payload);
+        $this->assertSame($rule->toArray(), $revision->payload->toArray());
         $this->assertSame($rule->digest(), $revision->payload->digest());
-        $this->assertEquals($proposed->examples, $revision->examples);
+        $expected = array_map(fn (RuleExample $example): array => $example->toArray(), $proposed->examples);
+        $this->assertSame($expected, $revision->examples->toArray());
         $this->assertCount(1, $revision->payload->contracts);
     }
 
