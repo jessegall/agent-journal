@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Agents;
+namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
 use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
-use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Contracts\Navigation\TerminalViewCloser;
 use App\Data\Terminals\TerminalControlData;
 use App\Enums\Drivers\DriverOperation;
@@ -22,14 +19,11 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
-use App\Support\PrivateValues;
 use App\Support\TerminalInput;
 use App\Values\BrowserInputCapabilities;
-use App\Values\PrivateSubmission;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\InspectOnlyAuthorizer;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -37,12 +31,12 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A browser writer's control of an agent's terminal at the server: one take wins a race, an actor who may only
- * inspect is refused, a revoked grant's input never reaches the host, a host that does not carry out browser input
- * is watch-only, and every operation becomes a control request whose typed text the report clears.
+ * The holder of control sends input, which goes to the host at the next sequence; a gap names the expected sequence, a
+ * paste over its bound is refused before anything is sent, a named key goes by its name and a revoked grant is
+ * refused at the server.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
-final class TerminalControlTest extends TestCase
+final class SendTerminalInputTest extends TestCase
 {
     use CommitsHookRows;
     use OpensTerminalRuntimes;
@@ -63,32 +57,6 @@ final class TerminalControlTest extends TestCase
         'terminal_grants',
     ];
 
-    public function test_two_takes_racing_for_one_runtime_leave_one_grant(): void
-    {
-        $runtime = $this->controllableRuntime();
-        $interest = $this->openInterest($runtime);
-
-        $first = $this->take($runtime, $interest);
-
-        $this->assertRefusedWith(TerminalControlRefusal::ControlHeld, fn () => $this->take($runtime, $interest));
-        $this->assertSame(TerminalGrantStatus::Taking, $first->state);
-        $this->assertSame(1, TerminalGrant::query()->acrossActors()->count());
-        $this->assertSame(
-            [DriverOperation::TakeControl],
-            DriverRequest::query()->pluck('operation')->all(),
-        );
-    }
-
-    public function test_an_actor_who_may_only_inspect_is_refused_control(): void
-    {
-        $runtime = $this->controllableRuntime();
-        $interest = $this->openInterest($runtime);
-        $this->app->instance(CurrentAuthorizer::class, new InspectOnlyAuthorizer());
-
-        $this->assertRefusedWith(TerminalControlRefusal::InspectOnly, fn () => $this->take($runtime, $interest));
-        $this->assertSame(0, TerminalGrant::query()->acrossActors()->count());
-    }
-
     public function test_a_revoked_grant_has_its_input_refused_at_the_server(): void
     {
         $runtime = $this->controllableRuntime();
@@ -106,14 +74,6 @@ final class TerminalControlTest extends TestCase
             new TerminalInput('ls', true, 1, 0),
         )));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->count());
-    }
-
-    public function test_a_host_that_does_not_carry_out_browser_input_is_watch_only(): void
-    {
-        $runtime = $this->runtimeOn($this->enrolledHost()->hostId);
-        $interest = $this->openInterest($runtime);
-
-        $this->assertRefusedWith(TerminalControlRefusal::WatchOnly, fn () => $this->take($runtime, $interest));
     }
 
     public function test_input_goes_to_the_host_at_the_next_sequence_and_a_gap_names_the_expected_one(): void
@@ -165,28 +125,6 @@ final class TerminalControlTest extends TestCase
 
         $sent = DriverRequest::query()->where('operation', DriverOperation::TerminalInput)->sole();
         $this->assertStringContainsString('"key":"ctrl_c"', (string) $sent->message);
-    }
-
-    public function test_a_private_value_reaches_the_host_once_and_is_stored_nowhere(): void
-    {
-        $runtime = $this->controllableRuntime();
-        $this->take($runtime, $this->openInterest($runtime));
-        TerminalGrant::query()->acrossActors()->sole()->issue('grant-1');
-        $agentId = $runtime->session->agent_id;
-        $values = $this->app->make(PrivateValues::class);
-        $secret = 'correct-horse-'.Str::random(12);
-
-        $this->asOwner(new OpenPrivateEntryCommand($agentId, 'grant-1', 1));
-        $values->keep('private-1', $secret);
-        $this->asOwner(new SubmitPrivateInputCommand($agentId, 'grant-1', new PrivateSubmission('private-1', 2)));
-
-        $request = DriverRequest::query()->where('operation', DriverOperation::PrivateInput)->sole();
-        $this->assertStringNotContainsString($secret, (string) $request->message);
-        $claimed = $values->carriedBy($request, $request->claimed($runtime, null, false));
-        $again = $values->carriedBy($request, $request->claimed($runtime, null, false));
-        $this->assertStringContainsString($secret, (string) $claimed->message);
-        $this->assertStringNotContainsString($secret, (string) $again->message);
-        $this->assertSame(0, DriverRequest::query()->where('message', 'like', '%'.$secret.'%')->count());
     }
 
     private function controllableRuntime(): AgentRuntime

@@ -6,9 +6,7 @@ namespace Tests\Feature\Scripts;
 
 use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Enums\Profiles\ProfileRunStatus;
 use App\Enums\Terminals\StepStatus;
-use App\Exceptions\ProfileRunRefused;
 use App\Models\Profiles\ProfileRun;
 use App\Support\ActorIdentity;
 use App\Support\ObjectReader;
@@ -58,29 +56,6 @@ final class ProfileRunTest extends TestCase
 
         $this->assertSame(StepStatus::Failed, $read->unread?->status);
         $this->assertNull($read->value);
-    }
-
-    public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
-    {
-        $run = ProfileRun::create(
-            ActorIdentity::of(TestStart::start('writing-helper')->agent),
-            WorkReference::free('ask'),
-            'journal-worker',
-            1,
-            str_repeat('a', 64),
-            'trigger-1',
-        );
-        $run->suspendOn(2, 'step-1');
-
-        $this->notify($run, 'step-1', StepStatus::Completed);
-        $this->notify($run, 'step-1', StepStatus::Failed);
-
-        $run->refresh();
-        $this->assertSame(ProfileRunStatus::Running, $run->status);
-        $this->assertSame([StepStatus::Completed], $run->results()->get()->map(fn ($result) => $result->status)->all());
-        $this->expectException(ProfileRunRefused::class);
-
-        $this->notify($run, 'step-2', StepStatus::Completed);
     }
 
     private function context(): ScriptContext

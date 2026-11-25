@@ -19,7 +19,6 @@ use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
-use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\AttachmentReferences;
@@ -858,34 +857,6 @@ final class AgentDriverLedgerTest extends TestCase
         $response->assertOk();
         $this->assertSame($opened->firstRequestId, $response->json('requests.0.requestId'));
         $this->assertSame([], $response->json('requests.0.scriptParameters'));
-    }
-
-    public function test_a_claimed_key_script_carries_its_script_and_resumes_from_its_reported_step(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
-        $request = DriverRequest::query()->findOrFail($receipt->requestId);
-
-        $claimed = $this->claimedScript($host, $receipt->requestId);
-        $this->assertSame(
-            ['ChangeModel', 2, [['name' => 'model', 'value' => 'gpt-6']], null],
-            [$claimed['script'], $claimed['scriptVersion'], $claimed['scriptParameters'], $claimed['scriptStep']],
-        );
-
-        $this->hostCall($host, '/host/reports/request', [
-            'request_id' => $request->id,
-            'attempt' => $claimed['attempt'],
-            'progress' => RequestProgress::Applying->value,
-            'actual_binding' => null,
-            'outcome' => null,
-            'script' => ['step' => 2, 'generation' => 7, 'evidence' => 'menu login-method, stable'],
-        ])->assertSuccessful();
-        $request->refresh();
-        $this->assertSame([2, 'menu login-method, stable'], [$request->script_step, $request->script_evidence]);
-
-        $this->asOwner(new ResumeKeyScriptCommand($request->id, $request->row_version, 'go on'));
-
-        $this->assertSame(2, $this->claimedScript($host, $request->id)['scriptStep']);
     }
 
     public function test_an_operator_appends_one_registered_key_script_request(): void

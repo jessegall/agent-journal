@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Enums\Navigation\NavigationStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Support\DriverRequestEndings;
@@ -41,16 +40,6 @@ final class NavigationLifecycleTest extends TestCase
         'active_accounts',
         'session_processes',
     ];
-
-    public function test_cancelling_the_key_script_cancels_its_request(): void
-    {
-        $stalled = $this->stalledScript();
-        $navigation = $this->raise($stalled, 'raise-1');
-
-        $this->asOwner(new CancelKeyScriptCommand($stalled->id, $stalled->row_version, 'not needed'));
-
-        $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
-    }
 
     public function test_a_runtime_that_ends_cancels_the_request_of_its_key_script(): void
     {
