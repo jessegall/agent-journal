@@ -11,6 +11,7 @@ use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
+use App\Support\Execution\SpawnedProcess;
 use App\Support\ManifestCheck;
 use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -63,6 +65,30 @@ final class OutputCaptureTest extends TestCase
         $this->app->make(OutputRecorder::class)->append(
             new CapturedChunk($part, OutputStream::Stdout, 'bytes', CarbonImmutable::now()),
         );
+    }
+
+    #[TimeLimit(5, 'It waits out a short drain deadline while a background child holds the pipe.')]
+    public function test_a_background_child_holding_stdout_past_the_deadline_leaves_the_drain_unfinished(): void
+    {
+        $process = SpawnedProcess::start(
+            ['sh', '-c', 'sleep 3 & echo started'],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            sys_get_temp_dir(),
+            ['PATH' => (string) getenv('PATH')],
+        );
+        $this->assertInstanceOf(SpawnedProcess::class, $process);
+
+        $drained = $process->drain(fn () => null, 0.5);
+
+        $this->assertFalse($drained);
+        $this->assertSame(0, $process->wait()->code);
+    }
+
+    public function test_the_output_disk_is_private_and_never_served(): void
+    {
+        $this->assertSame('private', config('filesystems.disks.process-output.visibility'));
+        $this->assertFalse(config('filesystems.disks.process-output.serve'));
+        $this->assertStringNotContainsString('public', (string) config('filesystems.disks.process-output.root'));
     }
 
     private function part(): PartRun

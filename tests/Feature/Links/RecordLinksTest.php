@@ -8,7 +8,9 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
+use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\RecordUnavailable;
+use App\Exceptions\UnknownLinkType;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
@@ -67,7 +69,8 @@ final class RecordLinksTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'inboxes', 'inbox_members',
+        'inboxes',
+        'inbox_members',
         'assignments',
         'command_receipts',
         'users',
@@ -183,6 +186,18 @@ final class RecordLinksTest extends TestCase
 
         $this->actingAs($owner)->from('/reports/1')->post('/links/remove', $link)->assertRedirect('/reports/1');
         $this->assertSame(0, Link::query()->count());
+    }
+
+    public function test_an_unknown_alias_and_a_class_name_are_refused_before_any_class_is_resolved(): void
+    {
+        try {
+            $this->records()->card(new RecordIdentity('fake.thing', (string) Str::ulid()));
+            $this->fail('An unknown alias was read.');
+        } catch (UnknownLinkType) {
+            $this->expectException(InvalidRecordIdentity::class);
+        }
+
+        new RecordIdentity('Domain\\Tasks\\Models\\Task', (string) Str::ulid());
     }
 
     private function actAsUser(): void
