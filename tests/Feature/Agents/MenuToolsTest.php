@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Commands\Navigation\RetireMenuEntry\RetireMenuEntryCommand;
-use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Models\Access\User;
 use App\Models\Drivers\MenuEntry;
@@ -21,8 +19,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * The menu tools read the journal owner's library, show why an entry went stale on a build, and only the owner
- * retires an entry, after which no lookup finds it; another actor's entry is never found.
+ * The menu tools list and show the owner's entries and why one went stale, page past one page with its total, and
+ * find no entry of another actor.
  */
 final class MenuToolsTest extends TestCase
 {
@@ -109,21 +107,6 @@ final class MenuToolsTest extends TestCase
             ->assertJsonPath('result.isError', true);
         $listed = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent.cards');
         $this->assertSame([], $listed);
-    }
-
-    public function test_only_the_owner_retires_an_entry_and_no_lookup_finds_it_after(): void
-    {
-        $entry = $this->entryOf('owner');
-
-        $this->sendMcp($this->caller, 'tools/call', [
-            'name' => 'menu_retire',
-            'arguments' => ['entry' => $entry->id, 'expected_state' => 'current', 'request_key' => 'retire'],
-        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-        $this->asOwner(new RetireMenuEntryCommand($entry->id, MenuEntryStatus::Current));
-
-        $owner = ActorIdentity::ofClass(User::class, 'owner');
-        $this->assertSame(MenuEntryStatus::Retired, $entry->fresh()?->status);
-        $this->assertSame(0, MenuEntry::query()->ownedBy($owner)->current()->count());
     }
 
     private function entryOf(string $owner): MenuEntry

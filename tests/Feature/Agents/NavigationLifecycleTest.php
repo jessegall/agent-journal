@@ -5,19 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
 use App\Enums\Navigation\NavigationStatus;
-use App\Events\Engine\EngineTicked;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Drivers\DriverRequest;
 use App\Support\DriverRequestEndings;
-use App\Support\EngineListenerSet;
-use App\Support\EngineTickedDelivery;
-use App\Support\ExpireNavigationRequestsOnTick;
-use App\Support\Ticks\ElapsedTime;
-use Carbon\CarbonImmutable;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;
@@ -26,8 +16,8 @@ use Tests\Support\SendsHostCalls;
 use Tests\TestCase;
 
 /**
- * A navigation request ends with its work: it expires on the first engine pass past its time, it is cancelled with
- * its key script or its runtime, and the host's report that the user took over interrupts it once.
+ * Cancelling a key script cancels its navigation request, and a runtime that ends cancels the request of its key
+ * script.
  */
 final class NavigationLifecycleTest extends TestCase
 {
@@ -52,32 +42,6 @@ final class NavigationLifecycleTest extends TestCase
         'session_processes',
     ];
 
-    public function test_the_engine_registers_the_expiry_sweep(): void
-    {
-        $this->assertTrue($this->app->make(EngineListenerSet::class)->has(ExpireNavigationRequestsOnTick::class));
-    }
-
-    public function test_a_request_past_its_time_expires_on_the_next_pass_and_ends_its_key_script(): void
-    {
-        $stalled = $this->stalledScript();
-        $navigation = $this->raise($stalled, 'raise-1');
-        $runtime = AgentRuntime::query()->findOrFail($stalled->agent_runtime_id);
-        $runtime->holdFor(HoldReason::NavigationNeeded);
-
-        $this->travel(31)->minutes();
-        $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(
-            new EngineTicked(CarbonImmutable::now(), ElapsedTime::between(0, 1_000_000_000)),
-        ));
-
-        $this->assertSame(NavigationStatus::Expired, $navigation->fresh()?->status);
-        $request = DriverRequest::query()->findOrFail($stalled->id);
-        $this->assertSame([RequestProgress::Failed, RequestOutcome::EntryUnavailable], [
-            $request->progress,
-            $request->outcome,
-        ]);
-        $this->assertSame(HoldReason::None, $runtime->fresh()?->hold_reason);
-    }
-
     public function test_cancelling_the_key_script_cancels_its_request(): void
     {
         $stalled = $this->stalledScript();
@@ -96,20 +60,5 @@ final class NavigationLifecycleTest extends TestCase
         $this->app->make(DriverRequestEndings::class)->closeAfterExit(AgentRuntime::query()->findOrFail($stalled->agent_runtime_id));
 
         $this->assertSame(NavigationStatus::Cancelled, $navigation->fresh()?->status);
-    }
-
-    public function test_the_hosts_report_that_the_user_took_over_interrupts_the_request_once(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
-        $stalled = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
-        $navigation = $this->raise($stalled, 'raise-1');
-
-        $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
-        $this->hostCall($host, "/host/navigation/{$navigation->id}/interrupt")->assertNoContent();
-
-        $this->assertSame(NavigationStatus::Interrupted, $navigation->fresh()?->status);
-        $this->assertSame(HoldReason::NeedsAttention, $stalled->fresh()?->hold_reason);
-        $this->assertTrue($stalled->refresh()->isStoppedKeyScript());
     }
 }

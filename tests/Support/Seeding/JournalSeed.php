@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
@@ -74,6 +75,16 @@ final class JournalSeed
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
 
         return $this->actAs($name);
+    }
+
+    /**
+     * The journal's named inboxes, the main inbox among them, installed as the journal installs them.
+     */
+    public function installInboxes(): self
+    {
+        $this->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
+
+        return $this;
     }
 
     /**
