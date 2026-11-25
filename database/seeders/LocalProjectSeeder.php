@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Commands\Projects\ProvisionLocalProject\ProvisionLocalProjectCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Enums\Accounts\CommandEntry;
+use App\Models\Access\User;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Seeder;
 
@@ -16,13 +17,13 @@ use Illuminate\Database\Seeder;
  */
 final class LocalProjectSeeder extends Seeder
 {
-    public function run(Repository $config, JournalCommands $commands, OwnerSeeder $owners): void
+    public function run(User $owner, Repository $config, JournalCommands $commands): void
     {
         $commands->runAsJournal(
             CommandEntry::HostControl,
             'projects local-provision',
             new ProvisionLocalProjectCommand(
-                $owners->owner()->id,
+                $owner->id,
                 $config->string('processes.project_key'),
                 $config->string('processes.project_label'),
             ),

@@ -21,14 +21,15 @@ class DatabaseSeeder extends Seeder
         $this->call(NumbersSeeder::class);
         $this->call(InboxesSeeder::class);
         $this->call(OwnerSeeder::class);
-        $this->callWith(LocalProjectSeeder::class);
+        $owner = $this->container->make(OwnerSeeder::class)->owner();
+        $this->callWith(LocalProjectSeeder::class, ['owner' => $owner]);
         $tasks = $this->container->make(PlanTasksSeeder::class);
         $this->callWith(PlansSeeder::class, [
             'readingTaskIds' => $tasks->readingTaskIds(),
             'startingTaskIds' => $tasks->startingTaskIds(),
             'reproducingTaskIds' => $tasks->reproducingTaskIds(),
         ]);
-        $this->callWith(DocumentsSeeder::class, ['author' => $this->container->make(OwnerSeeder::class)->owner()]);
+        $this->callWith(DocumentsSeeder::class, ['author' => $owner]);
         $this->call(SequencesSeeder::class);
     }
 }

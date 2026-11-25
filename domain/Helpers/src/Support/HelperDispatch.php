@@ -345,7 +345,7 @@ final readonly class HelperDispatch
     }
 
     /**
-     * The project a new helper belongs to: its parent agent's, or the served project when a person dispatches it.
+     * The project a new helper belongs to: its parent agent's, or the served project when the user dispatches it.
      */
     private function projectIdOf(DispatchRequest $request): string
     {
