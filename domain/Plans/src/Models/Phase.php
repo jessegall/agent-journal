@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
@@ -51,6 +52,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title', 'revision'])]
 final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
@@ -140,10 +142,8 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         return array_map(
             strval(...),
             array_values(
-                PhaseTask::query()->where(
-                    'phase_id',
-                    $this->id,
-                )->readAll('every task of the phase')->orderBy('position')->pluck('task_id')->all(),
+                PhaseTask::query()->ofPhase($this->id)->inPositionOrder()->readAll('every task of the phase')
+                    ->pluck('task_id')->all(),
             ),
         );
     }
@@ -255,7 +255,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function numberedIn(string $planId, int $number): self
     {
-        $row = self::query()->where('plan_id', $planId)->where('number', $number)->first();
+        $row = self::query()->ofPlan($planId)->numbered($number)->first();
         self::assertFound($row, $number);
 
         return $row;
@@ -270,11 +270,11 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function currentNumbersOf(array $planIds): array
     {
-        return self::query()->whereIn('plan_id', $planIds)
+        return self::query()->ofPlans($planIds)
             ->selectRaw(
                 'plan_id, coalesce(min(case when finished_tasks < total_tasks then number end), max(number)) as current',
             )
-            ->groupBy('plan_id')
+            ->perPlan()
             ->readAll('one row of each listed plan')
             ->pluck('current', 'plan_id')
             ->map(fn (mixed $number) => (int) $number)
@@ -288,8 +288,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
      */
     public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
     {
-        return self::query()->where('plan_id', $planId)->where('number', '>', $after)
-            ->orderBy('number')->orderBy('id')->readUpTo($limit)->get();
+        return self::query()->ofPlan($planId)->numberedAfter($after)->inNumberOrder()->readUpTo($limit)->get();
     }
 
     // ----------[ Scopes ]----------
@@ -303,5 +302,72 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
     protected function holdingTask(Builder $query, string $taskId): void
     {
         $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
+    }
+
+    /**
+     * The plan's phases.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPlan(Builder $query, string $planId): void
+    {
+        $query->where('plan_id', $planId);
+    }
+
+    /**
+     * The phases of the plans.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $planIds
+     */
+    #[Scope]
+    protected function ofPlans(Builder $query, array $planIds): void
+    {
+        $query->whereIn('plan_id', $planIds);
+    }
+
+    /**
+     * The phase of that number within its plan.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function numbered(Builder $query, int $number): void
+    {
+        $query->where('number', $number);
+    }
+
+    /**
+     * The phases numbered after that number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function numberedAfter(Builder $query, int $number): void
+    {
+        $query->where('number', '>', $number);
+    }
+
+    /**
+     * The phases in the order of their number.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inNumberOrder(Builder $query): void
+    {
+        $query->orderBy('number');
+    }
+
+    /**
+     * One group of rows for each plan.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function perPlan(Builder $query): void
+    {
+        $query->groupBy('plan_id');
     }
 }

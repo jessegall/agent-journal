@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -37,6 +38,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['catalogue_digest', 'registration_digest', 'entries', 'state', 'error_reason'])]
 final class SkillGeneration extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -144,7 +146,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function latestReady(): self|null
     {
-        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->orderByDesc('id')->first();
+        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->newestFirst()->first();
     }
 
     /**
@@ -152,7 +154,7 @@ final class SkillGeneration extends Model implements EventSource, ReadableModel
      */
     public static function latest(): self|null
     {
-        return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
+        return self::query()->orderByDesc('created_at')->newestFirst()->first();
     }
 
     // ----------[ Scopes ]----------

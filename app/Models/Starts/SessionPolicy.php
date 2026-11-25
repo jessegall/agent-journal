@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -162,7 +164,7 @@ final class SessionPolicy extends Model implements ReadableModel
             $starts[$session->id] = CarbonImmutable::instance($session->created_at);
         }
 
-        $policies = self::query()->whereIn('session_id', array_keys($starts))->readExactly(count($starts))->get();
+        $policies = self::query()->ofSessions(array_keys($starts))->readExactly(count($starts))->get();
         $deadlines = [];
 
         foreach ($policies as $policy) {
@@ -171,5 +173,19 @@ final class SessionPolicy extends Model implements ReadableModel
         }
 
         return $deadlines;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The policies of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<array-key>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('session_id', $sessionIds);
     }
 }

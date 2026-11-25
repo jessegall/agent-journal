@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -62,7 +64,20 @@ final class Project extends Model implements EventSource, ReadableModel
     public static function listed(): array
     {
         return array_values(
-            self::query()->orderBy('label')->readAll('an installation connects a handful of projects')->get()->all(),
+            self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),
         );
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The projects in the order of their label.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inLabelOrder(Builder $query): void
+    {
+        $query->orderBy('label');
     }
 }

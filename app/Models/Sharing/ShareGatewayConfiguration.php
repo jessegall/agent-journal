@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Casts\GatewaySettingsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['gateway_key', 'configuration_version', 'settings', 'is_default', 'disabled_at'])]
 final class ShareGatewayConfiguration extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -240,7 +242,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     {
         return array_values(self::query()
             ->whereKey($ids)
-            ->orderBy('id')
+            ->oldestFirst()
             ->lockForUpdate()
             ->readExactly(count($ids))
             ->get()
@@ -255,7 +257,7 @@ final class ShareGatewayConfiguration extends Model implements EventSource, Read
     public static function allRevisions(): array
     {
         return array_values(
-            self::query()->orderByDesc('id')
+            self::query()->newestFirst()
                 ->readAll('an installation keeps a handful of gateway revisions')
                 ->get()
                 ->all(),

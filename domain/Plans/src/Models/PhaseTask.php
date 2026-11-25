@@ -95,9 +95,9 @@ final class PhaseTask extends Pivot implements ReadableModel
         $taskIds = array_fill_keys($phaseIds, []);
 
         $phaseTasks = self::query()
-            ->whereIn('phase_id', $phaseIds)
+            ->ofPhases($phaseIds)
+            ->inPositionOrder()
             ->readAll('every task of the phases a plan read shows')
-            ->orderBy('position')
             ->get(['phase_id', 'task_id']);
 
         foreach ($phaseTasks as $phaseTask) {
@@ -115,8 +115,7 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public static function pageOf(string $phaseId, int $afterPosition, int $limit): array
     {
-        return self::query()->where('phase_id', $phaseId)->where('position', '>', $afterPosition)
-            ->orderBy('position')->orderBy('task_id')->readUpTo($limit)
+        return self::query()->ofPhase($phaseId)->placedAfter($afterPosition)->inPositionOrder()->readUpTo($limit)
             ->pluck('task_id', 'position')
             ->map(fn (mixed $taskId) => (string) $taskId)
             ->all();
@@ -137,5 +136,50 @@ final class PhaseTask extends Pivot implements ReadableModel
             ->orderBy('phases.number')
             ->orderBy('phase_tasks.position')
             ->orderBy('phase_tasks.id');
+    }
+
+    /**
+     * The phase's tasks.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofPhase(Builder $query, string $phaseId): void
+    {
+        $query->where('phase_id', $phaseId);
+    }
+
+    /**
+     * The tasks in the order of their place in the phase, then of their id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inPositionOrder(Builder $query): void
+    {
+        $query->orderBy('position')->orderBy('task_id');
+    }
+
+    /**
+     * The tasks of the phases.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $phaseIds
+     */
+    #[Scope]
+    protected function ofPhases(Builder $query, array $phaseIds): void
+    {
+        $query->whereIn('phase_id', $phaseIds);
+    }
+
+    /**
+     * The tasks placed after that position.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function placedAfter(Builder $query, int $position): void
+    {
+        $query->where('position', '>', $position);
     }
 }

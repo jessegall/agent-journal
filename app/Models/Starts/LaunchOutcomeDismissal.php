@@ -70,7 +70,7 @@ final class LaunchOutcomeDismissal extends Model implements ReadableModel
     {
         return array_values(self::query()
             ->dismissedBy($viewer)
-            ->whereIn('request_id', $requestIds)
+            ->ofRequests($requestIds)
             ->readExactly(count($requestIds) * count(StartDisposition::cases()))
             ->get()
             ->map(fn (self $dismissal) => LaunchOutcome::keyOf($dismissal->request_id, $dismissal->outcome_version))
@@ -86,5 +86,17 @@ final class LaunchOutcomeDismissal extends Model implements ReadableModel
     protected function dismissedBy(Builder $query, ActorIdentity $viewer): void
     {
         $query->where('viewer_type', $viewer->type->value)->where('viewer_id', $viewer->id);
+    }
+
+    /**
+     * The dismissals of the start requests.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $requestIds
+     */
+    #[Scope]
+    protected function ofRequests(Builder $query, array $requestIds): void
+    {
+        $query->whereIn('request_id', $requestIds);
     }
 }

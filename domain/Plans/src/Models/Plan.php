@@ -308,7 +308,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function phaseNumbered(int $number): Phase
     {
-        $phase = $this->phases()->where('number', $number)->first();
+        $phase = $this->phases()->numbered($number)->first();
         $this->assertHasPhase($phase, $number);
 
         return $phase;

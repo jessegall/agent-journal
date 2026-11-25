@@ -102,7 +102,7 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
      */
     public static function sharedRuntimeForOwners(array $owners): array
     {
-        return self::query()->whereIn('owner', $owners)->limit(count($owners))->get()->keyBy('owner')->all();
+        return self::query()->ofOwners($owners)->limit(count($owners))->get()->keyBy('owner')->all();
     }
 
     /**
@@ -122,5 +122,17 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
     protected function ownedBy(Builder $query, string $owner): void
     {
         $query->where('owner', $owner);
+    }
+
+    /**
+     * The records of the owners.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $owners
+     */
+    #[Scope]
+    protected function ofOwners(Builder $query, array $owners): void
+    {
+        $query->whereIn('owner', $owners);
     }
 }

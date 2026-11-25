@@ -196,7 +196,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
         $reports = self::query()->lockForUpdate();
 
         if (is_int($reference)) {
-            $report = $reports->where('number', $reference)->first();
+            $report = $reports->numberedInJournal($reference)->first();
             self::assertFound($report, $reference);
 
             return $report;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -55,6 +56,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class DeviceGrant extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -305,7 +307,7 @@ final class DeviceGrant extends Model implements EventSource, ReadableModel
      */
     public static function listedOfBindings(array $ids): array
     {
-        return array_values(self::query()->whereIn('binding_id', $ids)->orderByDesc('created_at')->orderByDesc('id')
+        return array_values(self::query()->whereIn('binding_id', $ids)->orderByDesc('created_at')->newestFirst()
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
     }
 

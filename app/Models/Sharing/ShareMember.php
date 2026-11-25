@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Support\ConsumedPreview;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
@@ -40,6 +41,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['scope_version', 'link_id', 'source_type', 'source_id', 'target_type', 'target_id', 'invalidated_at'])]
 final class ShareMember extends Model implements ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
@@ -109,7 +111,7 @@ final class ShareMember extends Model implements ReadableModel
             self::query()
                 ->ofScope($share)
                 ->stillApproved()
-                ->orderBy('id')
+                ->oldestFirst()
                 ->readAll('a share scope holds at most the preview limit of members')
                 ->get()
                 ->all(),

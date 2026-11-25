@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -116,12 +118,25 @@ final class ReviewDecision extends Model implements EventSource, ReadableModel
      */
     public static function idMerging(string $askId): string|null
     {
-        $id = self::query()->where('merge_ask_id', $askId)->value('id');
+        $id = self::query()->mergingFor($askId)->value('id');
 
         if ($id === null) {
             return null;
         }
 
         return (string) $id;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The decision whose merge the ask carries.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function mergingFor(Builder $query, string $askId): void
+    {
+        $query->where('merge_ask_id', $askId);
     }
 }

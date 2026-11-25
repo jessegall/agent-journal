@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -65,6 +66,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['brief', 'source_snapshot', 'request_id', 'state', 'steering', 'profile_revision'])]
 final class HelperJob extends Model implements Assignable, EventSource, ReadableModel
 {
+    use OrdersById;
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
@@ -313,7 +315,7 @@ final class HelperJob extends Model implements Assignable, EventSource, Readable
      */
     public static function newest(int $limit): Collection
     {
-        return self::query()->acrossActors()->latest()->orderByDesc('id')->limit($limit)->get();
+        return self::query()->acrossActors()->latest()->newestFirst()->limit($limit)->get();
     }
 
     /**

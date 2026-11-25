@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
@@ -92,6 +93,7 @@ use PhpOption\Option;
 )]
 final class Share extends Model implements EventSource, Numbered, ReadableModel
 {
+    use OrdersById;
     use BelongsToOneRoot;
     use BoundedReads;
     use FindsForUpdate;
@@ -506,7 +508,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function lockPastDeadline(int $most): array
     {
         return array_values(
-            self::query()->pastDeadline()->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all(),
+            self::query()->pastDeadline()->oldestFirst()->lockForUpdate()->readExactly($most)->get()->all(),
         );
     }
 
@@ -518,7 +520,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function lockAwaitingGatewayOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readExactly(
+            self::query()->servedBy($configurationId)->awaitingGateway()->oldestFirst()->lockForUpdate()->readExactly(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -563,7 +565,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function unendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->orderBy('id')->readExactly(
+            self::query()->servedBy($configurationId)->unended()->oldestFirst()->readExactly(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -577,7 +579,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function lockUnendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readExactly(
+            self::query()->servedBy($configurationId)->unended()->oldestFirst()->lockForUpdate()->readExactly(
                 self::LIVE_LIMIT,
             )->get()->all(),
         );
@@ -593,7 +595,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
         return array_values(
             self::query()->servedBy($configurationId)->inState(
                 ShareState::Pending,
-            )->orderBy('id')->lockForUpdate()->limit(self::LIVE_LIMIT)->get()->all(),
+            )->oldestFirst()->lockForUpdate()->limit(self::LIVE_LIMIT)->get()->all(),
         );
     }
 
@@ -634,7 +636,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function proposedBy(ActorIdentity $requester): array
     {
         return array_values(
-            self::query()->requestedBy($requester)->orderByDesc('id')->limit(self::PROPOSED_LIMIT)->get()->all(),
+            self::query()->requestedBy($requester)->newestFirst()->limit(self::PROPOSED_LIMIT)->get()->all(),
         );
     }
 
@@ -645,7 +647,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function liveFor(RecordIdentity $root): Option
     {
-        return Option::fromValue(self::query()->ofRoot($root)->liveNow()->orderByDesc('id')->first());
+        return Option::fromValue(self::query()->ofRoot($root)->liveNow()->newestFirst()->first());
     }
 
     /**
@@ -678,7 +680,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
      */
     public static function listPage(ShareListFilters $filters, int $rows): array
     {
-        $query = self::query()->orderByDesc('id');
+        $query = self::query()->newestFirst();
         $query->when($filters->state, fn (Builder $query, ShareState $state) => $query->inState($state));
         $query->when($filters->rootType, fn (Builder $query, string $type) => $query->ofRootType($type));
         $query->when($filters->configurationId, fn (Builder $query, string $id) => $query->servedBy($id));
@@ -711,7 +713,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     public static function openProposalsFor(RecordIdentity $root): array
     {
         return array_values(
-            self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readExactly(
+            self::query()->ofRoot($root)->proposedNow()->newestFirst()->readExactly(
                 self::PROPOSED_LIMIT,
             )->get()->all(),
         );

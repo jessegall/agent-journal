@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['job_state', 'text'])]
 final class HelperNotice extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
@@ -89,7 +91,7 @@ final class HelperNotice extends Model implements EventSource, ReadableModel
         return array_values(self::query()
             ->ownedBy($parent)
             ->whereNull('delivered_at')
-            ->orderBy('id')
+            ->oldestFirst()
             ->lockForUpdate()
             ->limit(self::DELIVERED_LIMIT)
             ->get()

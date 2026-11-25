@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Runs;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Casts\StoredValueCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -114,7 +116,7 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
         $position->setAttribute($position->getKeyName(), $position->newUniqueId());
         $position->insertIfAbsent();
 
-        return self::query()->where($identity)->sole();
+        return self::query()->forPurpose($part, $revision, $purpose)->sole();
     }
 
     // ----------[ Queries ]----------
@@ -133,5 +135,20 @@ final class ReaderPosition extends Model implements EventSource, ReadableModel
     public static function replayOf(PartRun $part, ReaderRevision $revision, ReaderCheckpoint $consumed): self
     {
         return self::madeFor($part, $revision, PositionPurpose::Replay, $consumed);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The reader revision's position on the part for that purpose.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forPurpose(Builder $query, PartRun $part, ReaderRevision $revision, PositionPurpose $purpose): void
+    {
+        $query->where('part_run_id', $part->id)
+            ->where('reader_revision_id', $revision->id)
+            ->where('purpose', $purpose);
     }
 }

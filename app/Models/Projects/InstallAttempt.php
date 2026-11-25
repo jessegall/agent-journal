@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -57,6 +58,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class InstallAttempt extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -310,7 +312,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
                 'project',
                 'environment',
             ])
-            ->orderByDesc('created_at')->orderByDesc('id')
+            ->orderByDesc('created_at')->newestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -39,6 +40,7 @@ use Illuminate\Support\Collection;
 )]
 final class PermissionRevocation extends Model implements ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -79,7 +81,7 @@ final class PermissionRevocation extends Model implements ReadableModel
         self::query()->where(
             'permission_source',
             $permissions->source,
-        )->orderBy('id')->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
+        )->oldestFirst()->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
             foreach ($revocations as $revocation) {
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
@@ -47,6 +48,7 @@ use PhpOption\Option;
 #[Fillable(['type', 'run_id', 'lease_token', 'lease_ends_at', 'outcome_code'])]
 final class ShareGatewayOperation extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use InsertsRowSets;
@@ -210,7 +212,7 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      */
     public static function nextClaimable(): Option
     {
-        return Option::fromValue(self::query()->claimable()->orderBy('id')->value('id'))->map(strval(...));
+        return Option::fromValue(self::query()->claimable()->oldestFirst()->value('id'))->map(strval(...));
     }
 
     /**

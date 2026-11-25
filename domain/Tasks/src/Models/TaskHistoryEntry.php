@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -52,6 +53,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class TaskHistoryEntry extends Model implements ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -154,6 +156,6 @@ final class TaskHistoryEntry extends Model implements ReadableModel
     {
         return self::query()->where('task_id', $taskId)
             ->when($beforeSequence !== null, fn ($query) => $query->where('sequence', '<', $beforeSequence))
-            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
+            ->orderByDesc('sequence')->newestFirst()->limit($limit)->get();
     }
 }

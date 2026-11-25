@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -45,6 +46,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['task_id', 'task_run_id', 'run_number', 'operation', 'caller_type', 'caller_id', 'process_run_id'])]
 final class TaskCheck extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -165,6 +167,6 @@ final class TaskCheck extends Model implements EventSource, ReadableModel
     {
         return self::query()->where('task_id', $taskId)
             ->when($afterId !== null, fn (Builder $query) => $query->where('id', '<', $afterId))
-            ->orderByDesc('id')->limit($limit)->get();
+            ->newestFirst()->limit($limit)->get();
     }
 }

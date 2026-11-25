@@ -225,7 +225,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      */
     public static function listed(): array
     {
-        return array_values(self::query()->orderBy('account_protocol')->readAll('one row per driver')->get()->all());
+        return array_values(self::query()->inDriverOrder()->readAll('one row per driver')->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -250,5 +250,16 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
         $selection->has_selected = false;
         $selection->change_number = 0;
         $selection->insertIfAbsent();
+    }
+
+    /**
+     * The selections in the order of their driver.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inDriverOrder(Builder $query): void
+    {
+        $query->orderBy('account_protocol');
     }
 }

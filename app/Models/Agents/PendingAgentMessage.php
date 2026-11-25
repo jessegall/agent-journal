@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
@@ -85,6 +87,19 @@ final class PendingAgentMessage extends Model implements ReadableModel
 
     public static function countAttentionFor(ActorIdentity $agent): int
     {
-        return self::query()->ownedBy($agent)->where('requests_attention', true)->count();
+        return self::query()->ownedBy($agent)->askingAttention()->count();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The messages that ask for the agent's attention.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function askingAttention(Builder $query): void
+    {
+        $query->where('requests_attention', true);
     }
 }

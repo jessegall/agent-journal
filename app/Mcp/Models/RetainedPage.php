@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Actors\ActorVisibility;
@@ -85,10 +86,19 @@ final class RetainedPage extends Model implements ReadableModel
      */
     public function prunable(): Builder
     {
-        return self::query()->withoutGlobalScope(AgentSessionScope::class)->where(
-            'expires_at',
-            '<',
-            CarbonImmutable::now(),
-        );
+        return self::query()->withoutGlobalScope(AgentSessionScope::class)->expired();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The pages past their expiry.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expired(Builder $query): void
+    {
+        $query->where('expires_at', '<', CarbonImmutable::now());
     }
 }

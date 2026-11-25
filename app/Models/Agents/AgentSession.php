@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -89,6 +90,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class AgentSession extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -369,7 +371,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function liveOf(string $agentId): self|null
     {
-        return self::query()->runningFor($agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
+        return self::query()->runningFor($agentId)->orderByDesc('created_at')->newestFirst()->first();
     }
 
     /**
@@ -384,7 +386,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
             ->whereIn('agent_id', $ids)
             ->running()
             ->orderBy('created_at')
-            ->orderBy('id')
+            ->oldestFirst()
             ->get(['agent_id', 'driver_key'])
             ->pluck('driver_key', 'agent_id')
             ->all();
@@ -395,7 +397,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      */
     public static function latestOf(string $agentId): self|null
     {
-        return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
+        return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->newestFirst()->first();
     }
 
     /**
@@ -408,7 +410,7 @@ final class AgentSession extends Model implements EventSource, ReadableModel
         $ids = self::query()
             ->where('agent_id', $agentId)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->readExactly($limit)
             ->pluck('id');
 

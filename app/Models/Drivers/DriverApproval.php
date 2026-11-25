@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -75,10 +77,24 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
     public static function buildsByKey(array $keys): array
     {
         return self::query()
-            ->whereIn('driver_key', $keys)
+            ->ofKeys($keys)
             ->readExactly(count($keys))
             ->get()
             ->mapWithKeys(fn (self $approval) => [$approval->driver_key => $approval->build_pins])
             ->all();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The approvals of the driver keys.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $keys
+     */
+    #[Scope]
+    protected function ofKeys(Builder $query, array $keys): void
+    {
+        $query->whereIn('driver_key', $keys);
     }
 }

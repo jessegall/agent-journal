@@ -50,7 +50,7 @@ final class ProcessEvent extends Model implements ReadableModel
      */
     public static function create(ProcessRun $run, int $sequence, string $type, array $fields): self
     {
-        $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
+        $existing = self::query()->ofRun($run)->atSequence($sequence)->first();
 
         if ($existing === null) {
             return self::query()->create(
@@ -83,5 +83,16 @@ final class ProcessEvent extends Model implements ReadableModel
     protected function ofRun(Builder $query, ProcessRun $run): void
     {
         $query->where('process_run_id', $run->id);
+    }
+
+    /**
+     * The event at that place in its run.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function atSequence(Builder $query, int $sequence): void
+    {
+        $query->where('sequence', $sequence);
     }
 }

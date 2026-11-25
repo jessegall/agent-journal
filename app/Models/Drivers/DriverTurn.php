@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 )]
 final class DriverTurn extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -188,7 +190,7 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
             ->where('agent_runtime_id', $runtime->id)
             ->whereNotNull('closing_words_digest')
             ->orderByDesc('started_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->lockForUpdate()
             ->first();
     }

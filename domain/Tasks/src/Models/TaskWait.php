@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -40,6 +41,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['dependent_task_id', 'prerequisite_task_id', 'created_by_type', 'created_by_id'])]
 final class TaskWait extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -199,7 +201,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public static function waitsOf(string $dependentId, int $limit): Collection
     {
-        return self::query()->where('dependent_task_id', $dependentId)->orderBy('id')->limit($limit)->get();
+        return self::query()->where('dependent_task_id', $dependentId)->oldestFirst()->limit($limit)->get();
     }
 
     /**
@@ -207,7 +209,7 @@ final class TaskWait extends Model implements EventSource, ReadableModel
      */
     public static function holdersOf(string $prerequisiteId, int $limit): Collection
     {
-        return self::query()->where('prerequisite_task_id', $prerequisiteId)->orderBy('id')->limit($limit)->get();
+        return self::query()->where('prerequisite_task_id', $prerequisiteId)->oldestFirst()->limit($limit)->get();
     }
 
     /**

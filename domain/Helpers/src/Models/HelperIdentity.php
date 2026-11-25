@@ -153,7 +153,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      */
     public static function designatedFor(string $profileKey): Option
     {
-        return Option::fromValue(self::query()->acrossActors()->where('designated_profile', $profileKey)->first());
+        return Option::fromValue(self::query()->acrossActors()->designatedAs($profileKey)->first());
     }
 
     // ----------[ Scopes ]----------
@@ -178,5 +178,16 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     protected function representing(Builder $query, ActorIdentity $helper): void
     {
         $query->where('helper_actor_type', $helper->type->value)->where('helper_actor_id', $helper->id);
+    }
+
+    /**
+     * The identity designated for the profile.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function designatedAs(Builder $query, string $profileKey): void
+    {
+        $query->where('designated_profile', $profileKey);
     }
 }

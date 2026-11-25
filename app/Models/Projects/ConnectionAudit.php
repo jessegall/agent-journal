@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['type', 'actor_type', 'actor_id', 'invitation_id', 'project_id', 'binding_id', 'outcome'])]
 final class ConnectionAudit extends Model implements ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -117,7 +119,7 @@ final class ConnectionAudit extends Model implements ReadableModel
      */
     public static function newest(int $most): array
     {
-        return array_values(self::query()->orderByDesc('created_at')->orderByDesc('id')->limit($most)->get()->all());
+        return array_values(self::query()->orderByDesc('created_at')->newestFirst()->limit($most)->get()->all());
     }
 
     /**
@@ -134,7 +136,7 @@ final class ConnectionAudit extends Model implements ReadableModel
 
         return array_values(self::query()->fromSub($ranked, 'connection_audits')
             ->where('step_rank', '<=', self::SUPPORT_RECORD_LIMIT)
-            ->orderByDesc('created_at')->orderByDesc('id')
+            ->orderByDesc('created_at')->newestFirst()
             ->readExactly(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
     }
 }

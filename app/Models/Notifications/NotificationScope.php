@@ -185,7 +185,7 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
      */
     public static function userOf(string $id): Option
     {
-        $scope = self::query()->whereKey($id)->where('recipient_type', ActorType::User->value)->first();
+        $scope = self::query()->whereKey($id)->ofUsers()->first();
 
         return Option::fromValue($scope?->recipient_id);
     }
@@ -209,5 +209,16 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         $query->where('scope_key', $key)
             ->where('recipient_type', $recipient->type->value)
             ->where('recipient_id', $recipient->id);
+    }
+
+    /**
+     * The scopes whose recipient is a user.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofUsers(Builder $query): void
+    {
+        $query->where('recipient_type', ActorType::User->value);
     }
 }

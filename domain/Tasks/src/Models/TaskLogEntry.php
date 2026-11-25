@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['task_id', 'task_run_id', 'run_number', 'actor_type', 'actor_id', 'text', 'sequence'])]
 final class TaskLogEntry extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -124,7 +126,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     public static function pageAfter(string $taskId, int $sequence, int $limit): Collection
     {
         return self::query()->where('task_id', $taskId)->where('sequence', '>', $sequence)
-            ->orderBy('sequence')->orderBy('id')->limit($limit)->get();
+            ->orderBy('sequence')->oldestFirst()->limit($limit)->get();
     }
 
     /**
@@ -134,7 +136,7 @@ final class TaskLogEntry extends Model implements EventSource, ReadableModel
     {
         return self::query()->where('task_id', $taskId)
             ->when($sequence !== null, fn (Builder $query) => $query->where('sequence', '<', $sequence))
-            ->orderByDesc('sequence')->orderByDesc('id')->limit($limit)->get();
+            ->orderByDesc('sequence')->newestFirst()->limit($limit)->get();
     }
 
     // ----------[ Scopes ]----------

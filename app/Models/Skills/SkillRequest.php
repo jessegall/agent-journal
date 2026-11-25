@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -79,6 +81,19 @@ final class SkillRequest extends Model implements ReadableModel
      */
     public static function earlier(ActorIdentity $actor, string $requestId): self|null
     {
-        return self::query()->byActor($actor)->where('request_id', $requestId)->first();
+        return self::query()->byActor($actor)->ofRequest($requestId)->first();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The request made under that request id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRequest(Builder $query, string $requestId): void
+    {
+        $query->where('request_id', $requestId);
     }
 }

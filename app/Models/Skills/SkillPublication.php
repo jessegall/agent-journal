@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Skills;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -71,6 +72,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class SkillPublication extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -379,7 +381,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
                 PublicationState::Delivered->value,
             ])
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->readExactly(max(1, 2 * count($sessionIds)))
             ->get()
             ->unique('session_id');
@@ -414,7 +416,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
                 PublicationState::Superseded->value,
             ])
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->readExactly($limit)
             ->get();
 
@@ -477,7 +479,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return self::query()
             ->where('session_id', $sessionId)
             ->orderBy('created_at')
-            ->orderBy('id')
+            ->oldestFirst()
             ->firstOrFail();
     }
 
@@ -490,7 +492,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
             ->where('session_id', $sessionId)
             ->inState(PublicationState::Delivered)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->first();
     }
 
@@ -502,7 +504,7 @@ final class SkillPublication extends Model implements EventSource, ReadableModel
         return self::query()
             ->where('session_id', $sessionId)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->first();
     }
 

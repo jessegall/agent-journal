@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -92,6 +94,19 @@ final class ReportJobLink extends Model implements EventSource, ReadableModel
      */
     public static function ofReport(string $reportId): Option
     {
-        return Option::fromValue(self::query()->where('report_id', $reportId)->first());
+        return Option::fromValue(self::query()->forReport($reportId)->first());
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The report's link to its job.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forReport(Builder $query, string $reportId): void
+    {
+        $query->where('report_id', $reportId);
     }
 }

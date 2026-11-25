@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
@@ -39,6 +41,19 @@ final class AskRequester extends Model implements ReadableModel
         ]);
 
         $requester->insertIfAbsent();
-        self::query()->where($actor->asColumns('actor'))->lockForUpdate()->sole();
+        self::query()->ofActor($actor)->lockForUpdate()->sole();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The actor's requester row.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofActor(Builder $query, ActorIdentity $actor): void
+    {
+        $query->where($actor->asColumns('actor'));
     }
 }

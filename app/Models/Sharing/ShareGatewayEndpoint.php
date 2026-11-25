@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -41,6 +42,7 @@ use PhpOption\Option;
 #[Fillable(['endpoint_version', 'run_id', 'public_origin', 'state', 'last_health_at'])]
 final class ShareGatewayEndpoint extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -201,7 +203,7 @@ final class ShareGatewayEndpoint extends Model implements EventSource, ReadableM
             self::query()->ofRun($runId)->where(
                 'state',
                 GatewayEndpointState::Open->value,
-            )->orderBy('id')->limit(Share::LIVE_LIMIT)->get()->all(),
+            )->oldestFirst()->limit(Share::LIVE_LIMIT)->get()->all(),
         );
     }
 

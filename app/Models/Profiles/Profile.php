@@ -128,7 +128,7 @@ final class Profile extends Model implements EventSource, ReadableModel
      */
     public static function listed(int $limit): array
     {
-        return array_values(self::query()->orderBy('key')->readExactly($limit)->get()->all());
+        return array_values(self::query()->inKeyOrder()->readExactly($limit)->get()->all());
     }
 
     // ----------[ Scopes ]----------
@@ -158,5 +158,16 @@ final class Profile extends Model implements EventSource, ReadableModel
     {
         $this->label = $label;
         $this->description = $description;
+    }
+
+    /**
+     * The profiles in the order of their key.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inKeyOrder(Builder $query): void
+    {
+        $query->orderBy('key');
     }
 }

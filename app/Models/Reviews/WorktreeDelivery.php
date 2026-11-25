@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Reviews;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -67,7 +69,7 @@ final class WorktreeDelivery extends Model implements ReadableModel
      */
     public static function create(ChildClaim $claim, DeliverySubmission $submission): self
     {
-        $earlier = self::query()->where('delivery_id', $submission->deliveryId)->lockForUpdate()->first();
+        $earlier = self::query()->ofDelivery($submission->deliveryId)->lockForUpdate()->first();
 
         self::assertSameCommit($earlier, $submission);
 
@@ -115,5 +117,18 @@ final class WorktreeDelivery extends Model implements ReadableModel
         if ($earlier instanceof self && $earlier->delivered_tip !== $submission->deliveredTip) {
             throw DeliveryRefused::otherCommit($submission->deliveryId);
         }
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The delivery of that id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDelivery(Builder $query, string $deliveryId): void
+    {
+        $query->where('delivery_id', $deliveryId);
     }
 }

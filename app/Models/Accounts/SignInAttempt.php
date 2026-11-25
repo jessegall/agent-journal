@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -89,6 +90,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     use HasUlids;
     use KeepsCleanupTries;
     use Linkable;
+    use OrdersById;
     use RaisesEvents;
 
     public const string LINK_TYPE = 'core.sign-in-attempt';
@@ -517,7 +519,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
             ->where('account_id', $account?->id)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
-            ->orderBy('id')
+            ->oldestFirst()
             ->lockForUpdate()
             ->first();
     }

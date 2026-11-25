@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -36,6 +37,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['driver', 'reason'])]
 final class AccountNotice extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -116,7 +118,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
             ->where('driver', $driver)
-            ->orderBy('id')
+            ->oldestFirst()
             ->lockForUpdate()
             ->readAll('a driver keeps one open notice per reason')
             ->get();

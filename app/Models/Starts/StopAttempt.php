@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -46,6 +47,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['stop_id', 'policy_digest', 'workspace_generation', 'condition_hashes', 'state', 'submission_digest'])]
 final class StopAttempt extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -260,7 +262,7 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
             ->where('session_id', $sessionId)
             ->where('state', '!=', StopAttemptState::Pending->value)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->readExactly($count)
             ->get()
             ->all());

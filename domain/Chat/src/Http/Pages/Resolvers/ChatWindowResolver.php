@@ -45,7 +45,6 @@ final readonly class ChatWindowResolver implements PageResolver
         private AgentDirectory $agents,
         private ChatPages $pages,
         private ChatInboxes $chats,
-        private CurrentActor $actors,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
         private DriverCatalogue $drivers,

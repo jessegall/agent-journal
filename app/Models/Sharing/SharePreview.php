@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Casts\SelectedTargetsCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
@@ -58,6 +59,7 @@ use PhpOption\Option;
 )]
 final class SharePreview extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BelongsToOneRoot;
     use BoundedReads;
     use HasUlids;
@@ -271,7 +273,7 @@ final class SharePreview extends Model implements EventSource, ReadableModel
     public static function openFor(string $ownerUserId, RecordIdentity $root): Option
     {
         return Option::fromValue(
-            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first(),
+            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->newestFirst()->first(),
         );
     }
 

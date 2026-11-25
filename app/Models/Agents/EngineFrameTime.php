@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -55,8 +57,22 @@ final class EngineFrameTime extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()->whereIn('frame_id', $ids)->readExactly(count($ids))->get()
+        return self::query()->ofFrames($ids)->readExactly(count($ids))->get()
             ->mapWithKeys(fn (self $time) => [$time->frame_id => $time->settled_at])
             ->all();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The times of the frames.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function ofFrames(Builder $query, array $ids): void
+    {
+        $query->whereIn('frame_id', $ids);
     }
 }

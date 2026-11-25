@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Starts;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -118,6 +119,7 @@ use PhpOption\Option;
 ])]
 final class StartRecord extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -421,7 +423,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         return self::query()
             ->whereIn('session_id', $ids)
             ->orderBy('created_at')
-            ->orderBy('id')
+            ->oldestFirst()
             ->readAll('the start records of the sessions whose readiness is read together')
             ->get()
             ->keyBy('session_id')
@@ -455,7 +457,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
         return Option::fromValue(self::query()
             ->where('session_id', $sessionId)
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->lockForUpdate()
             ->first());
     }

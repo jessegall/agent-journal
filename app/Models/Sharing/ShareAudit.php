@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -35,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['type', 'actor_type', 'actor_id', 'reason_code'])]
 final class ShareAudit extends Model implements ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -134,7 +136,7 @@ final class ShareAudit extends Model implements ReadableModel
      */
     public static function pageOf(Share $share, string|null $after, int $rows): array
     {
-        $query = self::query()->ofShare($share)->orderByDesc('id');
+        $query = self::query()->ofShare($share)->newestFirst();
         $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
 
         return array_values($query->readExactly($rows + 1)->get()->all());
@@ -167,7 +169,7 @@ final class ShareAudit extends Model implements ReadableModel
                         $endedLongAgo,
                     ),
                 ))
-            ->orderBy('id')->lockForUpdate()->readExactly($most)->get()->all());
+            ->oldestFirst()->lockForUpdate()->readExactly($most)->get()->all());
     }
 
     // ----------[ Scopes ]----------

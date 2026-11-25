@@ -69,7 +69,7 @@ final class UserPresence extends Model implements EventSource, ReadableModel
         $presence->setAttribute($presence->getKeyName(), $presence->newUniqueId());
         $presence->insertIfAbsent();
 
-        return self::query()->where('user_id', $userId)->lockForUpdate()->sole();
+        return self::query()->ofUser($userId)->lockForUpdate()->sole();
     }
 
     // ----------[ Scopes ]----------
@@ -83,5 +83,16 @@ final class UserPresence extends Model implements EventSource, ReadableModel
     protected function freshAt(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
     {
         $query->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds));
+    }
+
+    /**
+     * The user's presence.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofUser(Builder $query, string $userId): void
+    {
+        $query->where('user_id', $userId);
     }
 }

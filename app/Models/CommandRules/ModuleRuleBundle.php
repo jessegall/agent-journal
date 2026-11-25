@@ -74,7 +74,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();
 
-        return self::query()->where($identity)->sole();
+        return self::query()->ofBundle($projectKey, $bundle)->sole();
     }
 
     // ----------[ Scopes ]----------
@@ -86,5 +86,19 @@ final class ModuleRuleBundle extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * The project's approval of exactly this bundle: its module, version and digest.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofBundle(Builder $query, string $projectKey, RuleBundle $bundle): void
+    {
+        $query->ofProject($projectKey)
+            ->where('module', $bundle->module)
+            ->where('version', $bundle->version)
+            ->where('digest', $bundle->digest());
     }
 }

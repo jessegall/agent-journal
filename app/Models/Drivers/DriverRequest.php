@@ -151,7 +151,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     ): self {
         $request = new self();
         $request->agent_runtime_id = $runtime->id;
-        $request->sequence = (int) self::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1;
+        $request->sequence = (int) self::query()->ofRuntime($runtime)->max('sequence') + 1;
         $request->operation = $operation;
         $request->idempotency_key = $idempotencyKey;
         $request->payload_digest = $envelope->digestFor($operation->value);
@@ -722,5 +722,16 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $query->where('operation', DriverOperation::ResendReadiness)
             ->whereIn('progress', RequestProgress::open())
             ->where('created_at', '<', $before);
+    }
+
+    /**
+     * The runtime's requests.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRuntime(Builder $query, AgentRuntime $runtime): void
+    {
+        $query->where('agent_runtime_id', $runtime->id);
     }
 }

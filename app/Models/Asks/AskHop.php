@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use App\Concerns\OrdersById;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -40,6 +41,7 @@ use PhpOption\Option;
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
 final class AskHop extends Model implements EventSource, ReadableModel
 {
+    use OrdersById;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
@@ -144,7 +146,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
             ->where('ask_id', $askId)
             ->whereKeyNot($hopId)
             ->reorder('version', 'desc')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
     }
@@ -159,7 +161,7 @@ final class AskHop extends Model implements EventSource, ReadableModel
         return self::query()
             ->where('ask_id', $askId)
             ->reorder('version', 'desc')
-            ->orderByDesc('id')
+            ->newestFirst()
             ->firstOption()
             ->map(fn (self $hop) => $hop->actor());
     }
