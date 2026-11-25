@@ -22,6 +22,7 @@ use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Support\Readers\CandidateQuery;
 use Domain\Helpers\Support\Readers\HelperCandidate;
 use Domain\Helpers\Support\Readers\HelperCandidates;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -141,7 +142,7 @@ final class HelperSelectionTest extends TestCase
             $this->parent,
             'Review',
             [],
-            self::sessionStartFor('request-busy'),
+            HelperFixtures::startDetails('request-busy'),
         );
 
         $this->assertSame([], $this->candidates(DefaultDrivers::CODEX, self::LUNA));
@@ -202,7 +203,7 @@ final class HelperSelectionTest extends TestCase
             $this->parent,
             'Review',
             [],
-            self::sessionStartFor((string) Str::ulid()),
+            HelperFixtures::startDetails((string) Str::ulid()),
         );
 
         $this->travelTo($finishedAt);

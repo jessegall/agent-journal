@@ -63,7 +63,7 @@ final class HelperFixtures
     }
 
     /**
-     * A job started for the request on revision 1 of its profile, on a new identity in a new conversation.
+     * A job started for the request on revision 1 of its profile, on a reused identity in a new conversation.
      */
     public static function startDetails(string $requestId): SessionStartDetails
     {
@@ -71,7 +71,7 @@ final class HelperFixtures
             $requestId,
             hash('sha256', $requestId),
             1,
-            true,
+            false,
             false,
             ConversationModeType::New,
             '',

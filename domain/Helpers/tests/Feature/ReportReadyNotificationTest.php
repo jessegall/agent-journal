@@ -14,6 +14,7 @@ use Domain\Helpers\Listeners\DeliverReportReadyNotification;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
@@ -66,7 +67,7 @@ final class ReportReadyNotificationTest extends TestCase
             $parent,
             'Write it down',
             [],
-            self::sessionStartFor((string) Str::ulid()),
+            HelperFixtures::startDetails((string) Str::ulid()),
         );
     }
 

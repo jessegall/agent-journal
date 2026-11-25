@@ -7,6 +7,7 @@ namespace Domain\Helpers\Tests\Commands;
 use Domain\Helpers\Commands\FinishHelperJob\FinishHelperJobCommand;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -19,9 +20,10 @@ final class FinishHelperJobTest extends TestCase
 
     public function test_an_open_job_finishes_with_its_evidence_and_time(): void
     {
-        $job = $this->openHelperJob();
+        $helpers = $this->journal->owner()->fixtures(HelperFixtures::class)->openJob('Fix', 'Owner');
+        $job = $helpers->jobCalled('Fix');
 
-        $this->runLifecycleCommand(new FinishHelperJobCommand($job->id, 'stop-attempt:attempt-1'));
+        $helpers->runLifecycle(new FinishHelperJobCommand($job->id, 'stop-attempt:attempt-1'));
 
         $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
         $this->assertSame(
@@ -33,10 +35,11 @@ final class FinishHelperJobTest extends TestCase
 
     public function test_a_job_that_already_ended_is_left_as_it_was(): void
     {
-        $job = $this->openHelperJob();
+        $helpers = $this->journal->owner()->fixtures(HelperFixtures::class)->openJob('Fix', 'Owner');
+        $job = $helpers->jobCalled('Fix');
         $job->cancel();
 
-        $this->runLifecycleCommand(new FinishHelperJobCommand($job->id, 'stop-attempt:attempt-3'));
+        $helpers->runLifecycle(new FinishHelperJobCommand($job->id, 'stop-attempt:attempt-3'));
 
         $this->assertSame(JobStatus::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->status);
     }

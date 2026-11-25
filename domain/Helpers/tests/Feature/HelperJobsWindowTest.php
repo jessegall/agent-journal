@@ -12,6 +12,7 @@ use Domain\Helpers\Http\Pages\Resolvers\HelperJobsLayoutResolver;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -97,7 +98,7 @@ final class HelperJobsWindowTest extends TestCase
                 $parent,
                 $brief,
                 [],
-                self::sessionStartFor(hash('xxh64', $brief)),
+                HelperFixtures::startDetails(hash('xxh64', $brief)),
             ),
             $briefs,
         );

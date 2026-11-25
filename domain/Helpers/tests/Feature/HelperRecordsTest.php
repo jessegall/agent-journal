@@ -6,13 +6,13 @@ namespace Domain\Helpers\Tests\Feature;
 
 use App\Models\Agents\Agent;
 use App\Support\ActorIdentity;
-use App\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Domain\Helpers\Exceptions\HelperJobEnded;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
@@ -36,7 +36,7 @@ final class HelperRecordsTest extends TestCase
             $parent,
             'Read the plan',
             ['message:1'],
-            self::sessionStartFor('request-1'),
+            HelperFixtures::startDetails('request-1'),
         );
 
         $this->actAsUser('another');
@@ -68,7 +68,7 @@ final class HelperRecordsTest extends TestCase
             $parent,
             'Review',
             [],
-            self::sessionStartFor('request-2'),
+            HelperFixtures::startDetails('request-2'),
         );
 
         $job->addSteering('Look at the tests too');
