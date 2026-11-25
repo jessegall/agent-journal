@@ -77,6 +77,6 @@ final readonly class MapSessionOutputs
     {
         SessionOutputGrant::query()->where('session_id', $start->session_id)->delete();
 
-        SessionOutputGrant::create($start, $pathsByConversation);
+        SessionOutputGrant::createMany($start, $pathsByConversation);
     }
 }

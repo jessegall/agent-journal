@@ -76,8 +76,9 @@ final class StopResult extends Model implements ReadableModel
      * Writes the attempt's result of each report in one insert.
      *
      * @param  list<StopResultReport>  $reports
+     * @return list<string> the ids of the rows written
      */
-    public static function create(StopAttempt $attempt, array $reports): void
+    public static function createMany(StopAttempt $attempt, array $reports): array
     {
         $results = [];
 
@@ -97,7 +98,7 @@ final class StopResult extends Model implements ReadableModel
             $results[] = $result;
         }
 
-        self::createAll($results);
+        return self::insertRows($results);
     }
 
     // ----------[ Relations ]----------

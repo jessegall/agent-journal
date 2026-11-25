@@ -65,8 +65,9 @@ final class ShareMember extends Model implements ReadableModel
     /**
      * Approves each target the preview selected, linked from its source, at the share's current scope version, in one
      * insert.
+     * @return list<string> the ids of the rows written
      */
-    public static function create(Share $share, ConsumedPreview $consumed): void
+    public static function createMany(Share $share, ConsumedPreview $consumed): array
     {
         $members = [];
 
@@ -83,7 +84,7 @@ final class ShareMember extends Model implements ReadableModel
             $members[] = $member;
         }
 
-        self::createAll($members);
+        return self::insertRows($members);
     }
 
     // ----------[ Accessors ]----------

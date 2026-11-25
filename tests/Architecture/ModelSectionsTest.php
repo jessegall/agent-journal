@@ -32,6 +32,8 @@ final class ModelSectionsTest extends TestCase
 
     private const string CONSTRUCTOR_NAMED_OTHERWISE = 'constructor open is one of 2, so it is named createFor';
 
+    private const string BATCH_WITHOUT_IDS = 'batch constructor create returns the ids of the rows it wrote, as an array';
+
     private const string BUILDER_OF_ONE_CONSTRUCTOR = 'builder draft serves only the constructor open: inline it';
 
     public function test_every_model_method_sits_in_a_known_section_in_order(): void
@@ -68,6 +70,13 @@ final class ModelSectionsTest extends TestCase
         $this->assertStringContainsString(self::PLAIN_CREATE_BESIDE_ANOTHER, $output);
         $this->assertStringContainsString(self::CONSTRUCTOR_NAMED_OTHERWISE, $output);
         $this->assertStringContainsString(self::BUILDER_OF_ONE_CONSTRUCTOR, $output);
+    }
+
+    public function test_a_batch_constructor_that_gives_no_ids_is_flagged(): void
+    {
+        $output = $this->checkOutput('tests/Fixtures/ModelSections/BatchNamedCreate.php');
+
+        $this->assertStringContainsString(self::BATCH_WITHOUT_IDS, $output);
     }
 
     public function test_an_accessor_in_accessors_is_clean(): void

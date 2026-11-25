@@ -113,7 +113,7 @@ final class ShareStatusTest extends TestCase
                 ShareToken::generate(),
             ),
         );
-        ShareMember::create(
+        ShareMember::createMany(
             $share,
             $root,
             new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1'),

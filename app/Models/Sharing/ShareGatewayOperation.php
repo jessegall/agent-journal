@@ -94,13 +94,16 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
      * Writes an operation of the type for each configuration, in one insert.
      *
      * @param  list<ShareGatewayConfiguration>  $configurations
+     * @return list<string> the ids of the rows written
      */
-    public static function createForConfigurations(array $configurations, GatewayOperationType $type): void
+    public static function createManyForConfigurations(array $configurations, GatewayOperationType $type): array
     {
-        self::createAll(array_map(
+        $operations = array_map(
             fn (ShareGatewayConfiguration $configuration) => self::unsaved($configuration, $type),
             $configurations,
-        ));
+        );
+
+        return self::insertRows($operations);
     }
 
     // ----------[ Mutations ]----------

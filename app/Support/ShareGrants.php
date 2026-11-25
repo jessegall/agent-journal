@@ -148,7 +148,7 @@ final readonly class ShareGrants
 
     private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
     {
-        ShareMember::create($share, $consumed);
+        ShareMember::createMany($share, $consumed);
 
         ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
     }

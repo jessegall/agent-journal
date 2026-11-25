@@ -17,7 +17,7 @@ final readonly class RecordEvidenceReadsHandler implements CommandHandler
         $reader = ActorIdentity::of($command->dispatchedBy());
         $run = ProcessRun::query()->whereKey($command->processRunId)->sole();
 
-        EvidenceRead::create($run, $reader, $command->ranges);
+        EvidenceRead::createMany($run, $reader, $command->ranges);
 
         return count($command->ranges);
     }

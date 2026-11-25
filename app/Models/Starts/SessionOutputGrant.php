@@ -66,8 +66,9 @@ final class SessionOutputGrant extends Model implements ReadableModel
      * Grants the start's session each conversation's output paths, in one insert.
      *
      * @param  array<array-key, SessionOutputPaths>  $pathsByConversation
+     * @return list<string> the ids of the rows written
      */
-    public static function create(ProcessStart $start, array $pathsByConversation): void
+    public static function createMany(ProcessStart $start, array $pathsByConversation): array
     {
         $grants = [];
 
@@ -82,7 +83,7 @@ final class SessionOutputGrant extends Model implements ReadableModel
             $grants[] = $grant;
         }
 
-        self::createAll($grants);
+        return self::insertRows($grants);
     }
 
     // ----------[ Accessors ]----------

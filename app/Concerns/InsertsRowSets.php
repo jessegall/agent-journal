@@ -11,24 +11,33 @@ namespace App\Concerns;
 trait InsertsRowSets
 {
     /**
-     * Inserts the unsaved rows in one statement.
+     * Inserts the unsaved rows in one statement, and gives the ids it wrote, in the order of the rows.
      *
      * @param  list<static>  $rows
+     * @return list<string>
      */
-    public static function createAll(array $rows): void
+    protected static function insertRows(array $rows): array
     {
         if ($rows === []) {
-            return;
+            return [];
         }
 
-        static::query()->insert(array_map(static function (self $row): array {
+        $attributes = [];
+        $ids = [];
+
+        foreach ($rows as $row) {
             $row->setUniqueIds();
 
             if ($row->usesTimestamps()) {
                 $row->updateTimestamps();
             }
 
-            return $row->getAttributes();
-        }, $rows));
+            $attributes[] = $row->getAttributes();
+            $ids[] = (string) $row->getKey();
+        }
+
+        static::query()->insert($attributes);
+
+        return $ids;
     }
 }

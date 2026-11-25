@@ -125,7 +125,7 @@ final class SharingModelsTest extends TestCase
             CarbonImmutable::now()->addDays(7),
             new ShareProposal(TestActors::agentIdentity(5)),
         );
-        $member = ShareMember::create(
+        $member = ShareMember::createMany(
             $proposal,
             $this->root(),
             new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'),

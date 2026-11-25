@@ -143,7 +143,7 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($this->read($token, $step)->isAllowed);
 
-        ShareMember::create(
+        ShareMember::createMany(
             $share,
             $this->plan->shareIdentity(),
             new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1'),
@@ -204,7 +204,7 @@ final class ReadShareTest extends TestCase
             $link = $links->sole(
                 fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true),
             );
-            ShareMember::create(
+            ShareMember::createMany(
                 $share,
                 $this->plan->shareIdentity(),
                 new ShareSelectedTarget($document->shareIdentity(), $link->id, '1'),

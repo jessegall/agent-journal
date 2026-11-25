@@ -74,10 +74,11 @@ final class EvidenceRead extends Model implements ReadableModel
      * Records the reader's read of each range of the run, in one insert.
      *
      * @param  list<EvidenceRange>  $ranges
+     * @return list<string> the ids of the rows written
      */
-    public static function create(ProcessRun $run, ActorIdentity $reader, array $ranges): void
+    public static function createMany(ProcessRun $run, ActorIdentity $reader, array $ranges): array
     {
-        self::createAll(array_map(fn (EvidenceRange $range) => new self([
+        $reads = array_map(fn (EvidenceRange $range) => new self([
             'project_key' => $run->project_key,
             'actor_type' => $reader->type->value,
             'actor_id' => $reader->id,
@@ -86,7 +87,9 @@ final class EvidenceRead extends Model implements ReadableModel
             'source' => $range->source,
             'first_byte' => $range->firstByte,
             'end_byte' => $range->endByte,
-        ]), $ranges));
+        ]), $ranges);
+
+        return self::insertRows($reads);
     }
 
     // ----------[ Queries ]----------

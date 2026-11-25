@@ -59,8 +59,9 @@ final class PendingAgentMessage extends Model implements ReadableModel
      * Keeps a message for the agent for each text, each asking for its attention, in one insert.
      *
      * @param  list<string>  $texts
+     * @return list<string> the ids of the rows written
      */
-    public static function create(ActorIdentity $agent, AttentionOrigin $origin, array $texts): void
+    public static function createMany(ActorIdentity $agent, AttentionOrigin $origin, array $texts): array
     {
         $messages = [];
 
@@ -75,7 +76,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
             $messages[] = $message;
         }
 
-        self::createAll($messages);
+        return self::insertRows($messages);
     }
 
     // ----------[ Queries ]----------

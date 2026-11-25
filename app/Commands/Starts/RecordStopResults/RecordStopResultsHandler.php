@@ -40,7 +40,7 @@ final readonly class RecordStopResultsHandler implements CommandHandler
             throw StopResultsRefused::otherConditions($attempt->id);
         }
 
-        StopResult::create($attempt, $command->stopReports);
+        StopResult::createMany($attempt, $command->stopReports);
 
         $state = StopAttemptState::settledBy(
             array_map(fn (StopResultReport $stopReport) => $stopReport->status, $command->stopReports),

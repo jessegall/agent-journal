@@ -258,7 +258,7 @@ final class StateEventDeliveryTest extends TestCase
 
         try {
             $transaction->run(function () use ($event): void {
-                PendingAgentMessage::create(
+                PendingAgentMessage::createMany(
                     $this->target->actorIdentity(),
                     AttentionOrigin::agentMessages('producer-hook'),
                     ['Saved by the producer.'],

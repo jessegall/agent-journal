@@ -64,7 +64,7 @@ final class LinkRemovalTest extends TestCase
                 ShareToken::generate(),
             ),
         );
-        $this->member = ShareMember::create(
+        $this->member = ShareMember::createMany(
             $share,
             $this->identityOf($this->source),
             new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1'),

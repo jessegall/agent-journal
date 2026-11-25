@@ -21,7 +21,7 @@ final readonly class HookGuidance implements ActorGuidance
     {
         $origin = AttentionOrigin::guidance($key);
         $text = $this->texts->render($guidance);
-        PendingAgentMessage::create($actor, $origin, [$text]);
+        PendingAgentMessage::createMany($actor, $origin, [$text]);
         $this->attention->request($actor, $origin);
     }
 }
