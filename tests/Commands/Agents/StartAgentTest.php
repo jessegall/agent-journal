@@ -11,12 +11,10 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
-use App\Contracts\Sessions\SessionRequestResolver;
 use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
@@ -25,7 +23,6 @@ use App\Enums\Projects\HostCapabilityType;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
-use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\StartAccepted;
 use App\Exceptions\AccountContainerUnsupported;
@@ -34,12 +31,8 @@ use App\Exceptions\AgentBusy;
 use App\Exceptions\CapacityUnavailable;
 use App\Exceptions\ContainerUnavailable;
 use App\Exceptions\HostUnavailable;
-use App\Exceptions\SessionRequestMissing;
 use App\Exceptions\StartPreviewStale;
-use App\Exceptions\StartRefusalReplayed;
 use App\Exceptions\StartRefused;
-use App\Exceptions\StartRequestConflict;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
@@ -51,16 +44,10 @@ use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
-use App\Support\RecordIdentity;
 use App\Support\StartReceipt;
-use App\Values\ExecutionBudgets;
-use App\Values\ExecutionPolicy;
 use App\Values\HostCapacity;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
@@ -69,15 +56,12 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use PhpOption\None;
-use Tests\Fixtures\Agents\CountingImageVerifier;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\Agents\ServesEveryCombination;
+use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
 use Tests\Support\TestIds;
-use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -88,10 +72,7 @@ use Tests\TestCase;
 final class StartAgentTest extends TestCase
 {
     use CommitsHookRows;
-    use ServesEveryCombination;
-    use WithActiveAccount;
-
-    private Agent $researcher;
+    use StartsAgents;
 
     private const array TABLES = [
         'users',
@@ -113,22 +94,11 @@ final class StartAgentTest extends TestCase
         'account_notices',
     ];
 
-    private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-
-    private CountingImageVerifier $images;
-
-    private string $agentId;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->journal->owner();
-        $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
-        $this->agentId = $this->journal->idleAgent('Builder', 'writing-helper')->agentCalled('Builder')->id;
-
-        $this->chooseActiveAccounts();
-        $this->serveEveryCombination();
+        $this->prepareAgentStarts();
     }
 
     public function test_a_session_without_a_selection_cannot_be_written(): void
@@ -308,123 +278,6 @@ final class StartAgentTest extends TestCase
         $this->assertSame(0, SessionRequest::query()->count());
     }
 
-    public function test_a_capacity_refusal_keeps_its_receipt_after_the_rollback(): void
-    {
-        $this->proveTheHost();
-
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
-        $request = $this->containerRequest(TestSelections::requestId());
-
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
-
-        $record = SessionRequest::query()->where('request_id', $request->requestId)->sole();
-        $this->assertSame(
-            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
-            [$record->disposition, $record->refusal_reason, $record->session_id],
-        );
-        $this->assertNotNull($record->refused_at);
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
-        $this->assertSame(0, CapacityReservation::query()->count());
-    }
-
-    public function test_a_replay_answers_the_kept_refusal_without_a_second_admission(): void
-    {
-        $this->proveTheHost();
-
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
-        $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
-        $checksAtRefusal = $this->images->checks;
-        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
-
-        try {
-            $this->start($request);
-            $this->fail('A refused start ran again under its request id.');
-        } catch (StartRefusalReplayed $replayed) {
-            $this->assertSame(StartRefusalType::CapacityUnavailable->value, $replayed->reason);
-        }
-
-        $this->assertSame($checksAtRefusal, $this->images->checks);
-        $this->assertSame(0, CapacityReservation::query()->count());
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agentId)->count());
-    }
-
-    public function test_changed_input_under_a_refused_key_is_refused_as_a_conflict(): void
-    {
-        $this->proveTheHost();
-
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
-        $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
-
-        $this->assertThrows(
-            fn () => $this->start(
-                $this->containerRequest(
-                    $request->requestId,
-                    new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehex'),
-                ),
-            ),
-            StartRequestConflict::class,
-        );
-        $this->assertSame(
-            StartDisposition::Refused,
-            SessionRequest::query()->where('request_id', $request->requestId)->sole()->disposition,
-        );
-    }
-
-    public function test_an_intent_interrupted_before_its_receipt_resumes_once(): void
-    {
-        $this->proveTheHost();
-
-        $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
-        $request = $this->containerRequest(TestSelections::requestId());
-        SessionRequest::create(
-            $request,
-            TestSelections::pinOf($request),
-            ActorIdentity::of(ActorContext::forUser($this->journal->ownerUser()->id)),
-            None::create(),
-        );
-
-        $resumed = $this->start($request);
-        $replayed = $this->start($request);
-
-        $record = SessionRequest::query()->where('request_id', $request->requestId)->sole();
-        $this->assertSame(
-            [StartDisposition::Started, $resumed->sessionId, $resumed->sessionId, true, false],
-            [
-                $record->disposition,
-                $record->session_id,
-                $replayed->sessionId,
-                $resumed->isNewSession,
-                $replayed->isNewSession,
-            ],
-        );
-        $this->assertSame(1, CapacityReservation::query()->where('start_request_id', $request->requestId)->count());
-        $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agentId)->count());
-    }
-
-    public function test_the_requester_reads_a_sessionless_refused_receipt_and_another_agent_finds_none(): void
-    {
-        $this->proveTheHost();
-
-        $this->app->instance(HostCapacity::class, new HostCapacity(0, 0, 0));
-        $request = $this->containerRequest(TestSelections::requestId());
-        $this->assertThrows(fn () => $this->start($request), CapacityUnavailable::class);
-
-        $receipt = $this->app->make(SessionRequestResolver::class)->receipt($request->requestId);
-
-        $this->assertSame(
-            [StartDisposition::Refused, StartRefusalType::CapacityUnavailable->value, null],
-            [$receipt->disposition, $receipt->refusalReason, $receipt->sessionId],
-        );
-        $reader = Agent::create('Reader', 'writing-helper', $this->localProject());
-        $this->journal->actAsAgentIds($reader->id, TestSelections::requestId());
-        $this->assertThrows(
-            fn () => $this->app->make(SessionRequestResolver::class)->receipt($request->requestId),
-            SessionRequestMissing::class,
-        );
-    }
-
     public function test_unproven_account_transport_refuses_before_account_selection_or_host_preparation(): void
     {
         $this->journal->actAsUserId(TestIds::of(1));
@@ -532,130 +385,5 @@ final class StartAgentTest extends TestCase
         $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
         $this->assertSame(1, CapacityReservation::query()->count());
         $this->assertSame(1, AgentSession::query()->count());
-    }
-
-    private function request(int|null $previewRevision = null): StartRequest
-    {
-        return new StartRequest(
-            TestSelections::requestId(),
-            $this->researcher->id,
-            TestSelections::of(),
-            StartOriginType::MainStart,
-            null,
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile(TestSelections::onHost()),
-            driverType: DriverType::Headless,
-            previewRevision: $previewRevision,
-        );
-    }
-
-    private function start(StartRequest $request): StartReceipt
-    {
-        return $this->app->make(CommandBus::class)->run(new StartAgentCommand($request));
-    }
-
-    private function containerRequest(
-        string $requestId,
-        RecordIdentity $ownerWork = new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
-    ): StartRequest {
-        return new StartRequest(
-            $requestId,
-            $this->agentId,
-            TestSelections::of(),
-            StartOriginType::OwnerRequest,
-            $ownerWork,
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile(new ExecutionPolicy(
-                ExecutionModeType::RequiredContainer,
-                self::IMAGE,
-                'helper-7',
-                ExecutionBudgets::defaults(),
-                [],
-            )),
-            driverType: DriverType::Headless,
-        );
-    }
-
-    private function proveTheHost(): void
-    {
-        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
-        {
-            public function capability(HostCapabilityQuery $query): HostCapability
-            {
-                return new HostCapability(
-                    $query,
-                    CapabilityStatusType::Supported,
-                    'docs/x.md',
-                    'Proven for this test.',
-                );
-            }
-        });
-        $this->images = new CountingImageVerifier();
-        $this->app->instance(DockerImageVerifier::class, $this->images);
-    }
-
-    private function requestFor(Agent $actor, string $driver): StartRequest
-    {
-        $image = 'registry.example/journal-helper@sha256:'.str_repeat('a', 64);
-        $policy = new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            $image,
-            'helper-7',
-            ExecutionBudgets::defaults(),
-            [],
-        );
-
-        return new StartRequest(
-            TestSelections::requestId(),
-            $actor->id,
-            TestSelections::of($driver),
-            StartOriginType::OwnerRequest,
-            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile($policy),
-            driverType: DriverType::Headless,
-        );
-    }
-
-    private function newAgentContainerRequest(): StartRequest
-    {
-        $agent = Agent::create('Builder', 'writing-helper', $this->localProject());
-
-        return new StartRequest(
-            TestSelections::requestId(),
-            $agent->id,
-            TestSelections::of(),
-            StartOriginType::OwnerRequest,
-            new RecordIdentity('tests.owner', '01m7wgahp0n7766x1e1ta8ehew'),
-            null,
-            ConversationModeType::New,
-            null,
-            StartPolicy::withoutProfile($this->policy()),
-            driverType: DriverType::Headless,
-        );
-    }
-
-    private function policy(): ExecutionPolicy
-    {
-        return new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            self::IMAGE,
-            'helper-7',
-            ExecutionBudgets::defaults(),
-            [],
-        );
-    }
-
-    private function signIn(): void
-    {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->journal->actAsUserId($owner->id);
     }
 }

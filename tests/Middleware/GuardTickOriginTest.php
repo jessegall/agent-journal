@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Engine;
+namespace Tests\Middleware;
 
+use App\CommandMiddleware\GuardTickOrigin;
 use App\Commands\Agents\SettleFrameTimes\SettleFrameTimesCommand;
 use App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand;
 use App\Contracts\Time\MonotonicClock;
@@ -26,16 +27,18 @@ use Tests\Fixtures\Hooks\Ticks\TickScript;
 use Tests\Fixtures\Hooks\Ticks\UnreadState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\TestCase;
 
 /**
- * Each tick is told the time since its own frame's last settled tick, never null: exact within one engine process,
- * recovered and approximate after a restart. Commands run one by one and stop at the first failure; only a fully
- * settled tick moves its baseline, and one failing frame does not stop the next.
+ * A tick's commands run one by one inside the locks of the work the tick came from: work still live lets them
+ * through and a failing one stops the rest with the baseline unmoved, while work that ended meanwhile is checked,
+ * refused and commits none of them, its frame settling as it is.
  */
-final class TickDeliveryTest extends TestCase
+#[TestsMiddleware(GuardTickOrigin::class)]
+final class GuardTickOriginTest extends TestCase
 {
     use BuildsTickingStacks;
     use CommitsHookRows;
