@@ -182,7 +182,7 @@ abstract class TestCase extends BaseTestCase
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
 
-        $this->journal = new JournalSeed($this->app);
+        $this->journal = new JournalSeed($this->app, $this);
     }
 
     /**

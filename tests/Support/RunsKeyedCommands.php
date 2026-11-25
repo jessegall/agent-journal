@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Bus\CommandBus;
-use App\Support\RequestKey;
-use Illuminate\Support\Str;
+use App\Contracts\Bus\Command;
 
 /**
  * Runs a command on the bus under a request key of its own, or the given one to send the same request again, and
@@ -14,15 +12,14 @@ use Illuminate\Support\Str;
  */
 trait RunsKeyedCommands
 {
-    protected function runOnBus(object $command, string|null $key = null): mixed
+    /**
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    protected function runOnBus(Command $command, string|null $key = null): mixed
     {
-        $requestKey = $this->app->make(RequestKey::class);
-        $requestKey->set($key ?? (string) Str::ulid());
-
-        try {
-            return $this->app->make(CommandBus::class)->run($command);
-        } finally {
-            $requestKey->forget();
-        }
+        return $this->journal->run($command, $key);
     }
 }

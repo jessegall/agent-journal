@@ -89,6 +89,14 @@ final class FixtureRequests
     }
 
     /**
+     * Binds the selection in place again, after something the test ran set an actor of its own.
+     */
+    public function reselect(): void
+    {
+        $this->restore($this->selected);
+    }
+
+    /**
      * Runs the work under another selection and puts the one in place back afterwards, whatever the work did.
      *
      * @template TResult

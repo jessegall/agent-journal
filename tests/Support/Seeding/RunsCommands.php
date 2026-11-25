@@ -1,0 +1,105 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support\Seeding;
+
+use App\Contracts\Bus\Command;
+use App\Contracts\Bus\CommandBus;
+use App\Contracts\Bus\JournalCommands as JournalCommandsContract;
+use App\Enums\Accounts\CommandEntry;
+use App\Support\ActorStore;
+use App\Support\CommandRegistry;
+use App\Support\JournalCommands;
+use App\Support\RequestKey;
+use Illuminate\Support\Str;
+
+/**
+ * How the journal fixture sends a command: on the bus as the actor in place, keyed or not, or as the journal itself
+ * through a trusted entry; each gives the command's own result back and leaves the actor in place selected.
+ */
+trait RunsCommands
+{
+    /**
+     * Runs the command as the actor in place under a request key of its own, or the one given to send it again, and
+     * forgets the key afterwards, as the web's middleware does after each request.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function run(Command $command, string|null $requestKey = null): mixed
+    {
+        $key = $this->app->make(RequestKey::class);
+        $key->set($requestKey ?? (string) Str::ulid());
+
+        try {
+            return $this->app->make(CommandBus::class)->run($command);
+        } finally {
+            $key->forget();
+        }
+    }
+
+    /**
+     * Runs the command as the actor in place with no request key at all.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function runUnkeyed(Command $command): mixed
+    {
+        return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    /**
+     * Runs the command as the journal itself does, from the entry and under the trusted entry its listener names, and
+     * puts the actor in place back afterwards.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
+    {
+        try {
+            return $this->app->make(JournalCommandsContract::class)->runAsJournal($entry, $trustedEntry, $command);
+        } finally {
+            $this->requests->reselect();
+        }
+    }
+
+    /**
+     * Runs a trusted entry's command as the system, through the command's own entry.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function throughEntry(Command $command): mixed
+    {
+        $entry = $this->app->make(CommandRegistry::class)->entryOf($command::class);
+        $dispatcher = $this->app->make(JournalCommands::class)->for($entry);
+
+        return $this->app->make(ActorStore::class)->actAsSystem('test', fn (): mixed => $dispatcher->run($command));
+    }
+
+    /**
+     * The same as throughEntry() on a fresh request: the scoped instances of the last one are forgotten first.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function asSystem(Command $command): mixed
+    {
+        $this->app->forgetScopedInstances();
+
+        return $this->throughEntry($command);
+    }
+}

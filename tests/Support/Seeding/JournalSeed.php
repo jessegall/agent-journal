@@ -6,7 +6,6 @@ namespace Tests\Support\Seeding;
 
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Messages\InboxPermission;
@@ -26,12 +25,12 @@ use App\Values\SelectedDriver;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\FakeServerClock;
 use Tests\Support\OpensDriverRuntimes;
-use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestProjects;
 
 /**
@@ -43,8 +42,12 @@ final class JournalSeed
 {
     private const string OWNER = 'The journal';
 
+    use AssertsReceipts;
+    use AssertsResults;
+    use ObservesEvents;
     use OpensDriverRuntimes;
-    use RunsKeyedCommands;
+    use RunsCommands;
+    use SendsRequests;
 
     /**
      * @var array<string, Inbox>
@@ -104,7 +107,7 @@ final class JournalSeed
      */
     private array $remembered = [];
 
-    public function __construct(private readonly Application $app)
+    public function __construct(private readonly Application $app, private readonly TestCase $test)
     {
         $this->requests = new FixtureRequests($app);
         $this->inboxes = new FixtureInboxes($app);
@@ -165,7 +168,8 @@ final class JournalSeed
     {
         $name = trim($name);
         $this->refuseTakenName($name);
-        $agent = Agent::create($name, $profile, $project === null ? TestProjects::local() : $this->projectCalled($project));
+        $home = $project === null ? TestProjects::local() : $this->projectCalled($project);
+        $agent = Agent::create($name, $profile, $home);
         $this->inboxes->personal(ActorIdentity::of($agent));
         $this->agents[$name] = $agent;
         $this->startNames[$name] = [];
@@ -386,27 +390,6 @@ final class JournalSeed
     }
 
     /**
-     * Runs the command as the actor in place, under a request key of its own or the one given to send it again.
-     */
-    public function run(object $command, string|null $requestKey = null): mixed
-    {
-        return $this->runOnBus($command, $requestKey);
-    }
-
-    /**
-     * Runs the command as the journal itself does, from the entry and under the trusted entry its listener names.
-     *
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
-    {
-        return $this->app->make(JournalCommands::class)->runAsJournal($entry, $trustedEntry, $command);
-    }
-
-    /**
      * A message the user or agent of this name posts to the inbox, under the inbox's next number.
      */
     public function post(string $sender, Inbox $inbox, string $body): Message
@@ -531,7 +514,9 @@ final class JournalSeed
         $owner = $this->ownerUser();
         $this->requests->during(
             fn () => $this->requests->asUser($owner),
-            fn () => $this->run(new GrantEnvironmentAccessCommand($user->id, $environmentId, [InboxPermission::OpenInboxes])),
+            fn () => $this->run(
+                new GrantEnvironmentAccessCommand($user->id, $environmentId, [InboxPermission::OpenInboxes]),
+            ),
         );
     }
 
