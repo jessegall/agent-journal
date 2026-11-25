@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Support\ActorContext;
-use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
-use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
-use Domain\Plans\Models\Plan;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -34,99 +28,60 @@ final class AddPhaseTasksTest extends TestCase
         'phases',
         'phase_tasks',
         'tasks',
+        'users',
+        'number_groups',
+        'command_receipts',
     ];
+
+    private PlanFixtures $plans;
+
+    private TaskFixtures $tasks;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Build')->phase('Build', 'Read');
+        $this->tasks = $this->journal->fixtures(TaskFixtures::class)->task('First')->task('Second');
+    }
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
-        );
+        [$first, $second] = [$this->tasks->taskCalled('First'), $this->tasks->taskCalled('Second')];
 
-        $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create([
-                'title' => 'Build',
-                'type' => PlanType::Build,
-            ]),
-            'Read',
-        );
+        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$second->id, $first->id]));
 
-        $first = Task::factory()->create(['title' => 'First'])->id;
-        $second = Task::factory()->create(['title' => 'Second'])->id;
-
-        $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [
-            $second,
-            $first,
-        ]));
-
-        $this->assertSame([
-            $second,
-            $first,
-        ], $phase->taskIds());
+        $this->plans->assertPhaseTask('Read', $second->assignmentIdentity(), 1)
+            ->assertPhaseTask('Read', $first->assignmentIdentity(), 2);
     }
 
     public function test_one_missing_task_refuses_the_whole_addition(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
+        $real = $this->tasks->taskCalled('First')->id;
+
+        $this->journal->assertRefused(
+            TaskMissing::class,
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$real, TestIds::of(999999)])),
         );
 
-        $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create([
-                'title' => 'Build',
-                'type' => PlanType::Build,
-            ]),
-            'Read',
-        );
-
-        $real = Task::factory()->create(['title' => 'Real'])->id;
-
-        try {
-            $this->app->make(CommandBus::class)->run(
-                new AddPhaseTasksCommand($phase->id, 1, [
-                    $real,
-                    TestIds::of(999999),
-                ]),
-            );
-
-            $this->fail('A missing task was added.');
-        } catch (TaskMissing) {
-            $this->assertSame([], $phase->taskIds());
-        }
+        $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
     }
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
+        $task = $this->tasks->taskCalled('First')->id;
+
+        $this->journal->assertRefused(
+            TaskAlreadyInAPhase::class,
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$task, $task])),
+            fn (TaskAlreadyInAPhase $refusal) => $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal),
         );
 
-        $phase = $this->planStructure()->addPhase(
-            Plan::factory()->create([
-                'title' => 'Build',
-                'type' => PlanType::Build,
-            ]),
-            'Read',
-        );
-
-        $task = Task::factory()->create(['title' => 'Twice'])->id;
-
-        try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasksCommand($phase->id, 1, [
-                $task,
-                $task,
-            ]));
-            $this->fail('A task named twice was added.');
-        } catch (TaskAlreadyInAPhase $refusal) {
-            $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal);
-            $this->assertSame([], $phase->taskIds());
-        }
+        $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
     }
 
-    private function planStructure(): PlanStructure
+    private function phaseId(): string
     {
-        return $this->app->make(PlanStructure::class);
+        return $this->plans->phaseCalled('Read')->id;
     }
 }

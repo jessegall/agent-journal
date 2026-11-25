@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Fixtures;
 
+use App\Support\ActorContext;
 use App\Support\RecordIdentity;
 use Domain\Plans\Commands\AddPhase\AddPhaseCommand;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
@@ -70,6 +71,16 @@ final class PlanFixtures
         return $this;
     }
 
+    /**
+     * A plan its owner made and started.
+     */
+    public function startedPlan(string $name, PlanType $type = PlanType::Build): self
+    {
+        $this->plan($name, type: $type)->planCalled($name)->startOnce(ActorContext::of($this->journal->ownerUser()));
+
+        return $this;
+    }
+
     public function phase(string $plan, string $name, string|null $title = null): self
     {
         $planId = (string) $this->aliases->read(Plan::class, $plan);
@@ -88,12 +99,20 @@ final class PlanFixtures
      */
     public function phaseWithTask(string $plan, string $name, RecordIdentity $task): self
     {
-        if ($task->type !== Task::linkType()) {
-            throw FixtureRefused::wrongRecord(Task::linkType(), $task->type);
-        }
+        self::assertTasks([$task]);
 
-        $phase = $this->phase($plan, $name)->phaseCalled($name);
-        $this->journal->asOwner(new AddPhaseTasksCommand($phase->id, $phase->revision, [$task->id]));
+        return $this->phase($plan, $name)->placeTasks($name, $task);
+    }
+
+    /**
+     * The tasks placed at the end of the phase, in this order, as the Plans command places them.
+     */
+    public function placeTasks(string $phase, RecordIdentity ...$tasks): self
+    {
+        self::assertTasks($tasks);
+        $placed = $this->phaseCalled($phase);
+        $ids = array_map(fn (RecordIdentity $task) => $task->id, $tasks);
+        $this->journal->asOwner(new AddPhaseTasksCommand($placed->id, $placed->revision, $ids));
 
         return $this;
     }
@@ -139,5 +158,17 @@ final class PlanFixtures
         Assert::assertSame($task->id, $placed[$position - 1] ?? null, "The phase {$phase} holds another task there.");
 
         return $this;
+    }
+
+    /**
+     * @param  list<RecordIdentity>  $records
+     */
+    private static function assertTasks(array $records): void
+    {
+        foreach ($records as $record) {
+            if ($record->type !== Task::linkType()) {
+                throw FixtureRefused::wrongRecord(Task::linkType(), $record->type);
+            }
+        }
     }
 }

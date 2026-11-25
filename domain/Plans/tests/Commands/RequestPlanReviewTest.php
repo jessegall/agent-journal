@@ -6,7 +6,6 @@ namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
@@ -20,11 +19,12 @@ use Domain\Plans\Exceptions\PlanUnderReview;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -33,7 +33,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class RequestPlanReviewTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const string BRIEF = 'Read the notes.';
@@ -48,6 +47,7 @@ final class RequestPlanReviewTest extends TestCase
         'plan_review_editions',
         'tasks',
         'command_receipts',
+        'number_groups',
     ];
 
     /**
@@ -90,7 +90,7 @@ final class RequestPlanReviewTest extends TestCase
         $this->assertSame(PlanStatus::Planned, $plan->refresh()->status);
         $review = PlanReviewEdition::query()->whereKey($reviewId)->sole();
         $this->assertSame(PlanReviewStatus::Withdrawn, $review->status);
-        $this->assertSame($this->owner->id, $review->decided_by_id);
+        $this->assertSame($this->journal->ownerUser()->id, $review->decided_by_id);
 
         $this->runCommand(new EditTaskCommand($task->id, $task->refresh()->revision, brief: self::NEW_BRIEF));
         $this->assertSame(self::NEW_BRIEF, $task->refresh()->brief);
@@ -118,7 +118,7 @@ final class RequestPlanReviewTest extends TestCase
 
     public function test_a_caller_with_no_actor_is_refused(): void
     {
-        $plan = Plan::factory()->create();
+        $plan = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release')->planCalled('Release');
         $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->assertThrows(fn () => $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()])));
@@ -143,13 +143,12 @@ final class RequestPlanReviewTest extends TestCase
      */
     private function planWithTask(): array
     {
-        $plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $task = Task::factory()->create([
-            'title' => 'Read',
-            'brief' => self::BRIEF,
-        ]);
-        $this->journal->actAsUserId($this->owner->id);
-        $this->structure()->addTasks($this->structure()->addPhase($plan, 'Reading'), [$task->id]);
+        $this->journal->owner();
+        $task = $this->journal->fixtures(TaskFixtures::class)->task('Read', self::BRIEF)->taskCalled('Read');
+        $plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', title: 'Build the release page')
+            ->phaseWithTask('Release', 'Reading', $task->assignmentIdentity())
+            ->planCalled('Release');
 
         return [
             $plan->refresh(),
@@ -159,6 +158,6 @@ final class RequestPlanReviewTest extends TestCase
 
     private function owner(): ActorIdentity
     {
-        return ActorIdentity::ofClass(User::class, $this->owner->id);
+        return $this->journal->actorCalled('Owner');
     }
 }

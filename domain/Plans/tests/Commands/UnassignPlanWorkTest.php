@@ -6,9 +6,7 @@ namespace Domain\Plans\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
@@ -16,12 +14,13 @@ use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
-use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 
@@ -32,7 +31,20 @@ final class UnassignPlanWorkTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_stacks',
+        'inboxes',
+        'inbox_members',
+        'tasks',
+        'plans',
+        'phases',
+        'phase_tasks',
+        'assignments',
+        'number_groups',
+        'command_receipts',
+    ];
 
     private AssigneeIdentity $builder;
 
@@ -50,21 +62,29 @@ final class UnassignPlanWorkTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->journal->actAsUserId($owner->id);
-        $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper', $this->localProject()));
-        $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $this->open = Task::factory()->create(['title' => 'Open']);
-        $finished = Task::factory()->create(['title' => 'Finished']);
-        $cancelled = Task::factory()->create(['title' => 'Cancelled']);
-        $finished->finish('Done.');
-        $cancelled->cancel('Not needed.');
-        $this->working = $this->planStructure()->addPhase($this->plan, 'Working');
-        $this->planStructure()->addTasks($this->working, [$this->open->id]);
-        $this->over = $this->planStructure()->addPhase($this->plan, 'Over');
-        $this->planStructure()->addTasks($this->over, [$finished->id, $cancelled->id]);
-        $this->empty = $this->planStructure()->addPhase($this->plan, 'Empty');
+        $this->journal->owner()->idleAgent('Builder', 'read-only-helper');
+        $this->builder = AssigneeIdentity::of($this->journal->agentCalled('Builder'));
+        $tasks = $this->journal->fixtures(TaskFixtures::class)
+            ->task('Open')
+            ->finishedTask('Finished')
+            ->cancelledTask('Cancelled');
+        $plans = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release')
+            ->phaseWithTask('Release', 'Working', $tasks->taskCalled('Open')->assignmentIdentity())
+            ->phase('Release', 'Over')
+            ->placeTasks(
+                'Over',
+                $tasks->taskCalled('Finished')->assignmentIdentity(),
+                $tasks->taskCalled('Cancelled')->assignmentIdentity(),
+            )
+            ->phase('Release', 'Empty');
+        $this->plan = $plans->planCalled('Release');
+        $this->open = $tasks->taskCalled('Open');
+        [$this->working, $this->over, $this->empty] = [
+            $plans->phaseCalled('Working'),
+            $plans->phaseCalled('Over'),
+            $plans->phaseCalled('Empty'),
+        ];
     }
 
     public function test_a_phase_cascade_covers_that_phase_and_its_tasks_only_and_releasing_it_clears_them(): void

@@ -10,6 +10,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -28,7 +29,9 @@ final class AddPhaseTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal->ownerUser());
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', 'Ship it.', PlanType::Build)
+            ->planCalled('Release');
     }
 
     public function test_phases_are_added_each_after_the_last(): void
@@ -46,7 +49,9 @@ final class AddPhaseTest extends TestCase
     public function test_a_long_title_and_a_missing_plan_are_refused_and_add_nothing(): void
     {
         $this->assertThrows(
-            fn () => $this->journal->run(new AddPhaseCommand($this->plan->id, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1))),
+            fn () => $this->journal->run(
+                new AddPhaseCommand($this->plan->id, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1)),
+            ),
             CommandInputInvalid::class,
             'title:',
         );

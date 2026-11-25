@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ActorContextMissing;
 use App\Models\Access\User;
-use App\Support\ActorContext;
 use App\Support\StackTransaction;
-use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
-use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\StartDenied;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanResolver;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
-use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 
+/**
+ * A planned plan starts once and says who started it; a paused plan, a start that rolls back and a request with no
+ * actor leave it as it was and announce nothing.
+ */
 final class StartPlanTest extends TestCase
 {
     use CommitsHookRows;
@@ -39,116 +36,96 @@ final class StartPlanTest extends TestCase
         'tasks',
         'links',
         'assignments',
+        'users',
+        'number_groups',
+        'command_receipts',
     ];
 
-    private Plan $plan;
+    private PlanFixtures $plans;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        Event::fake([PlanStarted::class]);
-        $this->plan = Plan::factory()->create([
-            'title' => 'Build the plans page',
-            'type' => PlanType::Build,
-        ]);
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
-        );
+        $this->plans = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release');
+        $this->journal->observeEvents(PlanStarted::class);
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
     {
-        $this->startPlan($this->plan->id);
+        $plan = $this->plans->planCalled('Release')->id;
 
-        $this->assertSame(PlanStatus::Started, $this->plan->fresh()?->status);
-        Event::assertDispatchedTimes(PlanStarted::class, 1);
+        $this->journal->run(new StartPlanCommand($plan));
 
-        Event::assertDispatched(
+        $this->plans->assertStatus('Release', PlanStatus::Started);
+        $this->journal->assertEvent(
             PlanStarted::class,
-            fn (
-                PlanStarted $event,
-            ) => $event->planId === $this->plan->id && $event->startedBy->type === User::storedType(),
+            fn (PlanStarted $event) => $event->planId === $plan && $event->startedBy->type === User::storedType(),
         );
     }
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void
     {
-        $this->startPlan($this->plan->id);
-        $this->startPlan($this->plan->id);
+        $plan = $this->plans->planCalled('Release')->id;
 
-        Event::assertDispatchedTimes(PlanStarted::class, 1);
+        $this->journal->run(new StartPlanCommand($plan));
+        $this->journal->run(new StartPlanCommand($plan));
+
+        $this->journal->assertEventCount(PlanStarted::class, 1);
     }
 
     public function test_a_paused_plan_is_refused_and_stays_paused(): void
     {
-        Plan::query()->whereKey($this->plan->id)->update(['status' => PlanStatus::Paused->value]);
+        $this->plans->pausedPlan('Later');
+        $this->journal->observeEvents(PlanStarted::class);
 
-        try {
-            $this->startPlan($this->plan->id);
-            $this->fail('A paused plan started.');
-        } catch (StartDenied) {
-            $this->assertSame(PlanStatus::Paused, $this->plan->fresh()?->status);
-            Event::assertNotDispatched(PlanStarted::class);
-        }
+        $this->journal->assertRefused(
+            StartDenied::class,
+            fn () => $this->journal->run(new StartPlanCommand($this->plans->planCalled('Later')->id)),
+        );
+
+        $this->plans->assertStatus('Later', PlanStatus::Paused);
+        $this->journal->assertEventCount(PlanStarted::class, 0);
     }
 
     public function test_a_start_that_rolls_back_raises_nothing(): void
     {
+        $plan = $this->plans->planCalled('Release')->id;
+
         try {
-            $this->app->make(StackTransaction::class)->run(function (): void {
-                $this->startPlan($this->plan->id);
+            $this->app->make(StackTransaction::class)->run(function () use ($plan): void {
+                $this->journal->run(new StartPlanCommand($plan));
 
                 throw TestFailure::failedAfterTheStart();
             });
         } catch (TestFailure) {
-            $this->assertSame(PlanStatus::Planned, $this->plan->fresh()?->status);
-            Event::assertNotDispatched(PlanStarted::class);
+            $this->plans->assertStatus('Release', PlanStatus::Planned);
+            $this->journal->assertEventCount(PlanStarted::class, 0);
         }
     }
 
     public function test_the_read_offers_the_start_by_the_same_rule(): void
     {
-        $paused = Plan::factory()->create([
-            'title' => 'Paused plan',
-            'type' => PlanType::Fix,
-        ]);
-        Plan::query()->whereKey($paused->id)->update(['status' => PlanStatus::Paused->value]);
-
+        $this->plans->pausedPlan('Later');
         $canStart = [];
 
         foreach ($this->app->make(PlanResolver::class)->list(new PlanFilters())->cards as $card) {
             $canStart[$card->id] = $card->canStart;
         }
 
-        $this->assertSame(
-            [
-                $this->plan->id => true,
-                $paused->id => false,
-            ],
-            [
-                $this->plan->id => $canStart[$this->plan->id],
-                $paused->id => $canStart[$paused->id],
-            ],
-        );
+        [$release, $later] = [$this->plans->planCalled('Release')->id, $this->plans->planCalled('Later')->id];
+        $this->assertSame([true, false], [$canStart[$release], $canStart[$later]]);
     }
 
     public function test_a_request_without_an_actor_cannot_start(): void
     {
-        $this->app->forgetScopedInstances();
+        $plan = $this->plans->planCalled('Release')->id;
 
-        try {
-            $this->startPlan($this->plan->id);
-            $this->fail('A start without an actor went through.');
-        } catch (ActorContextMissing) {
-            $this->assertSame(PlanStatus::Planned, $this->plan->fresh()?->status);
-        }
-    }
+        $this->journal->asGuest()->assertRefused(
+            ActorContextMissing::class,
+            fn () => $this->journal->runUnkeyed(new StartPlanCommand($plan)),
+        );
 
-    private function startPlan(string $planId): void
-    {
-        $this->app->make(CommandBus::class)->run(new StartPlanCommand($planId));
+        $this->plans->assertStatus('Release', PlanStatus::Planned);
     }
 }

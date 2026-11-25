@@ -15,11 +15,11 @@ use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
-use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -28,7 +28,6 @@ use Tests\Support\CommitsHookRows;
  */
 final class ApprovePlanReviewTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -39,6 +38,7 @@ final class ApprovePlanReviewTest extends TestCase
         'plan_review_editions',
         'tasks',
         'command_receipts',
+        'number_groups',
     ];
 
     private Plan $plan;
@@ -49,20 +49,24 @@ final class ApprovePlanReviewTest extends TestCase
     {
         parent::setUp();
 
-        $this->plan = Plan::factory()->create(['title' => 'Build the release page']);
-        $this->task = Task::factory()->create([
-            'title' => 'Write',
-            'brief' => 'Write the page.',
-        ]);
-        $this->journal->actAsUserId($this->owner->id);
-        $structure = $this->app->make(PlanStructure::class);
-        $structure->addTasks($structure->addPhase($this->plan, 'Writing'), [$this->task->id]);
+        $this->journal->owner();
+        $this->task = $this->journal->fixtures(TaskFixtures::class)->task(
+            'Write',
+            'Write the page.',
+        )->taskCalled('Write');
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', title: 'Build the release page')
+            ->phaseWithTask('Release', 'Writing', $this->task->assignmentIdentity())
+            ->planCalled('Release');
     }
 
     public function test_approving_the_open_review_records_one_receipt_that_a_replay_returns(): void
     {
         $this->runCommand(
-            new RequestPlanReviewCommand($this->plan->id, [ActorIdentity::ofClass(User::class, $this->owner->id)]),
+            new RequestPlanReviewCommand(
+                $this->plan->id,
+                [ActorIdentity::ofClass(User::class, $this->journal->ownerUser()->id)],
+            ),
         );
 
         $key = (string) Str::uuid();
@@ -73,7 +77,7 @@ final class ApprovePlanReviewTest extends TestCase
         $this->assertSame($first, $again);
         $review = PlanReviewEdition::query()->whereKey($first)->sole();
         $this->assertSame(PlanReviewStatus::Approved, $review->status);
-        $this->assertSame($this->owner->id, $review->decided_by_id);
+        $this->assertSame($this->journal->ownerUser()->id, $review->decided_by_id);
         $this->assertSame(PlanStatus::Planned, $this->plan->refresh()->status);
 
         $this->runCommand(new StartPlanCommand($this->plan->id));
@@ -83,7 +87,10 @@ final class ApprovePlanReviewTest extends TestCase
     public function test_a_decision_on_a_withdrawn_review_reports_its_outcome(): void
     {
         $this->runCommand(
-            new RequestPlanReviewCommand($this->plan->id, [ActorIdentity::ofClass(User::class, $this->owner->id)]),
+            new RequestPlanReviewCommand(
+                $this->plan->id,
+                [ActorIdentity::ofClass(User::class, $this->journal->ownerUser()->id)],
+            ),
         );
 
         $this->runCommand(new WithdrawPlanReviewCommand($this->plan->id));

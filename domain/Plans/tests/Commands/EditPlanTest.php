@@ -9,6 +9,7 @@ use Domain\Plans\Commands\EditPlan\EditPlanCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 
@@ -28,16 +29,23 @@ final class EditPlanTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->plan = Plan::create('First', 'First brief', PlanType::Build, $this->journal->ownerUser());
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('First', 'First brief', PlanType::Build)
+            ->planCalled('First');
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void
     {
-        $revision = $this->journal->run(new EditPlanCommand($this->plan->id, 1, brief: 'Second brief', type: PlanType::Fix));
+        $revision = $this->journal->run(
+            new EditPlanCommand($this->plan->id, 1, brief: 'Second brief', type: PlanType::Fix),
+        );
 
         $this->plan->refresh();
         $this->assertSame(2, $revision);
-        $this->assertSame(['First', 'Second brief', PlanType::Fix], [$this->plan->title, $this->plan->brief, $this->plan->type]);
+        $this->assertSame(
+            ['First', 'Second brief', PlanType::Fix],
+            [$this->plan->title, $this->plan->brief, $this->plan->type],
+        );
     }
 
     public function test_an_edit_at_a_stale_revision_is_a_conflict_and_keeps_the_newer_text(): void
@@ -54,7 +62,9 @@ final class EditPlanTest extends TestCase
     public function test_a_title_past_its_limit_is_refused_naming_the_field(): void
     {
         $this->assertThrows(
-            fn () => $this->journal->run(new EditPlanCommand($this->plan->id, 1, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1))),
+            fn () => $this->journal->run(
+                new EditPlanCommand($this->plan->id, 1, str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1)),
+            ),
             CommandInputInvalid::class,
             'title:',
         );

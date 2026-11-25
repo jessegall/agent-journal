@@ -51,6 +51,26 @@ final class TaskFixtures
     }
 
     /**
+     * A task its owner finished with this outcome, without a run.
+     */
+    public function finishedTask(string $name, string $outcome = 'Done.'): self
+    {
+        $this->task($name)->taskCalled($name)->finish($outcome);
+
+        return $this;
+    }
+
+    /**
+     * A task its owner cancelled for this reason.
+     */
+    public function cancelledTask(string $name, string $reason = 'Not needed.'): self
+    {
+        $this->task($name)->taskCalled($name)->cancel($reason);
+
+        return $this;
+    }
+
+    /**
      * The named agent starts a run of the task through the Tasks command and is left acting.
      */
     public function startRun(string $task, string $agent): self

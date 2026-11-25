@@ -70,8 +70,11 @@ final class CreatePlanTest extends TestCase
     }
 
     #[DataProvider('refusedInput')]
-    public function test_input_past_its_limit_is_refused_naming_the_field(string $title, string $brief, string $field): void
-    {
+    public function test_input_past_its_limit_is_refused_naming_the_field(
+        string $title,
+        string $brief,
+        string $field,
+    ): void {
         $this->assertThrows(
             fn () => $this->journal->run(new CreatePlanCommand($title, $brief, PlanType::Build)),
             CommandInputInvalid::class,

@@ -9,10 +9,11 @@ use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 
@@ -35,10 +36,12 @@ final class RecordPhaseCheckTest extends TestCase
     {
         parent::setUp();
 
-        $plan = Plan::factory()->create(['title' => 'Checked phase']);
-        $this->task = Task::factory()->create(['title' => 'Write it']);
-        $this->phase = $this->planStructure()->addPhase($plan, 'Build');
-        $this->planStructure()->addTasks($this->phase, [$this->task->id]);
+        $this->journal->owner();
+        $this->task = $this->journal->fixtures(TaskFixtures::class)->task('Write it')->taskCalled('Write it');
+        $this->phase = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Checked phase')
+            ->phaseWithTask('Checked phase', 'Build', $this->task->assignmentIdentity())
+            ->phaseCalled('Build');
         $this->openAcmeRequest();
         $this->approvePair();
     }

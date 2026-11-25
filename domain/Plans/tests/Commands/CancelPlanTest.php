@@ -10,10 +10,8 @@ use App\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Events\PlanCancelled;
@@ -22,10 +20,10 @@ use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\Event;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 
@@ -50,19 +48,21 @@ final class CancelPlanTest extends TestCase
 
     private User $owner;
 
+    private PlanFixtures $plans;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->owner = $owner;
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($owner->id), new OwnerAuthority('test'));
-        Event::fake([
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->plans = $this->journal->fixtures(PlanFixtures::class);
+        $this->journal->observeEvents(
+            AccessSettings::class,
+            CurrentActorSetter::class,
             PlanStarted::class,
             PlanFinished::class,
             PlanCancelled::class,
-        ]);
+        );
     }
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
@@ -101,7 +101,7 @@ final class CancelPlanTest extends TestCase
         );
 
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
-        Event::assertDispatchedTimes(PlanCancelled::class, 1);
+        $this->journal->assertEventCount(PlanCancelled::class, 1);
     }
 
     public function test_a_long_reason_and_a_state_that_moved_on_are_refused(): void
@@ -109,7 +109,9 @@ final class CancelPlanTest extends TestCase
         $plan = $this->startedPlan([TaskStatus::Open]);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new CancelPlanCommand($plan->id, 1, str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1))),
+            fn () => $this->bus()->run(
+                new CancelPlanCommand($plan->id, 1, str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1)),
+            ),
             CommandInputInvalid::class,
             'reason:',
         );
@@ -125,15 +127,12 @@ final class CancelPlanTest extends TestCase
      */
     private function startedPlan(array $states): Plan
     {
-        $plan = Plan::factory()->create();
-        $plan->startOnce(ActorContext::forUser($this->owner->id));
+        $tasks = array_map(fn (TaskStatus $state) => $this->taskIn($state)->assignmentIdentity(), $states);
 
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($plan, 'Work'),
-            array_map(fn (TaskStatus $state): string => $this->taskIn($state)->id, $states),
-        );
-
-        return $plan;
+        return $this->plans->startedPlan('Release')->phase(
+            'Release',
+            'Work',
+        )->placeTasks('Work', ...$tasks)->planCalled('Release');
     }
 
     private function taskIn(TaskStatus $state): Task

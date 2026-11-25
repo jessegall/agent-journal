@@ -11,7 +11,6 @@ use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
-use App\Values\OwnerAuthority;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Events\PlanCancelled;
@@ -20,10 +19,10 @@ use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -47,19 +46,21 @@ final class FinishPlanTest extends TestCase
 
     private User $owner;
 
+    private PlanFixtures $plans;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->owner = $owner;
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($owner->id), new OwnerAuthority('test'));
-        Event::fake([
+        $this->owner = $this->journal->owner()->ownerUser();
+        $this->plans = $this->journal->fixtures(PlanFixtures::class);
+        $this->journal->observeEvents(
+            AccessSettings::class,
+            CurrentActorSetter::class,
             PlanStarted::class,
             PlanFinished::class,
             PlanCancelled::class,
-        ]);
+        );
     }
 
     public function test_finishing_a_plan_with_an_open_task_is_refused_with_the_count(): void
@@ -77,7 +78,7 @@ final class FinishPlanTest extends TestCase
         );
 
         $this->assertSame(PlanStatus::Started, $plan->fresh()?->status);
-        Event::assertNotDispatched(PlanFinished::class);
+        $this->journal->assertEventCount(PlanFinished::class, 0);
     }
 
     public function test_finishing_a_plan_whose_tasks_are_done_records_the_note_and_the_done_state(): void
@@ -102,9 +103,9 @@ final class FinishPlanTest extends TestCase
             ],
         );
 
-        Event::assertDispatchedTimes(PlanFinished::class, 1);
+        $this->journal->assertEventCount(PlanFinished::class, 1);
 
-        Event::assertDispatched(
+        $this->journal->assertEvent(
             PlanFinished::class,
             fn (PlanFinished $finished) => $finished->finishedBy == ActorContext::forUser($this->owner->id),
         );
@@ -122,7 +123,7 @@ final class FinishPlanTest extends TestCase
             );
         }
 
-        $planned = Plan::factory()->create();
+        $planned = $this->plans->plan('Planned')->planCalled('Planned');
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlanCommand($planned->id, 1, 'Done.')),
             PlanHasUnfinishedTasks::class,
@@ -135,15 +136,12 @@ final class FinishPlanTest extends TestCase
      */
     private function startedPlan(array $states): Plan
     {
-        $plan = Plan::factory()->create();
-        $plan->startOnce(ActorContext::forUser($this->owner->id));
+        $tasks = array_map(fn (TaskStatus $state) => $this->taskIn($state)->assignmentIdentity(), $states);
 
-        $this->planStructure()->addTasks(
-            $this->planStructure()->addPhase($plan, 'Work'),
-            array_map(fn (TaskStatus $state): string => $this->taskIn($state)->id, $states),
-        );
-
-        return $plan;
+        return $this->plans->startedPlan('Release')->phase(
+            'Release',
+            'Work',
+        )->placeTasks('Work', ...$tasks)->planCalled('Release');
     }
 
     private function taskIn(TaskStatus $state): Task

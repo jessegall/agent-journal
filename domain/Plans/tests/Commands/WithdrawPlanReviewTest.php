@@ -12,6 +12,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
@@ -23,7 +24,7 @@ final class WithdrawPlanReviewTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'plan_review_editions'];
+    private const array TABLES = ['plans', 'plan_review_editions', 'command_receipts', 'number_groups'];
 
     private Plan $plan;
 
@@ -32,12 +33,16 @@ final class WithdrawPlanReviewTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal->ownerUser());
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', 'Ship it.', PlanType::Build)
+            ->planCalled('Release');
     }
 
     public function test_a_withdrawn_review_is_kept_as_withdrawn_and_the_plan_is_planned_again(): void
     {
-        $reviewId = $this->journal->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]));
+        $reviewId = $this->journal->run(
+            new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]),
+        );
 
         $this->journal->run(new WithdrawPlanReviewCommand($this->plan->id));
 

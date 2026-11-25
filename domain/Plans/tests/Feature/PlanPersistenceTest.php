@@ -10,7 +10,6 @@ use App\Support\ActorIdentity;
 use App\Support\DomainRegistry;
 use App\Values\OwnerAuthority;
 use Database\Seeders\DatabaseSeeder;
-use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;

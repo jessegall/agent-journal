@@ -13,6 +13,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanReviewRefused;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Models\PlanReviewEdition;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -25,7 +26,7 @@ final class RequestPlanChangesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'plan_review_editions', 'command_receipts'];
+    private const array TABLES = ['plans', 'plan_review_editions', 'command_receipts', 'number_groups'];
 
     private Plan $plan;
 
@@ -34,7 +35,9 @@ final class RequestPlanChangesTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->plan = Plan::create('Release', 'Ship it.', PlanType::Build, $this->journal->ownerUser());
+        $this->plan = $this->journal->fixtures(PlanFixtures::class)
+            ->plan('Release', 'Ship it.', PlanType::Build)
+            ->planCalled('Release');
         $this->journal->run(new RequestPlanReviewCommand($this->plan->id, [$this->journal->actorCalled('Owner')]));
     }
 
@@ -42,7 +45,10 @@ final class RequestPlanChangesTest extends TestCase
     {
         $key = (string) Str::uuid();
 
-        $reviewId = $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split the second phase.'), $key);
+        $reviewId = $this->journal->run(
+            new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split the second phase.'),
+            $key,
+        );
 
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
         $this->assertSame(
@@ -63,7 +69,9 @@ final class RequestPlanChangesTest extends TestCase
         $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, $key, 'Split it.'), $key);
 
         $this->assertThrows(
-            fn () => $this->journal->run(new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), 'Again.')),
+            fn () => $this->journal->run(
+                new RequestPlanChangesCommand($this->plan->id, 1, (string) Str::uuid(), 'Again.'),
+            ),
             PlanReviewRefused::class,
         );
     }
