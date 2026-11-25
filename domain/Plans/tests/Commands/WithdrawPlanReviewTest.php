@@ -42,8 +42,7 @@ final class WithdrawPlanReviewTest extends TestCase
         $this->journal->owner();
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
-            ->plan('Release', 'Ship it.', PlanType::Build)
-            ->planCalled('Release');
+            ->createPlan('Release', 'Ship it.', PlanType::Build);
     }
 
     public function test_a_withdrawn_review_is_kept_as_withdrawn_and_the_plan_is_planned_again(): void

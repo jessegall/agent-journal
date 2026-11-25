@@ -28,7 +28,7 @@ final class RemoveMemoryToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
-        $memory = $journal->fixtures(MemoryFixtures::class)->memory('Rule', 'Builder', 'Run the phase tests once.')->memoryCalled('Rule');
+        $memory = $journal->fixtures(MemoryFixtures::class)->createMemory('Rule', 'Builder', 'Run the phase tests once.');
 
         return ToolCall::by($start)
             ->arguments([

@@ -49,6 +49,13 @@ final class JournalSkillsTest extends TestCase
         $this->assertSame(1, $this->journal->skillRevisionOf('user-review-notes')->revision);
     }
 
+    public function test_a_created_process_run_is_given_back_and_still_found_by_its_name(): void
+    {
+        $run = $this->journal->actAs('Writer')->createProcessRun('Read', 'cat composer.json');
+
+        $this->assertTrue($run->is($this->journal->processRunCalled('Read')));
+    }
+
     public function test_a_process_run_is_admitted_for_the_agent_with_its_part_started(): void
     {
         $this->journal->actAs('Writer')->processRun('Read', 'cat composer.json')->runningPart(

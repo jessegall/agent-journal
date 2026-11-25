@@ -21,6 +21,16 @@ final class QuestionFixturesTest extends TestCase
         'question_answer_notices',
     ];
 
+    public function test_a_created_question_is_given_back_and_still_found_by_its_name(): void
+    {
+        $chat = $this->journal->owner()->agent('Planner')->sharedInbox('Owner', 'Planner')->sharedInboxOf('Owner', 'Planner');
+        $questions = $this->journal->fixtures(QuestionFixtures::class);
+
+        $question = $questions->createQuestion('Database', $chat, 'Planner', 'Owner');
+
+        $this->assertTrue($question->is($questions->questionCalled('Database')));
+    }
+
     public function test_an_answer_is_kept_trimmed_and_the_asker_is_told_once(): void
     {
         $chat = $this->journal->owner()->agent('Planner')->sharedInbox(

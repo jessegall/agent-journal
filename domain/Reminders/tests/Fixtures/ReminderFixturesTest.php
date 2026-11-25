@@ -19,6 +19,14 @@ final class ReminderFixturesTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    public function test_a_created_reminder_is_given_back_and_still_found_by_its_name(): void
+    {
+        $reminders = $this->journal->owner()->fixtures(ReminderFixtures::class);
+        $reminder = $reminders->createReminder('Room', 'Owner', CarbonImmutable::parse('2026-11-30 09:00'));
+
+        $this->assertTrue($reminder->is($reminders->reminderCalled('Room')));
+    }
+
     public function test_the_exact_reminder_is_done_and_another_owners_stays_open(): void
     {
         $due = CarbonImmutable::parse('2026-11-30 09:00');

@@ -31,8 +31,7 @@ final class ReadQuestionTest extends TestCase
         $this->journal->owner()->agent('Planner')->agent('Stranger')->sharedInbox('Owner', 'Planner');
 
         $this->question = $this->journal->fixtures(QuestionFixtures::class)
-            ->question('Database', $this->journal->sharedInboxOf('Owner', 'Planner'), 'Planner', 'Owner')
-            ->questionCalled('Database');
+            ->createQuestion('Database', $this->journal->sharedInboxOf('Owner', 'Planner'), 'Planner', 'Owner');
     }
 
     public function test_the_asker_and_the_target_read_the_question(): void

@@ -33,8 +33,7 @@ final class AddPhaseTest extends TestCase
         $this->journal->owner();
 
         $this->plan = $this->journal->fixtures(PlanFixtures::class)
-            ->plan('Release', 'Ship it.', PlanType::Build)
-            ->planCalled('Release');
+            ->createPlan('Release', 'Ship it.', PlanType::Build);
     }
 
     public function test_phases_are_added_each_after_the_last(): void
