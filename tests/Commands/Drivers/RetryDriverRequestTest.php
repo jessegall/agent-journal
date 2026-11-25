@@ -11,6 +11,7 @@ use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
+use App\Exceptions\DriverRequestRefused;
 use App\Exceptions\HostReportRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
@@ -101,6 +102,44 @@ final class RetryDriverRequestTest extends TestCase
             'late',
             null,
         ));
+    }
+
+    public function test_a_proven_no_effect_failure_is_retried_once_from_two_tabs(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'two-tabs', 'Hello');
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->notifyProgress($host->hostId, $receipt->requestId, RequestProgress::Failed);
+        $read = DriverRequest::query()->findOrFail($receipt->requestId);
+
+        $first = $this->asOwner(new RetryDriverRequestCommand($read->id, $read->row_version, 'first tab'));
+        $second = $this->asOwner(new RetryDriverRequestCommand($read->id, $read->row_version, 'second tab'));
+
+        $this->assertSame($first, $second);
+        $this->assertSame($read->attempt_version + 1, $read->fresh()?->attempt_version);
+    }
+
+    public function test_a_failure_without_proof_that_nothing_ran_is_not_retried(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->deliver($opened, 'unproven', 'Hello');
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $request = DriverRequest::query()->findOrFail($receipt->requestId);
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $host->hostId,
+            $request->id,
+            $request->attempt_version,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::Refused,
+        ));
+        $request->refresh();
+
+        $this->assertThrows(
+            fn () => $this->asOwner(new RetryDriverRequestCommand($request->id, $request->row_version, 'again')),
+            DriverRequestRefused::class,
+            DriverRequestRefused::noEffectUnproven($request->id)->getMessage(),
+        );
     }
 
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt

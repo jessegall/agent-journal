@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
+use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Bus\CommandBus;
+use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\KeyScriptRefused;
+use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
+use App\Support\ActorContext;
 use App\Support\EnrolledHost;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -50,6 +56,18 @@ final class RunKeyScriptTest extends TestCase
             fn () => $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6', 'colour' => 'red'])),
             KeyScriptRefused::class,
         );
+    }
+
+    public function test_an_agent_cannot_run_a_key_script(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->agentIdOf($opened)),
+            TestStartAuthority::forAgent($this->agentIdOf($opened)),
+        );
+
+        $this->expectException(ActorNotAllowed::class);
+        $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
     }
 
     /**

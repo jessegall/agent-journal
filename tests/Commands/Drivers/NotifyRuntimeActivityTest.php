@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
+use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\NotifyRuntimeHeartbeat\NotifyRuntimeHeartbeatCommand;
 use App\Commands\Agents\WakeAgent\WakeAgentCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
+use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\DriverOperation;
@@ -16,6 +18,7 @@ use App\Enums\Drivers\RequestProgress;
 use App\Enums\Runs\RuntimeActivity;
 use App\Events\Sessions\SessionStateChanged;
 use App\Exceptions\HostReportRefused;
+use App\Exceptions\StaleProcessGeneration;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
@@ -24,6 +27,8 @@ use App\Support\OpenedRuntime;
 use App\Support\PendingWorkSources;
 use App\Values\AgentText;
 use App\Values\BrowserInputCapabilities;
+use App\Values\DriverReceipt;
+use App\Values\RequestReportBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\CountedPendingWork;
@@ -283,6 +288,90 @@ final class NotifyRuntimeActivityTest extends TestCase
         Event::assertDispatchedTimes(SessionStateChanged::class, 2);
     }
 
+    public function test_the_host_reports_a_navigation_hold_and_ends_requests_unavailable_or_unconfirmed(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $unavailable = $this->deliver($opened, 'entry-gone', 'Pick GPT-6');
+        $unconfirmed = $this->deliver($opened, 'only-highlighted', 'Pick GPT-6 again');
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+
+        $this->journal->hostCall($host, 'POST', '/host/reports/activity', [
+            'runtime_id' => $runtime->id,
+            'activity' => RuntimeActivity::Running->value,
+            'hold' => HoldReason::NavigationNeeded->value,
+            'process_generation' => $runtime->process_generation,
+        ])->assertSuccessful();
+        $ends = [[$unavailable, 'unavailable', 'entry_unavailable'], [$unconfirmed, 'failed', 'unconfirmed']];
+        $attempts = DriverRequest::query()
+            ->whereKey([$unavailable->requestId, $unconfirmed->requestId])
+            ->limit(2)
+            ->pluck('attempt_version', 'id');
+
+        foreach ($ends as [$receipt, $progress, $outcome]) {
+            $this->journal->hostCall($host, 'POST', '/host/reports/request', [
+                'request_id' => $receipt->requestId,
+                'attempt' => $attempts[$receipt->requestId],
+                'progress' => $progress,
+                'actual_binding' => null,
+                'outcome' => $outcome,
+            ])->assertSuccessful();
+        }
+
+        $this->assertSame(HoldReason::NavigationNeeded, $runtime->fresh()?->hold_reason);
+        $gone = DriverRequest::query()->findOrFail($unavailable->requestId);
+        $this->assertSame(
+            [RequestProgress::Unavailable, RequestOutcome::EntryUnavailable],
+            [$gone->progress, $gone->outcome],
+        );
+        $highlighted = DriverRequest::query()->findOrFail($unconfirmed->requestId);
+        $this->assertSame(
+            [RequestProgress::Failed, RequestOutcome::Unconfirmed],
+            [$highlighted->progress, $highlighted->outcome],
+        );
+    }
+
+    public function test_a_hook_call_of_an_older_generation_is_refused(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->journal->asSystem(
+            new NotifyRuntimeActivityCommand(
+                $host->hostId,
+                $opened->runtimeId,
+                RuntimeActivity::Running,
+                HoldReason::None,
+                3,
+            ),
+        );
+
+        $this->expectException(StaleProcessGeneration::class);
+
+        $this->app->make(NativeTurnRecords::class)->checkGeneration($opened->sessionId, 2);
+    }
+
+    public function test_an_idle_report_after_a_missing_one_leaves_the_running_request_uncertain(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $receipt = $this->deliver($opened, 'gap', 'Read the notes');
+        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
+        $this->numberedReport($host->hostId, $receipt->requestId, RequestProgress::Applying, 1);
+
+        $this->journal->asSystem(new NotifyRuntimeActivityCommand(
+            $host->hostId,
+            $runtime->id,
+            RuntimeActivity::Idle,
+            HoldReason::None,
+            $runtime->process_generation,
+            3,
+        ));
+
+        $this->assertSame(
+            RequestProgress::DeliveryUncertain,
+            DriverRequest::query()->findOrFail($receipt->requestId)->progress,
+        );
+    }
+
     /**
      * How many times the runtime's wakes were asked for, over all its wake requests.
      */
@@ -292,5 +381,27 @@ final class NotifyRuntimeActivityTest extends TestCase
             ->where('agent_runtime_id', $opened->runtimeId)
             ->where('operation', DriverOperation::Wake)
             ->sum('wake_requested');
+    }
+
+    private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt
+    {
+        return $this->asOwner(DeliverAgentCommand::text($this->agentIdOf($opened), $opened->sessionId, $key, $message));
+    }
+
+    private function numberedReport(string $hostId, string $requestId, RequestProgress $progress, int $sequence): void
+    {
+        $request = DriverRequest::query()->findOrFail($requestId);
+        $runtime = AgentRuntime::query()->findOrFail($request->agent_runtime_id);
+
+        $this->journal->asSystem(new NotifyRequestProgressCommand(
+            $hostId,
+            $request->id,
+            $request->attempt_version,
+            $progress,
+            null,
+            null,
+            binding: new RequestReportBinding($runtime->agent_session_id, null, $runtime->process_generation),
+            sequence: $sequence,
+        ));
     }
 }
