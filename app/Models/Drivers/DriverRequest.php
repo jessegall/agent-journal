@@ -734,4 +734,37 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     {
         $query->where('agent_runtime_id', $runtime->id);
     }
+
+    /**
+     * The requests still open.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->whereIn('progress', RequestProgress::open());
+    }
+
+    /**
+     * The requests that change the model or the effort.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function changingSettings(Builder $query): void
+    {
+        $query->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort]);
+    }
+
+    /**
+     * The requests in the order they were made.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSequenceOrder(Builder $query): void
+    {
+        $query->orderBy('sequence');
+    }
 }

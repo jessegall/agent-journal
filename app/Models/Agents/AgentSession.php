@@ -622,4 +622,27 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     {
         $query->where('discovered_at', '>', $moment);
     }
+
+    /**
+     * The sessions started under any of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function helpersOfAny(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('parent_session_id', $sessionIds);
+    }
+
+    /**
+     * The sessions whose runtime has not stopped.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withLiveRuntime(Builder $query): void
+    {
+        $query->whereIn('id', AgentRuntime::query()->notStopped()->select('agent_session_id'));
+    }
 }

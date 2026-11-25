@@ -13,9 +13,7 @@ use App\Data\Processes\RuntimeStatus;
 use App\Enums\DriverOperation;
 use App\Enums\DriverType;
 use App\Enums\HoldReason;
-use App\Enums\RequestProgress;
 use App\Enums\RuntimeActivity;
-use App\Enums\SessionStatus;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
 use App\Events\Sessions\AgentRuntimeHeld;
@@ -259,14 +257,18 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public function recomputeRequestedSettings(): void
     {
         $open = $this->requests()
-            ->whereIn('progress', RequestProgress::open())
-            ->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort])
-            ->orderBy('sequence')
+            ->open()
+            ->changingSettings()
+            ->inSequenceOrder()
             ->readAll('the open setting requests of one runtime decide what it has requested')
             ->get();
+        $lastOfEachOperation = $open->keyBy(fn (DriverRequest $request) => $request->operation->value);
 
-        $this->requested_model = $open->where('operation', DriverOperation::ChangeModel)->last()?->model;
-        $this->requested_effort = $open->where('operation', DriverOperation::ChangeEffort)->last()?->effort;
+        $modelChange = $lastOfEachOperation->get(DriverOperation::ChangeModel->value);
+        $effortChange = $lastOfEachOperation->get(DriverOperation::ChangeEffort->value);
+
+        $this->requested_model = $modelChange?->model;
+        $this->requested_effort = $effortChange?->effort;
         $this->assertSaved($this->save());
         $this->raise(new AgentRuntimeRequestedSettingsRecomputed($this->id));
     }
@@ -471,7 +473,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public static function existsForSession(string $sessionId): bool
     {
-        return self::query()->where('agent_session_id', $sessionId)->exists();
+        return self::query()->ofSessions([$sessionId])->exists();
     }
 
     /**
@@ -480,8 +482,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public static function runsForSession(string $sessionId): bool
     {
         return self::query()
-            ->where('agent_session_id', $sessionId)
-            ->whereHas('session', fn (Builder $session) => $session->running())
+            ->ofSessions([$sessionId])
+            ->withRunningSession()
             ->exists();
     }
 
@@ -492,7 +494,9 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public static function hostOfSession(string $sessionId): Option
     {
-        return Option::fromValue(self::query()->where('agent_session_id', $sessionId)->value('host_id'));
+        $hostId = self::query()->ofSessions([$sessionId])->value('host_id');
+
+        return Option::fromValue($hostId);
     }
 
     /**
@@ -500,7 +504,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public static function sessionOfHostRuntime(string $hostId, string $runtimeId): string
     {
-        return self::query()->whereKey($runtimeId)->where('host_id', $hostId)->firstOrFail()->agent_session_id;
+        return self::query()->whereKey($runtimeId)->onHost($hostId)->firstOrFail()->agent_session_id;
     }
 
     /**
@@ -511,7 +515,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public static function generationStartOfSession(string $sessionId): Option
     {
-        $runtime = self::query()->where('agent_session_id', $sessionId)->first();
+        $runtime = self::query()->ofSessions([$sessionId])->first();
 
         return Option::fromValue($runtime?->generation_started_at);
     }
@@ -522,8 +526,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public static function isRunningForSession(string $sessionId): bool
     {
         return self::query()
-            ->where('agent_session_id', $sessionId)
-            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
+            ->ofSessions([$sessionId])
+            ->notStopping()
             ->exists();
     }
 
@@ -536,10 +540,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     {
         return array_values(self::query()
             ->with('session')
-            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
-            ->whereHas('session', fn (Builder $sessions) => $sessions
-                ->where('parent_session_id', $sessionId)
-                ->whereIn('status', SessionStatus::running()))
+            ->notStopping()
+            ->helpingSession($sessionId)
             ->readAll('every running helper of one session is stopped before the session itself')
             ->get()
             ->all());
@@ -554,11 +556,8 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public static function sessionsWaitingOnHelpers(array $ids): array
     {
         $sessionsWithRunningHelpers = AgentSession::query()
-            ->whereIn('parent_session_id', $ids)
-            ->whereIn(
-                'id',
-                self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'),
-            )
+            ->helpersOfAny($ids)
+            ->withLiveRuntime()
             ->readAll('every helper still running holds back the stop of the session it helps')
             ->pluck('parent_session_id')
             ->all();
@@ -571,7 +570,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
      */
     public static function ofSession(string $sessionId): self|null
     {
-        return self::query()->where('agent_session_id', $sessionId)->first();
+        return self::query()->ofSessions([$sessionId])->first();
     }
 
     /**
@@ -583,7 +582,7 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     public static function driverKeysOfSessions(array $ids): array
     {
         return self::query()
-            ->whereIn('agent_session_id', $ids)
+            ->ofSessions($ids)
             ->limit(count($ids))
             ->pluck('driver_key', 'agent_session_id')
             ->map(fn (mixed $key) => (string) $key)
@@ -612,5 +611,61 @@ final class AgentRuntime extends Model implements EventSource, ReadableModel
     protected function onHost(Builder $query, string $hostId): void
     {
         $query->where('host_id', $hostId);
+    }
+
+    /**
+     * The runtimes of the sessions.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $sessionIds
+     */
+    #[Scope]
+    protected function ofSessions(Builder $query, array $sessionIds): void
+    {
+        $query->whereIn('agent_session_id', $sessionIds);
+    }
+
+    /**
+     * The runtimes whose session runs.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withRunningSession(Builder $query): void
+    {
+        $query->whereHas('session', fn (Builder $session) => $session->running());
+    }
+
+    /**
+     * The runtimes neither stopping nor stopped.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notStopping(Builder $query): void
+    {
+        $query->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped]);
+    }
+
+    /**
+     * The runtimes not stopped.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function notStopped(Builder $query): void
+    {
+        $query->where('activity', '!=', RuntimeActivity::Stopped);
+    }
+
+    /**
+     * The runtimes of the running helpers started under the session.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function helpingSession(Builder $query, string $sessionId): void
+    {
+        $query->whereHas('session', fn (Builder $helpers) => $helpers->helpersOfAny([$sessionId])->running());
     }
 }
