@@ -30,7 +30,8 @@ final readonly class StateCommandPublisher
     }
 
     /**
-     * Publishes the commands and raises the events the states answer the lifecycle moments of a change with.
+     * Runs the lifecycle moments of a change on its states, then publishes the commands and raises the events they
+     * answered with; the caller saves the frames after it, with the values the moments changed.
      */
     public function publishMoments(StackTarget $target, StackSnapshot $before, AgentStack $after): void
     {

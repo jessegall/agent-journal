@@ -95,14 +95,15 @@ trait PushesStates
     }
 
     /**
-     * The driver a state test answers hooks for: shell lines, finished tools and stops, rewrites without approval.
+     * The driver a state test answers hooks for: shell lines, file edits, finished tools and stops, rewrites without
+     * approval.
      */
     private static function testDriver(): DriverCapabilities
     {
         return new DriverCapabilities(
             'Test driver',
             'pre-tool, post-tool and stop replies',
-            ['onShellCommand', 'onToolFinished', 'onStop'],
+            ['onShellCommand', 'onFileEdit', 'onToolFinished', 'onStop'],
             RewriteSupport::WithoutApproval,
         );
     }

@@ -2,19 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\States;
+namespace Tests\States;
 
+use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
+use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskHopAssigned;
 use App\Models\Asks\AskHop;
+use App\Support\States\AnswerAskState;
 use App\Support\States\Support\AnswerAskStateReference;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateHandle;
 use Tests\Support\Seeding\StateObservation;
 use Tests\TestCase;
 
 /**
- * The answer-ask state on the real engine: it waits on its ask and ends when the ask moves to another hop.
+ * The answer-ask state on the real engine: it waits on its hop until its ask closes, which offers the holder the next
+ * ask, or until the ask moves to another hop; another ask's close or hop changes nothing.
  */
+#[TestsState(AnswerAskState::class)]
 final class AnswerAskStateTest extends TestCase
 {
     use CommitsHookRows;
@@ -43,9 +49,25 @@ final class AnswerAskStateTest extends TestCase
                 fn (StateObservation $state) => $state->assertLive(),
             )
             ->given(
+                new AskHopAssigned('ask-2', 'hop-3', 'question', $this->journal->actorCalled('Other')),
+                fn (StateObservation $state) => $state->assertLive(),
+            )
+            ->given(
                 new AskHopAssigned(self::ASK, 'hop-2', 'question', $this->journal->actorCalled('Other')),
                 fn (StateObservation $state) => $state->assertFinished(),
             );
+    }
+
+    public function test_its_ask_closing_ends_it_and_offers_the_holder_the_next_ask(): void
+    {
+        $answering = $this->answering();
+        $this->journal->sinkCommands();
+
+        $answering
+            ->given(new AskClosed('ask-2', 'question'), fn (StateObservation $state) => $state->assertLive())
+            ->given(new AskClosed(self::ASK, 'question'), fn (StateObservation $state) => $state->assertFinished());
+
+        $this->journal->assertDispatched(OfferNextAskCommand::class, ['hopId' => self::HOP]);
     }
 
     /**

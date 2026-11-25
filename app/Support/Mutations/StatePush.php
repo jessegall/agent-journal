@@ -63,7 +63,8 @@ final readonly class StatePush
             return;
         }
 
-        $row->saveFrames($after->records(), $this->types->ticking());
+        // The moments run first: what a state sets on entering, resuming or leaving is saved with its frame.
         $this->stateCommands->publishMoments($target, $before->snapshot(), $after);
+        $row->saveFrames($after->records(), $this->types->ticking());
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\States;
+namespace Tests\States;
 
 use App\Contracts\Processes\ShellCommandParser;
 use App\Enums\Hooks\AnswerType;
@@ -10,10 +10,12 @@ use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
+use App\Support\States\AnswerMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Values\AnswerBudget;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\ScenarioTick;
 use Tests\Support\Seeding\SessionHooks;
 use Tests\Support\Seeding\StateHandle;
@@ -25,6 +27,7 @@ use Tests\TestCase;
  * it; each tool use takes one off its budget, and once the budget is spent every write and the stop are refused.
  * It is also the worked example of a state scenario.
  */
+#[TestsState(AnswerMessageState::class)]
 final class AnswerMessageStateTest extends TestCase
 {
     use CommitsHookRows;
@@ -110,6 +113,30 @@ final class AnswerMessageStateTest extends TestCase
         $this->answering()
             ->given($this->hooks->stop(), fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
             ->given($this->sent($this->agent()), fn (StateObservation $state) => $state->assertFinished());
+    }
+
+    public function test_a_file_edit_passes_until_the_budget_is_spent(): void
+    {
+        $this->answering()
+            ->given(
+                $this->hooks->fileEdit('app/Thing.php'),
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            )
+            ->given([
+                $this->hooks->toolFinished(),
+                $this->hooks->toolFinished('pwd'),
+                $this->hooks->fileEdit('app/Thing.php'),
+            ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny));
+    }
+
+    public function test_a_stop_right_after_a_refused_one_passes(): void
+    {
+        $this->answering()
+            ->given($this->hooks->stop(), fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
+            ->given(
+                $this->hooks->stopAfterRefusal(),
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            );
     }
 
     public function test_a_tick_leaves_it_as_it_was(): void

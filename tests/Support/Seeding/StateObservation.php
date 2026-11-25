@@ -13,6 +13,7 @@ use App\Support\StateLoading\StateValues;
 use App\Support\Storage\WalkStep;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\TestText;
 
 /**
  * A bound state's frame and its stack after one given step, against the stack before it, with the answer the stack
@@ -153,6 +154,14 @@ final readonly class StateObservation
     public function assertAnswer(AnswerType $expected): void
     {
         Assert::assertSame($expected, $this->hookAnswer()->decision->answerType());
+    }
+
+    /**
+     * The stack refused the last hook with a reason that holds these words.
+     */
+    public function assertRefusedWith(string $words): void
+    {
+        Assert::assertStringContainsString($words, TestText::words($this->hookAnswer()->decision->refusalReason()));
     }
 
     /**

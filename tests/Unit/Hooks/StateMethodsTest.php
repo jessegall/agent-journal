@@ -9,14 +9,17 @@ use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
 use App\Exceptions\InvalidStateMethod;
 use App\Support\Decisions\Decision;
+use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Support\States\Exceptions\InvalidStateClass;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\DomainBoot;
 
 final class StateMethodsTest extends TestCase
@@ -118,5 +121,11 @@ final class StateMethodsTest extends TestCase
         };
 
         $this->assertArrayHasKey(TaskStarted::class, new StateMethods()->eventsOf($state::class));
+    }
+
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
+    public function test_the_base_state_passes_each_hook(HookInput $input): void
+    {
+        $this->assertEquals(Decision::delegate(), $input->answerBy(new class extends AgentState {}));
     }
 }

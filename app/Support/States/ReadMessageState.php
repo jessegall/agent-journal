@@ -44,6 +44,11 @@ final class ReadMessageState extends AgentState
 
     private int $toolUses = 0;
 
+    /**
+     * Whether the state has read the inbox's unread messages on entering; before that it is never finished.
+     */
+    private bool $hasEntered = false;
+
     public function __construct(
         private readonly string $inboxId,
         private readonly string $agentId,
@@ -57,7 +62,7 @@ final class ReadMessageState extends AgentState
 
     public function isFinished(): bool
     {
-        return $this->unreadIds === [];
+        return $this->hasEntered && $this->unreadIds === [];
     }
 
     /**
@@ -80,6 +85,7 @@ final class ReadMessageState extends AgentState
         $unread = Message::query()->inInbox($this->inboxId)->unreadBy($agent)->get();
         $ids = $unread->map(fn (Message $message): string => $message->id)->all();
         $this->unreadIds = array_values($ids);
+        $this->hasEntered = true;
     }
 
     // ----------[ Hooks ]----------
