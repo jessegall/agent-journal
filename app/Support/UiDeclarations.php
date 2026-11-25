@@ -107,6 +107,10 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
             self::assertUniqueKeys($owner, 'section', array_map(fn ($section) => $section->key, $owner->sections));
 
             foreach ($owner->sections as $section) {
+                if (! self::isSlotOwnerPresent($section->slot, $domains)) {
+                    continue;
+                }
+
                 if (! array_key_exists($section->slot, $slotHosts)) {
                     throw UiSlotMissing::for($owner->fullKey('section', $section->key), $section->slot);
                 }
@@ -338,6 +342,25 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
      * @param  array<string, RegisteredSection>  $sections
      * @return array<string, RegisteredAction>
      */
+    /**
+     * Whether the owner a slot key starts with is among the owners in use: a section for the slot of a domain that is
+     * switched off has no page to show in and is left out, while a slot an owner in use does not offer is a fault.
+     *
+     * @param  list<DomainUi>  $domains
+     */
+    private static function isSlotOwnerPresent(string $slot, array $domains): bool
+    {
+        $ownerKey = strstr($slot, '.', true);
+
+        foreach ($domains as $domain) {
+            if ($domain->key === $ownerKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static function actionsOf(array $pages, array $sections): array
     {
         $actions = [];

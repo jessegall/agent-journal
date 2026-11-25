@@ -32,18 +32,6 @@ use App\Providers\SupervisionServiceProvider;
 use App\Providers\TextServiceProvider;
 use App\Providers\TypeScriptServiceProvider;
 use App\Providers\WebServiceProvider;
-use Domain\Chat\Providers\ChatServiceProvider;
-use Domain\Comments\Providers\CommentsServiceProvider;
-use Domain\Documents\Providers\DocumentsServiceProvider;
-use Domain\Helpers\Providers\HelpersServiceProvider;
-use Domain\Memory\Providers\MemoryServiceProvider;
-use Domain\Plans\Providers\PlansServiceProvider;
-use Domain\Questions\Providers\QuestionsServiceProvider;
-use Domain\Reminders\Providers\RemindersServiceProvider;
-use Domain\Rules\Providers\RulesServiceProvider;
-use Domain\Sequences\Providers\SequencesServiceProvider;
-use Domain\Sharing\Providers\SharingServiceProvider;
-use Domain\Tasks\Providers\TasksServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -62,10 +50,8 @@ return [
     RecordsServiceProvider::class,
     DockingServiceProvider::class,
     DriversServiceProvider::class,
-    SharingServiceProvider::class,
     ConnectionsServiceProvider::class,
     CommunicationServiceProvider::class,
-    CommentsServiceProvider::class,
     TextServiceProvider::class,
     HooksServiceProvider::class,
     McpServiceProvider::class,
@@ -75,16 +61,6 @@ return [
     NumbersServiceProvider::class,
     SettingsServiceProvider::class,
     ProcessesServiceProvider::class,
-    TasksServiceProvider::class,
-    PlansServiceProvider::class,
-    DocumentsServiceProvider::class,
-    ChatServiceProvider::class,
-    HelpersServiceProvider::class,
-    MemoryServiceProvider::class,
-    QuestionsServiceProvider::class,
-    RemindersServiceProvider::class,
-    RulesServiceProvider::class,
-    SequencesServiceProvider::class,
     AccessServiceProvider::class,
     WebServiceProvider::class,
     TypeScriptServiceProvider::class,

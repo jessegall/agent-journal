@@ -24,6 +24,11 @@ use App\Values\SkillOwner;
 final readonly class DomainRegistry
 {
     /**
+     * The environment value that names the domains a process boots, by class, separated by commas.
+     */
+    public const string BOOTED_DOMAINS = 'JOURNAL_BOOTED_DOMAINS';
+
+    /**
      * @param  array<string, DomainEntry>  $domainsByName
      */
     private function __construct(private array $domainsByName) {}
@@ -272,5 +277,25 @@ final readonly class DomainRegistry
     public static function installedClasses(string $basePath): array
     {
         return require $basePath.'/bootstrap/domains.php';
+    }
+
+    /**
+     * The installed domain classes this process boots: all of them, unless JOURNAL_BOOTED_DOMAINS names a part, as a
+     * test does to boot core alone or one domain with those it requires. An empty name list boots none.
+     *
+     * @return list<string>
+     */
+    public static function bootedClasses(string $basePath): array
+    {
+        $installed = self::installedClasses($basePath);
+        $named = $_SERVER[self::BOOTED_DOMAINS] ?? getenv(self::BOOTED_DOMAINS);
+
+        if (! is_string($named)) {
+            return $installed;
+        }
+
+        $booted = array_filter(explode(',', $named));
+
+        return array_values(array_filter($installed, fn (string $class) => in_array($class, $booted, true)));
     }
 }

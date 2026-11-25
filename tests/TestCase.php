@@ -6,12 +6,15 @@ namespace Tests;
 
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
+use App\Support\Domain;
+use App\Support\DomainRegistry;
 use App\Support\OuterTransactionOwner;
 use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithCachedConfig;
 use Illuminate\Support\Facades\Event;
@@ -130,6 +133,29 @@ abstract class TestCase extends BaseTestCase
         }
 
         parent::onNotSuccessfulTest($failure);
+    }
+
+    /**
+     * The application with only the domains this test case boots: none for a core test, so no domain hears or answers
+     * core's events (user message 22402); a domain's test case boots that domain and the domains it requires.
+     */
+    public function createApplication(): Application
+    {
+        $booted = implode(',', static::bootedDomains());
+        $_SERVER[DomainRegistry::BOOTED_DOMAINS] = $booted;
+        putenv(DomainRegistry::BOOTED_DOMAINS.'='.$booted);
+
+        return parent::createApplication();
+    }
+
+    /**
+     * The domains this test case boots; a core test boots none.
+     *
+     * @return list<class-string<Domain>>
+     */
+    protected static function bootedDomains(): array
+    {
+        return [];
     }
 
     /**

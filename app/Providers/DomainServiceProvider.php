@@ -18,6 +18,7 @@ use App\Support\CommandRuleRegistry;
 use App\Support\ConditionRegistry;
 use App\Support\CoreSettings;
 use App\Support\CoreSkills;
+use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
 use App\Support\EmptySettingsDefinition;
@@ -33,6 +34,7 @@ use App\Support\SettingsDomainAvailability;
 use App\Support\ShareRecordRegistry;
 use App\Support\SkillRegistry;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -50,6 +52,8 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
+        $this->app->booting(fn () => $this->registerDomainProviders($registry));
+        $this->keepMigrationsOfUnbootedDomains($registry);
         $this->app->singleton(ShareRecordRegistry::class);
         $this->app->bindIf(ShareStatusResolver::class, NothingShared::class);
         $this->app->bindIf(SharePolicy::class, NoSharePolicy::class);
@@ -155,7 +159,35 @@ class DomainServiceProvider extends ServiceProvider
      */
     protected function domainClasses(): array
     {
-        return DomainRegistry::installedClasses($this->app->basePath());
+        return DomainRegistry::bootedClasses($this->app->basePath());
+    }
+
+    /**
+     * Each booted domain's own service providers, registered once every core provider is, so they boot after this
+     * provider put the domains' models in the morph map; a domain that does not boot registers none.
+     */
+    private function registerDomainProviders(DomainRegistry $registry): void
+    {
+        foreach ($registry->all() as $entry) {
+            foreach ($entry->providers() as $provider) {
+                $this->app->register($provider);
+            }
+        }
+    }
+
+    /**
+     * The schema stays whole whichever domains boot: an installed domain that does not boot still adds its migrations,
+     * so every process of a test run shares one database shape.
+     */
+    private function keepMigrationsOfUnbootedDomains(DomainRegistry $registry): void
+    {
+        $booted = array_map(fn (DomainEntry $entry) => $entry->domain::class, $registry->all());
+        $unbooted = array_diff(DomainRegistry::installedClasses($this->app->basePath()), $booted);
+
+        foreach ($unbooted as $class) {
+            $folder = DomainEntry::fromClass($class)->migrationFolder();
+            $this->app->afterResolving('migrator', fn (Migrator $migrator) => $migrator->path($folder));
+        }
     }
 
     /**

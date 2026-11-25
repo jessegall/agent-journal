@@ -50,6 +50,7 @@ use App\Values\RuleScope;
 use App\Values\SkillConditionDefinition;
 use App\Values\SkillOwner;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
@@ -221,6 +222,16 @@ final readonly class DomainEntry
     private function isPackage(): bool
     {
         return basename($this->folder) === 'src';
+    }
+
+    /**
+     * The service providers the domain keeps in its Providers folder, registered only when the domain boots.
+     *
+     * @return list<class-string<ServiceProvider>>
+     */
+    public function providers(): array
+    {
+        return FolderClasses::in($this->folder.'/Providers', ServiceProvider::class);
     }
 
     public function listenerFolder(): string

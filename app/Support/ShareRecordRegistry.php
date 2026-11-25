@@ -56,18 +56,15 @@ final class ShareRecordRegistry
     }
 
     /**
-     * Reads the relations of every registered model once and checks each names a capability some registered record
-     * advertises. Run once every domain has registered, after the application booted.
+     * Reads the relations of every registered model once and checks none is declared twice. A relation may need a
+     * capability no registered record advertises, as when the domain that offers it is switched off: it then reaches
+     * no record. Run once every domain has registered, after the application booted.
      *
      * @throws ShareRecordInvalid
      * @throws ShareRelationInvalid
      */
     public function checkRelations(): void
     {
-        $capabilities = array_merge(...array_map(
-            fn (ShareRecordDefinition $definition) => $definition->capabilities,
-            array_values($this->definitions->all()),
-        ));
 
         foreach ($this->definitions->all() as $alias => $definition) {
             $model = $definition->modelClass;
@@ -82,10 +79,6 @@ final class ShareRecordRegistry
             foreach ($relations->relations as $relation) {
                 if (in_array($relation->name, $names, true)) {
                     throw ShareRelationInvalid::repeated($alias, $relation->name);
-                }
-
-                if (! in_array($relation->capability, $capabilities, true)) {
-                    throw ShareRelationInvalid::unknownCapability($alias, $relation->name, $relation->capability);
                 }
 
                 $names[] = $relation->name;

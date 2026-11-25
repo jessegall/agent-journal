@@ -6,15 +6,15 @@ namespace Domain\Sharing\Tests\Feature;
 
 use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\InvalidRecordIdentity;
-use Domain\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Exceptions\ShareRecordInvalid;
-use App\Exceptions\ShareRelationInvalid;
-use Domain\Sharing\Exceptions\UnknownShareGateway;
 use App\Exceptions\UnknownShareRecordType;
 use App\Exceptions\UnknownShareRelation;
-use Domain\Sharing\Support\ShareGatewayRegistry;
 use App\Support\ShareRecordDefinition;
 use App\Support\ShareRecordRegistry;
+use Domain\Sharing\Exceptions\ShareGatewayInvalid;
+use Domain\Sharing\Exceptions\UnknownShareGateway;
+use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Flyers\FlyersDomain;
 use Tests\Fixtures\Domains\Leaflets\LeafletsDomain;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
@@ -22,7 +22,6 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 use Tests\Fixtures\Domains\Pamphlets\PressGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Domain\Sharing\Tests\TestCase;
 
 /**
  * The share registries: domains register shareable record types and gateways when they boot, each alias and key once
@@ -54,15 +53,14 @@ final class ShareRegistriesTest extends TestCase
         $this->registerShareDomain(LeafletsDomain::class);
     }
 
-    public function test_a_relation_needing_a_capability_no_record_advertises_is_refused(): void
+    public function test_a_relation_needing_a_capability_no_record_advertises_is_kept_and_reaches_nothing(): void
     {
         $this->registerShareDomain(FlyersDomain::class);
+        $records = $this->app->make(ShareRecordRegistry::class);
 
-        $this->expectExceptionObject(
-            ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'),
-        );
+        $records->checkRelations();
 
-        $this->app->make(ShareRecordRegistry::class)->checkRelations();
+        $this->assertTrue($records->has('flyers.flyer'));
     }
 
     public function test_a_model_or_provider_of_the_wrong_interface_and_a_bad_alias_are_refused(): void

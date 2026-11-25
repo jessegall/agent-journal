@@ -9,7 +9,9 @@ use App\Enums\Agents\ConversationModeType;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Values\OwnerAuthority;
+use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Values\SessionStartDetails;
+use Tests\Support\DomainBoot;
 use Tests\TestCase as BaseTestCase;
 
 /**
@@ -17,6 +19,11 @@ use Tests\TestCase as BaseTestCase;
  */
 abstract class TestCase extends BaseTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(HelpersDomain::class);
+    }
+
     /**
      * Acts as the user as the owner, the parent whose helper records the test reads and writes.
      */
