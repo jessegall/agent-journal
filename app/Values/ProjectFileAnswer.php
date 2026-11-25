@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\ProjectReadFailure;
 use App\Enums\ProjectReadState;
 use App\Models\Projects\ProjectRead;
@@ -15,7 +16,7 @@ use App\Models\Projects\ProjectRead;
 final readonly class ProjectFileAnswer
 {
     /**
-     * @param  list<ProjectEntry>  $entries
+     * @param  list<ProjectEntryData>  $entries
      */
     public function __construct(
         public string $readId,

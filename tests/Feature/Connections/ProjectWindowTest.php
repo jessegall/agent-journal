@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\ProjectReadType;
 use App\Enums\ProjectWindowState;
 use App\Models\Projects\ProjectRead;
-use App\Values\ProjectEntry;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Access\Models\User;
@@ -43,7 +43,7 @@ final class ProjectWindowTest extends TestCase
 
         $this->assertState(ProjectWindowState::Pending);
 
-        $this->answer('', [new ProjectEntry('src', true, 0), new ProjectEntry('README.md', false, 6)]);
+        $this->answer('', [new ProjectEntryData('src', true, 0), new ProjectEntryData('README.md', false, 6)]);
 
         $this->window(fn (AssertableInertia $window) => $window
             ->where(self::PROP.'.data.state', ProjectWindowState::Ready->value)
@@ -51,7 +51,7 @@ final class ProjectWindowTest extends TestCase
             ->where(self::PROP.'.data.entries.0.isLoading', true)
             ->where(self::PROP.'.data.entries.1.size', 6));
 
-        $this->answer('src', [new ProjectEntry('main.go', false, 13)]);
+        $this->answer('src', [new ProjectEntryData('main.go', false, 13)]);
 
         $this->window(fn (AssertableInertia $window) => $window
             ->where(self::PROP.'.data.entries.0.isLoading', false)
@@ -93,7 +93,7 @@ final class ProjectWindowTest extends TestCase
     }
 
     /**
-     * @param  list<ProjectEntry>  $entries
+     * @param  list<ProjectEntryData>  $entries
      */
     private function answer(string $path, array $entries): void
     {

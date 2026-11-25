@@ -7,6 +7,7 @@ namespace App\Http\Pages\Resolvers;
 use App\Contracts\Hosts\ProjectFiles;
 use App\Contracts\Hosts\ServedEnvironment;
 use App\Contracts\Navigation\PageResolver;
+use App\Data\Connections\ProjectEntryData;
 use App\Data\Connections\ProjectTreeEntryData;
 use App\Data\Connections\ProjectWindowData;
 use App\Enums\BindingReadiness;
@@ -14,7 +15,6 @@ use App\Enums\ProjectReadState;
 use App\Enums\ProjectWindowState;
 use App\Http\Requests\Connections\ProjectWindowRequest;
 use App\Models\Projects\ProjectBinding;
-use App\Values\ProjectEntry;
 use App\Values\ProjectFileAnswers;
 use Carbon\CarbonImmutable;
 
@@ -85,13 +85,13 @@ final readonly class ProjectWindowResolver implements PageResolver
     /**
      * A folder's entries as tree entries, each opened folder nested with its own answer.
      *
-     * @param  list<ProjectEntry>  $entries
+     * @param  list<ProjectEntryData>  $entries
      * @param  list<string>  $open
      * @return list<ProjectTreeEntryData>
      */
     private function tree(ProjectFileAnswers $answers, string $folder, array $entries, array $open): array
     {
-        return array_map(function (ProjectEntry $entry) use ($answers, $folder, $open): ProjectTreeEntryData {
+        return array_map(function (ProjectEntryData $entry) use ($answers, $folder, $open): ProjectTreeEntryData {
             $path = $folder === '' ? $entry->name : "{$folder}/{$entry->name}";
             $isOpen = $entry->isFolder && in_array($path, $open, true);
             $answer = $isOpen ? $answers->of($path) : null;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Commands\Projects\NotifyProjectRead;
 
 use App\Attributes\Entry;
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\CommandEntry;
 use App\Enums\ProjectReadFailure;
 use App\Support\Command;
-use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
 
 /**
@@ -23,7 +23,7 @@ use App\Values\ProjectFileText;
 final readonly class NotifyProjectReadCommand extends Command
 {
     /**
-     * @param  list<ProjectEntry>  $entries
+     * @param  list<ProjectEntryData>  $entries
      */
     public function __construct(
         public string $hostId,

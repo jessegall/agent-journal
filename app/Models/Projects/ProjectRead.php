@@ -10,6 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\ProjectReadFailure;
 use App\Enums\ProjectReadState;
 use App\Enums\ProjectReadType;
@@ -20,7 +21,6 @@ use App\Events\Connections\ProjectReadFailed;
 use App\Exceptions\ProjectReadRefused;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorIdentity;
-use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use PhpOption\Option;
+use Spatie\LaravelData\DataCollection;
 
 /**
  * One read of a connected project's folder or file, asked by the server and answered once by the project's host: its
@@ -45,7 +46,7 @@ use PhpOption\Option;
  * @property string $actor_id
  * @property ProjectReadState $state
  * @property ProjectReadFailure|null $failure
- * @property list<array{name: string, is_folder: bool, size: int}>|null $entries
+ * @property DataCollection<int, ProjectEntryData>|null $entries
  * @property string|null $text
  * @property string|null $digest
  * @property int|null $size
@@ -105,7 +106,7 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
             'type' => ProjectReadType::class,
             'state' => ProjectReadState::class,
             'failure' => ProjectReadFailure::class,
-            'entries' => 'array',
+            'entries' => DataCollection::class.':'.ProjectEntryData::class,
             'size' => 'integer',
             'is_truncated' => 'boolean',
             'claimed_at' => 'immutable_datetime',
@@ -154,14 +155,11 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     /**
      * Answers a folder read with its entries, cut to the entry limit and marked cut when the host or the limit cut it.
      *
-     * @param  list<ProjectEntry>  $entries
+     * @param  list<ProjectEntryData>  $entries
      */
     public function answerWithEntries(array $entries, bool $isTruncated): void
     {
-        $this->entries = array_map(
-            fn (ProjectEntry $entry) => $entry->fields(),
-            array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT),
-        );
+        $this->entries = array_slice($entries, 0, self::DIRECTORY_ENTRY_LIMIT);
 
         $this->is_truncated = $isTruncated || count($entries) > self::DIRECTORY_ENTRY_LIMIT;
         $this->settle(ProjectReadState::Answered);
@@ -213,11 +211,11 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     /**
      * The folder's entries as the host listed them; none for a file or an unanswered read.
      *
-     * @return list<ProjectEntry>
+     * @return list<ProjectEntryData>
      */
     public function listedEntries(): array
     {
-        return array_map(ProjectEntry::fromFields(...), $this->entries ?? []);
+        return $this->entries?->all() ?? [];
     }
 
     // ----------[ Asserts ]----------

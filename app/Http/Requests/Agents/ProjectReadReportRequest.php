@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Agents;
 
 use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\ProjectReadFailure;
-use App\Values\ProjectEntry;
 use App\Values\ProjectFileText;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -50,11 +50,11 @@ final class ProjectReadReportRequest extends FormRequest
     }
 
     /**
-     * @return list<ProjectEntry>
+     * @return list<ProjectEntryData>
      */
     private function entries(): array
     {
-        return array_map(ProjectEntry::fromFields(...), array_values($this->validated('entries', [])));
+        return array_values(ProjectEntryData::collect($this->validated('entries', [])));
     }
 
     /**
