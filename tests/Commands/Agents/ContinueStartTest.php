@@ -11,13 +11,11 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\StartRefused;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Access\AccessSettings;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\StartPolicy;
@@ -41,17 +39,14 @@ final class ContinueStartTest extends TestCase
 
     private Agent $agent;
 
-    private User $owner;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->chooseActiveAccounts();
         $this->serveEveryCombination();
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->agent = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
     }
 

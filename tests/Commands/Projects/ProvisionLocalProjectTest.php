@@ -29,7 +29,7 @@ final class ProvisionLocalProjectTest extends TestCase
 
     public function test_it_makes_the_project_its_main_environment_and_the_owners_grant_on_its_real_id(): void
     {
-        $owner = User::factory()->create();
+        $owner = $this->journal->user('Ada')->userCalled('Ada');
 
         $this->provision($owner);
 
@@ -47,7 +47,7 @@ final class ProvisionLocalProjectTest extends TestCase
 
     public function test_provisioning_again_makes_nothing_twice(): void
     {
-        $owner = User::factory()->create();
+        $owner = $this->journal->user('Ada')->userCalled('Ada');
 
         $this->provision($owner);
         $this->provision($owner);

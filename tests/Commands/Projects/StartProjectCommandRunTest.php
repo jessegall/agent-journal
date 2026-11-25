@@ -9,13 +9,11 @@ use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\CommandRunStatus;
 use App\Enums\Projects\ArrangementType;
 use App\Exceptions\DeviceGrantRefused;
-use App\Models\Access\User;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
-use App\Support\Access\AccessSettings;
 use App\Values\BindingFolder;
 use App\Values\CommandFingerprint;
 use App\Values\InstallTicket;
@@ -116,8 +114,7 @@ final class StartProjectCommandRunTest extends TestCase
         $grant = DeviceGrant::create($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH', 'start-1');
         $grant->issue(InstallTicket::digestOf('device-grant'));
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $this->actingAs($owner)->deleteJson("/project-connections/bindings/{$binding->id}")->assertOk();
 
         $this->command($start, 'request-3', $binding->id, ['comment', 'list'])->assertUnauthorized();

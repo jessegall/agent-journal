@@ -7,7 +7,6 @@ namespace Tests\Commands\Accounts;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
@@ -19,20 +18,16 @@ use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\Command;
 use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\AccountLabel;
-use App\Values\OwnerAuthority;
 use App\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -65,8 +60,7 @@ final class BeginSignInAgainTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
@@ -194,7 +188,7 @@ final class BeginSignInAgainTest extends TestCase
 
     private function again(string $requestKey): string
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
 
         return $this->journal->run(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
@@ -232,14 +226,6 @@ final class BeginSignInAgainTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 
     private function claimSignIn(string $hostId, CarbonImmutable $now): SignInAttempt|null

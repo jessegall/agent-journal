@@ -6,23 +6,17 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -51,15 +45,14 @@ final class ExpireSignInAttemptTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
     }
 
     public function test_an_attempt_with_no_account_looks_no_account_up_when_it_expires(): void
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
         $begin = new BeginSignInCommand('codex', SignInMethod::OAuth);
         $attemptId = $this->journal->run($begin, 'new')->attemptId;
         $attempts = SignInAttempt::query()->withoutGlobalScopes();
@@ -83,13 +76,5 @@ final class ExpireSignInAttemptTest extends TestCase
     private function asJournal(object $command): void
     {
         $this->app->make(JournalCommands::class)->runAsJournal(CommandEntry::AccountMaintenance, 'test', $command);
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 }

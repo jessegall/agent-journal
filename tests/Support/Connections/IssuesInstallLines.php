@@ -22,7 +22,7 @@ trait IssuesInstallLines
      */
     private function issuedLine(array $body): array
     {
-        $issued = $this->actingAs($this->owner)->from('/connections')->post('/project-connections/invitations', $body)
+        $issued = $this->actingAs($this->journal->ownerUser())->from('/connections')->post('/project-connections/invitations', $body)
             ->assertRedirect('/connections')
             ->assertSessionHasNoErrors();
 
@@ -36,7 +36,7 @@ trait IssuesInstallLines
      */
     private function refusedLine(array $body): string
     {
-        $refused = $this->actingAs($this->owner)->from('/connections')->post('/project-connections/invitations', $body)
+        $refused = $this->actingAs($this->journal->ownerUser())->from('/connections')->post('/project-connections/invitations', $body)
             ->assertRedirect('/connections')
             ->assertSessionHasErrors();
 

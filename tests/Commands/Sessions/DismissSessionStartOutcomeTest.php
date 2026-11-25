@@ -17,7 +17,6 @@ use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
 use App\Exceptions\CapacityUnavailable;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
@@ -54,8 +53,7 @@ final class DismissSessionStartOutcomeTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-        $this->ownerId = User::factory()->create()->id;
-        $this->journal->actAsUserId($this->ownerId);
+        $this->ownerId = $this->journal->owner()->ownerUser()->id;
         $this->agentId = $this->journal->idleAgent('Builder', 'writing-helper')->agentCalled('Builder')->id;
         $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
         {

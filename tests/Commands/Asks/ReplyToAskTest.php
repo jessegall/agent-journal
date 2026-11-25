@@ -14,7 +14,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Asks\UnansweredReason;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Asks\Ask;
 use App\Support\ActorIdentity;
@@ -54,14 +53,12 @@ final class ReplyToAskTest extends TestCase
 
     private Agent $holder;
 
-    private User $owner;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
@@ -75,7 +72,7 @@ final class ReplyToAskTest extends TestCase
         $ask = $this->routedAsk('question');
 
         $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(new ReplyToAskCommand($ask->reference, self::LATE_ANSWER));
 
         $closed = $ask->refresh();
@@ -97,7 +94,7 @@ final class ReplyToAskTest extends TestCase
             $type->resolver()->resolve($type->subject(), $reference, null),
             SupervisorTarget::forActor(ActorIdentity::of($this->holder)),
         );
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(new RouteAskCommand($reference, 0));
 
         return $ask->refresh();
@@ -121,7 +118,7 @@ final class ReplyToAskTest extends TestCase
 
     private function superviseWith(Agent $agent, SupervisorTarget $target): void
     {
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $type = AskTypeKey::of('question');
         $actor = ActorIdentity::of($agent);
         $version = $this->app->make(SupervisorDefinitions::class)->routeFor($actor, $type)->version;

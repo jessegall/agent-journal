@@ -20,14 +20,12 @@ use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\ProfileCannotCoordinate;
 use App\Exceptions\ResumeRefused;
 use App\Exceptions\StartPreflightRefused;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Access\AccessSettings;
 use App\Support\AgentSessions;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
@@ -67,8 +65,6 @@ final class StartProfileMainTest extends TestCase
      */
     private array $accounts;
 
-    private User $owner;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -76,9 +72,8 @@ final class StartProfileMainTest extends TestCase
         $this->accounts = $this->chooseActiveAccounts();
         $this->serveEveryCombination();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 

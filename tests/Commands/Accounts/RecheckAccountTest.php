@@ -8,22 +8,16 @@ use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\AccountRecheckRefused;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\Command;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -54,8 +48,7 @@ final class RecheckAccountTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
@@ -72,7 +65,7 @@ final class RecheckAccountTest extends TestCase
         $this->assertTrue($this->account->refresh()->isCheckInconclusive());
         $this->assertNull(Account::findNextDueForCheck());
 
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
         $this->app->make(CommandBus::class)->run(new RecheckAccountCommand($this->account->id));
 
         $this->assertFalse($this->account->refresh()->isCheckInconclusive());
@@ -86,7 +79,7 @@ final class RecheckAccountTest extends TestCase
 
     private function again(string $requestKey): string
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
 
         return $this->journal->run(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
@@ -94,20 +87,12 @@ final class RecheckAccountTest extends TestCase
 
     private function cancel(string $attemptId): void
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
         $this->app->make(CommandBus::class)->run(new CancelSignInCommand($attemptId));
     }
 
     private function asHost(Command $command): void
     {
         $this->app->make(JournalCommands::class)->runAsJournal(CommandEntry::HostControl, 'test host', $command);
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 }

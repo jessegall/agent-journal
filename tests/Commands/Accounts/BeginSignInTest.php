@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Values\OwnerAuthority;
 use App\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -45,11 +39,10 @@ final class BeginSignInTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
     }
 
     public function test_a_second_start_and_a_repeated_request_rejoin_the_running_attempt(): void
@@ -81,13 +74,5 @@ final class BeginSignInTest extends TestCase
     private function begin(string $requestKey): SignInStarted
     {
         return $this->journal->run(new BeginSignInCommand('claude-code', SignInMethod::OAuth), $requestKey);
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 }

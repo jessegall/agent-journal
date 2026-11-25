@@ -16,13 +16,11 @@ use App\Enums\Profiles\ModelTier;
 use App\Enums\Sessions\StartPreflightRefusal;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverSwitchStale;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Support\Access\AccessSettings;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
@@ -61,8 +59,6 @@ final class SwitchAgentDriverTest extends TestCase
      */
     private array $accounts;
 
-    private User $owner;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -70,9 +66,8 @@ final class SwitchAgentDriverTest extends TestCase
         $this->accounts = $this->chooseActiveAccounts();
         $this->serveEveryCombination();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 
@@ -110,13 +105,13 @@ final class SwitchAgentDriverTest extends TestCase
             'model' => 'default',
         ];
 
-        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
+        $this->actingAs($this->journal->ownerUser())->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
             ->assertRedirect('/');
-        $this->actingAs($this->owner)->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
+        $this->actingAs($this->journal->ownerUser())->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
             ->assertRedirect('/');
 
         $made = DriverSwitch::query()->where('request_id', $switch['requestId'])->sole();
-        $this->actingAs($this->owner)->getJson(route('profiles.switch-stage', $switch['requestId']))
+        $this->actingAs($this->journal->ownerUser())->getJson(route('profiles.switch-stage', $switch['requestId']))
             ->assertJsonPath('switchId', $made->id)
             ->assertJsonPath('stage', DriverSwitchStage::Refused->value);
     }

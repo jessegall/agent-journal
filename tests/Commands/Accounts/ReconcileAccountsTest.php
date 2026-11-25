@@ -6,19 +6,13 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -45,17 +39,16 @@ final class ReconcileAccountsTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
     }
 
     public function test_the_sweep_ends_an_overdue_attempt_and_signing_in_again_holds_the_folder_once(): void
     {
         $account = $this->chooseActiveAccounts()['codex'];
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
         $again = $this->journal->run(new BeginSignInAgainCommand($account->id), 'request-again');
         $rejoined = $this->journal->run(new BeginSignInAgainCommand($account->id), 'request-other');
 
@@ -69,13 +62,5 @@ final class ReconcileAccountsTest extends TestCase
         $this->assertSame(1, $ended);
         $this->assertSame(SignInStatus::Expired, SignInAttempt::query()->whereKey($again->attemptId)->sole()->status);
         $this->assertNull($account->refresh()->live_writer_attempt_id);
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 }

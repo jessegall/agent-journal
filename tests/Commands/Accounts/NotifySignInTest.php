@@ -6,20 +6,15 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInRefusal;
 use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\EnrolledHost;
 use App\Support\SignInChallenges;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -45,13 +40,13 @@ final class NotifySignInTest extends TestCase
         'users',
     ];
 
-    private User|null $owner = null;
-
     private string $root;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
@@ -108,21 +103,9 @@ final class NotifySignInTest extends TestCase
         $this->assertNull($this->app->make(SignInChallenges::class)->challengeOf($attemptId));
     }
 
-    /**
-     * The journal's owner, made once per test, as the web sign-in admits them.
-     */
-    private function owner(): User
-    {
-        $this->owner ??= User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-
-        return $this->owner;
-    }
-
     private function begin(): string
     {
-        $owner = ActorContext::forUser($this->owner()->id);
-        $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
+        $this->journal->actAs('Owner');
 
         $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
         $started = $this->journal->run($begin, (string) Str::ulid());

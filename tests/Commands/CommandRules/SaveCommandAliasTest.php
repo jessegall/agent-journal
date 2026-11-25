@@ -8,9 +8,7 @@ use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\Processes\ShellDialect;
-use App\Models\Access\User;
 use App\Models\CommandRules\CommandAlias;
-use App\Support\Access\AccessSettings;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;
@@ -27,8 +25,11 @@ final class SaveCommandAliasTest extends TestCase
 
     public function test_an_alias_the_owner_saves_shows_its_body_id_revision_and_purpose(): void
     {
-        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
-        $this->artisan('processes:alias-save', ['project' => base_path(), 'name' => 'checks', 'line' => 'php artisan test'])
+        $this->journal->owner();
+        $this->artisan(
+            'processes:alias-save',
+            ['project' => base_path(), 'name' => 'checks', 'line' => 'php artisan test'],
+        )
             ->assertSuccessful();
         $this->artisan('processes:alias-save', [
             'project' => base_path(),

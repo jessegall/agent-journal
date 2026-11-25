@@ -7,7 +7,6 @@ namespace Tests\Commands\Accounts;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
 use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\AccountStatus;
@@ -17,14 +16,10 @@ use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\Command;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -57,8 +52,7 @@ final class CancelSignInTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
@@ -168,7 +162,7 @@ final class CancelSignInTest extends TestCase
 
     private function again(string $requestKey): string
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
 
         return $this->journal->run(new BeginSignInAgainCommand($this->account->id), $requestKey)
             ->attemptId;
@@ -176,7 +170,7 @@ final class CancelSignInTest extends TestCase
 
     private function cancel(string $attemptId): void
     {
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
         $this->app->make(CommandBus::class)->run(new CancelSignInCommand($attemptId));
     }
 
@@ -188,13 +182,5 @@ final class CancelSignInTest extends TestCase
     private function chosen(): string|null
     {
         return ActiveAccount::query()->withoutGlobalScopes()->where('account_protocol', 'codex')->value('account_id');
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 }

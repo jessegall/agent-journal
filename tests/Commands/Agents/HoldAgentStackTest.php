@@ -6,10 +6,8 @@ namespace Tests\Commands\Agents;
 
 use App\Enums\Engine\NoSubject;
 use App\Enums\Hooks\AnswerType;
-use App\Models\Access\User;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
-use App\Support\Access\AccessSettings;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\PruneHookHistory;
 use App\Support\References\StateReference;
@@ -40,8 +38,11 @@ final class HoldAgentStackTest extends TestCase
         $held = $this->stack(1);
         $this->recordCall(1, 'held call');
         $held->closeAt(CarbonImmutable::now());
-        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
-        $this->artisan('agents:stack-hold', ['agent' => self::target(1)->agentId, 'session' => self::target(1)->sessionId])
+        $this->journal->owner();
+        $this->artisan(
+            'agents:stack-hold',
+            ['agent' => self::target(1)->agentId, 'session' => self::target(1)->sessionId],
+        )
             ->assertSuccessful();
         $this->moveDays(40);
 

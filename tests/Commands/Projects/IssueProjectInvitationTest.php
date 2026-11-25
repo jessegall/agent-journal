@@ -5,13 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Models\Access\User;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
-use App\Values\OwnerAuthority;
 use App\Values\ReleaseManifest;
 use App\Values\ReleaseTarget;
 use App\Values\SettingReference;
@@ -40,8 +35,6 @@ final class IssueProjectInvitationTest extends TestCase
 
     private const string LINE = '#\Acurl -fsSL https://journal\.example\.com/install/([A-Za-z0-9_-]{43}) \| sh\z#';
 
-    private User $owner;
-
     /**
      * @var list<string>
      */
@@ -51,8 +44,7 @@ final class IssueProjectInvitationTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->journal->owner();
         $this->publishRelease();
         config(['agents.server_origin' => 'https://journal.example.com']);
         Event::listen(MessageLogged::class, function (MessageLogged $logged): void {
@@ -83,7 +75,7 @@ final class IssueProjectInvitationTest extends TestCase
     public function test_a_viewer_and_a_signed_out_visitor_are_refused_and_leave_no_pending_line(): void
     {
         $this->switchOn();
-        $viewer = User::factory()->create();
+        $viewer = $this->journal->user('Viewer')->userCalled('Viewer');
 
         $this->assertFalse($this->actingAs($viewer)->postJson('/project-connections/invitations', [
             'issuanceKey' => 'action-1',
@@ -137,10 +129,7 @@ final class IssueProjectInvitationTest extends TestCase
 
     private function switchOn(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->app->make(CommandBus::class)->run(
             new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),
         );

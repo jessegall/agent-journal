@@ -14,13 +14,11 @@ use App\Enums\Drivers\DriverType;
 use App\Enums\Profiles\ModelTier;
 use App\Events\Sessions\DriverSwitchStopped;
 use App\Listeners\StartSwitchReplacementOnStop;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Access\AccessSettings;
 use App\Support\AgentSessions;
 use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
@@ -56,8 +54,6 @@ final class StartSwitchReplacementTest extends TestCase
      */
     private array $accounts;
 
-    private User $owner;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -65,9 +61,8 @@ final class StartSwitchReplacementTest extends TestCase
         $this->accounts = $this->chooseActiveAccounts();
         $this->serveEveryCombination();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->owner();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
     }
 

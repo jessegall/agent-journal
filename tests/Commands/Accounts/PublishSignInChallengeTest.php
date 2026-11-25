@@ -6,14 +6,9 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\SignInMethod;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\EnrolledHost;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -39,13 +34,13 @@ final class PublishSignInChallengeTest extends TestCase
         'users',
     ];
 
-    private User|null $owner = null;
-
     private string $root;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
         $this->root = sys_get_temp_dir().'/sign-in-host-'.bin2hex(random_bytes(4));
@@ -54,7 +49,7 @@ final class PublishSignInChallengeTest extends TestCase
 
     public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
     {
-        $owner = $this->owner();
+        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-1')->post('/accounts/sign-ins', [
             'driver' => 'claude-code',
@@ -82,13 +77,13 @@ final class PublishSignInChallengeTest extends TestCase
         $poll(0)->assertExactJson(['live' => true, 'code' => '1234']);
         $poll(0)->assertExactJson(['live' => true, 'code' => null]);
         $poll(1)->assertExactJson(['live' => false, 'code' => null]);
-        $stranger = User::factory()->create();
+        $stranger = $this->journal->user('Stranger')->userCalled('Stranger');
         $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
     }
 
     public function test_a_challenge_outside_the_providers_pages_publishes_no_link_and_a_stranger_reads_nothing(): void
     {
-        $owner = $this->owner();
+        $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
@@ -106,26 +101,16 @@ final class PublishSignInChallengeTest extends TestCase
         $this->assertNull($this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->json('address'));
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
-        $stranger = $this->actingAs(User::factory()->create())->post("/accounts/sign-ins/{$attemptId}/challenge");
+        $stranger = $this->actingAs(
+            $this->journal->user('Stranger')->userCalled('Stranger'),
+        )->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertFalse($stranger->isOk());
         $this->assertStringNotContainsString('claude.ai', (string) $stranger->getContent());
     }
 
-    /**
-     * The journal's owner, made once per test, as the web sign-in admits them.
-     */
-    private function owner(): User
-    {
-        $this->owner ??= User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-
-        return $this->owner;
-    }
-
     private function begin(): string
     {
-        $owner = ActorContext::forUser($this->owner()->id);
-        $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
+        $this->journal->actAs('Owner');
 
         $begin = new BeginSignInCommand('claude-code', SignInMethod::OAuth);
         $started = $this->journal->run($begin, (string) Str::ulid());

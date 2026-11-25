@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
@@ -39,8 +38,7 @@ final class ReassignRecordTest extends TestCase
 
     public function test_an_agent_and_a_user_are_assigned_and_reassigned_through_the_assign_command(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->journal->owner()->ownerUser();
         $agent = $this->journal->idleAgent('Builder', 'read-only-helper')->agentCalled('Builder');
         $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->journal->actAsUserId($owner->id);

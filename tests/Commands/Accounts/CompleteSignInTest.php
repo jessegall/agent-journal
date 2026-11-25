@@ -18,14 +18,11 @@ use App\Enums\Accounts\SignInStatus;
 use App\Events\Accounts\AccountsChanged;
 use App\Exceptions\SignInAttemptStale;
 use App\Jobs\SignInDeadline;
-use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorContext;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use App\Values\SignInIdentity;
 use App\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
@@ -61,11 +58,10 @@ final class CompleteSignInTest extends TestCase
     {
         parent::setUp();
 
-        User::factory()->create(['id' => TestIds::of(1)]);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        $this->journal->owner();
 
         Bus::fake([SignInDeadline::class]);
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
     }
 
     public function test_a_verified_sign_in_makes_the_first_account_and_chooses_it_once(): void
@@ -129,7 +125,7 @@ final class CompleteSignInTest extends TestCase
             ),
         );
 
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
 
         $this->assertSame([null, $account->id], $this->targetAndResultOf($added));
         $this->assertSame([null, $account->id], $this->targetAndResultOf($matched));
@@ -193,7 +189,7 @@ final class CompleteSignInTest extends TestCase
             new CompleteSignInCommand($started->attemptId, 0, $identity),
         );
 
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
 
         return $started->attemptId;
     }
@@ -206,7 +202,7 @@ final class CompleteSignInTest extends TestCase
             new CompleteSignInCommand($attemptId, $generation, SignInIdentity::shown($display)),
         );
 
-        $this->actAsOwner();
+        $this->journal->actAs('Owner');
     }
 
     /**
@@ -221,14 +217,6 @@ final class CompleteSignInTest extends TestCase
         );
 
         return [$attempt->accountId, $attempt->resultAccountId];
-    }
-
-    private function actAsOwner(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
     }
 
     private function bus(): CommandBus

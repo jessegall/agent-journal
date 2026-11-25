@@ -12,11 +12,9 @@ use App\Exceptions\AgentRetirementDenied;
 use App\Exceptions\CommandTransactionMismatch;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\StartRefused;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\CredentialLookup;
@@ -70,8 +68,6 @@ final class RetireAgentTest extends TestCase
         'assignments',
     ];
 
-    private User $owner;
-
     private Agent $main;
 
     private Agent $helper;
@@ -80,11 +76,10 @@ final class RetireAgentTest extends TestCase
     {
         parent::setUp();
 
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->journal->owner();
         $this->main = $this->journal->idleAgent('Main', 'main-agent')->agentCalled('Main');
         $this->helper = $this->journal->idleAgent('Helper', 'read-only-helper')->agentCalled('Helper');
-        $this->journal->actAsUserId($this->owner->id);
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 
     public function test_the_owner_retires_an_agent_releasing_its_work_and_ending_its_sessions(): void
