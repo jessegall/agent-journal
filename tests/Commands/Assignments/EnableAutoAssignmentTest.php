@@ -15,6 +15,7 @@ use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;
+use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\TasksDomain;
@@ -43,7 +44,13 @@ final class EnableAutoAssignmentTest extends TestCase
         'tasks',
         'auto_assignments',
         'command_receipts',
+        'assignments',
+        'number_groups',
+        'inboxes',
+        'inbox_members',
     ];
+
+    private TestStart $main;
 
     protected function setUp(): void
     {
@@ -60,7 +67,7 @@ final class EnableAutoAssignmentTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
     }
 
     public function test_the_owner_enables_a_named_pool_for_an_agent(): void
@@ -88,6 +95,41 @@ final class EnableAutoAssignmentTest extends TestCase
             AutoAssignmentDenied::class,
         );
         $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
+    }
+
+    public function test_a_main_agent_enables_named_tasks_by_number_and_shows_the_status(): void
+    {
+        $owner = $this->journal->ownerUser();
+        $this->main = TestStart::start('main-agent');
+        $this->worker = TestStart::start('writing-helper');
+        $this->journal->relayAgentCommands($this->main);
+
+        $tasks = array_map(fn () => Task::factory()->create(), range(1, 3));
+        $worker = "agent:{$this->worker->agent->id}";
+
+        $this->artisan('assignment:auto-enable', [
+            'actor' => $worker,
+            'type' => 'tasks.task',
+            '--pool' => 'tasks.named',
+            '--task' => [$tasks[2]->number, $tasks[0]->number, $tasks[1]->number],
+            '--size' => 3,
+            '--json' => true,
+        ])->expectsOutputToContain('"revision":1')->assertExitCode(0);
+
+        $this->artisan('assignment:auto-show', ['actor' => $worker, 'type' => 'tasks.task', '--json' => true])
+            ->expectsOutputToContain('"state":"ready","stateLabel":"Ready","revision":1,"pool":"Named tasks","size":3')
+            ->assertExitCode(0);
+
+        $this->artisan('assignment:auto-list', ['actor' => $worker, '--json' => true])
+            ->expectsOutputToContain('"pool":"tasks.named"')
+            ->assertExitCode(0);
+
+        $this->artisan('assignment:auto-enable', [
+            'actor' => $worker,
+            'type' => 'tasks.task',
+            '--pool' => 'tasks.open',
+            '--revision' => 0,
+        ])->expectsOutputToContain('revision 1, not 0')->assertExitCode(1);
     }
 
     /**

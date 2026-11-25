@@ -9,6 +9,7 @@ use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\StartTransaction;
@@ -17,14 +18,17 @@ use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentRetirementDenied;
+use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\CommandTransactionMismatch;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\StartRefused;
+use App\Models\Access\User;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
 use App\Models\Sessions\SessionProcess;
+use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
@@ -32,18 +36,24 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Support\CredentialLookup;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
+use App\Support\RecordIdentity;
 use App\Support\SessionTokens;
 use App\Support\StartSessions;
 use App\Values\OwnerAuthority;
 use Closure;
+use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Agents\TestStart;
+use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\InstallsNotesModule;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -59,6 +69,7 @@ use Throwable;
 final class RetireAgentTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsNotesModule;
     use WithActiveAccount;
 
     /**
@@ -68,9 +79,20 @@ final class RetireAgentTest extends TestCase
 
     private const string FOLDER = '/work/project';
 
+    private User $owner;
+
+    private Task $task;
+
+    /**
+     * The stored type of a note, which stays in the rows while the module is gone.
+     */
+    private const string NOTE_TYPE = 'notes.note';
+
+    private Agent $writer;
+
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(TasksDomain::class);
+        return DomainBoot::withRequirements(RulesDomain::class, TasksDomain::class);
     }
 
     /**
@@ -277,6 +299,80 @@ final class RetireAgentTest extends TestCase
         $this->assertNull($this->journal->asSystem(new ClaimStartCommand($host->hostId, $opened->sessionId)));
     }
 
+    public function test_retirement_is_open_to_the_user_over_the_web_and_to_a_main_agent_over_a_signed_call(): void
+    {
+        $owner = $this->journal->ownerUser();
+        $main = TestStart::start('main-agent');
+        $helper = TestStart::start('read-only-helper');
+        $task = $this->tasks()->task('Write the retire commands')->taskCalled('Write the retire commands');
+
+        $spare = Agent::create('Spare', 'read-only-helper', $this->localProject());
+        $this->actingAs($owner)->postJson(
+            '/assignments/assign',
+            [
+                'recordType' => 'tasks.task',
+                'recordId' => $task->id,
+                'recipientType' => 'agent',
+                'recipientId' => $helper->agent->id,
+            ],
+        )->assertOk();
+
+        $this->journal->agentCall(
+            $main,
+            'POST',
+            '/agent/agents/retire',
+            ['agentId' => $main->agent->id, 'request_key' => 'retire-1'],
+        )->assertForbidden();
+        $this->journal->agentCall(
+            $main,
+            'POST',
+            '/agent/agents/retire',
+            ['agentId' => $helper->agent->id, 'request_key' => 'retire-2'],
+        )->assertOk()->assertJson(['changed' => 1]);
+        $this->actingAs($owner)->postJson(
+            '/agents/retire',
+            ['agentId' => $spare->id],
+        )->assertOk()->assertJson(['changed' => 0]);
+
+        $this->assertTrue($helper->agent->refresh()->isRetired());
+        $this->assertTrue($spare->refresh()->isRetired());
+    }
+
+    public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
+    {
+        $this->createNotesTables();
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->main = Agent::create('Main', 'main-agent', $this->localProject());
+        $this->writer = Agent::create('Writer', 'read-only-helper', $this->localProject());
+
+        $noteId = strtolower((string) Str::ulid());
+        AssignmentRecord::query()->insert(
+            [
+                'id' => strtolower((string) Str::ulid()),
+                'record_type' => self::NOTE_TYPE,
+                'record_id' => $noteId,
+                'holder_type' => 'agent',
+                'holder_id' => $this->writer->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+        $this->journal->actAsUserId($this->owner->id);
+
+        $this->assertThrows(
+            fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor(
+                [new RecordIdentity(self::NOTE_TYPE, $noteId)],
+            ),
+            AssignmentTypeUnavailable::class,
+        );
+
+        $result = $this->app->make(CommandBus::class)->run(new RetireAgentCommand($this->writer->id));
+
+        $this->assertCount(1, $result->changes);
+        $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
+    }
+
     /**
      * The forked process: it writes what a start writes, a session under the shared lifecycle lock and its
      * credential, tells the parent it holds the lock, waits until the retirement is seen waiting for it, commits and
@@ -415,5 +511,10 @@ final class RetireAgentTest extends TestCase
     private function actAsOwner(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

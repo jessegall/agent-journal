@@ -12,17 +12,22 @@ use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
+use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\PlansDomain;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
 
 /**
@@ -47,6 +52,8 @@ final class AssignPlanWorkTest extends TestCase
         'assignments',
         'number_groups',
         'command_receipts',
+        'agent_sessions',
+        'session_tokens',
     ];
 
     private AssigneeIdentity $builder;
@@ -60,6 +67,10 @@ final class AssignPlanWorkTest extends TestCase
     private Phase $empty;
 
     private Task $open;
+
+    private TestStart $helper;
+
+    private TestStart $main;
 
     protected function setUp(): void
     {
@@ -138,6 +149,45 @@ final class AssignPlanWorkTest extends TestCase
         );
     }
 
+    public function test_the_commands_say_they_covered_the_whole_plan(): void
+    {
+        $owner = $this->journal->ownerUser();
+        $this->main = TestStart::start('main-agent');
+        $this->helper = TestStart::start('read-only-helper');
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $open = $this->tasks()->task('Open command')->taskCalled('Open command');
+        $finished = $this->tasks()->task('Finished command')->taskCalled('Finished command');
+        $finished->finish('Done.');
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Working'), [$open->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Over'), [$finished->id]);
+
+        $this->journal->relayAgentCommands($this->main);
+
+        $this->artisan(
+            'plan:assign-work',
+            ['type' => Plan::linkType(), 'id' => $plan->id, '--to' => "agent:{$this->helper->agent->id}"],
+        )
+            ->expectsOutputToContain(
+                sprintf(
+                    'Cascade over plans.plan %s and its unfinished work: 3 changed, 0 unchanged, 2 skipped as finished.',
+                    $plan->id,
+                ),
+            )
+            ->assertExitCode(0);
+        $this->artisan(
+            'plan:unassign-work',
+            [
+                'type' => Plan::linkType(),
+                'id' => $plan->id,
+                '--assignment' => TestIds::of(999999),
+                '--holder' => "agent:{$this->helper->agent->id}",
+            ],
+        )
+            ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
+        $this->artisan('plan:assign-work', ['type' => Plan::linkType(), 'id' => $plan->id, '--to' => 'nobody'])
+            ->expectsOutputToContain('type:id')->assertExitCode(1);
+    }
+
     private function assignWork(RecordIdentity $root, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -148,5 +198,18 @@ final class AssignPlanWorkTest extends TestCase
     private function planStructure(): PlanStructure
     {
         return $this->app->make(PlanStructure::class);
+    }
+
+    /**
+     * The domains this test uses beside core.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+    }
+
+    private function tasks(): TaskFixtures
+    {
+        return $this->journal->fixtures(TaskFixtures::class);
     }
 }

@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
+use App\Contracts\Bus\CommandBus;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Plans\Tests\TestCase;
+use Domain\Plans\Values\PlanProgress;
+use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
+use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -31,6 +38,14 @@ final class AddPhaseTasksTest extends TestCase
         'users',
         'number_groups',
         'command_receipts',
+        'task_runs',
+        'agents',
+        'agent_sessions',
+        'agent_stacks',
+        'assignments',
+        'claim_authorizations',
+        'inboxes',
+        'inbox_members',
     ];
 
     private PlanFixtures $plans;
@@ -80,8 +95,87 @@ final class AddPhaseTasksTest extends TestCase
         $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
     }
 
+    public function test_placing_starting_finishing_and_cancelling_moves_the_phase_and_plan_tallies(): void
+    {
+        $plan = $this->plans()->plan('plan')->planCalled('plan');
+        $phase = $this->structure()->addPhase($plan, 'Work');
+        [$first, $second, $third] = Task::factory()->count(3)->create()->all();
+        $this->journal->actAsUserId($this->journal->ownerUser()->id);
+        $this->structure()->addTasks($phase, [
+            $first->id,
+            $second->id,
+            $third->id,
+        ]);
+
+        $this->runCommand(new StartTaskCommand($first->id));
+        $this->runCommand(new StartTaskCommand($second->id));
+        $this->runCommand(new FinishTaskCommand($second->id, 1, 'Done.'));
+        $this->runCommand(new CancelTaskCommand($third->id, 'Not needed.'));
+
+        foreach ([
+            $phase->refresh()->progress,
+            $plan->refresh()->progress,
+        ] as $progress) {
+            $this->assertSame(
+                [
+                    'total' => 3,
+                    'finished' => 1,
+                    'cancelled' => 1,
+                    'started' => 1,
+                    'blocked' => 0,
+                    'unfinished' => 1,
+                ],
+                self::tallies($progress),
+            );
+        }
+
+        $this->runCommand(new CancelTaskCommand($first->id, 'Dropped.'));
+
+        $this->assertSame(
+            [
+                'total' => 3,
+                'finished' => 1,
+                'cancelled' => 2,
+                'started' => 0,
+                'blocked' => 0,
+                'unfinished' => 0,
+            ],
+            self::tallies($phase->refresh()->progress),
+        );
+    }
+
     private function phaseId(): string
     {
         return $this->plans->phaseCalled('Read')->id;
+    }
+
+    private function structure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private static function tallies(PlanProgress $progress): array
+    {
+        return [
+            'total' => $progress->total,
+            'finished' => $progress->finished,
+            'cancelled' => $progress->cancelled,
+            'started' => $progress->started,
+            'blocked' => $progress->blocked,
+            'unfinished' => $progress->unfinished(),
+        ];
+    }
+
+    private function runCommand(object $command): void
+    {
+        $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function plans(): PlanFixtures
+    {
+        return $this->journal->fixtures(PlanFixtures::class);
     }
 }
