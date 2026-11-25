@@ -88,7 +88,7 @@ final class IssueProjectInvitationTest extends TestCase
     public function test_a_viewer_and_a_signed_out_visitor_are_refused_and_leave_no_pending_line(): void
     {
         $this->switchOn();
-        $viewer = $this->journal->user('Viewer')->userCalled('Viewer');
+        $viewer = $this->journal->createUser('Viewer');
 
         $this->assertFalse($this->actingAs($viewer)->postJson('/project-connections/invitations', [
             'issuanceKey' => 'action-1',

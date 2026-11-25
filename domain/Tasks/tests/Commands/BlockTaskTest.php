@@ -52,7 +52,7 @@ final class BlockTaskTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('First');
-        $this->task = $this->tasks()->task('Owned work', 'Build it.')->taskCalled('Owned work');
+        $this->task = $this->tasks()->createTask('Owned work', 'Build it.');
         $this->run = $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 
@@ -96,7 +96,7 @@ final class BlockTaskTest extends TestCase
     public function test_a_block_of_one_run_keeps_its_reason_after_the_next_run_starts(): void
     {
 
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->runCommand(new StartTaskCommand($task->id));

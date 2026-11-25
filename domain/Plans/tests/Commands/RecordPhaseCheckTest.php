@@ -39,7 +39,7 @@ final class RecordPhaseCheckTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->task = $this->journal->fixtures(TaskFixtures::class)->task('Write it')->taskCalled('Write it');
+        $this->task = $this->journal->fixtures(TaskFixtures::class)->createTask('Write it');
 
         $this->phase = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Checked phase')

@@ -64,7 +64,7 @@ final class ResumeTaskRunTest extends TestCase
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void
     {
         $worker = $this->started('Third');
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
 
         $holding = AssignmentRecord::create(
             $task->assignmentIdentity(),
@@ -86,8 +86,8 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->started('Fourth');
         $holder = AssigneeIdentity::of($worker->agent()->firstOrFail());
-        $first = $this->tasks()->task('first')->taskCalled('first');
-        $second = $this->tasks()->task('second')->taskCalled('second');
+        $first = $this->tasks()->createTask('first');
+        $second = $this->tasks()->createTask('second');
         AssignmentRecord::create($first->assignmentIdentity(), $holder);
         AssignmentRecord::create($second->assignmentIdentity(), $holder);
         $this->runAs($worker, new StartTaskCommand($first->id));
@@ -105,7 +105,7 @@ final class ResumeTaskRunTest extends TestCase
     public function test_a_resume_of_a_run_left_behind_by_a_restart_is_refused_as_stale(): void
     {
         $worker = $this->started('Fifth');
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
         $this->runAs($worker, new StartTaskCommand($task->id));
         $first = TaskRun::query()->where('task_id', $task->id)->sole();

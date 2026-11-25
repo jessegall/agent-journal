@@ -306,7 +306,7 @@ final class RetireAgentTest extends TestCase
         $owner = $this->journal->ownerUser();
         $main = TestStart::start('main-agent');
         $helper = TestStart::start('read-only-helper');
-        $task = $this->tasks()->task('Write the retire commands')->taskCalled('Write the retire commands');
+        $task = $this->tasks()->createTask('Write the retire commands');
 
         $spare = Agent::create('Spare', 'read-only-helper', $this->localProject());
         $this->actingAs($owner)->postJson(

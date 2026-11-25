@@ -38,6 +38,16 @@ final class SequenceFixtures
     }
 
     /**
+     * The run the naming verb makes, given back at once instead of read back by its name.
+     *
+     * @param  list<string>  $steps
+     */
+    public function createRun(string $name, array $steps, string|null $title = null): SequenceRun
+    {
+        return $this->run($name, $steps, $title)->runCalled($name);
+    }
+
+    /**
      * The named agent's session starts following the run.
      */
     public function startRun(string $name, string $agent): self

@@ -80,7 +80,7 @@ final class PublishSignInChallengeTest extends TestCase
         $poll(0)->assertExactJson(['live' => true, 'code' => '1234']);
         $poll(0)->assertExactJson(['live' => true, 'code' => null]);
         $poll(1)->assertExactJson(['live' => false, 'code' => null]);
-        $stranger = $this->journal->user('Stranger')->userCalled('Stranger');
+        $stranger = $this->journal->createUser('Stranger');
         $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
     }
 
@@ -105,7 +105,7 @@ final class PublishSignInChallengeTest extends TestCase
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
         $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
         $stranger = $this->actingAs(
-            $this->journal->user('Stranger')->userCalled('Stranger'),
+            $this->journal->createUser('Stranger'),
         )->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertFalse($stranger->isOk());
         $this->assertStringNotContainsString('claude.ai', (string) $stranger->getContent());

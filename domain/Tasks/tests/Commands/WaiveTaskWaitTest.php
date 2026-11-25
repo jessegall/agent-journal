@@ -50,8 +50,8 @@ final class WaiveTaskWaitTest extends TestCase
 
         $this->journal->owner();
 
-        $this->first = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
-        $this->second = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->first = $this->tasks()->createTask('Prepare records');
+        $this->second = $this->tasks()->createTask('Publish records');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
     }
 

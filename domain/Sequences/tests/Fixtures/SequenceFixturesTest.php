@@ -41,6 +41,13 @@ final class SequenceFixturesTest extends TestCase
         $runs->assertStep('Close', step: 1, follower: 'Ada');
     }
 
+    public function test_a_created_run_is_given_back_and_still_found_by_its_name(): void
+    {
+        $runs = $this->journal->owner()->fixtures(SequenceFixtures::class);
+
+        $this->assertTrue($runs->createRun('Close', ['Read the brief.'])->is($runs->runCalled('Close')));
+    }
+
     public function test_a_failed_push_leaves_the_run_unassigned_where_it_was(): void
     {
         $runs = $this->journal->owner()->agent('Ada')->fixtures(SequenceFixtures::class)->run(

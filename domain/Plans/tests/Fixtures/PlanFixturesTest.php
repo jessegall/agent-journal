@@ -38,6 +38,13 @@ final class PlanFixturesTest extends TestCase
         $this->assertSame($this->journal->ownerUser()->id, $plans->planCalled('Release')->creator_id);
     }
 
+    public function test_a_created_plan_is_given_back_and_still_found_by_its_name(): void
+    {
+        $plans = $this->journal->owner()->fixtures(PlanFixtures::class);
+
+        $this->assertTrue($plans->createPlan('Release')->is($plans->planCalled('Release')));
+    }
+
     public function test_a_task_placed_in_a_phase_stands_at_its_place(): void
     {
         $this->journal->owner();

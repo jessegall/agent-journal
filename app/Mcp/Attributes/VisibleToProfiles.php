@@ -20,6 +20,9 @@ final readonly class VisibleToProfiles
      */
     public function __construct(DiscoveryProfile $profile, DiscoveryProfile ...$more)
     {
-        $this->profiles = [$profile, ...array_values($more)];
+        $this->profiles = [
+            $profile,
+            ...array_values($more),
+        ];
     }
 }

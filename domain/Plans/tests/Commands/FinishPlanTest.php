@@ -142,7 +142,7 @@ final class FinishPlanTest extends TestCase
             );
         }
 
-        $planned = $this->plans->plan('Planned')->planCalled('Planned');
+        $planned = $this->plans->createPlan('Planned');
 
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlanCommand($planned->id, 1, 'Done.')),

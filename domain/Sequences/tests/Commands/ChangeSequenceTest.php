@@ -34,7 +34,7 @@ final class ChangeSequenceTest extends TestCase
 
     public function test_a_change_goes_one_version_on_and_a_started_run_keeps_its_own_steps(): void
     {
-        $run = $this->journal->fixtures(SequenceFixtures::class)->run('Release', ['tests'])->runCalled('Release');
+        $run = $this->journal->fixtures(SequenceFixtures::class)->createRun('Release', ['tests']);
         $run->sequence()->associate($this->sequence)->save();
 
         $this->journal->run(

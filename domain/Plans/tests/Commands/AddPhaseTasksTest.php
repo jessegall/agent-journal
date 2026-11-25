@@ -111,7 +111,7 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_placing_starting_finishing_and_cancelling_moves_the_phase_and_plan_tallies(): void
     {
-        $plan = $this->plans()->plan('plan')->planCalled('plan');
+        $plan = $this->plans()->createPlan('plan');
         $phase = $this->structure()->addPhase($plan, 'Work');
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);

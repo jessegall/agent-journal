@@ -192,6 +192,14 @@ final class TestJournal
     }
 
     /**
+     * The user the naming verb makes, given back at once instead of read back by its name.
+     */
+    public function createUser(string $name): User
+    {
+        return $this->user($name)->userCalled($name);
+    }
+
+    /**
      * An agent of the local project on the profile, running one session started as the journal starts one, with its
      * stack and its driver's runtime, and a personal inbox; the start is named after the agent.
      */

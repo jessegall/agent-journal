@@ -30,7 +30,7 @@ final class DeleteLayoutTest extends TestCase
             LayoutShape::from(SaveLayoutTest::shape('chat')),
         );
         $strangersLayout = Layout::create(
-            $this->journal->user('Stranger')->userCalled('Stranger')->id,
+            $this->journal->createUser('Stranger')->id,
             'Theirs',
             LayoutShape::from(SaveLayoutTest::shape('chat')),
         );

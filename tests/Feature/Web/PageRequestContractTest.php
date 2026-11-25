@@ -102,8 +102,8 @@ final class PageRequestContractTest extends TestCase
     private function recordsFor(User $owner): array
     {
         $agentId = $this->runtimeOn('host-1')->session->agent_id;
-        $member = $this->journal->user('Bea')->userCalled('Bea');
-        $candidate = $this->journal->user('Cy')->userCalled('Cy');
+        $member = $this->journal->createUser('Bea');
+        $candidate = $this->journal->createUser('Cy');
 
         foreach ([$member, $candidate] as $invited) {
             EnvironmentUserGrant::create(

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Enums\Engine\CoreToolName;
 use App\Enums\Processes\OutputStream;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -21,7 +19,6 @@ use Laravel\Mcp\Server\Attributes\Name;
  * Reads the last lines of one of your runs' stored output, recorded as evidence read.
  */
 #[Name(self::NAME)]
-#[Dispatches(RecordEvidenceReadsCommand::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description(
     'The last lines of a stored run output: the run, the part of the line (0 for the first command), the stream '

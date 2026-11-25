@@ -41,7 +41,7 @@ final class ChangeLayoutTest extends TestCase
     {
         $this->journal->owner();
         $strangersLayout = Layout::create(
-            $this->journal->user('Stranger')->userCalled('Stranger')->id,
+            $this->journal->createUser('Stranger')->id,
             'Theirs',
             LayoutShape::from(SaveLayoutTest::shape('chat')),
         );

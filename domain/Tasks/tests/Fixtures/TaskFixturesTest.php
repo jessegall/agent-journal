@@ -44,6 +44,13 @@ final class TaskFixturesTest extends TestCase
         ]);
     }
 
+    public function test_a_created_task_is_given_back_and_still_found_by_its_name(): void
+    {
+        $task = $this->tasks->createTask('Write it');
+
+        $this->assertTrue($task->is($this->tasks->taskCalled('Write it')));
+    }
+
     public function test_a_started_run_is_claimed_by_the_named_agent_and_its_log_is_its_own(): void
     {
         $this->tasks->task('Write it')->startRun('Write it', 'Ada')->assertStarted('Write it', by: 'Ada');

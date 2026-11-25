@@ -156,7 +156,7 @@ final class StartTaskTest extends TestCase
     {
 
         Event::fake([TaskStartCommitted::class]);
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->app->make(CommandBus::class)->run(new StartTaskCommand($task->id));
@@ -171,8 +171,8 @@ final class StartTaskTest extends TestCase
 
     public function test_an_unmet_wait_keeps_the_task_out_of_starts_and_the_pool_until_its_prerequisite_finishes(): void
     {
-        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
-        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->prerequisite = $this->tasks()->createTask('Prepare records');
+        $this->dependent = $this->tasks()->createTask('Publish records');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
@@ -193,8 +193,8 @@ final class StartTaskTest extends TestCase
 
     public function test_a_waiver_makes_the_task_startable(): void
     {
-        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
-        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->prerequisite = $this->tasks()->createTask('Prepare records');
+        $this->dependent = $this->tasks()->createTask('Publish records');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->runCommand(new AddTaskWaitCommand($this->dependent->id, $this->prerequisite->id));
@@ -209,8 +209,8 @@ final class StartTaskTest extends TestCase
 
     public function test_a_blocked_task_with_a_new_unmet_wait_cannot_restart_and_a_repeat_start_keeps_the_run(): void
     {
-        $this->prerequisite = $this->tasks()->task('Prepare records')->taskCalled('Prepare records');
-        $this->dependent = $this->tasks()->task('Publish records')->taskCalled('Publish records');
+        $this->prerequisite = $this->tasks()->createTask('Prepare records');
+        $this->dependent = $this->tasks()->createTask('Publish records');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->assertSame(1, $this->runCommand(new StartTaskCommand($this->dependent->id)));
@@ -251,7 +251,7 @@ final class StartTaskTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $started = $this->heard(TaskStarted::class);
 
         $this->start($task);
@@ -272,7 +272,7 @@ final class StartTaskTest extends TestCase
             ->session;
 
         $plan = Plan::factory()->create();
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $progress = $this->heard(PlanProgressChanged::class);
 
@@ -291,7 +291,7 @@ final class StartTaskTest extends TestCase
 
         $progress = $this->heard(PlanProgressChanged::class);
 
-        $this->start($this->tasks()->task('Loose')->taskCalled('Loose'));
+        $this->start($this->tasks()->createTask('Loose'));
 
         $this->assertSame([], $progress());
     }
@@ -305,7 +305,7 @@ final class StartTaskTest extends TestCase
             ->session;
 
         $plan = Plan::factory()->create();
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $this->switchDomainOff('plans');
         $progress = $this->heard(PlanProgressChanged::class);
@@ -343,7 +343,7 @@ final class StartTaskTest extends TestCase
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
 
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
 
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([

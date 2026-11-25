@@ -33,7 +33,7 @@ final class UnassignRecordToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $journal->owner();
-        $task = $journal->fixtures(TaskFixtures::class)->task('Ship the dock')->taskCalled('Ship the dock');
+        $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
         $start = $journal->signedStart('Planner');
         $holder = $journal->signedStart('Builder');
         $record = new RecordIdentity('tasks.task', $task->id);

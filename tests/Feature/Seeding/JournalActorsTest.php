@@ -35,6 +35,13 @@ final class JournalActorsTest extends TestCase
         $this->assertSame($this->journal->userCalled('Sam')->id, $this->app->make('auth')->guard()->id());
     }
 
+    public function test_a_created_user_is_given_back_and_still_found_by_its_name(): void
+    {
+        $user = $this->journal->owner()->createUser('Sam');
+
+        $this->assertTrue($user->is($this->journal->userCalled('Sam')));
+    }
+
     public function test_only_an_admitted_user_acts_as_an_inbox_member(): void
     {
         $this->journal->owner()->user('Sam')->user('Kim')->admitInboxMember('Sam');

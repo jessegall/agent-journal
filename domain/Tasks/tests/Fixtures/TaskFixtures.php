@@ -52,6 +52,20 @@ final class TaskFixtures
     }
 
     /**
+     * The open task the naming verb makes, given back at once instead of read back by its name.
+     *
+     * @param  list<string>  $environmentIds
+     */
+    public function createTask(
+        string $name,
+        string $brief = self::BRIEF,
+        Actor|null $creator = null,
+        array $environmentIds = [],
+    ): Task {
+        return $this->task($name, $brief, $creator, $environmentIds)->taskCalled($name);
+    }
+
+    /**
      * A task the owner made that already stands in this state, with no run behind it, for reads of every state.
      */
     public function taskIn(string $name, TaskStatus $status): self

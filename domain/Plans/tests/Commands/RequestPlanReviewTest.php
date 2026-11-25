@@ -123,7 +123,7 @@ final class RequestPlanReviewTest extends TestCase
 
     public function test_a_caller_with_no_actor_is_refused(): void
     {
-        $plan = $this->journal->owner()->fixtures(PlanFixtures::class)->plan('Release')->planCalled('Release');
+        $plan = $this->journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
         $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->assertThrows(fn () => $this->runCommand(new RequestPlanReviewCommand($plan->id, [$this->owner()])));
@@ -180,7 +180,7 @@ final class RequestPlanReviewTest extends TestCase
     private function planWithTask(): array
     {
         $this->journal->owner();
-        $task = $this->journal->fixtures(TaskFixtures::class)->task('Read', self::BRIEF)->taskCalled('Read');
+        $task = $this->journal->fixtures(TaskFixtures::class)->createTask('Read', self::BRIEF);
 
         $plan = $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release', title: 'Build the release page')
@@ -200,7 +200,7 @@ final class RequestPlanReviewTest extends TestCase
     {
         $this->journal->owner()->agent('Reviewer')->user('Ada');
 
-        return $this->journal->fixtures(PlanFixtures::class)->plan('Release')->planCalled('Release');
+        return $this->journal->fixtures(PlanFixtures::class)->createPlan('Release');
     }
 
     private function owner(): ActorReference

@@ -136,7 +136,7 @@ final class AssignRecordTest extends TestCase
         $owner = $this->journal->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = $this->tasks()->task('Keyed work')->taskCalled('Keyed work');
+        $this->task = $this->tasks()->createTask('Keyed work');
 
         $this->journal->relayAgentCommands($this->helper);
 
@@ -158,9 +158,9 @@ final class AssignRecordTest extends TestCase
         $this->owner = $this->journal->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = $this->tasks()->task('Write the commands')->taskCalled('Write the commands');
+        $this->task = $this->tasks()->createTask('Write the commands');
 
-        $other = $this->tasks()->task('For an agent')->taskCalled('For an agent');
+        $other = $this->tasks()->createTask('For an agent');
         $sessions = AgentSession::query()->withoutGlobalScopes()->count();
 
         $this->actingAs($this->owner)->postJson(
@@ -196,7 +196,7 @@ final class AssignRecordTest extends TestCase
         $this->owner = $this->journal->ownerUser();
         $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = $this->tasks()->task('Write the commands')->taskCalled('Write the commands');
+        $this->task = $this->tasks()->createTask('Write the commands');
 
         $this->journal->relayAgentCommands($this->main);
 

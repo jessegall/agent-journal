@@ -8,8 +8,8 @@ use App\Contracts\Assignments\AssignmentTransaction;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\MainInboxTakeover;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Seeding\TestJournal;
-use Tests\Support\Seeding\TestStart;
 
 /**
  * A main agent's signed start holding the journal's main inbox, and a navigation request raised for a stalled key

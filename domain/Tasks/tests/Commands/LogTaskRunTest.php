@@ -51,7 +51,7 @@ final class LogTaskRunTest extends TestCase
 
     public function test_lines_keep_their_run_and_order_and_page_in_both_directions(): void
     {
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
         $this->runCommand(new StartTaskCommand($task->id));
 
@@ -95,7 +95,7 @@ final class LogTaskRunTest extends TestCase
 
     public function test_a_caller_without_the_current_run_cannot_log(): void
     {
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
         $this->assertThrows(fn () => $this->runCommand(new LogTaskRunCommand($task->id, 1, 'No run yet.')));

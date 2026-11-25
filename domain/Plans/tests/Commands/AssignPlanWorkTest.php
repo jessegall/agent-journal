@@ -181,8 +181,8 @@ final class AssignPlanWorkTest extends TestCase
             'title' => 'Release',
             'type' => PlanType::Build,
         ]);
-        $open = $this->tasks()->task('Open command')->taskCalled('Open command');
-        $finished = $this->tasks()->task('Finished command')->taskCalled('Finished command');
+        $open = $this->tasks()->createTask('Open command');
+        $finished = $this->tasks()->createTask('Finished command');
         $finished->finish('Done.');
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Working'), [$open->id]);
         $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Over'), [$finished->id]);

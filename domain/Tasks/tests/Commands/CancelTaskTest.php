@@ -38,7 +38,7 @@ final class CancelTaskTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('First')->agent('Second', 'read-only-helper');
-        $this->task = $this->tasks()->task('Owned work', 'Build it.')->taskCalled('Owned work');
+        $this->task = $this->tasks()->createTask('Owned work', 'Build it.');
         $this->journal->actAs('First')->run(new StartTaskCommand($this->task->id));
     }
 

@@ -49,6 +49,18 @@ final class PlanFixtures
     }
 
     /**
+     * The plan the naming verb makes, given back at once instead of read back by its name.
+     */
+    public function createPlan(
+        string $name,
+        string $brief = self::BRIEF,
+        PlanType $type = PlanType::Build,
+        string|null $title = null,
+    ): Plan {
+        return $this->plan($name, $brief, $type, $title)->planCalled($name);
+    }
+
+    /**
      * A plan its owner paused, which no command arranges on its own.
      */
     public function pausedPlan(

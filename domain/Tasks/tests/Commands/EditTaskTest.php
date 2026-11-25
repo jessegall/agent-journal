@@ -29,7 +29,7 @@ final class EditTaskTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->task = $this->tasks()->task('First', 'First brief')->taskCalled('First');
+        $this->task = $this->tasks()->createTask('First', 'First brief');
     }
 
     public function test_an_edit_changes_what_it_names_and_moves_the_revision_on(): void

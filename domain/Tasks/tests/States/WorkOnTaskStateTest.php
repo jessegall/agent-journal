@@ -104,7 +104,7 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_its_task_ending_ends_the_run_and_another_tasks_does_not(string $ending): void
     {
         $this->startWork();
-        $other = $this->journal->fixtures(TaskFixtures::class)->task('Other', 'Independent work')->taskCalled('Other');
+        $other = $this->journal->fixtures(TaskFixtures::class)->createTask('Other', 'Independent work');
 
         $this->working()
             ->given(
@@ -249,7 +249,7 @@ final class WorkOnTaskStateTest extends TestCase
 
     public function test_starting_a_started_task_again_keeps_one_frame_and_one_run(): void
     {
-        $task = $this->writersTasks()->task('Write the walk')->taskCalled('Write the walk');
+        $task = $this->writersTasks()->createTask('Write the walk');
 
         $this->journal->run(new StartTaskCommand($task->id));
         $this->journal->run(new StartTaskCommand($task->id));
@@ -260,8 +260,8 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_a_finished_task_frame_keeps_its_stored_place(): void
     {
         $tasks = $this->writersTasks();
-        $first = $tasks->task('Write the walk')->taskCalled('Write the walk');
-        $second = $tasks->task('Read the walk')->taskCalled('Read the walk');
+        $first = $tasks->createTask('Write the walk');
+        $second = $tasks->createTask('Read the walk');
 
         $this->journal->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
@@ -275,7 +275,7 @@ final class WorkOnTaskStateTest extends TestCase
 
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
     {
-        $task = $this->writersTasks()->task('Write the walk')->taskCalled('Write the walk');
+        $task = $this->writersTasks()->createTask('Write the walk');
         $this->journal->run(new StartTaskCommand($task->id));
         $this->journal->run(new BlockTaskCommand($task->id, 1, 'Waits.'));
 
@@ -288,8 +288,8 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_finishing_a_task_changes_only_the_task_and_the_task_below_is_current_again(): void
     {
         $tasks = $this->writersTasks();
-        $first = $tasks->task('Write the walk')->taskCalled('Write the walk');
-        $second = $tasks->task('Fix the hook')->taskCalled('Fix the hook');
+        $first = $tasks->createTask('Write the walk');
+        $second = $tasks->createTask('Fix the hook');
         $this->journal->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
         $current = $this->app->make(AssignedTaskResolver::class);
@@ -310,8 +310,8 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_blocking_or_cancelling_a_task_leaves_its_frame_stored_and_no_task_current(): void
     {
         $tasks = $this->writersTasks();
-        $blocked = $tasks->task('Wait for review')->taskCalled('Wait for review');
-        $cancelled = $tasks->task('Drop the idea')->taskCalled('Drop the idea');
+        $blocked = $tasks->createTask('Wait for review');
+        $cancelled = $tasks->createTask('Drop the idea');
         $this->journal->run(new StartTaskCommand($blocked->id));
         $this->journal->run(new StartTaskCommand($cancelled->id));
 
@@ -330,8 +330,8 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_focusing_the_older_of_two_tasks_brings_its_work_back_on_top(): void
     {
         $tasks = $this->writersTasks();
-        $first = $tasks->task('Write the walk')->taskCalled('Write the walk');
-        $second = $tasks->task('Fix the hook')->taskCalled('Fix the hook');
+        $first = $tasks->createTask('Write the walk');
+        $second = $tasks->createTask('Fix the hook');
         $this->journal->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
 

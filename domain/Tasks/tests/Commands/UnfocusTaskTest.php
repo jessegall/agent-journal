@@ -31,8 +31,8 @@ final class UnfocusTaskTest extends TestCase
     public function test_the_focused_task_leaves_the_focus_and_another_task_leaves_it_alone(): void
     {
         $this->journal->owner()->agent('First');
-        $first = $this->tasks()->task('First', 'One.')->taskCalled('First');
-        $second = $this->tasks()->task('Second', 'Two.')->taskCalled('Second');
+        $first = $this->tasks()->createTask('First', 'One.');
+        $second = $this->tasks()->createTask('Second', 'Two.');
         $this->journal->actAs('First')->run(new StartTaskCommand($first->id));
         $this->journal->run(new StartTaskCommand($second->id));
         $this->journal->run(new FocusTaskCommand($first->id));

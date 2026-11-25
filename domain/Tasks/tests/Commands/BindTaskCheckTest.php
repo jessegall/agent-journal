@@ -71,7 +71,7 @@ final class BindTaskCheckTest extends TestCase
     public function test_a_check_of_the_current_run_binds_its_receipt_once_and_shows_as_a_proof(): void
     {
         Event::fake([TaskCheckRecorded::class]);
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $own = (string) Str::ulid();
         $other = (string) Str::ulid();
 

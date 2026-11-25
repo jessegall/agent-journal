@@ -61,7 +61,7 @@ final class RunTaskCheckTest extends TestCase
     public function test_a_check_runs_for_the_current_run_once_and_another_callers_run_is_refused(): void
     {
         Event::fake([TaskCheckRecorded::class]);
-        $task = $this->tasks()->task('task')->taskCalled('task');
+        $task = $this->tasks()->createTask('task');
         $own = (string) Str::ulid();
         $other = (string) Str::ulid();
 
