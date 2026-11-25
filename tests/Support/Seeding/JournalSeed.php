@@ -526,7 +526,29 @@ final class JournalSeed
      */
     public function actorCalled(string $name): ActorIdentity
     {
-        return ActorIdentity::of($this->agents[$name] ?? $this->userCalled($name));
+        return ActorIdentity::of($this->userOrAgentCalled($name));
+    }
+
+    public function userOrAgentCalled(string $name): User|Agent
+    {
+        return $this->agents[$name] ?? $this->userCalled($name);
+    }
+
+    /**
+     * Runs the command under a new request key as the user or agent of this name, and puts the selection back after.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    public function runAs(string $name, Command $command): mixed
+    {
+        $select = array_key_exists($name, $this->agents)
+            ? fn () => $this->requests->asAgent($this->sessionOf($name)->agent_id, $this->sessionOf($name)->id)
+            : fn () => $this->requests->asUser($this->userCalled($name));
+
+        return $this->requests->during($select, fn () => $this->run($command));
     }
 
     private function makeUser(string $name): User
