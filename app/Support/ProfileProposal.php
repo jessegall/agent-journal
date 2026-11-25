@@ -164,7 +164,7 @@ final readonly class ProfileProposal
             throw SupervisorRouteInvalid::missingDefault();
         }
 
-        return SupervisorRoutes::fromArray($profile['supervisor']);
+        return SupervisorRoutes::parse($profile['supervisor']);
     }
 
     /**

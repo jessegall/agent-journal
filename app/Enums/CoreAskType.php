@@ -20,7 +20,7 @@ enum CoreAskType: string
 
     public function key(): AskTypeKey
     {
-        return AskTypeKey::from($this->value);
+        return AskTypeKey::of($this->value);
     }
 
     /**

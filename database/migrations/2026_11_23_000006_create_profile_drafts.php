@@ -23,8 +23,7 @@ return new class extends Migration
             $table->string('profile_key');
             $table->foreign('profile_key')->references('profile_key')->on('profile_drafts')->cascadeOnDelete();
             $table->unsignedInteger('revision');
-            $table->text('source');
-            $table->json('commands');
+            $table->json('script_source');
             $table->string('author_type', 16);
             $table->string('author_id');
             $table->timestampTz('created_at');

@@ -46,7 +46,7 @@ final class ProfileDraft extends Model implements ReadableModel
     {
         $this->assertAtRevision($expected);
 
-        return $this->currentRevision->scriptSource ?? ScriptSource::empty();
+        return $this->currentRevision->script_source ?? ScriptSource::none();
     }
 
     // ----------[ Relations ]----------

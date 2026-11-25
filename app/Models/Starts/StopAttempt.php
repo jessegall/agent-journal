@@ -196,17 +196,14 @@ final class StopAttempt extends Model implements EventSource, ReadableModel
         array $conditionHashes,
     ): self {
         $attempt = new self();
-
-        $attempt->setRawAttributes([
-            'id' => $attempt->newUniqueId(),
-            'agent_id' => $stop->agentId,
-            'session_id' => $stop->sessionId,
-            'stop_id' => $stop->hookId,
-            'policy_digest' => $policyDigest,
-            'workspace_generation' => $workspaceGeneration,
-            'condition_hashes' => json_encode($conditionHashes, JSON_THROW_ON_ERROR),
-            'state' => StopAttemptState::Pending->value,
-        ]);
+        $attempt->setAttribute($attempt->getKeyName(), $attempt->newUniqueId());
+        $attempt->agent_id = $stop->agentId;
+        $attempt->session_id = $stop->sessionId;
+        $attempt->stop_id = $stop->hookId;
+        $attempt->policy_digest = $policyDigest;
+        $attempt->workspace_generation = $workspaceGeneration;
+        $attempt->condition_hashes = $conditionHashes;
+        $attempt->state = StopAttemptState::Pending;
 
         $attempt->insertIfAbsent();
 

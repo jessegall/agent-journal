@@ -21,7 +21,7 @@ final class AskTypeKeyCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): AskTypeKey
     {
-        return AskTypeKey::from($value);
+        return AskTypeKey::of($value);
     }
 
     /**

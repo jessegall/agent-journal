@@ -8,12 +8,13 @@ use App\Exceptions\InvalidActorText;
 use App\Exceptions\ProfileKeyInvalid;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Support\ActorIdentity;
+use Spatie\LaravelData\Data;
 
-final readonly class SupervisorTarget
+final class SupervisorTarget extends Data
 {
     private const string PROFILE_PREFIX = 'profile:';
 
-    public function __construct(public string $key = 'owner')
+    public function __construct(public readonly string $key = 'owner')
     {
         if ($this->isOwner()) {
             return;

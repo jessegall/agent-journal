@@ -7,21 +7,21 @@ namespace App\Values;
 use App\Enums\AccessType;
 use App\Enums\CommandDirectory;
 use App\Exceptions\ProfileDraftRefused;
-use JsonSerializable;
+use Spatie\LaravelData\Data;
 
-final readonly class NamedCommand implements JsonSerializable
+final class NamedCommand extends Data
 {
     /**
      * @param  list<string>  $arguments
      * @param  non-empty-list<AccessType>  $effects
      */
-    private function __construct(
-        public string $key,
-        public string $executable,
-        public array $arguments,
-        public CommandDirectory $directory,
-        public array $effects,
-        public int $timeoutSeconds,
+    public function __construct(
+        public readonly string $key,
+        public readonly string $executable,
+        public readonly array $arguments,
+        public readonly CommandDirectory $directory,
+        public readonly array $effects,
+        public readonly int $timeoutSeconds,
     ) {}
 
     public static function fromDefinition(string $key, mixed $definition): self
@@ -76,21 +76,5 @@ final readonly class NamedCommand implements JsonSerializable
     public function label(): string
     {
         return $this->key;
-    }
-
-    /**
-     * @return array{
-     *     executable: string, arguments: list<string>, directory: string, effects: list<string>, timeout_seconds: int
-     * }
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'executable' => $this->executable,
-            'arguments' => $this->arguments,
-            'directory' => $this->directory->value,
-            'effects' => array_map(fn (AccessType $access) => $access->value, $this->effects),
-            'timeout_seconds' => $this->timeoutSeconds,
-        ];
     }
 }

@@ -5,22 +5,27 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\SupervisorRouteInvalid;
+use Spatie\LaravelData\Data;
 
-final readonly class AskTypeKey
+final class AskTypeKey extends Data
 {
     /**
      * The route an ask without a type of its own follows.
      */
     public const string DEFAULT_ROUTE = 'default';
 
-    private function __construct(public string $key) {}
-
-    public static function from(string $key): self
+    /**
+     * @throws SupervisorRouteInvalid
+     */
+    public function __construct(public readonly string $key)
     {
         if ($key === self::DEFAULT_ROUTE || preg_match('/^[a-z][a-z0-9]*(?:[.-][a-z][a-z0-9]*)*$/D', $key) !== 1) {
             throw SupervisorRouteInvalid::askType($key);
         }
+    }
 
+    public static function of(string $key): self
+    {
         return new self($key);
     }
 

@@ -5,22 +5,24 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\SupervisorRouteInvalid;
-use JsonSerializable;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 
-final readonly class SupervisorRoutes implements JsonSerializable
+final class SupervisorRoutes extends Data
 {
     /**
      * @param  list<SupervisorOverride>  $overrides
      */
     public function __construct(
-        public SupervisorTarget $default = new SupervisorTarget(),
-        public array $overrides = [],
+        public readonly SupervisorTarget $default = new SupervisorTarget(),
+        #[DataCollectionOf(SupervisorOverride::class)]
+        public readonly array $overrides = [],
     ) {}
 
     /**
      * @param  array<string, mixed>  $routes
      */
-    public static function fromArray(array $routes): self
+    public static function parse(array $routes): self
     {
         if (! isset($routes['default']) || ! is_string($routes['default'])) {
             throw SupervisorRouteInvalid::missingDefault();
@@ -29,7 +31,7 @@ final readonly class SupervisorRoutes implements JsonSerializable
         $overrides = [];
 
         foreach (array_diff_key($routes, ['default' => true]) as $key => $target) {
-            $type = AskTypeKey::from($key);
+            $type = AskTypeKey::of($key);
 
             if (! is_string($target)) {
                 throw SupervisorRouteInvalid::target($key);
@@ -68,19 +70,5 @@ final readonly class SupervisorRoutes implements JsonSerializable
             ...$overrides,
             new SupervisorOverride($type, $target),
         ]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function jsonSerialize(): array
-    {
-        $routes = ['default' => $this->default->key];
-
-        foreach ($this->overrides as $override) {
-            $routes[$override->type->key] = $override->target->key;
-        }
-
-        return $routes;
     }
 }

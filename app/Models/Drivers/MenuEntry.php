@@ -243,15 +243,6 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     // ----------[ Internals ]----------
 
     /**
-     * @param  non-empty-list<MenuStep>  $steps
-     * @return non-empty-list<array<string, mixed>>
-     */
-    private static function storedSteps(array $steps): array
-    {
-        return array_map(fn (MenuStep $step) => $step->toArray(), $steps);
-    }
-
-    /**
      * Saves the build's proof in place of the entry's earlier proof on that build, or after the others.
      */
     private function storeBuild(MenuEntryBuild $build): void
@@ -343,7 +334,9 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
     #[Scope]
     protected function withSteps(Builder $query, array $steps): void
     {
-        $query->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)]);
+        $stored = MenuStep::collect($steps, DataCollection::class);
+
+        $query->whereRaw('steps::jsonb = ?::jsonb', [$stored->toJson()]);
     }
 
     /**

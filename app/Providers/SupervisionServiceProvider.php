@@ -104,7 +104,7 @@ final class SupervisionServiceProvider extends ServiceProvider
             }
 
             foreach (array_diff_key($routes, [AskTypeKey::DEFAULT_ROUTE => true]) as $key => $target) {
-                $types->get(AskTypeKey::from($key));
+                $types->get(AskTypeKey::of($key));
             }
         }
     }

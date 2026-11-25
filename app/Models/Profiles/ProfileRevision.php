@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Models\Profiles;
 
 use App\Casts\ProfileBaseCast;
-use App\Casts\ScriptSourceCast;
-use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
@@ -50,7 +48,6 @@ use Illuminate\Support\Carbon;
  * @property SupervisorRoutes $supervisor
  * @property InstancePolicy $instances
  * @property ScriptSource $script_source
- * @property array $script_commands
  * @property ?array $compiled_script
  * @property ?string $script_definition_digest
  * @property ActorType $author_type
@@ -80,10 +77,9 @@ final class ProfileRevision extends Model implements ReadableModel
             'required_skills' => 'array',
             'start_policy' => ProfileStartPolicy::class,
             'authorization' => ProfileAuthorization::class,
-            'supervisor' => SupervisorRoutesCast::class,
+            'supervisor' => SupervisorRoutes::class,
             'instances' => InstancePolicy::class,
-            'script_commands' => 'array',
-            'script_source' => ScriptSourceCast::class,
+            'script_source' => ScriptSource::class,
             'compiled_script' => 'array',
             'author_type' => ActorType::class,
         ];
@@ -188,7 +184,6 @@ final class ProfileRevision extends Model implements ReadableModel
             ->select([
                 'profiles.key as profile_key',
                 'profile_revisions.script_source',
-                'profile_revisions.script_commands',
             ])
             ->readExactly(count($keys))
             ->get()

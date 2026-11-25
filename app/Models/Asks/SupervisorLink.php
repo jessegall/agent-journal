@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
-use App\Casts\SupervisorRoutesCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
@@ -39,7 +38,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
     protected function casts(): array
     {
         return [
-            'routes' => SupervisorRoutesCast::class,
+            'routes' => SupervisorRoutes::class,
             'versions' => 'array',
         ];
     }

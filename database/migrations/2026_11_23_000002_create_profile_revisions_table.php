@@ -23,8 +23,7 @@ return new class extends Migration
             $table->json('authorization');
             $table->json('supervisor');
             $table->string('instances', 16);
-            $table->text('script_source');
-            $table->json('script_commands');
+            $table->json('script_source');
             $table->json('compiled_script')->nullable();
             $table->string('script_definition_digest', 64)->nullable();
             $table->string('author_type', 16);

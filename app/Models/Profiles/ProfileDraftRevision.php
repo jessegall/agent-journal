@@ -9,10 +9,8 @@ use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\ActorType;
 use App\Models\Concerns\PreventsRevisionUpdates;
-use App\Models\Support\Accessor;
 use App\Support\ActorIdentity;
 use App\Values\ScriptSource;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -21,12 +19,10 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $profile_key
  * @property int $revision
- * @property string $source
- * @property array $commands
+ * @property ScriptSource $script_source
  * @property ActorType $author_type
  * @property string $author_id
  * @property Carbon $created_at
- * @property mixed $script_source attribute
  */
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
@@ -41,7 +37,7 @@ final class ProfileDraftRevision extends Model implements ReadableModel
     {
         return [
             'revision' => 'integer',
-            'commands' => 'array',
+            'script_source' => ScriptSource::class,
             'author_type' => ActorType::class,
         ];
     }
@@ -53,22 +49,11 @@ final class ProfileDraftRevision extends Model implements ReadableModel
         $profileDraftRevision = new self();
         $profileDraftRevision->profile_key = $draft->profile_key;
         $profileDraftRevision->revision = $draft->revision + 1;
-        $profileDraftRevision->source = $script->text;
-        $profileDraftRevision->commands = $script->definitions();
+        $profileDraftRevision->script_source = $script;
         $profileDraftRevision->author_type = $author->type;
         $profileDraftRevision->author_id = $author->id;
         $profileDraftRevision->save();
 
         return $profileDraftRevision;
-    }
-
-    // ----------[ Accessors ]----------
-
-    /**
-     * @return Attribute<ScriptSource, never>
-     */
-    protected function scriptSource(): Attribute
-    {
-        return Accessor::get(fn () => ScriptSource::fromDefinitions($this->source, $this->commands));
     }
 }

@@ -39,6 +39,6 @@ final class MakeAskCall extends Data implements JournalCall
             return null;
         }
 
-        return AskTypeKey::from($this->type);
+        return AskTypeKey::of($this->type);
     }
 }

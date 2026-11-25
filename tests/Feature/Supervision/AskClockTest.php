@@ -123,7 +123,7 @@ final class AskClockTest extends TestCase
 
     private function routedAsk(string $body): Ask
     {
-        $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::from('question'));
+        $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
         $reference = Ask::newReference();
         $ask = Ask::submit(
             $reference,
@@ -175,7 +175,7 @@ final class AskClockTest extends TestCase
     private function superviseWith(Agent $agent, SupervisorTarget $target): void
     {
         $this->startUserRequestAs($this->owner->id);
-        $type = AskTypeKey::from('question');
+        $type = AskTypeKey::of('question');
         $actor = ActorIdentity::of($agent);
         $version = $this->app->make(SupervisorRouting::class)->routeFor($actor, $type)->version;
         $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $version, $type));

@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ProfileDraftRefused;
+use Spatie\LaravelData\Data;
 
-final readonly class ScriptSource
+final class ScriptSource extends Data
 {
     public const int BYTE_LIMIT = 262144;
 
     /**
      * @param  list<NamedCommand>  $commands
      */
-    public function __construct(public string $text, public array $commands = [])
+    public function __construct(public readonly string $text, public readonly array $commands = [])
     {
         if (strlen($text) > self::BYTE_LIMIT || count($commands) > 64) {
             throw ProfileDraftRefused::oversized();
         }
     }
 
-    public static function empty(): self
+    public static function none(): self
     {
         return new self('');
     }

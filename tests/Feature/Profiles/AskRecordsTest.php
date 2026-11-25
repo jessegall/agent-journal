@@ -141,11 +141,11 @@ final class AskRecordsTest extends TestCase
     public function test_registry_refuses_an_unknown_or_duplicate_ask_type(): void
     {
         $registry = $this->app->make(AskTypeRegistry::class);
-        $question = $registry->get(AskTypeKey::from('question'));
+        $question = $registry->get(AskTypeKey::of('question'));
 
         $this->assertSame(15, $question->allowance()->i);
         $this->assertThrows(fn () => $registry->register($question), AskRefused::class);
-        $this->assertThrows(fn () => $registry->get(AskTypeKey::from('imaginary')), SupervisorRouteInvalid::class);
+        $this->assertThrows(fn () => $registry->get(AskTypeKey::of('imaginary')), SupervisorRouteInvalid::class);
     }
 
     public function test_the_plain_signed_cli_retains_a_question_for_the_reviewers_supervisor(): void
@@ -224,7 +224,7 @@ final class AskRecordsTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
 
         $this->assertThrows(
-            fn () => $commands->run(new AskSupervisorCommand('Review this', 'review', AskTypeKey::from('review.ready'))),
+            fn () => $commands->run(new AskSupervisorCommand('Review this', 'review', AskTypeKey::of('review.ready'))),
             AskRefused::class,
         );
         $this->assertSame(0, Ask::openSubmissions(ActorIdentity::of($requester)));
@@ -241,7 +241,7 @@ final class AskRecordsTest extends TestCase
         $commands->run(new StartTaskCommand($task->id));
 
         $question = $commands->run(new AskSupervisorCommand('What should I check?', 'question'));
-        $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::from('review.ready')));
+        $review = $commands->run(new AskSupervisorCommand('Review this task', 'review', AskTypeKey::of('review.ready')));
 
         $expected = WorkReference::forRecord($task->assignmentIdentity());
         $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference);
@@ -339,7 +339,7 @@ final class AskRecordsTest extends TestCase
     private function retainFor(Agent $requester, SupervisorTarget $target, int $routeVersion = 0): Ask
     {
         $actor = ActorIdentity::of($requester);
-        $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::from('question'));
+        $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::of('question'));
         $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $routeVersion, $type->key()));
         $reference = Ask::newReference();
 

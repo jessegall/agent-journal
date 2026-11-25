@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
@@ -47,10 +47,10 @@ final class SupervisorRoutesTest extends TestCase
         $worker = $profiles->snapshotFor(ProfileKey::from('journal-worker'));
 
         $this->assertSame('profile:journal-code-reviewer', $worker->supervisor->default->key);
-        $this->assertSame('profile:journal-main', $reviewer->supervisor->targetFor(AskTypeKey::from('question'))->key);
+        $this->assertSame('profile:journal-main', $reviewer->supervisor->targetFor(AskTypeKey::of('question'))->key);
         $this->assertSame(
             'profile:journal-merger',
-            $reviewer->supervisor->targetFor(AskTypeKey::from('merge.ready'))->key,
+            $reviewer->supervisor->targetFor(AskTypeKey::of('merge.ready'))->key,
         );
 
         $byKey = collect($activation->profiles)->keyBy(fn (ActivatedProfile $profile) => $profile->key->key);
@@ -75,8 +75,8 @@ final class SupervisorRoutesTest extends TestCase
 
         $saved = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('route-b'));
         $this->assertSame(1, $saved->revision);
-        $this->assertSame('owner', $saved->supervisor->targetFor(AskTypeKey::from('question'))->key);
-        $this->assertSame('profile:route-a', $saved->supervisor->targetFor(AskTypeKey::from('stuck'))->key);
+        $this->assertSame('owner', $saved->supervisor->targetFor(AskTypeKey::of('question'))->key);
+        $this->assertSame('profile:route-a', $saved->supervisor->targetFor(AskTypeKey::of('stuck'))->key);
     }
 
     public function test_unknown_targets_and_missing_defaults_are_refused(): void
@@ -101,7 +101,7 @@ final class SupervisorRoutesTest extends TestCase
         $this->activate((array) config('profiles'));
         $agent = Agent::create('Worker', 'journal-worker');
         $actor = ActorIdentity::of(ActorContext::forAgent($agent->id));
-        $question = AskTypeKey::from('question');
+        $question = AskTypeKey::of('question');
         $receipt = $this->app->make(CommandBus::class)->run(
             new ChangeSupervisorCommand($actor, SupervisorTarget::parse('profile:journal-main'), 0, $question),
         );
@@ -109,7 +109,7 @@ final class SupervisorRoutesTest extends TestCase
 
         $this->assertSame(1, $receipt->version);
         $this->assertSame(1, $link->versionFor($question));
-        $this->assertSame(0, $link->versionFor(AskTypeKey::from('stuck')));
+        $this->assertSame(0, $link->versionFor(AskTypeKey::of('stuck')));
         $this->assertSame('profile:journal-code-reviewer', $link->routes->default->key);
         $this->assertSame(1, SupervisorChange::query()->count());
     }
