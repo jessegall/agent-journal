@@ -19,7 +19,7 @@ final readonly class PersonalInboxes implements ActorProvisioning
 
     public function provision(ActorIdentity $actor, string $label): void
     {
-        $inbox = Inbox::open(Inbox::PERSONAL_PROVIDER, $actor->text(), $label);
+        $inbox = Inbox::create(Inbox::PERSONAL_PROVIDER, $actor->text(), $label);
 
         InboxMember::join($inbox->id, $actor, $this->clock->now());
     }

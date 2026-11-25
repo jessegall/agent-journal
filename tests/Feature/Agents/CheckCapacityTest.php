@@ -39,7 +39,7 @@ final class CheckCapacityTest extends TestCase
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
         $this->app->instance(HostCapacity::class, $room);
-        CapacityReservation::reserve('start-held', $budgets, $room);
+        CapacityReservation::create('start-held', $budgets, $room);
     }
 
     public function test_a_container_start_that_does_not_fit_names_the_resource_and_reserves_nothing(): void

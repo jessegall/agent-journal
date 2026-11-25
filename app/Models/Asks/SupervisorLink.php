@@ -44,7 +44,7 @@ final class SupervisorLink extends Model implements EventSource, ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function ofActor(ActorIdentity $actor, SupervisorRoutes $inherited): self
+    public static function create(ActorIdentity $actor, SupervisorRoutes $inherited): self
     {
         $link = self::query()->ownedBy($actor)->first();
 

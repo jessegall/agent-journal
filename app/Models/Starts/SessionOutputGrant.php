@@ -63,19 +63,26 @@ final class SessionOutputGrant extends Model implements ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * The grant of one conversation's output paths to the start's session, not yet written, for createAll.
+     * Grants the start's session each conversation's output paths, in one insert.
+     *
+     * @param  array<array-key, SessionOutputPaths>  $pathsByConversation
      */
-    public static function unsaved(ProcessStart $start, string $conversationId, SessionOutputPaths $paths): self
+    public static function create(ProcessStart $start, array $pathsByConversation): void
     {
-        $grant = new self();
-        $grant->session_id = $start->session_id;
-        $grant->start_id = $start->id;
-        $grant->mapping_generation = $start->output_generation;
-        $grant->conversation_id = $conversationId;
-        $grant->transcript_path = $paths->transcriptPath;
-        $grant->output_directory = $paths->outputDirectory;
+        $grants = [];
 
-        return $grant;
+        foreach ($pathsByConversation as $conversationId => $paths) {
+            $grant = new self();
+            $grant->session_id = $start->session_id;
+            $grant->start_id = $start->id;
+            $grant->mapping_generation = $start->output_generation;
+            $grant->conversation_id = (string) $conversationId;
+            $grant->transcript_path = $paths->transcriptPath;
+            $grant->output_directory = $paths->outputDirectory;
+            $grants[] = $grant;
+        }
+
+        self::createAll($grants);
     }
 
     // ----------[ Accessors ]----------

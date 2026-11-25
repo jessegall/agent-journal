@@ -174,7 +174,7 @@ final class HookStorageTest extends TestCase
         $call = new HookCall();
         $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
-        Link::connect($stack, $call);
+        Link::createForModels($stack, $call);
 
         $this->assertTrue($call->isLinkedTo($stack));
     }

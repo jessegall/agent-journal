@@ -52,7 +52,7 @@ final class StartReceiptReadTest extends TestCase
     public function test_a_refused_start_without_a_session_answers_its_reason_by_key(): void
     {
         $request = $this->request();
-        StartRecord::accept($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create())->refuse(
+        StartRecord::create($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create())->refuse(
             CapacityUnavailable::because(CapacityResource::Memory, 'its memory does not fit.'),
         );
 
@@ -70,7 +70,7 @@ final class StartReceiptReadTest extends TestCase
     public function test_a_started_request_answers_its_session_by_key(): void
     {
         $request = $this->request();
-        $record = StartRecord::accept($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
+        $record = StartRecord::create($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
         $session = $this->app->make(StartSessions::class)
             ->start($this->agent, TestSelections::of('claude-code'), $request->requestId)
             ->session;
@@ -85,7 +85,7 @@ final class StartReceiptReadTest extends TestCase
     public function test_a_user_the_journal_does_not_admit_is_refused_before_any_key_is_read(): void
     {
         $request = $this->request();
-        StartRecord::accept($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
+        StartRecord::create($request, TestSelections::pinOf($request), $this->ownerIdentity(), None::create());
         $member = User::factory()->create();
 
         $this->actingAs($member)->getJson(route('web.start-receipt', $request->requestId))

@@ -151,6 +151,6 @@ final class ShareScopeTest extends TestCase
 
     private function link(RecordIdentity $root, RecordIdentity $target): Link
     {
-        return Link::create($root->type, $root->id, $target->type, $target->id);
+        return Link::createForColumns($root->type, $root->id, $target->type, $target->id);
     }
 }

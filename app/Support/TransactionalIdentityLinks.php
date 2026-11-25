@@ -19,7 +19,7 @@ final readonly class TransactionalIdentityLinks implements IdentityLinks
         $this->transaction->assertRunning($record->getConnection());
         $this->types->requireRegistered($other->type);
 
-        Link::connectKey($record, $other->type, $other->id);
+        Link::createForKey($record, $other->type, $other->id);
     }
 
     public function linkedOfType(Model $record, string $type): array

@@ -70,20 +70,14 @@ final class EvidenceRead extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
-    {
-        $read = self::unsaved($run, $reader, $range);
-        $read->save();
-
-        return $read;
-    }
-
     /**
-     * The row of one read range, not yet written, for createAll.
+     * Records the reader's read of each range of the run, in one insert.
+     *
+     * @param  list<EvidenceRange>  $ranges
      */
-    public static function unsaved(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
+    public static function create(ProcessRun $run, ActorIdentity $reader, array $ranges): void
     {
-        return new self([
+        self::createAll(array_map(fn (EvidenceRange $range) => new self([
             'project_key' => $run->project_key,
             'actor_type' => $reader->type->value,
             'actor_id' => $reader->id,
@@ -92,10 +86,10 @@ final class EvidenceRead extends Model implements ReadableModel
             'source' => $range->source,
             'first_byte' => $range->firstByte,
             'end_byte' => $range->endByte,
-        ]);
+        ]), $ranges));
     }
 
-    // ----------[ Scopes ]----------
+    // ----------[ Queries ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -105,6 +99,8 @@ final class EvidenceRead extends Model implements ReadableModel
     {
         $query->where('project_key', $projectKey);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

@@ -43,7 +43,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         $this->cancelOpensOf($configuration);
 
         if (ShareGatewayEndpoint::hasAnyRunningOf($configuration)) {
-            ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
+            ShareGatewayOperation::createForConfiguration($configuration, GatewayOperationType::Close);
         }
 
         $configuration->disable();

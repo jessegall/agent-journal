@@ -33,7 +33,7 @@ final readonly class ReadMessageHandler implements CommandHandler
             throw InboxUnavailable::forActor($message->inbox_id);
         }
 
-        MessageReadEntry::record($message, $reader, $this->clock->now());
+        MessageReadEntry::create($message, $reader, $this->clock->now());
 
         return ShownMessage::of($message);
     }

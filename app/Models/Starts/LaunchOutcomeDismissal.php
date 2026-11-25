@@ -44,7 +44,7 @@ final class LaunchOutcomeDismissal extends Model implements ReadableModel
     /**
      * The viewer's dismissal of this version of the start's outcome; dismissing it again keeps the one already there, by the table's unique key.
      */
-    public static function dismiss(ActorIdentity $viewer, StartRecord $start, StartDisposition $version): void
+    public static function create(ActorIdentity $viewer, StartRecord $start, StartDisposition $version): void
     {
         $dismissal = new self([
             'viewer_type' => $viewer->type->value,

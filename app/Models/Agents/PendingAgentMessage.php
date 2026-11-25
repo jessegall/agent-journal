@@ -47,48 +47,33 @@ final class PendingAgentMessage extends Model implements ReadableModel
     {
         return [
             'lines' => 'array',
-            'requests_attention' => 'boolean'
+            'requests_attention' => 'boolean',
         ];
     }
 
     // ----------[ Constructors ]----------
 
     /**
-     * @param  list<string>  $lines
-     */
-    public static function create(
-        ActorIdentity $agent,
-        AttentionOrigin $origin,
-        array $lines,
-        bool $requestsAttention,
-    ): self {
-        $message = self::unsaved($agent, $origin, $lines, $requestsAttention);
-        $message->save();
-
-        return $message;
-    }
-
-    /**
-     * The row of one message, not yet written, for createAll.
+     * Keeps a message for the agent for each text, each asking for its attention, in one insert.
      *
-     * @param  list<string>  $lines
+     * @param  list<string>  $texts
      */
-    public static function unsaved(
-        ActorIdentity $agent,
-        AttentionOrigin $origin,
-        array $lines,
-        bool $requestsAttention,
-    ): self {
-        $message = new self([
-            'origin_type' => $origin->type,
-            'origin_id' => $origin->id,
-            'lines' => $lines,
-            'requests_attention' => $requestsAttention,
-        ]);
+    public static function create(ActorIdentity $agent, AttentionOrigin $origin, array $texts): void
+    {
+        $messages = [];
 
-        $message->belongTo($agent);
+        foreach ($texts as $text) {
+            $message = new self([
+                'origin_type' => $origin->type,
+                'origin_id' => $origin->id,
+                'lines' => [$text],
+                'requests_attention' => true,
+            ]);
+            $message->belongTo($agent);
+            $messages[] = $message;
+        }
 
-        return $message;
+        self::createAll($messages);
     }
 
     // ----------[ Queries ]----------

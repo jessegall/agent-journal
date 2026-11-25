@@ -180,7 +180,7 @@ final class HelperSelectionTest extends TestCase
         )->session;
 
         $conversation = DriverConversation::create($session, 'settings', (string) Str::uuid(), $this->review->id);
-        ConversationVisit::appendOnce($session, $conversation, 'event-1', $finishedAt);
+        ConversationVisit::create($session, $conversation, 'event-1', $finishedAt);
         $session->endAt($finishedAt);
 
         return $identity;

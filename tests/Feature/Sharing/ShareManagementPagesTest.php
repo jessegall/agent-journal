@@ -94,7 +94,7 @@ final class ShareManagementPagesTest extends TestCase
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        Link::connect($this->plan, $this->document);
+        Link::createForModels($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $configuration->is_default = true;

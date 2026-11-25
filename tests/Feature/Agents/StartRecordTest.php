@@ -126,8 +126,8 @@ final class StartRecordTest extends TestCase
         $request = $this->request($agent, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         $requester = ActorIdentity::system();
 
-        $first = StartRecord::accept($request, TestSelections::pinOf($request), $requester, None::create());
-        $again = StartRecord::accept($request, TestSelections::pinOf($request), $requester, None::create());
+        $first = StartRecord::create($request, TestSelections::pinOf($request), $requester, None::create());
+        $again = StartRecord::create($request, TestSelections::pinOf($request), $requester, None::create());
 
         $this->assertSame($first->id, $again->id);
         $this->assertSame(1, StartRecord::query()->where('request_id', $request->requestId)->count());
@@ -142,7 +142,7 @@ final class StartRecordTest extends TestCase
 
         $changed = $this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5'));
 
-        StartRecord::accept($changed, TestSelections::pinOf($changed), $requester, None::create());
+        StartRecord::create($changed, TestSelections::pinOf($changed), $requester, None::create());
     }
 
     public function test_an_agent_reads_its_own_record_and_not_another_agents(): void
@@ -156,8 +156,8 @@ final class StartRecordTest extends TestCase
             'helpers.job 7',
         );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
-        StartRecord::accept($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
-        StartRecord::accept($otherRequest, TestSelections::pinOf($otherRequest), ActorIdentity::system(), None::create());
+        StartRecord::create($ownRequest, TestSelections::pinOf($ownRequest), ActorIdentity::system(), None::create());
+        StartRecord::create($otherRequest, TestSelections::pinOf($otherRequest), ActorIdentity::system(), None::create());
         $session = $this->app->make(StartSessions::class)
             ->start($own, TestSelections::of(), TestSelections::requestId())
             ->session;

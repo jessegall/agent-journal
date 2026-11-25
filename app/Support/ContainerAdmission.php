@@ -43,7 +43,7 @@ final readonly class ContainerAdmission
         }
 
         $this->capacityLock->holdUntilCommit();
-        CapacityReservation::reserve($requestId, $execution->budgets, $this->capacity);
+        CapacityReservation::create($requestId, $execution->budgets, $this->capacity);
     }
 
     public function assertSupported(string $driver): void

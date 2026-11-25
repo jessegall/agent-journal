@@ -54,15 +54,15 @@ final class Environment extends Model implements EventSource, ReadableModel
     /**
      * The environment a new project starts with.
      */
-    public static function openDefaultOf(Project $project): self
+    public static function createForDefault(Project $project): self
     {
-        return self::create($project, self::DEFAULT_LABEL);
+        return self::createForLabel($project, self::DEFAULT_LABEL);
     }
 
     /**
      * A new environment of the project under a label no other environment of it has.
      */
-    public static function create(Project $project, string $label): self
+    public static function createForLabel(Project $project, string $label): self
     {
         $environment = new self();
         $environment->project_id = $project->id;

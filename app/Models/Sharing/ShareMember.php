@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sharing;
 
+use App\Support\ConsumedPreview;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
@@ -60,31 +61,27 @@ final class ShareMember extends Model implements ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * Approves the selected target, linked from the source, at the share's current scope version.
+     * Approves each target the preview selected, linked from its source, at the share's current scope version, in one
+     * insert.
      */
-    public static function create(Share $share, RecordIdentity $source, ShareSelectedTarget $target): self
+    public static function create(Share $share, ConsumedPreview $consumed): void
     {
-        $member = self::unsaved($share, $source, $target);
-        $member->save();
+        $members = [];
 
-        return $member;
-    }
+        foreach ($consumed->selection as $target) {
+            $source = $consumed->candidates->sourceOf($target);
+            $member = new self();
+            $member->share_id = $share->id;
+            $member->scope_version = $share->scope_version;
+            $member->link_id = $target->linkId;
+            $member->source_type = $source->type;
+            $member->source_id = $source->id;
+            $member->target_type = $target->record->type;
+            $member->target_id = $target->record->id;
+            $members[] = $member;
+        }
 
-    /**
-     * The row of one shared target, not yet written, for createAll.
-     */
-    public static function unsaved(Share $share, RecordIdentity $source, ShareSelectedTarget $target): self
-    {
-        $member = new self();
-        $member->share_id = $share->id;
-        $member->scope_version = $share->scope_version;
-        $member->link_id = $target->linkId;
-        $member->source_type = $source->type;
-        $member->source_id = $source->id;
-        $member->target_type = $target->record->type;
-        $member->target_id = $target->record->id;
-
-        return $member;
+        self::createAll($members);
     }
 
     // ----------[ Accessors ]----------

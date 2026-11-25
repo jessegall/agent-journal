@@ -19,7 +19,7 @@ final readonly class OpenInboxHandler implements CommandHandler
             ->where('provider_key', $command->providerKey)
             ->where('provider_id', $command->providerId)
             ->lockForUpdate()
-            ->first() ?? Inbox::open($command->providerKey, $command->providerId, $command->label);
+            ->first() ?? Inbox::create($command->providerKey, $command->providerId, $command->label);
 
         foreach ($command->members as $member) {
             if (! InboxMember::isAttached($inbox->id, $member)) {

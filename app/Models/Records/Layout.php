@@ -54,14 +54,6 @@ final class Layout extends Model implements EventSource, ReadableModel
         return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape->toArray()]);
     }
 
-    /**
-     * The layout locked for a change; one of another user's is outside the scope, so it is missing (404).
-     */
-    public static function lockedForChange(string $layoutId): self
-    {
-        return self::query()->whereKey($layoutId)->lockForUpdate()->firstOrFail();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -77,5 +69,15 @@ final class Layout extends Model implements EventSource, ReadableModel
     {
         $this->delete();
         $this->raise(new LayoutRemoved($this->id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The layout locked for a change; one of another user's is outside the scope, so it is missing (404).
+     */
+    public static function lockedForChange(string $layoutId): self
+    {
+        return self::query()->whereKey($layoutId)->lockForUpdate()->firstOrFail();
     }
 }

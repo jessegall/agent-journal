@@ -91,7 +91,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
      *
      * @throws RuleProposalRefused when the request id already proposed another payload
      */
-    public static function open(
+    public static function create(
         string $projectKey,
         ActorIdentity $author,
         string $requestId,

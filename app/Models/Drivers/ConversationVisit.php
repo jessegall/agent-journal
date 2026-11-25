@@ -47,7 +47,7 @@ final class ConversationVisit extends Model implements ReadableModel
      * Appends the next visit of the session to the conversation, once per event: the same event id finds the visit
      * already kept.
      */
-    public static function appendOnce(
+    public static function create(
         AgentSession $session,
         DriverConversation $conversation,
         string $eventId,

@@ -66,7 +66,7 @@ final class PlanSharingTest extends TestCase
         $document = Document::query()->where('number', 1)->sole();
         $plan = Plan::factory()->create(['title' => self::PLAN_TITLE, 'type' => PlanType::Build]);
         $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
-        Link::connect($plan, $document);
+        Link::createForModels($plan, $document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
         $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::LINK_TYPE)->content(

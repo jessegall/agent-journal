@@ -65,7 +65,7 @@ final class WorktreeDelivery extends Model implements ReadableModel
      *
      * @throws DeliveryRefused
      */
-    public static function submit(ChildClaim $claim, DeliverySubmission $submission): self
+    public static function create(ChildClaim $claim, DeliverySubmission $submission): self
     {
         $earlier = self::query()->where('delivery_id', $submission->deliveryId)->lockForUpdate()->first();
 

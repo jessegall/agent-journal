@@ -103,7 +103,18 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
         CommandRequest|null $request,
         array $candidateRules,
     ): self {
-        $permit = self::filled($projectKey, $line, $runner, $limits);
+        $permit = new self();
+        $permit->project_key = $projectKey;
+        $permit->working_folder = $line->workingFolder;
+        $permit->source_line = $line->line;
+        $permit->source_digest = hash('sha256', $line->line);
+        $permit->classification_digest = $line->classificationDigest;
+        $permit->approved_classes = $line->approvedClasses;
+        $permit->runner_type = $runner->type->value;
+        $permit->runner_id = $runner->id;
+        $permit->byte_cap = $limits->byteCap;
+        $permit->seconds_cap = $limits->secondsCap;
+        $permit->expires_at = CarbonImmutable::now()->addMinutes($limits->minutesValid);
         $permit->command_request_id = $request?->id;
         $permit->candidate_rules = $candidateRules;
         $permit->save();
@@ -169,33 +180,6 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     // ----------[ Internals ]----------
 
     /**
-     * A permit for the line, filled from the line, the runner and the limits, not yet saved.
-     */
-    private static function filled(
-        string $projectKey,
-        PermittedLine $line,
-        ActorIdentity $runner,
-        PermitLimits $limits,
-    ): self {
-        $permit = new self();
-        $permit->project_key = $projectKey;
-        $permit->working_folder = $line->workingFolder;
-        $permit->source_line = $line->line;
-        $permit->source_digest = hash('sha256', $line->line);
-        $permit->classification_digest = $line->classificationDigest;
-        $permit->approved_classes = $line->approvedClasses;
-        $permit->runner_type = $runner->type->value;
-        $permit->runner_id = $runner->id;
-        $permit->byte_cap = $limits->byteCap;
-        $permit->seconds_cap = $limits->secondsCap;
-        $permit->expires_at = CarbonImmutable::now()->addMinutes($limits->minutesValid);
-
-        return $permit;
-    }
-
-    // ----------[ Scopes ]----------
-
-    /**
      * @param  Builder<self>  $query
      */
     #[Scope]
@@ -203,6 +187,8 @@ final class EvidencePermit extends Model implements EventSource, ReadableModel
     {
         $query->where('command_request_id', $request->id)->whereNotNull('process_run_id');
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

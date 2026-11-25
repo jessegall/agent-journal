@@ -56,7 +56,7 @@ final class Message extends Model implements AuthoredModel, EventSource, Readabl
      * Sends a message to the receiver, stored in its inbox under the inbox's next number, as a reply to the target
      * when one is given; the inbox's row is locked, so two sends never take the same number.
      */
-    public static function send(
+    public static function create(
         MessageReceiver $to,
         MessageSender $from,
         string $body,

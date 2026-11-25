@@ -17,7 +17,7 @@ return [
     'AccountNotice::countAgain',
     'AccountNotice::create',
     'AccountNotice::resolveAt',
-    'AccountUsageCost::add',
+    'AccountUsageCost::create',
     'AccountUsageTokens::create',
     'AccountUsageTokens::replaceWith',
     'AccountUsageWindow::create',

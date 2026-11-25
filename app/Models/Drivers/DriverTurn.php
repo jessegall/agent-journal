@@ -64,7 +64,7 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
      * The turn of this native prompt in this process generation, recorded the first time it is seen; a repeated
      * report finds the same turn. The caller's transaction holds the runtime's lock, so two reports never race.
      */
-    public static function recordStart(
+    public static function create(
         string $runtimeId,
         int $processGeneration,
         string $nativePromptId,
@@ -77,44 +77,6 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
         ];
 
         return self::query()->where($key)->first() ?? self::query()->create([...$key, 'started_at' => $startedAt]);
-    }
-
-    /**
-     * The turn of this native prompt in the session's runtime now; none while the runtime has not seen it.
-     */
-    public static function ofSessionTurn(string $sessionId, string $nativePromptId): self|null
-    {
-        $runtime = AgentRuntime::ofSession($sessionId);
-
-        if ($runtime === null) {
-            return null;
-        }
-
-        return self::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->where('process_generation', $runtime->process_generation)
-            ->where('native_prompt_id', $nativePromptId)
-            ->first();
-    }
-
-    /**
-     * The newest turn of the session's runtime with closing words offered or delivered.
-     */
-    public static function withClosingWordsOf(string $sessionId): self|null
-    {
-        $runtime = AgentRuntime::ofSession($sessionId);
-
-        if ($runtime === null) {
-            return null;
-        }
-
-        return self::query()
-            ->where('agent_runtime_id', $runtime->id)
-            ->whereNotNull('closing_words_digest')
-            ->orderByDesc('started_at')
-            ->orderByDesc('id')
-            ->lockForUpdate()
-            ->first();
     }
 
     /**
@@ -189,5 +151,45 @@ final class DriverTurn extends Model implements EventSource, ReadableModel
     private static function digestOf(string $words): string
     {
         return hash('sha256', $words);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The turn of this native prompt in the session's runtime now; none while the runtime has not seen it.
+     */
+    public static function ofSessionTurn(string $sessionId, string $nativePromptId): self|null
+    {
+        $runtime = AgentRuntime::ofSession($sessionId);
+
+        if ($runtime === null) {
+            return null;
+        }
+
+        return self::query()
+            ->where('agent_runtime_id', $runtime->id)
+            ->where('process_generation', $runtime->process_generation)
+            ->where('native_prompt_id', $nativePromptId)
+            ->first();
+    }
+
+    /**
+     * The newest turn of the session's runtime with closing words offered or delivered.
+     */
+    public static function withClosingWordsOf(string $sessionId): self|null
+    {
+        $runtime = AgentRuntime::ofSession($sessionId);
+
+        if ($runtime === null) {
+            return null;
+        }
+
+        return self::query()
+            ->where('agent_runtime_id', $runtime->id)
+            ->whereNotNull('closing_words_digest')
+            ->orderByDesc('started_at')
+            ->orderByDesc('id')
+            ->lockForUpdate()
+            ->first();
     }
 }

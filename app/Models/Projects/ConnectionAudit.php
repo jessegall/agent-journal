@@ -61,7 +61,7 @@ final class ConnectionAudit extends Model implements ReadableModel
     /**
      * A step the owner took on an install line.
      */
-    public static function ofInvitation(ConnectionAuditType $type, string $userId, ProjectInvitation $invitation): self
+    public static function createForInvitation(ConnectionAuditType $type, string $userId, ProjectInvitation $invitation): self
     {
         return self::record(
             $type,
@@ -76,7 +76,7 @@ final class ConnectionAudit extends Model implements ReadableModel
     /**
      * A step the owner or a binding's host took on the binding.
      */
-    public static function ofBinding(
+    public static function createForBinding(
         ConnectionAuditType $type,
         ConnectionAuditActor $actorType,
         string $actorId,

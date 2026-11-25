@@ -66,7 +66,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      *
      * @throws UsageCostConflict when the account holds another amount or time under the same source
      */
-    public static function add(Account $account, int $generation, UsageCost $cost): void
+    public static function create(Account $account, int $generation, UsageCost $cost): void
     {
         $kept = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)

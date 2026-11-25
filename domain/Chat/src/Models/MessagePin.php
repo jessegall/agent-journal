@@ -49,7 +49,7 @@ final class MessagePin extends Model implements ReadableModel
     /**
      * Pins the message in the conversation for the owner; pinning it again keeps the one pin.
      */
-    public static function pinFor(
+    public static function create(
         ActorIdentity $owner,
         string $inboxId,
         string $messageId,

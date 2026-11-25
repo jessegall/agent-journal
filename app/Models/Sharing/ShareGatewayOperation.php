@@ -78,8 +78,10 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     /**
      * An unclaimed request to open or close the endpoint of the configuration at its current version.
      */
-    public static function create(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
-    {
+    public static function createForConfiguration(
+        ShareGatewayConfiguration $configuration,
+        GatewayOperationType $type,
+    ): self {
         $operation = self::unsaved($configuration, $type);
         $operation->save();
 
@@ -87,16 +89,16 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     }
 
     /**
-     * The operation of one configuration, not yet written, for createAll.
+     * Writes an operation of the type for each configuration, in one insert.
+     *
+     * @param  list<ShareGatewayConfiguration>  $configurations
      */
-    public static function unsaved(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
+    public static function createForConfigurations(array $configurations, GatewayOperationType $type): void
     {
-        $operation = new self();
-        $operation->share_gateway_configuration_id = $configuration->id;
-        $operation->configuration_version = $configuration->configuration_version;
-        $operation->type = $type;
-
-        return $operation;
+        self::createAll(array_map(
+            fn (ShareGatewayConfiguration $configuration) => self::unsaved($configuration, $type),
+            $configurations,
+        ));
     }
 
     // ----------[ Mutations ]----------
@@ -186,6 +188,19 @@ final class ShareGatewayOperation extends Model implements EventSource, Readable
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The operation of one configuration, not yet written.
+     */
+    private static function unsaved(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
+    {
+        $operation = new self();
+        $operation->share_gateway_configuration_id = $configuration->id;
+        $operation->configuration_version = $configuration->configuration_version;
+        $operation->type = $type;
+
+        return $operation;
+    }
 
     /**
      * The id of the oldest operation no run holds now: never claimed, or claimed under a lease that ran out without an

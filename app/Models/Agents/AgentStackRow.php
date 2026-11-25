@@ -82,7 +82,7 @@ final class AgentStackRow extends Model implements EventSource, ReadableModel
      * Inserts the stack of the target unless one exists, and answers whether this insert won; a racing insert is
      * skipped by the database, never raised.
      */
-    public static function insertIfMissing(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): bool
+    public static function create(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): bool
     {
         $row = new self();
 

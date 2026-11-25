@@ -85,7 +85,7 @@ final class DomainAvailabilityTest extends TestCase
 
     public function test_a_corrupt_switch_is_an_error_never_a_guess(): void
     {
-        SettingsRecord::makeEmptyFor('Core');
+        SettingsRecord::create('Core');
         $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
         $record->revise($record->document->withToggle(new EncodedToggle('domain_tasks', EncodedValue::of('off'))));
 

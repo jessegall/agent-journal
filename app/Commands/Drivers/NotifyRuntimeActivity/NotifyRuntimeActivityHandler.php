@@ -32,7 +32,7 @@ final readonly class NotifyRuntimeActivityHandler implements CommandHandler
     {
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
 
-        $event = $command->sequence === null ? null : RuntimeEvent::record(
+        $event = $command->sequence === null ? null : RuntimeEvent::create(
             $runtime,
             $command->processGeneration,
             $command->sequence,

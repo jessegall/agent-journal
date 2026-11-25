@@ -90,7 +90,7 @@ return [
     AccountUsageChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => [
-            'AccountUsageCost::add',
+            'AccountUsageCost::create',
             'AccountUsageTokens::create',
             'AccountUsageWindow::create',
             'KeepsNewestReading::saveReading',

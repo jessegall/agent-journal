@@ -57,7 +57,7 @@ final class CapacityReservation extends Model implements ReadableModel
      *
      * @throws CapacityUnavailable
      */
-    public static function reserve(string $startRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
+    public static function create(string $startRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
     {
         $existing = self::query()->where('start_request_id', $startRequestId)->first();
 

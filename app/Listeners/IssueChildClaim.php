@@ -55,8 +55,8 @@ final class IssueChildClaim implements Listener
 
         return array_map(
             fn ($read) => $parentClaims === []
-                ? ChildClaim::forMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read)
-                : ChildClaim::nestedUnder($parentClaims[0], $request->childAgentId, ChildRole::Writer, $read),
+                ? ChildClaim::createForMainRuntime($binding, $parent->id, $request->childAgentId, ChildRole::Writer, $read)
+                : ChildClaim::createForParent($parentClaims[0], $request->childAgentId, ChildRole::Writer, $read),
             WorkspaceRead::latestCommitReadOf($parentAgentId),
         );
     }

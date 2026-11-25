@@ -52,7 +52,7 @@ final class ConnectedProjectTest extends TestCase
     {
         $first = $this->bindingOf('shop-ticket', 'nonce-aaaaaaaaaaaaaaaa');
         ProjectInvitation::create(
-            InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
+            InstallAttempt::create($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('join-ticket'),
         );
         $second = ProjectBinding::query()->findOrFail(

@@ -49,7 +49,7 @@ final class IssueChildClaimTest extends TestCase
         $this->assertNull($childClaim->parent_claim_id);
 
         // The parent agent becomes a child itself, so the next child it starts is a grandchild of the chain.
-        $parentClaim = ChildClaim::nestedUnder($childClaim, $this->target->agentId, ChildRole::Writer, $this->facts($binding));
+        $parentClaim = ChildClaim::createForParent($childClaim, $this->target->agentId, ChildRole::Writer, $this->facts($binding));
         $grandchild = (string) Str::ulid();
         $this->requestCheckout($binding, $grandchild);
         $grandchildClaim = ChildClaim::query()->where('child_agent_id', $grandchild)->sole();
@@ -78,7 +78,7 @@ final class IssueChildClaimTest extends TestCase
         return ProjectBinding::create(
             $host,
             $project,
-            Environment::openDefaultOf($project),
+            Environment::createForDefault($project),
             Agent::create('Shop main agent', 'main-agent'),
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );

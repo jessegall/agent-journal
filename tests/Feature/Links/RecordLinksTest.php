@@ -168,7 +168,7 @@ final class RecordLinksTest extends TestCase
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n"));
         $message = $this->messageFor(8);
         $stored = Message::query()->withoutGlobalScopes()->whereKey($message->id)->sole();
-        Link::connect(Document::query()->sole(), $stored);
+        Link::createForModels(Document::query()->sole(), $stored);
 
         $this->actAsAgent(9);
 

@@ -68,7 +68,7 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::createForColumns($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
 

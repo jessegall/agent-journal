@@ -31,7 +31,7 @@ final readonly class RetryShareHandler implements CommandHandler
         $share = Share::ownForUpdate($command->shareId);
         $share->retryOpening();
 
-        ShareGatewayOperation::create($share->gatewayConfiguration(), GatewayOperationType::Open);
+        ShareGatewayOperation::createForConfiguration($share->gatewayConfiguration(), GatewayOperationType::Open);
         ShareAudit::create($share, ShareAuditType::Retried, ActorIdentity::of($owner), null);
 
         return $share->summary;

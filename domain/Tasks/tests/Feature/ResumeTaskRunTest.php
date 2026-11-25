@@ -67,7 +67,7 @@ final class ResumeTaskRunTest extends TestCase
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
-        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::createForRecord($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
 
         $seat = $this->app->make(AssignmentTransaction::class)->run(
@@ -105,7 +105,7 @@ final class ResumeTaskRunTest extends TestCase
         $worker = $this->started('Third');
         $task = Task::factory()->create();
 
-        $holding = AssignmentRecord::create(
+        $holding = AssignmentRecord::createForRecord(
             $task->assignmentIdentity(),
             AssigneeIdentity::of($worker->agent()->firstOrFail()),
         );
@@ -114,7 +114,7 @@ final class ResumeTaskRunTest extends TestCase
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
         $holding->delete();
-        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
+        AssignmentRecord::createForRecord($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
 
         $this->assertNull($this->holderOf($run));
         $this->assertSame(1, $this->runAs($worker, new ResumeTaskRunCommand($run->id)));
@@ -127,8 +127,8 @@ final class ResumeTaskRunTest extends TestCase
         $holder = AssigneeIdentity::of($worker->agent()->firstOrFail());
         $first = Task::factory()->create();
         $second = Task::factory()->create();
-        AssignmentRecord::create($first->assignmentIdentity(), $holder);
-        AssignmentRecord::create($second->assignmentIdentity(), $holder);
+        AssignmentRecord::createForRecord($first->assignmentIdentity(), $holder);
+        AssignmentRecord::createForRecord($second->assignmentIdentity(), $holder);
         $this->runAs($worker, new StartTaskCommand($first->id));
         $this->runAs($worker, new StartTaskCommand($second->id));
 
@@ -145,7 +145,7 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->started('Fifth');
         $task = Task::factory()->create();
-        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
+        AssignmentRecord::createForRecord($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
         $this->runAs($worker, new StartTaskCommand($task->id));
         $first = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->runAs($worker, new BlockTaskCommand($task->id, 1, 'Waits on the server.'));

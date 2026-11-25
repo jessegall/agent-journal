@@ -273,7 +273,7 @@ final class StartIdentityTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        $record = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $record = StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $record->startedAs($session);
         $receipt = $this->app->make(AgentWakes::class)->wake(
             new StackTarget($session->agent_id, $session->id),

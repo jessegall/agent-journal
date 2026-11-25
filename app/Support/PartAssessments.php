@@ -57,7 +57,7 @@ final readonly class PartAssessments
         ReaderPosition::replayOf($part, $pair->reader, $replayed->consumed)->rewindTo($replayed->consumed);
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $pair->contract);
         $run = ProcessRun::ofAnyActor($part->process_run_id);
-        $assessment = OutputAssessment::record($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
+        $assessment = OutputAssessment::create($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
         $this->updates->settled($part);
 
         if (! $validation->isValid()) {

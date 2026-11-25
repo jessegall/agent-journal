@@ -179,14 +179,14 @@ final class SettingsResolverTest extends TestCase
 
     private function storeSetting(string $owner, string $key, mixed $value): void
     {
-        SettingsRecord::makeEmptyFor($owner);
+        SettingsRecord::create($owner);
         $record = SettingsRecord::lockedForOwner($owner);
         $record->revise($record->document->withSetting(new EncodedSetting($key, EncodedValue::of($value))));
     }
 
     private function storeToggle(string $owner, string $key, mixed $value): void
     {
-        SettingsRecord::makeEmptyFor($owner);
+        SettingsRecord::create($owner);
         $record = SettingsRecord::lockedForOwner($owner);
         $record->revise($record->document->withToggle(new EncodedToggle($key, EncodedValue::of($value))));
     }

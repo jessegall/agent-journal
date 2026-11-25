@@ -49,7 +49,7 @@ final class MessageReadEntry extends Model implements EventSource
 
     // ----------[ Constructors ]----------
 
-    public static function record(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
+    public static function create(Message $message, MessageSender&MessageReceiver $reader, CarbonImmutable $at): void
     {
         $entry = self::query()->firstOrCreate(
             [

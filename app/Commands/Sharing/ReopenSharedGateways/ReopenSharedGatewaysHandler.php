@@ -29,18 +29,18 @@ final readonly class ReopenSharedGatewaysHandler implements CommandHandler
             $configurations,
         ));
 
-        $opens = [];
+        $reopenable = [];
 
         foreach ($configurations as $configuration) {
             if ($configuration->isDisabled() || in_array($configuration->id, $waiting, true)) {
                 continue;
             }
 
-            $opens[] = ShareGatewayOperation::unsaved($configuration, GatewayOperationType::Open);
+            $reopenable[] = $configuration;
         }
 
-        ShareGatewayOperation::createAll($opens);
+        ShareGatewayOperation::createForConfigurations($reopenable, GatewayOperationType::Open);
 
-        return count($opens);
+        return count($reopenable);
     }
 }

@@ -72,7 +72,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     public function assignIfUnheld(RecordIdentity $record, AssigneeIdentity $holder): Assignment
     {
         $this->assertInTransaction();
-        AssignmentRecord::insertUnlessHeld($record, $holder);
+        AssignmentRecord::createForFreeRecord($record, $holder);
 
         return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment;
     }
@@ -86,7 +86,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
         $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
 
-        return AssignmentRecord::create($current->record, $holder)->toAssignment;
+        return AssignmentRecord::createForRecord($current->record, $holder)->toAssignment;
     }
 
     public function remove(Assignment $current): void

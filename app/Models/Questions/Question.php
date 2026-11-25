@@ -65,7 +65,7 @@ final class Question extends Model implements AuthoredModel, EventSource, Readab
     /**
      * @param  list<string>  $options
      */
-    public static function ask(
+    public static function create(
         string $inboxId,
         ActorIdentity $sender,
         ActorIdentity $target,

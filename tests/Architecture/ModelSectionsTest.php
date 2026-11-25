@@ -11,8 +11,9 @@ use Tests\TestCase;
 /**
  * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Getters, Accessors, Relations,
  * Asserts, Internals, Queries and Scopes, in that order (user messages 22032, 22039 and 22042), and an accessor (a
- * method returning Attribute) sits only in Accessors. tools/refactoring/model-sections.php lists every fault, and
- * sorts with --fix.
+ * method returning Attribute) sits only in Accessors. A constructor is named create, or createFor and what it is made
+ * from when the model has several, and a row builder only one constructor uses is inlined into it (user messages 22052
+ * and 22060). tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelSectionsTest extends TestCase
@@ -26,6 +27,12 @@ final class ModelSectionsTest extends TestCase
     private const string MISPLACED_ASSERT = 'assert method assertOpen sits in Internals, not in Asserts';
 
     private const string PLAIN_METHOD_IN_ASSERTS = 'method isOpen is no assert method, so it does not belong in Asserts';
+
+    private const string PLAIN_CREATE_BESIDE_ANOTHER = 'constructor create is one of 2, so it is named createFor';
+
+    private const string CONSTRUCTOR_NAMED_OTHERWISE = 'constructor open is one of 2, so it is named createFor';
+
+    private const string BUILDER_OF_ONE_CONSTRUCTOR = 'builder draft serves only the constructor open: inline it';
 
     public function test_every_model_method_sits_in_a_known_section_in_order(): void
     {
@@ -52,6 +59,15 @@ final class ModelSectionsTest extends TestCase
 
         $this->assertStringContainsString(self::MISPLACED_ASSERT, $output);
         $this->assertStringContainsString(self::PLAIN_METHOD_IN_ASSERTS, $output);
+    }
+
+    public function test_constructors_named_otherwise_and_a_builder_one_constructor_uses_are_flagged(): void
+    {
+        $output = $this->checkOutput('tests/Fixtures/ModelSections/ConstructorsNamedOtherwise.php');
+
+        $this->assertStringContainsString(self::PLAIN_CREATE_BESIDE_ANOTHER, $output);
+        $this->assertStringContainsString(self::CONSTRUCTOR_NAMED_OTHERWISE, $output);
+        $this->assertStringContainsString(self::BUILDER_OF_ONE_CONSTRUCTOR, $output);
     }
 
     public function test_an_accessor_in_accessors_is_clean(): void

@@ -72,33 +72,32 @@ final class StopResult extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(StopAttempt $attempt, StopResultReport $report): self
-    {
-        $stopRecord = self::unsaved($attempt, $report);
-        $stopRecord->save();
-
-        return $stopRecord;
-    }
-
     /**
-     * The result row of one report, not yet written, for createAll.
+     * Writes the attempt's result of each report in one insert.
+     *
+     * @param  list<StopResultReport>  $reports
      */
-    public static function unsaved(StopAttempt $attempt, StopResultReport $report): self
+    public static function create(StopAttempt $attempt, array $reports): void
     {
-        $stopRecord = new self();
-        $stopRecord->stop_attempt_id = $attempt->id;
-        $stopRecord->condition_key = $report->conditionKey;
-        $stopRecord->definition_hash = $report->definitionHash;
-        $stopRecord->status = $report->status;
-        $stopRecord->started_at = CarbonImmutable::parse($report->startedAt);
-        $stopRecord->ended_at = $report->endedAt === null ? null : CarbonImmutable::parse($report->endedAt);
-        $stopRecord->exit_code = $report->exitCode;
-        $stopRecord->signal = $report->signal;
-        $stopRecord->summary = $report->summary;
-        $stopRecord->output = $report->output;
-        $stopRecord->truncated = $report->isTruncated;
+        $results = [];
 
-        return $stopRecord;
+        foreach ($reports as $report) {
+            $result = new self();
+            $result->stop_attempt_id = $attempt->id;
+            $result->condition_key = $report->conditionKey;
+            $result->definition_hash = $report->definitionHash;
+            $result->status = $report->status;
+            $result->started_at = CarbonImmutable::parse($report->startedAt);
+            $result->ended_at = $report->endedAt === null ? null : CarbonImmutable::parse($report->endedAt);
+            $result->exit_code = $report->exitCode;
+            $result->signal = $report->signal;
+            $result->summary = $report->summary;
+            $result->output = $report->output;
+            $result->truncated = $report->isTruncated;
+            $results[] = $result;
+        }
+
+        self::createAll($results);
     }
 
     // ----------[ Relations ]----------

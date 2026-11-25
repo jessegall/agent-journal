@@ -72,9 +72,9 @@ final class ProcessRecordsTest extends TestCase
     {
         $run = $this->admittedRun();
 
-        ProcessEvent::record($run, 1, 'part_started', ['part' => 'a']);
-        ProcessEvent::record($run, 1, 'part_started', ['part' => 'a']);
-        $conflict = ProcessEvent::record($run, 1, 'part_ended', ['part' => 'a']);
+        ProcessEvent::create($run, 1, 'part_started', ['part' => 'a']);
+        ProcessEvent::create($run, 1, 'part_started', ['part' => 'a']);
+        $conflict = ProcessEvent::create($run, 1, 'part_ended', ['part' => 'a']);
 
         $this->assertSame(2, $run->events()->count());
         $this->assertSame(ProcessEvent::OPERATIONAL_ERROR, $conflict->type);

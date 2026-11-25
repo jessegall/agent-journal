@@ -77,12 +77,6 @@ final readonly class MapSessionOutputs
     {
         SessionOutputGrant::query()->where('session_id', $start->session_id)->delete();
 
-        $grants = [];
-
-        foreach ($pathsByConversation as $conversationId => $paths) {
-            $grants[] = SessionOutputGrant::unsaved($start, (string) $conversationId, $paths);
-        }
-
-        SessionOutputGrant::createAll($grants);
+        SessionOutputGrant::create($start, $pathsByConversation);
     }
 }

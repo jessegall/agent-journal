@@ -75,7 +75,7 @@ final class AccountsUsageRowTest extends TestCase
         $resetsAt = CarbonImmutable::parse('2026-11-24T10:00:00Z')->getTimestamp();
         $window = new UsageWindowReading('claude', UsageWindowSlot::SevenDay, 42.0, 10080, $resetsAt, $source);
         $this->app->make(UsageReadings::class)->recordWindow($account, 1, $window);
-        AccountUsageCost::add($account, 1, new UsageCost('result-1', UsdAmount::from('3.42'), $source->observedAt));
+        AccountUsageCost::create($account, 1, new UsageCost('result-1', UsdAmount::from('3.42'), $source->observedAt));
         $tokens = new ThreadTokens('thread-1', 8240, 8000, null, 240, null, 120, $source);
         $this->app->make(UsageReadings::class)->recordTokens($account, 1, $tokens);
 

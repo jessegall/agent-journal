@@ -42,16 +42,6 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
         return ['build_pins' => 'array'];
     }
 
-    // ----------[ Constructors ]----------
-
-    /**
-     * The driver's approval, or a new one not yet saved when the owner never approved it.
-     */
-    public static function forKey(DriverKey $key): self
-    {
-        return self::query()->firstOrNew(['driver_key' => (string) $key]);
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -67,6 +57,14 @@ final class DriverApproval extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The driver's approval, or a new one not yet saved when the owner never approved it.
+     */
+    public static function forKey(DriverKey $key): self
+    {
+        return self::query()->firstOrNew(['driver_key' => (string) $key]);
+    }
 
     /**
      * The approved builds of each approved driver among these keys, by key.

@@ -26,7 +26,7 @@ final class SignedInScopeTest extends TestCase
     {
         parent::setUp();
 
-        AssignmentRecord::insertUnlessHeld(
+        AssignmentRecord::createForFreeRecord(
             TestActors::record('tasks.task', 1),
             new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)),
         );

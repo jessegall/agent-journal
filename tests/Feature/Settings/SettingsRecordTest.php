@@ -35,8 +35,8 @@ final class SettingsRecordTest extends TestCase
     {
         $this->assertTrue(SettingsRecord::sharedRuntimeForOwner('Library')->isEmpty());
 
-        SettingsRecord::makeEmptyFor('Library');
-        SettingsRecord::makeEmptyFor('Library');
+        SettingsRecord::create('Library');
+        SettingsRecord::create('Library');
 
         $record = SettingsRecord::sharedRuntimeForOwner('Library')->get();
         $this->assertSame(1, SettingsRecord::query()->where('owner', 'Library')->count());
@@ -139,7 +139,7 @@ final class SettingsRecordTest extends TestCase
 
     private function store(string $document): void
     {
-        SettingsRecord::makeEmptyFor('Library');
+        SettingsRecord::create('Library');
         DB::table('settings_records')->where('owner', 'Library')->update(['document' => $document]);
     }
 

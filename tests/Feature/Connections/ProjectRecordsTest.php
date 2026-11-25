@@ -53,7 +53,7 @@ final class ProjectRecordsTest extends TestCase
     {
         CarbonImmutable::setTestNow('2026-11-21 12:00:00');
         $invitation = ProjectInvitation::create(
-            InstallAttempt::openFor('user-1', 'issue-1', null),
+            InstallAttempt::create('user-1', 'issue-1', null),
             InstallTicket::digestOf('the-ticket'),
         );
 
@@ -70,13 +70,13 @@ final class ProjectRecordsTest extends TestCase
     public function test_a_revoked_or_spent_install_line_cannot_be_redeemed(): void
     {
         $project = Project::create('shop', 'Shop');
-        $main = Environment::openDefaultOf($project);
+        $main = Environment::createForDefault($project);
         $revoked = ProjectInvitation::create(
-            InstallAttempt::openFor('user-1', 'issue-a', $main),
+            InstallAttempt::create('user-1', 'issue-a', $main),
             InstallTicket::digestOf('ticket-a'),
         );
         $spent = ProjectInvitation::create(
-            InstallAttempt::openFor('user-1', 'issue-b', $main),
+            InstallAttempt::create('user-1', 'issue-b', $main),
             InstallTicket::digestOf('ticket-b'),
         );
 
@@ -93,7 +93,7 @@ final class ProjectRecordsTest extends TestCase
     public function test_a_new_binding_is_pending_in_its_first_authority_generation(): void
     {
         $project = Project::create('shop', 'Shop');
-        $binding = $this->binding($project, Environment::openDefaultOf($project));
+        $binding = $this->binding($project, Environment::createForDefault($project));
 
         $this->assertSame(1, $binding->authority_generation);
         $this->assertSame(BindingReadiness::Pending, $binding->readinessAt(CarbonImmutable::now()));
@@ -102,7 +102,7 @@ final class ProjectRecordsTest extends TestCase
     public function test_revoking_a_binding_raises_its_authority_generation(): void
     {
         $project = Project::create('shop', 'Shop');
-        $binding = $this->binding($project, Environment::openDefaultOf($project));
+        $binding = $this->binding($project, Environment::createForDefault($project));
 
         $binding->revoke();
 

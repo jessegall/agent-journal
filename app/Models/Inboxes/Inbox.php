@@ -71,7 +71,7 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
 
     // ----------[ Constructors ]----------
 
-    public static function open(
+    public static function create(
         string $providerKey,
         string $providerId,
         string $label,

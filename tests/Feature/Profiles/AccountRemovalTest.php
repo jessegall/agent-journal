@@ -397,7 +397,7 @@ final class AccountRemovalTest extends TestCase
         $window = new UsageWindowReading('claude', UsageWindowSlot::SevenDay, 40.0, null, null, $source);
         $this->app->make(UsageReadings::class)->recordWindow($this->account, $generation, $window);
         $cost = new UsageCost('result-1', UsdAmount::from('1'), $source->observedAt);
-        AccountUsageCost::add($this->account, $generation, $cost);
+        AccountUsageCost::create($this->account, $generation, $cost);
         $tokens = new ThreadTokens('thread-1', 10, null, null, null, null, null, $source);
         $this->app->make(UsageReadings::class)->recordTokens($this->account, $generation, $tokens);
         $this->assertSame(1, AccountUsageWindow::query()->withoutGlobalScopes()->count());

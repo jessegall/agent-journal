@@ -20,6 +20,6 @@ final readonly class AddUsageCostHandler implements CommandHandler
     {
         $account = $this->accounts->accountOf($command->start);
 
-        AccountUsageCost::add($account, $command->start->generation, $command->cost);
+        AccountUsageCost::create($account, $command->start->generation, $command->cost);
     }
 }

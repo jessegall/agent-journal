@@ -23,7 +23,7 @@ final readonly class PinMessageHandler extends ChatCommandHandler
     {
         $this->pinnable->requireIn($command->inboxId, $command->messageId);
 
-        MessagePin::pinFor(
+        MessagePin::create(
             ActorIdentity::of($command->dispatchedBy()),
             $command->inboxId,
             $command->messageId,

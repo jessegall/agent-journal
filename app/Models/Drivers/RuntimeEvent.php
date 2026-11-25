@@ -54,7 +54,7 @@ final class RuntimeEvent extends Model implements ReadableModel
      * Keeps the report under its sequence unless that sequence is kept already, and says whether reports of its
      * generation are missing between it and the one before; the first report of a generation follows none. Called under the runtime's lock, so its reports are numbered one at a time.
      */
-    public static function record(
+    public static function create(
         AgentRuntime $runtime,
         int $generation,
         int $sequence,

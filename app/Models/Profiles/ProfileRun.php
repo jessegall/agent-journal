@@ -99,7 +99,7 @@ final class ProfileRun extends Model implements EventSource, ReadableModel
      * The run a trigger is answered by: the run it started, else the actor's unfinished run on this work, which
      * the new trigger continues (there is never more than one), else a new run, numbered after the others.
      */
-    public static function forTrigger(
+    public static function create(
         ActorIdentity $actor,
         WorkReference $work,
         string $profileKey,

@@ -28,7 +28,7 @@ final readonly class RuleProposals
         ProposedRule $proposed,
         CommandRequest|null $answers,
     ): RuleProposal {
-        $proposal = RuleProposal::open($projectKey, $author, $requestId, $proposed, $answers);
+        $proposal = RuleProposal::create($projectKey, $author, $requestId, $proposed, $answers);
 
         if ($proposal->current_revision === 0) {
             $this->record($proposal, $proposed, $author);

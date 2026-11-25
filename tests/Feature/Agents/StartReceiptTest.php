@@ -150,7 +150,7 @@ final class StartReceiptTest extends TestCase
     {
         $this->app->instance(HostCapacity::class, new HostCapacity(64, 256 * 1024 ** 3, 1024 ** 4));
         $request = $this->containerRequest(TestSelections::requestId());
-        StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::of(ActorContext::forUser($this->ownerId)), None::create());
+        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::of(ActorContext::forUser($this->ownerId)), None::create());
 
         $resumed = $this->start($request);
         $replayed = $this->start($request);

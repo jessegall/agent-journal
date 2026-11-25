@@ -61,7 +61,7 @@ trait ConnectsProjects
     private function issueLine(string $ticket): ProjectInvitation
     {
         return ProjectInvitation::create(
-            InstallAttempt::openFor($this->owner->id, 'action-'.bin2hex(random_bytes(4)), null),
+            InstallAttempt::create($this->owner->id, 'action-'.bin2hex(random_bytes(4)), null),
             InstallTicket::digestOf($ticket),
         );
     }

@@ -51,7 +51,7 @@ final readonly class ShareGrants
             ),
         );
 
-        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::createForConfiguration($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
 
@@ -83,7 +83,7 @@ final readonly class ShareGrants
             $duration->deadlineFrom(CarbonImmutable::now()),
         );
 
-        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::createForConfiguration($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
 
@@ -148,14 +148,7 @@ final readonly class ShareGrants
 
     private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
     {
-        ShareMember::createAll(array_map(
-            fn (ShareSelectedTarget $target) => ShareMember::unsaved(
-                $share,
-                $consumed->candidates->sourceOf($target),
-                $target,
-            ),
-            $consumed->selection,
-        ));
+        ShareMember::create($share, $consumed);
 
         ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
     }

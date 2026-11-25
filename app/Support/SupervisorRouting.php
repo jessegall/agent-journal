@@ -52,7 +52,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         $this->lock->acquire();
         $actor = $this->workingActor($command->actor);
         $profile = $this->profiles->snapshotFor(ProfileKey::from($actor->profile_key));
-        $link = SupervisorLink::ofActor($command->actor, $profile->supervisor);
+        $link = SupervisorLink::create($command->actor, $profile->supervisor);
         $type = $command->type;
         $version = $link->versionFor($type);
 
@@ -88,7 +88,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         $this->types->get($type);
         $actor = $this->workingActor($requester);
         $profile = $this->profiles->snapshotFor(ProfileKey::from($actor->profile_key));
-        $link = SupervisorLink::ofActor($requester, $profile->supervisor);
+        $link = SupervisorLink::create($requester, $profile->supervisor);
 
         return new SupervisorRoute($link->routes->targetFor($type), $link->versionFor($type));
     }

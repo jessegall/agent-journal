@@ -31,7 +31,7 @@ final readonly class BuiltInInboxes
     private static function installNamed(string $name, string $label, bool $forwardsMembers): void
     {
         if (Inbox::named($name)->isEmpty()) {
-            Inbox::open(Inbox::NAMED_PROVIDER, $name, $label, $name, $forwardsMembers);
+            Inbox::create(Inbox::NAMED_PROVIDER, $name, $label, $name, $forwardsMembers);
         }
     }
 }

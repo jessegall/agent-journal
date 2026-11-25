@@ -75,7 +75,7 @@ final class SharePreviewPageTest extends TestCase
         TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        Link::connect($this->plan, $this->document);
+        Link::createForModels($this->plan, $this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),

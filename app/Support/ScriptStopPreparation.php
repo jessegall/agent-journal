@@ -65,7 +65,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
 
         $script = $scripts->get();
 
-        $run = ProfileRun::forTrigger(
+        $run = ProfileRun::create(
             $request->actor,
             $request->work,
             $request->profileKey,

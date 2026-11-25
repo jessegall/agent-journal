@@ -152,22 +152,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return $attempt;
     }
 
-    /**
-     * The oldest attempt no host runs yet, locked for its claim; none when nothing waits.
-     */
-    public static function oldestWaitingAt(CarbonImmutable $now): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', SignInState::Starting->value)
-            ->where('waits_for_uses', false)
-            ->whereNull('process_reference')
-            ->where('expires_at', '>', $now)
-            ->orderBy('created_at')
-            ->lockForUpdate()
-            ->first();
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -497,6 +481,22 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The oldest attempt no host runs yet, locked for its claim; none when nothing waits.
+     */
+    public static function oldestWaitingAt(CarbonImmutable $now): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', SignInState::Starting->value)
+            ->where('waits_for_uses', false)
+            ->whereNull('process_reference')
+            ->where('expires_at', '>', $now)
+            ->orderBy('created_at')
+            ->lockForUpdate()
+            ->first();
+    }
 
     /**
      * A new, unused staging folder under the accounts root, one for every attempt.

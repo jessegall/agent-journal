@@ -50,7 +50,7 @@ final class InboxMember extends Model implements EventSource
         return ['joined_at' => 'immutable_datetime', 'left_at' => 'immutable_datetime'];
     }
 
-    // ----------[ Constructors ]----------
+    // ----------[ Queries ]----------
 
     /**
      * Detaches the actor from the inbox; an actor not attached leaves nothing.
@@ -67,8 +67,6 @@ final class InboxMember extends Model implements EventSource
         $member->save();
         $member->raise(new InboxLeft($inboxId, $actor));
     }
-
-    // ----------[ Queries ]----------
 
     /**
      * Attaches the actor to the inbox; an actor already attached stays as it is.

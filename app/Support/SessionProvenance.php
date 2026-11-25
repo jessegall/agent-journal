@@ -36,7 +36,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
     public function inherit(Model $record, Model $source): void
     {
         foreach ($this->links->linkedOfType($source, self::SESSION) as $origin) {
-            Link::connectKey($record, $origin->type, $origin->id);
+            Link::createForKey($record, $origin->type, $origin->id);
         }
     }
 

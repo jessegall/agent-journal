@@ -50,7 +50,7 @@ final readonly class NotifyRequestProgressHandler implements CommandHandler
             throw HostReportRefused::staleAttempt($request->id, $command->attempt, $request->attempt_version);
         }
 
-        if ($command->sequence !== null && $command->binding !== null && RuntimeEvent::record(
+        if ($command->sequence !== null && $command->binding !== null && RuntimeEvent::create(
             $runtime,
             $command->binding->processGeneration,
             $command->sequence,

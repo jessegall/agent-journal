@@ -23,14 +23,14 @@ final readonly class TransactionalRecordLinker implements RecordLinker
         $this->transaction->assertRunning($source->getConnection());
 
         foreach ($targets as $target) {
-            Link::connect($source, $this->records->requireReadable($target));
+            Link::createForModels($source, $this->records->requireReadable($target));
         }
     }
 
     public function link(RecordIdentity $source, RecordIdentity $target): void
     {
         [$from, $to] = $this->lockedPair($source, $target);
-        Link::connect($from, $to);
+        Link::createForModels($from, $to);
     }
 
     public function unlink(RecordIdentity $source, RecordIdentity $target): void

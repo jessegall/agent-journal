@@ -115,26 +115,6 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     }
 
     /**
-     * The actors that follow runs, each once, for a caller that may read every owner's runs.
-     *
-     * @return list<ActorIdentity>
-     *
-     * @throws CrossOwnerReadRefused
-     */
-    public static function followers(): array
-    {
-        $runs = self::query()
-            ->acrossOwners()
-            ->whereNotNull('actor_id')
-            ->select(['actor_type', 'actor_id'])
-            ->groupBy('actor_type', 'actor_id')
-            ->readUpTo(self::FOLLOWER_LIMIT)
-            ->get();
-
-        return array_values($runs->map(fn (self $run) => $run->owningActor())->all());
-    }
-
-    /**
      * The runs this actor follows, within a read already across owners.
      *
      * @param  Builder<self>  $query
@@ -274,6 +254,26 @@ final class SequenceRun extends Model implements AuthoredModel, Dockable, EventS
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The actors that follow runs, each once, for a caller that may read every owner's runs.
+     *
+     * @return list<ActorIdentity>
+     *
+     * @throws CrossOwnerReadRefused
+     */
+    public static function followers(): array
+    {
+        $runs = self::query()
+            ->acrossOwners()
+            ->whereNotNull('actor_id')
+            ->select(['actor_type', 'actor_id'])
+            ->groupBy('actor_type', 'actor_id')
+            ->readUpTo(self::FOLLOWER_LIMIT)
+            ->get();
+
+        return array_values($runs->map(fn (self $run) => $run->owningActor())->all());
+    }
 
     /**
      * @return BelongsTo<Sequence, $this>

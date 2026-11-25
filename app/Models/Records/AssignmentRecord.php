@@ -72,7 +72,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * Gives an unheld record to the holder in one insert that does nothing when the record already has a holder, so
      * the unique record key decides between two writers without aborting the transaction.
      */
-    public static function insertUnlessHeld(RecordIdentity $record, AssigneeIdentity $holder): void
+    public static function createForFreeRecord(RecordIdentity $record, AssigneeIdentity $holder): void
     {
         $row = new self([
             'record_type' => $record->type,
@@ -85,7 +85,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         $row->insertIfAbsent();
     }
 
-    public static function create(RecordIdentity $record, AssigneeIdentity $holder): self
+    public static function createForRecord(RecordIdentity $record, AssigneeIdentity $holder): self
     {
         return self::query()->create([
             'record_type' => $record->type,

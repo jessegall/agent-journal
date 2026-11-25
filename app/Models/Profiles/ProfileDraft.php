@@ -38,17 +38,6 @@ final class ProfileDraft extends Model implements ReadableModel
         return ['revision' => 'integer'];
     }
 
-    // ----------[ Constructors ]----------
-
-    /**
-     * The profile's draft, or an empty one at revision 0 when nobody saved one yet.
-     */
-    public static function of(ProfileKey $profile): self
-    {
-        return self::query()->with('currentRevision')->where('profile_key', $profile->key)->first()
-            ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
-    }
-
     // ----------[ Getters ]----------
 
     public function sourceAt(int $expected): ScriptSource
@@ -83,6 +72,15 @@ final class ProfileDraft extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The profile's draft, or an empty one at revision 0 when nobody saved one yet.
+     */
+    public static function of(ProfileKey $profile): self
+    {
+        return self::query()->with('currentRevision')->where('profile_key', $profile->key)->first()
+            ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
+    }
 
     /**
      * @param  list<string>  $profiles

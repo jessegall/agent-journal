@@ -31,6 +31,6 @@ final readonly class DismissLaunchOutcomeHandler implements CommandHandler
             ->where('request_id', $command->requestId)
             ->firstOr(fn () => throw StartRecordMissing::forRequest($command->requestId));
 
-        LaunchOutcomeDismissal::dismiss(ActorIdentity::of($command->dispatchedBy()), $record, $command->version);
+        LaunchOutcomeDismissal::create(ActorIdentity::of($command->dispatchedBy()), $record, $command->version);
     }
 }

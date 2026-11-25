@@ -57,7 +57,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
             throw ConversationIncompatible::forSession($session->id);
         }
 
-        ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
+        ConversationVisit::create($session, $conversation, $eventId, $observedAt);
         $session->enterConversation($conversation);
         $this->confirmConversation($session->id, $nativeId);
 
@@ -78,7 +78,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
         );
 
         if ($conversation !== null) {
-            ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
+            ConversationVisit::create($session, $conversation, $eventId, $observedAt);
         }
     }
 

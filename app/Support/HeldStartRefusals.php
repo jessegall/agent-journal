@@ -29,7 +29,7 @@ final class HeldStartRefusals
         ActorIdentity $requester,
         StartRefusal $refusal,
     ): void {
-        $this->refusals[] = fn () => StartRecord::accept($request, $pin, $requester)->refuse($refusal);
+        $this->refusals[] = fn () => StartRecord::create($request, $pin, $requester)->refuse($refusal);
     }
 
     /**

@@ -76,7 +76,7 @@ final class WorktreeDeliveryTest extends TestCase
             CommitObservation::ofHead($binding->id, 'checkout-main', self::BASE),
         );
 
-        return ChildClaim::forMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $read);
+        return ChildClaim::createForMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $read);
     }
 
     private function deliver(string $nonce, ChildClaim $claim, string $tip): TestResponse

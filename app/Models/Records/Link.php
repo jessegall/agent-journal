@@ -54,7 +54,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     /**
      * The link between the two models, made now when there is none yet in either direction.
      */
-    public static function connect(Model $source, Model $target): self
+    public static function createForModels(Model $source, Model $target): self
     {
         return self::query()->between($source, $target)->first() ?? self::query()->create([
             'source_type' => $source->getMorphClass(),
@@ -67,7 +67,7 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
     /**
      * A link stored as given, between two records named by their link type and id.
      */
-    public static function create(string $sourceType, string $sourceId, string $targetType, string $targetId): self
+    public static function createForColumns(string $sourceType, string $sourceId, string $targetType, string $targetId): self
     {
         $link = new self();
         $link->source_type = $sourceType;
@@ -142,10 +142,10 @@ final class Link extends MorphPivot implements EventSource, ReadableModel
      * The link between a model and a record named only by its link alias and id, made now when there is none yet;
      * the named record is never loaded.
      */
-    public static function connectKey(Model $source, string $targetType, string $targetId): self
+    public static function createForKey(Model $source, string $targetType, string $targetId): self
     {
         return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
-            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+            ?? self::createForColumns($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
     /**

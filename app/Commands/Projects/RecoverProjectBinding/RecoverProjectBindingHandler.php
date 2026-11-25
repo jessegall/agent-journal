@@ -20,7 +20,7 @@ final readonly class RecoverProjectBindingHandler implements CommandHandler
     {
         $binding = ProjectBinding::ofHostByNonce($command->hostId, $command->installationNonce);
 
-        ConnectionAudit::ofBinding(
+        ConnectionAudit::createForBinding(
             ConnectionAuditType::Recovered,
             ConnectionAuditActor::Host,
             $command->hostId,

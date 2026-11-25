@@ -65,7 +65,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         ActorIdentity $requester,
         Closure $start,
     ): mixed {
-        $intent = StartRecord::accept($request, $this->pinOf($request), $requester);
+        $intent = StartRecord::create($request, $this->pinOf($request), $requester);
 
         try {
             return $start();
@@ -92,7 +92,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
             return $start();
         } catch (StartRefusal $refusal) {
             $pin = $this->pinOf($request);
-            StartRecord::accept($request, $pin, $requester)->refuse($refusal);
+            StartRecord::create($request, $pin, $requester)->refuse($refusal);
             $this->heldRefusals->hold($request, $pin, $requester, $refusal);
 
             throw $refusal;

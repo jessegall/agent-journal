@@ -22,10 +22,7 @@ final readonly class KeepMessagesAndWake implements Pipe
         $agent = $walked->call->target->actorIdentity();
         $origin = AttentionOrigin::agentMessages($walked->call->input->identity()->hookId);
 
-        PendingAgentMessage::createAll(array_map(
-            fn (string $text) => PendingAgentMessage::unsaved($agent, $origin, [$text], requestsAttention: true),
-            $walked->answer->messages,
-        ));
+        PendingAgentMessage::create($agent, $origin, $walked->answer->messages);
 
         $this->attention->request($agent, $origin);
 

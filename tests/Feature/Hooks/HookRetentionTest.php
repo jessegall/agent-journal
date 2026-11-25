@@ -122,7 +122,7 @@ final class HookRetentionTest extends TestCase
     public function test_pruning_removes_the_links_of_what_it_removes(): void
     {
         $stack = $this->stack(1);
-        Link::connect($stack, $this->recordCall(1, 'old'));
+        Link::createForModels($stack, $this->recordCall(1, 'old'));
         $this->moveDays(8);
 
         $this->app->make(PruneHookHistory::class)->prune();

@@ -32,7 +32,7 @@ final readonly class SaveCall implements Pipe
             RecordedSteps::of($answer->steps),
         );
 
-        Link::connect($rendered->row, $call);
+        Link::createForModels($rendered->row, $call);
 
         return $rendered->reply;
     }

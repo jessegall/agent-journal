@@ -66,14 +66,14 @@ return [
     ],
     EnvironmentOpened::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Environment::create',
+        'owner' => 'Environment::createForLabel',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new EnvironmentOpened('environment', 'project', new DateTimeImmutable('2026-01-01')),
     ],
     InstallAttemptOpened::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'InstallAttempt::openFor',
+        'owner' => 'InstallAttempt::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new InstallAttemptOpened('attempt', 'IA-ABCDEFGH', new DateTimeImmutable('2026-01-01')),

@@ -101,7 +101,12 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
         string $key,
         string $hash,
     ): self {
-        $comment = self::draft($target, $author, $sessionId, $body, $key, $hash);
+        $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
+        $comment->target_type = $target->getMorphClass();
+        $comment->target_id = (string) $target->getKey();
+        $comment->author_type = $author->type;
+        $comment->author_id = $author->id;
+        $comment->author_session_id = $sessionId;
 
         if ($anchor !== null) {
             $comment->version_id = $anchor->versionId;
@@ -264,24 +269,6 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
             $isQuote ? (int) $column('startOffset', 'start_offset') : 0,
             $isQuote ? (int) $column('endOffset', 'end_offset') : 0,
         );
-    }
-
-    private static function draft(
-        Model $target,
-        ActorIdentity $author,
-        string|null $sessionId,
-        string $body,
-        string $key,
-        string $hash,
-    ): self {
-        $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
-        $comment->target_type = $target->getMorphClass();
-        $comment->target_id = (string) $target->getKey();
-        $comment->author_type = $author->type;
-        $comment->author_id = $author->id;
-        $comment->author_session_id = $sessionId;
-
-        return $comment;
     }
 
     // ----------[ Queries ]----------

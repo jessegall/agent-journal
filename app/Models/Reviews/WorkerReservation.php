@@ -41,54 +41,6 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
     use Linkable;
     use RaisesEvents;
 
-    // ----------[ Constructors ]----------
-
-    /**
-     * The reservations of the workers, made when missing and locked for update in holder order, keyed by holder.
-     *
-     * @param  list<AssigneeIdentity>  $holders
-     * @return array<string, self>
-     */
-    public static function lockedFor(array $holders): array
-    {
-        $keys = [];
-
-        foreach ($holders as $holder) {
-            $keys["{$holder->type}:{$holder->id}"] = $holder;
-        }
-
-        ksort($keys);
-        $locked = [];
-
-        foreach ($keys as $holder) {
-            $reservation = new self(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
-            $reservation->id = $reservation->newUniqueId();
-            $reservation->insertIfAbsent();
-        }
-
-        $rows = self::query()
-            ->where(function ($rows) use ($keys): void {
-                foreach ($keys as $holder) {
-                    $rows->orWhere(
-                        fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id),
-                    );
-                }
-            })
-            ->orderBy('holder_type')
-            ->orderBy('holder_id')
-            ->lockForUpdate()
-            ->readExactly(count($keys))
-            ->get();
-
-        foreach ($rows as $row) {
-            $locked["{$row->holder_type}:{$row->holder_id}"] = $row;
-        }
-
-        ksort($locked);
-
-        return $locked;
-    }
-
     // ----------[ Mutations ]----------
 
     /**
@@ -144,5 +96,53 @@ final class WorkerReservation extends Model implements EventSource, ReadableMode
         if ($this->root_id !== null && ! ($this->root_type === $root->type && $this->root_id === $root->id)) {
             throw WorkerAlreadyAssigned::holding((string) $this->root_type);
         }
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The reservations of the workers, made when missing and locked for update in holder order, keyed by holder.
+     *
+     * @param  list<AssigneeIdentity>  $holders
+     * @return array<string, self>
+     */
+    public static function lockedFor(array $holders): array
+    {
+        $keys = [];
+
+        foreach ($holders as $holder) {
+            $keys["{$holder->type}:{$holder->id}"] = $holder;
+        }
+
+        ksort($keys);
+        $locked = [];
+
+        foreach ($keys as $holder) {
+            $reservation = new self(['holder_type' => $holder->type, 'holder_id' => $holder->id]);
+            $reservation->id = $reservation->newUniqueId();
+            $reservation->insertIfAbsent();
+        }
+
+        $rows = self::query()
+            ->where(function ($rows) use ($keys): void {
+                foreach ($keys as $holder) {
+                    $rows->orWhere(
+                        fn ($row) => $row->where('holder_type', $holder->type)->where('holder_id', $holder->id),
+                    );
+                }
+            })
+            ->orderBy('holder_type')
+            ->orderBy('holder_id')
+            ->lockForUpdate()
+            ->readExactly(count($keys))
+            ->get();
+
+        foreach ($rows as $row) {
+            $locked["{$row->holder_type}:{$row->holder_id}"] = $row;
+        }
+
+        ksort($locked);
+
+        return $locked;
     }
 }

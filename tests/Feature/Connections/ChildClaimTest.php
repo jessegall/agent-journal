@@ -38,8 +38,8 @@ final class ChildClaimTest extends TestCase
         $parent = (string) Str::ulid();
         $child = (string) Str::ulid();
 
-        $claim = ChildClaim::forMainRuntime($binding, $parent, $child, ChildRole::Writer, $this->read($binding, true, 4));
-        $grandchild = ChildClaim::nestedUnder($claim, (string) Str::ulid(), ChildRole::Reader, $this->read($binding, false, 5));
+        $claim = ChildClaim::createForMainRuntime($binding, $parent, $child, ChildRole::Writer, $this->read($binding, true, 4));
+        $grandchild = ChildClaim::createForParent($claim, (string) Str::ulid(), ChildRole::Reader, $this->read($binding, false, 5));
 
         $this->assertSame(
             [$parent, 4, $child, ChildRole::Writer, $binding->id, self::HEAD, true],
@@ -55,8 +55,8 @@ final class ChildClaimTest extends TestCase
         $binding = $this->connected();
         $unborn = $this->readOf(CommitObservation::withoutCommit($binding->id, 'checkout-main', CommitObservation::UNBORN));
 
-        $this->assertRefused(fn () => ChildClaim::forMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $unborn));
-        $this->assertRefused(fn () => ChildClaim::forMainRuntime(
+        $this->assertRefused(fn () => ChildClaim::createForMainRuntime($binding, (string) Str::ulid(), (string) Str::ulid(), ChildRole::Writer, $unborn));
+        $this->assertRefused(fn () => ChildClaim::createForMainRuntime(
             $binding,
             (string) Str::ulid(),
             (string) Str::ulid(),

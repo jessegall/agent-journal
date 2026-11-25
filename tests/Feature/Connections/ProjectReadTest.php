@@ -238,7 +238,7 @@ final class ProjectReadTest extends TestCase
         return ProjectBinding::create(
             Host::query()->findOrFail($host->hostId),
             $project,
-            Environment::openDefaultOf($project),
+            Environment::createForDefault($project),
             Agent::create('Shop main agent', 'main-agent'),
             new BindingFolder('root-'.Str::random(6), '/Users/owner/shop', 'Owner laptop', Str::random(16)),
         );

@@ -84,15 +84,15 @@ final class AccountUsageTest extends TestCase
     {
         $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00.250Z');
         $cost = UsageCost::of('result-1', UsdAmount::from('0.0128'), $observedAt);
-        AccountUsageCost::add($this->account, 1, $cost);
-        AccountUsageCost::add($this->account, 1, $cost);
+        AccountUsageCost::create($this->account, 1, $cost);
+        AccountUsageCost::create($this->account, 1, $cost);
 
         $kept = AccountUsageCost::query()->withoutGlobalScopes()->sole();
         $this->assertSame('0.012800000000', $kept->usd);
         $this->assertSame('2026-11-21T10:00:00+00:00', $kept->observed_at->utc()->toIso8601String());
 
         $this->expectException(UsageCostConflict::class);
-        AccountUsageCost::add($this->account, 1, new UsageCost('result-1', UsdAmount::from('0.5'), $cost->observedAt));
+        AccountUsageCost::create($this->account, 1, new UsageCost('result-1', UsdAmount::from('0.5'), $cost->observedAt));
     }
 
     public function test_a_dollar_amount_with_more_than_twelve_decimals_or_a_sign_is_refused(): void
@@ -160,7 +160,7 @@ final class AccountUsageTest extends TestCase
     private function addCost(Account $account, int $generation, string $source, string $usd, string $at): void
     {
         $cost = UsageCost::of($source, UsdAmount::from($usd), CarbonImmutable::parse($at));
-        AccountUsageCost::add($account, $generation, $cost);
+        AccountUsageCost::create($account, $generation, $cost);
     }
 
     private function recordTokens(string $thread, int $total, string $at): void

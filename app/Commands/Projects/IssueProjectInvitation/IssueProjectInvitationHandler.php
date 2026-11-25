@@ -41,7 +41,7 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
 
         $invitation = ProjectInvitation::create($attempt, $command->ticketDigest);
         $type = $isFirstLine ? ConnectionAuditType::Issued : ConnectionAuditType::Replaced;
-        ConnectionAudit::ofInvitation($type, $owner, $invitation);
+        ConnectionAudit::createForInvitation($type, $owner, $invitation);
 
         return new IssuedInvitation(
             $invitation->id,
@@ -62,12 +62,12 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
         }
 
         if ($command->projectId === null) {
-            return InstallAttempt::openFor($owner, $command->issuanceKey, null);
+            return InstallAttempt::create($owner, $command->issuanceKey, null);
         }
 
         $project = Project::forId($command->projectId);
         $joins = Environment::ofProjectById($project->id, (string) $command->environmentId);
 
-        return InstallAttempt::openFor($owner, $command->issuanceKey, $joins);
+        return InstallAttempt::create($owner, $command->issuanceKey, $joins);
     }
 }

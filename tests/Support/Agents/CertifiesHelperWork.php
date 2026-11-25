@@ -94,7 +94,7 @@ trait CertifiesHelperWork
             new StartPolicy($policy->access, $policy->stopConditions, $execution, null, null, null, $requiresReview),
             driverType: DriverType::Headless,
         );
-        $start = StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
+        $start = StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 

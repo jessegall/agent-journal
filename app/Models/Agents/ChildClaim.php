@@ -64,7 +64,7 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @throws ChildClaimRefused
      */
-    public static function forMainRuntime(
+    public static function createForMainRuntime(
         ProjectBinding $binding,
         string $parentRuntimeId,
         string $agentId,
@@ -79,7 +79,7 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @throws ChildClaimRefused
      */
-    public static function nestedUnder(self $parent, string $agentId, ChildRole $role, WorkspaceFacts $read): self
+    public static function createForParent(self $parent, string $agentId, ChildRole $role, WorkspaceFacts $read): self
     {
         $binding = ProjectBinding::query()->whereKey($parent->binding_id)->firstOrFail();
 

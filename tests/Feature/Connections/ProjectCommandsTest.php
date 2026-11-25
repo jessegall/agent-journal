@@ -175,7 +175,7 @@ final class ProjectCommandsTest extends TestCase
         $binding = ProjectBinding::create(
             $host,
             $project,
-            Environment::openDefaultOf($project),
+            Environment::createForDefault($project),
             $start->agent,
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );

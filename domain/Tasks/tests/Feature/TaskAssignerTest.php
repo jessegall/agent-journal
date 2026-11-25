@@ -145,7 +145,7 @@ final class TaskAssignerTest extends TestCase
 
     private function hold(string $taskId, ActorIdentity $holder): void
     {
-        AssignmentRecord::create(
+        AssignmentRecord::createForRecord(
             Task::query()->findOrFail($taskId)->assignmentIdentity(),
             AssigneeIdentity::ofActorIdentity($holder),
         );

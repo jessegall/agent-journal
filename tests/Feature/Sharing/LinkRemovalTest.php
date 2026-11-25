@@ -49,7 +49,7 @@ final class LinkRemovalTest extends TestCase
 
         $this->source = Agent::create('Source', 'read-only-helper');
         $this->target = Agent::create('Target', 'read-only-helper');
-        Link::connect($this->source, $this->target);
+        Link::createForModels($this->source, $this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -98,7 +98,7 @@ final class LinkRemovalTest extends TestCase
         $this->inCommandUnit(
             fn () => $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target),
         );
-        Link::connect($this->source, $this->target);
+        Link::createForModels($this->source, $this->target);
         $share = Share::query()->findOrFail($this->member->share_id);
 
         $this->assertNotNull($this->member->fresh()?->invalidated_at);

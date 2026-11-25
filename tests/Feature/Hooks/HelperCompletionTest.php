@@ -252,7 +252,7 @@ final class HelperCompletionTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
+        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
 
         return $work;
     }

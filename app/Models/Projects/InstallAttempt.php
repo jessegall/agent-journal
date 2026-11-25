@@ -95,7 +95,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      * The owner's attempt under this key, opened now when there is none: two first submissions of one key make one
      * attempt, as the key is unique per owner. A Join attempt names the environment of the project it lands in.
      */
-    public static function openFor(string $userId, string $idempotencyKey, Environment|null $joins): self
+    public static function create(string $userId, string $idempotencyKey, Environment|null $joins): self
     {
         $earlier = self::query()->ofOwner($userId)->where('idempotency_key', $idempotencyKey)->lockForUpdate()
             ->limit(1)->get()->all();

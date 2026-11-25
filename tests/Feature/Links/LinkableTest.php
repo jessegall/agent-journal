@@ -45,7 +45,7 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
 
-        Link::connect($note, $label);
+        Link::createForModels($note, $label);
 
         $this->assertTrue($note->isLinkedTo($label));
         $this->assertTrue($label->isLinkedTo($note));
@@ -58,9 +58,9 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
 
-        Link::connect($note, $label);
-        Link::connect($note, $label);
-        Link::connect($label, $note);
+        Link::createForModels($note, $label);
+        Link::createForModels($note, $label);
+        Link::createForModels($label, $note);
 
         $this->assertSame(1, Link::query()->count());
         $this->assertSame(
@@ -73,7 +73,7 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        Link::connect($note, $label);
+        Link::createForModels($note, $label);
 
         $this->expectException(QueryException::class);
 
@@ -84,7 +84,7 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        Link::connect($label, $note);
+        Link::createForModels($label, $note);
 
         $this->app->make(LinkRemoval::class)->removeBetween($note, $label);
 
@@ -97,7 +97,7 @@ final class LinkableTest extends TestCase
         $visible = Note::ownedBy('visible');
         $hidden = Note::ownedBy('someone else');
         $label = Label::named('urgent');
-        Link::connect($label, $visible);
+        Link::createForModels($label, $visible);
         $this->insertRawLink($hidden, $label);
 
         $this->assertSame([$visible->id], $label->links()->among(Note::query())->pluck('id')->all());
@@ -109,8 +109,8 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
         $otherLabel = Label::named('later');
-        Link::connect($note, $label);
-        Link::connect($otherLabel, $label);
+        Link::createForModels($note, $label);
+        Link::createForModels($otherLabel, $label);
 
         $this->assertSame([$otherLabel->id], $label->links()->among(Label::query())->pluck('id')->all());
     }
@@ -119,10 +119,10 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        Link::connect($note, $label);
+        Link::createForModels($note, $label);
         $link = Link::query()->sole();
 
-        Link::connect($link, $note);
+        Link::createForModels($link, $note);
 
         $this->assertTrue($link->isLinkedTo($note));
         $this->assertSame([$note->id], $link->links()->among(Note::query())->pluck('id')->all());
@@ -130,11 +130,11 @@ final class LinkableTest extends TestCase
     }
 
     /**
-     * Writes a link row directly, past Link::connect, as a racing or foreign writer would.
+     * Writes a link row directly, past Link::createForModels, as a racing or foreign writer would.
      */
     private function insertRawLink(Model $source, Model $target): void
     {
-        Link::create(
+        Link::createForColumns(
             $source->getMorphClass(),
             (string) $source->getKey(),
             $target->getMorphClass(),

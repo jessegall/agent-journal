@@ -62,7 +62,7 @@ final class ProfileRunTest extends TestCase
 
     public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
     {
-        $run = ProfileRun::forTrigger(
+        $run = ProfileRun::create(
             ActorIdentity::of(TestStart::start('writing-helper')->agent),
             WorkReference::free('ask'),
             'journal-worker',

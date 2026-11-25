@@ -58,7 +58,7 @@ final class SettingsRecord extends Model implements EventSource, ReadableModel
      * Makes the owner's empty record at revision 0 in one insert that does nothing when it exists, so the unique owner
      * key decides between two writers without aborting the transaction.
      */
-    public static function makeEmptyFor(string $owner): void
+    public static function create(string $owner): void
     {
         $record = new self();
         $record->setAttribute($record->getKeyName(), $record->newUniqueId());

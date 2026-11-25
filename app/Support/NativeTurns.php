@@ -74,7 +74,7 @@ final readonly class NativeTurns implements NativeTurnRecords
         // Like the wake's acknowledgement, the turn is written before the hook's own transaction, in one of its own, so
         // its facts reach their listeners.
         $this->transaction->run(
-            fn () => DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now()),
+            fn () => DriverTurn::create($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now()),
         );
     }
 }

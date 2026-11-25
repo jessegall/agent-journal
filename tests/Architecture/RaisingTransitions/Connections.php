@@ -8,10 +8,10 @@ declare(strict_types=1);
  */
 return [
     'BindingStart::create',
-    'Environment::create',
-    'Environment::openDefaultOf',
+    'Environment::createForLabel',
+    'Environment::createForDefault',
     'InstallAttempt::cancel',
-    'InstallAttempt::openFor',
+    'InstallAttempt::create',
     'InstallAttempt::replace',
     'InstallAttempt::spendOn',
     'Project::create',

@@ -76,7 +76,11 @@ final class ShareAudit extends Model implements ReadableModel
         ActorIdentity $actor,
         string|null $reasonCode,
     ): self {
-        $audit = self::fact($type, $actor, $reasonCode);
+        $audit = new self();
+        $audit->type = $type;
+        $audit->actor_type = $actor->type;
+        $audit->actor_id = $actor->id;
+        $audit->reason_code = $reasonCode;
         $audit->share_id = $share?->id;
         $audit->save();
 
@@ -118,17 +122,6 @@ final class ShareAudit extends Model implements ReadableModel
             ActorType::Agent => ShareAuditActor::Agent,
             ActorType::System => ShareAuditActor::System,
         };
-    }
-
-    private static function fact(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
-    {
-        $audit = new self();
-        $audit->type = $type;
-        $audit->actor_type = $actor->type;
-        $audit->actor_id = $actor->id;
-        $audit->reason_code = $reasonCode;
-
-        return $audit;
     }
 
     // ----------[ Queries ]----------

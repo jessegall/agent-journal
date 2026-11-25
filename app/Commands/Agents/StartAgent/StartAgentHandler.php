@@ -85,7 +85,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->neededCapabilities(),
         );
 
-        $record = StartRecord::accept(
+        $record = StartRecord::create(
             $request,
             $pinned,
             $dispatcher,

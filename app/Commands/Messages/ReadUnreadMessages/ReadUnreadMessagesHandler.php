@@ -26,7 +26,7 @@ final readonly class ReadUnreadMessagesHandler implements CommandHandler
         $at = $this->clock->now();
 
         foreach ($messages as $message) {
-            MessageReadEntry::record($message, $reader, $at);
+            MessageReadEntry::create($message, $reader, $at);
         }
 
         return new ShownMessages($messages->map(ShownMessage::of(...))->values()->all());

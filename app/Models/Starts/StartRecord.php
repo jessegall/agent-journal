@@ -154,7 +154,7 @@ final class StartRecord extends Model implements EventSource, ReadableModel
      * @throws StartRequestConflict
      * @throws StartRefusalReplayed
      */
-    public static function accept(
+    public static function create(
         StartRequest $request,
         PinnedDriver $pin,
         ActorIdentity $requester,

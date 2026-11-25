@@ -150,7 +150,7 @@ final readonly class SettingsWriter
     private function lockedRecord(string $owner, string $key, int $expectedRevision): SettingsRecord
     {
         $this->transaction->assertRunning(new SettingsRecord()->getConnection());
-        SettingsRecord::makeEmptyFor($owner);
+        SettingsRecord::create($owner);
         $record = SettingsRecord::lockedForOwner($owner);
 
         if ($record->revision !== $expectedRevision) {

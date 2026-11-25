@@ -83,13 +83,6 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
         ];
     }
 
-    // ----------[ Constructors ]----------
-
-    public static function newReference(): AskReference
-    {
-        return new AskReference(new self()->newUniqueId());
-    }
-
     // ----------[ Mutations ]----------
 
     public function accept(): void
@@ -226,6 +219,11 @@ final class Ask extends Model implements Assignable, EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    public static function newReference(): AskReference
+    {
+        return new AskReference(new self()->newUniqueId());
+    }
 
     /**
      * @return Option<self>

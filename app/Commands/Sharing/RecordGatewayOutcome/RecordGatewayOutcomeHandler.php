@@ -85,7 +85,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
         }
 
         if (! Share::hasAnyLiveOn($configuration->id)) {
-            ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
+            ShareGatewayOperation::createForConfiguration($configuration, GatewayOperationType::Close);
         }
     }
 

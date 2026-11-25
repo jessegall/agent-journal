@@ -86,7 +86,7 @@ final class OutputAssessment extends Model implements ReadableModel
      * The next assessment of a part: what the approved reader made of it and what the validator found, linked to the
      * assessment it replaces.
      */
-    public static function record(
+    public static function create(
         ProcessRun $run,
         PartRun $part,
         RuleRevision $declaration,

@@ -119,7 +119,7 @@ final class ContinueStackTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
+        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($session);
         $target = new StackTarget($old->agent->id, $session->id);
         $this->app->make(StartTransaction::class)->runForSession(
             $session->id,

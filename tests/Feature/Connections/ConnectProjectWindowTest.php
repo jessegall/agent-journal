@@ -113,7 +113,7 @@ final class ConnectProjectWindowTest extends TestCase
     public function test_thirty_folders_page_as_twenty_five_then_five_and_an_expired_presence_reads_offline(): void
     {
         $project = Project::create('shop', 'Shop');
-        $environment = Environment::openDefaultOf($project);
+        $environment = Environment::createForDefault($project);
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
 
         foreach (range(1, 30) as $number) {
@@ -155,7 +155,7 @@ final class ConnectProjectWindowTest extends TestCase
             ProjectBinding::create(
                 $host,
                 $project,
-                Environment::openDefaultOf($project),
+                Environment::createForDefault($project),
                 Agent::create("{$key} main agent", 'main-agent'),
                 new BindingFolder("root-{$key}", "/Users/owner/{$key}", 'Owner laptop', "nonce-{$key}"),
             );

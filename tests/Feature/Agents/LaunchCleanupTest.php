@@ -108,15 +108,15 @@ final class LaunchCleanupTest extends TestCase
     {
         $budgets = ExecutionBudgets::defaults();
         $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
-        CapacityReservation::reserve('start-1', $budgets, $room);
+        CapacityReservation::create('start-1', $budgets, $room);
 
         $this->assertThrows(
-            fn () => CapacityReservation::reserve('start-2', $budgets, $room),
+            fn () => CapacityReservation::create('start-2', $budgets, $room),
             CapacityUnavailable::class,
         );
 
         $unguarded = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes, false);
-        CapacityReservation::reserve('start-2', $budgets, $unguarded);
+        CapacityReservation::create('start-2', $budgets, $unguarded);
         $this->assertTrue(CapacityReservation::isHeldFor('start-2'));
     }
 
@@ -132,7 +132,7 @@ final class LaunchCleanupTest extends TestCase
         $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null));
         $this->assertNull(CapacityReservation::shortageOf($budgets, $room));
 
-        CapacityReservation::reserve('start-other', $budgets, $room);
+        CapacityReservation::create('start-other', $budgets, $room);
         $this->assertSame(CleanupState::Done, $this->notify($launch, new CleanupReport(self::ALL_STEPS, null, null)));
         $this->assertTrue(CapacityReservation::isHeldFor('start-other'));
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
@@ -200,7 +200,7 @@ final class LaunchCleanupTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
             driverType: DriverType::Headless,
         );
-        StartRecord::accept($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
+        StartRecord::create($request, TestSelections::pinOf($request), ActorIdentity::system(), None::create())->startedAs($launch->session);
         SessionPolicy::create($launch->session, $request->policy);
 
         return $launch;
@@ -209,7 +209,7 @@ final class LaunchCleanupTest extends TestCase
     private function reserve(TestStart $launch): void
     {
         $capacity = new HostCapacity(8, 16 * 1024 ** 3, 50 * 1024 ** 3);
-        CapacityReservation::reserve($launch->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
+        CapacityReservation::create($launch->session->start_request_id, ExecutionBudgets::defaults(), $capacity);
     }
 
     private function notify(TestStart $launch, CleanupReport $report): CleanupState

@@ -15,7 +15,7 @@ trait SwitchesDomainsOff
 {
     private function switchDomainOff(string $domainKey): void
     {
-        SettingsRecord::makeEmptyFor('Core');
+        SettingsRecord::create('Core');
         $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
         $switch = new EncodedToggle("domain_{$domainKey}", EncodedValue::of(false));
         $record->revise($record->document->withToggle($switch));

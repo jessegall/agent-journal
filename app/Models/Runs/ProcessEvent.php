@@ -48,7 +48,7 @@ final class ProcessEvent extends Model implements ReadableModel
     /**
      * @param  array<string, mixed>  $fields
      */
-    public static function record(ProcessRun $run, int $sequence, string $type, array $fields): self
+    public static function create(ProcessRun $run, int $sequence, string $type, array $fields): self
     {
         $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
 

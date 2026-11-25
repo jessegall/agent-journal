@@ -14,6 +14,9 @@ declare(strict_types=1);
  */
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
@@ -123,6 +126,79 @@ function constructorsOf(string $source, Class_ $class): array
 }
 
 /**
+ * How often each Class::method( is written in app, the domains and tests, by "Class::method", read once a run.
+ *
+ * @return array<string, int>
+ */
+function staticCallCounts(): array
+{
+    static $counts = null;
+
+    if ($counts !== null) {
+        return $counts;
+    }
+
+    $counts = [];
+
+    foreach (['app', 'domain', 'tests'] as $folder) {
+        foreach (phpFiles(dirname(__DIR__, 2).'/'.$folder) as $file) {
+            preg_match_all('/\b([A-Z]\w*)::([a-z]\w*)\(/', (string) file_get_contents($file), $calls, PREG_SET_ORDER);
+
+            foreach ($calls as [, $class, $method]) {
+                $counts["{$class}::{$method}"] = ($counts["{$class}::{$method}"] ?? 0) + 1;
+            }
+        }
+    }
+
+    return $counts;
+}
+
+/**
+ * The faults of the model's row builders that only one constructor of the model calls, once: such a builder is
+ * inlined into that constructor (user message 22060).
+ *
+ * @return list<string>
+ */
+function inlineFaultsOf(string $source, Class_ $class): array
+{
+    $constructors = array_map(fn (ClassMethod $method) => $method->name->toString(), constructorsOf($source, $class));
+    $callers = [];
+
+    foreach ($class->getMethods() as $caller) {
+        $calls = new NodeFinder()->find($caller->stmts ?? [], fn (Node $node) => $node instanceof StaticCall
+            && $node->class instanceof Name && in_array($node->class->toLowerString(), ['self', 'static'], true)
+            && $node->name instanceof Identifier);
+
+        foreach ($calls as $call) {
+            $callers[$call->name->toString()][] = $caller->name->toString();
+        }
+    }
+
+    $faults = [];
+    $className = $class->name?->toString() ?? '';
+
+    foreach ($class->getMethods() as $method) {
+        $name = $method->name->toString();
+        $ownCallers = $callers[$name] ?? [];
+        $outsideCount = staticCallCounts()["{$className}::{$name}"] ?? 0;
+
+        $body = substr($source, $method->getStartFilePos(), $method->getEndFilePos() + 1 - $method->getStartFilePos());
+
+        $isBuilder = $method->isStatic() && preg_match(ROW_MAKES, $body) === 1;
+
+        if (! $isBuilder || count($ownCallers) !== 1 || $outsideCount > 0) {
+            continue;
+        }
+
+        if (in_array($ownCallers[0], $constructors, true) && $ownCallers[0] !== $name) {
+            $faults[] = "{$method->getStartLine()}\tbuilder {$name} serves only the constructor {$ownCallers[0]}: inline it";
+        }
+    }
+
+    return $faults;
+}
+
+/**
  * A constructor is named create, or createFor and what it is made from when the model has several (user message
  * 22052); none for any other method.
  */
@@ -196,7 +272,7 @@ function faultsOf(string $source, Class_ $class): array
         return "method {$name} is no accessor, so it does not belong in Accessors";
     };
 
-    return sectionFaults($source, $class, SECTIONS, $check);
+    return [...sectionFaults($source, $class, SECTIONS, $check), ...inlineFaultsOf($source, $class)];
 }
 
 /**
@@ -239,8 +315,9 @@ function currentSectionOf(array $marked, ClassMethod $method): string|null
 }
 
 /**
- * The section the fixer puts a method in: an accessor in Accessors and an assert method in Asserts always, any other
- * method in the section it already sits in, or where its looks put it.
+ * The section the fixer puts a method in: an accessor in Accessors and an assert method in Asserts always, a static
+ * method not named create out of Constructors into Queries, any other method in the section it already sits in, or
+ * where its looks put it.
  *
  * @param  array<int, string>  $marked
  */
@@ -254,7 +331,13 @@ function placedSection(array $marked, ClassMethod $method, string $body): string
         return 'Asserts';
     }
 
-    return currentSectionOf($marked, $method) ?? sectionOf($method, $body);
+    $current = currentSectionOf($marked, $method);
+
+    if ($current === 'Constructors' && $method->isStatic() && ! str_starts_with($method->name->toString(), 'create')) {
+        return 'Queries';
+    }
+
+    return $current ?? sectionOf($method, $body);
 }
 
 /**
