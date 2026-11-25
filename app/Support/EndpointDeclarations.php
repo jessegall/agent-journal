@@ -33,7 +33,7 @@ final class EndpointDeclarations
      */
     public static function endpointOf(string $call): Endpoint
     {
-        $declaration = Reflector::of($call);
+        $declaration = ReflectedType::of($call);
 
         if (! $declaration->implements(JournalCall::class)) {
             throw EndpointDeclarationInvalid::for($call, 'it does not implement JournalCall');

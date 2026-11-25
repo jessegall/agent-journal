@@ -17,8 +17,8 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
-use App\Support\MainInboxHandover;
+use App\Support\JournalCommands;
+use App\Support\MainInboxTakeover;
 use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -56,7 +56,7 @@ final class BindingRuntimeTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-        $this->app->make(EntryDispatchers::class)
+        $this->app->make(JournalCommands::class)
             ->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
     }
 
@@ -102,7 +102,7 @@ final class BindingRuntimeTest extends TestCase
     {
         $serverMain = Agent::create('Server main', 'main-agent', $this->localProject());
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxHandover::class)->takeOver($serverMain),
+            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($serverMain),
         );
         $binding = $this->connected('the-ticket', self::NONCE);
 

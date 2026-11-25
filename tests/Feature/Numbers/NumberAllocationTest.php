@@ -16,7 +16,7 @@ use App\Models\Records\NumberGroup;
 use App\Support\NumberedTypeRegistry;
 use App\Support\OperationDeadline;
 use App\Support\OutsideCommandAllowance;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Domain\Rules\RulesDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -94,7 +94,7 @@ final class NumberAllocationTest extends TestCase
     {
         $registry = $this->app->make(NumberedTypeRegistry::class);
 
-        $this->assertFalse(Reflector::of(LedgerDomain::class)->hasMethod('numberedModels'));
+        $this->assertFalse(ReflectedType::of(LedgerDomain::class)->hasMethod('numberedModels'));
         $registry->assertNumbered(new Ledger()->getMorphClass());
         $registry->assertNumbered(new LedgerEntry()->getMorphClass());
 

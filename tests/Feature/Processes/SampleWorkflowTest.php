@@ -18,7 +18,7 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\CommandRule;
 use App\Values\PartEnd;
@@ -148,7 +148,7 @@ final class SampleWorkflowTest extends TestCase
     {
         $part = $this->part($runId);
         $part->start('host', 1);
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $chunk = new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
         ok first
         done 1 0

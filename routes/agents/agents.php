@@ -13,7 +13,7 @@ use App\Http\Controllers\Agents\RetryDriverSwitchController;
 use App\Http\Controllers\Agents\StartAgentController;
 use App\Http\Controllers\Agents\StopAgentController;
 use App\Http\Controllers\Calls\RecordHeartbeatController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -67,7 +67,7 @@ Route::middleware('journal.agent')
     ->prefix('agent')
     ->name('agents.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(App\Http\Controllers\Calls\RetireAgentController::class)->name('retire');
         $calls->register(RecordHeartbeatController::class)->name('heartbeat');
     });

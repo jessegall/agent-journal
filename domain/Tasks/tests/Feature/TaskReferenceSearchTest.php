@@ -13,7 +13,7 @@ use App\Values\SearchQuery;
 use App\Values\SearchReader;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
-use App\Values\WorkBudget;
+use App\Values\WorkAllowance;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskReferenceRecognizer;
 use Domain\Tasks\Support\TaskSearchProvider;
@@ -106,7 +106,7 @@ final class TaskReferenceSearchTest extends TestCase
             SearchScope::within('tasks.task'),
             'tasks.task',
             10,
-            WorkBudget::forBatch(150),
+            WorkAllowance::forBatch(150),
         ));
     }
 

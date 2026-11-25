@@ -6,8 +6,8 @@ namespace Tests\Feature\Actors;
 
 use App\Models\Access\User;
 use App\Models\Presence\UserPresence;
-use App\Support\DatabaseClock;
 use App\Support\PresenceWindow;
+use App\Support\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\ActsAsOwner;
@@ -49,7 +49,7 @@ final class UserHeartbeatTest extends TestCase
     public function test_a_row_is_fresh_only_while_its_beat_plus_the_window_is_later_than_the_observation(): void
     {
         $window = $this->app->make(PresenceWindow::class);
-        $now = $this->app->make(DatabaseClock::class)->now()->startOfSecond();
+        $now = $this->app->make(ServerClock::class)->now()->startOfSecond();
         $this->beat($this->owner->id, $now);
 
         $this->assertSame(

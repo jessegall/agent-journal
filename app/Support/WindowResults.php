@@ -54,7 +54,7 @@ final readonly class WindowResults implements WindowResultsContract
         private ReflectorFactory $reflectors,
         private Application $app,
         private RequestKey $requestKey,
-        private ScopedReadMeter $meter,
+        private ReadMeter $meter,
     ) {}
 
     /**

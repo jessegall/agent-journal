@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Support\DatabaseClock;
+use App\Support\ServerClock;
 use App\Support\StartedAgent;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ trait BackdatesSessions
     private function startedSecondsAgo(StartedAgent $started, int $seconds): void
     {
         DB::table('agent_sessions')->where('id', $started->session->id)->update(
-            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
+            ['created_at' => $this->app->make(ServerClock::class)->now()->subSeconds($seconds)],
         );
     }
 }

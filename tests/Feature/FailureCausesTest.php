@@ -8,7 +8,7 @@ use App\Contracts\Refusals\RefusalMapper;
 use App\Enums\Engine\RefusalCode;
 use App\Mcp\Data\JsonRpcMessageData;
 use App\Mcp\Support\Frame;
-use App\Mcp\Support\LoggedMcpCall;
+use App\Mcp\Support\McpCall;
 use App\Mcp\Support\RelayFrames;
 use App\Mcp\Support\ResultBudget;
 use App\Support\AgentCallReply;
@@ -40,7 +40,7 @@ final class FailureCausesTest extends TestCase
                 return new MappedRefusal(RefusalCode::InvalidInput, 'Refused.');
             }
         };
-        $call = new LoggedMcpCall(
+        $call = new McpCall(
             new AgentContext('agent', 'session', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null),
             $mapper,
             new ResultBudget(),

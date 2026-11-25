@@ -30,7 +30,7 @@ use App\Http\Controllers\Calls\ShowCommandRequestController;
 use App\Http\Controllers\Calls\StartEvidenceRunController;
 use App\Http\Controllers\Calls\StartSampleController;
 use App\Http\Controllers\Calls\WithdrawProposalController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -39,7 +39,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('processes.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(AdmitLineController::class)->name('admit');
         $calls->register(FetchAdmissionController::class)->name('admission');
         $calls->register(StartEvidenceRunController::class)->name('evidence');
@@ -72,7 +72,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
 Route::middleware('journal.agent')
     ->prefix('agent')
     ->group(function (): void {
-        Container::getInstance()->make(CallRoutes::class)
+        Container::getInstance()->make(CallRegistrar::class)
             ->register(ExplainCommandController::class)
             ->name('processes.explain');
     });

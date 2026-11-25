@@ -8,9 +8,9 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Sharing\ShareGateway;
 use App\Enums\Accounts\CommandEntry;
 use App\Exceptions\SupervisorInsideTransaction;
-use App\Support\EntryDispatchers;
 use App\Support\GatewayEndpoint;
 use App\Support\GatewayOperation;
+use App\Support\JournalCommands;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
@@ -38,7 +38,7 @@ final class SharingSupervisor
     public readonly string $runId;
 
     public function __construct(
-        private readonly EntryDispatchers $dispatchers,
+        private readonly JournalCommands $dispatchers,
         private readonly ShareGatewayRegistry $gateways,
         private readonly ConnectionInterface $database,
         private readonly LoggerInterface $log,

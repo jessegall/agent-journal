@@ -6,12 +6,12 @@ namespace Tests\Architecture;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentRegistration;
-use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Support\ActorStore;
 use App\Support\DomainRegistry;
 use App\Support\Exports;
 use App\Support\Registry\AssignmentRegistry;
-use App\Support\ShellParser;
+use App\Support\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -47,11 +47,11 @@ final class BindingRulesTest extends TestCase
         'app/Http/Middleware/Agents/AuthenticateHost.php',
         'app/Http/Middleware/AuthenticateDeviceGrant.php',
         'app/Support/ConsoleOwner.php',
-        'app/Support/EntryDispatchers.php',
+        'app/Support/JournalCommands.php',
         'app/Http/Middleware/AuthenticateUser.php',
         'app/Support/EnginePass.php',
         'app/Listeners/RefreshOnSkillsChanged.php',
-        'app/Support/BuiltInProfilePins.php',
+        'app/Support/BuiltInStartProfiles.php',
     ];
 
     /**
@@ -109,7 +109,7 @@ final class BindingRulesTest extends TestCase
 
     public function test_cores_parser_is_the_shell_parser(): void
     {
-        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
+        $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void

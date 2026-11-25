@@ -6,7 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\Mcp\Support\McpCatalogue;
 use App\Support\DomainRegistry;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Tests\TestCase;
 
 /**
@@ -27,11 +27,11 @@ final class McpDiscoveryBaselineTest extends TestCase
     {
         $catalogue = $this->app->make(McpCatalogue::class);
         $tools = array_map(
-            fn (string $tool) => Reflector::of($tool)->newInstanceWithoutConstructor()->name(),
+            fn (string $tool) => ReflectedType::of($tool)->newInstanceWithoutConstructor()->name(),
             $catalogue->toolClasses(),
         );
         $resources = array_map(
-            fn (string $resource) => Reflector::of($resource)->newInstanceWithoutConstructor()->uri(),
+            fn (string $resource) => ReflectedType::of($resource)->newInstanceWithoutConstructor()->uri(),
             $catalogue->resourceClasses(),
         );
         sort($tools);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Execution;
 
 use App\Contracts\Events\RunEvents;
-use App\Contracts\Processes\StopSignal;
+use App\Contracts\Processes\StopSignal as StopSignalContract;
 use App\Enums\CommandRules\BuiltinCommand;
 use App\Enums\CommandRules\StepType;
 use App\Values\ExecutionContext;
@@ -22,7 +22,7 @@ final readonly class PlannedRun
         public RunEvents $events,
         public ExecutionPlan $plan,
         public ExecutionContext $context,
-        public StopSignal $stop = new NoStop(),
+        public StopSignalContract $stop = new StopSignal(),
     ) {}
 
     /**

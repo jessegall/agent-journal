@@ -20,7 +20,7 @@ use App\Values\SearchReader;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
 use App\Values\SourcePosition;
-use App\Values\WorkBudget;
+use App\Values\WorkAllowance;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskSearchProvider;
 use Domain\Tasks\Tests\TestCase;
@@ -158,7 +158,7 @@ final class TaskSearchProviderTest extends TestCase
             SearchScope::within(self::SOURCE_KEY),
             self::SOURCE_KEY,
             $allowance,
-            WorkBudget::forBatch(150),
+            WorkAllowance::forBatch(150),
             null,
         );
     }

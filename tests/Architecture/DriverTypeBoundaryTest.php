@@ -27,8 +27,8 @@ final class DriverTypeBoundaryTest extends TestCase
      */
     private const array REGISTRATION = [
         'app/Data/Hosts/EnrolledDescriptorData.php',
-        'app/Support/DriverRegistry.php',
-        'app/Support/RegisteredDriver.php',
+        'app/Support/DriverCatalogue.php',
+        'app/Support/Driver.php',
         'app/Values/DriverRegistration.php',
     ];
 

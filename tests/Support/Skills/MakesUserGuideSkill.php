@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Support\Access\AccessSettings;
 use App\Support\SkillPublishingService;
 use Tests\Fixtures\Skills\RecordingStack;
@@ -18,7 +18,7 @@ trait MakesUserGuideSkill
     protected function setUpMakesUserGuideSkill(): void
     {
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-        $this->app->instance(AgentStack::class, new RecordingStack());
+        $this->app->instance(AgentStacks::class, new RecordingStack());
         $this->artisan('skill:make', [
             'key' => 'user-guide',
             '--description' => 'The guide',

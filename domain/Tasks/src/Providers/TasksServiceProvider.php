@@ -6,37 +6,37 @@ namespace Domain\Tasks\Providers;
 
 use App\Contracts\Authorization\ReadEntitlements;
 use App\Contracts\Authorization\SystemEntryPolicies;
-use App\Contracts\Work\EnvironmentTasks;
+use App\Contracts\Work\EnvironmentTasks as EnvironmentTasksContract;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
 use Domain\Tasks\Console\Commands\AssignedTasksCommand;
-use Domain\Tasks\Contracts\AssignedTaskResolver;
-use Domain\Tasks\Contracts\TaskAssignmentResolver;
-use Domain\Tasks\Contracts\TaskDetailsResolver;
-use Domain\Tasks\Contracts\TaskGraphResolver;
-use Domain\Tasks\Contracts\TaskHistoryResolver;
-use Domain\Tasks\Contracts\TaskListResolver;
-use Domain\Tasks\Contracts\TaskLogResolver;
-use Domain\Tasks\Contracts\TaskProgressCounter;
-use Domain\Tasks\Contracts\TaskProofResolver;
-use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Contracts\TaskWaitResolver;
+use Domain\Tasks\Contracts\AssignedTaskResolver as AssignedTaskResolverContract;
+use Domain\Tasks\Contracts\TaskAssignmentResolver as TaskAssignmentResolverContract;
+use Domain\Tasks\Contracts\TaskDetailsResolver as TaskDetailsResolverContract;
+use Domain\Tasks\Contracts\TaskGraphResolver as TaskGraphResolverContract;
+use Domain\Tasks\Contracts\TaskHistoryResolver as TaskHistoryResolverContract;
+use Domain\Tasks\Contracts\TaskListResolver as TaskListResolverContract;
+use Domain\Tasks\Contracts\TaskLogResolver as TaskLogResolverContract;
+use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
+use Domain\Tasks\Contracts\TaskProofResolver as TaskProofResolverContract;
+use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
+use Domain\Tasks\Contracts\TaskWaitResolver as TaskWaitResolverContract;
 use Domain\Tasks\Listeners\BindTaskCheckResults;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
-use Domain\Tasks\Resolvers\AssignedTasks;
-use Domain\Tasks\Resolvers\ListedTasks;
-use Domain\Tasks\Resolvers\TaskAssignmentRecords;
-use Domain\Tasks\Resolvers\TaskCounts;
-use Domain\Tasks\Resolvers\TaskDetailRecords;
-use Domain\Tasks\Resolvers\TaskGraphRecords;
-use Domain\Tasks\Resolvers\TaskHistoryRecords;
-use Domain\Tasks\Resolvers\TaskLogRecords;
-use Domain\Tasks\Resolvers\TaskProofRecords;
-use Domain\Tasks\Resolvers\TaskWaitRecords;
-use Domain\Tasks\Resolvers\VisibleTasks;
+use Domain\Tasks\Resolvers\AssignedTaskResolver;
+use Domain\Tasks\Resolvers\TaskAssignmentResolver;
+use Domain\Tasks\Resolvers\TaskDetailsResolver;
+use Domain\Tasks\Resolvers\TaskGraphResolver;
+use Domain\Tasks\Resolvers\TaskHistoryResolver;
+use Domain\Tasks\Resolvers\TaskListResolver;
+use Domain\Tasks\Resolvers\TaskLogResolver;
+use Domain\Tasks\Resolvers\TaskProgressCounter;
+use Domain\Tasks\Resolvers\TaskProofResolver;
+use Domain\Tasks\Resolvers\TaskResolver;
+use Domain\Tasks\Resolvers\TaskWaitResolver;
 use Domain\Tasks\Support\DockedTask;
-use Domain\Tasks\Support\EnvironmentAssignedTasks;
+use Domain\Tasks\Support\EnvironmentTasks;
 use Domain\Tasks\Support\TaskDocking;
 use Illuminate\Support\ServiceProvider;
 
@@ -48,18 +48,18 @@ final class TasksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(TaskProgressCounter::class, TaskCounts::class);
-        $this->app->bind(TaskHistoryResolver::class, TaskHistoryRecords::class);
-        $this->app->bind(TaskLogResolver::class, TaskLogRecords::class);
-        $this->app->bind(TaskProofResolver::class, TaskProofRecords::class);
-        $this->app->bind(TaskWaitResolver::class, TaskWaitRecords::class);
-        $this->app->bind(TaskGraphResolver::class, TaskGraphRecords::class);
-        $this->app->bind(TaskResolver::class, VisibleTasks::class);
-        $this->app->scoped(TaskAssignmentResolver::class, TaskAssignmentRecords::class);
-        $this->app->scoped(AssignedTaskResolver::class, AssignedTasks::class);
-        $this->app->scoped(EnvironmentTasks::class, EnvironmentAssignedTasks::class);
-        $this->app->scoped(TaskListResolver::class, ListedTasks::class);
-        $this->app->scoped(TaskDetailsResolver::class, TaskDetailRecords::class);
+        $this->app->bind(TaskProgressCounterContract::class, TaskProgressCounter::class);
+        $this->app->bind(TaskHistoryResolverContract::class, TaskHistoryResolver::class);
+        $this->app->bind(TaskLogResolverContract::class, TaskLogResolver::class);
+        $this->app->bind(TaskProofResolverContract::class, TaskProofResolver::class);
+        $this->app->bind(TaskWaitResolverContract::class, TaskWaitResolver::class);
+        $this->app->bind(TaskGraphResolverContract::class, TaskGraphResolver::class);
+        $this->app->bind(TaskResolverContract::class, TaskResolver::class);
+        $this->app->scoped(TaskAssignmentResolverContract::class, TaskAssignmentResolver::class);
+        $this->app->scoped(AssignedTaskResolverContract::class, AssignedTaskResolver::class);
+        $this->app->scoped(EnvironmentTasksContract::class, EnvironmentTasks::class);
+        $this->app->scoped(TaskListResolverContract::class, TaskListResolver::class);
+        $this->app->scoped(TaskDetailsResolverContract::class, TaskDetailsResolver::class);
     }
 
     public function boot(

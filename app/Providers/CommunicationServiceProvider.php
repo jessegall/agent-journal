@@ -6,52 +6,52 @@ namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\InstallInboxesCommand;
-use App\Contracts\Actors\ActorInboxResolver;
-use App\Contracts\Actors\ActorProvisioning;
+use App\Contracts\Actors\ActorInboxResolver as ActorInboxResolverContract;
+use App\Contracts\Actors\ActorProvisioning as ActorProvisioningContract;
 use App\Contracts\Actors\ActorTypes;
-use App\Contracts\Agents\AgentNotices;
-use App\Contracts\Assignments\AssignmentDestinationResolver;
+use App\Contracts\Agents\AgentNotices as AgentNoticesContract;
+use App\Contracts\Assignments\AssignmentDestinationResolver as AssignmentDestinationResolverContract;
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Inboxes\InboxDestinationResolver;
+use App\Contracts\Inboxes\InboxDestinationResolver as InboxDestinationResolverContract;
 use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Inboxes\InboxMemberRoutes;
 use App\Contracts\Inboxes\InboxRegistration;
 use App\Contracts\Inboxes\InboxResolver;
-use App\Contracts\Inboxes\MainInbox;
-use App\Contracts\Inboxes\MainInboxTakeover;
-use App\Contracts\Notifications\Notifications;
-use App\Contracts\Notifications\NotificationTargets;
-use App\Contracts\Processes\RunClaims;
+use App\Contracts\Inboxes\MainInbox as MainInboxContract;
+use App\Contracts\Inboxes\MainInboxTakeover as MainInboxTakeoverContract;
+use App\Contracts\Notifications\Notifications as NotificationsContract;
+use App\Contracts\Notifications\NotificationTargets as NotificationTargetsContract;
+use App\Contracts\Processes\RunClaims as RunClaimsContract;
 use App\Contracts\Records\RecordProviderRegistration;
-use App\Contracts\Sharing\SharedHolders;
+use App\Contracts\Sharing\SharedHolders as SharedHoldersContract;
 use App\Enums\Agents\AccessType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Policies\MessageAdministrationPolicy;
 use App\Policies\MessagePolicy;
 use App\Support\ActorDestinationProvider;
+use App\Support\ActorInboxResolver;
+use App\Support\ActorProvisioning;
+use App\Support\AgentNotices;
 use App\Support\AssigneeDefinition;
-use App\Support\AttachedInboxes;
+use App\Support\AssignmentDestinationResolver;
 use App\Support\CoreInboxes;
 use App\Support\DestinationRegistry;
 use App\Support\EngineListenerSet;
 use App\Support\InboxAssignees;
 use App\Support\InboxDestinationProvider;
-use App\Support\InboxRunClaims;
-use App\Support\JournalAgentNotices;
+use App\Support\InboxDestinationResolver;
 use App\Support\Links\MessageLinkRecords;
-use App\Support\MainInboxHandover;
-use App\Support\MainInboxNavigation;
+use App\Support\MainInbox;
+use App\Support\MainInboxTakeover;
 use App\Support\NotificationChangeRetentionService;
-use App\Support\NotificationTargetRegistry;
-use App\Support\PersonalInboxes;
-use App\Support\PersonalInboxResolver;
-use App\Support\RecipientNotifications;
-use App\Support\RegisteredAssignmentDestinations;
-use App\Support\RegisteredInboxDestinations;
+use App\Support\Notifications;
+use App\Support\NotificationTargets;
 use App\Support\RegisteredInboxes;
+use App\Support\RunClaims;
+use App\Support\SharedHolders;
 use App\Values\AnswerBudget;
 use App\Values\PolicyDefinition;
 use App\Values\ReadEntitlement;
@@ -70,21 +70,21 @@ final class CommunicationServiceProvider extends ServiceProvider
     {
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
-        $this->app->scoped(ActorProvisioning::class, PersonalInboxes::class);
-        $this->app->scoped(ActorInboxResolver::class, PersonalInboxResolver::class);
-        $this->app->scoped(RunClaims::class, InboxRunClaims::class);
-        $this->app->scoped(MainInboxTakeover::class, MainInboxHandover::class);
-        $this->app->scoped(MainInbox::class, MainInboxNavigation::class);
-        $this->app->scoped(SharedHolders::class, AttachedInboxes::class);
+        $this->app->scoped(ActorProvisioningContract::class, ActorProvisioning::class);
+        $this->app->scoped(ActorInboxResolverContract::class, ActorInboxResolver::class);
+        $this->app->scoped(RunClaimsContract::class, RunClaims::class);
+        $this->app->scoped(MainInboxTakeoverContract::class, MainInboxTakeover::class);
+        $this->app->scoped(MainInboxContract::class, MainInbox::class);
+        $this->app->scoped(SharedHoldersContract::class, SharedHolders::class);
         $this->app->singleton(DestinationRegistry::class);
-        $this->app->scoped(AssignmentDestinationResolver::class, RegisteredAssignmentDestinations::class);
-        $this->app->scoped(InboxDestinationResolver::class, RegisteredInboxDestinations::class);
+        $this->app->scoped(AssignmentDestinationResolverContract::class, AssignmentDestinationResolver::class);
+        $this->app->scoped(InboxDestinationResolverContract::class, InboxDestinationResolver::class);
         $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
         $this->app->singleton(RegisteredInboxes::class);
-        $this->app->bind(AgentNotices::class, JournalAgentNotices::class);
-        $this->app->singleton(NotificationTargetRegistry::class);
-        $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
-        $this->app->bind(Notifications::class, RecipientNotifications::class);
+        $this->app->bind(AgentNoticesContract::class, AgentNotices::class);
+        $this->app->singleton(NotificationTargets::class);
+        $this->app->singleton(NotificationTargetsContract::class, NotificationTargets::class);
+        $this->app->bind(NotificationsContract::class, Notifications::class);
 
         $this->app->singleton(AnswerBudget::class, fn () => new AnswerBudget(
             $this->app->make('config')->integer('hooks.answer_budget'),
@@ -98,7 +98,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         InboxRegistration $inboxes,
         DestinationRegistry $destinations,
         AssignmentRegistration $assignments,
-        NotificationTargetRegistry $notificationTargets,
+        NotificationTargets $notificationTargets,
         InboxMemberPolicies $inboxMembers,
         InboxMemberRoutes $memberRoutes,
         EngineListenerSet $engineListeners,

@@ -10,8 +10,8 @@ use App\Models\Projects\Project;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
 use App\Support\OuterTransactionOwner;
+use App\Support\OutputRecorder;
 use App\Support\OutsideCommandAllowance;
-use App\Support\SpoolRecorder;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -70,7 +70,7 @@ abstract class TestCase extends BaseTestCase
         File::ensureDirectoryExists($folder, Place::ProcessOutput->folderMode());
         config([Place::ProcessOutput->rootSetting() => (string) realpath($folder)]);
         $this->app->forgetInstance(Files::class);
-        Storage::forgetDisk(SpoolRecorder::DISK);
+        Storage::forgetDisk(OutputRecorder::DISK);
     }
 
     /**

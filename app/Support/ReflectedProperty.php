@@ -27,7 +27,7 @@ final class ReflectedProperty
     private Option $type;
 
     /**
-     * @param  Closure(class-string): Reflector<object>  $reflectorOf  answers the Reflector of a declaring class
+     * @param  Closure(class-string): ReflectedType<object>  $reflectorOf  answers the ReflectedType of a declaring class
      */
     public function __construct(private readonly ReflectionProperty $property, private readonly Closure $reflectorOf)
     {
@@ -169,9 +169,9 @@ final class ReflectedProperty
     /**
      * The class that declares the property, which may be a parent of the class it was read from.
      *
-     * @return Reflector<object>
+     * @return ReflectedType<object>
      */
-    public function declaringClass(): Reflector
+    public function declaringClass(): ReflectedType
     {
         return ($this->reflectorOf)($this->property->getDeclaringClass()->getName());
     }

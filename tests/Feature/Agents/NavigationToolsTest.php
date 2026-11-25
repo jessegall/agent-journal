@@ -10,7 +10,7 @@ use App\Enums\Navigation\NavigationState;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\MainInboxHandover;
+use App\Support\MainInboxTakeover;
 use App\Values\OwnerAuthority;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
@@ -64,7 +64,7 @@ final class NavigationToolsTest extends TestCase
         $this->main = TestStart::start();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->main->agent),
+            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main->agent),
         );
     }
 

@@ -9,7 +9,7 @@ use App\Support\Inputs\Contracts\HookAnswerer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\States\AgentState;
 use App\Support\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -66,8 +66,8 @@ final class ReadyTest extends TestCase
      */
     private function hooksNotAnsweredBy(string $class): array
     {
-        $hooks = Reflector::of(HookAnswerer::class)->methods();
-        $state = Reflector::of($class);
+        $hooks = ReflectedType::of(HookAnswerer::class)->methods();
+        $state = ReflectedType::of($class);
 
         return array_values(array_map(
             fn (ReflectedMethod $method) => $method->name(),

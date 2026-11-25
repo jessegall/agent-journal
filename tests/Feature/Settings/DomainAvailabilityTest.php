@@ -7,13 +7,13 @@ namespace Tests\Feature\Settings;
 use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
 use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Domains\DomainAvailability as DomainAvailabilityContract;
 use App\Exceptions\DomainNotFound;
 use App\Exceptions\SettingStorageInvalid;
 use App\Models\Records\SettingsRecord;
+use App\Support\DomainAvailability;
 use App\Support\DomainRegistry;
 use App\Support\DomainStatus;
-use App\Support\SettingsDomainAvailability;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
 use App\Values\GroupReference;
@@ -126,12 +126,12 @@ final class DomainAvailabilityTest extends TestCase
     /**
      * The availability of a new request, reading the settings as they are now.
      */
-    private function availability(): SettingsDomainAvailability
+    private function availability(): DomainAvailability
     {
         $this->app->forgetScopedInstances();
         $this->actAs(TestActors::user(7));
-        $availability = $this->app->make(DomainAvailability::class);
-        $this->assertInstanceOf(SettingsDomainAvailability::class, $availability);
+        $availability = $this->app->make(DomainAvailabilityContract::class);
+        $this->assertInstanceOf(DomainAvailability::class, $availability);
 
         return $availability;
     }

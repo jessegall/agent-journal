@@ -7,11 +7,11 @@ namespace App\Commands\CommandRules\OpenCommandRequest;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\CommandRequest;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 
 final readonly class OpenCommandRequestHandler implements CommandHandler
 {
-    public function __construct(private ProjectKey $projects) {}
+    public function __construct(private ServedEnvironment $projects) {}
 
     public function handle(OpenCommandRequestCommand $command): string
     {

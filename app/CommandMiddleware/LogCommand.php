@@ -11,8 +11,8 @@ use App\Exceptions\ActorNotAllowed;
 use App\Support\CommandCall;
 use App\Support\CommandName;
 use App\Support\CommandRegistry;
+use App\Support\ReadMeter;
 use App\Support\RequestKey;
-use App\Support\ScopedReadMeter;
 use App\Values\ReadCounts;
 use Closure;
 use Psr\Log\LoggerInterface;
@@ -27,7 +27,7 @@ final readonly class LogCommand implements CommandMiddleware
 {
     public function __construct(
         private LoggerInterface $log,
-        private ScopedReadMeter $meter,
+        private ReadMeter $meter,
         private CommandRegistry $registry,
         private CurrentActor $actors,
         private RequestKey $key,

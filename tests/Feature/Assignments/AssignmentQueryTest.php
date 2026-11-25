@@ -6,18 +6,18 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignedWorkProvider;
-use App\Contracts\Assignments\AssignedWorkResolver;
-use App\Contracts\Assignments\AssignmentQuery;
+use App\Contracts\Assignments\AssignedWorkResolver as AssignedWorkResolverContract;
+use App\Contracts\Assignments\AssignmentQuery as AssignmentQueryContract;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
-use App\Resolvers\RegisteredAssignedWork;
+use App\Resolvers\AssignedWorkResolver;
 use App\Support\AssigneeIdentity;
 use App\Support\Bootstrappers\RegisterAssignables;
 use App\Support\DomainEntry;
 use App\Support\RecordIdentity;
 use App\Support\Registry\AssignmentRegistry;
-use App\Support\Storage\DatabaseAssignmentQuery;
+use App\Support\Storage\AssignmentQuery;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Database\Eloquent\Builder;
@@ -72,9 +72,9 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($third, $this->reviewer);
         AssignmentRecord::create(TestActors::record('plans.plan', 40), $this->builder);
 
-        $query = $this->app->make(AssignmentQuery::class);
+        $query = $this->app->make(AssignmentQueryContract::class);
 
-        $this->assertInstanceOf(DatabaseAssignmentQuery::class, $query);
+        $this->assertInstanceOf(AssignmentQuery::class, $query);
         $this->assertSame(
             self::sorted([$first, $second]),
             $this->taskIds(fn ($tasks) => $tasks->whereIn('id', $query->heldIds(Task::linkType(), $this->builder))),
@@ -95,7 +95,7 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($first, $this->builder);
         $this->hold($second, $this->builder)->delete();
 
-        $query = $this->app->make(AssignmentQuery::class);
+        $query = $this->app->make(AssignmentQueryContract::class);
 
         $this->assertSame(
             [$first],
@@ -113,7 +113,7 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($first, $this->builder);
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        $query = $this->app->make(DatabaseAssignmentQuery::class);
+        $query = $this->app->make(AssignmentQuery::class);
 
         $this->assertSame([$first], $query->heldIds(Task::linkType(), $this->builder)->pluck('record_id')->all());
         $this->assertSame([$first], $query->assignedIds(Task::linkType())->pluck('record_id')->all());
@@ -123,7 +123,7 @@ final class AssignmentQueryTest extends TestCase
     {
         $registry = new AssignmentRegistry();
         new RegisterAssignables($registry)(DomainEntry::fromClass(ErrandsDomain::class));
-        $resolver = new RegisteredAssignedWork($registry);
+        $resolver = new AssignedWorkResolver($registry);
         $this->app->scoped(ErrandWork::class, fn () => new class implements AssignedWorkProvider
         {
             public function countFor(AssigneeIdentity $holder): int
@@ -132,7 +132,7 @@ final class AssignmentQueryTest extends TestCase
             }
         });
 
-        $this->assertInstanceOf(RegisteredAssignedWork::class, $this->app->make(AssignedWorkResolver::class));
+        $this->assertInstanceOf(AssignedWorkResolver::class, $this->app->make(AssignedWorkResolverContract::class));
         $this->assertSame(3, $resolver->count(ErrandsDomain::ERRAND, $this->builder));
         $this->assertThrows(
             fn () => $resolver->count(ErrandsDomain::ERRAND, $this->reviewer),

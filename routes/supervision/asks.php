@@ -7,7 +7,7 @@ use App\Http\Controllers\MakeAskController;
 use App\Http\Controllers\ReplyToAskController;
 use App\Http\Controllers\ShowAskController;
 use App\Http\Controllers\WithdrawAskController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +15,7 @@ Route::middleware('journal.agent')
     ->prefix('agent')
     ->name('asks.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(MakeAskController::class)->name('make');
         $calls->register(ListAsksController::class)->name('list');
         $calls->register(ShowAskController::class)->name('show');

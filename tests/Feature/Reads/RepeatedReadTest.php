@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Reads;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Reads\ReadMeter as ReadMeterContract;
 use App\Exceptions\RepeatedReadRefused;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskRecords;
@@ -55,7 +55,7 @@ final class RepeatedReadTest extends TestCase
         $numbers = Task::query()->limit(12)->pluck('number')->all();
         $this->expectException(RepeatedReadRefused::class);
 
-        $this->app->make(ReadMeter::class)->measure('one read per task', function () use ($records, $numbers): void {
+        $this->app->make(ReadMeterContract::class)->measure('one read per task', function () use ($records, $numbers): void {
             foreach ($numbers as $number) {
                 $records->identityOf($number);
             }
@@ -71,7 +71,7 @@ final class RepeatedReadTest extends TestCase
 
         $records = $this->app->make(TaskRecords::class);
         $numbers = Task::query()->limit(12)->pluck('number')->all();
-        $meter = ScopedReadMeter::ofCurrentScope();
+        $meter = ReadMeter::ofCurrentScope();
         $readHalf = fn (array $half) => fn () => array_map(fn (int $number) => $records->identityOf($number), $half);
 
         $parts = $meter->measure('a page of two windows', fn () => [
@@ -96,9 +96,9 @@ final class RepeatedReadTest extends TestCase
         $numbers = Task::query()->limit(12)->pluck('number')->all();
         array_map(fn (int $number) => $records->identityOf($number), $numbers);
 
-        $identities = $this->app->make(ReadMeter::class)->measure(
+        $identities = $this->app->make(ReadMeterContract::class)->measure(
             'a declared schedule',
-            fn () => ScopedReadMeter::ofCurrentScope()->withinSchedule(
+            fn () => ReadMeter::ofCurrentScope()->withinSchedule(
                 'test batches',
                 fn () => array_map(fn (int $number) => $records->identityOf($number), $numbers),
             ),
@@ -115,7 +115,7 @@ final class RepeatedReadTest extends TestCase
             ->sequence(fn (Sequence $sequence) => ['title' => 'Task '.($sequence->index + 3)])
             ->create();
 
-        $seen = $this->app->make(ReadMeter::class)->measure('chunked', function (): int {
+        $seen = $this->app->make(ReadMeterContract::class)->measure('chunked', function (): int {
             $count = 0;
             Task::query()->readInChunks(100, function ($batch) use (&$count): void {
                 $count += $batch->count();

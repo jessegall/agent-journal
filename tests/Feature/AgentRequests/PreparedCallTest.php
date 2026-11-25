@@ -10,7 +10,7 @@ use App\Exceptions\SessionTokenRefused;
 use App\Exceptions\StartSettingMissing;
 use App\Support\AgentClientSettings;
 use App\Support\AgentRequestClient;
-use App\Support\EnvironmentCredentialSource;
+use App\Support\SessionTokenSource;
 use App\Support\SignedCall;
 use App\Support\StartEnvironment;
 use App\Support\StartProfilePin;
@@ -179,7 +179,7 @@ final class PreparedCallTest extends TestCase
      */
     private function credentials(array $environment): AgentClientSettings
     {
-        return new EnvironmentCredentialSource(new StartEnvironment($environment))->forThisStart();
+        return new SessionTokenSource(new StartEnvironment($environment))->forThisStart();
     }
 
     private function settings(): AgentClientSettings

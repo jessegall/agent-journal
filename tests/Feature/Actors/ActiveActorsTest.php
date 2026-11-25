@@ -6,7 +6,7 @@ namespace Tests\Feature\Actors;
 
 use App\Exceptions\ActiveActorCounterRepeated;
 use App\Exceptions\ActiveActorsUnavailable;
-use App\Support\ActiveActorCounterRegistry;
+use App\Support\ActiveActorRegistration;
 use App\Support\ActiveActorsResolver;
 use Tests\Fixtures\Actors\FailingAgentCounter;
 use Tests\Fixtures\Actors\FakeAgentCounter;
@@ -26,14 +26,14 @@ final class ActiveActorsTest extends TestCase
 
     private const array TABLES = [];
 
-    private ActiveActorCounterRegistry $counters;
+    private ActiveActorRegistration $counters;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->counters = new ActiveActorCounterRegistry();
-        $this->app->instance(ActiveActorCounterRegistry::class, $this->counters);
+        $this->counters = new ActiveActorRegistration();
+        $this->app->instance(ActiveActorRegistration::class, $this->counters);
     }
 
     public function test_the_snapshot_adds_every_counter_at_one_observation_time(): void

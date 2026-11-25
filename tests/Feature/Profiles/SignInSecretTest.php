@@ -20,7 +20,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\SignInChallenges;
 use App\Values\OwnerAuthority;
 use App\Values\SignInIdentity;
@@ -186,7 +186,7 @@ final class SignInSecretTest extends TestCase
         );
         $this->submit($attempt, $key);
         $attempt->waitForUser();
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($attempt->id, $attempt->refresh()->generation, SignInIdentity::unproved()),

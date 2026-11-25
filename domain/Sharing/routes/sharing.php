@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Domain\Sharing\Http\Controllers\Calls\RequestShareController;
 use Domain\Sharing\Http\Controllers\Calls\ShareStatusController;
 use Illuminate\Container\Container;
@@ -16,7 +16,7 @@ Route::middleware([
     ->prefix('agent')
     ->name('shares.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(RequestShareController::class)->name('request');
         $calls->register(ShareStatusController::class)->name('status');
     });

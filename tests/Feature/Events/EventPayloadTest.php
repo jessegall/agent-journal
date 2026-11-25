@@ -9,7 +9,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Support\ActorContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;
 use Domain\Plans\Commands\FinishPlan\FinishPlanCommand;
@@ -99,7 +99,7 @@ final class EventPayloadTest extends TestCase
     #[DataProvider('facts')]
     public function test_a_fact_keeps_its_published_shape(string $event, array $fields): void
     {
-        $declaration = Reflector::of($event);
+        $declaration = ReflectedType::of($event);
         $declared = [];
         $parameters = $declaration->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
@@ -235,7 +235,7 @@ final class EventPayloadTest extends TestCase
      */
     private function unqueueableTypesIn(string $type, array $seen): array
     {
-        $declaration = Reflector::find($type)->filter(fn (Reflector $found) => $found->isClass());
+        $declaration = ReflectedType::find($type)->filter(fn (ReflectedType $found) => $found->isClass());
 
         if (in_array($type, $seen, true) || $declaration->isEmpty()) {
             return [];

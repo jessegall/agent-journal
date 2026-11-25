@@ -17,15 +17,15 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/ProvedClaimRelease.php',
-            'app/Support/Storage/AssignmentStore.php',
+            'app/Support/ClaimRelease.php',
+            'app/Support/Storage/AssignmentStorage.php',
         ],
     ],
     AssignmentsChanged::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/AssignmentFacts.php',
+            'app/Support/AssignmentFactPublisher.php',
         ],
     ],
     AutoAssignmentConfigured::class => [

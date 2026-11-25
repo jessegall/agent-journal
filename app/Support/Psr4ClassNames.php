@@ -84,7 +84,7 @@ final class Psr4ClassNames
 
             $class = $namespace.str_replace(DIRECTORY_SEPARATOR, '\\', substr($path, strlen($folder) + 1, -4));
 
-            if (Reflector::exists($class)) {
+            if (ReflectedType::exists($class)) {
                 return $class;
             }
 

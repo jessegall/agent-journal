@@ -9,16 +9,16 @@ use App\Enums\CommandRules\SyntaxForm;
 use App\Support\CompileContext;
 use App\Values\FlowShape;
 use App\Values\Instruction;
-use App\Values\KeywordDefinition;
 use App\Values\ParsedStatement;
 use App\Values\RunContext;
+use App\Values\ScriptKeywordDefinition;
 use App\Values\StepOutcome;
 
 final readonly class ConditionalKeyword implements ScriptStatement
 {
-    public static function definition(): KeywordDefinition
+    public static function definition(): ScriptKeywordDefinition
     {
-        return KeywordDefinition::statement('IF', SyntaxForm::Block, self::class, 'Branch on a boolean member.');
+        return ScriptKeywordDefinition::statement('IF', SyntaxForm::Block, self::class, 'Branch on a boolean member.');
     }
 
     public function compile(ParsedStatement $statement, CompileContext $context): Instruction

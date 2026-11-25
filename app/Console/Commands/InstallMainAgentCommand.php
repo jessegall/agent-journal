@@ -8,7 +8,7 @@ use App\Commands\Agents\InstallMainAgent\InstallMainAgentCommand as InstallMainA
 use App\Enums\Accounts\CommandEntry;
 use App\Models\Agents\MainAgentDesignation;
 use App\Models\Projects\Project;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
 
@@ -18,7 +18,7 @@ final class InstallMainAgentCommand extends Command
 
     protected $description = 'Create the installation main agent and designate it, once';
 
-    public function handle(EntryDispatchers $dispatchers, Repository $config): int
+    public function handle(JournalCommands $dispatchers, Repository $config): int
     {
         if (! $config->boolean('processes.local_execution')) {
             $this->info('Local execution is off, so no main agent is made.');

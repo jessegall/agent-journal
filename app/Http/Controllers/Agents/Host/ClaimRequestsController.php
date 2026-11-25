@@ -12,7 +12,7 @@ use App\Models\Projects\Host;
 use App\Support\ClaimAnswer;
 use App\Support\DriverBudgets;
 use App\Support\HostClaim;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use App\Support\WatchedRuntimes;
 use App\Values\BrowserInputCapabilities;
 use App\Values\HostContext;
@@ -66,7 +66,7 @@ final readonly class ClaimRequestsController
         $claim = fn () => new HostClaim($commands->run($claiming), $commands->run($reading));
         $version = fn () => $watched->version($host->hostId);
 
-        $claimed = ScopedReadMeter::ofCurrentScope()->withinSchedule(
+        $claimed = ReadMeter::ofCurrentScope()->withinSchedule(
             'host long poll',
             fn () => $this->pollUntil($deadline, $claim, $version, $knownVersion),
         );

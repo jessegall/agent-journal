@@ -11,8 +11,8 @@ use App\Enums\CommandRules\OperandType;
 use App\Enums\CommandRules\UnresolvedType;
 use App\Enums\Processes\ShellDialect;
 use App\Support\CatalogueReflectorFactory;
+use App\Support\Classification\CommandClassifier;
 use App\Support\Classification\RedirectFacts;
-use App\Support\Classification\TreeClassifier;
 use App\Support\CommandRuleRegistry;
 use App\Support\PackageScripts;
 use App\Support\PipelineRunner;
@@ -186,7 +186,7 @@ final class TreeClassifierTest extends TestCase
             ),
         ]);
 
-        return new TreeClassifier(
+        return new CommandClassifier(
             $rules,
             new ProgramNames(),
             new RedirectFacts(),

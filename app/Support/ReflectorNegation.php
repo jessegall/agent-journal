@@ -7,20 +7,20 @@ namespace App\Support;
 use App\Exceptions\QuestionNotNegatable;
 
 /**
- * A Reflector's yes-or-no questions turned around, so a caller reads $type->not()->is(X) instead of a bang. It asks
- * the wrapped Reflector the same question and answers the opposite, so every question the Reflector answers with a
+ * A ReflectedType's yes-or-no questions turned around, so a caller reads $type->not()->is(X) instead of a bang. It asks
+ * the wrapped ReflectedType the same question and answers the opposite, so every question the ReflectedType answers with a
  * bool works here with no second copy; any other method is refused.
  *
  * @template-covariant T of object
  *
- * @mixin Reflector<T>
+ * @mixin ReflectedType<T>
  */
 final readonly class ReflectorNegation
 {
     /**
-     * @param  Reflector<T>  $type
+     * @param  ReflectedType<T>  $type
      */
-    public function __construct(private Reflector $type) {}
+    public function __construct(private ReflectedType $type) {}
 
     /**
      * @param  list<mixed>  $arguments
@@ -37,11 +37,11 @@ final readonly class ReflectorNegation
     }
 
     /**
-     * Whether the Reflector has a public instance method of this name that answers bool.
+     * Whether the ReflectedType has a public instance method of this name that answers bool.
      */
     private static function isQuestion(string $method): bool
     {
-        $reflector = Reflector::of(Reflector::class);
+        $reflector = ReflectedType::of(ReflectedType::class);
 
         if (! $reflector->hasMethod($method)) {
             return false;

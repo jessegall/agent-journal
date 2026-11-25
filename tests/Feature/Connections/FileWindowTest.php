@@ -15,7 +15,7 @@ use App\Models\Projects\ProjectFile;
 use App\Models\Projects\ProjectFileVersion;
 use App\Models\Projects\ProjectRead;
 use App\Support\ActorIdentity;
-use App\Support\PersonalInboxes;
+use App\Support\ActorProvisioning;
 use App\Values\ProjectFileText;
 use Closure;
 use Domain\Comments\CommentsDomain;
@@ -145,7 +145,7 @@ final class FileWindowTest extends TestCase
         $this->readyFolder();
         $agent = ProjectBinding::query()->firstOrFail()->main_agent_id;
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(PersonalInboxes::class)->provision(ActorIdentity::ofClass(User::class, $this->owner->id), 'Own'),
+            fn () => $this->app->make(ActorProvisioning::class)->provision(ActorIdentity::ofClass(User::class, $this->owner->id), 'Own'),
         );
         $key = ['Idempotency-Key' => (string) Str::ulid()];
         $message = [

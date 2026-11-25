@@ -17,7 +17,7 @@ use App\Enums\Assignments\AssignmentReason;
 use App\Exceptions\AssignmentConflict;
 use App\Exceptions\AssignmentRootFinished;
 use App\Policies\AssignmentRecipientPolicy;
-use App\Support\Storage\AssignmentStore;
+use App\Support\Storage\AssignmentStorage;
 use App\Support\Support\AssignmentBatch;
 use Closure;
 
@@ -37,8 +37,8 @@ final readonly class WriteAssignments implements
         private CurrentAuthorizer $authorizer,
         private AssignmentProviders $providers,
         private AssignmentTransaction $transaction,
-        private AssignmentStore $store,
-        private AssignmentFacts $facts,
+        private AssignmentStorage $store,
+        private AssignmentFactPublisher $facts,
         private AssignmentBatch $batch,
         private AdmitPublicAssignments $admission,
         private AdmitJournalAssignment $journalAdmission,

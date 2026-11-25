@@ -13,7 +13,7 @@ use App\Models\Messages\Message;
 use App\Support\DeclaredType;
 use App\Support\IsolatedListener;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -77,7 +77,7 @@ final class MessageEventsTest extends MessagingTestCase
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
         foreach (DomainFiles::in([app_path('Events/Messages')]) as $file) {
-            $event = Reflector::of('App\\Events\\Messages\\'.basename($file, '.php'));
+            $event = ReflectedType::of('App\\Events\\Messages\\'.basename($file, '.php'));
 
             if (! $event->isSubclassOf(MessageEvent::class)) {
                 continue;
@@ -90,8 +90,8 @@ final class MessageEventsTest extends MessagingTestCase
             foreach ($parameters as $parameter) {
                 $holdsModel = $parameter->type()
                     ->filter(fn (DeclaredType $type) => $type->isNamed())
-                    ->flatMap(fn (DeclaredType $type) => Reflector::find($type->name()))
-                    ->filter(fn (Reflector $type) => $type->isSubclassOf(Model::class))
+                    ->flatMap(fn (DeclaredType $type) => ReflectedType::find($type->name()))
+                    ->filter(fn (ReflectedType $type) => $type->isSubclassOf(Model::class))
                     ->isDefined();
                 $this->assertNotSame('body', $parameter->name(), basename($file));
                 $this->assertFalse($holdsModel, basename($file));

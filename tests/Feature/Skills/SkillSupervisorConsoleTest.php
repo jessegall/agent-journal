@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Skills\PublicationState;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Support\Drivers\DriverSkillAdapters;
-use App\Support\HostSkillPublisher;
 use App\Support\PublicationFiles;
+use App\Support\SkillPublisher;
 use App\Support\SkillPublishingService;
 use App\Support\SkillTables;
 use App\Support\SkillTargets;
@@ -77,11 +77,11 @@ final class SkillSupervisorConsoleTest extends TestCase
 
     public function test_retry_delivers_a_failed_publication_once_its_cause_is_fixed(): void
     {
-        $this->app->instance(SkillPublisher::class, new FullDiskPublisher($this->app->make(HostSkillPublisher::class)));
+        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         $publication = $this->intend('First text.');
         $this->publishing()->publish($publication->id, 'worker-1');
         $this->assertSame(PublicationState::Failed, $publication->refresh()->state);
-        $this->app->forgetInstance(SkillPublisher::class);
+        $this->app->forgetInstance(SkillPublisherContract::class);
 
         $this->artisan('skill:retry', ['publication' => $publication->id])
             ->expectsOutputToContain("Publication {$publication->id}: delivered.")

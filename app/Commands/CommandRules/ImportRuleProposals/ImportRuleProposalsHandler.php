@@ -9,9 +9,9 @@ use App\Declarations\RuleDeclarations;
 use App\Exceptions\DeclarationInvalid;
 use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
 use App\Support\ProposalChecks;
 use App\Support\RuleProposals;
+use App\Support\ServedEnvironment;
 use App\Values\DeclaredProposal;
 use App\Values\ImportedProposals;
 use App\Values\ProposalReceipt;
@@ -25,7 +25,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
     public function __construct(
         private RuleDeclarations $declarations,
         private ProposalChecks $checks,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private RuleProposals $proposals,
     ) {}
 

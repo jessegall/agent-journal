@@ -7,9 +7,9 @@ namespace Domain\Documents\Mcp\Resources;
 use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Values\ReadRequest;
-use Domain\Documents\Contracts\Reports\ReportReader;
+use Domain\Documents\Contracts\Reports\ReportReader as ReportReaderContract;
 use Domain\Documents\Mcp\Tools\ReadReportTool;
-use Domain\Documents\Resolvers\ReportPages;
+use Domain\Documents\Resolvers\ReportReader;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -23,7 +23,7 @@ use Laravel\Mcp\Support\UriTemplate;
 #[Description('The Markdown of a filed report.')]
 final class ReportResource extends PublicationResource implements HasUriTemplate
 {
-    public function __construct(private readonly ReportReader $reports, private readonly ReadGrant $reads) {}
+    public function __construct(private readonly ReportReaderContract $reports, private readonly ReadGrant $reads) {}
 
     public function uriTemplate(): UriTemplate
     {
@@ -38,10 +38,10 @@ final class ReportResource extends PublicationResource implements HasUriTemplate
     protected function read(Request $request): Response
     {
         $id = $this->pathArguments($request, ['id'])->recordReference('id');
-        $this->reads->assertAllowed(new ReadRequest(ReportPages::TOOL));
+        $this->reads->assertAllowed(new ReadRequest(ReportReader::TOOL));
 
         return $this->markdown(
-            $this->reports->report($id, $this->bodyArguments($request, ReportPages::TOOL)),
+            $this->reports->report($id, $this->bodyArguments($request, ReportReader::TOOL)),
             $request,
         );
     }

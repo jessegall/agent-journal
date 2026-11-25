@@ -11,7 +11,7 @@ use App\Support\AvailableListener;
 use App\Support\IsolatedListener;
 use App\Support\ListenerDeclarations;
 use App\Support\ListenerRegistry;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 
 /**
  * Wraps domain listeners for availability, in both lanes, and adds failure logging to the dispatcher's listeners
@@ -28,8 +28,8 @@ final readonly class GateListenersByDomain implements Pipe
             foreach ($listeners as $listener) {
                 $available = $this->available($declarations, $event, $listener);
 
-                $logsFailures = Reflector::exists($event)
-                    && Reflector::of($event)->isSubclassOf(ListenerFailureLog::class);
+                $logsFailures = ReflectedType::exists($event)
+                    && ReflectedType::of($event)->isSubclassOf(ListenerFailureLog::class);
 
                 $gated[$event][] = $logsFailures
                     ? new IsolatedListener($event, $available)
@@ -58,7 +58,7 @@ final readonly class GateListenersByDomain implements Pipe
     ): string|AvailableListener {
         $class = explode('@', $listener, 2)[0];
 
-        $listenerType = Reflector::find($class)->filter(fn (Reflector $type) => $type->isClass());
+        $listenerType = ReflectedType::find($class)->filter(fn (ReflectedType $type) => $type->isClass());
 
         if ($listenerType->isEmpty()) {
             throw InvalidListener::staleCache($listener, $event);

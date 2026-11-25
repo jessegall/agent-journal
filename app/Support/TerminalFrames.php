@@ -25,7 +25,7 @@ final readonly class TerminalFrames
     public function __construct(
         private CurrentActor $actor,
         private CurrentAuthorizer $authorizer,
-        private TerminalViews $views,
+        private TerminalViewCloser $views,
         private TerminalControls $controls,
         private ServerClock $clock,
     ) {}

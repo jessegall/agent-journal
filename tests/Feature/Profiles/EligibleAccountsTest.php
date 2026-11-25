@@ -15,8 +15,8 @@ use App\Exceptions\ActorNotAllowed;
 use App\Models\Accounts\Account;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\EligibleAccounts;
 use App\Support\ProfileProposal;
+use App\Support\StartAccounts;
 use App\Values\AccountLabel;
 use App\Values\ProfileKey;
 use Carbon\CarbonImmutable;
@@ -47,7 +47,7 @@ final class EligibleAccountsTest extends TestCase
         $signedOut = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Signed out'), '/journal/accounts/out');
         $signedOut->applyCheck($signedOut->sign_in_generation, AccountCheckResult::SignedOut, CarbonImmutable::now());
 
-        $eligible = $this->app->make(EligibleAccounts::class)->forDriver(DefaultDrivers::CODEX)->toArray();
+        $eligible = $this->app->make(StartAccounts::class)->forDriver(DefaultDrivers::CODEX)->toArray();
         $rows = array_column($eligible['accounts'], null, 'id');
 
         $this->assertSame([$signedOut->id, $default->id], array_keys($rows));
@@ -74,7 +74,7 @@ final class EligibleAccountsTest extends TestCase
         $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from(self::PROFILE));
         $family = $this->app->make(DriverCatalogue::class)->family(DefaultDrivers::CLAUDE_CODE);
 
-        $eligible = $this->app->make(EligibleAccounts::class)->forProfileStart(DefaultDrivers::CLAUDE_CODE, self::PROFILE);
+        $eligible = $this->app->make(StartAccounts::class)->forProfileStart(DefaultDrivers::CLAUDE_CODE, self::PROFILE);
 
         $this->assertSame($family->models, $eligible->toArray()['modelChoices']);
         $this->assertSame($family->modelAt($profile->preferredTier), $eligible->toArray()['defaultModel']);
@@ -91,6 +91,6 @@ final class EligibleAccountsTest extends TestCase
 
         $this->expectException(ActorNotAllowed::class);
 
-        $this->app->make(EligibleAccounts::class)->forDriver(DefaultDrivers::CODEX);
+        $this->app->make(StartAccounts::class)->forDriver(DefaultDrivers::CODEX);
     }
 }

@@ -22,7 +22,7 @@ use App\Models\CommandRules\RuleProposal;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\OwnerApproval;
 use App\Values\PartEnd;
@@ -102,7 +102,7 @@ trait RunsAcmeRequests
             new PartKey(1, 1, 'acme verify'),
         );
         $part->start('host', 1);
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
         $part->finishProcess(PartEnd::exited($status));
         $part->finishDraining();
@@ -142,7 +142,7 @@ trait RunsAcmeRequests
         $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $part->start('host', 1);
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
         $part->finishProcess(PartEnd::exited($status));
         $part->finishDraining();

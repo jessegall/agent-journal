@@ -7,15 +7,15 @@ namespace App\Commands\CommandRules\ApproveRuleProposal;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\RuleProposal;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
 use App\Support\RuleApprovals;
+use App\Support\ServedEnvironment;
 use App\Values\ApprovalReceipt;
 
 final readonly class ApproveRuleProposalHandler implements CommandHandler
 {
     public function __construct(
         private RuleApprovals $approvals,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
     ) {}
 
     public function handle(ApproveRuleProposalCommand $command): ApprovalReceipt

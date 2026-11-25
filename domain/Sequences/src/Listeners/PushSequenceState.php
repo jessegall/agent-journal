@@ -6,7 +6,7 @@ namespace Domain\Sequences\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Sequences\Support\States\Support\FollowSequenceStateReference;
@@ -19,7 +19,7 @@ final readonly class PushSequenceState implements Listener
 {
     public function __construct(
         private SequenceRecords $runs,
-        private AgentStack $stacks,
+        private AgentStacks $stacks,
     ) {}
 
     public function handle(SequenceStarted $event): void

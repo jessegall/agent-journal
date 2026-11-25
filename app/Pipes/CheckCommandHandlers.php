@@ -20,7 +20,7 @@ use App\Support\DeclaredCommand;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\SharedBindingCheck;
 use Illuminate\Auth\Access\Response;
 use PhpOption\Option;
@@ -159,7 +159,7 @@ final readonly class CheckCommandHandlers implements Pipe
      */
     private static function assertPermits(string $command, string $policy, string $model): void
     {
-        $declaration = Reflector::of($policy);
+        $declaration = ReflectedType::of($policy);
 
         if (! $declaration->hasMethod('permits')) {
             throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);

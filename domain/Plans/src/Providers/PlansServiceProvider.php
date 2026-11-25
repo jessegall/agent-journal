@@ -9,14 +9,14 @@ use App\Contracts\Time\VerificationTiming;
 use App\Support\FolderClasses;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
-use Domain\Plans\Contracts\PlanDetailsResolver;
-use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Contracts\PlanDetailsResolver as PlanDetailsResolverContract;
+use Domain\Plans\Contracts\PlanResolver as PlanResolverContract;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
-use Domain\Plans\Resolvers\PlanDetailRecords;
-use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Resolvers\PlanDetailsResolver;
+use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Support\DockedPlan;
 use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Support\PlanDocking;
@@ -34,8 +34,8 @@ final class PlansServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(PlanResolver::class, PlanRecords::class);
-        $this->app->scoped(PlanDetailsResolver::class, PlanDetailRecords::class);
+        $this->app->scoped(PlanResolverContract::class, PlanResolver::class);
+        $this->app->scoped(PlanDetailsResolverContract::class, PlanDetailsResolver::class);
         $this->app->scoped(VerificationTiming::class, PhaseTiming::class);
     }
 

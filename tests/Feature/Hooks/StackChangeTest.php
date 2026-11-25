@@ -13,11 +13,11 @@ use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\AgentStacks;
-use App\Support\DatabaseClock;
 use App\Support\EngineAccess;
 use App\Support\EngineStacks;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
+use App\Support\ServerClock;
 use App\Support\SignedCall;
 use App\Support\Stack\StackRestorer;
 use App\Support\StackTransaction;
@@ -96,9 +96,9 @@ final class StackChangeTest extends TestCase
 
     public function test_a_new_frame_enters_at_the_server_time_of_its_push(): void
     {
-        $before = $this->app->make(DatabaseClock::class)->now();
+        $before = $this->app->make(ServerClock::class)->now();
         $this->push('A');
-        $after = $this->app->make(DatabaseClock::class)->now();
+        $after = $this->app->make(ServerClock::class)->now();
 
         $entered = $this->storedEntryTimes()['A'];
         $this->assertTrue($entered->betweenIncluded($before, $after));

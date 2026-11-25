@@ -8,7 +8,7 @@ use App\Calls\Connections\CancelProjectCommandCall;
 use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use App\Enums\Accounts\CommandEntry;
 use App\Support\AgentContext;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Values\CallAccepted;
 
 /**
@@ -19,7 +19,7 @@ final readonly class CancelProjectCommandController
     public function __invoke(
         CancelProjectCommandCall $call,
         AgentContext $agent,
-        EntryDispatchers $dispatchers,
+        JournalCommands $dispatchers,
     ): CallAccepted {
         $cancelRun = new CancelProjectCommandRunCommand($call->requestKey, $agent->agentId);
         $dispatchers->runAsJournal(CommandEntry::HostControl, 'project command cancel', $cancelRun);

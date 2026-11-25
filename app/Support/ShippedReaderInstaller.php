@@ -55,7 +55,7 @@ final readonly class ShippedReaderInstaller
         private CommandRuleRegistry $coreRules,
         private CommandBus $commands,
         private StackTransactionRunner $transaction,
-        private SpoolRecorder $recorder,
+        private OutputRecorder $recorder,
         private OutputSummaries $summaries,
         private ActiveRules $rules,
     ) {}

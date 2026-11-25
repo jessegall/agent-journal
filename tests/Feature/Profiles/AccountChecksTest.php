@@ -19,7 +19,7 @@ use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
@@ -122,7 +122,7 @@ final class AccountChecksTest extends TestCase
 
     private function check(int $generation, AccountCheckResult $result): void
     {
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CheckAccountCommand('host', $this->account->id, $generation, $result),

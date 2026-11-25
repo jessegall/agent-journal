@@ -10,7 +10,7 @@ use App\Contracts\Hosts\HostCalls;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Engine\RefusalCode;
 use App\Models\Projects\DeviceGrant;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\ServerOrigin;
 use App\Values\InstallTicket;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +26,7 @@ final readonly class DeviceGrantController
 {
     public function __construct(private HostCalls $calls, private ServerOrigin $origin) {}
 
-    public function start(Request $request, EntryDispatchers $dispatchers): JsonResponse
+    public function start(Request $request, JournalCommands $dispatchers): JsonResponse
     {
         $host = $this->calls->verifyRelay($request);
         $deviceCode = InstallTicket::generate();
@@ -47,7 +47,7 @@ final readonly class DeviceGrantController
         ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store']);
     }
 
-    public function poll(Request $request, EntryDispatchers $dispatchers): JsonResponse
+    public function poll(Request $request, JournalCommands $dispatchers): JsonResponse
     {
         $host = $this->calls->verifyRelay($request);
         $grant = InstallTicket::generate();

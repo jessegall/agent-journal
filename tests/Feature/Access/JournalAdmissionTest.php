@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Admission\JournalAdmission as JournalAdmissionContract;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\Access\AccessSettings;
-use App\Support\Access\OwnerAdmission;
+use App\Support\Access\JournalAdmission;
 use App\Support\ActorContext;
 use Database\Factories\UserFactory;
 use Illuminate\Support\Facades\Route;
@@ -71,9 +71,9 @@ final class JournalAdmissionTest extends TestCase
         $owner = User::factory()->create();
         $agent = Agent::create('Planner', 'main-agent', $this->localProject());
         $this->configureOwner($owner->id);
-        $admission = $this->app->make(JournalAdmission::class);
+        $admission = $this->app->make(JournalAdmissionContract::class);
 
-        $this->assertInstanceOf(OwnerAdmission::class, $admission);
+        $this->assertInstanceOf(JournalAdmission::class, $admission);
         $this->assertSame([
             User::storedType(),
             $owner->id,

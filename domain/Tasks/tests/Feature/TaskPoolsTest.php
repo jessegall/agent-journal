@@ -13,10 +13,10 @@ use App\Support\RecordIdentity;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Support\Assignments\ActiveTaskAssignments;
+use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
+use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
-use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\HasBuilderAgent;
@@ -51,8 +51,8 @@ final class TaskPoolsTest extends TestCase
         $this->assertSame('Tasks', $providers->poolOwner('tasks.named'));
         $this->assertInstanceOf(OpenTaskPoolFactory::class, $providers->poolFactory('tasks.open'));
         $this->assertInstanceOf(NamedTaskPoolFactory::class, $providers->poolFactory('tasks.named'));
-        $this->assertInstanceOf(TaskAssigner::class, $providers->autoAssigner(TaskType::linkType()));
-        $this->assertInstanceOf(ActiveTaskAssignments::class, $providers->assignedWork(TaskType::linkType()));
+        $this->assertInstanceOf(AutoAssigner::class, $providers->autoAssigner(TaskType::linkType()));
+        $this->assertInstanceOf(AssignedWorkProvider::class, $providers->assignedWork(TaskType::linkType()));
     }
 
     public function test_the_open_pool_takes_neither_a_target_nor_a_list(): void

@@ -9,10 +9,10 @@ use App\Data\Pages\RecordCard;
 use App\Exceptions\DockDefinitionInvalid;
 use App\Models\Messages\Message;
 use App\Support\ActorContext;
-use App\Support\DockDefinitions;
 use App\Support\Docking\LinkCardDockable;
 use App\Support\Docking\LinkCardDockableProvider;
-use App\Support\Sources\Contracts\DockRegistration;
+use App\Support\DockRegistration;
+use App\Support\Sources\Contracts\DockRegistration as DockRegistrationContract;
 use Tests\Fixtures\Docking\FixtureDockable;
 use Tests\Fixtures\Docking\FixtureDockableProvider;
 use Tests\Fixtures\Docking\OpenGate;
@@ -80,8 +80,8 @@ final class DockDefinitionsTest extends TestCase
         $this->assertNull($card->open);
     }
 
-    private function definitions(): DockRegistration
+    private function definitions(): DockRegistrationContract
     {
-        return $this->app->make(DockDefinitions::class);
+        return $this->app->make(DockRegistration::class);
     }
 }

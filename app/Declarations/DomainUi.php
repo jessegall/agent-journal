@@ -22,7 +22,7 @@ use App\Exceptions\UiComponentMissing;
 use App\Exceptions\UiKeyInvalid;
 use App\Exceptions\UiResolverInvalid;
 use App\Support\CodeFiles;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Values\FilePath;
 use Illuminate\Support\Str;
 
@@ -212,7 +212,7 @@ final readonly class DomainUi
      */
     public function assertImplements(string $declaration, string $className, string $interface): void
     {
-        if (! Reflector::factory()->isSubclassOf($className, $interface)) {
+        if (! ReflectedType::factory()->isSubclassOf($className, $interface)) {
             throw UiResolverInvalid::notA($declaration, $className, $interface);
         }
     }
@@ -231,8 +231,8 @@ final readonly class DomainUi
      */
     public function assertInvokableController(string $declaration, string $controller): void
     {
-        if (! $this->owns($controller) || ! Reflector::exists($controller)
-            || ! Reflector::of($controller)->hasMethod('__invoke')) {
+        if (! $this->owns($controller) || ! ReflectedType::exists($controller)
+            || ! ReflectedType::of($controller)->hasMethod('__invoke')) {
             throw UiResolverInvalid::controllerNotOwned($declaration, $controller);
         }
     }

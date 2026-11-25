@@ -31,7 +31,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 use Domain\Documents\Tests\TestCase;
-use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareBudget;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -312,8 +312,8 @@ final class SharingTest extends TestCase
         }
     }
 
-    private function budget(): MeteredShareBudget
+    private function budget(): ShareBudget
     {
-        return MeteredShareBudget::forRead($this->app->make(ReadMeter::class));
+        return ShareBudget::forRead($this->app->make(ReadMeter::class));
     }
 }

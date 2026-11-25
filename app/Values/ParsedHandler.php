@@ -13,7 +13,7 @@ final readonly class ParsedHandler
      * @param  list<ParsedStatement>  $statements
      */
     public function __construct(
-        public KeywordDefinition $trigger,
+        public ScriptKeywordDefinition $trigger,
         public ScriptRange $source,
         public array $statements,
     ) {}

@@ -16,7 +16,7 @@ use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
-use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Tests\TestCase;
@@ -88,9 +88,9 @@ final class PlanSharingTest extends TestCase
         $this->assertStringNotContainsString(self::SECRET_PHASE, (string) json_encode($candidates));
     }
 
-    private function budget(): MeteredShareBudget
+    private function budget(): ShareBudget
     {
-        return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
+        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 
     private function planStructure(): PlanStructure

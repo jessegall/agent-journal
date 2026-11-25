@@ -6,12 +6,12 @@ namespace App\Commands\Agents\ChangeSupervisor;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Support\ActorIdentity;
-use App\Support\SupervisorRouting;
+use App\Support\SupervisorDefinitions;
 use App\Values\SupervisorChangeReceipt;
 
 final readonly class ChangeSupervisorHandler implements CommandHandler
 {
-    public function __construct(private SupervisorRouting $routes) {}
+    public function __construct(private SupervisorDefinitions $routes) {}
 
     public function handle(ChangeSupervisorCommand $command): SupervisorChangeReceipt
     {

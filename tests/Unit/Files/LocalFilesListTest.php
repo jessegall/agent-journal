@@ -9,8 +9,8 @@ use App\Exceptions\FileReadReentered;
 use App\Exceptions\FolderClosed;
 use App\Exceptions\FolderMissing;
 use App\Exceptions\PlaceUnavailable;
-use App\Support\LocalFiles;
-use App\Support\Reflector;
+use App\Support\Files;
+use App\Support\ReflectedType;
 use App\Values\Depth;
 use App\Values\FilePath;
 use App\Values\FolderEntry;
@@ -18,14 +18,14 @@ use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
 
 /**
- * LocalFiles lists one level unless more is asked, matches a pattern one name per '*', refuses a closed folder named
+ * Files lists one level unless more is asked, matches a pattern one name per '*', refuses a closed folder named
  * directly and a list inside a read, and reports the free space of a place.
  */
 final class LocalFilesListTest extends TestCase
 {
     private string $folder;
 
-    private LocalFiles $files;
+    private Files $files;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ final class LocalFilesListTest extends TestCase
         file_put_contents("{$this->folder}/app/Tasks/Task.php", 'x');
         file_put_contents("{$this->folder}/app/readme.md", 'x');
         config(['files.places.project' => $this->folder, 'files.places.host-skills' => null]);
-        $this->files = $this->app->make(LocalFiles::class);
+        $this->files = $this->app->make(Files::class);
     }
 
     protected function tearDown(): void
@@ -81,7 +81,7 @@ final class LocalFilesListTest extends TestCase
 
     public function test_a_list_or_pattern_inside_a_read_is_refused(): void
     {
-        $whileReading = Reflector::of(LocalFiles::class)->method('whileReading');
+        $whileReading = ReflectedType::of(Files::class)->method('whileReading');
         $outer = $this->path('app/readme.md');
 
         $this->assertThrows(

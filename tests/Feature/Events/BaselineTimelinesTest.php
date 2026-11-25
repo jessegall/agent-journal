@@ -18,7 +18,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\StackTransaction;
 use App\Support\StartSessions;
 use App\Values\OwnerAuthority;
@@ -401,7 +401,7 @@ final class BaselineTimelinesTest extends TestCase
         );
         $this->timeline = [];
 
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new ReconcileSignInsCommand('host-a', []),

@@ -8,25 +8,25 @@ use App\Actions\Access\CreateNewUser;
 use App\Actions\Access\ResetUserPassword;
 use App\Contracts\Actors\ActiveActorRegistration;
 use App\Contracts\Actors\ActorProviderRegistration;
-use App\Contracts\Actors\CurrentUserResolver;
-use App\Contracts\Admission\JournalAdmission;
+use App\Contracts\Actors\CurrentUserResolver as CurrentUserResolverContract;
+use App\Contracts\Admission\JournalAdmission as JournalAdmissionContract;
 use App\Contracts\Assignments\AssignmentRegistration;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Inboxes\InboxEligibility;
+use App\Contracts\Inboxes\InboxEligibility as InboxEligibilityContract;
 use App\Contracts\Inboxes\InboxMemberRoutes as InboxMemberRoutesContract;
-use App\Contracts\Messages\AdmittedRecipients;
+use App\Contracts\Messages\AdmittedRecipients as AdmittedRecipientsContract;
 use App\Contracts\Reflection\TypeReflections;
 use App\Enums\Agents\AccessType;
 use App\Models\Access\Passkey;
 use App\Models\Access\User;
 use App\Policies\EnvironmentAccessPolicy;
-use App\Resolvers\CurrentUserRecords;
+use App\Resolvers\CurrentUserResolver;
 use App\Support\Access\AccessSettings;
-use App\Support\Access\AdmittedUsers;
-use App\Support\Access\EnvironmentInboxEligibility;
+use App\Support\Access\AdmittedRecipients;
+use App\Support\Access\InboxEligibility;
 use App\Support\Access\InboxMemberRoutes;
-use App\Support\Access\OwnerAdmission;
+use App\Support\Access\JournalAdmission;
 use App\Support\Access\OwnerAuthorizerProvider;
 use App\Support\Access\PresentUserCounter;
 use App\Support\Access\UserActivity;
@@ -52,10 +52,10 @@ class AccessServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
-        $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
-        $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
-        $this->app->bind(InboxEligibility::class, EnvironmentInboxEligibility::class);
+        $this->app->bind(CurrentUserResolverContract::class, CurrentUserResolver::class);
+        $this->app->bind(JournalAdmissionContract::class, JournalAdmission::class);
+        $this->app->bind(AdmittedRecipientsContract::class, AdmittedRecipients::class);
+        $this->app->bind(InboxEligibilityContract::class, InboxEligibility::class);
         $this->app->singleton(InboxMemberRoutesContract::class, InboxMemberRoutes::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.

@@ -8,7 +8,7 @@ use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCompatibilities;
+use App\Contracts\Drivers\DriverCompatibilities as DriverCompatibilitiesContract;
 use App\Enums\Agents\SessionProcessState;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverEvidence;
@@ -20,7 +20,7 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
-use App\Resolvers\PinnedCompatibilities;
+use App\Resolvers\DriverCompatibilities;
 use App\Support\ActorContext;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\Compatibility\DriverCompatibility;
@@ -77,7 +77,7 @@ final class HostStartsTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
+        $this->app->instance(DriverCompatibilitiesContract::class, new class implements DriverCompatibilitiesContract
         {
             public function for(string $driver): DriverCompatibility
             {
@@ -90,8 +90,8 @@ final class HostStartsTest extends TestCase
 
     public function test_until_the_real_program_shows_its_arrangement_no_start_is_claimed(): void
     {
-        $this->app->forgetInstance(DriverCompatibilities::class);
-        $this->app->bind(DriverCompatibilities::class, PinnedCompatibilities::class);
+        $this->app->forgetInstance(DriverCompatibilitiesContract::class);
+        $this->app->bind(DriverCompatibilitiesContract::class, DriverCompatibilities::class);
         [$host, $opened] = $this->openRuntime();
 
         $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);

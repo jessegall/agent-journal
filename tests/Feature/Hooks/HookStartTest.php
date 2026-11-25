@@ -18,6 +18,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\ConversationVisits;
 use App\Support\CredentialLookup;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Support\Drivers\DriverCapabilities;
@@ -26,7 +27,6 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\StopDetails;
 use App\Support\OperationDeadline;
-use App\Support\RecordConversationVisit;
 use App\Support\SignedCall;
 use App\Support\Stack\HookAnswer;
 use App\Support\StartedAgent;
@@ -136,7 +136,7 @@ final class HookStartTest extends TestCase
     public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
     {
         $started = $this->start('main-agent');
-        $visits = $this->app->make(RecordConversationVisit::class);
+        $visits = $this->app->make(ConversationVisits::class);
 
         $visits->entered($started->session->id, 'driver-session-1', null, 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($started);

@@ -41,7 +41,7 @@ use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskChangedSinceRead;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
-use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Policies\RecordPolicy;
 use Domain\Tasks\Support\TaskDetailsFactory;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskExecution;
@@ -85,7 +85,7 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[UseFactory(TaskFactory::class)]
-#[UsePolicy(TaskRunPolicy::class)]
+#[UsePolicy(RecordPolicy::class)]
 final class Task extends Model implements Assignable, Commentable, EventSource, Focusable, Numbered, ReadableModel
 {
     use AssignableListing;

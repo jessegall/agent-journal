@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\Records\AuthoredModel;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
 
@@ -25,8 +25,8 @@ final class AuthoredModelTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (Reflector::factory()->isSubclassOf($class, AuthoredModel::class)
-                && ! Reflector::factory()->isSubclassOf($class, Model::class)) {
+            if (ReflectedType::factory()->isSubclassOf($class, AuthoredModel::class)
+                && ! ReflectedType::factory()->isSubclassOf($class, Model::class)) {
                 $faults[] = $class;
             }
         }

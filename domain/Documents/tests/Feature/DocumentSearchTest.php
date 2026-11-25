@@ -16,7 +16,7 @@ use App\Values\SearchResult;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
 use App\Values\SourcePosition;
-use App\Values\WorkBudget;
+use App\Values\WorkAllowance;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
@@ -133,7 +133,7 @@ final class DocumentSearchTest extends TestCase
             SearchScope::within('documents.document'),
             'documents.document',
             10,
-            WorkBudget::forBatch(150),
+            WorkAllowance::forBatch(150),
         );
 
         $batch = $provider->search($query);

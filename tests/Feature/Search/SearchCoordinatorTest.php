@@ -12,11 +12,11 @@ use App\Enums\Search\SearchStatus;
 use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
 use App\Support\RecordIdentity;
+use App\Support\RecordSearch;
 use App\Support\Searchable;
 use App\Support\SearchablesRegistry;
-use App\Support\SearchCoordinator;
 use App\Support\SearchDiagnostics;
-use App\Support\SearchEligibility;
+use App\Support\SearchSources;
 use App\Support\SearchStates;
 use App\Values\RefreshCandidates;
 use App\Values\SearchAnswer;
@@ -311,7 +311,7 @@ final class SearchCoordinatorTest extends TestCase
         );
     }
 
-    private function resume(SearchCoordinator $coordinator, SearchAnswer $answer): SearchAnswer
+    private function resume(RecordSearch $coordinator, SearchAnswer $answer): SearchAnswer
     {
         $this->assertNotNull($answer->continuation);
 
@@ -325,19 +325,19 @@ final class SearchCoordinatorTest extends TestCase
     /**
      * @param  array<string, list<Searchable>>  $fixtures
      */
-    private function coordinator(MutableReadGrant $grant, array $fixtures): SearchCoordinator
+    private function coordinator(MutableReadGrant $grant, array $fixtures): RecordSearch
     {
         $this->app->instance(ReadGrant::class, $grant);
         $declarations = ['Tasks' => new TasksDomain()->searchables(), ...$fixtures];
 
-        $eligibility = new SearchEligibility(
+        $eligibility = new SearchSources(
             SearchablesRegistry::publishing($declarations),
             new SwitchedOffDomains(),
             $grant,
             $this->app,
         );
 
-        return new SearchCoordinator(
+        return new RecordSearch(
             $eligibility,
             $this->app->make(SearchStates::class),
             $this->records(),
@@ -390,7 +390,7 @@ final class SearchCoordinatorTest extends TestCase
     private function hanging(): Searchable
     {
         return Searchable::make('hang', 'Hanging', OpenSearchAccess::class, function (SearchQuery|RefreshCandidates $query): SearchBatch {
-            usleep((SearchCoordinator::SOURCE_MILLISECONDS + 50) * 1000);
+            usleep((RecordSearch::SOURCE_MILLISECONDS + 50) * 1000);
 
             return SearchBatch::scanning('1', SourcePosition::of(['step' => 1]));
         });

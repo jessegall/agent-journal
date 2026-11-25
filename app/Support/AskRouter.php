@@ -21,7 +21,7 @@ final readonly class AskRouter
 {
     public function __construct(
         private SupervisorRecipients $recipients,
-        private SupervisorRouting $routes,
+        private SupervisorDefinitions $routes,
         private JournalAssignmentWriter $writer,
         private AskAttention $attention,
         private SupervisorDispatch $dispatch,

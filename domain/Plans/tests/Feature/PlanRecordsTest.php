@@ -14,7 +14,7 @@ use App\Values\OwnerAuthority;
 use App\Values\StackTarget;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
 use Domain\Plans\Tests\TestCase;
@@ -223,9 +223,9 @@ final class PlanRecordsTest extends TestCase
         $this->assertNull($selection->card);
     }
 
-    private function records(): PlanRecords
+    private function records(): PlanResolver
     {
-        return $this->app->make(PlanRecords::class);
+        return $this->app->make(PlanResolver::class);
     }
 
     /**

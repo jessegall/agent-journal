@@ -24,7 +24,7 @@ use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Data\DriverChoiceData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\ChatPages;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -43,7 +43,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private ConversationRequest $request,
         private AgentDirectory $agents,
         private ChatPages $pages,
-        private ChatInboxes $chats,
+        private PairChats $chats,
         private SlotSections $slots,
         private StartAccounts $startAccounts,
         private DriverCatalogue $drivers,

@@ -14,8 +14,8 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Support\Assignments\ActiveTaskAssignments;
-use Domain\Tasks\Support\Assignments\TaskAssigner;
+use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
+use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\TaskType;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
@@ -64,7 +64,7 @@ final class TaskAssignerTest extends TestCase
 
         $this->assertSame(
             2,
-            $this->app->make(ActiveTaskAssignments::class)->countFor(AssigneeIdentity::ofActorIdentity($this->builder)),
+            $this->app->make(AssignedWorkProvider::class)->countFor(AssigneeIdentity::ofActorIdentity($this->builder)),
         );
     }
 
@@ -76,7 +76,7 @@ final class TaskAssignerTest extends TestCase
         $this->hold($lowest, $this->reviewer);
         $this->task(TaskState::Started);
 
-        $assigner = $this->app->make(TaskAssigner::class);
+        $assigner = $this->app->make(AutoAssigner::class);
 
         $this->assertSame([$middle], $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1)->ids);
 
@@ -103,7 +103,7 @@ final class TaskAssignerTest extends TestCase
             $second,
         ]));
 
-        $assigner = $this->app->make(TaskAssigner::class);
+        $assigner = $this->app->make(AutoAssigner::class);
 
         $this->assertSame([$first], $assigner->pick($this->builder, $pool, 1)->ids);
         $this->assertSame([
@@ -120,14 +120,14 @@ final class TaskAssignerTest extends TestCase
 
         $pool = self::pool(PoolMembers::ordered($listed));
 
-        $picked = $this->app->make(TaskAssigner::class)->pick($this->builder, $pool, 12);
+        $picked = $this->app->make(AutoAssigner::class)->pick($this->builder, $pool, 12);
 
         $this->assertSame($listed, $picked->ids);
     }
 
     public function test_a_limit_outside_one_to_a_thousand_is_refused(): void
     {
-        $assigner = $this->app->make(TaskAssigner::class);
+        $assigner = $this->app->make(AutoAssigner::class);
 
         $this->assertThrows(
             fn () => $assigner->pick($this->builder, self::pool(PoolMembers::all()), 0),
@@ -142,7 +142,7 @@ final class TaskAssignerTest extends TestCase
 
     public function test_a_candidate_must_still_be_open(): void
     {
-        $assigner = $this->app->make(TaskAssigner::class);
+        $assigner = $this->app->make(AutoAssigner::class);
         $open = Task::factory()->create();
         $finished = Task::factory()->create(['state' => TaskState::Finished]);
 

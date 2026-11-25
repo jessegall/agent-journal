@@ -8,9 +8,9 @@ use App\Contracts\Authorization\ReadGrant;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Values\ReadRequest;
-use Domain\Documents\Contracts\Documents\DocumentReader;
+use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;
 use Domain\Documents\Mcp\Tools\ReadDocumentTool;
-use Domain\Documents\Resolvers\DocumentPages;
+use Domain\Documents\Resolvers\DocumentReader;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -24,7 +24,7 @@ use Laravel\Mcp\Support\UriTemplate;
 #[Description('The Markdown of one published document revision.')]
 final class DocumentRevisionResource extends PublicationResource implements HasUriTemplate
 {
-    public function __construct(private readonly DocumentReader $documents, private readonly ReadGrant $reads) {}
+    public function __construct(private readonly DocumentReaderContract $documents, private readonly ReadGrant $reads) {}
 
     public function uriTemplate(): UriTemplate
     {
@@ -49,10 +49,10 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }
 
-        $this->reads->assertAllowed(new ReadRequest(DocumentPages::TOOL));
+        $this->reads->assertAllowed(new ReadRequest(DocumentReader::TOOL));
 
         return $this->markdown(
-            $this->documents->document($id, $this->bodyArguments($request, DocumentPages::TOOL, $revision)),
+            $this->documents->document($id, $this->bodyArguments($request, DocumentReader::TOOL, $revision)),
             $request,
         );
     }

@@ -26,7 +26,7 @@ final readonly class ProjectCommands
 {
     public function __construct(
         private JournalRoutes $routes,
-        private EntryDispatchers $dispatchers,
+        private JournalCommands $dispatchers,
         private CommandRunEvidence $evidence,
         private string $artisanPath,
         private string $journalUrl,

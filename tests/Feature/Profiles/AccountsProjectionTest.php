@@ -9,7 +9,7 @@ use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\JournalCommands;
+use App\Contracts\Bus\JournalCommands as JournalCommandsContract;
 use App\Enums\Accounts\AccountNoticeReason;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Drivers\DriverFailure;
@@ -20,7 +20,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
@@ -93,7 +93,7 @@ final class AccountsProjectionTest extends TestCase
     // A failure is never swallowed, so the failing notice command is thrown, named by its fact.
     public function test_a_failing_notice_command_is_thrown_as_a_failed_listener_of_its_fact(): void
     {
-        $this->app->bind(JournalCommands::class, fn () => throw new RuntimeException('The notice command failed.'));
+        $this->app->bind(JournalCommandsContract::class, fn () => throw new RuntimeException('The notice command failed.'));
         $failed = new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed);
 
         $this->assertThrows(
@@ -106,7 +106,7 @@ final class AccountsProjectionTest extends TestCase
     public function test_recording_the_notice_again_counts_it_and_refreshes_for_the_same_notice(): void
     {
         $record = new RecordAccountNoticeCommand('claude-code', AccountNoticeReason::NeedsSignIn);
-        $journal = $this->app->make(EntryDispatchers::class);
+        $journal = $this->app->make(JournalCommands::class);
 
         $journal->runAsJournal(CommandEntry::AccountMaintenance, 'test', $record);
         $journal->runAsJournal(CommandEntry::AccountMaintenance, 'test', $record);

@@ -12,7 +12,7 @@ use App\Support\ActorContext;
 use App\Support\DomainRegistry;
 use App\Support\Searchable;
 use App\Support\SearchablesRegistry;
-use App\Support\SearchEligibility;
+use App\Support\SearchSources;
 use App\Values\ScopeResolution;
 use App\Values\SearchBatch;
 use App\Values\SearchQuery;
@@ -158,13 +158,13 @@ final class SearchRequestTest extends TestCase
         return $this->eligibility()->scopeOf($reader, $request);
     }
 
-    private function eligibility(): SearchEligibility
+    private function eligibility(): SearchSources
     {
         $declarations = DomainRegistry::from([TasksDomain::class, LogsDomain::class])->searchableDeclarations();
         $plans = Searchable::make('plan', 'Plans', OpenSearchAccess::class, $this->countingProvider());
         $declarations['Plans'] = [$plans];
 
-        return new SearchEligibility(
+        return new SearchSources(
             SearchablesRegistry::publishing($declarations),
             new SwitchedOffDomains(),
             new NamedReadGrant(['tasks_read', 'logs_read']),

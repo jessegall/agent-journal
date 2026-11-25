@@ -10,7 +10,7 @@ use App\Exceptions\ScriptSyntaxError;
 final readonly class ParsedStatement
 {
     public function __construct(
-        public KeywordDefinition $keyword,
+        public ScriptKeywordDefinition $keyword,
         public ScriptRange $source,
         public ScriptRange $operandSource,
         public CommandOperand|BooleanOperand|TextOperand|BlockOperand $operand,

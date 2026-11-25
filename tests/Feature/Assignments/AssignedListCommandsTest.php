@@ -8,7 +8,7 @@ use App\Exceptions\StartSettingMissing;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
-use App\Support\EnvironmentCredentialSource;
+use App\Support\SessionTokenSource;
 use App\Support\StartEnvironment;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -128,7 +128,7 @@ final class AssignedListCommandsTest extends TestCase
     public function test_the_starter_turns_subject_and_verb_into_the_command_and_needs_the_start_settings(): void
     {
         $this->assertThrows(
-            fn () => new EnvironmentCredentialSource(new StartEnvironment([]))->forThisStart(),
+            fn () => new SessionTokenSource(new StartEnvironment([]))->forThisStart(),
             StartSettingMissing::class,
         );
 

@@ -17,7 +17,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Tests\TestCase;
 use Domain\Plans\Values\PlanFilters;
 use Illuminate\Support\Facades\Event;
@@ -119,7 +119,7 @@ final class StartPlanTest extends TestCase
 
         $canStart = [];
 
-        foreach ($this->app->make(PlanRecords::class)->list(new PlanFilters())->cards as $card) {
+        foreach ($this->app->make(PlanResolver::class)->list(new PlanFilters())->cards as $card) {
             $canStart[$card->id] = $card->canStart;
         }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use Illuminate\Events\NullDispatcher;
 
 /**
@@ -24,7 +24,7 @@ trait CountsLoads
         $eventsAreOff = static::getEventDispatcher() === null || static::getEventDispatcher() instanceof NullDispatcher;
 
         if ($eventsAreOff) {
-            ScopedReadMeter::ofCurrentScope()->recordModel(static::class);
+            ReadMeter::ofCurrentScope()->recordModel(static::class);
         }
 
         return $model;

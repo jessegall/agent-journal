@@ -8,8 +8,8 @@ use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
+use App\Support\ReadMeter;
 use App\Support\RecordIdentity;
-use App\Support\ScopedReadMeter;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecordRegistry;
 use App\Support\ShareSelection;
@@ -35,7 +35,7 @@ final readonly class ShareScope
      * @throws RecordUnavailable when the root is missing or may not be disclosed
      * @throws ShareScopeTooLarge when finding the candidates would pass the budget
      */
-    public function discover(RecordIdentity $root, MeteredShareBudget $budget): ShareCandidates
+    public function discover(RecordIdentity $root, ShareBudget $budget): ShareCandidates
     {
         $provider = $this->records->provider($root->type);
 
@@ -46,7 +46,7 @@ final readonly class ShareScope
 
             $card = $budget->run(fn () => $provider->preview(new ShareSelection($root, []), $budget));
 
-            $linked = ScopedReadMeter::ofCurrentScope()->withinSchedule(
+            $linked = ReadMeter::ofCurrentScope()->withinSchedule(
                 'share scope batches',
                 fn () => $this->linkedFrom($root, $budget),
             );
@@ -62,7 +62,7 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function linkedFrom(RecordIdentity $root, MeteredShareBudget $budget): array
+    private function linkedFrom(RecordIdentity $root, ShareBudget $budget): array
     {
         $found = [];
         $seen = [$this->key($root)];
@@ -106,7 +106,7 @@ final readonly class ShareScope
     private function candidatesOf(
         RecordIdentity $source,
         array $capabilities,
-        MeteredShareBudget $budget,
+        ShareBudget $budget,
         array $seen,
     ): array {
         $links = $budget->run(
@@ -160,7 +160,7 @@ final readonly class ShareScope
         RecordIdentity $source,
         string $type,
         array $targets,
-        MeteredShareBudget $budget,
+        ShareBudget $budget,
     ): array {
         $provider = $this->records->provider($type);
         $cards = [];

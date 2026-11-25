@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Declarations;
 
 use App\Support\DeclaredType;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Spatie\LaravelData\Data;
 
 /**
@@ -20,7 +20,7 @@ final class ResolverDataClass
      */
     public static function of(string $resolver): string|null
     {
-        $type = Reflector::of($resolver)->method('read')->returnType()
+        $type = ReflectedType::of($resolver)->method('read')->returnType()
             ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin())
             ->filter(fn (DeclaredType $declared) => ! $declared->allowsNull);
 
@@ -30,7 +30,7 @@ final class ResolverDataClass
 
         $name = $type->get()->name();
 
-        if (! Reflector::factory()->isSubclassOf($name, Data::class) || Reflector::of($name)->isAbstract()) {
+        if (! ReflectedType::factory()->isSubclassOf($name, Data::class) || ReflectedType::of($name)->isAbstract()) {
             return null;
         }
 

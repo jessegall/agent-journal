@@ -10,7 +10,7 @@ use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Skills\PublicationState;
@@ -23,8 +23,8 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Support\ActorContext;
 use App\Support\DomainRegistry;
-use App\Support\HostSkillPublisher;
 use App\Support\OpenedRuntime;
+use App\Support\SkillPublisher;
 use App\Support\StartGrant;
 use App\Values\OwnerAuthority;
 use App\Values\ProfileBase;
@@ -115,7 +115,7 @@ final class StartSkillsTest extends TestCase
 
     public function test_a_failed_set_refuses_the_grant_so_nothing_spawns(): void
     {
-        $this->app->instance(SkillPublisher::class, new FullDiskPublisher($this->app->make(HostSkillPublisher::class)));
+        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         [$host, $opened] = $this->openCodexRuntime();
 
         $this->expectException(StartRefused::class);

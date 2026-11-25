@@ -21,7 +21,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\EnrolledHost;
-use App\Support\MainInboxHandover;
+use App\Support\MainInboxTakeover;
 use App\Support\NavigationLibrary;
 use App\Support\OpenedRuntime;
 use App\Values\MenuStep;
@@ -414,7 +414,7 @@ final class NavigationRaiseRouteTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxHandover::class)->takeOver($agent),
+            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($agent),
         );
     }
 }

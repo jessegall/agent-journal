@@ -13,7 +13,7 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
 use App\Support\AgentContext;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use App\Support\SignedCall;
 use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
@@ -68,7 +68,7 @@ final class ConnectedProjectTest extends TestCase
         $shop = $this->bindingOf('shop-ticket', 'nonce-aaaaaaaaaaaaaaaa');
 
         $this->projectOfCallBy($shop->main_agent_id);
-        $projects = $this->app->make(ProjectKey::class);
+        $projects = $this->app->make(ServedEnvironment::class);
         $projects->assertFolderAllowed($shop->canonical_root.'/src');
 
         $this->expectException(FolderOutsideProject::class);
@@ -102,7 +102,7 @@ final class ConnectedProjectTest extends TestCase
         $middleware = $this->app->make(ResolveConnectedProject::class);
         $middleware->handle(Request::create('/agent/call'), fn () => new Response());
 
-        return $this->app->make(ProjectKey::class)->current();
+        return $this->app->make(ServedEnvironment::class)->current();
     }
 
     /**

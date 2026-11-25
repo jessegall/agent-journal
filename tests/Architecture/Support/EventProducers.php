@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
 use App\Support\DeclaredType;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
@@ -144,7 +144,7 @@ final readonly class EventProducers
     {
         $class = $call->eventClass;
 
-        if ($class !== null && Reflector::factory()->isSubclassOf($class, Event::class)) {
+        if ($class !== null && ReflectedType::factory()->isSubclassOf($class, Event::class)) {
             return $class;
         }
 
@@ -231,14 +231,14 @@ final readonly class EventProducers
 
         $faults = [];
 
-        foreach (Reflector::of($event)->properties() as $property) {
+        foreach (ReflectedType::of($event)->properties() as $property) {
             $class = $property->type()
                 ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
                 ->map(fn (DeclaredType $type) => $type->name())
                 ->getOrElse('');
             $holds = array_filter(
                 self::UNSERIALIZABLE,
-                fn (string $kind) => Reflector::factory()->is($class, $kind),
+                fn (string $kind) => ReflectedType::factory()->is($class, $kind),
             );
 
             if ($holds !== [] || str_contains($class, 'EventUnit')) {

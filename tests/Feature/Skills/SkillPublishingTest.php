@@ -6,11 +6,11 @@ namespace Tests\Feature\Skills;
 
 use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
 use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
-use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Enums\Skills\PublicationState;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
-use App\Support\HostSkillPublisher;
+use App\Support\SkillPublisher;
 use App\Support\SkillPublishingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
@@ -72,7 +72,7 @@ final class SkillPublishingTest extends TestCase
     {
         $this->publishing()->publish($this->intend('First text.')->id, 'worker-1');
         $before = (string) readlink($this->target());
-        $this->app->instance(SkillPublisher::class, new FullDiskPublisher($this->app->make(HostSkillPublisher::class)));
+        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         $second = $this->intend('Second text.');
 
         $this->assertSame(PublicationState::Failed, $this->publishing()->publish($second->id, 'worker-1'));

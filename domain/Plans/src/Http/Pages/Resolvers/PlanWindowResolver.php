@@ -12,7 +12,7 @@ use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Pages\Plans\PlansShow;
 use Domain\Plans\Http\Requests\PlanRequest;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Support\PlanGraphService;
 use Domain\Plans\Support\PlanOutline;
 use Domain\Plans\Support\PlanReviewView;
@@ -28,7 +28,7 @@ final readonly class PlanWindowResolver implements PageResolver
 {
     public function __construct(
         private PlanRequest $request,
-        private PlanRecords $records,
+        private PlanResolver $records,
         private PlanOutline $outline,
         private PlanReviewView $review,
         private TaskGraphResolver $graphs,

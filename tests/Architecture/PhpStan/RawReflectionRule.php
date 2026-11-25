@@ -52,7 +52,7 @@ final class RawReflectionRule implements Rule
         'app/Support/ReflectedProperty.php',
         'app/Support/ReflectionCatalogue.php',
         'app/Support/SourceNodeAttributes.php',
-        'app/Support/Reflector.php',
+        'app/Support/ReflectedType.php',
     ];
 
     /**

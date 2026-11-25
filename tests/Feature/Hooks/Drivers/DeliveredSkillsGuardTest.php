@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Drivers;
 
-use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Models\Agents\AgentRuntime;
 use App\Support\Decisions\Decision;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
@@ -16,7 +16,7 @@ use App\Support\Drivers\HookPayload;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
-use App\Support\ShellParser;
+use App\Support\ShellCommandParser;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
 use App\Values\AgentText;
@@ -151,7 +151,7 @@ final class DeliveredSkillsGuardTest extends TestCase
      */
     private function useTheRealShellParser(): void
     {
-        $this->app->scoped(ShellCommandParser::class, ShellParser::class);
+        $this->app->scoped(ShellCommandParserContract::class, ShellCommandParser::class);
     }
 
     /**

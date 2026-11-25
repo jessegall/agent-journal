@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use LogicException;
 use Tests\Architecture\Support\ClassesDeclared;
 use Tests\Architecture\Support\DomainFiles;
@@ -50,7 +50,7 @@ final class ContractDescriptionsTest extends TestCase
         $undescribed = [];
 
         foreach ($types as $name) {
-            $type = Reflector::find($name)->getOrThrow(new LogicException("{$name} does not load."));
+            $type = ReflectedType::find($name)->getOrThrow(new LogicException("{$name} does not load."));
 
             if (! $type->isInterface() && ! ($type->isAbstract() && $type->isClass())) {
                 continue;
@@ -69,9 +69,9 @@ final class ContractDescriptionsTest extends TestCase
     }
 
     /**
-     * @param  Reflector<object>  $type
+     * @param  ReflectedType<object>  $type
      */
-    private function needsDescription(ReflectedMethod $method, Reflector $type): bool
+    private function needsDescription(ReflectedMethod $method, ReflectedType $type): bool
     {
         return $method->declaringClass()->name() === $type->name()
             && ! $method->isPrivate()
@@ -80,12 +80,12 @@ final class ContractDescriptionsTest extends TestCase
     }
 
     /**
-     * @param  Reflector<object>  $type
+     * @param  ReflectedType<object>  $type
      */
-    private function overridesAParent(ReflectedMethod $method, Reflector $type): bool
+    private function overridesAParent(ReflectedMethod $method, ReflectedType $type): bool
     {
         $others = [...array_slice($type->lineage(), 1), ...$type->interfaces()];
 
-        return array_any($others, fn (Reflector $other) => $other->hasMethod($method->name()));
+        return array_any($others, fn (ReflectedType $other) => $other->hasMethod($method->name()));
     }
 }

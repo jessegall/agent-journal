@@ -9,7 +9,7 @@ use App\Support\AgentContext;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Values\StackTarget;
 use PhpOption\Option;
 use Tests\Architecture\Support\Exceptions\FileDeclaresNoClass;
@@ -75,7 +75,7 @@ final readonly class AgentReferences
         foreach (glob($modelsFolder.'/*.php') ?: [] as $file) {
             $class = self::classIn($file);
 
-            $model = Reflector::of($class);
+            $model = ReflectedType::of($class);
 
             foreach ($model->methods() as $method) {
                 if ($method->declaringClass()->name() === $class && self::namesAnAgent($method)) {

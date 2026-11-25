@@ -15,12 +15,12 @@ use App\Support\FolderClasses;
 use App\Support\Sources\Contracts\DockedSources;
 use App\Support\Sources\Contracts\DockOffers;
 use App\Values\ReadEntitlement;
-use Domain\Chat\Contracts\PairChats;
+use Domain\Chat\Contracts\PairChats as PairChatsContract;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\QuestionNotificationTarget;
 use Domain\Chat\Support\AgentDockOffers;
 use Domain\Chat\Support\ChatDepartures;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use Domain\Chat\Support\PlacedSources;
 use Domain\Questions\Values\QuestionNotificationKeys;
 use Illuminate\Console\Command;
@@ -36,7 +36,7 @@ final class ChatServiceProvider extends ServiceProvider
     {
         $this->app->bind(DockOffers::class, AgentDockOffers::class);
         $this->app->bind(DockedSources::class, PlacedSources::class);
-        $this->app->bind(PairChats::class, ChatInboxes::class);
+        $this->app->bind(PairChatsContract::class, PairChats::class);
         $this->app->bind(InboxParticipationEnding::class, ChatDepartures::class);
     }
 
@@ -50,8 +50,8 @@ final class ChatServiceProvider extends ServiceProvider
         $members->allow(MessagePinPolicy::class);
         $memberRoutes->open('chat.');
         $notificationTargets->register(QuestionNotificationKeys::target(), QuestionNotificationTarget::class);
-        $inboxes->register(ChatInboxes::PAIR_PROVIDER, CoreInboxes::class);
-        $inboxes->register(ChatInboxes::GROUP_PROVIDER, CoreInboxes::class);
+        $inboxes->register(PairChats::PAIR_PROVIDER, CoreInboxes::class);
+        $inboxes->register(PairChats::GROUP_PROVIDER, CoreInboxes::class);
 
         $reads->declare('dock_list', ReadEntitlement::resolver());
         $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/agent.php');

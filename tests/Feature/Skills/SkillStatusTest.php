@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Data\Skills\GeneratedSkillData;
 use App\Enums\Files\Place;
 use App\Enums\Sessions\SessionStatus;
@@ -19,8 +19,8 @@ use App\Models\Skills\SkillPublication;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\HostSkillPublisher;
 use App\Support\SkillPublications;
+use App\Support\SkillPublisher;
 use App\Support\SkillPublishingService;
 use App\Support\SkillTargets;
 use Illuminate\Support\Facades\Artisan;
@@ -78,7 +78,7 @@ final class SkillStatusTest extends TestCase
     public function test_it_shows_the_ready_generation_and_a_failed_publication_with_its_reason_and_retry(): void
     {
         $delivered = $this->publish($this->openAgentSession('Main', 'main-agent'), 'First text.');
-        $this->app->instance(SkillPublisher::class, new FullDiskPublisher($this->app->make(HostSkillPublisher::class)));
+        $this->app->instance(SkillPublisherContract::class, new FullDiskPublisher($this->app->make(SkillPublisher::class)));
         $failed = $this->publish($this->openAgentSession('Helper', 'writing-helper'), 'Second text.');
 
         Artisan::call('skill:status', ['--json' => true]);

@@ -8,7 +8,7 @@ use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\ParticipantInput;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -19,7 +19,7 @@ final readonly class RemoveParticipantController
 {
     public function __invoke(
         ParticipantInput $input,
-        ChatInboxes $chats,
+        PairChats $chats,
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {

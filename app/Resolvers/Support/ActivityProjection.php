@@ -8,7 +8,7 @@ use App\Enums\Runs\LifecycleState;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Support\StoredOutput;
 use App\Values\PartActivity;
 use Carbon\CarbonImmutable;
@@ -60,7 +60,7 @@ final readonly class ActivityProjection
 
     private function latestLineOf(OutputChunk $chunk): string
     {
-        $bytes = (string) $this->disks->disk(SpoolRecorder::DISK)->get($chunk->storage_path);
+        $bytes = (string) $this->disks->disk(OutputRecorder::DISK)->get($chunk->storage_path);
         $lines = array_values(array_filter(explode("\n", $bytes), fn (string $line) => trim($line) !== ''));
 
         if ($lines === []) {

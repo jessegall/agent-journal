@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Data\Profiles\ProfileAuthorization;
 use App\Enums\Profiles\InstancePolicy;
 use App\Enums\Profiles\ModelTier;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 
 /**
  * What an owner activates for one profile: its stable key, label and the content of its next revision, its start
@@ -50,7 +50,7 @@ final readonly class ProfileDefinition
      */
     public function differsFrom(ProfileSnapshot $active): bool
     {
-        return ! Reflector::propertiesMatch($this, $active, self::NOT_CONFIGURATION);
+        return ! ReflectedType::propertiesMatch($this, $active, self::NOT_CONFIGURATION);
     }
 
     public function supervisorProfile(): SupervisorProfile

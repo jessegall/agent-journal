@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\Records\ReadableModel;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
@@ -23,7 +23,7 @@ final class ReadOrderTest extends TestCase
         $faults = [];
 
         foreach (array_unique(array_values(Relation::morphMap())) as $class) {
-            if (! Reflector::factory()->isSubclassOf($class, ReadableModel::class)) {
+            if (! ReflectedType::factory()->isSubclassOf($class, ReadableModel::class)) {
                 continue;
             }
 

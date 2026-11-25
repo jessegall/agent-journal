@@ -17,8 +17,8 @@ use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Domain\Sharing\Exceptions\SharePreviewRefused;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
-use Domain\Sharing\Support\MeteredShareBudget;
 use Domain\Sharing\Support\SavedSharePreview;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSelectedTarget;
@@ -168,7 +168,7 @@ final class SaveSharePreviewTest extends TestCase
     {
         return $this->app->make(ShareScope::class)->discover(
             $this->root,
-            MeteredShareBudget::forPreview($this->app->make(ReadMeter::class)),
+            ShareBudget::forPreview($this->app->make(ReadMeter::class)),
         );
     }
 }

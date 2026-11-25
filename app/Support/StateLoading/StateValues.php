@@ -7,7 +7,7 @@ namespace App\Support\StateLoading;
 use App\Exceptions\StateValuesRefused;
 use App\Support\DeclaredType;
 use App\Support\ReflectedProperty;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\States\AgentState;
 use BackedEnum;
 use PhpOption\Option;
@@ -45,7 +45,7 @@ final class StateValues
     public static function dataProperties(string $class): array
     {
         $found = [];
-        $type = Option::fromValue(Reflector::of($class));
+        $type = Option::fromValue(ReflectedType::of($class));
 
         while ($type->isDefined()) {
             foreach ($type->get()->properties() as $property) {
@@ -105,8 +105,8 @@ final class StateValues
      */
     private static function isEnumOrData(string $name): bool
     {
-        return Reflector::find($name)->filter(
-            fn (Reflector $type) => $type->implements(BackedEnum::class) || $type->isSubclassOf(Data::class),
+        return ReflectedType::find($name)->filter(
+            fn (ReflectedType $type) => $type->implements(BackedEnum::class) || $type->isSubclassOf(Data::class),
         )->isDefined();
     }
 

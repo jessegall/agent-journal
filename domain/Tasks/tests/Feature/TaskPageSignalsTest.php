@@ -6,7 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Navigation\UserInterfaceUpdater;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Events\TaskBlocked;
 use Domain\Tasks\Events\TaskCancelled;
@@ -65,7 +65,7 @@ final class TaskPageSignalsTest extends TestCase
             TaskCancelled::class,
             TaskStartCommitted::class,
         ] as $fact) {
-            $this->assertTrue(Reflector::of($fact)->isSubclassOf(UserInterfaceUpdater::class), $fact);
+            $this->assertTrue(ReflectedType::of($fact)->isSubclassOf(UserInterfaceUpdater::class), $fact);
         }
     }
 }

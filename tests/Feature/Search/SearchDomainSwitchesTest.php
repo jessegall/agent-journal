@@ -9,8 +9,8 @@ use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Search\SearchStatus;
 use App\Enums\Search\SearchSurface;
-use App\Support\SearchCoordinator;
-use App\Support\SearchEligibility;
+use App\Support\RecordSearch;
+use App\Support\SearchSources;
 use App\Values\DeclaredSearchable;
 use App\Values\EmittedHit;
 use App\Values\GroupReference;
@@ -159,18 +159,18 @@ final class SearchDomainSwitchesTest extends TestCase
     /**
      * The search of a new request, reading the switches as they are now.
      */
-    private function coordinator(): SearchCoordinator
+    private function coordinator(): RecordSearch
     {
         $this->freshRequest();
 
-        return $this->app->make(SearchCoordinator::class);
+        return $this->app->make(RecordSearch::class);
     }
 
-    private function eligibility(): SearchEligibility
+    private function eligibility(): SearchSources
     {
         $this->freshRequest();
 
-        return $this->app->make(SearchEligibility::class);
+        return $this->app->make(SearchSources::class);
     }
 
     private function freshRequest(): void

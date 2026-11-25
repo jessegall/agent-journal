@@ -8,14 +8,14 @@ use App\Contracts\Actors\AgentTexts;
 use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Sessions\SessionStartEnded;
-use App\Support\ContextReminders;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\SessionStartDetails;
-use App\Support\Stack\RegisteredStateFactory;
+use App\Support\ReminderContribution;
+use App\Support\Stack\StateFactory;
 use App\Values\StackTarget;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Events\HelperJobHeld;
@@ -125,7 +125,7 @@ final class HelperContextTest extends TestCase
      */
     private function remindersOn(string $agentId, ContextStartType $type): array
     {
-        $reminders = $this->app->make(ContextReminders::class);
+        $reminders = $this->app->make(ReminderContribution::class);
 
         $this->app->make(SupplyHelperNotices::class)->handle(new ContextStarted(
             new StackTarget($agentId, (string) Str::ulid()),
@@ -142,7 +142,7 @@ final class HelperContextTest extends TestCase
         $identity = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId);
         $purpose = HelperPurpose::query()->acrossActors()->findOrFail($job->helper_purpose_id);
         $reference = HelperJobStateReference::forJob($job, $identity, $purpose->label);
-        $state = $this->app->make(RegisteredStateFactory::class)->frameFor($reference)->state;
+        $state = $this->app->make(StateFactory::class)->frameFor($reference)->state;
         $this->assertInstanceOf(HelperJobState::class, $state);
 
         return $state;

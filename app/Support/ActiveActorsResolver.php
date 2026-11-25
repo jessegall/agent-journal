@@ -20,7 +20,7 @@ use Throwable;
 final readonly class ActiveActorsResolver
 {
     public function __construct(
-        private ActiveActorCounterRegistry $counters,
+        private ActiveActorRegistration $counters,
         private ConnectionInterface $database,
         private ServerClock $clock,
     ) {}

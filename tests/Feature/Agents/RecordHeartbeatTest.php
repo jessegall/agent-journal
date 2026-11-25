@@ -12,10 +12,10 @@ use App\Exceptions\CredentialRejected;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorContext;
-use App\Support\DatabaseClock;
-use App\Support\HeartbeatService;
+use App\Support\ServerClock;
 use App\Support\SessionTokens;
 use App\Support\StartedAgent;
+use App\Support\StartHeartbeats;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -38,14 +38,14 @@ final class RecordHeartbeatTest extends TestCase
     public function test_a_beat_records_the_database_server_time(): void
     {
         $started = $this->start();
-        $before = $this->app->make(DatabaseClock::class)->now()->startOfSecond();
+        $before = $this->app->make(ServerClock::class)->now()->startOfSecond();
 
         $this->beat($started->session);
 
         $beat = $started->session->refresh()->last_heartbeat_at;
         $this->assertInstanceOf(CarbonImmutable::class, $beat);
         $this->assertTrue($beat->greaterThanOrEqualTo($before));
-        $this->assertTrue($beat->lessThanOrEqualTo($this->app->make(DatabaseClock::class)->now()->addSecond()));
+        $this->assertTrue($beat->lessThanOrEqualTo($this->app->make(ServerClock::class)->now()->addSecond()));
         $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
     }
 
@@ -53,7 +53,7 @@ final class RecordHeartbeatTest extends TestCase
     {
         $started = $this->start();
         $this->startedSecondsAgo($started->session, 121);
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
         $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
 
         $this->beat($started->session);
@@ -65,7 +65,7 @@ final class RecordHeartbeatTest extends TestCase
     public function test_a_beat_of_an_ended_session_is_refused_and_writes_nothing(): void
     {
         $started = $this->start();
-        $this->app->make(HeartbeatService::class)->markExited($started->session, 'exit code 0');
+        $this->app->make(StartHeartbeats::class)->markExited($started->session, 'exit code 0');
 
         $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
     }
@@ -136,7 +136,7 @@ final class RecordHeartbeatTest extends TestCase
     private function startedSecondsAgo(AgentSession $session, int $seconds): void
     {
         DB::table('agent_sessions')->where('id', $session->id)->update(
-            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
+            ['created_at' => $this->app->make(ServerClock::class)->now()->subSeconds($seconds)],
         );
     }
 }

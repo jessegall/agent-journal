@@ -16,7 +16,7 @@ use App\Values\ProfileKey;
 final readonly class AskService
 {
     public function __construct(
-        private SupervisorRouting $routes,
+        private SupervisorDefinitions $routes,
         private SupervisorGraphLock $graph,
     ) {}
 

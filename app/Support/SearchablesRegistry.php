@@ -12,7 +12,7 @@ use App\Values\SearchWords;
 /**
  * Every searchable the domains declare, by qualified key: the lower-case owner, a dot and the local key, as in
  * tasks.task. A publication is checked whole before it replaces the catalogue, so a failed one leaves the previous
- * catalogue serving. It holds declarations only; who may search each is SearchEligibility's answer.
+ * catalogue serving. It holds declarations only; who may search each is SearchSources's answer.
  */
 final class SearchablesRegistry
 {

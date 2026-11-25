@@ -6,7 +6,7 @@ use App\Http\Controllers\Calls\AddLinkController;
 use App\Http\Controllers\Calls\RemoveLinkController;
 use App\Http\Controllers\Links\LinkRecordsController;
 use App\Http\Controllers\Links\UnlinkRecordsController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -15,7 +15,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('links.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(AddLinkController::class)->name('add');
         $calls->register(RemoveLinkController::class)->name('remove');
     });

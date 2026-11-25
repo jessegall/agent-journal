@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Bus\CommandClassifier;
-use App\Contracts\Processes\StopSignal;
+use App\Contracts\Processes\StopSignal as StopSignalContract;
 use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\LifecycleState;
 use App\Enums\Runs\PartEndType;
@@ -13,11 +13,11 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Pipelines\SuperviseRunPipeline;
 use App\Support\ActorIdentity;
-use App\Support\Execution\NoStop;
 use App\Support\Execution\PlannedRun;
 use App\Support\Execution\RecordedRunEvents;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\Execution\StepOutcome;
+use App\Support\Execution\StopSignal;
 use App\Support\ExecutionPlanner;
 use App\Support\PipelineRunner;
 use App\Support\Syntax\TreeParser;
@@ -129,7 +129,7 @@ final class PipelineAndStopTest extends TestCase
         $this->assertTrue($process->stopGroup(5.0));
     }
 
-    private function supervise(string $line, StopSignal $stop = new NoStop()): StepOutcome
+    private function supervise(string $line, StopSignalContract $stop = new StopSignal()): StepOutcome
     {
         $context = new ExecutionContext(
             ShellDialect::Bash,

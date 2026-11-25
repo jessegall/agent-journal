@@ -7,7 +7,7 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Search\SearchSurface;
 use App\Support\ActorContext;
-use App\Support\SearchCoordinator;
+use App\Support\RecordSearch;
 use App\Values\EmittedHit;
 use App\Values\SearchOwner;
 use App\Values\SearchReader;
@@ -97,7 +97,7 @@ final class TaskLogSearchTest extends TestCase
     {
         $task = $this->loggedTask();
         $owner = self::owner();
-        $coordinator = $this->app->make(SearchCoordinator::class);
+        $coordinator = $this->app->make(RecordSearch::class);
         $request = SearchRequest::parse(query: 'driver', within: 'tasks.log', limit: 1);
 
         $first = $coordinator->search($owner, $this->reader(), $request);
@@ -137,7 +137,7 @@ final class TaskLogSearchTest extends TestCase
      */
     private function hitsOfEveryPage(string $words): array
     {
-        $coordinator = $this->app->make(SearchCoordinator::class);
+        $coordinator = $this->app->make(RecordSearch::class);
         $answer = $coordinator->search(self::owner(), $this->reader(), SearchRequest::parse(query: $words));
         $hits = $answer->hits;
 

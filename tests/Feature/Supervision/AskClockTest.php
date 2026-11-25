@@ -25,7 +25,7 @@ use App\Support\CommandEntrance;
 use App\Support\EngineAccess;
 use App\Support\ProfileProposal;
 use App\Support\RequestKey;
-use App\Support\SupervisorRouting;
+use App\Support\SupervisorDefinitions;
 use App\Support\SystemActor;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;
@@ -177,7 +177,7 @@ final class AskClockTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $type = AskTypeKey::of('question');
         $actor = ActorIdentity::of($agent);
-        $version = $this->app->make(SupervisorRouting::class)->routeFor($actor, $type)->version;
+        $version = $this->app->make(SupervisorDefinitions::class)->routeFor($actor, $type)->version;
         $this->app->make(CommandBus::class)->run(new ChangeSupervisorCommand($actor, $target, $version, $type));
     }
 }

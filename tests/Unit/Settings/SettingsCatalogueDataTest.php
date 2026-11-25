@@ -21,7 +21,7 @@ use App\Enums\Settings\SettingSource;
 use App\Enums\Settings\SettingType;
 use App\Support\DeclaredType;
 use App\Support\ReflectedProperty;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Tests\Architecture\Support\DomainFiles;
@@ -116,7 +116,7 @@ final class SettingsCatalogueDataTest extends TestCase
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
         foreach (DomainFiles::in([app_path('Data/Settings')]) as $file) {
-            $class = Reflector::of('App\\Data\\Settings\\'.basename($file, '.php'));
+            $class = ReflectedType::of('App\\Data\\Settings\\'.basename($file, '.php'));
             $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(

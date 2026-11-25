@@ -15,7 +15,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Exception;
@@ -103,7 +103,7 @@ final class AssignmentFactsTest extends TestCase
     {
         $attempts = 0;
         $conflict = new PDOException('could not serialize access');
-        Reflector::of(Exception::class)->property('code')->writeTo($conflict, '40001');
+        ReflectedType::of(Exception::class)->property('code')->writeTo($conflict, '40001');
 
         $this->app->make(AssignmentTransaction::class)->run(function () use (&$attempts, $conflict): void {
             $attempts++;

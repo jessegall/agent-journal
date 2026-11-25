@@ -48,7 +48,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
     public function __construct(
         private ProfileScripts $profiles,
         private ScriptChecks $checks,
-        private KeywordRegistry $keywords,
+        private ScriptKeywordRegistration $keywords,
         private ObjectReader $reader,
         private AgentTexts $texts,
     ) {}
@@ -173,7 +173,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         StopPreparationRequest $request,
         string $instructionId,
     ): StepOutcome {
-        $execution = new ProfileRunExecution(
+        $execution = new ScriptExecution(
             $this->reader,
             $this->context($run, $request, $instructionId),
             $request->access,

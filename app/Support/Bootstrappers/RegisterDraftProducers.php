@@ -7,14 +7,14 @@ namespace App\Support\Bootstrappers;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Contracts\Navigation\DraftProducerProvider;
 use App\Support\DomainEntry;
-use App\Support\DraftProducerRegistry;
+use App\Support\DraftProducers;
 
 /**
  * Registers the draft producers a domain declares, so its nouns offer guided creation; a noun claimed twice is refused.
  */
 final readonly class RegisterDraftProducers implements DomainBootstrapper
 {
-    public function __construct(private DraftProducerRegistry $producers) {}
+    public function __construct(private DraftProducers $producers) {}
 
     public function __invoke(DomainEntry $domain): void
     {

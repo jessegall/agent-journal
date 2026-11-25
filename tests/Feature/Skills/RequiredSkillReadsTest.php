@@ -15,7 +15,7 @@ use App\Listeners\RefreshSessionSkills;
 use App\Listeners\RemindRequiredSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ContextReminders;
+use App\Support\ReminderContribution;
 use App\Support\SkillPublishingService;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
@@ -120,7 +120,7 @@ final class RequiredSkillReadsTest extends TestCase
     private function boundary(AgentSession $session): array
     {
         $this->app->forgetScopedInstances();
-        $reminders = $this->app->make(ContextReminders::class);
+        $reminders = $this->app->make(ReminderContribution::class);
         $event = new ContextStarted(
             new StackTarget($session->agent_id, $session->id),
             'hook-'.bin2hex(random_bytes(4)),

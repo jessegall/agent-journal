@@ -17,8 +17,8 @@ use App\Models\Sessions\SessionRequest;
 use App\Support\AccountStartSettings;
 use App\Support\ChildCheckoutSlot;
 use App\Support\ClaimedStart;
-use App\Support\HeartbeatService;
 use App\Support\StartExtensionRequests;
+use App\Support\StartHeartbeats;
 
 /**
  * Hands the host a pending start of a runtime assigned to it, with the recipe the driver's adapter checked and, for a
@@ -29,7 +29,7 @@ use App\Support\StartExtensionRequests;
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
-    public function __construct(private StartExtensionRequests $extensions, private HeartbeatService $heartbeats) {}
+    public function __construct(private StartExtensionRequests $extensions, private StartHeartbeats $heartbeats) {}
 
     /**
      * @throws StartClaimRefused

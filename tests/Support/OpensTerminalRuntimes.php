@@ -20,7 +20,7 @@ use App\Support\ActorIdentity;
 use App\Support\AgentRuntimes;
 use App\Support\StartSessions;
 use App\Support\TerminalControls;
-use App\Support\TerminalViews;
+use App\Support\TerminalViewCloser;
 use App\Values\OwnerAuthority;
 use App\Values\RuntimeIntent;
 use Illuminate\Support\Str;
@@ -58,7 +58,7 @@ trait OpensTerminalRuntimes
 
         return match (true) {
             $command instanceof OpenTerminalViewCommand, $command instanceof RenewTerminalViewCommand => $this->app
-                ->make(TerminalViews::class)
+                ->make(TerminalViewCloser::class)
                 ->answerFor($this->owner(), $rowId, $this->app->make(ServerClock::class)->now()),
             is_string($rowId) => $this->app
                 ->make(TerminalControls::class)

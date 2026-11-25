@@ -8,7 +8,7 @@ use App\Support\RecordIdentity;
 use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Resolvers\ReportRecords;
+use Domain\Documents\Resolvers\ReportResolver;
 use Domain\Documents\Support\RecordComments;
 
 final readonly class CommentOnReportHandler extends DocumentCommandHandler
@@ -18,7 +18,7 @@ final readonly class CommentOnReportHandler extends DocumentCommandHandler
     public function handle(CommentOnReportCommand $command): string
     {
         $reference = RecordReference::idOrNumber($command->reportId);
-        $id = is_int($reference) ? ReportRecords::published($reference)->id : $reference;
+        $id = is_int($reference) ? ReportResolver::published($reference)->id : $reference;
 
         return $this->comments->post(
             new RecordIdentity(Report::linkType(), $id),

@@ -11,7 +11,7 @@ use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -59,7 +59,7 @@ final class ProvisionLocalProjectTest extends TestCase
 
     private function provision(User $owner): void
     {
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'projects local-provision',
             new ProvisionLocalProjectCommand($owner->id, self::KEY, self::LABEL),

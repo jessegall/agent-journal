@@ -62,10 +62,10 @@ final readonly class PropertyRules
     /**
      * Each ruled property's Laravel rules, the type rule first; a property with no attribute has no entry.
      *
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      * @return array<string, list<string|object>>
      */
-    public function of(Reflector $command): array
+    public function of(ReflectedType $command): array
     {
         $rules = [];
 
@@ -87,13 +87,13 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      */
-    private function typeRuleOf(Reflector $command, ReflectedProperty $property): string
+    private function typeRuleOf(ReflectedType $command, ReflectedProperty $property): string
     {
         $name = self::namedTypeOf($property);
 
-        if (Reflector::exists($name) && $this->reflectors->make($name)->isEnum()) {
+        if (ReflectedType::exists($name) && $this->reflectors->make($name)->isEnum()) {
             $problem = sprintf(
                 '%s is the enum %s, whose cases already limit it; take its validation attributes off',
                 $property->name(),
@@ -117,11 +117,11 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      * @param  list<AttributeEntry<ValidationRule>>  $attributes
      * @return list<string|object>
      */
-    private function rulesOf(Reflector $command, ReflectedProperty $property, array $attributes): array
+    private function rulesOf(ReflectedType $command, ReflectedProperty $property, array $attributes): array
     {
         $rules = [];
 
@@ -136,9 +136,9 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      */
-    private function refuseLookup(Reflector $command, ReflectedProperty $property, string $attribute): void
+    private function refuseLookup(ReflectedType $command, ReflectedProperty $property, string $attribute): void
     {
         if (! in_array($attribute, self::LOOKUP_RULES, true)) {
             return;
@@ -152,11 +152,11 @@ final readonly class PropertyRules
     /**
      * A new build of the rule for each read: the denormalizer rewrites some rules, such as In, as it reads them.
      *
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      * @param  AttributeEntry<ValidationRule>  $attribute
      */
     private function builtRule(
-        Reflector $command,
+        ReflectedType $command,
         ReflectedProperty $property,
         AttributeEntry $attribute,
     ): ValidationRule {
@@ -168,10 +168,10 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      * @return list<string|object>
      */
-    private function denormalized(Reflector $command, ReflectedProperty $property, ValidationRule $rule): array
+    private function denormalized(ReflectedType $command, ReflectedProperty $property, ValidationRule $rule): array
     {
         try {
             return array_values($this->denormalizer->execute($rule, ValidationPath::create()));
@@ -183,9 +183,9 @@ final readonly class PropertyRules
     /**
      * A rule naming another field, such as RequiredWithout('brief'), names one of the command's own properties.
      *
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      */
-    private function refuseUnknownFields(Reflector $command, ReflectedProperty $property, ValidationRule $rule): void
+    private function refuseUnknownFields(ReflectedType $command, ReflectedProperty $property, ValidationRule $rule): void
     {
         if (! $rule instanceof StringValidationAttribute) {
             return;
@@ -205,14 +205,14 @@ final readonly class PropertyRules
     /**
      * A value a command carries checks itself, so a validation attribute on one of its properties is never read.
      *
-     * @param  Reflector<object>  $command
+     * @param  ReflectedType<object>  $command
      * @param  list<string>  $seen  the value classes already walked, so a value holding itself ends
      */
-    private function refuseRulesInsideValue(Reflector $command, ReflectedProperty $property, array $seen): void
+    private function refuseRulesInsideValue(ReflectedType $command, ReflectedProperty $property, array $seen): void
     {
         $name = self::namedTypeOf($property);
 
-        if (! Reflector::exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
+        if (! ReflectedType::exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
             return;
         }
 

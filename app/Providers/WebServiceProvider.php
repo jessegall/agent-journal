@@ -13,7 +13,7 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Drivers\InstalledVersion as InstalledVersionContract;
 use App\Contracts\Files\Files;
 use App\Contracts\Navigation\DeclaredPages;
-use App\Contracts\Navigation\DraftProducers;
+use App\Contracts\Navigation\DraftProducers as DraftProducersContract;
 use App\Contracts\Navigation\NavigationRecords as NavigationRecordsContract;
 use App\Contracts\Navigation\RecordMenus as RecordMenusContract;
 use App\Contracts\Navigation\SlotSections;
@@ -35,9 +35,10 @@ use App\Policies\LayoutPolicy;
 use App\Policies\PresencePolicy;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainRegistry;
-use App\Support\DraftProducerRegistry;
+use App\Support\DraftProducers;
 use App\Support\InstallationFaults;
 use App\Support\InstalledVersion;
+use App\Support\NavigationRecords;
 use App\Support\OwnerAutoAssignmentAccess;
 use App\Support\OwnerSettingsAccess;
 use App\Support\PageChangeBroadcastLog;
@@ -49,7 +50,6 @@ use App\Support\UiComponentFinder;
 use App\Support\UiDeclarations;
 use App\Support\UiOwnerAvailability;
 use App\Support\UserChannel;
-use App\Support\WebNavigationRecords;
 use App\Support\WindowResults;
 use App\Values\FilePath;
 use App\Values\PolicyDefinition;
@@ -82,10 +82,10 @@ final class WebServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(NavigationRecordsContract::class, WebNavigationRecords::class);
+        $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
         $this->app->bind(RecordMenusContract::class, RecordMenus::class);
-        $this->app->singleton(DraftProducerRegistry::class);
-        $this->app->alias(DraftProducerRegistry::class, DraftProducers::class);
+        $this->app->singleton(DraftProducers::class);
+        $this->app->alias(DraftProducers::class, DraftProducersContract::class);
         $this->app->bind(InstalledVersionContract::class, InstalledVersion::class);
         $this->app->bind(ProtectedViewsContract::class, ProtectedViews::class);
         $this->app->bind(

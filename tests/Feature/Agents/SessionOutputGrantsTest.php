@@ -16,7 +16,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionOutputGrant;
 use App\Models\Sessions\SessionProcess;
 use App\Support\Access\AccessSettings;
-use App\Support\RecordConversationVisit;
+use App\Support\ConversationVisits;
 use App\Support\RecordIdentity;
 use App\Support\StartSessions;
 use App\Values\StartPolicy;
@@ -48,7 +48,7 @@ final class SessionOutputGrantsTest extends TestCase
 
     private Agent $agent;
 
-    private RecordConversationVisit $visits;
+    private ConversationVisits $visits;
 
     private SessionOutputAccess $access;
 
@@ -61,7 +61,7 @@ final class SessionOutputGrantsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $this->agent = Agent::create('Researcher', 'read-only-helper', $this->localProject());
-        $this->visits = $this->app->make(RecordConversationVisit::class);
+        $this->visits = $this->app->make(ConversationVisits::class);
         $this->access = $this->app->make(SessionOutputAccess::class);
     }
 

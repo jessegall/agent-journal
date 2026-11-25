@@ -75,7 +75,7 @@ abstract class Domain
      */
     protected function mcpRoot(string $role): string
     {
-        $domainFile = Reflector::of($this)->fileName()->getOrElse('');
+        $domainFile = ReflectedType::of($this)->fileName()->getOrElse('');
 
         return McpToolDirectory::rootOf(dirname($domainFile), $role);
     }
@@ -93,7 +93,7 @@ abstract class Domain
         foreach ($traits as $trait) {
             $method = 'bootstrappers'.class_basename($trait);
 
-            if (Reflector::of($this)->hasMethod($method)) {
+            if (ReflectedType::of($this)->hasMethod($method)) {
                 array_push($fromTraits, ...$this->{$method}());
             }
         }

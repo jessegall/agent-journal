@@ -9,8 +9,8 @@ use App\Calls\Agents\RecordHeartbeatCall;
 use App\Contracts\Domains\JournalCall;
 use App\Enums\CommandRules\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
-use App\Support\CallRoutes;
-use App\Support\Reflector;
+use App\Support\CallRegistrar;
+use App\Support\ReflectedType;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Routes;
 use Spatie\LaravelData\Data;
@@ -86,7 +86,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_no_code_writes_an_agent_path_outside_the_routes_and_the_sender(): void
     {
-        $allowed = ['/routes/', 'app/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
+        $allowed = ['/routes/', 'app/Support/CallSender.php', 'Mcp/Servers/JournalServer.php'];
         $found = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
@@ -112,7 +112,7 @@ final class SignedCallRulesTest extends TestCase
         foreach ($routes as $route) {
             $signed = in_array('journal.agent', $route->gatherMiddleware(), true);
 
-            if ($signed && $route->uri() !== $mcp && ! array_key_exists(CallRoutes::CALL_DEFAULT, $route->defaults)) {
+            if ($signed && $route->uri() !== $mcp && ! array_key_exists(CallRegistrar::CALL_DEFAULT, $route->defaults)) {
                 $outside[] = $route->uri();
             }
         }
@@ -128,7 +128,7 @@ final class SignedCallRulesTest extends TestCase
         $controllers = [];
 
         foreach (Routes::getRoutes()->getRoutes() as $route) {
-            if (array_key_exists(CallRoutes::CALL_DEFAULT, $route->defaults)) {
+            if (array_key_exists(CallRegistrar::CALL_DEFAULT, $route->defaults)) {
                 $controllers[] = $route->getControllerClass();
             }
         }
@@ -156,7 +156,7 @@ final class SignedCallRulesTest extends TestCase
         foreach ($files as $file) {
             $class = self::classOf($file);
 
-            if ($class !== null && Reflector::factory()->isSubclassOf($class, JournalCall::class)) {
+            if ($class !== null && ReflectedType::factory()->isSubclassOf($class, JournalCall::class)) {
                 $calls[] = $class;
             }
         }
@@ -180,7 +180,7 @@ final class SignedCallRulesTest extends TestCase
 
         foreach ($files as $file) {
             $class = self::classOf($file);
-            $isRead = $class !== null && Reflector::of($class)->attributes(JournalRoute::class)->first()
+            $isRead = $class !== null && ReflectedType::of($class)->attributes(JournalRoute::class)->first()
                 ->filter(fn (JournalRoute $route) => $route->type === JournalRouteType::Read)
                 ->isDefined();
 
@@ -210,7 +210,7 @@ final class SignedCallRulesTest extends TestCase
          */
         $class = $namespace[1].'\\'.$name[1];
 
-        $isClass = Reflector::find($class)->filter(fn (Reflector $type) => $type->isClass())->isDefined();
+        $isClass = ReflectedType::find($class)->filter(fn (ReflectedType $type) => $type->isClass())->isDefined();
 
         return $isClass ? $class : null;
     }

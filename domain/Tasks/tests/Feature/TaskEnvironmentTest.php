@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ActorContext;
 use App\Support\ConnectedProject;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use App\Values\OwnerAuthority;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Models\Task;
@@ -47,7 +47,7 @@ final class TaskEnvironmentTest extends TestCase
     private function createThrough(string $environmentId, string $title): Task
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(ProjectKey::class)->connect(new ConnectedProject('shop', '/work/shop', $environmentId));
+        $this->app->make(ServedEnvironment::class)->connect(new ConnectedProject('shop', '/work/shop', $environmentId));
 
         return $this->create($title);
     }

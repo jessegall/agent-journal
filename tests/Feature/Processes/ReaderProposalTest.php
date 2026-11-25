@@ -16,7 +16,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ReaderRevision;
 use App\Support\ActorIdentity;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartEnd;
 use App\Values\PartKey;
@@ -165,7 +165,7 @@ final class ReaderProposalTest extends TestCase
         );
         $part = PartRun::create($run, new PartKey(1, 1, self::OPERATION));
         $part->start('host', 1);
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $now = CarbonImmutable::now();
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
         ok first

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Tests\Support\ScanCache\ScanCache;
@@ -176,8 +176,8 @@ final readonly class ModelWrites
     private static function isModel(array $type): bool
     {
         return ! $type['isTrait']
-            && Reflector::exists($type['type'])
-            && Reflector::of($type['type'])->isSubclassOf(Model::class);
+            && ReflectedType::exists($type['type'])
+            && ReflectedType::of($type['type'])->isSubclassOf(Model::class);
     }
 
     /**
@@ -211,8 +211,8 @@ final readonly class ModelWrites
 
         foreach ($models as $model) {
             foreach ($model['traits'] as $trait) {
-                $file = Reflector::exists($trait) && Reflector::of($trait)->isTrait()
-                    ? Reflector::of($trait)->fileName()->getOrElse('')
+                $file = ReflectedType::exists($trait) && ReflectedType::of($trait)->isTrait()
+                    ? ReflectedType::of($trait)->fileName()->getOrElse('')
                     : '';
                 $isProjectCode = preg_match('#/(app|domain|tests)/#', $file) === 1 && ! str_contains($file, '/vendor/');
 
@@ -366,7 +366,7 @@ final readonly class ModelWrites
         }
 
         // A call on an unknown object that a query builder answers without writing, such as select, is a read.
-        if (! ModelWriteScan::isWrite($method) && Reflector::of(QueryBuilder::class)->hasMethod($method)) {
+        if (! ModelWriteScan::isWrite($method) && ReflectedType::of(QueryBuilder::class)->hasMethod($method)) {
             return null;
         }
 

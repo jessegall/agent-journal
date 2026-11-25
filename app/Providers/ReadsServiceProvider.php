@@ -6,13 +6,13 @@ namespace App\Providers;
 
 use App\Concerns\Linkable;
 use App\Contracts\Reads\ReadLog as ReadLogContract;
-use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Reads\ReadMeter as ReadMeterContract;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\ReadLimitInvalid;
 use App\Exceptions\ReadPolicyMissing;
 use App\Support\ReadLog;
-use App\Support\Reflector;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
+use App\Support\ReflectedType;
 use App\Support\SelfMeasuredCommands;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
@@ -47,8 +47,8 @@ final class ReadsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(ReadLogContract::class, ReadLog::class);
-        $this->app->scoped(ScopedReadMeter::class);
-        $this->app->alias(ScopedReadMeter::class, ReadMeter::class);
+        $this->app->scoped(ReadMeter::class);
+        $this->app->alias(ReadMeter::class, ReadMeterContract::class);
         $this->app->singleton(SelfMeasuredCommands::class);
     }
 
@@ -69,7 +69,7 @@ final class ReadsServiceProvider extends ServiceProvider
             foreach (Relation::morphMap() as $linkType => $model) {
                 $isLinkable = in_array(Linkable::class, class_uses_recursive($model), true);
 
-                if ($isLinkable && ! Reflector::factory()->isSubclassOf($model, ReadableModel::class)) {
+                if ($isLinkable && ! ReflectedType::factory()->isSubclassOf($model, ReadableModel::class)) {
                     throw ReadPolicyMissing::for($model, $linkType);
                 }
             }
@@ -86,14 +86,14 @@ final class ReadsServiceProvider extends ServiceProvider
 
         $events->listen(
             QueryExecuted::class,
-            static fn () => ScopedReadMeter::ofCurrentScope()->recordCompletedQuery(),
+            static fn () => ReadMeter::ofCurrentScope()->recordCompletedQuery(),
         );
 
         $events->listen(
             CommandStarting::class,
             static fn (
                 CommandStarting $starting,
-            ) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin(),
+            ) => $selfMeasured->has($starting->command) ? null : ReadMeter::ofCurrentScope()->begin(),
         );
 
         $events->listen(
@@ -103,7 +103,7 @@ final class ReadsServiceProvider extends ServiceProvider
             ),
         );
 
-        $events->listen(JobProcessing::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
+        $events->listen(JobProcessing::class, static fn () => ReadMeter::ofCurrentScope()->begin());
 
         $events->listen(
             JobProcessed::class,
@@ -120,13 +120,13 @@ final class ReadsServiceProvider extends ServiceProvider
             static fn (
                 string $event,
                 array $models,
-            ) => ScopedReadMeter::ofCurrentScope()->recordModel($models[0]::class),
+            ) => ReadMeter::ofCurrentScope()->recordModel($models[0]::class),
         );
     }
 
     private static function endEntry(string $label): void
     {
-        Container::getInstance()->make(ReadLog::class)->record($label, ScopedReadMeter::ofCurrentScope()->end());
+        Container::getInstance()->make(ReadLog::class)->record($label, ReadMeter::ofCurrentScope()->end());
     }
 
     private static function countQueriesOn(Connection $connection): void
@@ -144,7 +144,7 @@ final class ReadsServiceProvider extends ServiceProvider
                 string $query,
                 array $bindings,
                 Connection $on,
-            ) => ScopedReadMeter::ofCurrentScope()->recordQuery(
+            ) => ReadMeter::ofCurrentScope()->recordQuery(
                 (string) $on->getName(),
                 ! self::doesOnlyRead($query),
                 $query,

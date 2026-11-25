@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\StateCatalog\Contracts;
 
 use App\Contracts\Work\WorkOccurrenceGuard;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateCatalog\StateRegistration;
 use App\Support\Ticks\TickingTypes;
 
 /**
@@ -21,7 +21,7 @@ interface StateTypes
     /**
      * Every registered state type, by its key.
      */
-    public function registry(): StateTypeRegistry;
+    public function registry(): StateRegistration;
 
     /**
      * The state types that hear the engine's tick.

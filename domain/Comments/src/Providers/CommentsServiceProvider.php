@@ -7,10 +7,10 @@ namespace Domain\Comments\Providers;
 use App\Contracts\Projects\FileComments;
 use App\Contracts\Projects\HeldFileVersions;
 use App\Support\FolderClasses;
-use Domain\Comments\Contracts\CommentResolver;
-use Domain\Comments\Contracts\PublicCommentResolver;
-use Domain\Comments\Resolvers\CommentRecords;
-use Domain\Comments\Resolvers\PublicComments;
+use Domain\Comments\Contracts\CommentResolver as CommentResolverContract;
+use Domain\Comments\Contracts\PublicCommentResolver as PublicCommentResolverContract;
+use Domain\Comments\Resolvers\CommentResolver;
+use Domain\Comments\Resolvers\PublicCommentResolver;
 use Domain\Comments\Support\CommentedFileVersions;
 use Domain\Comments\Support\FileCommentThreads;
 use Illuminate\Console\Command;
@@ -23,8 +23,8 @@ final class CommentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(CommentResolver::class, CommentRecords::class);
-        $this->app->bind(PublicCommentResolver::class, PublicComments::class);
+        $this->app->bind(CommentResolverContract::class, CommentResolver::class);
+        $this->app->bind(PublicCommentResolverContract::class, PublicCommentResolver::class);
         $this->app->bind(FileComments::class, FileCommentThreads::class);
         $this->app->bind(HeldFileVersions::class, CommentedFileVersions::class);
     }

@@ -7,11 +7,11 @@ namespace Tests\Feature\Engine;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Time\MonotonicClock;
 use App\Exceptions\RepeatedReadRefused;
-use App\Support\DatabaseClock;
 use App\Support\EnginePass;
 use App\Support\EngineSettings;
 use App\Support\OperationDeadline;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
+use App\Support\ServerClock;
 use App\Support\SystemActor;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
@@ -51,7 +51,7 @@ final class EnginePassTest extends TestCase
         });
 
         foreach (range(1, 12) as $pass) {
-            $this->app->make(EnginePass::class)->run(fn () => $this->app->make(DatabaseClock::class)->now());
+            $this->app->make(EnginePass::class)->run(fn () => $this->app->make(ServerClock::class)->now());
         }
 
         $this->assertSame(array_fill(0, 12, 1), $entries);
@@ -72,18 +72,18 @@ final class EnginePassTest extends TestCase
         $passMeter = null;
 
         $failingPass = function () use (&$passMeter): void {
-            $passMeter = ScopedReadMeter::ofCurrentScope();
+            $passMeter = ReadMeter::ofCurrentScope();
             $this->app->make(DatabaseManager::class)->connection()->beginTransaction();
 
             throw SimulatedFailure::of('The pass failed.');
         };
 
         $this->assertThrows(fn () => $this->app->make(EnginePass::class)->run($failingPass), RuntimeException::class);
-        $this->assertInstanceOf(ScopedReadMeter::class, $passMeter);
+        $this->assertInstanceOf(ReadMeter::class, $passMeter);
 
         $this->assertFalse($this->app->make(CurrentActor::class)->hasActor());
         $this->assertSame(0, $this->app->make(DatabaseManager::class)->connection()->transactionLevel());
-        $this->assertNotSame($passMeter, ScopedReadMeter::ofCurrentScope());
+        $this->assertNotSame($passMeter, ReadMeter::ofCurrentScope());
     }
 
     public function test_commands_of_a_pass_get_the_time_the_pass_has_left(): void
@@ -105,7 +105,7 @@ final class EnginePassTest extends TestCase
 
         $this->app->make(EnginePass::class)->run(function (): void {
             foreach (range(1, 12) as $read) {
-                $this->app->make(DatabaseClock::class)->now();
+                $this->app->make(ServerClock::class)->now();
             }
         });
     }

@@ -12,7 +12,7 @@ use App\Contracts\Time\ServerClock;
 use App\Enums\Engine\RefusalCode;
 use App\Support\ActorIdentity;
 use App\Support\TerminalControls;
-use App\Support\TerminalViews;
+use App\Support\TerminalViewCloser;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -28,7 +28,7 @@ final readonly class TerminalAnswers
         private CommandBus $commands,
         private CurrentActor $actors,
         private TerminalControls $controls,
-        private TerminalViews $views,
+        private TerminalViewCloser $views,
         private ServerClock $clock,
     ) {}
 

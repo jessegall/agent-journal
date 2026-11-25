@@ -12,7 +12,7 @@ use App\Support\RecordIdentity;
 use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Exceptions\ShareScopeTooLarge;
-use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Tests\TestCase;
@@ -115,9 +115,9 @@ final class ShareScopeTest extends TestCase
         return $this->app->make(ShareScope::class);
     }
 
-    private function budget(): MeteredShareBudget
+    private function budget(): ShareBudget
     {
-        return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
+        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 
     private function root(int $number): RecordIdentity

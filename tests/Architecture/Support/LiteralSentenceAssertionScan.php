@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\InterpolatedStringPart;
@@ -83,7 +83,7 @@ final readonly class LiteralSentenceAssertionScan implements FileScan
      */
     private static function messagePositionOf(Expr\MethodCall|Expr\StaticCall $call): int|null
     {
-        $assert = Reflector::of(Assert::class);
+        $assert = ReflectedType::of(Assert::class);
         $name = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
 
         if (! $assert->hasMethod($name)) {

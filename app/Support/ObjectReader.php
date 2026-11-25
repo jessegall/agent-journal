@@ -16,7 +16,7 @@ use Throwable;
  */
 final readonly class ObjectReader
 {
-    public function __construct(private ObjectRegistry $objects) {}
+    public function __construct(private ScriptObjectRegistration $objects) {}
 
     /**
      * The script member a condition names by its word, read from the property that holds it.

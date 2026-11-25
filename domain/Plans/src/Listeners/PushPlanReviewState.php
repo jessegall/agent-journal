@@ -6,7 +6,7 @@ namespace Domain\Plans\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use Domain\Plans\Events\PlanReviewRequested;
 use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 
@@ -17,7 +17,7 @@ use Domain\Plans\Support\States\Support\ReviewPlanStateReference;
 #[InCommandTransaction]
 final readonly class PushPlanReviewState implements Listener
 {
-    public function __construct(private AgentStack $stacks) {}
+    public function __construct(private AgentStacks $stacks) {}
 
     public function handle(PlanReviewRequested $event): void
     {

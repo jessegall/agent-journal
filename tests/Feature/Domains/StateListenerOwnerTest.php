@@ -9,7 +9,7 @@ use App\Exceptions\InvalidListener;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
 use App\Support\ListenerOwnership;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateCatalog\StateRegistration;
 use App\Support\StateListenerDeclarations;
 use App\Support\StateLoading\RegisteredStateType;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
@@ -23,7 +23,7 @@ final class StateListenerOwnerTest extends TestCase
 {
     public function test_a_state_listener_outside_every_domain_is_refused_naming_it(): void
     {
-        $types = new StateTypeRegistry();
+        $types = new StateRegistration();
         $types->register(RegisteredStateType::named('fixture.ownerless', OwnerlessState::class));
         $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), [], new CatalogueReflectorFactory(), app_path());
 

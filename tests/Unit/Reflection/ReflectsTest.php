@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Reflection;
 
 use App\Support\ReflectedProperty;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Parcel;
 use Tests\Fixtures\Reflection\ReadonlyReflectingParcel;
@@ -21,13 +21,13 @@ final class ReflectsTest extends TestCase
 {
     public function test_a_class_reflects_itself_and_a_subclass_reflects_the_subclass(): void
     {
-        $this->assertSame(Reflector::of(ReflectingParcel::class), new ReflectingParcel()->reflectorOfItself());
-        $this->assertSame(Reflector::of(ReflectingParcelChild::class), new ReflectingParcelChild()->reflectorOfItself());
+        $this->assertSame(ReflectedType::of(ReflectingParcel::class), new ReflectingParcel()->reflectorOfItself());
+        $this->assertSame(ReflectedType::of(ReflectingParcelChild::class), new ReflectingParcelChild()->reflectorOfItself());
     }
 
     public function test_a_given_target_is_reflected_instead_of_the_caller(): void
     {
-        $this->assertSame(Reflector::of(Parcel::class), new ReflectingParcel()->reflectorOf(new Parcel()));
+        $this->assertSame(ReflectedType::of(Parcel::class), new ReflectingParcel()->reflectorOf(new Parcel()));
     }
 
     public function test_a_final_readonly_class_and_an_enum_use_the_trait_without_a_property_of_its_own(): void

@@ -81,13 +81,13 @@ use App\Support\DriverBudgets;
 use App\Support\EnginePass;
 use App\Support\EngineTickedDelivery;
 use App\Support\EnrolledHost;
-use App\Support\HeartbeatService;
 use App\Support\InitialWakeSettlement;
-use App\Support\NativeTurns;
+use App\Support\NativeTurnRecords;
 use App\Support\OpenedRuntime;
 use App\Support\OutsideCommandAllowance;
 use App\Support\PendingWorkSources;
 use App\Support\StartGrant;
+use App\Support\StartHeartbeats;
 use App\Support\StartProfiles;
 use App\Support\Ticks\ElapsedTime;
 use App\Values\AccountLabel;
@@ -326,7 +326,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
         $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
-        $turns = $this->app->make(NativeTurns::class);
+        $turns = $this->app->make(NativeTurnRecords::class);
 
         $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
 
@@ -353,7 +353,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
         $this->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
 
-        $this->app->make(NativeTurns::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
+        $this->app->make(NativeTurnRecords::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
         $this->assertSame([0, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
@@ -877,7 +877,7 @@ final class AgentDriverLedgerTest extends TestCase
         AgentSession::query()->whereKey($served->sessionId)->update(['last_heartbeat_at' => CarbonImmutable::now()]);
         $this->silenceSince($unserved, CarbonImmutable::now()->subMinutes(11));
 
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
 
         $this->assertSame(
             [true, false],
@@ -893,7 +893,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         $this->silenceSince($opened, CarbonImmutable::now()->subMinutes(11));
 
-        $this->app->make(HeartbeatService::class)->markSilentStarts();
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
 
         $this->assertSame(SessionStatus::Silent, AgentSession::query()->findOrFail($opened->sessionId)->status);
     }
@@ -1588,13 +1588,13 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->expectException(StaleProcessGeneration::class);
 
-        $this->app->make(NativeTurns::class)->checkGeneration($opened->sessionId, 2);
+        $this->app->make(NativeTurnRecords::class)->checkGeneration($opened->sessionId, 2);
     }
 
     public function test_each_native_prompt_id_makes_one_turn_inside_a_unit_of_its_own(): void
     {
         [, $opened] = $this->openRuntime();
-        $turns = $this->app->make(NativeTurns::class);
+        $turns = $this->app->make(NativeTurnRecords::class);
         // A hook records its prompt's turn outside any command, as the real app forbids.
         $this->app->make(OutsideCommandAllowance::class)->forbid();
 

@@ -8,9 +8,9 @@ use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Exceptions\KeyedWriteWithoutReceipt;
 use App\Support\CallDeclaration;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use App\Support\ReadGrant;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\RequestKey;
 use App\Values\ReadRequest;
 use Closure;
@@ -47,8 +47,8 @@ final readonly class ReadRequestKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $call = $request->route()?->defaults[CallRoutes::CALL_DEFAULT] ?? null;
-        $declaration = is_string($call) && Reflector::exists($call) ? CallDeclaration::of($call) : null;
+        $call = $request->route()?->defaults[CallRegistrar::CALL_DEFAULT] ?? null;
+        $declaration = is_string($call) && ReflectedType::exists($call) ? CallDeclaration::of($call) : null;
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);

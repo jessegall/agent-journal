@@ -6,7 +6,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Methods\ListToolsAndRecordDiscovery;
 use App\Mcp\Support\McpCatalogue;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -43,7 +43,7 @@ final class JournalServer extends Server
 
     public static function contractVersion(): string
     {
-        return Reflector::of(self::class)->attribute(Version::class)->value;
+        return ReflectedType::of(self::class)->attribute(Version::class)->value;
     }
 
     protected function boot(): void

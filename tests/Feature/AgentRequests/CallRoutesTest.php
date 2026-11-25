@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\AgentRequests;
 
 use App\Exceptions\KeyedWriteWithoutReceipt;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\AgentRequests\WriteNoteController;
 use Tests\Fixtures\Agents\TestStart;
@@ -33,7 +33,7 @@ final class CallRoutesTest extends TestCase
         parent::setUp();
 
         Route::middleware('journal.agent')->prefix('agent')->group(function (): void {
-            $this->app->make(CallRoutes::class)->register(WriteNoteController::class)->name('test.notes.write');
+            $this->app->make(CallRegistrar::class)->register(WriteNoteController::class)->name('test.notes.write');
         });
         $this->start = TestStart::start();
     }

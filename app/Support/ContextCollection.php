@@ -38,7 +38,7 @@ final readonly class ContextCollection
      */
     private function remindersOn(StackTarget $target, HookInput $input, ContextStartType $type): array
     {
-        $reminders = new ContextReminders($this->budget, $this->texts);
+        $reminders = new ReminderContribution($this->budget, $this->texts);
         $this->events->dispatch(new ContextStarted($target, $input->identity()->hookId, $type, $reminders));
 
         return $reminders->all();

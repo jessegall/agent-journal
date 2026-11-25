@@ -30,7 +30,7 @@ use App\Support\PoolReference;
 use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Support\Assignments\TaskAssigner;
+use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\TasksDomain;
 use Psr\Log\LoggerInterface;
 use Tests\Support\DomainBoot;
@@ -65,7 +65,7 @@ final class AutoAssignmentTriggerTest extends TestCase
         $providers = $this->mock(AssignmentProviders::class);
         $providers->shouldReceive('recordOwner', 'poolOwner')->andReturn('Tasks');
         $providers->shouldReceive('activity')->andReturn($activity);
-        $providers->shouldReceive('autoAssignerClass')->andReturn(TaskAssigner::class);
+        $providers->shouldReceive('autoAssignerClass')->andReturn(AutoAssigner::class);
     }
 
     public function test_consider_walks_one_page_caps_claims_and_advances_on_the_last_page(): void
@@ -105,7 +105,7 @@ final class AutoAssignmentTriggerTest extends TestCase
         )->andReturn(AutoAssignmentOutcome::assigned($record));
         $this->mock(LoggerInterface::class)->shouldReceive('warning')->once()->withArgs(
             fn (string $message, array $fields): bool => $message === 'Auto-assignment claim failed.'
-                && $fields['actor_id'] === TestIds::of(2) && $fields['provider'] === TaskAssigner::class,
+                && $fields['actor_id'] === TestIds::of(2) && $fields['provider'] === AutoAssigner::class,
         );
 
         $this->assertEquals(new AutoAssignmentRun(4, 2, 1, 1, TestIds::of(25)), $this->consider());

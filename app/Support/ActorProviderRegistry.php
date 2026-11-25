@@ -102,7 +102,7 @@ final class ActorProviderRegistry implements
     {
         $types = array_keys(array_filter(
             $this->actorClasses,
-            fn (string $actorClass) => Reflector::of($actorClass)->implements(RecipientActor::class),
+            fn (string $actorClass) => ReflectedType::of($actorClass)->implements(RecipientActor::class),
         ));
 
         return array_map(strval(...), $types);

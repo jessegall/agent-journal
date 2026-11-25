@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes\Rules;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Attribute;
 
 /**
@@ -28,9 +28,9 @@ final readonly class RequiresInterface
     }
 
     /**
-     * @param  Reflector<object>  $type
+     * @param  ReflectedType<object>  $type
      */
-    public function isMetBy(Reflector $type): bool
+    public function isMetBy(ReflectedType $type): bool
     {
         return array_intersect($this->interfaces, $type->typeNames()) !== [];
     }

@@ -14,7 +14,7 @@ use App\Models\Notifications\NotificationScope;
 use App\Support\ActorIdentity;
 use App\Support\NotificationCursor;
 use App\Support\NotificationScopes;
-use App\Support\NotificationTargetRegistry;
+use App\Support\NotificationTargets;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -28,7 +28,7 @@ final readonly class NotificationFeed
 {
     public function __construct(
         private NotificationScopes $scopes,
-        private NotificationTargetRegistry $targets,
+        private NotificationTargets $targets,
     ) {}
 
     /**

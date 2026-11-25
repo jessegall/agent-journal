@@ -44,11 +44,11 @@ final class ShareRecordRegistry
         $alias = $definition->alias;
         RecordIdentity::assertKnownType($alias);
 
-        if (! Reflector::factory()->isSubclassOf($definition->modelClass, Shareable::class)) {
+        if (! ReflectedType::factory()->isSubclassOf($definition->modelClass, Shareable::class)) {
             throw ShareRecordInvalid::notShareable($alias, $definition->modelClass);
         }
 
-        if (! Reflector::factory()->isSubclassOf($definition->providerClass, ShareRecordProvider::class)) {
+        if (! ReflectedType::factory()->isSubclassOf($definition->providerClass, ShareRecordProvider::class)) {
             throw ShareRecordInvalid::notAProvider($alias, $definition->providerClass);
         }
 
@@ -69,7 +69,7 @@ final class ShareRecordRegistry
         foreach ($this->definitions->all() as $alias => $definition) {
             $model = $definition->modelClass;
 
-            if (! Reflector::factory()->isSubclassOf($model, Shareable::class)) {
+            if (! ReflectedType::factory()->isSubclassOf($model, Shareable::class)) {
                 throw ShareRecordInvalid::notShareable($alias, $model);
             }
 

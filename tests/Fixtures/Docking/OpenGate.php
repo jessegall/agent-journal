@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Docking;
 
 use App\Contracts\Actors\Actor;
-use App\Support\Sources\Contracts\CardContext;
+use App\Support\Sources\Contracts\CardContext as CardContextContract;
 use App\Support\Sources\Contracts\DestinationGate;
-use App\Support\GatedCardContext;
+use App\Support\CardContext;
 use App\Support\Cards\DockDestination;
 
 /**
@@ -20,8 +20,8 @@ final readonly class OpenGate implements DestinationGate
         return true;
     }
 
-    public function contextFor(Actor $viewer): CardContext
+    public function contextFor(Actor $viewer): CardContextContract
     {
-        return new GatedCardContext($viewer, $this);
+        return new CardContext($viewer, $this);
     }
 }

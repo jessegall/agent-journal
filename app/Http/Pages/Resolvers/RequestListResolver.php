@@ -17,8 +17,8 @@ use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\ProjectKey;
 use App\Support\ProjectRules;
+use App\Support\ServedEnvironment;
 use App\Values\RuleBundle;
 
 /**
@@ -29,7 +29,7 @@ use App\Values\RuleBundle;
 final readonly class RequestListResolver implements PageResolver
 {
     public function __construct(
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private CommandRuleRegistry $rules,
         private ProjectRules $approved,
     ) {}

@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Events\Messages\MessageSent;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;
@@ -20,7 +20,7 @@ use App\Support\States\Support\ReadMessageStateReference;
 #[InCommandTransaction]
 final readonly class PushReadMessageState implements Listener
 {
-    public function __construct(private AgentStack $stacks) {}
+    public function __construct(private AgentStacks $stacks) {}
 
     public function handle(MessageSent $event): void
     {

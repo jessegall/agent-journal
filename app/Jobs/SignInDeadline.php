@@ -6,7 +6,7 @@ namespace App\Jobs;
 
 use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,7 +22,7 @@ final class SignInDeadline implements ShouldQueue
 
     public function __construct(public readonly string $attemptId) {}
 
-    public function handle(EntryDispatchers $dispatchers): void
+    public function handle(JournalCommands $dispatchers): void
     {
         $dispatchers->runAsJournal(
             CommandEntry::AccountMaintenance,

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks as AgentStacksContract;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Contracts\Work\UserStack;
+use App\Contracts\Work\UserStack as UserStackContract;
 use App\Support\AgentStacks;
 use App\Support\StackTransaction;
-use App\Support\UserStacks;
+use App\Support\UserStack;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -26,8 +26,8 @@ final class StackContractsTest extends TestCase
     {
         $this->startTestAgentRequest(1, 10);
 
-        $this->assertInstanceOf(AgentStacks::class, $this->app->make(AgentStack::class));
-        $this->assertInstanceOf(UserStacks::class, $this->app->make(UserStack::class));
+        $this->assertInstanceOf(AgentStacks::class, $this->app->make(AgentStacksContract::class));
+        $this->assertInstanceOf(UserStack::class, $this->app->make(UserStackContract::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(StackTransactionRunner::class));
     }
 }

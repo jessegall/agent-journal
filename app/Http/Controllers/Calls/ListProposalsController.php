@@ -8,14 +8,14 @@ use App\Calls\Processes\ListProposalsCall;
 use App\Calls\Processes\ProposalList;
 use App\Enums\CommandRules\ProposalState;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 
 /**
  * Lists the project's proposals in the asked state.
  */
 final readonly class ListProposalsController
 {
-    public function __invoke(ListProposalsCall $call, ProjectKey $projects): ProposalList
+    public function __invoke(ListProposalsCall $call, ServedEnvironment $projects): ProposalList
     {
         $states = $call->states === [] ? ProposalState::cases() : array_map(ProposalState::from(...), $call->states);
 

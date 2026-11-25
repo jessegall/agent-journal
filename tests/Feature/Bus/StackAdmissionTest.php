@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Contracts\Bus\CommandBus;
 use App\Exceptions\CommandRefused;
 use App\Exceptions\StackLockTimedOut;
-use App\Support\Admission\AdvisoryStackAdmission;
+use App\Support\Admission\StackAdmission;
 use App\Support\OperationDeadline;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
@@ -69,7 +69,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->hold(2);
         $this->holder->select(
             'SELECT pg_advisory_unlock(?, hashtext(?))',
-            [AdvisoryStackAdmission::NAMESPACE, TestIds::of(2)],
+            [StackAdmission::FIRST_LOCK_KEY, TestIds::of(2)],
         );
         $this->startTestAgentRequest(1, 2);
 
@@ -125,7 +125,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $sessionId = TestIds::of($sessionIdNumber);
         $this->holder->select(
             'SELECT pg_advisory_lock(?, hashtext(?))',
-            [AdvisoryStackAdmission::NAMESPACE, $sessionId],
+            [StackAdmission::FIRST_LOCK_KEY, $sessionId],
         );
     }
 
@@ -134,7 +134,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $sessionId = TestIds::of($sessionIdNumber);
         $taken = $this->holder->selectOne(
             'SELECT pg_try_advisory_lock(?, hashtext(?)) AS taken',
-            [AdvisoryStackAdmission::NAMESPACE, $sessionId],
+            [StackAdmission::FIRST_LOCK_KEY, $sessionId],
         )->taken;
         $this->holder->select('SELECT pg_advisory_unlock_all()');
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -22,7 +22,7 @@ trait CountsPivotLoads
         $pivot = parent::fromRawAttributes($parent, $attributes, $table, $exists);
 
         if ($exists) {
-            ScopedReadMeter::ofCurrentScope()->recordModel(static::class);
+            ReadMeter::ofCurrentScope()->recordModel(static::class);
         }
 
         return $pivot;

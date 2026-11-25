@@ -9,7 +9,7 @@ use App\Attributes\States\Ticks;
 use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateTypeUnknown;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\States\AgentState;
 use Closure;
 
@@ -38,7 +38,7 @@ final readonly class RegisteredStateType
      */
     public static function of(string $class): self
     {
-        $type = Reflector::of($class)->attribute(StateType::class);
+        $type = ReflectedType::of($class)->attribute(StateType::class);
 
         return self::named($type->key, $class, $type->schemaVersion, $type->transfer);
     }
@@ -75,7 +75,7 @@ final readonly class RegisteredStateType
 
     public function isTicking(): bool
     {
-        return Reflector::of($this->stateClass)->hasAttribute(Ticks::class);
+        return ReflectedType::of($this->stateClass)->hasAttribute(Ticks::class);
     }
 
     /**
@@ -91,6 +91,6 @@ final readonly class RegisteredStateType
             throw StateTypeUnknown::forTicking($this->key);
         }
 
-        return Reflector::of($this->stateClass)->attribute(Ticks::class)->guard;
+        return ReflectedType::of($this->stateClass)->attribute(Ticks::class)->guard;
     }
 }

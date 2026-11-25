@@ -23,7 +23,7 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\MainInboxHandover;
+use App\Support\MainInboxTakeover;
 use App\Values\NavigationAnswer;
 use App\Values\OwnerAuthority;
 use Tests\Support\Agents\RaisesNavigationRequests;
@@ -72,7 +72,7 @@ final class AnswerNavigationTest extends TestCase
         $this->main = Agent::create('Main', 'main-agent', $this->localProject());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(MainInboxHandover::class)->takeOver($this->main),
+            fn () => $this->app->make(MainInboxTakeover::class)->takeOver($this->main),
         );
     }
 

@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand as EnrollHost;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Projects\ArrangementType;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Console\Command;
 
 /**
@@ -21,7 +21,7 @@ final class EnrollHostCommand extends Command
 
     protected $description = 'Enroll a host that runs agents and print its secret once';
 
-    public function handle(EntryDispatchers $dispatchers): int
+    public function handle(JournalCommands $dispatchers): int
     {
         $enroll = new EnrollHost($this->installationName(), $this->startRoots(), $this->arrangement());
         $enrolled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'host enrolment', $enroll);

@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Events\Listener;
 use App\Contracts\Skills\SkillResolver;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Enums\Skills\SkillReload;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Skills\SessionSkillsIntended;
@@ -40,7 +40,7 @@ final readonly class RefreshSessionSkills implements Listener
         private DriverSkillAdapters $adapters,
         private SkillTargets $targets,
         private SkillResolver $skills,
-        private AgentStack $stacks,
+        private AgentStacks $stacks,
         private CommandFacts $facts,
         private SkillPublications $publications,
         private DriverCatalogue $drivers,

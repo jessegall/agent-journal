@@ -8,7 +8,7 @@ use App\Exceptions\UiResolverInvalid;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Foundation\Http\FormRequest;
 use Spatie\LaravelData\Data;
 
@@ -43,7 +43,7 @@ final readonly class ResolverDefinition
     ): self {
         $owner->assertImplements($declaration, $resolver, $interface);
 
-        $parameters = Reflector::of($resolver)->constructor()
+        $parameters = ReflectedType::of($resolver)->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
             ->getOrElse([]);
 
@@ -66,7 +66,7 @@ final readonly class ResolverDefinition
             ->map(fn (DeclaredType $declared) => $declared->name())
             ->getOrElse('');
 
-        if (Reflector::factory()->isSubclassOf($name, FormRequest::class)) {
+        if (ReflectedType::factory()->isSubclassOf($name, FormRequest::class)) {
             return $name;
         }
 

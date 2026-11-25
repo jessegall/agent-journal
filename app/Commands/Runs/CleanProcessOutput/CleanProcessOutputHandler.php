@@ -10,7 +10,7 @@ use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CleanPreview;
 use Illuminate\Contracts\Filesystem\Factory;
 
@@ -48,7 +48,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
             return $preview;
         }
 
-        $disk = $this->disks->disk(SpoolRecorder::DISK);
+        $disk = $this->disks->disk(OutputRecorder::DISK);
 
         foreach ($chunks as $chunk) {
             $disk->delete($chunk->storage_path);

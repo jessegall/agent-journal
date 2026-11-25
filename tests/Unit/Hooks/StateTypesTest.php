@@ -12,9 +12,9 @@ use App\Exceptions\StateTypesFrozen;
 use App\Exceptions\StateTypeUnknown;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
-use App\Support\Stack\RegisteredStateFactory;
+use App\Support\Stack\StateFactory;
 use App\Support\Stack\StateTypes;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateCatalog\StateRegistration;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\StateLoading\StateBuilder;
 use App\Support\States\Contracts\StopConditionGate;
@@ -50,7 +50,7 @@ final class StateTypesTest extends TestCase
     public function test_a_registered_type_is_found_by_its_key(): void
     {
         $type = RegisteredStateType::named('tasks.work', InMemoryTaskState::class);
-        $registry = new StateTypeRegistry();
+        $registry = new StateRegistration();
         $registry->register($type);
 
         $this->assertTrue($registry->has('tasks.work'));
@@ -62,12 +62,12 @@ final class StateTypesTest extends TestCase
     {
         $this->expectException(StateTypeUnknown::class);
 
-        new StateTypeRegistry()->get('core.messages.answer');
+        new StateRegistration()->get('core.messages.answer');
     }
 
     public function test_a_key_registered_twice_is_an_error(): void
     {
-        $registry = new StateTypeRegistry();
+        $registry = new StateRegistration();
         $registry->register(RegisteredStateType::named('tasks.work', InMemoryTaskState::class));
 
         $this->expectException(StateTypeRepeated::class);
@@ -77,7 +77,7 @@ final class StateTypesTest extends TestCase
 
     public function test_nothing_is_registered_after_the_registry_is_frozen(): void
     {
-        $registry = new StateTypeRegistry();
+        $registry = new StateRegistration();
         $registry->freeze();
 
         $this->expectException(StateTypesFrozen::class);
@@ -165,7 +165,7 @@ final class StateTypesTest extends TestCase
                 RegisteredStateType::named('tasks.work', InMemoryTaskState::class),
             ),
         );
-        $factory = $this->app->make(RegisteredStateFactory::class, ['types' => new StateTypes($events, $this->app)]);
+        $factory = $this->app->make(StateFactory::class, ['types' => new StateTypes($events, $this->app)]);
         $values = ['number' => 42, 'runNumber' => 1];
         $reference = new StateReference('tasks.work', new SubjectReference('42', 1), $values);
 

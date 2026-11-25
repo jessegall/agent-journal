@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Http\Controllers;
 
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\ReadPermit;
 use App\Support\SourceAddressRule;
 use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
@@ -28,7 +28,7 @@ final readonly class ReadShareController
         ReadShareRequest $request,
         ReadPermits $permits,
         ShareReadLimits $limits,
-        EntryDispatchers $dispatchers,
+        JournalCommands $dispatchers,
         SharedPageResponses $responses,
     ): Response {
         try {

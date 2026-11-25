@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\ReadShare;
 
 use App\Contracts\Reads\ReadMeter;
-use App\Contracts\Sharing\ShareBudget;
+use App\Contracts\Sharing\ShareBudget as ShareBudgetContract;
 use App\Enums\Sharing\ShareRelationType;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\UnknownShareRecordType;
@@ -24,9 +24,9 @@ use Domain\Sharing\Exceptions\ShareReadRefused;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareMember;
-use Domain\Sharing\Support\MeteredShareBudget;
 use Domain\Sharing\Support\OwnerSharePolicy;
 use Domain\Sharing\Support\ReadPermits;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\SharedPage;
@@ -123,7 +123,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
         ShareReadPath $path,
         ReadShareCommand $command,
     ): SharedPage {
-        $budget = MeteredShareBudget::forRead($this->meter);
+        $budget = ShareBudget::forRead($this->meter);
         $provider = $this->records->provider($target->type);
         $content = $budget->run(fn () => $provider->content(new ShareContentRead($target), $budget));
         $linked = $this->linkedFrom($share, $target, $budget);
@@ -147,7 +147,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
      *
      * @return list<SharedPageItem>
      */
-    private function linkedFrom(Share $share, RecordIdentity $target, ShareBudget $budget): array
+    private function linkedFrom(Share $share, RecordIdentity $target, ShareBudgetContract $budget): array
     {
         $cards = [];
 
@@ -180,7 +180,7 @@ final readonly class ReadShareHandler extends SharingCommandHandler
         RecordIdentity $target,
         ShareReadPath $path,
         string|null $cursor,
-        ShareBudget $budget,
+        ShareBudgetContract $budget,
     ): array {
         $owned = array_values(
             array_filter(

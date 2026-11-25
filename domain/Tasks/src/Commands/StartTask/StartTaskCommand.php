@@ -9,7 +9,7 @@ use App\Contracts\Bus\RecordCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Policies\RecordPolicy;
 
 /**
  * Starts a task for the agent of a session and answers its run number; the start and the push of its state commit
@@ -17,7 +17,7 @@ use Domain\Tasks\Policies\TaskRunPolicy;
  *
  * @extends Command<int>
  */
-#[Authorize(TaskRunPolicy::class, AccessType::Create)]
+#[Authorize(RecordPolicy::class, AccessType::Create)]
 final readonly class StartTaskCommand extends Command implements RecordCommand
 {
     public function __construct(

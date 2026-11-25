@@ -10,8 +10,8 @@ use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
-use Domain\Sharing\Support\MeteredShareBudget;
 use Domain\Sharing\Support\SavedSharePreview;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareScope;
 
 final readonly class SaveSharePreviewHandler extends SharingCommandHandler
@@ -32,7 +32,7 @@ final readonly class SaveSharePreviewHandler extends SharingCommandHandler
             ? ShareGatewayConfiguration::usableDefault()
             : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
 
-        $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
         $selection = $candidates->selection($command->selectedIds);
         $preview = SharePreview::create($owner->actorId(), $root, $selection, $configuration);
 

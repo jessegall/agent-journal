@@ -14,7 +14,7 @@ use App\Commands\Settings\SetIntegerChoice\SetIntegerChoiceCommand;
 use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
 use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
 use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
-use App\Contracts\Settings\SettingCommands;
+use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\SettingHandleUnknown;
 use App\Exceptions\SettingReferenceInvalid;
@@ -22,7 +22,7 @@ use App\Exceptions\SettingValueInvalid;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
-use App\Support\RegisteredSettingCommands;
+use App\Support\SettingCommands;
 use App\Values\Decimal;
 use App\Values\GroupReference;
 use App\Values\SettingReference;
@@ -38,7 +38,7 @@ use Tests\TestCase;
  */
 final class SettingCommandsTest extends TestCase
 {
-    private SettingCommands $commands;
+    private SettingCommandsContract $commands;
 
     private ReviewSettings $reviews;
 
@@ -47,7 +47,7 @@ final class SettingCommandsTest extends TestCase
         parent::setUp();
 
         $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
-        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
+        $this->commands = new SettingCommands($registry, new CatalogueReflectorFactory());
         $this->reviews = $registry->definition('Reviews');
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Settings\SettingCommands;
+use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
 use App\Contracts\Settings\SettingsCatalogue;
 use App\Contracts\Settings\SettingsDefinition;
 use App\Contracts\Settings\SettingsResolver;
@@ -23,7 +23,7 @@ use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
-use App\Support\RegisteredSettingCommands;
+use App\Support\SettingCommands;
 use App\Support\SettingRegistry;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedValue;
@@ -58,7 +58,7 @@ final class SettingsStoriesTest extends TestCase
 
     private ReviewSettings $reviews;
 
-    private SettingCommands $commands;
+    private SettingCommandsContract $commands;
 
     protected function setUp(): void
     {
@@ -70,7 +70,7 @@ final class SettingsStoriesTest extends TestCase
 
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
+        $this->commands = new SettingCommands($registry, new CatalogueReflectorFactory());
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));

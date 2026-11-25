@@ -8,7 +8,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Exceptions\BindingRevoked;
 use App\Models\Projects\ProjectBinding;
 use App\Support\ConnectedProject;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ResolveConnectedProject
 {
-    public function __construct(private CurrentActor $current, private ProjectKey $projects) {}
+    public function __construct(private CurrentActor $current, private ServedEnvironment $projects) {}
 
     /**
      * @param  Closure(Request): Response  $next

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\AccountFolders;
-use App\Contracts\Accounts\AccountOwnerDrain;
+use App\Contracts\Accounts\AccountOwnerDrain as AccountOwnerDrainContract;
 use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInHost;
 use App\Contracts\Accounts\SignInProtocol;
@@ -42,7 +42,7 @@ final readonly class PrivateSignInProcesses
         private Closure $pause,
         private Files $files,
         private AccountFolders $folders,
-        private AccountOwnerDrain $owners = new HostAccountDrain('', ArrangementType::Local),
+        private AccountOwnerDrainContract $owners = new AccountOwnerDrain('', ArrangementType::Local),
     ) {}
 
     /**

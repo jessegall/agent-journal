@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\Registry;
 use Domain\Sharing\Models\Share;
 use PhpParser\Node;
@@ -17,7 +17,7 @@ use Tests\Support\ScanCache\FileScan;
 
 /**
  * The static calls of a file that should go through an instance: one class and method called again with the same
- * arguments in one function body, and a static Reflector call inside an instance method of a class the container
+ * arguments in one function body, and a static ReflectedType call inside an instance method of a class the container
  * builds, which takes the ReflectorFactory instead.
  *
  * @implements FileScan<array{line: int, call: string, reason: string}>
@@ -29,8 +29,8 @@ final readonly class StaticFactoryScan implements FileScan
     public const string INJECTABLE = 'injectable';
 
     /**
-     * The Reflector's static answers that make no Reflector, so a class the container builds asks them of the
-     * Reflector itself: whether a name loads.
+     * The ReflectedType's static answers that make no ReflectedType, so a class the container builds asks them of the
+     * ReflectedType itself: whether a name loads.
      */
     private const array NOT_FACTORIES = ['exists'];
 
@@ -67,7 +67,7 @@ final readonly class StaticFactoryScan implements FileScan
 
                 $printed = $call->class->toString().'::'.$call->name->toString();
 
-                if ($call->class->toString() === Reflector::class
+                if ($call->class->toString() === ReflectedType::class
                     && ! in_array($call->name->toString(), self::NOT_FACTORIES, true)
                     && self::isInjectableInstanceMethod($function)) {
                     $findings[] = ['line' => $call->getStartLine(), 'call' => $printed, 'reason' => self::INJECTABLE];
@@ -152,7 +152,7 @@ final readonly class StaticFactoryScan implements FileScan
      * Whether the function is an instance method of a class the container builds: one whose constructor hides a
      * service in a private or protected promoted parameter typed by a class or interface, and which is neither an
      * attribute nor a PHPStan rule. A value object, whose constructor takes public data, scalars, arrays or closures,
-     * is made with new and keeps its static Reflector calls.
+     * is made with new and keeps its static ReflectedType calls.
      */
     private static function isInjectableInstanceMethod(FunctionLike $function): bool
     {

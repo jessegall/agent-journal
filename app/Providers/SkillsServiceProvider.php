@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Authorization\FileAccessPolicy;
+use App\Contracts\Authorization\FileAccessPolicy as FileAccessPolicyContract;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Reads\MarkdownParts as MarkdownPartsContract;
-use App\Contracts\Skills\SkillPublisher;
+use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
 use App\Contracts\Skills\SkillResolver;
 use App\Enums\Agents\AccessType;
 use App\Enums\Files\Place;
@@ -19,10 +19,10 @@ use App\Resolvers\Support\SkillContextResolver;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\CanonicalRenderer;
 use App\Support\ConditionTree;
-use App\Support\DeliveredSkillsAccess;
 use App\Support\EvaluationGuard;
-use App\Support\HostSkillPublisher;
+use App\Support\FileAccessPolicy;
 use App\Support\MarkdownParts;
+use App\Support\SkillPublisher;
 use App\Support\SkillRegistry;
 use App\Support\SkillTables;
 use App\Support\SkillTargets;
@@ -58,8 +58,8 @@ final class SkillsServiceProvider extends ServiceProvider
             fn () => new SkillTargets($this->app->make(Repository::class)->string(Place::HostSkills->rootSetting())),
         );
 
-        $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
-        $this->app->scoped(FileAccessPolicy::class, DeliveredSkillsAccess::class);
+        $this->app->bind(SkillPublisherContract::class, SkillPublisher::class);
+        $this->app->scoped(FileAccessPolicyContract::class, FileAccessPolicy::class);
 
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),

@@ -10,7 +10,7 @@ use App\Support\Command;
 use App\Support\CommandGrammar;
 use App\Support\PlainValue;
 use App\Support\ReflectedProperty;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Bus\Proof\BoundItem;
 
@@ -58,7 +58,7 @@ final class CommandBaseTest extends TestCase
         $bound = $item->withDispatcher(ActorContext::forAgent('agent-1'));
         $properties = array_map(
             fn (ReflectedProperty $property) => $property->name(),
-            Reflector::of(BoundItem::class)->properties(),
+            ReflectedType::of(BoundItem::class)->properties(),
         );
         $grammar = new CommandGrammar(fn (string $class) => true);
 
@@ -71,7 +71,7 @@ final class CommandBaseTest extends TestCase
 
     public function test_the_lifecycle_methods_are_final_and_an_unbound_read_names_the_command(): void
     {
-        $command = Reflector::of(Command::class);
+        $command = ReflectedType::of(Command::class);
 
         $this->assertTrue($command->method('dispatchedBy')->isFinal());
         $this->assertTrue($command->method('withDispatcher')->isFinal());

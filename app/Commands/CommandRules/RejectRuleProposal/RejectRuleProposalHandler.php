@@ -10,13 +10,13 @@ use App\Events\Processes\RuleRejected;
 use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\RuleProposalRefused;
 use App\Models\CommandRules\RuleProposal;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 
 final readonly class RejectRuleProposalHandler implements CommandHandler
 {
     public function __construct(
         private CommandFacts $facts,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
     ) {}
 
     /**

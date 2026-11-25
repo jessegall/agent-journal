@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Contracts\Settings\EnabledSettingsGroup;
-use App\Contracts\Settings\SettingsResolver;
+use App\Contracts\Settings\SettingsResolver as SettingsResolverContract;
 use App\Declarations\IntegerSetting;
 use App\Exceptions\GroupSnapshotRequired;
 use App\Exceptions\SettingHandleUnknown;
@@ -14,10 +14,10 @@ use App\Exceptions\SettingsUnavailable;
 use App\Exceptions\SettingUnavailable;
 use App\Models\Records\SettingsRecord;
 use App\Support\CoreSettings;
-use App\Support\DatabaseSettingsResolver;
 use App\Support\DisabledSettingsGroup;
 use App\Support\DomainRegistry;
 use App\Support\SettingRegistry;
+use App\Support\SettingsResolver;
 use App\Support\Storage\EncodedSetting;
 use App\Support\Storage\EncodedToggle;
 use App\Support\Storage\EncodedValue;
@@ -168,11 +168,11 @@ final class SettingsResolverTest extends TestCase
     /**
      * The reader of a new request or job.
      */
-    private function resolver(): DatabaseSettingsResolver
+    private function resolver(): SettingsResolver
     {
         $this->app->forgetScopedInstances();
-        $resolver = $this->app->make(SettingsResolver::class);
-        $this->assertInstanceOf(DatabaseSettingsResolver::class, $resolver);
+        $resolver = $this->app->make(SettingsResolverContract::class);
+        $this->assertInstanceOf(SettingsResolver::class, $resolver);
 
         return $resolver;
     }

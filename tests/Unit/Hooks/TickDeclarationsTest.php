@@ -7,8 +7,8 @@ namespace Tests\Unit\Hooks;
 use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Exceptions\TooManyTickCommands;
 use App\Support\ReflectedProperty;
-use App\Support\Reflector;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\ReflectedType;
+use App\Support\StateCatalog\StateRegistration;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Ticks\ElapsedTime;
 use App\Support\Ticks\TickCommands;
@@ -30,7 +30,7 @@ final class TickDeclarationsTest extends TestCase
 {
     public function test_only_states_marked_as_ticking_tick(): void
     {
-        $registry = new StateTypeRegistry();
+        $registry = new StateRegistration();
         $registry->register(RegisteredStateType::named('test.ticking', TickState::class));
         $registry->register(RegisteredStateType::named('test.scripted', ScriptedTickState::class));
         $registry->register(RegisteredStateType::named('test.plain', UnreadState::class));
@@ -60,7 +60,7 @@ final class TickDeclarationsTest extends TestCase
         $fields = array_values(array_map(
             fn (ReflectedProperty $property) => $property->name(),
             array_filter(
-                Reflector::of($context)->properties(),
+                ReflectedType::of($context)->properties(),
                 fn (ReflectedProperty $property) => $property->isPublic(),
             ),
         ));

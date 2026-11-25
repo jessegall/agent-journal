@@ -13,7 +13,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorIdentity;
-use App\Support\PersonalInboxes;
+use App\Support\ActorProvisioning;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
@@ -117,7 +117,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     private function withInbox(Agent $agent): Agent
     {
-        $this->app->make(PersonalInboxes::class)->provision(ActorIdentity::of($agent), $agent->name);
+        $this->app->make(ActorProvisioning::class)->provision(ActorIdentity::of($agent), $agent->name);
 
         return $agent;
     }

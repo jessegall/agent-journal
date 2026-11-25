@@ -15,8 +15,8 @@ use App\Support\CommandStops;
 use App\Support\EventUnitLifecycle;
 use App\Support\OperationDeadline;
 use App\Support\OuterTransactionOwner;
+use App\Support\ReadMeter;
 use App\Support\RunningCommand;
-use App\Support\ScopedReadMeter;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -87,7 +87,7 @@ final readonly class RunInTransaction implements CommandMiddleware
                     return $this->attempt($call, $next, $deadline);
                 }
 
-                return ScopedReadMeter::ofCurrentScope()->withinSchedule(
+                return ReadMeter::ofCurrentScope()->withinSchedule(
                     'transaction retry',
                     fn () => $this->attempt($call, $next, $deadline),
                 );

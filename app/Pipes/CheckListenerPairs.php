@@ -12,7 +12,7 @@ use App\Support\DeclaredType;
 use App\Support\ListenerDeclarations;
 use App\Support\ListenerOwnership;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\States\AgentState;
 
 /**
@@ -35,20 +35,20 @@ final readonly class CheckListenerPairs implements Pipe
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
 
-        $listenerType = Reflector::find($class);
+        $listenerType = ReflectedType::find($class);
 
-        if ($listenerType->filter(fn (Reflector $type) => $type->isSubclassOf(AgentState::class))->isDefined()) {
+        if ($listenerType->filter(fn (ReflectedType $type) => $type->isSubclassOf(AgentState::class))->isDefined()) {
             throw InvalidListener::stateRegisteredByHand($listener, $event);
         }
 
-        $handler = $listenerType->filter(fn (Reflector $type) => $type->isClass() && $type->hasMethod($method));
+        $handler = $listenerType->filter(fn (ReflectedType $type) => $type->isClass() && $type->hasMethod($method));
 
         if ($handler->isEmpty() || ! $this->doesFirstParameterAccept($handler->get()->method($method), $event)) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        $isConcreteEvent = Reflector::find($event)
-            ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class) && $type->not()->isAbstract())
+        $isConcreteEvent = ReflectedType::find($event)
+            ->filter(fn (ReflectedType $type) => $type->isSubclassOf(Event::class) && $type->not()->isAbstract())
             ->isDefined();
 
         if (! $isConcreteEvent) {
@@ -73,8 +73,8 @@ final readonly class CheckListenerPairs implements Pipe
         return array_any(
             $arms,
             fn (DeclaredType $arm) => $arm->isNamed()
-                && Reflector::exists($arm->name())
-                && Reflector::factory()->is($event, $arm->name()),
+                && ReflectedType::exists($arm->name())
+                && ReflectedType::factory()->is($event, $arm->name()),
         );
     }
 }

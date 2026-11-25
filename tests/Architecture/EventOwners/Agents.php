@@ -137,7 +137,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Support/ServedActivityLog.php',
+            'app/Support/ActivityLog.php',
         ],
     ],
     AccountSettingsRequested::class => [
@@ -235,7 +235,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/HeartbeatService.php',
+            'app/Support/StartHeartbeats.php',
             'app/Support/StartSessions.php',
         ],
     ],

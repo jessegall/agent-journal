@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\Runs\ReconcileLostRuns\ReconcileLostRunsCommand;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +18,7 @@ final class ProcessReconcileCommand extends Command
 
     protected $description = 'Mark runs whose supervisor fell silent as lost';
 
-    public function handle(EntryDispatchers $dispatchers): int
+    public function handle(JournalCommands $dispatchers): int
     {
         $lost = $dispatchers->runAsJournal(
             CommandEntry::HostControl,

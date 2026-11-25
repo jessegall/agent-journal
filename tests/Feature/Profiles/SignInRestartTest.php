@@ -14,7 +14,7 @@ use App\Enums\Accounts\SignInState;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
@@ -93,7 +93,7 @@ final class SignInRestartTest extends TestCase
      */
     private function reconcile(string $hostId, array $running): int
     {
-        return $this->app->make(EntryDispatchers::class)->runAsJournal(
+        return $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new ReconcileSignInsCommand($hostId, $running),

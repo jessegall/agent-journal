@@ -83,15 +83,15 @@ use Domain\Tasks\Http\Pages\Resolvers\TaskWindowResolver;
 use Domain\Tasks\Mcp\Resources\TaskResource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Policies\RecordPolicy;
 use Domain\Tasks\Policies\TaskPolicy;
-use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Resolvers\TaskRunAssignments;
-use Domain\Tasks\Support\Assignments\ActiveTaskAssignments;
+use Domain\Tasks\Support\Assignments\AssignedWorkProvider;
+use Domain\Tasks\Support\Assignments\AutoAssigner;
 use Domain\Tasks\Support\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Support\Assignments\OpenTaskPoolFactory;
-use Domain\Tasks\Support\Assignments\TaskAssigner;
 use Domain\Tasks\Support\Mcp\HeldTasksOverview;
 use Domain\Tasks\Support\Skills\TasksSkill;
 use Domain\Tasks\Support\States\LogDueState;
@@ -284,7 +284,7 @@ final class TasksDomain extends Domain implements
                 ],
             ),
             new PolicyDefinition(
-                TaskRunPolicy::class,
+                RecordPolicy::class,
                 [
                     AccessType::Create,
                     AccessType::Edit,
@@ -313,7 +313,7 @@ final class TasksDomain extends Domain implements
 
     public function autoAssigners(): array
     {
-        return [new AutoAssignerDefinition(TaskType::linkType(), TaskAssigner::class, ActiveTaskAssignments::class)];
+        return [new AutoAssignerDefinition(TaskType::linkType(), AutoAssigner::class, AssignedWorkProvider::class)];
     }
 
     public function assignmentPools(): array

@@ -24,7 +24,7 @@ final readonly class StoredOutput
 
     public function bytes(PartRun $part, OutputStream $stream): string
     {
-        $disk = $this->disks->disk(SpoolRecorder::DISK);
+        $disk = $this->disks->disk(OutputRecorder::DISK);
         $bytes = '';
 
         OutputChunk::query()
@@ -48,7 +48,7 @@ final readonly class StoredOutput
      */
     public function frames(PartRun $part, OutputStream $stream, int $fromOffset): array
     {
-        $disk = $this->disks->disk(SpoolRecorder::DISK);
+        $disk = $this->disks->disk(OutputRecorder::DISK);
         $frames = [];
 
         OutputChunk::query()

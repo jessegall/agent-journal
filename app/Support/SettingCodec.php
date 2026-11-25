@@ -96,7 +96,7 @@ final readonly class SettingCodec
      */
     public function encodeEnum(string $owner, EnumSetting $setting, BackedEnum $input): EncodedValue
     {
-        if (Reflector::of($setting->enum)->asInstance($input)->isDefined() && $setting->accepts($input->value)) {
+        if (ReflectedType::of($setting->enum)->asInstance($input)->isDefined() && $setting->accepts($input->value)) {
             return EncodedValue::of($input->value);
         }
 

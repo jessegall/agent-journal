@@ -25,7 +25,7 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Values\OwnerAuthority;
 use App\Values\SignInIdentity;
 use App\Values\SignInStarted;
@@ -133,7 +133,7 @@ final class SignInAttemptTest extends TestCase
         $renewal = SignInAttempt::query()->whereKey($again->attemptId)->sole();
         $renewal->waitForUser();
 
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
@@ -207,7 +207,7 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);
         $this->travel(16)->minutes();
 
-        $ended = $this->app->make(EntryDispatchers::class)
+        $ended = $this->app->make(JournalCommands::class)
             ->runAsJournal(CommandEntry::AccountMaintenance, 'test sweep', new ReconcileAccountsCommand());
 
         $this->assertSame(1, $ended);
@@ -228,7 +228,7 @@ final class SignInAttemptTest extends TestCase
         $started = $this->begin($requestKey);
         SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
 
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($started->attemptId, 0, $identity),
@@ -241,7 +241,7 @@ final class SignInAttemptTest extends TestCase
 
     private function complete(string $attemptId, int $generation, string|null $display): void
     {
-        $this->app->make(EntryDispatchers::class)->runAsJournal(
+        $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             new CompleteSignInCommand($attemptId, $generation, SignInIdentity::shown($display)),

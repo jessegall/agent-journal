@@ -27,7 +27,7 @@ final readonly class DirectFileAccess
         'app/Support/FileContents.php',
         'app/Support/FileWriter.php',
         'app/Support/FolderWalker.php',
-        'app/Support/LocalFiles.php',
+        'app/Support/Files.php',
         'app/Support/PathConfinement.php',
         'app/Support/PlaceRoots.php',
         'app/Values/Fingerprint.php',

@@ -1,0 +1,147 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Storage;
+
+use App\Contracts\Assignments\AssignmentStorage as AssignmentStorageContract;
+use App\Contracts\Bus\CommandFacts;
+use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Events\Assignments\AssignmentsEnded;
+use App\Exceptions\AssignmentConflict;
+use App\Exceptions\AssignmentTransactionRequired;
+use App\Models\Records\AssignmentRecord;
+use App\Support\AssigneeIdentity;
+use App\Support\Assignment;
+use App\Support\AssignmentChange;
+use App\Support\AssignmentOutcome;
+use App\Support\AssignmentReference;
+use App\Support\AssignmentResult;
+use App\Support\RecordIdentity;
+use Illuminate\Database\ConnectionInterface;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
+
+/**
+ * Core's private writes and reads of the one current holder per record. Every call runs inside an assignment
+ * transaction; the writer and retirement decide who may do what before they call it.
+ */
+final readonly class AssignmentStorage implements AssignmentStorageContract
+{
+    public function __construct(private ConnectionInterface $database, private CommandFacts $facts) {}
+
+    /**
+     * The record's current assignment, its row locked for update.
+     *
+     * @return Option<Assignment>
+     */
+    public function lockCurrent(RecordIdentity $record): Option
+    {
+        $this->assertInTransaction();
+        $row = AssignmentRecord::query()->forRecord($record)->lockForUpdate()->first();
+
+        if ($row === null) {
+            return None::create();
+        }
+
+        return Some::create($row->toAssignment);
+    }
+
+    /**
+     * The record's current assignment, locked, when it is still the one the caller read.
+     *
+     * @throws AssignmentConflict
+     */
+    public function lockExpected(RecordIdentity $record, AssignmentReference $expected): Assignment
+    {
+        $current = $this->lockCurrent($record);
+
+        if ($current->isEmpty() || ! $current->get()->reference->isSameAs($expected)) {
+            throw AssignmentConflict::staleReference($record);
+        }
+
+        return $current->get();
+    }
+
+    /**
+     * Gives an unheld record to the holder and answers the record's assignment afterwards: the new one, or the one
+     * another transaction made first. The unique record key decides the winner without aborting this transaction; a
+     * winner this snapshot cannot see raises a serialization failure, and the transaction runs again.
+     */
+    public function assignIfUnheld(RecordIdentity $record, AssigneeIdentity $holder): Assignment
+    {
+        $this->assertInTransaction();
+        AssignmentRecord::createForFreeRecord($record, $holder);
+
+        return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment;
+    }
+
+    /**
+     * Replaces the record's assignment with a new row for the holder, so the old reference no longer matches.
+     */
+    public function replace(Assignment $current, AssigneeIdentity $holder): Assignment
+    {
+        $this->assertInTransaction();
+        AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
+        $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
+
+        return AssignmentRecord::create($current->record, $holder)->toAssignment;
+    }
+
+    public function remove(Assignment $current): void
+    {
+        $this->assertInTransaction();
+        AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
+        $this->facts->publishAfterCommit(new AssignmentsEnded([$current->reference->id]));
+    }
+
+    /**
+     * Removes every assignment the actor holds, of every record type, without asking any owner, for Core's retirement
+     * of that actor.
+     */
+    public function releaseAll(AssigneeIdentity $holder): AssignmentResult
+    {
+        $this->assertInTransaction();
+
+        $rows = AssignmentRecord::query()
+            ->heldForRetirement($holder)
+            ->readAll('every assignment the retiring holder holds is released')
+            ->oldestFirst()
+            ->lockForUpdate()
+            ->get();
+
+        AssignmentRecord::query()->heldForRetirement($holder)->whereKey($rows->modelKeys())->delete();
+        $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->to_assignment)->all());
+
+        if ($released !== []) {
+            $endedIds = array_values(array_map('strval', $rows->modelKeys()));
+            $this->facts->publishAfterCommit(new AssignmentsEnded($endedIds));
+        }
+
+        return new AssignmentResult(
+            array_map(
+                fn (Assignment $assignment) => new AssignmentOutcome(
+                    $assignment->record,
+                    null,
+                    AssignmentOutcomeType::Changed,
+                ),
+                $released,
+            ),
+            array_map(
+                fn (Assignment $assignment) => new AssignmentChange($assignment->record, $assignment, null),
+                $released,
+            ),
+        );
+    }
+
+    /**
+     * @throws AssignmentTransactionRequired
+     */
+    private function assertInTransaction(): void
+    {
+        if ($this->database->transactionLevel() === 0) {
+            throw AssignmentTransactionRequired::forStore();
+        }
+    }
+}

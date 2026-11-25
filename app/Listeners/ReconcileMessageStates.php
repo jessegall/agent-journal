@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Events\Sessions\SessionOpened;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
@@ -24,7 +24,7 @@ final readonly class ReconcileMessageStates implements Listener
 {
     private const int MESSAGE_LIMIT = 100;
 
-    public function __construct(private AgentStack $stacks) {}
+    public function __construct(private AgentStacks $stacks) {}
 
     public function handle(SessionOpened $event): void
     {

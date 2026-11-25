@@ -10,8 +10,8 @@ use App\Exceptions\FileMissing;
 use App\Exceptions\FileReadReentered;
 use App\Exceptions\FileUnreadable;
 use App\Exceptions\LinkLeavesPlace;
-use App\Support\LocalFiles;
-use App\Support\Reflector;
+use App\Support\Files;
+use App\Support\ReflectedType;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -19,7 +19,7 @@ use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
 
 /**
- * LocalFiles reads a project file once while it is unchanged, reads a private file fresh every time, refuses a
+ * Files reads a project file once while it is unchanged, reads a private file fresh every time, refuses a
  * read started inside a read, and names every failure.
  */
 final class LocalFilesTest extends TestCase
@@ -30,7 +30,7 @@ final class LocalFilesTest extends TestCase
 
     private string $folder;
 
-    private LocalFiles $files;
+    private Files $files;
 
     protected function setUp(): void
     {
@@ -46,7 +46,7 @@ final class LocalFilesTest extends TestCase
             'accounts.root' => "{$this->folder}/accounts",
         ]);
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinute());
-        $this->files = $this->app->make(LocalFiles::class);
+        $this->files = $this->app->make(Files::class);
     }
 
     protected function tearDown(): void
@@ -264,12 +264,12 @@ final class LocalFilesTest extends TestCase
     }
 
     /**
-     * Runs code while LocalFiles holds its read flag for a file, as a listener fired during a read would.
+     * Runs code while Files holds its read flag for a file, as a listener fired during a read would.
      *
      * @param  Closure(): mixed  $work
      */
     private function whileReading(FilePath $file, Closure $work): mixed
     {
-        return Reflector::of(LocalFiles::class)->method('whileReading')->invokeOn($this->files, $file, $work);
+        return ReflectedType::of(Files::class)->method('whileReading')->invokeOn($this->files, $file, $work);
     }
 }

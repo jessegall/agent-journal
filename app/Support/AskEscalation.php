@@ -22,7 +22,7 @@ use Carbon\CarbonImmutable;
 final readonly class AskEscalation
 {
     public function __construct(
-        private SupervisorRouting $routes,
+        private SupervisorDefinitions $routes,
         private SupervisorRecipients $recipients,
         private AskRouter $router,
         private JournalAssignmentWriter $assignments,

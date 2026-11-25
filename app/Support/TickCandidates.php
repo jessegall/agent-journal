@@ -44,7 +44,7 @@ final class TickCandidates
     {
         $selected = $this->examineAfter($this->progress, $limit);
 
-        $restored = ScopedReadMeter::ofCurrentScope()->withinSchedule(
+        $restored = ReadMeter::ofCurrentScope()->withinSchedule(
             'engine ticks',
             fn () => $this->restore($selected),
         );

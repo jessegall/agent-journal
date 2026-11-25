@@ -19,7 +19,7 @@ use Illuminate\Auth\Access\Response;
  */
 final readonly class ActorAuthorizers
 {
-    public function __construct(private AuthorizerProviderRegistry $providers) {}
+    public function __construct(private AuthorizerProviderRegistration $providers) {}
 
     public function forActor(Actor $actor): Authorizer
     {

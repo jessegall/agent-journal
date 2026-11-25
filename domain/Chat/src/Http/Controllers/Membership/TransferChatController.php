@@ -9,7 +9,7 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Bus\CommandBus;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\ParticipantInput;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -20,7 +20,7 @@ final readonly class TransferChatController
 {
     public function __invoke(
         ParticipantInput $input,
-        ChatInboxes $chats,
+        PairChats $chats,
         CurrentActor $actors,
         CommandBus $commands,
         Redirector $redirect,

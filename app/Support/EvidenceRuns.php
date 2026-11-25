@@ -41,7 +41,7 @@ final readonly class EvidenceRuns
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
         private CommandPermissionResolver $permissions,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private VerificationTiming $timing,
         private AgentTexts $texts,
     ) {}

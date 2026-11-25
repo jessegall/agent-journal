@@ -35,7 +35,7 @@ final readonly class SettingsWriter
         private CommandTransaction $transaction,
         private SettingRegistry $registry,
         private SettingCodec $codec,
-        private DatabaseSettingsResolver $resolver,
+        private SettingsResolver $resolver,
         private CommandFacts $facts,
     ) {}
 

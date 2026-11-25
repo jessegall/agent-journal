@@ -11,7 +11,7 @@ use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\ModuleRuleBundle;
 use App\Support\ActorIdentity;
 use App\Support\CommandRuleRegistry;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use App\Values\RuleBundle;
 
 /**
@@ -22,7 +22,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
 {
     public function __construct(
         private CommandRuleRegistry $rules,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private CommandFacts $facts,
     ) {}
 

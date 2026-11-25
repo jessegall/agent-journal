@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
 use App\Declarations\StateMethods;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\States\AgentState;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
@@ -21,7 +21,7 @@ final class StateEventParameter
     public static function matches(Param $parameter): bool
     {
         if (! $parameter->type instanceof Name
-            || ! Reflector::factory()->isSubclassOf($parameter->type->toString(), Event::class)) {
+            || ! ReflectedType::factory()->isSubclassOf($parameter->type->toString(), Event::class)) {
             return false;
         }
 
@@ -39,7 +39,7 @@ final class StateEventParameter
 
         $name = $class->namespacedName->toString();
 
-        $declared = Reflector::exists($name) ? Reflector::of($name) : null;
+        $declared = ReflectedType::exists($name) ? ReflectedType::of($name) : null;
 
         if ($declared === null || (! $declared->isSubclassOf(AgentState::class) && ! $declared->isTrait())) {
             return false;

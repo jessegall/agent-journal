@@ -13,7 +13,7 @@ use App\Values\SearchReader;
 use App\Values\SearchResult;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
-use App\Values\WorkBudget;
+use App\Values\WorkAllowance;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Support\MemorySearchProvider;
 use Domain\Memory\Tests\TestCase;
@@ -70,7 +70,7 @@ final class MemorySearchProviderTest extends TestCase
             SearchScope::within(Memory::linkType()),
             Memory::linkType(),
             10,
-            WorkBudget::forBatch(150),
+            WorkAllowance::forBatch(150),
             null,
         );
 

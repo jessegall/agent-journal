@@ -7,7 +7,7 @@ use App\Http\Controllers\Calls\ReadTextVersionController;
 use App\Http\Controllers\Text\ReadTextController;
 use App\Http\Controllers\Text\TextSectionsController;
 use App\Http\Controllers\Text\TextVersionController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +16,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('text.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(ReadTextVersionController::class)->name('version');
         $calls->register(ListTextSectionsController::class)->name('sections');
         $calls->register(App\Http\Controllers\Calls\ReadTextController::class)->name('read');

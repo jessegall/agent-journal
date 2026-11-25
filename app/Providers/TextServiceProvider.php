@@ -8,10 +8,10 @@ use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\TextReadCommand;
 use App\Console\Commands\TextSectionsCommand;
 use App\Console\Commands\TextVersionCommand;
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Reads\TextResolver;
-use App\Resolvers\TextRecords;
-use App\Support\AgentTextRenderer;
+use App\Contracts\Actors\AgentTexts as AgentTextsContract;
+use App\Contracts\Reads\TextResolver as TextResolverContract;
+use App\Resolvers\TextResolver;
+use App\Support\AgentTexts;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -23,8 +23,8 @@ final class TextServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(TextResolver::class, TextRecords::class);
-        $this->app->bind(AgentTexts::class, AgentTextRenderer::class);
+        $this->app->bind(TextResolverContract::class, TextResolver::class);
+        $this->app->bind(AgentTextsContract::class, AgentTexts::class);
     }
 
     public function boot(): void

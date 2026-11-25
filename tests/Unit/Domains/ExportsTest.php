@@ -12,10 +12,10 @@ use App\Support\DomainRegistry;
 use App\Support\ExportBuilder;
 use App\Support\Exports as DeclaredExports;
 use App\Support\ExportValidator;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Resolvers\VisibleTasks;
+use Domain\Tasks\Resolvers\TaskResolver;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Values\TaskSummary;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -49,10 +49,10 @@ final class ExportsTest extends TestCase
         $checked = ExportValidator::check(
             'Tasks',
             'Domain\\Tasks',
-            DeclaredExports::make()->contracts('\\'.TaskResolver::class)->build(),
+            DeclaredExports::make()->contracts('\\'.TaskResolverContract::class)->build(),
         );
 
-        $this->assertSame([TaskResolver::class], $checked->contracts);
+        $this->assertSame([TaskResolverContract::class], $checked->contracts);
     }
 
     public function test_a_name_that_does_not_exist_is_refused_with_its_list(): void
@@ -68,9 +68,9 @@ final class ExportsTest extends TestCase
 
     public function test_a_name_of_a_neighbouring_namespace_with_the_same_start_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidExports::outsideOwner('Task', TaskResolver::class, 'Domain\\Task'));
+        $this->expectExceptionObject(InvalidExports::outsideOwner('Task', TaskResolverContract::class, 'Domain\\Task'));
 
-        ExportValidator::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskResolver::class)->build());
+        ExportValidator::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskResolverContract::class)->build());
     }
 
     public function test_a_domain_exporting_another_owners_class_cannot_be_registered(): void
@@ -93,8 +93,8 @@ final class ExportsTest extends TestCase
         ];
 
         yield 'a concrete reader under contracts' => [
-            DeclaredExports::make()->contracts(VisibleTasks::class),
-            InvalidExports::notAnInterface('Tasks', VisibleTasks::class),
+            DeclaredExports::make()->contracts(TaskResolver::class),
+            InvalidExports::notAnInterface('Tasks', TaskResolver::class),
         ];
 
         yield 'a plain value under commands' => [

@@ -17,7 +17,7 @@ use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use Carbon\CarbonImmutable;
 use Domain\Chat\ChatDomain;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Finder\Finder;
 use Tests\Support\Agents\HostContract;
@@ -121,7 +121,7 @@ final class PageRequestContractTest extends TestCase
         $this->member = $member;
         $this->inboxOf(ActorIdentity::of($member));
         $this->startUserRequestAs($owner->id);
-        $inboxId = $this->app->make(ChatInboxes::class)->openGroup('Design', [ActorIdentity::of($member)]);
+        $inboxId = $this->app->make(PairChats::class)->openGroup('Design', [ActorIdentity::of($member)]);
         $messageId = $this->runOnBus(new SendMessageCommand($inboxId, 'Hello'));
         $account = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Work'), '/journal/accounts/recorded');
         $question = $this->askInboxOf(ActorIdentity::of($owner), 'Which plan first?');

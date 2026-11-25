@@ -34,7 +34,7 @@ final class NumberedTypeRegistry
         $this->modelOfLinkType = Registry::replacing(NumberedModelUndeclared::for(...));
 
         foreach (Relation::morphMap() as $linkType => $model) {
-            if (! Reflector::factory()->isSubclassOf($model, Numbered::class)) {
+            if (! ReflectedType::factory()->isSubclassOf($model, Numbered::class)) {
                 continue;
             }
 

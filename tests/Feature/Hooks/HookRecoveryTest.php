@@ -16,9 +16,9 @@ use App\Models\Drivers\HookCall;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
-use App\Support\HeartbeatService;
 use App\Support\SignedCall;
 use App\Support\StartedAgent;
+use App\Support\StartHeartbeats;
 use App\Support\StartSessions;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
@@ -210,8 +210,8 @@ final class HookRecoveryTest extends TestCase
         )->sole();
     }
 
-    private function heartbeats(): HeartbeatService
+    private function heartbeats(): StartHeartbeats
     {
-        return $this->app->make(HeartbeatService::class);
+        return $this->app->make(StartHeartbeats::class);
     }
 }

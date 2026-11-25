@@ -14,8 +14,8 @@ use App\Declarations\SidebarGroup;
 use App\Enums\Navigation\Icon;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
+use App\Support\NavigationRecords;
 use App\Support\UiDeclarations;
-use App\Support\WebNavigationRecords;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;
@@ -257,9 +257,9 @@ final class NavigationTest extends TestCase
         );
     }
 
-    private function navigation(): WebNavigationRecords
+    private function navigation(): NavigationRecords
     {
-        return $this->app->make(WebNavigationRecords::class);
+        return $this->app->make(NavigationRecords::class);
     }
 
     private function requestTo(string $path): Request

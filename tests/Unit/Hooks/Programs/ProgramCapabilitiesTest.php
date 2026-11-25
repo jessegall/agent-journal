@@ -11,7 +11,7 @@ use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
 use App\Support\States\AgentState;
@@ -83,7 +83,7 @@ final class ProgramCapabilitiesTest extends TestCase
         $hookMethods = array_map(
             fn (ReflectedMethod $method) => $method->name(),
             array_filter(
-                Reflector::of(AgentState::class)->methods(),
+                ReflectedType::of(AgentState::class)->methods(),
                 fn (ReflectedMethod $method) => str_starts_with($method->name(), 'on'),
             ),
         );

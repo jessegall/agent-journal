@@ -11,7 +11,7 @@ use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Support\Wire\DockCardEncoder;
+use App\Support\Wire\CardEncoder;
 use App\Support\Wire\DockNodeTypes;
 use App\Support\Wire\PartMap;
 use Tests\TestCase;
@@ -30,7 +30,7 @@ final class DockCardEncoderTest extends TestCase
     {
         $card = DockCard::named('Message 4', Stack::of('root', new Subtitle('status', 'Ready')));
 
-        $encoded = $this->app->make(DockCardEncoder::class)->encode($card, 'P7', new DockIdentity('message', 'M4'), 'Message 4');
+        $encoded = $this->app->make(CardEncoder::class)->encode($card, 'P7', new DockIdentity('message', 'M4'), 'Message 4');
 
         $this->assertSame(self::EXAMPLE_ENVELOPE, json_encode($encoded));
     }
@@ -40,7 +40,7 @@ final class DockCardEncoderTest extends TestCase
         $titles = array_map(fn (int $index) => new Title("title-{$index}", 'x'), range(1, DockCard::NODE_LIMIT));
         $card = DockCard::named('Many', Stack::of('root', ...$titles));
 
-        $encoded = $this->app->make(DockCardEncoder::class)->encode($card, 'P1', new DockIdentity('message', 'M1'), 'Many');
+        $encoded = $this->app->make(CardEncoder::class)->encode($card, 'P1', new DockIdentity('message', 'M1'), 'Many');
 
         $this->assertNull($encoded->root);
         $this->assertNull($encoded->open);

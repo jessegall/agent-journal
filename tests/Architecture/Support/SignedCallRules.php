@@ -8,7 +8,7 @@ use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
 use App\Support\CallDeclaration;
 use App\Support\DeclaredType;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PhpOption\Option;
 
 /**
@@ -33,11 +33,11 @@ final readonly class SignedCallRules
         $wrong = [];
 
         foreach ($controllers as $controller) {
-            $controllerMethod = Reflector::of($controller)->method('__invoke');
+            $controllerMethod = ReflectedType::of($controller)->method('__invoke');
             $parameters = $controllerMethod->parameters();
             $call = $parameters === [] ? '' : self::namedTypeOf($parameters[0]->type());
 
-            if (! Reflector::exists($call) || ! Reflector::of($call)->isSubclassOf(JournalCall::class)) {
+            if (! ReflectedType::exists($call) || ! ReflectedType::of($call)->isSubclassOf(JournalCall::class)) {
                 $wrong[] = "{$controller}: its first parameter is no call";
 
                 continue;
@@ -64,11 +64,11 @@ final readonly class SignedCallRules
         $wrong = [];
 
         foreach ($calls as $call) {
-            $docblock = Reflector::of($call)->docComment()->getOrElse('');
+            $docblock = ReflectedType::of($call)->docComment()->getOrElse('');
             preg_match('/@implements\s+JournalCall<(\w+)>/', $docblock, $callContractMatch);
             $answer = CallDeclaration::of($call)->endpoint->answer;
 
-            if (($callContractMatch[1] ?? '') !== Reflector::of($answer)->shortName()) {
+            if (($callContractMatch[1] ?? '') !== ReflectedType::of($answer)->shortName()) {
                 $wrong[] = $call;
             }
         }
@@ -87,7 +87,7 @@ final readonly class SignedCallRules
         $found = [];
 
         foreach ($classes as $class) {
-            foreach (Reflector::of($class)->properties() as $property) {
+            foreach (ReflectedType::of($class)->properties() as $property) {
                 if ($property->isPublic() && in_array($property->name(), self::ACTOR_ID_NAMES, true)) {
                     $found[] = "{$class}::\${$property->name()}";
                 }
@@ -114,7 +114,7 @@ final readonly class SignedCallRules
 
         foreach ($commandSources as $command => $source) {
             foreach ($writes as $write) {
-                $short = Reflector::of($write)->shortName();
+                $short = ReflectedType::of($write)->shortName();
                 $method = lcfirst(substr($short, 0, -strlen('Call')));
 
                 if (str_contains($source, $short) || str_contains($source, "->{$method}(")) {

@@ -7,7 +7,7 @@ namespace App\Concerns;
 use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\ModelReadAllRefused;
 use App\Support\ReadBuilder;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use App\Values\ReadOrder;
 use Illuminate\Container\Container;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -54,7 +54,7 @@ trait BoundedReads
      */
     protected function mutateAttribute($key, $value): mixed
     {
-        return ScopedReadMeter::ofCurrentScope()->withoutQueries(
+        return ReadMeter::ofCurrentScope()->withoutQueries(
             static::class."::{$key} accessor",
             fn () => parent::mutateAttribute($key, $value),
         );
@@ -65,7 +65,7 @@ trait BoundedReads
      */
     protected function mutateAttributeMarkedAttribute($key, $value): mixed
     {
-        return ScopedReadMeter::ofCurrentScope()->withoutQueries(
+        return ReadMeter::ofCurrentScope()->withoutQueries(
             static::class."::{$key} accessor",
             fn () => parent::mutateAttributeMarkedAttribute($key, $value),
         );
@@ -76,7 +76,7 @@ trait BoundedReads
      */
     public function toArray(): array
     {
-        return ScopedReadMeter::ofCurrentScope()->withoutQueries(static::class.'::toArray', fn () => parent::toArray());
+        return ReadMeter::ofCurrentScope()->withoutQueries(static::class.'::toArray', fn () => parent::toArray());
     }
 
     /**

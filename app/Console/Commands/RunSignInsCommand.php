@@ -6,14 +6,14 @@ namespace App\Console\Commands;
 
 use App\Contracts\Files\Files;
 use App\Exceptions\SignInRunnerRefused;
+use App\Support\AccountOwnerDrain;
 use App\Support\ArrangementSetting;
-use App\Support\HostAccountDrain;
 use App\Support\HostAccountFolders;
 use App\Support\HostSecret;
 use App\Support\HostStartSocket;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
-use App\Support\SignedSignInHost;
+use App\Support\SignInHost;
 use App\Support\SignInProtocols;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Factory;
@@ -36,7 +36,7 @@ final class RunSignInsCommand extends Command
         Files $files,
     ): int {
         $runner = new PrivateSignInProcesses(
-            new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
+            new SignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
                 (string) getenv('JOURNAL_HOST_SECRET_FILE'),
                 (string) getenv('JOURNAL_HOST_SECRET'),
             ), $arrangement->arrangement),
@@ -46,7 +46,7 @@ final class RunSignInsCommand extends Command
             $arrangement->arrangement->isContained()
                 ? new HostAccountFolders(new HostStartSocket((string) getenv('AGENTS_HOST_START_SOCKET')))
                 : new LocalAccountFolders($files),
-            new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
+            new AccountOwnerDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
         );
 
         $runner->reconcileAtStart();

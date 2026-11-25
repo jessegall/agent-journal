@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills;
 
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Support\ActorIdentity;
 use App\Support\References\StateReference;
 use App\Values\StackTarget;
@@ -12,7 +12,7 @@ use App\Values\StackTarget;
 /**
  * An agent stack that only records what was pushed, for listeners tested outside a hook call.
  */
-final class RecordingStack implements AgentStack
+final class RecordingStack implements AgentStacks
 {
     /**
      * @var list<StateReference>

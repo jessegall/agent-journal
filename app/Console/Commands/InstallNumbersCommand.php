@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\Records\InstallNumbers\InstallNumbersCommand as InstallNumbers;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Console\Command;
 
 final class InstallNumbersCommand extends Command
@@ -15,7 +15,7 @@ final class InstallNumbersCommand extends Command
 
     protected $description = 'Create the global number group the journal numbers its records in';
 
-    public function handle(EntryDispatchers $dispatchers): int
+    public function handle(JournalCommands $dispatchers): int
     {
         $dispatchers->runAsJournal(CommandEntry::HostControl, 'number install', new InstallNumbers());
         $this->info('The journal number group is installed.');

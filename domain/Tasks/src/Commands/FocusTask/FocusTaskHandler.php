@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands\FocusTask;
 
 use App\Contracts\Work\AgentFocuses;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Exceptions\FrameNotHeld;
 use App\Support\ActorIdentity;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
@@ -15,7 +15,7 @@ use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;
 
 final readonly class FocusTaskHandler extends TaskCommandHandler
 {
-    public function __construct(private AgentStack $stacks, private AgentFocuses $focuses) {}
+    public function __construct(private AgentStacks $stacks, private AgentFocuses $focuses) {}
 
     /**
      * Under the task's lock: only a started task takes the caller's focus, moving it off what it focused on before,

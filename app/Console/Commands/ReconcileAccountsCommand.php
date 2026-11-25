@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand as ReconcileAccounts;
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +18,7 @@ final class ReconcileAccountsCommand extends Command
 
     protected $description = 'End the sign-ins past their deadline';
 
-    public function handle(EntryDispatchers $dispatchers): int
+    public function handle(JournalCommands $dispatchers): int
     {
         $expired = $dispatchers->runAsJournal(
             CommandEntry::AccountMaintenance,

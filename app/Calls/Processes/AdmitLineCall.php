@@ -10,7 +10,7 @@ use App\Contracts\Domains\JournalCall;
 use App\Enums\Processes\CallEffect;
 use App\Enums\Processes\ReceiptOwner;
 use App\Enums\Processes\ShellDialect;
-use App\Exceptions\AdmissionRefused;
+use App\Exceptions\CallRefusal;
 use App\Support\CallKey;
 use App\Support\Transformers\CallKeyTransformer;
 use Spatie\LaravelData\Attributes\MapName;
@@ -32,7 +32,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
     LineAdmitted::class,
     CallEffect::KeyedWrite,
     ReceiptOwner::Operation,
-    refusals: [AdmissionRefused::class],
+    refusals: [CallRefusal::class],
 )]
 final class AdmitLineCall extends Data implements JournalCall
 {

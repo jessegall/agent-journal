@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -16,8 +16,8 @@ final class DriversServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(DriverRegistry::class, function (): DriverRegistry {
-            $registry = new DriverRegistry($this->app);
+        $this->app->singleton(DriverCatalogue::class, function (): DriverCatalogue {
+            $registry = new DriverCatalogue($this->app);
 
             foreach (DefaultDrivers::families() as $family) {
                 $registry->registerFamily($family);
@@ -30,6 +30,6 @@ final class DriversServiceProvider extends ServiceProvider
             return $registry;
         });
 
-        $this->app->alias(DriverRegistry::class, DriverCatalogue::class);
+        $this->app->alias(DriverCatalogue::class, DriverCatalogueContract::class);
     }
 }

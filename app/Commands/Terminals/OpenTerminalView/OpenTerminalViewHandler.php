@@ -7,12 +7,12 @@ namespace App\Commands\Terminals\OpenTerminalView;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
 use App\Support\ActorIdentity;
-use App\Support\TerminalViews;
+use App\Support\TerminalViewCloser;
 
 final readonly class OpenTerminalViewHandler implements CommandHandler
 {
     public function __construct(
-        private TerminalViews $views,
+        private TerminalViewCloser $views,
         private ServerClock $clock,
     ) {}
 

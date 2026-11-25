@@ -6,7 +6,7 @@ namespace Tests\Unit\Reflection;
 
 use App\Exceptions\AttributeBuiltRecursively;
 use App\Exceptions\AttributeMissing;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Tests\Fixtures\Reflection\Attributes\BaseMarker;
@@ -22,7 +22,7 @@ use Tests\Fixtures\Reflection\SelfReadingParcel;
 use Tests\Fixtures\Reflection\TwiceMarkedParcel;
 
 /**
- * A Reflector selects a type's attributes by class, in declaration order, builds each only when it is read and keeps
+ * A ReflectedType selects a type's attributes by class, in declaration order, builds each only when it is read and keeps
  * every answer, an empty one too.
  */
 final class ReflectorAttributesTest extends TestCase
@@ -30,7 +30,7 @@ final class ReflectorAttributesTest extends TestCase
     public function test_counting_and_asking_for_presence_build_nothing(): void
     {
         $built = Marker::$built;
-        $reflector = Reflector::of(MarkedParcel::class);
+        $reflector = ReflectedType::of(MarkedParcel::class);
 
         $this->assertCount(2, $reflector->attributes(Marker::class));
         $this->assertTrue($reflector->hasAttribute(Marker::class));
@@ -40,7 +40,7 @@ final class ReflectorAttributesTest extends TestCase
 
     public function test_the_required_read_builds_only_the_first_occurrence_and_only_once(): void
     {
-        $reflector = Reflector::of(TwiceMarkedParcel::class);
+        $reflector = ReflectedType::of(TwiceMarkedParcel::class);
         $built = Marker::$built;
 
         $marker = $reflector->attribute(Marker::class);
@@ -59,7 +59,7 @@ final class ReflectorAttributesTest extends TestCase
 
     public function test_iteration_gives_every_occurrence_in_order_and_a_second_read_builds_nothing_new(): void
     {
-        $reflector = Reflector::of(MarkedParcel::class);
+        $reflector = ReflectedType::of(MarkedParcel::class);
 
         $labels = array_map(fn (Marker $marker) => $marker->label, iterator_to_array($reflector->attributes(Marker::class)));
         $built = Marker::$built;
@@ -73,7 +73,7 @@ final class ReflectorAttributesTest extends TestCase
 
     public function test_an_absent_attribute_is_missing_for_the_required_read_and_none_for_the_optional_one(): void
     {
-        $reflector = Reflector::of(MarkedParcel::class);
+        $reflector = ReflectedType::of(MarkedParcel::class);
 
         $this->assertTrue($reflector->attributes(FailingMarker::class)->first()->isEmpty());
         $this->assertFalse($reflector->hasAttribute(FailingMarker::class));
@@ -89,16 +89,16 @@ final class ReflectorAttributesTest extends TestCase
 
     public function test_a_class_attribute_is_not_read_from_the_parent(): void
     {
-        $this->assertSame('parcel', Reflector::of(Parcel::class)->attribute(Marker::class)->label);
+        $this->assertSame('parcel', ReflectedType::of(Parcel::class)->attribute(Marker::class)->label);
         $this->assertSame(
             ['first', 'second'],
-            array_map(fn (Marker $marker) => $marker->label, iterator_to_array(Reflector::of(MarkedParcel::class)->attributes(Marker::class))),
+            array_map(fn (Marker $marker) => $marker->label, iterator_to_array(ReflectedType::of(MarkedParcel::class)->attributes(Marker::class))),
         );
     }
 
     public function test_an_exact_selection_excludes_a_derived_attribute_and_an_implementing_one_includes_it(): void
     {
-        $reflector = Reflector::of(MarkedParcel::class);
+        $reflector = ReflectedType::of(MarkedParcel::class);
 
         $this->assertCount(0, $reflector->attributes(BaseMarker::class));
         $this->assertCount(1, $reflector->attributesImplementing(BaseMarker::class));
@@ -111,7 +111,7 @@ final class ReflectorAttributesTest extends TestCase
 
     public function test_a_failing_constructor_throws_its_cause_every_time(): void
     {
-        $reflector = Reflector::of(FailingParcel::class);
+        $reflector = ReflectedType::of(FailingParcel::class);
 
         foreach ([1, 2] as $attempt) {
             try {
@@ -130,7 +130,7 @@ final class ReflectorAttributesTest extends TestCase
     {
         foreach ([1, 2] as $attempt) {
             try {
-                Reflector::of(SelfReadingParcel::class)->attribute(SelfReadingMarker::class);
+                ReflectedType::of(SelfReadingParcel::class)->attribute(SelfReadingMarker::class);
                 $this->fail("Attempt {$attempt} built a marker that reads itself.");
             } catch (AttributeBuiltRecursively $recursion) {
                 $this->assertStringContainsString(SelfReadingMarker::class, $recursion->getMessage());

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Contracts\Drivers\Driver;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\SupportState;
@@ -18,7 +18,7 @@ use App\Support\Capabilities\CodexHeadlessCapabilities;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\Capabilities\HeadlessCapabilities;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Values\BoundTarget;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
@@ -163,10 +163,10 @@ final class DriverRegistryTest extends TestCase
         );
     }
 
-    private function registry(): DriverRegistry
+    private function registry(): DriverCatalogue
     {
-        $drivers = $this->app->make(DriverCatalogue::class);
-        $this->assertInstanceOf(DriverRegistry::class, $drivers);
+        $drivers = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $drivers);
 
         return $drivers;
     }

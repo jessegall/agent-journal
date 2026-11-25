@@ -257,7 +257,7 @@ final class AgentStacksTest extends TestCase
         $this->createStack();
 
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None, ['enabled' => false])),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None, ['isEnabled' => false])),
         );
         $this->assertSame(
             ['core.ready'],
@@ -265,7 +265,7 @@ final class AgentStacksTest extends TestCase
         );
 
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None, ['enabled' => true])),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None, ['isEnabled' => true])),
         );
         $this->assertSame(
             ['core.ready', 'test.switched_on'],
@@ -287,7 +287,7 @@ final class AgentStacksTest extends TestCase
         });
         $this->createStack();
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None, ['enabled' => true])),
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None, ['isEnabled' => true])),
         );
 
         $enabled = false;

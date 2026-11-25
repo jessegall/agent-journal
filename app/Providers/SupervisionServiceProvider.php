@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
-use App\Contracts\Admission\AskAdmission;
-use App\Contracts\Asks\AskReader;
+use App\Contracts\Admission\AskAdmission as AskAdmissionContract;
+use App\Contracts\Asks\AskReader as AskReaderContract;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Processes\SupervisorDefinitions;
+use App\Contracts\Processes\SupervisorDefinitions as SupervisorDefinitionsContract;
 use App\Contracts\Processes\SupervisorDispatch;
 use App\Enums\Agents\AccessType;
 use App\Policies\AskPolicy;
 use App\Policies\SupervisorPolicy;
 use App\Support\AdvanceDueAsksOnTick;
+use App\Support\AskAdmission;
 use App\Support\AskTypeRegistry;
-use App\Support\CurrentAskAdmission;
 use App\Support\EngineListenerSet;
-use App\Support\Readers\AskRecords;
-use App\Support\SupervisorRouting;
+use App\Support\Readers\AskReader;
+use App\Support\SupervisorDefinitions;
 use App\Support\Types\QuestionAskType;
 use App\Support\Types\StuckType;
 use App\Support\UnavailableSupervisorDispatch;
@@ -35,9 +35,9 @@ final class SupervisionServiceProvider extends ServiceProvider
     public function register(): void
     {
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
-        $this->app->bind(SupervisorDefinitions::class, SupervisorRouting::class);
-        $this->app->bind(AskAdmission::class, CurrentAskAdmission::class);
-        $this->app->bind(AskReader::class, AskRecords::class);
+        $this->app->bind(SupervisorDefinitionsContract::class, SupervisorDefinitions::class);
+        $this->app->bind(AskAdmissionContract::class, AskAdmission::class);
+        $this->app->bind(AskReaderContract::class, AskReader::class);
         $this->app->singleton(AskTypeRegistry::class);
         $this->app->bindIf(SupervisorDispatch::class, UnavailableSupervisorDispatch::class);
     }

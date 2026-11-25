@@ -10,7 +10,7 @@ use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartEnd;
 use App\Values\PartKey;
@@ -57,7 +57,7 @@ final class StoredOutputReadTest extends TestCase
             '',
             array_map(fn (int $line) => "line {$line}".($line === 50 ? ' error' : '')."\n", range(1, 100)),
         );
-        $this->app->make(SpoolRecorder::class)->append(
+        $this->app->make(OutputRecorder::class)->append(
             new CapturedChunk($part, OutputStream::Stdout, $lines."\x00\xff end\n", CarbonImmutable::now()),
         );
         $part->finishProcess(PartEnd::exited(1));

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 
 final readonly class ScriptDiff
 {
@@ -15,6 +15,6 @@ final readonly class ScriptDiff
      */
     public function isChange(): bool
     {
-        return ! Reflector::propertiesMatch($this->before, $this->after);
+        return ! ReflectedType::propertiesMatch($this->before, $this->after);
     }
 }

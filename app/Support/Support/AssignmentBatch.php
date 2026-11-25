@@ -12,7 +12,7 @@ use App\Support\AssignmentGroup;
 use App\Support\AssignmentOutcome;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
-use App\Support\Storage\AssignmentStore;
+use App\Support\Storage\AssignmentStorage;
 use Closure;
 
 /**
@@ -23,7 +23,7 @@ final readonly class AssignmentBatch
 {
     public function __construct(
         private AssignmentProviders $providers,
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
     ) {}
 
     /**

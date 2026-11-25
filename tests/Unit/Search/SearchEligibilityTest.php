@@ -10,7 +10,7 @@ use App\Exceptions\SearchableMissing;
 use App\Support\ActorContext;
 use App\Support\DomainRegistry;
 use App\Support\SearchablesRegistry;
-use App\Support\SearchEligibility;
+use App\Support\SearchSources;
 use App\Values\DiscoveryPage;
 use App\Values\ScopeResolution;
 use App\Values\SearchReader;
@@ -114,11 +114,11 @@ final class SearchEligibilityTest extends TestCase
      * @param  list<string>  $switchedOff
      * @param  list<string>  $agentReads
      */
-    private static function eligibility(array $switchedOff, array $agentReads): SearchEligibility
+    private static function eligibility(array $switchedOff, array $agentReads): SearchSources
     {
         $domains = DomainRegistry::from([TasksDomain::class, LogsDomain::class]);
 
-        return new SearchEligibility(
+        return new SearchSources(
             SearchablesRegistry::publishing($domains->searchableDeclarations()),
             new SwitchedOffDomains($switchedOff),
             new NamedReadGrant($agentReads),

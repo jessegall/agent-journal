@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Contracts\Sessions\StartTransaction;
 use App\Support\DefaultDrivers;
 use App\Support\DomainEntry;
@@ -16,9 +16,9 @@ use App\Support\Drivers\Contracts\DriverCall;
 use App\Support\Drivers\HookPayload;
 use App\Support\HookRetryWindow;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\RetentionPeriods;
-use App\Support\ShellParser;
+use App\Support\ShellCommandParser;
 use App\Support\Stack\StateTypes;
 use App\Support\StackTransaction;
 use App\Support\States\AgentState;
@@ -123,7 +123,7 @@ final class HookRuntimeStartTest extends TestCase
     {
         $registry = $this->app->make(StateTypes::class)->registry();
 
-        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
+        $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(StartTransaction::class));
 
         foreach (['core.ready', 'tasks.work', 'core.messages.answer', 'sequences.follow'] as $typeKey) {
@@ -169,7 +169,7 @@ final class HookRuntimeStartTest extends TestCase
         return array_values(array_map(
             fn (ReflectedMethod $method) => $method->name(),
             array_filter(
-                Reflector::of(AgentState::class)->methods(),
+                ReflectedType::of(AgentState::class)->methods(),
                 fn (ReflectedMethod $method) => str_starts_with($method->name(), 'on'),
             ),
         ));

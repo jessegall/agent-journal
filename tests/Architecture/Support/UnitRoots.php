@@ -12,7 +12,7 @@ use App\Contracts\Work\StackTransactionRunner;
 use App\Contracts\Work\UnitOfWork;
 use App\Support\CommandFrame;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\StackTransaction as StackTransactionOwner;
 use App\Support\States\AgentState;
 use Illuminate\Contracts\Container\Container;
@@ -126,11 +126,11 @@ final readonly class UnitRoots
      */
     private static function runsInUnit(string $class, string $transactionListenerAttribute): bool
     {
-        if (! Reflector::exists($class)) {
+        if (! ReflectedType::exists($class)) {
             return false;
         }
 
-        $declaration = Reflector::of($class);
+        $declaration = ReflectedType::of($class);
 
         return $declaration->hasAttribute($transactionListenerAttribute)
             || str_starts_with($class, self::SCRIPT_OBJECTS)
@@ -149,7 +149,7 @@ final readonly class UnitRoots
         $pipes = [];
 
         foreach ($named as $class) {
-            if (! Reflector::exists($class) || ! Reflector::of($class)->implements(PipelineDefinition::class)) {
+            if (! ReflectedType::exists($class) || ! ReflectedType::of($class)->implements(PipelineDefinition::class)) {
                 continue;
             }
 

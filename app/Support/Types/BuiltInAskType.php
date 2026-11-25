@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\Asks\AskSubjectResolver;
+use App\Contracts\Asks\AskSubjectResolver as AskSubjectResolverContract;
 use App\Contracts\Asks\AskType;
 use App\Enums\Asks\CoreAskType;
-use App\Support\VisibleAskSubjects;
+use App\Support\AskSubjectResolver;
 use App\Values\AskTypeKey;
 use App\Values\SubjectType;
 use DateInterval;
@@ -17,7 +17,7 @@ abstract readonly class BuiltInAskType implements AskType
     /**
      * Takes the subjects an ask of a built-in type may be about.
      */
-    public function __construct(private VisibleAskSubjects $subjects) {}
+    public function __construct(private AskSubjectResolver $subjects) {}
 
     public function key(): AskTypeKey
     {
@@ -29,7 +29,7 @@ abstract readonly class BuiltInAskType implements AskType
         return $this->definition()->subject();
     }
 
-    public function resolver(): AskSubjectResolver
+    public function resolver(): AskSubjectResolverContract
     {
         return $this->subjects;
     }

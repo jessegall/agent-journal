@@ -9,7 +9,7 @@ use App\Data\Processes\RunOutcomeSummaryData;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\RunOutcome;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use PhpOption\Option;
 
 /**
@@ -21,7 +21,7 @@ final readonly class RunOutcomeSummaries
 {
     public function __construct(
         private CurrentActor $actors,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
     ) {}
 
     /**

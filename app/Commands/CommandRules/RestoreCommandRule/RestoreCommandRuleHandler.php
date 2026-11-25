@@ -11,8 +11,8 @@ use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\CommandRules\RuleRevision;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
 use App\Support\RuleProposals;
+use App\Support\ServedEnvironment;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 
@@ -23,7 +23,7 @@ use App\Values\ProposedRule;
 final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
     public function __construct(
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private RuleProposals $proposals,
     ) {}
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
@@ -23,11 +23,11 @@ final class ModelTables
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! Reflector::factory()->isSubclassOf($name, Model::class)) {
+                if (! ReflectedType::factory()->isSubclassOf($name, Model::class)) {
                     continue;
                 }
 
-                $model = Reflector::of($name);
+                $model = ReflectedType::of($name);
 
                 if ($model->isAbstract()) {
                     continue;

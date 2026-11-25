@@ -12,9 +12,9 @@ use App\Listeners\RecordProvenSkillReads;
 use App\Listeners\RefreshSessionSkills;
 use App\Models\Agents\AgentSession;
 use App\Resolvers\Support\SkillStatusResolver;
-use App\Support\ContextReminders;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
+use App\Support\ReminderContribution;
 use App\Values\SessionSkillStatus;
 use App\Values\StackTarget;
 use Tests\Support\ActsAsActors;
@@ -117,7 +117,7 @@ final class SessionSkillStatusTest extends TestCase
             new StackTarget($session->agent_id, $session->id),
             'hook-'.bin2hex(random_bytes(4)),
             ContextStartType::Resume,
-            $this->app->make(ContextReminders::class),
+            $this->app->make(ReminderContribution::class),
         ));
     }
 }

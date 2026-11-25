@@ -58,7 +58,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/RecipientNotifications.php',
+            'app/Support/Notifications.php',
         ],
     ],
     NotificationsMarkAllStarted::class => [

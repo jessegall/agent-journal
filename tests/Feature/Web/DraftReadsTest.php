@@ -9,7 +9,7 @@ use App\Http\Responses\PageReadProps;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\AccountDraftProducer;
-use App\Support\DraftProducerRegistry;
+use App\Support\DraftProducers;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Support\DocumentDraftProducer;
 use Domain\Plans\PlansDomain;
@@ -51,7 +51,7 @@ final class DraftReadsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(DraftProducerRegistry::class)->register('note', StubDraftProducer::class);
+        $this->app->make(DraftProducers::class)->register('note', StubDraftProducer::class);
     }
 
     public function test_the_questions_and_the_drafted_record_are_read_by_partial_reload(): void

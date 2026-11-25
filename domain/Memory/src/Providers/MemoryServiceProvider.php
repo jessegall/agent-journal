@@ -10,10 +10,10 @@ use Domain\Memory\Console\Commands\MemoryEditCommand;
 use Domain\Memory\Console\Commands\MemoryListCommand;
 use Domain\Memory\Console\Commands\MemoryRemoveCommand;
 use Domain\Memory\Console\Commands\MemorySaveCommand;
-use Domain\Memory\Contracts\MemoryResolver;
+use Domain\Memory\Contracts\MemoryResolver as MemoryResolverContract;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
-use Domain\Memory\Resolvers\OwnMemories;
+use Domain\Memory\Resolvers\MemoryResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -24,7 +24,7 @@ final class MemoryServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(MemoryResolver::class, OwnMemories::class);
+        $this->app->scoped(MemoryResolverContract::class, MemoryResolver::class);
     }
 
     public function boot(ReadEntitlements $reads): void

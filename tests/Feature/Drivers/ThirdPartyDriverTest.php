@@ -7,7 +7,7 @@ namespace Tests\Feature\Drivers;
 use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
@@ -16,7 +16,7 @@ use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverRegisteredTwice;
 use App\Support\ActorContext;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Support\HostDescriptorEnrollment;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
@@ -105,10 +105,10 @@ final class ThirdPartyDriverTest extends TestCase
         $this->assertSame([null, HostDescriptorEnrollment::BUILD_UNAPPROVED], [$reasonFor('1.0.0'), $reasonFor('2.0.0')]);
     }
 
-    private function registryWithAcme(): DriverRegistry
+    private function registryWithAcme(): DriverCatalogue
     {
-        $registry = $this->app->make(DriverCatalogue::class);
-        $this->assertInstanceOf(DriverRegistry::class, $registry);
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(
             new DriverFamily('acme', 'Acme', ProviderKey::from('acme'), 'acme', $claude->isolatesHooksPerSession, []),
@@ -120,7 +120,7 @@ final class ThirdPartyDriverTest extends TestCase
 
     private function acme(string $key, DriverType $mode): DriverRegistration
     {
-        $registry = $this->app->make(DriverCatalogue::class);
+        $registry = $this->app->make(DriverCatalogueContract::class);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
 
         return new DriverRegistration(
@@ -139,7 +139,7 @@ final class ThirdPartyDriverTest extends TestCase
 
     private function descriptor(string $build): HostDescriptor
     {
-        $registry = $this->app->make(DriverCatalogue::class);
+        $registry = $this->app->make(DriverCatalogueContract::class);
 
         return new HostDescriptor(
             DriverKey::from('acme/reader'),

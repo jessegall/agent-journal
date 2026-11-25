@@ -14,7 +14,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use App\Support\OutputDocking;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\DockedOutput;
 use App\Values\PartEnd;
@@ -171,7 +171,7 @@ final class ProcessAndCleanupDockTest extends TestCase
         $run = ProcessRun::create($actor, TestRunAdmissions::of(projectKey: (string) config('processes.project_key')));
         $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $part->start('host', 1);
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();

@@ -12,7 +12,7 @@ use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ReaderPosition;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -23,7 +23,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final readonly class RunSnapshotResolver
 {
     public function __construct(
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private ActivityProjection $activity,
         private ResultReceipts $receipts,
     ) {}

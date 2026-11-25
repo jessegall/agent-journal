@@ -21,7 +21,7 @@ use App\Support\Drivers\DriverReplies;
 use App\Support\Hooks\HookFailure;
 use App\Support\Hooks\HookResponse;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\NativeTurns;
+use App\Support\NativeTurnRecords;
 use App\Support\OperationDeadline;
 use App\Support\StackAccess;
 use App\Values\AgentText;
@@ -40,7 +40,7 @@ final readonly class HookController
     public function __construct(
         private DriverAdapters $adapters,
         private OperationDeadline $deadline,
-        private NativeTurns $turns,
+        private NativeTurnRecords $turns,
         private AgentTexts $texts,
     ) {}
 

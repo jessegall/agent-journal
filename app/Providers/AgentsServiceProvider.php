@@ -5,52 +5,52 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
-use App\Contracts\Accounts\AccountUses;
+use App\Contracts\Accounts\AccountUses as AccountUsesContract;
 use App\Contracts\Accounts\ActiveAccountReader;
-use App\Contracts\Activity\ActivityLog;
-use App\Contracts\Actors\ActorAttention;
+use App\Contracts\Activity\ActivityLog as ActivityLogContract;
+use App\Contracts\Actors\ActorAttention as ActorAttentionContract;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Assignments\AssignmentRegistration;
-use App\Contracts\Authorization\AgentAuthority;
+use App\Contracts\Authorization\AgentAuthority as AgentAuthorityContract;
 use App\Contracts\Authorization\AuthorizerProviderRegistration;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Authorization\ReadGrant as ReadGrantContract;
-use App\Contracts\Domains\CallRegistrar;
-use App\Contracts\Domains\CallSender;
+use App\Contracts\Domains\CallRegistrar as CallRegistrarContract;
+use App\Contracts\Domains\CallSender as CallSenderContract;
 use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Drivers\CallingDriver;
+use App\Contracts\Drivers\CallingDriver as CallingDriverContract;
 use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Drivers\DriverConversationResolver;
-use App\Contracts\Drivers\ToolDiscovery;
+use App\Contracts\Drivers\DriverConversationResolver as DriverConversationResolverContract;
+use App\Contracts\Drivers\ToolDiscovery as ToolDiscoveryContract;
 use App\Contracts\Files\Files;
-use App\Contracts\Files\WorkspaceReader;
+use App\Contracts\Files\WorkspaceReader as WorkspaceReaderContract;
 use App\Contracts\Hosts\DockerImageVerifier as DockerImageVerifierContract;
-use App\Contracts\Hosts\HostCalls;
-use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Hosts\HostCalls as HostCallsContract;
+use App\Contracts\Hosts\HostCapabilities as HostCapabilitiesContract;
 use App\Contracts\Inboxes\InboxParticipationEnding;
 use App\Contracts\Navigation\NavigationExpiry as NavigationExpiryContract;
-use App\Contracts\Navigation\NavigationReader;
-use App\Contracts\Navigation\TerminalViewCloser;
-use App\Contracts\Processes\RuntimeStops;
-use App\Contracts\Reads\SessionOutputAccess;
+use App\Contracts\Navigation\NavigationReader as NavigationReaderContract;
+use App\Contracts\Navigation\TerminalViewCloser as TerminalViewCloserContract;
+use App\Contracts\Processes\RuntimeStops as RuntimeStopsContract;
+use App\Contracts\Reads\SessionOutputAccess as SessionOutputAccessContract;
 use App\Contracts\Sessions\AgentCallContext;
-use App\Contracts\Sessions\AgentDirectory;
+use App\Contracts\Sessions\AgentDirectory as AgentDirectoryContract;
 use App\Contracts\Sessions\AgentRequestClient as AgentRequestClientContract;
 use App\Contracts\Sessions\AgentResolver;
 use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Sessions\RuntimeResolver;
-use App\Contracts\Sessions\SessionPolicyReader;
+use App\Contracts\Sessions\RuntimeResolver as RuntimeResolverContract;
+use App\Contracts\Sessions\SessionPolicyReader as SessionPolicyReaderContract;
 use App\Contracts\Sessions\SessionProvenance as SessionProvenanceContract;
-use App\Contracts\Sessions\SessionRequestResolver;
-use App\Contracts\Sessions\SessionResolver;
-use App\Contracts\Sessions\SessionStartCandidates;
-use App\Contracts\Sessions\SessionTokenSource;
-use App\Contracts\Sessions\StartExecutor;
+use App\Contracts\Sessions\SessionRequestResolver as SessionRequestResolverContract;
+use App\Contracts\Sessions\SessionResolver as SessionResolverContract;
+use App\Contracts\Sessions\SessionStartCandidates as SessionStartCandidatesContract;
+use App\Contracts\Sessions\SessionTokenSource as SessionTokenSourceContract;
+use App\Contracts\Sessions\StartExecutor as StartExecutorContract;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
-use App\Contracts\Sessions\StartPreflight;
-use App\Contracts\Sessions\StartReceipts;
-use App\Contracts\Sessions\StartReservations;
+use App\Contracts\Sessions\StartPreflight as StartPreflightContract;
+use App\Contracts\Sessions\StartReceipts as StartReceiptsContract;
+use App\Contracts\Sessions\StartReservations as StartReservationsContract;
 use App\Contracts\Sessions\StartTransaction;
 use App\Contracts\Settings\SettingsResolver;
 use App\Enums\Agents\AccessType;
@@ -65,52 +65,48 @@ use App\Policies\ActivityPolicy;
 use App\Policies\AgentMaintenancePolicy;
 use App\Policies\AgentPolicy;
 use App\Policies\AgentTerminalControlPolicy;
-use App\Resolvers\AgentAuthorityRecords;
+use App\Resolvers\AccountUses;
+use App\Resolvers\AgentAuthority;
+use App\Resolvers\AgentDirectory;
 use App\Resolvers\AgentLabels;
-use App\Resolvers\AgentRecords;
-use App\Resolvers\AgentStartCandidates;
-use App\Resolvers\CallingSessionDriver;
-use App\Resolvers\DriverConversationRecords;
-use App\Resolvers\LinkedAccountUses;
-use App\Resolvers\OwnerStartReceipts;
-use App\Resolvers\RecordedHostCapabilities;
-use App\Resolvers\RuntimeRecords;
-use App\Resolvers\SessionRecords;
-use App\Resolvers\SessionRequests;
+use App\Resolvers\CallingDriver;
+use App\Resolvers\DriverConversationResolver;
+use App\Resolvers\HostCapabilities;
+use App\Resolvers\RuntimeResolver;
+use App\Resolvers\SessionRequestResolver;
+use App\Resolvers\SessionResolver;
+use App\Resolvers\SessionStartCandidates;
+use App\Resolvers\StartReceipts;
 use App\Resolvers\Support\CurrentAgentRuntimes;
 use App\Resolvers\Support\PendingStartSecrets;
 use App\Resolvers\UnconfiguredAccounts;
-use App\Support\ActiveActorCounterRegistry;
+use App\Support\ActiveActorRegistration;
 use App\Support\ActivityDefinition;
+use App\Support\ActivityLog;
 use App\Support\ActivityRetentionService;
+use App\Support\ActorAttention;
 use App\Support\AgentActivity;
 use App\Support\AgentActors;
 use App\Support\AgentAssignees;
 use App\Support\AgentClientSettings;
 use App\Support\AgentContext;
-use App\Support\AgentNavigationRecords;
+use App\Support\AgentNotices;
 use App\Support\AgentRequestClient;
 use App\Support\AgentSessionCounter;
 use App\Support\AgentVisibility;
 use App\Support\ArrangementSetting;
 use App\Support\AssigneeDefinition;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
+use App\Support\CallSender;
 use App\Support\CoreSettings;
-use App\Support\CurrentRuntimeAttention;
 use App\Support\DatabaseStartTransaction;
 use App\Support\DockerImageVerifier;
 use App\Support\DriverBudgets;
-use App\Support\DriverRuntimeStops;
-use App\Support\EnvironmentCredentialSource;
-use App\Support\FrozenSessionPolicies;
-use App\Support\GrantedSessionOutputs;
-use App\Support\HeartbeatService;
-use App\Support\HostStartExecutor;
-use App\Support\HostStartPreflight;
+use App\Support\HostCalls;
 use App\Support\InstallLineAvailability;
-use App\Support\JournalAgentNotices;
 use App\Support\KeptInboxParticipation;
 use App\Support\NavigationExpiry;
+use App\Support\NavigationReader;
 use App\Support\NavigationRequestProvider;
 use App\Support\PendingNavigationWork;
 use App\Support\PendingWorkSources;
@@ -118,19 +114,23 @@ use App\Support\PublishedReleases;
 use App\Support\ReadGrant;
 use App\Support\ReadinessCheckSweep;
 use App\Support\RequestSession;
-use App\Support\ReserveStarts;
-use App\Support\RetainedWorkspaceReads;
-use App\Support\ServedActivityLog;
+use App\Support\RuntimeStops;
 use App\Support\ServerOrigin;
+use App\Support\SessionOutputAccess;
+use App\Support\SessionPolicyReader;
 use App\Support\SessionProvenance;
-use App\Support\SessionToolDiscovery;
-use App\Support\SignedCallSender;
-use App\Support\SignedHostCalls;
+use App\Support\SessionTokenSource;
 use App\Support\StartEnvironment;
+use App\Support\StartExecutor;
+use App\Support\StartHeartbeats;
+use App\Support\StartPreflight;
 use App\Support\StartProfiles;
+use App\Support\StartReservations;
 use App\Support\SystemEntryPolicies;
-use App\Support\TerminalViews;
+use App\Support\TerminalViewCloser;
+use App\Support\ToolDiscovery;
 use App\Support\UnavailableAttachments;
+use App\Support\WorkspaceReader;
 use App\Values\FilePath;
 use App\Values\HostCapacity;
 use App\Values\PolicyDefinition;
@@ -160,7 +160,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
-        $this->app->bind(ActivityLog::class, ServedActivityLog::class);
+        $this->app->bind(ActivityLogContract::class, ActivityLog::class);
 
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
             static fn (): Option => $app->resolved(AgentContext::class)
@@ -179,34 +179,34 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->alias(RequestSession::class, CurrentSession::class);
         $this->app->alias(RequestSession::class, AgentCallContext::class);
-        $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
-        $this->app->bind(WorkspaceReader::class, RetainedWorkspaceReads::class);
+        $this->app->bind(ToolDiscoveryContract::class, ToolDiscovery::class);
+        $this->app->bind(WorkspaceReaderContract::class, WorkspaceReader::class);
         $this->app->bindIf(AttachmentReferences::class, UnavailableAttachments::class);
         $this->app->bindIf(InboxParticipationEnding::class, KeptInboxParticipation::class);
-        $this->app->bind(RuntimeStops::class, DriverRuntimeStops::class);
-        $this->app->bind(NavigationReader::class, AgentNavigationRecords::class);
-        $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
+        $this->app->bind(RuntimeStopsContract::class, RuntimeStops::class);
+        $this->app->bind(NavigationReaderContract::class, NavigationReader::class);
+        $this->app->bind(TerminalViewCloserContract::class, TerminalViewCloser::class);
 
-        $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(
+        $this->app->bind(StartExecutorContract::class, fn () => new StartExecutor(
             $this->app->make(Repository::class)->string('agents.host_start_socket'),
             $this->app->make(DriverCatalogue::class),
         ));
 
-        $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);
-        $this->app->bind(SessionResolver::class, SessionRecords::class);
-        $this->app->bind(AgentDirectory::class, AgentRecords::class);
+        $this->app->bind(RuntimeResolverContract::class, RuntimeResolver::class);
+        $this->app->bind(SessionResolverContract::class, SessionResolver::class);
+        $this->app->bind(AgentDirectoryContract::class, AgentDirectory::class);
         $this->app->bind(AgentRequestClientContract::class, AgentRequestClient::class);
-        $this->app->bind(StartHeartbeatsContract::class, HeartbeatService::class);
+        $this->app->bind(StartHeartbeatsContract::class, StartHeartbeats::class);
         $this->app->bind(NavigationExpiryContract::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
-        $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
+        $this->app->scoped(ActorAttentionContract::class, ActorAttention::class);
         $this->app->scoped(AgentContext::class, AgentContextMissing::throwing()->forRequest());
         $this->app->scoped(AgentAssignees::class);
-        $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
-        $this->app->bind(CallSender::class, SignedCallSender::class);
-        $this->app->bind(CallRegistrar::class, CallRoutes::class);
-        $this->app->bind(SessionRequestResolver::class, SessionRequests::class);
-        $this->app->bind(DriverConversationResolver::class, DriverConversationRecords::class);
+        $this->app->bind(AgentAuthorityContract::class, AgentAuthority::class);
+        $this->app->bind(CallSenderContract::class, CallSender::class);
+        $this->app->bind(CallRegistrarContract::class, CallRegistrar::class);
+        $this->app->bind(SessionRequestResolverContract::class, SessionRequestResolver::class);
+        $this->app->bind(DriverConversationResolverContract::class, DriverConversationResolver::class);
 
         $this->app->bind(
             DockerImageVerifierContract::class,
@@ -216,12 +216,12 @@ final class AgentsServiceProvider extends ServiceProvider
             ),
         );
 
-        $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
+        $this->app->bind(SessionPolicyReaderContract::class, SessionPolicyReader::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
-        $this->app->bind(SessionStartCandidates::class, AgentStartCandidates::class);
-        $this->app->bind(StartReservations::class, ReserveStarts::class);
-        $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);
-        $this->app->bind(CallingDriver::class, CallingSessionDriver::class);
+        $this->app->bind(SessionStartCandidatesContract::class, SessionStartCandidates::class);
+        $this->app->bind(StartReservationsContract::class, StartReservations::class);
+        $this->app->bind(StartReceiptsContract::class, StartReceipts::class);
+        $this->app->bind(CallingDriverContract::class, CallingDriver::class);
 
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
@@ -247,7 +247,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make(ServerOrigin::class),
         ));
 
-        $this->app->bind(HostCalls::class, SignedHostCalls::class);
+        $this->app->bind(HostCallsContract::class, HostCalls::class);
 
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('agents.server_origin'),
@@ -256,7 +256,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bind(StartProfiles::class, fn () => new StartProfiles(
             $this->app->make(ArrangementSetting::class),
-            $this->app->make(HostCapabilities::class),
+            $this->app->make(HostCapabilitiesContract::class),
             StartProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
         ));
 
@@ -270,8 +270,8 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(PendingStartSecrets::class);
 
         $this->app->bind(
-            HostCapabilities::class,
-            fn () => new RecordedHostCapabilities(
+            HostCapabilitiesContract::class,
+            fn () => new HostCapabilities(
                 $this->app->make(Files::class),
                 FilePath::in(Place::Project, 'docs/accounts/container-capabilities.json'),
             ),
@@ -279,15 +279,15 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
-        $this->app->bind(SessionTokenSource::class, EnvironmentCredentialSource::class);
+        $this->app->bind(SessionTokenSourceContract::class, SessionTokenSource::class);
         $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
-        $this->app->bind(StartPreflight::class, HostStartPreflight::class);
-        $this->app->bind(AccountUses::class, LinkedAccountUses::class);
-        $this->app->bind(SessionOutputAccess::class, GrantedSessionOutputs::class);
+        $this->app->bind(StartPreflightContract::class, StartPreflight::class);
+        $this->app->bind(AccountUsesContract::class, AccountUses::class);
+        $this->app->bind(SessionOutputAccessContract::class, SessionOutputAccess::class);
 
         $this->app->bind(
             AgentClientSettings::class,
-            fn ($app) => $app->make(SessionTokenSource::class)->forThisStart(),
+            fn ($app) => $app->make(SessionTokenSourceContract::class)->forThisStart(),
         );
 
         $this->app->singleton(PendingWorkSources::class);
@@ -297,7 +297,7 @@ final class AgentsServiceProvider extends ServiceProvider
         SystemEntryPolicies $systemEntries,
         AssignmentRegistration $assignments,
         ActorProviderRegistration $actors,
-        ActiveActorCounterRegistry $presentActors,
+        ActiveActorRegistration $presentActors,
         AuthorizerProviderRegistration $authorizers,
         PolicyCatalogue $policies,
         PendingWorkSources $pendingWork,
@@ -350,7 +350,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);
         $systemEntries->allow('driver switch', AgentPolicy::class);
-        $systemEntries->allow(JournalAgentNotices::TRUSTED_ENTRY, AgentPolicy::class);
+        $systemEntries->allow(AgentNotices::TRUSTED_ENTRY, AgentPolicy::class);
         $actors->register(Agent::class, AgentActors::class);
         $actors->registerLabels(Agent::class, AgentLabels::class);
         $actors->registerVisibility(Agent::class, AgentVisibility::class);

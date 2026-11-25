@@ -55,14 +55,14 @@ final class ExplicitTransactionTest extends TestCase
     public const array OPENERS = [
         'app/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
         'app/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
-        'app/Support/Storage/DatabaseAssignmentTransaction.php' => 'joins the open unit inside a command',
+        'app/Support/Storage/AssignmentTransaction.php' => 'joins the open unit inside a command',
         'app/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
         'app/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
         'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
         'app/Support/AgentChatAccessService.php' => 'owns a unit: the console change of an agent\'s chat access',
         'app/Support/MessageBatchService.php' => 'owns a unit: each settled batch of the sweep',
         'app/Support/ReceiptDeliveryService.php' => 'owns a unit: each delivery a pass tries',
-        'app/Support/StatementDeadline.php' => 'joins the open unit: scopes a statement time limit with SET LOCAL',
+        'app/Support/StatementDeadlines.php' => 'joins the open unit: scopes a statement time limit with SET LOCAL',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void

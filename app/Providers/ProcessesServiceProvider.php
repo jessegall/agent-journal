@@ -27,16 +27,16 @@ use App\Console\Commands\ReaderProveCommand;
 use App\Console\Commands\ReaderSampleApproveCommand;
 use App\Console\Commands\ReaderSampleRunCommand;
 use App\Console\Commands\RunProcessCommand;
-use App\Contracts\Actors\AliasResolver;
-use App\Contracts\Admission\ShellAdmission;
+use App\Contracts\Actors\AliasResolver as AliasResolverContract;
+use App\Contracts\Admission\ShellAdmission as ShellAdmissionContract;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Bus\CommandClassifier;
-use App\Contracts\Bus\ResultReceipts;
-use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Bus\CommandClassifier as CommandClassifierContract;
+use App\Contracts\Bus\ResultReceipts as ResultReceiptsContract;
+use App\Contracts\Hosts\ServedEnvironment as ServedEnvironmentContract;
 use App\Contracts\Notifications\NotificationTargets;
-use App\Contracts\Processes\ProcessRunCallers;
-use App\Contracts\Processes\ShellCommandParser;
-use App\Contracts\Reads\OutputRecorder;
+use App\Contracts\Processes\ProcessRunCallers as ProcessRunCallersContract;
+use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
+use App\Contracts\Reads\OutputRecorder as OutputRecorderContract;
 use App\Contracts\Time\VerificationTiming;
 use App\Enums\Agents\AccessType;
 use App\Models\Runs\ProcessRun;
@@ -44,25 +44,25 @@ use App\Policies\ProcessAdministrationPolicy;
 use App\Policies\ProcessPolicy;
 use App\Resolvers\RunNotificationTarget;
 use App\Support\ActiveRules;
-use App\Support\Admission\LineAdmission;
-use App\Support\Classification\TreeClassifier;
-use App\Support\CommandAliases;
+use App\Support\Admission\ShellAdmission;
+use App\Support\AliasResolver;
+use App\Support\Classification\CommandClassifier;
 use App\Support\CommandRuleRegistry;
 use App\Support\JournalRoutes;
 use App\Support\OpenTiming;
 use App\Support\OutputDocking;
+use App\Support\OutputRecorder;
+use App\Support\ProcessRunCallers;
 use App\Support\ProgramClassifiers;
-use App\Support\ProjectKey;
-use App\Support\ProjectReceipts;
 use App\Support\ProjectRules;
-use App\Support\ProjectRunCallers;
 use App\Support\ReceiptPublisher;
 use App\Support\RequiredServices;
-use App\Support\Rules\JournalClassifier;
+use App\Support\ResultReceipts;
+use App\Support\Rules\ProgramClassifier;
 use App\Support\RunDocking;
-use App\Support\ShellParser;
+use App\Support\ServedEnvironment;
+use App\Support\ShellCommandParser;
 use App\Support\Sources\Contracts\DockRegistration;
-use App\Support\SpoolRecorder;
 use App\Support\Syntax\TreeParser;
 use App\Values\DockedOutput;
 use App\Values\PolicyDefinition;
@@ -81,25 +81,25 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->scoped(ShellCommandParser::class, ShellParser::class);
+        $this->app->scoped(ShellCommandParserContract::class, ShellCommandParser::class);
         $this->app->singleton(TreeParser::class);
-        $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
-        $this->app->scoped(ProjectKey::class);
-        $this->app->scoped(ServedEnvironment::class, fn ($app) => $app->make(ProjectKey::class));
+        $this->app->scoped(CommandClassifierContract::class, CommandClassifier::class);
+        $this->app->scoped(ServedEnvironment::class);
+        $this->app->scoped(ServedEnvironmentContract::class, fn ($app) => $app->make(ServedEnvironment::class));
         $this->app->scoped(ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
-        $this->app->scoped(ShellAdmission::class, LineAdmission::class);
+        $this->app->scoped(ShellAdmissionContract::class, ShellAdmission::class);
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ReceiptPublisher::class);
-        $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
-        $this->app->scoped(ProcessRunCallers::class, ProjectRunCallers::class);
+        $this->app->scoped(ResultReceiptsContract::class, ResultReceipts::class);
+        $this->app->scoped(ProcessRunCallersContract::class, ProcessRunCallers::class);
 
-        $this->app->when(TreeClassifier::class)
+        $this->app->when(CommandClassifier::class)
             ->needs(CommandRuleRegistry::class)
             ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
 
-        $this->app->scoped(AliasResolver::class, CommandAliases::class);
-        $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
+        $this->app->scoped(AliasResolverContract::class, AliasResolver::class);
+        $this->app->scoped(OutputRecorderContract::class, OutputRecorder::class);
 
         $this->app->singleton(
             JournalRoutes::class,
@@ -107,7 +107,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped(ProgramClassifiers::class, fn (Application $app) => new ProgramClassifiers([
-            new JournalClassifier($app->make(JournalRoutes::class), $app->basePath('bin/journal')),
+            new ProgramClassifier($app->make(JournalRoutes::class), $app->basePath('bin/journal')),
         ]));
     }
 

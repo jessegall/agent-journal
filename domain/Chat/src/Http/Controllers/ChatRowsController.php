@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Controllers;
 use Domain\Chat\Data\ChatRowsInput;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Resolvers\Support\ChatPages;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 
 /**
  * The page of a chat's entries before the one named, for a window scrolled up, or the newest page; only for a chat the
@@ -15,7 +15,7 @@ use Domain\Chat\Support\ChatInboxes;
  */
 final readonly class ChatRowsController
 {
-    public function __invoke(ChatRowsInput $input, ChatInboxes $chats, ChatPages $pages): ChatRowsPageData
+    public function __invoke(ChatRowsInput $input, PairChats $chats, ChatPages $pages): ChatRowsPageData
     {
         $chats->attached($input->inboxId);
 

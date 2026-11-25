@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\JsonDecodeScan;
@@ -52,7 +52,7 @@ final class JsonIntoDataTest extends TestCase
             $relative = substr($path, strlen(base_path()) + 1);
 
             // The Files area decodes a file as it reads it, behind the Files contract.
-            if ($relative === 'app/Support/LocalFiles.php') {
+            if ($relative === 'app/Support/Files.php') {
                 continue;
             }
 
@@ -76,6 +76,6 @@ final class JsonIntoDataTest extends TestCase
     {
         return $class !== null
             && in_array($method, self::TAKERS, true)
-            && Reflector::factory()->isSubclassOf($class, Data::class);
+            && ReflectedType::factory()->isSubclassOf($class, Data::class);
     }
 }

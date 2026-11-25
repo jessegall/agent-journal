@@ -129,7 +129,7 @@ final readonly class ShareGrants
         ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::lockUsable($configurationId);
         $preview = SharePreview::lockFor($previewId);
-        $candidates = $this->scope->discover($preview->root, MeteredShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($preview->root, ShareBudget::forPreview($this->meter));
         $selection = $preview->consumeFor($owner->actorId(), $previewChecksum, $candidates);
 
         return new ConsumedPreview($configuration, $preview->root, $selection, $candidates);

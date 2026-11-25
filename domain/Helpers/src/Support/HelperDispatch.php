@@ -27,8 +27,8 @@ use App\Models\Projects\Project;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\OwnerStartRequest;
-use App\Support\ProjectKey;
 use App\Support\RecordIdentity;
+use App\Support\ServedEnvironment;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;
 use App\Values\ProfileSelection;
@@ -80,7 +80,7 @@ final readonly class HelperDispatch
         private CommandBus $commands,
         private JournalAdmission $admission,
         private HelperRecordFacts $helperFacts,
-        private ProjectKey $projectKey,
+        private ServedEnvironment $projectKey,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt

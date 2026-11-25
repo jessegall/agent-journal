@@ -12,7 +12,7 @@ use App\Events\Hooks\ContextStarted;
 use App\Listeners\RemindAgentInstructions;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ContextReminders;
+use App\Support\ReminderContribution;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
@@ -68,7 +68,7 @@ final class AgentInstructionsTest extends TestCase
     private function remindersOf(AgentSession $session): array
     {
         $this->app->forgetScopedInstances();
-        $reminders = $this->app->make(ContextReminders::class);
+        $reminders = $this->app->make(ReminderContribution::class);
         $event = new ContextStarted(
             new StackTarget($session->agent_id, $session->id),
             'hook-'.bin2hex(random_bytes(4)),

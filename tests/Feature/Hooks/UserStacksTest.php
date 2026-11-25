@@ -18,7 +18,7 @@ use App\Support\StartedAgent;
 use App\Support\StartSessions;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Storage\FrameRecord;
-use App\Support\UserStacks;
+use App\Support\UserStack;
 use App\Values\StackTarget;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
@@ -77,7 +77,7 @@ final class UserStacksTest extends TestCase
         $this->actAs(TestActors::user(7));
 
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(UserStacks::class)->push(
+            fn () => $this->app->make(UserStack::class)->push(
                 $this->target,
                 new StateReference('test.switched_off', NoSubject::None, ['enabled' => false]),
             ),
@@ -120,13 +120,13 @@ final class UserStacksTest extends TestCase
 
         $this->expectException(StackTransactionRequired::class);
 
-        $this->app->make(UserStacks::class)->push($this->target, new StateReference('notes.writing', NoSubject::None));
+        $this->app->make(UserStack::class)->push($this->target, new StateReference('notes.writing', NoSubject::None));
     }
 
     private function pushInTransaction(StackTarget $target): void
     {
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(UserStacks::class)->push(
+            fn () => $this->app->make(UserStack::class)->push(
                 $target,
                 new StateReference('notes.writing', NoSubject::None),
             ),

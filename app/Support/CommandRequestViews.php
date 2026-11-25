@@ -15,7 +15,7 @@ use App\Models\Runs\ReaderRevision;
  */
 final readonly class CommandRequestViews
 {
-    public function __construct(private ProjectKey $projects) {}
+    public function __construct(private ServedEnvironment $projects) {}
 
     public function show(string $requestId): CommandRequestShown
     {

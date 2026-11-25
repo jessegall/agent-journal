@@ -12,7 +12,7 @@ use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Policies\RecordPolicy;
 
 /**
  * Takes up an unfinished run whose claim ended, such as after a seat change, keeping its number and its history.
@@ -21,7 +21,7 @@ use Domain\Tasks\Policies\TaskRunPolicy;
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-#[Authorize(TaskRunPolicy::class, AccessType::Create)]
+#[Authorize(RecordPolicy::class, AccessType::Create)]
 final readonly class ResumeTaskRunCommand extends Command implements RecordCommand
 {
     public function __construct(public string $runId) {}

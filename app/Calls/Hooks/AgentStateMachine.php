@@ -12,7 +12,7 @@ use App\Support\CallStages\HookCallStage;
 use App\Support\Drivers\DriverCapabilities;
 use App\Support\Drivers\DriverReply;
 use App\Support\Drivers\Exceptions\ReplayFound;
-use App\Support\IncomingWorkList;
+use App\Support\IncomingWorkRegistration;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
@@ -30,7 +30,7 @@ final readonly class AgentStateMachine
     public function __construct(
         private StackTransaction $transaction,
         private StackAccess $access,
-        private IncomingWorkList $incomingWork,
+        private IncomingWorkRegistration $incomingWork,
         private PipelineRunner $pipelines,
         private StateEventActivity $eventActivity,
     ) {}

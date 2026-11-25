@@ -37,21 +37,21 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/HelperRecordFactSender.php',
+            'app/Support/HelperRecordFacts.php',
         ],
     ],
     HelperReportedOnRecord::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/HelperRecordFactSender.php',
+            'app/Support/HelperRecordFacts.php',
         ],
     ],
     HelperStopHeld::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StopCheckGate.php',
+            'app/Support/StopConditionGate.php',
         ],
     ],
     StateCommandAnswered::class => [

@@ -7,7 +7,7 @@ namespace Domain\Chat\Http\Controllers\Membership;
 use App\Models\Access\User;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\CreateGroupInput;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 use Illuminate\Http\RedirectResponse;
 use Inertia\ResponseFactory;
 
@@ -21,7 +21,7 @@ final readonly class CreateGroupChatController
      */
     public const string CREATED_CHAT = 'createdInboxId';
 
-    public function __invoke(CreateGroupInput $input, ChatInboxes $chats, ResponseFactory $inertia): RedirectResponse
+    public function __invoke(CreateGroupInput $input, PairChats $chats, ResponseFactory $inertia): RedirectResponse
     {
         $chats->assertMayCreate();
         $inboxId = $chats->openGroup(

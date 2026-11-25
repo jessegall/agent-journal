@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Feature;
 
-use App\Contracts\Reads\ReadMeter;
+use App\Contracts\Reads\ReadMeter as ReadMeterContract;
 use App\Exceptions\ShareBudgetExceeded;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use Carbon\CarbonImmutable;
-use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;
@@ -25,8 +25,8 @@ final class ShareBudgetTest extends TestCase
 
     public function test_a_read_budget_allows_32_queries_and_refuses_the_33rd(): void
     {
-        $meter = $this->app->make(ScopedReadMeter::class);
-        $budget = MeteredShareBudget::forRead($meter);
+        $meter = $this->app->make(ReadMeter::class);
+        $budget = ShareBudget::forRead($meter);
         $runQueries = fn (
             int $count,
         ) => $meter->withinSchedule('one query per budgeted call', function () use ($budget, $count): void {
@@ -45,9 +45,9 @@ final class ShareBudgetTest extends TestCase
 
     public function test_two_budgets_count_their_own_work_and_nested_work_counts_in_both(): void
     {
-        $meter = $this->app->make(ReadMeter::class);
-        $first = MeteredShareBudget::forRead($meter);
-        $second = MeteredShareBudget::forRead($meter);
+        $meter = $this->app->make(ReadMeterContract::class);
+        $first = ShareBudget::forRead($meter);
+        $second = ShareBudget::forRead($meter);
 
         $first->run(fn () => DB::select('select 1'));
         $second->run(fn () => DB::select('select 2'));
@@ -59,7 +59,7 @@ final class ShareBudgetTest extends TestCase
 
     public function test_loaded_bytes_count_text_and_metadata_apart_under_one_limit(): void
     {
-        $budget = MeteredShareBudget::forRead($this->app->make(ReadMeter::class));
+        $budget = ShareBudget::forRead($this->app->make(ReadMeterContract::class));
         $budget->chargeText(3 * 1_048_576);
         $budget->chargeMetadata(1_048_576);
 
@@ -72,9 +72,9 @@ final class ShareBudgetTest extends TestCase
 
     public function test_rendered_output_records_links_and_hops_refuse_one_past_their_limit(): void
     {
-        $read = MeteredShareBudget::forRead($this->app->make(ReadMeter::class));
+        $read = ShareBudget::forRead($this->app->make(ReadMeterContract::class));
         $read->chargeRendered(2 * 1_048_576);
-        $preview = MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
+        $preview = ShareBudget::forPreview($this->app->make(ReadMeterContract::class));
         $preview->chargeRecords(1_000);
         $preview->chargeLinks(2_000);
         $preview->assertHopsWithinBudget(4);
@@ -92,7 +92,7 @@ final class ShareBudgetTest extends TestCase
     public function test_work_after_two_seconds_is_refused(): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-18 12:00:00'));
-        $budget = MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
+        $budget = ShareBudget::forPreview($this->app->make(ReadMeterContract::class));
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-18 12:00:02'));
         $budget->chargeRecords(1);
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-11-18 12:00:02.001'));

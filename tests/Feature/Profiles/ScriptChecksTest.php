@@ -11,8 +11,8 @@ use App\Contracts\Domains\DomainAvailability;
 use App\Contracts\Scripts\ScriptChecks;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
-use App\Support\KeywordRegistry;
 use App\Support\ProfileProposal;
+use App\Support\ScriptKeywordRegistration;
 use App\Values\DraftExpectations;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
@@ -88,7 +88,7 @@ SCRIPT, ['tests' => [
 
     public function test_an_external_text_statement_uses_the_same_parser(): void
     {
-        $this->app->make(KeywordRegistry::class)->registerOwned('Review', ExampleScriptKeyword::definition());
+        $this->app->make(ScriptKeywordRegistration::class)->registerOwned('Review', ExampleScriptKeyword::definition());
         $this->mock(DomainAvailability::class)->shouldReceive('isEnabled')->with('Review')->andReturn(true);
         $this->app->make(DomainAvailability::class)->shouldReceive('isEnabled')->with('Core')->andReturn(true);
         $source = new ScriptSource("ON STOP\nNOTE \"Retain \\\"évidence\\\".\"\nEND");

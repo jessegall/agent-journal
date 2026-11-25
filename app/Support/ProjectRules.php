@@ -17,7 +17,7 @@ use Illuminate\Database\QueryException;
  */
 final readonly class ProjectRules
 {
-    public function __construct(private ProjectKey $projects, private AgentTexts $texts) {}
+    public function __construct(private ServedEnvironment $projects, private AgentTexts $texts) {}
 
     /**
      * @return list<RuleRevision>

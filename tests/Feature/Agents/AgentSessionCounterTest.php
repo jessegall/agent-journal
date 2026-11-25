@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ActiveActorCounterRegistry;
+use App\Support\ActiveActorRegistration;
 use App\Support\ActiveActorsResolver;
 use App\Support\AgentSessionCounter;
 use App\Support\SessionTokens;
@@ -110,7 +110,7 @@ final class AgentSessionCounterTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
         $this->assertSame(
             AgentSessionCounter::class,
-            $this->app->make(ActiveActorCounterRegistry::class)->get(AgentSessionCounter::type())::class,
+            $this->app->make(ActiveActorRegistration::class)->get(AgentSessionCounter::type())::class,
         );
     }
 

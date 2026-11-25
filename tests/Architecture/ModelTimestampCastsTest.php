@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;
 
@@ -46,8 +46,8 @@ final class ModelTimestampCastsTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (Reflector::factory()->isSubclassOf($class, Model::class)
-                && Reflector::of($class)->not()->isAbstract()) {
+            if (ReflectedType::factory()->isSubclassOf($class, Model::class)
+                && ReflectedType::of($class)->not()->isAbstract()) {
                 $models[] = $class;
             }
         }

@@ -10,7 +10,7 @@ use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\Support\ActivityProjection;
 use App\Support\ActorIdentity;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartActivity;
 use App\Values\PartEnd;
@@ -51,7 +51,7 @@ final class ActivityProjectionTest extends TestCase
 
         TEXT;
         $chunk = new CapturedChunk($this->part, OutputStream::Stdout, $bytes, CarbonImmutable::now());
-        $this->app->make(SpoolRecorder::class)->append($chunk);
+        $this->app->make(OutputRecorder::class)->append($chunk);
     }
 
     public function test_a_running_part_shows_its_bytes_and_latest_line_and_nothing_like_a_result(): void

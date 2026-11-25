@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Fixtures\StaticFactories;
 
 use App\Exceptions\ClassMissing;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Container\Container;
 
 /**
  * The planted shapes of StaticFactoryScanTest: a repeated factory call, look-alikes it leaves alone, static
- * Reflector calls inside and outside a class the container builds, and a value object that keeps its static call.
+ * ReflectedType calls inside and outside a class the container builds, and a value object that keeps its static call.
  */
 final class StaticFactoryUses
 {
@@ -19,9 +19,9 @@ final class StaticFactoryUses
 
     public function repeats(): bool
     {
-        $first = Reflector::of($this->name);
+        $first = ReflectedType::of($this->name);
 
-        return Reflector::of($this->name)->isFinal() && $first->isFinal();
+        return ReflectedType::of($this->name)->isFinal() && $first->isFinal();
     }
 
     public function differs(): bool
@@ -44,12 +44,12 @@ final class StaticFactoryUses
             throw ClassMissing::for($name);
         }
 
-        return Reflector::exists($name) || throw ClassMissing::for($name);
+        return ReflectedType::exists($name) || throw ClassMissing::for($name);
     }
 }
 
 /**
- * A value object made with new: its public data and no hidden service, so its static Reflector call stays.
+ * A value object made with new: its public data and no hidden service, so its static ReflectedType call stays.
  */
 final readonly class StaticFactoryValue
 {
@@ -57,6 +57,6 @@ final readonly class StaticFactoryValue
 
     public function isFinal(): bool
     {
-        return Reflector::of($this->name)->isFinal();
+        return ReflectedType::of($this->name)->isFinal();
     }
 }

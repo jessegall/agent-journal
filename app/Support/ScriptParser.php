@@ -11,9 +11,9 @@ use App\Exceptions\ScriptSyntaxError;
 use App\Values\BlockOperand;
 use App\Values\BooleanOperand;
 use App\Values\CommandOperand;
-use App\Values\KeywordDefinition;
 use App\Values\ParsedHandler;
 use App\Values\ParsedStatement;
+use App\Values\ScriptKeywordDefinition;
 use App\Values\ScriptLine;
 use App\Values\TextOperand;
 
@@ -23,7 +23,7 @@ final readonly class ScriptParser
 
     private const int TEXT_LIMIT = 4096;
 
-    public function __construct(private KeywordRegistry $keywords) {}
+    public function __construct(private ScriptKeywordRegistration $keywords) {}
 
     /**
      * @param  list<ScriptLine>  $lines
@@ -66,7 +66,7 @@ final readonly class ScriptParser
 
         $trigger = $this->keywords->find($line->operand);
 
-        if ($trigger->isEmpty() || ! $trigger->get()->definition instanceof KeywordDefinition
+        if ($trigger->isEmpty() || ! $trigger->get()->definition instanceof ScriptKeywordDefinition
             || $trigger->get()->definition->category !== KeywordCategory::Trigger) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnknownTrigger, $line->operandSource, 'Unknown trigger.');
         }
@@ -159,7 +159,7 @@ final readonly class ScriptParser
         $cursor->advance();
     }
 
-    private function keyword(ScriptLine $line): KeywordDefinition
+    private function keyword(ScriptLine $line): ScriptKeywordDefinition
     {
         $entry = $this->keywords->find($line->token);
 
@@ -169,7 +169,7 @@ final readonly class ScriptParser
 
         $word = $entry->get();
 
-        if (! $word->definition instanceof KeywordDefinition || ! $this->keywords->isAvailable($word)) {
+        if (! $word->definition instanceof ScriptKeywordDefinition || ! $this->keywords->isAvailable($word)) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnavailableDefinition, $line->source, 'Keyword unavailable.');
         }
 

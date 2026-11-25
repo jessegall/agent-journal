@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Domains\CallSender;
+use App\Contracts\Domains\CallSender as CallSenderContract;
 use App\Contracts\Domains\JournalCall;
 use App\Exceptions\CallRefused;
 use App\Exceptions\JournalUnreachable;
-use App\Support\SignedCallSender;
+use App\Support\CallSender;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Assert;
 use RuntimeException;
@@ -18,7 +18,7 @@ use Spatie\LaravelData\Data;
  * A call sender for tests: it answers or refuses each call class as told and records every call it sends; in pass-
  * through mode it sends to the real server until the test cuts it.
  */
-final class RecordedCalls implements CallSender
+final class RecordedCalls implements CallSenderContract
 {
     private const string UNEXPECTED_CALL = 'A call was sent.';
 
@@ -42,7 +42,7 @@ final class RecordedCalls implements CallSender
     public static function bind(): self
     {
         $calls = new self();
-        Container::getInstance()->instance(CallSender::class, $calls);
+        Container::getInstance()->instance(CallSenderContract::class, $calls);
 
         return $calls;
     }
@@ -93,7 +93,7 @@ final class RecordedCalls implements CallSender
         }
 
         if ($this->passesThrough) {
-            return Container::getInstance()->make(SignedCallSender::class)->send($call);
+            return Container::getInstance()->make(CallSender::class)->send($call);
         }
 
         $cut = new RuntimeException('The connection was cut.');

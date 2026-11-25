@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Drivers;
 
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Exceptions\DriverFamilyUnknown;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
@@ -20,7 +20,7 @@ final class DriverFamilyTest extends TestCase
 {
     public function test_every_registered_driver_names_a_registered_family(): void
     {
-        $drivers = $this->app->make(DriverCatalogue::class);
+        $drivers = $this->app->make(DriverCatalogueContract::class);
         $keys = array_map(fn (DriverFamily $family) => $family->key, $drivers->families());
 
         foreach ($drivers->catalogue() as $registration) {
@@ -30,8 +30,8 @@ final class DriverFamilyTest extends TestCase
 
     public function test_a_driver_of_an_unknown_family_is_refused(): void
     {
-        $registry = new DriverRegistry($this->app);
-        $claude = $this->app->make(DriverCatalogue::class)->catalogue()[0];
+        $registry = new DriverCatalogue($this->app);
+        $claude = $this->app->make(DriverCatalogueContract::class)->catalogue()[0];
 
         $this->assertThrows(
             fn () => $registry->register(new DriverRegistration(

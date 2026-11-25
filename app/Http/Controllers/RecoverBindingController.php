@@ -11,7 +11,7 @@ use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\CallSignatureInvalid;
 use App\Exceptions\HostCredentialRejected;
 use App\Http\Requests\Connections\RecoverBindingRequest;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -23,7 +23,7 @@ final readonly class RecoverBindingController
     public function __invoke(
         RecoverBindingRequest $request,
         HostCalls $calls,
-        EntryDispatchers $dispatchers,
+        JournalCommands $dispatchers,
     ): JsonResponse {
         try {
             $host = $calls->verifyRelay($request);

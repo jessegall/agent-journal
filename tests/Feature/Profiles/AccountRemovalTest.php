@@ -38,7 +38,7 @@ use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorContext;
 use App\Support\Command;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
@@ -421,7 +421,7 @@ final class AccountRemovalTest extends TestCase
 
     private function asHost(Command $command): mixed
     {
-        return $this->app->make(EntryDispatchers::class)->runAsJournal(
+        return $this->app->make(JournalCommands::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
             $command,
@@ -430,7 +430,7 @@ final class AccountRemovalTest extends TestCase
 
     private function reconcile(): void
     {
-        $this->app->make(EntryDispatchers::class)
+        $this->app->make(JournalCommands::class)
             ->runAsJournal(CommandEntry::AccountMaintenance, 'account reconciliation', new ReconcileAccountsCommand());
     }
 

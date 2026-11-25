@@ -29,7 +29,7 @@ final readonly class AssignmentWriteScan implements FileScan
      */
     private const string ASSIGNMENT_CONTRACTS = 'App\\Contracts\\Assignments\\';
 
-    private const array WRITERS = ['App\\Support\\WriteAssignments', 'App\\Support\\WriteResponsibilities'];
+    private const array WRITERS = ['App\\Support\\WriteAssignments', 'App\\Support\\ResponsibilityWriter'];
 
     /**
      * The fields only the models and their writers set.

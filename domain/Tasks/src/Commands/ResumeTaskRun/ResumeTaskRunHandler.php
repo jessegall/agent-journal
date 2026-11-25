@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands\ResumeTaskRun;
 
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Processes\RunClaims;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Contracts\Work\CurrentState;
 use App\Exceptions\RunClaimRefused;
 use App\Support\ActorIdentity;
@@ -25,7 +25,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 {
     public function __construct(
         private RunClaims $claims,
-        private AgentStack $stacks,
+        private AgentStacks $stacks,
         private CurrentState $states,
         private CommandFacts $facts,
     ) {}

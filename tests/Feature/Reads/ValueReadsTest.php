@@ -8,7 +8,7 @@ use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\QueryInValueRead;
 use App\Models\Access\User;
 use App\Models\Agents\AgentSession;
-use App\Support\ScopedReadMeter;
+use App\Support\ReadMeter;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CountsReads;
 use Tests\Support\RefreshHookDatabase;
@@ -40,7 +40,7 @@ final class ValueReadsTest extends TestCase
 
     public function test_a_query_inside_a_value_read_is_refused_and_a_pure_one_works(): void
     {
-        $meter = ScopedReadMeter::ofCurrentScope();
+        $meter = ReadMeter::ofCurrentScope();
 
         $this->assertSame(2, $meter->withoutQueries('a pure value', fn () => 1 + 1));
         $this->expectExceptionObject(QueryInValueRead::during('a reading value'));

@@ -16,7 +16,7 @@ use Domain\Sharing\Http\Requests\SharePreviewPageRequest;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
-use Domain\Sharing\Support\MeteredShareBudget;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareScope;
 
@@ -37,7 +37,7 @@ final readonly class SharePreviewResolver implements PageResolver
     public function read(): SharePreviewData
     {
         $root = $this->request->shareRoot($this->records);
-        $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
 
         $live = Share::liveFor($root);
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Reflection;
 
 use App\Concerns\Reflects;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 
 /**
  * An enum that reflects itself.
@@ -17,9 +17,9 @@ enum ReflectingSize
     case Large;
 
     /**
-     * @return Reflector<self>
+     * @return ReflectedType<self>
      */
-    public function reflector(): Reflector
+    public function reflector(): ReflectedType
     {
         return self::reflect();
     }

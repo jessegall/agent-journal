@@ -21,8 +21,8 @@ final readonly class CompileContext
      * @param  array<string, NamedCommand>  $commands
      */
     private function __construct(
-        private KeywordRegistry $keywords,
-        private ObjectRegistry $objects,
+        private ScriptKeywordRegistration $keywords,
+        private ScriptObjectRegistration $objects,
         private ScriptGraph $graph,
         private array $commands,
         public TriggerPolicy $policy,
@@ -33,8 +33,8 @@ final readonly class CompileContext
      * @param  array<string, NamedCommand>  $commands
      */
     public static function forHandler(
-        KeywordRegistry $keywords,
-        ObjectRegistry $objects,
+        ScriptKeywordRegistration $keywords,
+        ScriptObjectRegistration $objects,
         ScriptGraph $graph,
         array $commands,
         TriggerPolicy $policy,

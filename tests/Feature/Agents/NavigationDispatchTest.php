@@ -16,7 +16,7 @@ use App\Models\Inboxes\Inbox;
 use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\AssigneeIdentity;
-use App\Support\MainInboxHandover;
+use App\Support\MainInboxTakeover;
 use App\Support\NavigationDispatch;
 use App\Support\PendingWorkSources;
 use App\Values\OwnerAuthority;
@@ -125,7 +125,7 @@ final class NavigationDispatchTest extends TestCase
     private function seat(Agent $agent): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $this->inTransaction(fn () => $this->app->make(MainInboxHandover::class)->takeOver($agent));
+        $this->inTransaction(fn () => $this->app->make(MainInboxTakeover::class)->takeOver($agent));
     }
 
     /**

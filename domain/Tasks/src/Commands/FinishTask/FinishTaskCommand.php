@@ -9,7 +9,7 @@ use App\Contracts\Bus\RecordCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Policies\RecordPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 
 /**
@@ -17,7 +17,7 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  *
  * @extends Command<null>
  */
-#[Authorize(TaskRunPolicy::class, AccessType::Edit)]
+#[Authorize(RecordPolicy::class, AccessType::Edit)]
 final readonly class FinishTaskCommand extends Command implements RecordCommand
 {
     public function __construct(

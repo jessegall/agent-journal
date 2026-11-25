@@ -13,7 +13,7 @@ use App\Support\EnrolledHost;
 use App\Support\HeldFrame;
 use App\Support\RuntimeScreen;
 use App\Support\ScreenRegistration;
-use App\Support\TerminalViews;
+use App\Support\TerminalViewCloser;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -141,7 +141,7 @@ final class ScreenReportRouteTest extends TestCase
      */
     private function textsSeenBy(AgentRuntime $runtime): array
     {
-        $views = $this->app->make(TerminalViews::class);
+        $views = $this->app->make(TerminalViewCloser::class);
         $agentId = $runtime->session->agent_id;
         $now = CarbonImmutable::now();
         $watcher = TerminalView::query()->ownedBy(TestActors::userIdentity(1))->live()->value('read_interest_id');

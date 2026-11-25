@@ -11,7 +11,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Domain\Chat\Data\ChatInput;
 use Domain\Chat\Data\ParticipantData;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 
 /**
  * The users the viewer may add to a group chat: those who may be invited and are not in it yet.
@@ -25,7 +25,7 @@ final readonly class ChatCandidatesController
      */
     public function __invoke(
         ChatInput $input,
-        ChatInboxes $chats,
+        PairChats $chats,
         InboxEligibility $eligibility,
         ActorLabels $labels,
     ): array {

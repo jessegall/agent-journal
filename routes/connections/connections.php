@@ -24,7 +24,7 @@ use App\Http\Controllers\RevokeProjectBindingsController;
 use App\Http\Controllers\RevokeProjectInvitationController;
 use App\Http\Controllers\RuntimeLeaseController;
 use App\Http\Middleware\AuthenticateDeviceGrant;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -63,7 +63,7 @@ Route::post('/api/project-connections/redeem', RedeemProjectInvitationController
 
 // A connected machine's journal verbs, signed with the calling start's own token (the agent call envelope).
 Route::middleware('journal.agent')->name('connections.commands.')->group(function (): void {
-    $calls = Container::getInstance()->make(CallRoutes::class);
+    $calls = Container::getInstance()->make(CallRegistrar::class);
     $calls->register(RunProjectCommandController::class)->name('run');
     $calls->register(CancelProjectCommandController::class)->name('cancel');
     $calls->register(ReadProjectCommandStatusController::class)->name('status');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks as AgentStacksContract;
 use App\Models\Agents\AgentStackRow;
 use App\Support\Mutations\StatePush;
 use App\Support\References\Exceptions\ActivationDeclined;
@@ -15,7 +15,7 @@ use App\Values\StackTarget;
  * Pushes states onto an agent's stack, by its target, onto the acting actor's own stacks, or onto another actor's,
  * always inside the caller's stack transaction and under the stack's row lock.
  */
-final readonly class AgentStacks implements AgentStack
+final readonly class AgentStacks implements AgentStacksContract
 {
     public function __construct(
         private StackTransaction $transaction,

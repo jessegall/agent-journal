@@ -11,9 +11,9 @@ use App\Support\ActorContext;
 use App\Support\ActorIdentity;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 use App\Support\DomainEntry;
-use App\Support\KeywordRegistry;
-use App\Support\ObjectRegistry;
 use App\Support\Objects\WorkspaceObject;
+use App\Support\ScriptKeywordRegistration;
+use App\Support\ScriptObjectRegistration;
 use App\Values\ProfileKey;
 use App\Values\ProfileRevisionReference;
 use App\Values\ScriptContext;
@@ -28,7 +28,7 @@ final class ScriptDefinitionsTest extends TestCase
 {
     public function test_workspace_members_are_reflected_without_resolving_the_workspace_reader(): void
     {
-        $objects = $this->app->make(ObjectRegistry::class);
+        $objects = $this->app->make(ScriptObjectRegistration::class);
         $workspace = $objects->get('workspace');
         $names = array_keys($workspace->members);
         sort($names);
@@ -46,8 +46,8 @@ final class ScriptDefinitionsTest extends TestCase
         $this->assertContains(RegisterScriptDefinitions::class, $domain->domain->bootSteps());
         $this->app->make(RegisterScriptDefinitions::class)($domain);
         $this->mock(DomainAvailability::class)->shouldReceive('isEnabled')->with($domain->name)->andReturn(false);
-        $objects = $this->app->make(ObjectRegistry::class);
-        $keywords = $this->app->make(KeywordRegistry::class);
+        $objects = $this->app->make(ScriptObjectRegistration::class);
+        $keywords = $this->app->make(ScriptKeywordRegistration::class);
 
         $this->assertSame($domain->name, $objects->get('example')->owner);
         $this->assertFalse($objects->isAvailable($objects->get('example')));
@@ -64,7 +64,7 @@ final class ScriptDefinitionsTest extends TestCase
 
     public function test_each_evaluation_constructs_a_fresh_object_with_its_context(): void
     {
-        $objects = $this->app->make(ObjectRegistry::class);
+        $objects = $this->app->make(ScriptObjectRegistration::class);
         $objects->register(ExampleScriptObject::class);
         $first = $objects->make('example', $this->context('selected'));
         $second = $objects->make('example', $this->context('opened'));

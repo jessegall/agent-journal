@@ -9,7 +9,7 @@ use App\Contracts\Bus\RecordCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Policies\TaskRunPolicy;
+use Domain\Tasks\Policies\RecordPolicy;
 
 /**
  * Puts one of the caller's started tasks in its focus, the task it works on now, taking the focus from any other, and
@@ -17,7 +17,7 @@ use Domain\Tasks\Policies\TaskRunPolicy;
  *
  * @extends Command<null>
  */
-#[Authorize(TaskRunPolicy::class, AccessType::Edit)]
+#[Authorize(RecordPolicy::class, AccessType::Edit)]
 final readonly class FocusTaskCommand extends Command implements RecordCommand
 {
     public function __construct(public string $taskId) {}

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Enums\Files\Place;
 use App\Enums\Hooks\ContextStartType;
 use App\Events\Hooks\ContextStarted;
@@ -13,7 +13,7 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillPublication;
 use App\Policies\AssignmentRecipientPolicy;
 use App\Support\Access\AccessSettings;
-use App\Support\ContextReminders;
+use App\Support\ReminderContribution;
 use App\Support\SkillPublishingService;
 use App\Support\SkillTargets;
 use App\Support\States\Support\AwaitSkillsStateReference;
@@ -65,7 +65,7 @@ final class SessionSkillsTest extends TestCase
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->stack = new RecordingStack();
-        $this->app->instance(AgentStack::class, $this->stack);
+        $this->app->instance(AgentStacks::class, $this->stack);
         $this->app->make(SkillPublishingService::class)->refresh();
     }
 
@@ -128,10 +128,10 @@ final class SessionSkillsTest extends TestCase
     /**
      * A boundary is a hook call of its own, so it starts a new request scope with a fresh catalogue.
      */
-    private function boundary(AgentSession $session): ContextReminders
+    private function boundary(AgentSession $session): ReminderContribution
     {
         $this->app->forgetScopedInstances();
-        $reminders = $this->app->make(ContextReminders::class);
+        $reminders = $this->app->make(ReminderContribution::class);
         $this->app->make(RefreshSessionSkills::class)->handle(new ContextStarted(
             new StackTarget($session->agent_id, $session->id),
             'hook-'.bin2hex(random_bytes(4)),

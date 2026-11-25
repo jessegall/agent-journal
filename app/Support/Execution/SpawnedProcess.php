@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\Processes\StopSignal;
+use App\Contracts\Processes\StopSignal as StopSignalContract;
 use App\Enums\Processes\OutputStream;
 use App\Values\PartEnd;
 
@@ -83,7 +83,7 @@ final class SpawnedProcess
     public function drain(
         callable $onOutput,
         float $seconds = self::DRAIN_SECONDS,
-        StopSignal $stop = new NoStop(),
+        StopSignalContract $stop = new StopSignal(),
     ): bool {
         $deadline = null;
         $streams = array_filter([

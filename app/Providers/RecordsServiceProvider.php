@@ -7,19 +7,19 @@ namespace App\Providers;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\LinkAddCommand;
 use App\Console\Commands\LinkRemoveCommand;
-use App\Contracts\Actors\IdentityLinks;
+use App\Contracts\Actors\IdentityLinks as IdentityLinksContract;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Records\RecordLinker;
+use App\Contracts\Records\RecordLinker as RecordLinkerContract;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Contracts\Records\RecordResolver;
 use App\Enums\Agents\AccessType;
 use App\Models\Records\Link;
 use App\Policies\RecordLinkPolicy;
 use App\Support\Docking\RecordFallbackDocks;
+use App\Support\IdentityLinks;
+use App\Support\RecordLinker;
 use App\Support\RecordProviders;
 use App\Support\Sources\Contracts\FallbackDocks;
-use App\Support\TransactionalIdentityLinks;
-use App\Support\TransactionalRecordLinker;
 use App\Values\PolicyDefinition;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,8 +32,8 @@ final class RecordsServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(RecordLinker::class, TransactionalRecordLinker::class);
-        $this->app->bind(IdentityLinks::class, TransactionalIdentityLinks::class);
+        $this->app->bind(RecordLinkerContract::class, RecordLinker::class);
+        $this->app->bind(IdentityLinksContract::class, IdentityLinks::class);
         $this->app->bind(RecordProviderRegistration::class, RecordProviders::class);
         $this->app->bind(RecordResolver::class, RecordProviders::class);
         $this->app->bind(FallbackDocks::class, RecordFallbackDocks::class);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -15,7 +15,7 @@ final class ProcessOutputDisk
 {
     public static function fake(): void
     {
-        Storage::fake(SpoolRecorder::DISK);
-        config(['filesystems.disks.process-output.root' => Storage::disk(SpoolRecorder::DISK)->path('')]);
+        Storage::fake(OutputRecorder::DISK);
+        config(['filesystems.disks.process-output.root' => Storage::disk(OutputRecorder::DISK)->path('')]);
     }
 }

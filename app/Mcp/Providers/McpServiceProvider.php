@@ -9,15 +9,15 @@ use App\Mcp\Console\ContractSnapshotCommand;
 use App\Mcp\Console\RelayCommand;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
-use App\Mcp\Contracts\McpCall;
-use App\Mcp\Contracts\NumberedPages;
+use App\Mcp\Contracts\McpCall as McpCallContract;
+use App\Mcp\Contracts\NumberedPages as NumberedPagesContract;
 use App\Mcp\Contracts\TextFields as TextFieldsContract;
 use App\Mcp\Models\RetainedPage;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\JobPermissionReader;
-use App\Mcp\Support\LoggedMcpCall;
+use App\Mcp\Support\McpCall;
 use App\Mcp\Support\McpCatalogue;
-use App\Mcp\Support\RetainedNumberedPages;
+use App\Mcp\Support\NumberedPages;
 use App\Mcp\Support\TextFields;
 use App\Support\AgentContext;
 use Illuminate\Cache\RateLimiter;
@@ -41,8 +41,8 @@ final class McpServiceProvider extends ServiceProvider
         $this->app->bind(JobPermissionReaderContract::class, JobPermissionReader::class);
         $this->app->bind(TextFieldsContract::class, TextFields::class);
         $this->app->bind(ContinuationsContract::class, Continuations::class);
-        $this->app->bind(McpCall::class, LoggedMcpCall::class);
-        $this->app->bind(NumberedPages::class, RetainedNumberedPages::class);
+        $this->app->bind(McpCallContract::class, McpCall::class);
+        $this->app->bind(NumberedPagesContract::class, NumberedPages::class);
         $this->app->bind(JournalToolNames::class, McpCatalogue::class);
     }
 

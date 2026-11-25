@@ -12,7 +12,7 @@ use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Resolvers\PlanResolver;
 use Domain\Plans\Values\PlanCard;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final readonly class PlanDocking implements DockableProvider
 {
-    public function __construct(private PlanRecords $plans) {}
+    public function __construct(private PlanResolver $plans) {}
 
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {

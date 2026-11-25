@@ -16,9 +16,9 @@ use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Contracts\TaskProgressCounter;
+use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Resolvers\TaskCounts;
+use Domain\Tasks\Resolvers\TaskProgressCounter;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -94,8 +94,8 @@ final class PlanPersistenceTest extends TestCase
         $started = $this->task('Started');
         $started->start(ActorIdentity::system());
         $open = $this->task('Open');
-        $counts = $this->app->make(TaskProgressCounter::class);
-        $this->assertInstanceOf(TaskCounts::class, $counts);
+        $counts = $this->app->make(TaskProgressCounterContract::class);
+        $this->assertInstanceOf(TaskProgressCounter::class, $counts);
 
         $progress = $counts->progressOf([
             $done->id,

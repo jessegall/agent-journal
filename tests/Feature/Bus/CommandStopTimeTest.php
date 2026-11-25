@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\CommandMiddleware\RunInTransaction;
-use App\Contracts\Processes\StopTime;
+use App\Contracts\Processes\StopTime as StopTimeContract;
 use App\Exceptions\StackLockTimedOut;
 use App\Support\CommandCall;
 use App\Support\CommandStops;
-use App\Support\MonotonicStop;
+use App\Support\MonotonicClock;
 use App\Support\OperationDeadline;
-use App\Support\Reflector;
-use App\Support\SystemMonotonicClock;
+use App\Support\ReflectedType;
+use App\Support\StopTime;
 use Exception;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -47,8 +47,8 @@ final class CommandStopTimeTest extends TestCase
     public function test_a_retry_gets_the_time_left_until_the_stop_not_a_fresh_budget(): void
     {
         $stops = $this->app->make(CommandStops::class);
-        $clock = new SystemMonotonicClock();
-        $stop = new MonotonicStop($clock, $clock->nanoseconds() + 50_000_000);
+        $clock = new MonotonicClock();
+        $stop = new StopTime($clock, $clock->nanoseconds() + 50_000_000);
         $limits = [];
 
         $result = $stops->runUntil($stop, function () use (&$limits): mixed {
@@ -78,8 +78,8 @@ final class CommandStopTimeTest extends TestCase
     public function test_once_the_stop_has_passed_the_retry_is_refused(): void
     {
         $stops = $this->app->make(CommandStops::class);
-        $clock = new SystemMonotonicClock();
-        $stop = new MonotonicStop($clock, $clock->nanoseconds() + 50_000_000);
+        $clock = new MonotonicClock();
+        $stop = new StopTime($clock, $clock->nanoseconds() + 50_000_000);
         $attempts = 0;
 
         $this->expectException(StackLockTimedOut::class);
@@ -105,7 +105,7 @@ final class CommandStopTimeTest extends TestCase
     {
         $stops = $this->app->make(CommandStops::class);
         $deadline = new OperationDeadline(5000);
-        $near = new class implements StopTime
+        $near = new class implements StopTimeContract
         {
             public function remainingMilliseconds(): int
             {
@@ -145,7 +145,7 @@ final class CommandStopTimeTest extends TestCase
     private static function serializationFailure(): QueryException
     {
         $cause = new PDOException('could not serialize access');
-        Reflector::of(Exception::class)->property('code')->writeTo($cause, '40001');
+        ReflectedType::of(Exception::class)->property('code')->writeTo($cause, '40001');
 
         return new QueryException('pgsql', 'select 1', [], $cause);
     }

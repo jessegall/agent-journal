@@ -146,7 +146,7 @@ final readonly class ListenerOwnership
      */
     public static function isGroup(string $type): bool
     {
-        $reflected = Reflector::of($type);
+        $reflected = ReflectedType::of($type);
 
         return $type !== Event::class && ($reflected->isAbstract() || $reflected->isInterface());
     }
@@ -161,7 +161,7 @@ final readonly class ListenerOwnership
     {
         return array_values(array_filter(
             $this->eventClasses(),
-            fn (string $event) => in_array($group, Reflector::of($event)->typeNames(), true),
+            fn (string $event) => in_array($group, ReflectedType::of($event)->typeNames(), true),
         ));
     }
 
@@ -197,18 +197,18 @@ final readonly class ListenerOwnership
     ): bool {
         $listenerClass = Str::before($listener, '@');
 
-        if (! Reflector::exists($listenerClass)) {
+        if (! ReflectedType::exists($listenerClass)) {
             return false;
         }
 
         $handler = $this->reflectors->make($listenerClass)->method($method);
         $group = $handler->firstParameterClass()->getOrElse('');
 
-        if (! Reflector::exists($group) || ! self::isGroup($group)) {
+        if (! ReflectedType::exists($group) || ! self::isGroup($group)) {
             return false;
         }
 
-        if (! Reflector::exists($event) || ! in_array($group, $this->reflectors->make($event)->typeNames(), true)) {
+        if (! ReflectedType::exists($event) || ! in_array($group, $this->reflectors->make($event)->typeNames(), true)) {
             return false;
         }
 

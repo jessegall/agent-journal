@@ -36,8 +36,8 @@ final readonly class ChatDepartures implements InboxParticipationEnding
     {
         $chats = Inbox::query()
             ->withAnyProviderKey([
-                ChatInboxes::PAIR_PROVIDER,
-                ChatInboxes::GROUP_PROVIDER,
+                PairChats::PAIR_PROVIDER,
+                PairChats::GROUP_PROVIDER,
             ])
             ->attachedTo($actor)
             ->limit(InboxMember::ATTACHED_LIMIT)

@@ -8,7 +8,7 @@ use App\Http\Controllers\Communication\MarkAllNotificationsReadController;
 use App\Http\Controllers\Communication\MarkNotificationReadController;
 use App\Http\Controllers\Communication\MarkTargetNotificationReadController;
 use App\Http\Controllers\Communication\SendMessageController;
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +17,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('communication.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(App\Http\Controllers\Calls\SendMessageController::class)->name('send');
         $calls->register(ReadMessageController::class)->name('read');
         $calls->register(ReadUnreadMessagesController::class)->name('read-unread');

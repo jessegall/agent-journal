@@ -21,9 +21,9 @@ use App\Models\Sessions\SessionCleanup;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorIdentity;
-use App\Support\HeartbeatService;
 use App\Support\RecordIdentity;
 use App\Support\SessionStartLimits;
+use App\Support\StartHeartbeats;
 use App\Values\CleanupReport;
 use App\Values\ExecutionBudgets;
 use App\Values\HostCapacity;
@@ -98,7 +98,7 @@ final class SessionCleanupTest extends TestCase
         $start->openStack($this->app);
         $this->reserve($start);
 
-        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 1');
+        $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 1');
 
         $this->assertSame(ReservationState::Released, $this->reservationOf($start)->state);
         $this->assertSame(0, SessionCleanup::query()->count());
@@ -162,7 +162,7 @@ final class SessionCleanupTest extends TestCase
         $this->assertFalse(AgentRuntime::isRunningForSession($start->session->id));
         $this->assertTrue(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
 
-        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 0');
+        $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 0');
         $limits->enforceFences();
 
         $this->assertFalse(ProfileRevisionHold::query()->whereKey($fence->id)->whereNull('reconciled_at')->exists());
@@ -175,7 +175,7 @@ final class SessionCleanupTest extends TestCase
         $start->openStack($this->app);
         $this->reserve($start);
 
-        $this->app->make(HeartbeatService::class)->markExited($start->session, 'exit 0');
+        $this->app->make(StartHeartbeats::class)->markExited($start->session, 'exit 0');
 
         return $start;
     }

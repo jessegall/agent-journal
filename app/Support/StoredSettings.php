@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Settings\EnabledSettingsGroup;
+use App\Contracts\Settings\EnabledSettingsGroup as EnabledSettingsGroupContract;
 use App\Contracts\Settings\Setting;
 use App\Declarations\BooleanSetting;
 use App\Declarations\ChoiceSetting;
@@ -69,7 +69,7 @@ final readonly class StoredSettings
      * @throws SettingUnavailable
      * @throws SettingStorageInvalid
      */
-    public function group(ToggleGroup $group): EnabledSettingsGroup|DisabledSettingsGroup
+    public function group(ToggleGroup $group): EnabledSettingsGroupContract|DisabledSettingsGroup
     {
         if ($this->registry->ownerOf($group)->owner !== $this->owner) {
             throw SettingUnavailable::for($this->owner, $group->key);
@@ -84,7 +84,7 @@ final readonly class StoredSettings
             ->getOrElse($group->isDefaultEnabled);
 
         if ($enabled) {
-            return new StoredEnabledSettingsGroup($group, $this, $this->registry);
+            return new EnabledSettingsGroup($group, $this, $this->registry);
         }
 
         return new DisabledSettingsGroup($this->owner, $group->key, $this->revision);

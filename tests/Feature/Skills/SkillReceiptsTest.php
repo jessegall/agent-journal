@@ -12,8 +12,8 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
-use App\Support\ContextReminders;
 use App\Support\DomainRegistry;
+use App\Support\ReminderContribution;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
@@ -90,7 +90,7 @@ final class SkillReceiptsTest extends TestCase
             new StackTarget($session->agent_id, $session->id),
             'hook-compact',
             ContextStartType::Compact,
-            $this->app->make(ContextReminders::class),
+            $this->app->make(ReminderContribution::class),
         ));
 
         $this->assertFalse(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));

@@ -6,7 +6,7 @@ namespace App\Providers;
 
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Bus\PipelineRunner;
-use App\Contracts\Domains\DomainAvailability;
+use App\Contracts\Domains\DomainAvailability as DomainAvailabilityContract;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Contracts\Sharing\SharePolicy;
 use App\Contracts\Sharing\ShareStatusResolver;
@@ -18,6 +18,7 @@ use App\Support\CommandRuleRegistry;
 use App\Support\ConditionRegistry;
 use App\Support\CoreSettings;
 use App\Support\CoreSkills;
+use App\Support\DomainAvailability;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
@@ -30,7 +31,6 @@ use App\Support\Rules\CoreRules;
 use App\Support\SearchablesRegistry;
 use App\Support\SearchDiagnostics;
 use App\Support\SettingRegistry;
-use App\Support\SettingsDomainAvailability;
 use App\Support\ShareRecordRegistry;
 use App\Support\SkillRegistry;
 use Illuminate\Contracts\Foundation\Application;
@@ -93,7 +93,7 @@ class DomainServiceProvider extends ServiceProvider
             fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)),
         );
 
-        $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
+        $this->app->scoped(DomainAvailabilityContract::class, DomainAvailability::class);
 
         $this->app->singleton(
             SearchablesRegistry::class,

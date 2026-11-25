@@ -9,7 +9,7 @@ use App\Declarations\StateEventDeclaration;
 use App\Declarations\StateEvents;
 use App\Declarations\StateMethod;
 use App\Declarations\StateMethods;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateCatalog\StateRegistration;
 
 /**
  * Collects state listeners from the registered state types and checks the owners of their methods and source files.
@@ -18,7 +18,7 @@ final readonly class StateListenerDeclarations
 {
     public function __construct(private ListenerOwnership $ownership, private ReflectorFactory $reflectors) {}
 
-    public function declarations(StateTypeRegistry $types, StateMethods $methods): StateEvents
+    public function declarations(StateRegistration $types, StateMethods $methods): StateEvents
     {
         $declarations = [];
 

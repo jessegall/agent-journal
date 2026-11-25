@@ -12,8 +12,8 @@ use App\Enums\Profiles\ModelTier;
 use App\Enums\Sessions\ModelSelectionType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
+use App\Support\ConversationVisits;
 use App\Support\DefaultDrivers;
-use App\Support\RecordConversationVisit;
 use App\Support\StartReceipt;
 use App\Support\StartSessions;
 use App\Values\ModelSelection;
@@ -83,7 +83,7 @@ final class SessionSelectionReadTest extends TestCase
 
     public function test_the_visit_count_after_a_b_a_is_three(): void
     {
-        $visits = $this->app->make(RecordConversationVisit::class);
+        $visits = $this->app->make(ConversationVisits::class);
         $visits->entered($this->session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
         $visits->entered($this->session->id, 'native-b', null, 'call-2', CarbonImmutable::now());
         $visits->entered($this->session->id, 'native-a', null, 'call-3', CarbonImmutable::now());

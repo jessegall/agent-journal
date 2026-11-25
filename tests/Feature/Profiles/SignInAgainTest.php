@@ -32,7 +32,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\Command;
 use App\Support\DefaultDrivers;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use App\Values\SignInIdentity;
@@ -363,12 +363,12 @@ final class SignInAgainTest extends TestCase
 
     private function asHost(Command $command): void
     {
-        $this->app->make(EntryDispatchers::class)->runAsJournal(CommandEntry::HostControl, 'test host', $command);
+        $this->app->make(JournalCommands::class)->runAsJournal(CommandEntry::HostControl, 'test host', $command);
     }
 
     private function reconcile(): void
     {
-        $this->app->make(EntryDispatchers::class)
+        $this->app->make(JournalCommands::class)
             ->runAsJournal(CommandEntry::AccountMaintenance, 'account reconciliation', new ReconcileAccountsCommand());
     }
 

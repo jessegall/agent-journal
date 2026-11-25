@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Contracts\Files\Files;
-use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Hosts\HostCapabilities as HostCapabilitiesContract;
 use App\Enums\Accounts\AccountModeType;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Projects\CapabilityStatusType;
@@ -14,7 +14,7 @@ use App\Enums\Sessions\StartRefusalType;
 use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\CapabilityMatrixInvalid;
 use App\Exceptions\HostCapabilityUnsupported;
-use App\Resolvers\RecordedHostCapabilities;
+use App\Resolvers\HostCapabilities;
 use App\Support\DefaultDrivers;
 use App\Support\HostCapabilityQuery;
 use Tests\TestCase;
@@ -52,7 +52,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_nothing_is_recorded_as_supported_in_a_container_without_native_evidence(): void
     {
-        $capabilities = $this->app->make(HostCapabilities::class);
+        $capabilities = $this->app->make(HostCapabilitiesContract::class);
 
         foreach (DefaultDrivers::familyKeys() as $driver) {
             $this->assertSame(
@@ -84,7 +84,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_a_start_of_an_unproven_account_transport_is_refused_as_account_container_unsupported(): void
     {
-        $capability = $this->app->make(HostCapabilities::class)->capability(
+        $capability = $this->app->make(HostCapabilitiesContract::class)->capability(
             $this->capabilityQuery(
                 HostCapabilityType::AccountTransport,
                 DefaultDrivers::CODEX,
@@ -103,7 +103,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_a_stop_guarantee_without_a_proven_stop_deadline_is_refused_before_work(): void
     {
-        $capability = $this->app->make(HostCapabilities::class)->capability(
+        $capability = $this->app->make(HostCapabilitiesContract::class)->capability(
             $this->capabilityQuery(
                 HostCapabilityType::StopDeadline,
                 DefaultDrivers::CLAUDE_CODE,
@@ -190,7 +190,7 @@ final class HostCapabilitiesTest extends TestCase
 
     private function assertRecorded(HostCapabilityQuery $query): void
     {
-        $capability = $this->app->make(HostCapabilities::class)->capability($query);
+        $capability = $this->app->make(HostCapabilitiesContract::class)->capability($query);
 
         $this->assertNotSame(self::UNRECORDED, $capability->reason, $query->describe());
         $this->assertFileExists(base_path(strtok($capability->evidence, '#')));
@@ -204,11 +204,11 @@ final class HostCapabilitiesTest extends TestCase
         return new HostCapabilityQuery($capability, $driver, AccountModeType::Subscription, $mode);
     }
 
-    private function capabilities(string $matrixPath): RecordedHostCapabilities
+    private function capabilities(string $matrixPath): HostCapabilities
     {
         $files = $this->app->make(Files::class);
 
-        return new RecordedHostCapabilities($files, $files->filePathOf($matrixPath));
+        return new HostCapabilities($files, $files->filePathOf($matrixPath));
     }
 
     /**

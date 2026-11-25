@@ -9,13 +9,13 @@ use App\Contracts\Bus\CommandHandler;
 use App\Events\Processes\RuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\CommandRules\ClassificationRule;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 
 final readonly class RetireCommandRuleHandler implements CommandHandler
 {
     public function __construct(
         private CommandFacts $facts,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
     ) {}
 
     /**

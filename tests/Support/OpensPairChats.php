@@ -8,7 +8,7 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorIdentity;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Support\ChatInboxes;
+use Domain\Chat\Support\PairChats;
 
 /**
  * Opens the direct chat of two actors as the chat does: a pair inbox both are attached to, with the personal inbox of
@@ -29,7 +29,7 @@ trait OpensPairChats
         $members = [$first->text(), $second->text()];
         sort($members);
 
-        $inbox = Inbox::create(ChatInboxes::PAIR_PROVIDER, implode('|', $members), 'Chat');
+        $inbox = Inbox::create(PairChats::PAIR_PROVIDER, implode('|', $members), 'Chat');
         $now = CarbonImmutable::now();
         InboxMember::create($inbox->id, $first, $now);
         InboxMember::create($inbox->id, $second, $now);

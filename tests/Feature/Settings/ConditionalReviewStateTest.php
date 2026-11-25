@@ -19,7 +19,7 @@ use App\Support\CoreSettings;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
 use App\Support\References\StateReference;
-use App\Support\RegisteredSettingCommands;
+use App\Support\SettingCommands;
 use App\Support\SettingRegistry;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
@@ -172,7 +172,7 @@ final class ConditionalReviewStateTest extends TestCase
 
     private function switchReview(bool $isOff, int $expectedRevision): void
     {
-        $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class), new CatalogueReflectorFactory());
+        $commands = new SettingCommands($this->app->make(SettingRegistry::class), new CatalogueReflectorFactory());
 
         $command = $isOff ? $commands->disable(
             $this->reviews->review,

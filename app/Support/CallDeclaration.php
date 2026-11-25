@@ -38,7 +38,7 @@ final readonly class CallDeclaration
         $inPath = [];
         $body = [];
 
-        $declaration = Reflector::of($call);
+        $declaration = ReflectedType::of($call);
 
         $classInput = $declaration->attributes(MapName::class)->first()
             ->map(fn (MapName $mapping) => $mapping->input)
@@ -120,7 +120,7 @@ final readonly class CallDeclaration
      */
     private static function inputName(int|string|NameMapper $input, string $property): string
     {
-        $mapper = is_string($input) && Reflector::factory()->is($input, NameMapper::class) ? new $input() : $input;
+        $mapper = is_string($input) && ReflectedType::factory()->is($input, NameMapper::class) ? new $input() : $input;
 
         return (string) ($mapper instanceof NameMapper ? $mapper->map($property) : $mapper);
     }

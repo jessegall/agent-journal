@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
-use App\Support\DockDefinitions;
+use App\Support\DockRegistration;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
@@ -144,7 +144,7 @@ final class ExternalOwnerDockTest extends TestCase
         ])->assertJsonPath('result.structuredContent.outcome', 'added');
 
         $this->app->forgetScopedInstances();
-        $this->app->forgetInstance(DockDefinitions::class);
+        $this->app->forgetInstance(DockRegistration::class);
         $this->app->call([new NotesServiceProvider($this->app), 'boot']);
 
         $this->callMcpTool($this->agent, 'dock_list')

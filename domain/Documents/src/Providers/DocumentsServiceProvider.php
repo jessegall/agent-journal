@@ -13,27 +13,27 @@ use App\Enums\Agents\AccessType;
 use App\Support\FolderClasses;
 use App\Support\Sources\Contracts\DockRegistration;
 use App\Values\ReadEntitlement;
-use Domain\Documents\Contracts\Attachments\AttachmentReader;
-use Domain\Documents\Contracts\Documents\DocumentReader;
-use Domain\Documents\Contracts\Documents\DocumentResolver;
-use Domain\Documents\Contracts\Drafts\DraftReader;
-use Domain\Documents\Contracts\Drafts\DraftResolver;
-use Domain\Documents\Contracts\Reports\ReportReader;
-use Domain\Documents\Contracts\Reports\ReportResolver;
+use Domain\Documents\Contracts\Attachments\AttachmentReader as AttachmentReaderContract;
+use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;
+use Domain\Documents\Contracts\Documents\DocumentResolver as DocumentResolverContract;
+use Domain\Documents\Contracts\Drafts\DraftReader as DraftReaderContract;
+use Domain\Documents\Contracts\Drafts\DraftResolver as DraftResolverContract;
+use Domain\Documents\Contracts\Reports\ReportReader as ReportReaderContract;
+use Domain\Documents\Contracts\Reports\ReportResolver as ReportResolverContract;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Models\TextUploadChunk;
 use Domain\Documents\Policies\DocumentPolicy;
-use Domain\Documents\Resolvers\AttachmentPages;
-use Domain\Documents\Resolvers\DocumentPages;
-use Domain\Documents\Resolvers\DocumentRecords;
-use Domain\Documents\Resolvers\DraftRecords;
+use Domain\Documents\Resolvers\AttachmentReader;
+use Domain\Documents\Resolvers\DocumentReader;
+use Domain\Documents\Resolvers\DocumentResolver;
+use Domain\Documents\Resolvers\DraftReader;
+use Domain\Documents\Resolvers\DraftResolver;
 use Domain\Documents\Resolvers\ReportNotificationTarget;
-use Domain\Documents\Resolvers\ReportPages;
-use Domain\Documents\Resolvers\ReportRecords;
-use Domain\Documents\Resolvers\RetainedDrafts;
+use Domain\Documents\Resolvers\ReportReader;
+use Domain\Documents\Resolvers\ReportResolver;
 use Domain\Documents\Support\DocumentDocking;
 use Domain\Documents\Support\ReportDocking;
 use Domain\Documents\Support\SealedAttachments;
@@ -50,14 +50,14 @@ final class DocumentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(DocumentResolver::class, DocumentRecords::class);
-        $this->app->bind(DraftResolver::class, DraftRecords::class);
-        $this->app->bind(DraftReader::class, RetainedDrafts::class);
-        $this->app->bind(ReportResolver::class, ReportRecords::class);
-        $this->app->scoped(AttachmentReader::class, AttachmentPages::class);
+        $this->app->bind(DocumentResolverContract::class, DocumentResolver::class);
+        $this->app->bind(DraftResolverContract::class, DraftResolver::class);
+        $this->app->bind(DraftReaderContract::class, DraftReader::class);
+        $this->app->bind(ReportResolverContract::class, ReportResolver::class);
+        $this->app->scoped(AttachmentReaderContract::class, AttachmentReader::class);
         $this->app->scoped(AttachmentReferences::class, SealedAttachments::class);
-        $this->app->scoped(DocumentReader::class, DocumentPages::class);
-        $this->app->scoped(ReportReader::class, ReportPages::class);
+        $this->app->scoped(DocumentReaderContract::class, DocumentReader::class);
+        $this->app->scoped(ReportReaderContract::class, ReportReader::class);
     }
 
     public function boot(
@@ -93,7 +93,7 @@ final class DocumentsServiceProvider extends ServiceProvider
      */
     private function limitDrafts(Builder $drafts): void
     {
-        if ($this->app->make(RetainedDrafts::class)->mayAdminister()) {
+        if ($this->app->make(DraftReader::class)->mayAdminister()) {
             return;
         }
 

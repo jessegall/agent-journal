@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Memory\Resolvers;
+
+use App\Contracts\Actors\CurrentActor;
+use App\Exceptions\RecordUnavailable;
+use App\Support\ActorIdentity;
+use Domain\Memory\Contracts\MemoryResolver as MemoryResolverContract;
+use Domain\Memory\Models\Memory;
+use Domain\Memory\Values\MemoryCard;
+use Domain\Memory\Values\MemoryPage;
+
+/**
+ * Reads one page of the memories of this request's actor, heaviest first.
+ */
+final readonly class MemoryResolver implements MemoryResolverContract
+{
+    public function __construct(private CurrentActor $actors) {}
+
+    public function own(int $page): MemoryPage
+    {
+        $owner = ActorIdentity::of($this->actors->actor());
+        $query = Memory::query()->ownedBy($owner);
+        $total = $query->clone()->count();
+
+        $cards = $query->orderByDesc('weight')->orderBy('id')->forPage(
+            $page,
+            self::PER_PAGE,
+        )->limit(self::PER_PAGE)->get()
+            ->map(fn (Memory $memory) => self::cardOf($memory))
+            ->all();
+
+        return new MemoryPage(array_values($cards), $page, self::PER_PAGE, $total);
+    }
+
+    public function memory(string $memoryId): MemoryCard
+    {
+        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->actors->actor()))->whereKey($memoryId)->first();
+
+        if ($memory !== null) {
+            return self::cardOf($memory);
+        }
+
+        throw RecordUnavailable::forModel(Memory::class, $memoryId);
+    }
+
+    private static function cardOf(Memory $memory): MemoryCard
+    {
+        return new MemoryCard($memory->id, $memory->number, $memory->text, $memory->weight, $memory->revision);
+    }
+}

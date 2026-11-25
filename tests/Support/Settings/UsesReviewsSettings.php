@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Contracts\Settings\SettingCommands;
+use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
 use App\Support\CatalogueReflectorFactory;
 use App\Support\CoreSettings;
 use App\Support\DomainRegistry;
 use App\Support\DomainSwitches;
-use App\Support\RegisteredSettingCommands;
+use App\Support\SettingCommands;
 use App\Support\SettingRegistry;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
@@ -30,7 +30,7 @@ trait UsesReviewsSettings
 
     private ReviewSettings $reviews;
 
-    private SettingCommands $commands;
+    private SettingCommandsContract $commands;
 
     private string $ownerId;
 
@@ -67,6 +67,6 @@ trait UsesReviewsSettings
     {
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
+        $this->commands = new SettingCommands($registry, new CatalogueReflectorFactory());
     }
 }

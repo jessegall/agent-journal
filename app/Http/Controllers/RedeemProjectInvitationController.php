@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Accounts\CommandEntry;
 use App\Http\Requests\Connections\RedeemProjectInvitationRequest;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\ServerOrigin;
 use Illuminate\Http\JsonResponse;
 
@@ -18,7 +18,7 @@ final readonly class RedeemProjectInvitationController
 {
     public function __invoke(
         RedeemProjectInvitationRequest $request,
-        EntryDispatchers $dispatchers,
+        JournalCommands $dispatchers,
         ServerOrigin $origin,
     ): JsonResponse {
         $redemption = $dispatchers->runAsJournal(CommandEntry::HostControl, 'project redemption', $request->command());

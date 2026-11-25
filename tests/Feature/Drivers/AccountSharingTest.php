@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Drivers;
 
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverType;
 use App\Exceptions\AccountWriterTaken;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\AccountLabel;
@@ -113,8 +113,8 @@ final class AccountSharingTest extends TestCase
 
     private function registerFamily(): void
     {
-        $registry = $this->app->make(DriverCatalogue::class);
-        $this->assertInstanceOf(DriverRegistry::class, $registry);
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(

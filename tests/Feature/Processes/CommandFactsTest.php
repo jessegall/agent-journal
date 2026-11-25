@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Contracts\Admission\ShellAdmission;
-use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Enums\CommandRules\CommandEffect;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\CommandRules\ParseOutcome;
@@ -14,7 +14,7 @@ use App\Enums\Processes\ShellDialect;
 use App\Enums\Runs\PartJoin;
 use App\Models\CommandRules\CommandAlias;
 use App\Support\DomainRegistry;
-use App\Support\ShellParser;
+use App\Support\ShellCommandParser;
 use App\Values\CommandPart;
 use App\Values\ExecutionContext;
 use App\Values\ShellCommand;
@@ -111,7 +111,7 @@ final class CommandFactsTest extends TestCase
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
     {
-        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
+        $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
     }
 
     public function test_a_line_is_split_into_its_commands_and_joins(): void
@@ -151,7 +151,7 @@ final class CommandFactsTest extends TestCase
 
     private function parse(string $line): ShellCommand
     {
-        return $this->app->make(ShellCommandParser::class)->parse($line, ShellDialect::Bash);
+        return $this->app->make(ShellCommandParserContract::class)->parse($line, ShellDialect::Bash);
     }
 
     private function answer(string $profileKey, string $line): AnswerType

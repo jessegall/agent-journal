@@ -14,7 +14,7 @@ use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\Access\AccessSettings;
 use App\Support\AssigneeIdentity;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -45,7 +45,7 @@ final class AssigneeIdentityTest extends TestCase
 
     public function test_an_assignee_is_not_an_actor_by_contract(): void
     {
-        $this->assertFalse(Reflector::of(Assignee::class)->implements(Actor::class));
+        $this->assertFalse(ReflectedType::of(Assignee::class)->implements(Actor::class));
     }
 
     public function test_an_agent_and_a_user_are_assigned_and_reassigned_through_the_assign_command(): void

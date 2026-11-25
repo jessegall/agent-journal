@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Support\Domain;
 use App\Support\ReflectedMethod;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -26,7 +26,7 @@ final class DomainBootstrapperOrderTest extends TestCase
             $methods = array_values(array_map(
                 fn (ReflectedMethod $method) => $method->name(),
                 array_filter(
-                    Reflector::of($class)->methods(),
+                    ReflectedType::of($class)->methods(),
                     fn (ReflectedMethod $method) => $method->declaringClass()->name() === $class,
                 ),
             ));
@@ -58,11 +58,11 @@ final class DomainBootstrapperOrderTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (! Reflector::factory()->isSubclassOf($class, Domain::class)) {
+            if (! ReflectedType::factory()->isSubclassOf($class, Domain::class)) {
                 continue;
             }
 
-            $domain = Reflector::of($class);
+            $domain = ReflectedType::of($class);
 
             if ($domain->method('bootstrappers')->declaringClass() === $domain) {
                 $classes[] = $class;

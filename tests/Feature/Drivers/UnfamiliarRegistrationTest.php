@@ -8,7 +8,7 @@ use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
@@ -18,7 +18,7 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Values\AccountLabel;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
@@ -134,8 +134,8 @@ final class UnfamiliarRegistrationTest extends TestCase
 
     private function register(string $key): void
     {
-        $registry = $this->app->make(DriverCatalogue::class);
-        $this->assertInstanceOf(DriverRegistry::class, $registry);
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $registry->registerFamily(

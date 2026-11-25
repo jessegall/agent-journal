@@ -8,8 +8,8 @@ use App\Contracts\Messages\MessageSender;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
+use App\Support\ActorProvisioning;
 use App\Support\InboxReceiver;
-use App\Support\PersonalInboxes;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Models\Question;
 
@@ -30,7 +30,7 @@ trait WritesInboxMessages
             return $inbox;
         }
 
-        $this->app->make(PersonalInboxes::class)->provision($actor, 'Own');
+        $this->app->make(ActorProvisioning::class)->provision($actor, 'Own');
 
         return Inbox::personalOf($actor);
     }

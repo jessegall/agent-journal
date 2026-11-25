@@ -8,7 +8,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Exceptions\ContentMissing;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\Drafts\DraftResolver;
@@ -62,7 +62,7 @@ final class IsolationTest extends TestCase
         foreach ([CreateDocumentCommand::class] as $command) {
             $parameters = array_map(
                 fn (ReflectedParameter $parameter) => $parameter->name(),
-                Reflector::of($command)->constructor()
+                ReflectedType::of($command)->constructor()
                     ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
                     ->getOrElse([]),
             );

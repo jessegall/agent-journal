@@ -17,7 +17,7 @@ final readonly class StartRequestLock
     /**
      * The first key of every start request lock, so no other advisory lock of the database meets it.
      */
-    public const int NAMESPACE = 410_027;
+    public const int FIRST_LOCK_KEY = 410_027;
 
     public function __construct(
         private DatabaseManager $databases,
@@ -39,19 +39,19 @@ final readonly class StartRequestLock
 
         if ($connection->transactionLevel() > 0) {
             $connection->select('SELECT pg_advisory_xact_lock(?, hashtext(?))', [
-                self::NAMESPACE,
+                self::FIRST_LOCK_KEY,
                 $requestId,
             ]);
 
             return $work();
         }
 
-        $this->locks->lock(self::NAMESPACE, $requestId, $this->deadline);
+        $this->locks->lock(self::FIRST_LOCK_KEY, $requestId, $this->deadline);
 
         try {
             return $work();
         } finally {
-            $this->locks->unlock(self::NAMESPACE, $requestId);
+            $this->locks->unlock(self::FIRST_LOCK_KEY, $requestId);
         }
     }
 }

@@ -23,7 +23,7 @@ use App\Models\Runs\ReaderRevision;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\ProvenBranch;
@@ -35,7 +35,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final readonly class RequestWindowResolver implements PageResolver
 {
-    public function __construct(private RequestPageRequest $page, private ProjectKey $projects) {}
+    public function __construct(private RequestPageRequest $page, private ServedEnvironment $projects) {}
 
     public function read(): DeclaredLayoutData
     {

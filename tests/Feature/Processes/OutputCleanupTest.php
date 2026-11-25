@@ -14,7 +14,7 @@ use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\Admission;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
@@ -57,7 +57,7 @@ final class OutputCleanupTest extends TestCase
 
         $this->assertSame(CaptureState::Removed, $this->part->refresh()->capture_state);
         $chunk = OutputChunk::query()->where('part_run_id', $this->part->id)->sole();
-        Storage::disk(SpoolRecorder::DISK)->assertMissing($chunk->storage_path);
+        Storage::disk(OutputRecorder::DISK)->assertMissing($chunk->storage_path);
     }
 
     public function test_a_run_that_has_not_ended_keeps_its_output(): void
@@ -71,12 +71,12 @@ final class OutputCleanupTest extends TestCase
     public function test_restored_output_counts_only_when_every_byte_matches(): void
     {
         $path = OutputChunk::query()->where('part_run_id', $this->part->id)->sole()->storage_path;
-        Storage::disk(SpoolRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
+        Storage::disk(OutputRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
 
         $check = new VerifyRestoredOutputCommand($this->part->process_run_id);
         $this->assertSame([CaptureState::Corrupt], $this->asUser($check)->states());
 
-        Storage::disk(SpoolRecorder::DISK)->put($path, self::PASSED_OUTPUT);
+        Storage::disk(OutputRecorder::DISK)->put($path, self::PASSED_OUTPUT);
         $this->assertSame([CaptureState::Complete], $this->asUser($check)->states());
     }
 

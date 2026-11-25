@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\DriverTypeSource;
@@ -12,7 +12,7 @@ use App\Enums\Profiles\ModelTier;
 use App\Models\Agents\Agent;
 use App\Support\Capabilities\CodexTerminalCapabilities;
 use App\Support\DefaultDrivers;
-use App\Support\DriverRegistry;
+use App\Support\DriverCatalogue;
 use App\Support\StartPreviews;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
@@ -92,8 +92,8 @@ final class StartPreviewsTest extends TestCase
 
     public function test_a_family_that_runs_one_mode_locks_it(): void
     {
-        $registry = $this->app->make(DriverCatalogue::class);
-        $this->assertInstanceOf(DriverRegistry::class, $registry);
+        $registry = $this->app->make(DriverCatalogueContract::class);
+        $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $registry->registerFamily(

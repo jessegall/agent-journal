@@ -77,7 +77,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/SpoolRecorder.php',
+            'app/Support/OutputRecorder.php',
         ],
     ],
     RuleActivated::class => [

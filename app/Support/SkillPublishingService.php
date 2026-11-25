@@ -30,7 +30,7 @@ final readonly class SkillPublishingService
     private const int PUBLICATION_LIMIT = 100;
 
     public function __construct(
-        private EntryDispatchers $dispatchers,
+        private JournalCommands $dispatchers,
     ) {}
 
     /**

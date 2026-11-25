@@ -22,7 +22,7 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorContext;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Support\ListenerRegistry;
 use App\Values\OwnerAuthority;
 use Illuminate\Database\Events\QueryExecuted;
@@ -149,7 +149,7 @@ final class ReleaseSignInWriterTest extends TestCase
 
     private function asJournal(object $command): void
     {
-        $this->app->make(EntryDispatchers::class)->runAsJournal(CommandEntry::AccountMaintenance, 'test', $command);
+        $this->app->make(JournalCommands::class)->runAsJournal(CommandEntry::AccountMaintenance, 'test', $command);
     }
 
     private function actAsOwner(): void

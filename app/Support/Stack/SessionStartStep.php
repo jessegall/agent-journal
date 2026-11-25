@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Stack;
 
 use App\Exceptions\ConversationIncompatible;
+use App\Support\ConversationVisits;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\RecordConversationVisit;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 
@@ -17,7 +17,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class SessionStartStep
 {
-    public function __construct(private RecordConversationVisit $visits) {}
+    public function __construct(private ConversationVisits $visits) {}
 
     /**
      * @throws ConversationIncompatible

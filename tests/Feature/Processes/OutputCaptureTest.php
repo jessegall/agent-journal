@@ -13,7 +13,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\ActorIdentity;
 use App\Support\Execution\SpawnedProcess;
 use App\Support\ManifestCheck;
-use App\Support\SpoolRecorder;
+use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartEnd;
 use App\Values\PartKey;
@@ -44,7 +44,7 @@ final class OutputCaptureTest extends TestCase
     public function test_a_part_writing_50_mib_keeps_every_byte(): void
     {
         $part = $this->part();
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $process = SpawnedProcess::start(
             ['head', '-c', '52428800', '/dev/zero'],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
@@ -69,22 +69,22 @@ final class OutputCaptureTest extends TestCase
         $part = $this->part();
         $bytes = "\x00\xffprogress 10%\rprogress 20%\r\n";
 
-        $this->app->make(SpoolRecorder::class)->append(
+        $this->app->make(OutputRecorder::class)->append(
             new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()),
         );
 
         $chunk = OutputChunk::query()->where('part_run_id', $part->id)->firstOrFail();
-        $this->assertSame($bytes, Storage::disk(SpoolRecorder::DISK)->get($chunk->storage_path));
+        $this->assertSame($bytes, Storage::disk(OutputRecorder::DISK)->get($chunk->storage_path));
     }
 
     public function test_a_removed_chunk_file_is_a_gap_in_the_manifest(): void
     {
         $part = $this->part();
-        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder = $this->app->make(OutputRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, 'first ', CarbonImmutable::now()));
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, 'second', CarbonImmutable::now()));
 
-        Storage::disk(SpoolRecorder::DISK)->delete(
+        Storage::disk(OutputRecorder::DISK)->delete(
             OutputChunk::query()->where('part_run_id', $part->id)->where('offset', 0)->firstOrFail()->storage_path,
         );
 
@@ -112,11 +112,11 @@ final class OutputCaptureTest extends TestCase
     {
         $part = $this->part();
         $occupied = "{$part->process_run_id}/{$part->id}/stdout/".str_pad('0', 20, '0', STR_PAD_LEFT).'.chunk';
-        Storage::disk(SpoolRecorder::DISK)->put($occupied, 'already here');
+        Storage::disk(OutputRecorder::DISK)->put($occupied, 'already here');
 
         $this->expectException(OutputStorageFailed::class);
 
-        $this->app->make(SpoolRecorder::class)->append(
+        $this->app->make(OutputRecorder::class)->append(
             new CapturedChunk($part, OutputStream::Stdout, 'bytes', CarbonImmutable::now()),
         );
     }

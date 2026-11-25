@@ -6,7 +6,7 @@ namespace Domain\Helpers\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStack;
+use App\Contracts\Work\AgentStacks;
 use App\Events\Sessions\StartSessionOpened;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
@@ -20,7 +20,7 @@ use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 #[InCommandTransaction]
 final readonly class AttachHelperJob implements Listener
 {
-    public function __construct(private AgentStack $stacks) {}
+    public function __construct(private AgentStacks $stacks) {}
 
     public function handle(StartSessionOpened $event): void
     {

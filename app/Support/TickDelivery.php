@@ -64,7 +64,7 @@ final readonly class TickDelivery
             array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
         );
 
-        $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use (
+        $settled = ReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use (
             $batch,
             $passStartNanoseconds,
             $passNow,

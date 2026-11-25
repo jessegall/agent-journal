@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
 use App\Support\DomainEntry;
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -343,8 +343,8 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && Reflector::find($name)
-            ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class) && $type->isInstantiable())
+        return stripos($name, 'App\\') === 0 && ReflectedType::find($name)
+            ->filter(fn (ReflectedType $type) => $type->isSubclassOf(Event::class) && $type->isInstantiable())
             ->isDefined();
     }
 

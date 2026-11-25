@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\CallRoutes;
+use App\Support\CallRegistrar;
 use Domain\Comments\Http\Controllers\Calls;
 use Domain\Comments\Http\Controllers\Calls\LocateCommentController;
 use Domain\Comments\Http\Controllers\CommentLocationController;
@@ -13,7 +13,7 @@ use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('journal.agent')->prefix('agent')->name('comments.agent.')->group(function (): void {
-    $calls = Container::getInstance()->make(CallRoutes::class);
+    $calls = Container::getInstance()->make(CallRegistrar::class);
     $calls->register(Calls\PostCommentController::class)->name('post');
     $calls->register(Calls\ListCommentsController::class)->name('list');
     $calls->register(LocateCommentController::class)->name('location');

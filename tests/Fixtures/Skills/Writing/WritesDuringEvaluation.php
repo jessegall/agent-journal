@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Skills\Writing;
 
 use App\Enums\Accounts\CommandEntry;
-use App\Support\EntryDispatchers;
+use App\Support\JournalCommands;
 use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
 use App\Contracts\Skills\SkillConditionEvaluator;
 use App\Values\ConditionResult;
@@ -18,7 +18,7 @@ use Spatie\LaravelData\Data;
 final readonly class WritesDuringEvaluation implements SkillConditionEvaluator
 {
     public function __construct(
-        private EntryDispatchers $dispatchers,
+        private JournalCommands $dispatchers,
     ) {}
 
     public function evaluate(SkillContext $context, Data $parameters): ConditionResult

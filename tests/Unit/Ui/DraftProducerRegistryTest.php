@@ -6,7 +6,7 @@ namespace Tests\Unit\Ui;
 
 use App\Exceptions\DraftProducerMissing;
 use App\Exceptions\DraftProducerRepeated;
-use App\Support\DraftProducerRegistry;
+use App\Support\DraftProducers;
 use Tests\Fixtures\UiDeclarations\StubDraftProducer;
 use Tests\TestCase;
 
@@ -17,7 +17,7 @@ final class DraftProducerRegistryTest extends TestCase
 {
     public function test_with_no_producer_registered_no_noun_offers_guided_creation(): void
     {
-        $producers = new DraftProducerRegistry();
+        $producers = new DraftProducers();
 
         $this->assertFalse($producers->offersGuided('task'));
         $this->assertThrows(fn () => $producers->producerFor('task'), DraftProducerMissing::class);
@@ -25,7 +25,7 @@ final class DraftProducerRegistryTest extends TestCase
 
     public function test_a_registered_producer_drafts_from_answers_and_a_noun_takes_only_one(): void
     {
-        $producers = new DraftProducerRegistry();
+        $producers = new DraftProducers();
         $producers->register('task', StubDraftProducer::class);
 
         $draft = $producers->producerFor('task')->draft(['Ship it', 'Soon', 'Yes']);

@@ -6,7 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Enums\Projects\ArrangementType;
 use App\Support\SignedCall;
-use App\Support\SignedSignInHost;
+use App\Support\SignInHost;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -21,7 +21,7 @@ final class SignedSignInHostTest extends TestCase
     public function test_each_call_of_the_sign_in_runner_is_signed(): void
     {
         Http::fake(['*' => Http::response(null, 204)]);
-        $runner = new SignedSignInHost(
+        $runner = new SignInHost(
             $this->app->make(Factory::class),
             'http://journal.test',
             'host-secret',

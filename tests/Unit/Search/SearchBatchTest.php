@@ -23,7 +23,7 @@ use App\Values\SearchResult;
 use App\Values\SearchScope;
 use App\Values\SearchWords;
 use App\Values\SourcePosition;
-use App\Values\WorkBudget;
+use App\Values\WorkAllowance;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -147,7 +147,7 @@ final class SearchBatchTest extends TestCase
             SearchScope::everywhere(),
             'tasks.task',
             10,
-            WorkBudget::forBatch(150),
+            WorkAllowance::forBatch(150),
         );
     }
 }

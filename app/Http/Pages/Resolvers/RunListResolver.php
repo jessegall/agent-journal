@@ -11,7 +11,7 @@ use App\Models\Runs\ProcessRun;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\ProjectKey;
+use App\Support\ServedEnvironment;
 use Illuminate\Support\Collection;
 
 /**
@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  */
 final readonly class RunListResolver implements PageResolver
 {
-    public function __construct(private ProjectKey $projects) {}
+    public function __construct(private ServedEnvironment $projects) {}
 
     public function read(): DeclaredLayoutData
     {

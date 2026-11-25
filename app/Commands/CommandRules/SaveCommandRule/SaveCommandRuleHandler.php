@@ -9,10 +9,10 @@ use App\Enums\CommandRules\ProposalState;
 use App\Exceptions\ApprovalRefused;
 use App\Models\CommandRules\RuleRevision;
 use App\Support\ActorIdentity;
-use App\Support\ProjectKey;
 use App\Support\ProposalChecks;
 use App\Support\RuleApprovals;
 use App\Support\RuleProposals;
+use App\Support\ServedEnvironment;
 use App\Values\ApprovalReceipt;
 use App\Values\OwnerApproval;
 
@@ -21,7 +21,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
     public function __construct(
         private ProposalChecks $checks,
         private RuleApprovals $approvals,
-        private ProjectKey $projects,
+        private ServedEnvironment $projects,
         private RuleProposals $proposals,
     ) {}
 

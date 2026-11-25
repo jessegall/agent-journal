@@ -79,9 +79,9 @@ final readonly class ObjectReflection
     }
 
     /**
-     * @param  Reflector<object>  $class
+     * @param  ReflectedType<object>  $class
      */
-    private function contextParameter(Reflector $class): string
+    private function contextParameter(ReflectedType $class): string
     {
         if ($class->constructor()->isEmpty()) {
             throw ScriptDefinitionRefused::invalidObject($class->name());

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Profiles;
 
-use App\Values\KeywordDefinition;
+use App\Values\ScriptKeywordDefinition;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -30,7 +30,7 @@ final class ScriptKeywordData extends Data
     /**
      * @param  list<string>  $ports
      */
-    public static function fromDefinition(KeywordDefinition $definition, array $ports, bool $isAvailable): self
+    public static function fromDefinition(ScriptKeywordDefinition $definition, array $ports, bool $isAvailable): self
     {
         return new self(
             $definition->token,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Support\Reflector;
+use App\Support\ReflectedType;
 use Tests\Support\ScanCache\ScanCache;
 use Throwable;
 
@@ -27,8 +27,8 @@ final class ExceptionPlacement
         $misplacedExceptions = array_values(
             array_filter(
                 ScanCache::findings(new ClassesDeclared(), $paths),
-                fn (string $name) => Reflector::find($name)
-                    ->filter(fn (Reflector $type) => $type->isSubclassOf(Throwable::class))
+                fn (string $name) => ReflectedType::find($name)
+                    ->filter(fn (ReflectedType $type) => $type->isSubclassOf(Throwable::class))
                     ->isDefined(),
             ),
         );

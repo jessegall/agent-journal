@@ -40,7 +40,7 @@ final readonly class EnginePass
         $this->app->forgetScopedInstances();
         $previousDeadline = $this->app->getBindings()[OperationDeadline::class] ?? null;
         $this->bindPassDeadline($this->clock->nanoseconds());
-        $meter = ScopedReadMeter::ofCurrentScope();
+        $meter = ReadMeter::ofCurrentScope();
         $meter->begin();
 
         try {

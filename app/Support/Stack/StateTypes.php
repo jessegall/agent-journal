@@ -7,7 +7,7 @@ namespace App\Support\Stack;
 use App\Contracts\Work\WorkOccurrenceGuard;
 use App\Events\Hooks\StateTypesRequested;
 use App\Support\StateCatalog\Contracts\StateTypes as StateTypesContract;
-use App\Support\StateCatalog\StateTypeRegistry;
+use App\Support\StateCatalog\StateRegistration;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\States\AnswerAskState;
 use App\Support\States\AnswerMessageState;
@@ -35,19 +35,19 @@ final class StateTypes implements StateTypesContract
         AwaitSkillsState::class,
     ];
 
-    private StateTypeRegistry|null $registry = null;
+    private StateRegistration|null $registry = null;
 
     public function __construct(
         private readonly Dispatcher $events,
         private readonly Container $container,
     ) {}
 
-    public function registrationSnapshot(): StateTypeRegistry
+    public function registrationSnapshot(): StateRegistration
     {
         return $this->registry ?? $this->build();
     }
 
-    public function registry(): StateTypeRegistry
+    public function registry(): StateRegistration
     {
         return $this->registry ??= $this->build();
     }
@@ -65,9 +65,9 @@ final class StateTypes implements StateTypesContract
         return new TickingTypes($this->registry()->tickingTypeKeys());
     }
 
-    private function build(): StateTypeRegistry
+    private function build(): StateRegistration
     {
-        $registry = new StateTypeRegistry();
+        $registry = new StateRegistration();
 
         foreach (self::CORE_STATES as $stateClass) {
             $registry->register(RegisteredStateType::of($stateClass));
