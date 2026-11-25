@@ -11,7 +11,7 @@ use App\Exceptions\FileReadReentered;
 use App\Exceptions\FileUnreadable;
 use App\Exceptions\LinkLeavesPlace;
 use App\Support\Files;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -270,6 +270,6 @@ final class LocalFilesTest extends TestCase
      */
     private function whileReading(FilePath $file, Closure $work): mixed
     {
-        return ReflectedType::of(Files::class)->method('whileReading')->invokeOn($this->files, $file, $work);
+        return Reflector::of(Files::class)->method('whileReading')->invokeOn($this->files, $file, $work);
     }
 }

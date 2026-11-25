@@ -45,7 +45,7 @@ final readonly class DeclaredCommand
      */
     public static function read(string $command, CommandOwner $owner, string $handler): self
     {
-        $declaration = ReflectedType::of($command);
+        $declaration = Reflector::of($command);
         $authorizations = $declaration->attributes(Authorize::class);
         $entries = $declaration->attributes(Entry::class);
 
@@ -129,9 +129,9 @@ final readonly class DeclaredCommand
     /**
      * What PHP declares about the command class.
      *
-     * @return ReflectedType<object>
+     * @return Reflector<object>
      */
-    public function declaration(): ReflectedType
+    public function declaration(): Reflector
     {
         return $this->reflect($this->command);
     }

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\PhpStan;
 
 use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Concerns\Reflects;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Fixtures\Reflection\Attributes\Marker;
 use Tests\Fixtures\Reflection\Parcel;
 
@@ -21,11 +21,11 @@ class ReflectorTypes
 
     public function reflectorTypes(Parcel $parcel): void
     {
-        assertType('App\Support\ReflectedType<static(Tests\Fixtures\PhpStan\ReflectorTypes)>', $this->reflect());
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', static::reflect(Parcel::class));
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', static::reflect($parcel));
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', ReflectedType::of(Parcel::class));
-        assertType('App\Support\ReflectedType<Tests\Fixtures\Reflection\Parcel>', ReflectedType::of($parcel));
+        assertType('App\Support\Reflector<static(Tests\Fixtures\PhpStan\ReflectorTypes)>', $this->reflect());
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect(Parcel::class));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', static::reflect($parcel));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of(Parcel::class));
+        assertType('App\Support\Reflector<Tests\Fixtures\Reflection\Parcel>', Reflector::of($parcel));
     }
 
     public function attributeTypes(): void

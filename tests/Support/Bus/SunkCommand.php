@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Bus;
 
 use App\Contracts\Bus\Command;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 
 /**
  * A command the test sink took in place of its handler: the command as it reached the end, the middleware it passed,
@@ -45,7 +45,7 @@ final readonly class SunkCommand
         }
 
         foreach ($arguments as $property => $value) {
-            if (! ReflectedType::of($this->command)->hasProperty($property)
+            if (! Reflector::of($this->command)->hasProperty($property)
                 || ! self::isSameValue($this->command->{$property}, $value)) {
                 return false;
             }

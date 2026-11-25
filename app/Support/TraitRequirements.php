@@ -29,7 +29,7 @@ final class TraitRequirements
             return;
         }
 
-        $type = ReflectedType::of($class);
+        $type = Reflector::of($class);
 
         foreach ($type->allTraits() as $trait) {
             foreach ($trait->attributes(RequiresInterface::class) as $requirement) {

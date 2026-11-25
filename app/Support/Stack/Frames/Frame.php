@@ -13,7 +13,7 @@ use App\Exceptions\StateAnswerRefused;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\StateLoading\StateValues;
 use App\Support\States\AgentState;
 use App\Support\States\Support\StateReturnedParts;
@@ -124,7 +124,7 @@ final readonly class Frame
      */
     public function momentMethod(StackMoment $moment): StateMethod
     {
-        return StateMethod::fromMethod($this->state::class, ReflectedType::of($this->state)->method($moment->value));
+        return StateMethod::fromMethod($this->state::class, Reflector::of($this->state)->method($moment->value));
     }
 
     /**

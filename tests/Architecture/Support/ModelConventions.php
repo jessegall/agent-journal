@@ -8,7 +8,7 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -121,7 +121,7 @@ final class ModelConventions
 
         foreach (self::modelsIn($files) as $path => $models) {
             foreach ($models as $line => $class) {
-                if (! ReflectedType::of($class)->isSubclassOf(ReadableModel::class)
+                if (! Reflector::of($class)->isSubclassOf(ReadableModel::class)
                     || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
                     $violations[] = new Violation(
                         $path,
@@ -170,11 +170,11 @@ final class ModelConventions
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! ReflectedType::factory()->isSubclassOf($name, Model::class)) {
+                if (! Reflector::factory()->isSubclassOf($name, Model::class)) {
                     continue;
                 }
 
-                $model = ReflectedType::of($name);
+                $model = Reflector::of($name);
 
                 if ($model->not()->isAbstract()) {
                     $models[$path][$model->startLine()] = $name;
@@ -194,7 +194,7 @@ final class ModelConventions
      */
     private static function declaresFillable(string $class): bool
     {
-        foreach (ReflectedType::of($class)->lineage() as $declaration) {
+        foreach (Reflector::of($class)->lineage() as $declaration) {
             if (preg_match('/^(App|Domain|Tests)\\\\/', $declaration->name()) !== 1) {
                 continue;
             }

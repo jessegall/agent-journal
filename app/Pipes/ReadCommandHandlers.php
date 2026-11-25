@@ -22,7 +22,7 @@ use App\Support\CommandGrammar;
 use App\Support\CommandName;
 use App\Support\CommandOwner;
 use App\Support\DeclaredCommand;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
 
@@ -95,11 +95,11 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, 'its name does not end in Command');
         }
 
-        if (! ReflectedType::factory()->isSubclassOf($command, Command::class)) {
+        if (! Reflector::factory()->isSubclassOf($command, Command::class)) {
             throw CommandDeclarationInvalid::for($command, 'it is no class implementing Command');
         }
 
-        $declaration = ReflectedType::of($command);
+        $declaration = Reflector::of($command);
 
         if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
             throw CommandDeclarationInvalid::for($command, 'a command is a final readonly class');
@@ -130,7 +130,7 @@ final readonly class ReadCommandHandlers implements Pipe
 
         $handler = self::handlerNamedFor($command);
 
-        if (! ReflectedType::exists($handler)) {
+        if (! Reflector::exists($handler)) {
             throw CommandHandlerMissing::for($command, $handler);
         }
 

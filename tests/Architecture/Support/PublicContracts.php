@@ -8,7 +8,7 @@ use App\Support\Exports;
 use App\Support\LinkAccess;
 use App\Support\ReadBuilder;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
 use PhpParser\Node\Name;
@@ -93,7 +93,7 @@ final readonly class PublicContracts
             ];
         }
 
-        $class = ReflectedType::of($export);
+        $class = Reflector::of($export);
         $file = $class->fileName()->getOrElse('');
         $disallowedCategory = self::disallowedCategoryOf($class, $owner);
 
@@ -136,9 +136,9 @@ final readonly class PublicContracts
      * What makes an export unpublishable, or null for an interface, an enum, an immutable value without hidden state,
      * a Core trait, abstract base or Eloquent adapter, or an exception in the owner's own Exceptions folder.
      *
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private static function disallowedCategoryOf(ReflectedType $class, PublicOwner $owner): string|null
+    private static function disallowedCategoryOf(Reflector $class, PublicOwner $owner): string|null
     {
         if ($class->isInterface() || $class->isEnum()) {
             return null;
@@ -174,9 +174,9 @@ final readonly class PublicContracts
      * A final value whose own properties are all public and read-only or computed: a fact or a Data value, never a
      * service.
      *
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private static function isImmutableValue(ReflectedType $class): bool
+    private static function isImmutableValue(Reflector $class): bool
     {
         if (! $class->isFinal()) {
             return false;
@@ -197,10 +197,10 @@ final readonly class PublicContracts
     /**
      * Every class name the public members of a type and of its project parents show, with the member that shows it.
      *
-     * @param  ReflectedType<object>  $class
+     * @param  Reflector<object>  $class
      * @return list<PublicTypePath>
      */
-    private function signatureNamesOf(ReflectedType $class): array
+    private function signatureNamesOf(Reflector $class): array
     {
         $paths = [];
 
@@ -214,17 +214,17 @@ final readonly class PublicContracts
     /**
      * The type itself and the parents and interfaces it takes from the project; framework parents are not judged.
      *
-     * @param  ReflectedType<object>  $class
-     * @return list<ReflectedType<object>>
+     * @param  Reflector<object>  $class
+     * @return list<Reflector<object>>
      */
-    private function projectLineageOf(ReflectedType $class): array
+    private function projectLineageOf(Reflector $class): array
     {
         $parents = array_slice($class->lineage(), 1);
         $lineage = [
             $class,
             ...array_values(array_filter(
                 $parents,
-                fn (ReflectedType $parent) => $this->roots->startsWithProjectNamespace($parent->name()),
+                fn (Reflector $parent) => $this->roots->startsWithProjectNamespace($parent->name()),
             )),
         ];
 
@@ -399,6 +399,6 @@ final readonly class PublicContracts
      */
     private static function exists(string $name): bool
     {
-        return ReflectedType::exists($name);
+        return Reflector::exists($name);
     }
 }

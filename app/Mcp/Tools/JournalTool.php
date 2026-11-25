@@ -10,7 +10,7 @@ use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use BackedEnum;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
@@ -72,7 +72,7 @@ abstract class JournalTool extends Tool
      */
     final public function isVisibleTo(DiscoveryProfile $profile): bool
     {
-        foreach (ReflectedType::of($this)->lineage() as $type) {
+        foreach (Reflector::of($this)->lineage() as $type) {
             if ($type->hasAttribute(VisibleToProfiles::class)) {
                 return in_array($profile, $type->attribute(VisibleToProfiles::class)->profiles, true);
             }
@@ -86,7 +86,7 @@ abstract class JournalTool extends Tool
      */
     final public function writeDeclaration(): Option
     {
-        return ReflectedType::of($this)->attributes(Dispatches::class)->first();
+        return Reflector::of($this)->attributes(Dispatches::class)->first();
     }
 
     /**

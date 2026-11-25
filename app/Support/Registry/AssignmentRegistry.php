@@ -27,7 +27,7 @@ use App\Support\AutoAssignerDefinition;
 use App\Support\LinkTypeRegistry;
 use App\Support\PoolDefinition;
 use App\Support\RecordIdentity;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Registry;
 use Illuminate\Container\Container;
 
@@ -145,12 +145,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         RecordIdentity::assertKnownType($type);
         $this->requireOwner($owner);
 
-        if (! ReflectedType::factory()->isSubclassOf($providerClass, AssignableProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($providerClass, AssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
         if ($purpose === AssignmentPurpose::JournalAssigned
-            && ! ReflectedType::factory()->isSubclassOf($providerClass, JournalAssignableProvider::class)) {
+            && ! Reflector::factory()->isSubclassOf($providerClass, JournalAssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
@@ -179,11 +179,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AutoAssignmentDeclarationRefused::assignerOfAnotherOwner($type, $owner, $recordOwner);
         }
 
-        if (! ReflectedType::factory()->isSubclassOf($assignerClass, AutoAssigner::class)) {
+        if (! Reflector::factory()->isSubclassOf($assignerClass, AutoAssigner::class)) {
             throw AssignmentProviderInvalid::forAutoAssigner($type, $assignerClass);
         }
 
-        if (! ReflectedType::factory()->isSubclassOf($workProviderClass, AssignedWorkProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($workProviderClass, AssignedWorkProvider::class)) {
             throw AssignmentProviderInvalid::forAssignedWork($type, $workProviderClass);
         }
 
@@ -201,7 +201,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $this->requireOwner($owner);
 
-        if (! ReflectedType::factory()->isSubclassOf($pool->factoryClass, AssignmentPoolFactory::class)) {
+        if (! Reflector::factory()->isSubclassOf($pool->factoryClass, AssignmentPoolFactory::class)) {
             throw AssignmentProviderInvalid::forPoolFactory($pool->key, $pool->factoryClass);
         }
 
@@ -215,7 +215,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerAssignees(AssigneeDefinition $definition): void
     {
-        if (! ReflectedType::factory()->isSubclassOf($definition->providerClass, AssigneeProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->providerClass, AssigneeProvider::class)) {
             throw AssignmentProviderInvalid::forAssignees($definition->type, $definition->providerClass);
         }
 
@@ -230,7 +230,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $type = $definition->type;
 
-        if (! ReflectedType::factory()->isSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
             throw AssignmentProviderInvalid::forActivity($type, $definition->activityClass);
         }
 
@@ -364,7 +364,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         foreach ($this->recordProviders->keys() as $type) {
             $model = $links->modelFor($type);
 
-            if (! ReflectedType::factory()->isSubclassOf($model, Assignable::class)) {
+            if (! Reflector::factory()->isSubclassOf($model, Assignable::class)) {
                 throw AssignmentProviderInvalid::forModel($type, $model);
             }
         }
@@ -414,7 +414,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $built = Container::getInstance()->make($registeredClass);
 
-        if (! ReflectedType::of($contract)->isInstance($built)) {
+        if (! Reflector::of($contract)->isInstance($built)) {
             throw AssignmentProviderInvalid::forResolved($registeredClass, $built::class, $contract);
         }
 

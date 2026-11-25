@@ -7,7 +7,7 @@ namespace Tests\Unit\Hooks;
 use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Exceptions\TooManyTickCommands;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\StateCatalog\StateRegistration;
 use App\Support\StateLoading\RegisteredStateType;
 use App\Support\Ticks\ElapsedTime;
@@ -60,7 +60,7 @@ final class TickDeclarationsTest extends TestCase
         $fields = array_values(array_map(
             fn (ReflectedProperty $property) => $property->name(),
             array_filter(
-                ReflectedType::of($context)->properties(),
+                Reflector::of($context)->properties(),
                 fn (ReflectedProperty $property) => $property->isPublic(),
             ),
         ));

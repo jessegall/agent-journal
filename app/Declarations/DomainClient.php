@@ -22,7 +22,7 @@ use App\Exceptions\FolderClosed;
 use App\Exceptions\LinkLeavesPlace;
 use App\Exceptions\LinkLoop;
 use App\Support\CodeFiles;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Values\FilePath;
 use Illuminate\Support\Str;
 
@@ -212,7 +212,7 @@ final readonly class DomainClient
      */
     public function assertImplements(string $declaration, string $className, string $interface): void
     {
-        if (! ReflectedType::factory()->isSubclassOf($className, $interface)) {
+        if (! Reflector::factory()->isSubclassOf($className, $interface)) {
             throw ClientResolverInvalid::notA($declaration, $className, $interface);
         }
     }
@@ -231,8 +231,8 @@ final readonly class DomainClient
      */
     public function assertInvokableController(string $declaration, string $controller): void
     {
-        if (! $this->owns($controller) || ! ReflectedType::exists($controller)
-            || ! ReflectedType::of($controller)->hasMethod('__invoke')) {
+        if (! $this->owns($controller) || ! Reflector::exists($controller)
+            || ! Reflector::of($controller)->hasMethod('__invoke')) {
             throw ClientResolverInvalid::controllerNotOwned($declaration, $controller);
         }
     }

@@ -18,9 +18,9 @@ interface TypeReflections
      * @template T of object
      *
      * @param  class-string<T>|T  $type
-     * @return ReflectedType<T>
+     * @return Reflector<T>
      *
      * @throws ClassMissing
      */
-    public function of(string|object $type): ReflectedType;
+    public function of(string|object $type): Reflector;
 }

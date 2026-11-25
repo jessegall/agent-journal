@@ -7,7 +7,7 @@ namespace Tests\Support\Entries;
 use App\Http\Controllers\Web\PageController;
 use App\Support\ClientDeclarations;
 use App\Support\EnrolledHost;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\Web\DeclaredRouteKey;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -140,7 +140,7 @@ abstract class RouteEntryTestCase extends TestCase
 
     protected function entry(): TestsRoute
     {
-        return ReflectedType::of($this)->attribute(TestsRoute::class);
+        return Reflector::of($this)->attribute(TestsRoute::class);
     }
 
     /**

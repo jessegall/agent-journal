@@ -9,7 +9,7 @@ use Closure;
 use ReflectionClass;
 
 /**
- * The one ReflectedType per loaded type of this process, found by any spelling PHP accepts for that type: its name, an
+ * The one Reflector per loaded type of this process, found by any spelling PHP accepts for that type: its name, an
  * alias, a leading backslash or other letter case. It keeps no object it was given and remembers no missing name.
  */
 final class ReflectionCatalogue
@@ -17,9 +17,9 @@ final class ReflectionCatalogue
     private static self|null $current = null;
 
     /**
-     * Each ReflectedType by its type's canonical name.
+     * Each Reflector by its type's canonical name.
      *
-     * @var array<class-string, ReflectedType<object>>
+     * @var array<class-string, Reflector<object>>
      */
     private array $reflectors = [];
 
@@ -36,15 +36,15 @@ final class ReflectionCatalogue
     }
 
     /**
-     * The one ReflectedType of the type a spelling names, built by $build the first time the type is asked for.
+     * The one Reflector of the type a spelling names, built by $build the first time the type is asked for.
      *
      * @param  string  $name  any spelling PHP accepts for the type
-     * @param  Closure(class-string): ReflectedType<object>  $build
-     * @return ReflectedType<object> the ReflectedType of exactly the type $name names
+     * @param  Closure(class-string): Reflector<object>  $build
+     * @return Reflector<object> the Reflector of exactly the type $name names
      *
      * @throws ClassMissing
      */
-    public function reflector(string $name, Closure $build): ReflectedType
+    public function reflector(string $name, Closure $build): Reflector
     {
         $canonical = $this->canonicalNameOf($name);
 

@@ -13,7 +13,7 @@ use App\Enums\Web\PageDestination;
 use App\Enums\Web\PageSkeleton;
 use App\Enums\Web\WindowPlace;
 use App\Exceptions\InvalidPageDeclaration;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
@@ -80,7 +80,7 @@ final class Page
     {
         $result = (string) ResolverDataClass::of($resolver);
 
-        if ($result === '' || ! ReflectedType::factory()->isSubclassOf($result, PresentsLayout::class)) {
+        if ($result === '' || ! Reflector::factory()->isSubclassOf($result, PresentsLayout::class)) {
             throw InvalidPageDeclaration::readerReturnsNoLayout($key, $resolver);
         }
 

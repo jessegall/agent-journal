@@ -12,7 +12,7 @@ use App\Exceptions\ReadLimitInvalid;
 use App\Exceptions\ReadPolicyMissing;
 use App\Support\ReadLog;
 use App\Support\ReadMeter;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\SelfMeasuredCommands;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
@@ -69,7 +69,7 @@ final class ReadsServiceProvider extends ServiceProvider
             foreach (Relation::morphMap() as $linkType => $model) {
                 $isLinkable = in_array(Linkable::class, class_uses_recursive($model), true);
 
-                if ($isLinkable && ! ReflectedType::factory()->isSubclassOf($model, ReadableModel::class)) {
+                if ($isLinkable && ! Reflector::factory()->isSubclassOf($model, ReadableModel::class)) {
                     throw ReadPolicyMissing::for($model, $linkType);
                 }
             }

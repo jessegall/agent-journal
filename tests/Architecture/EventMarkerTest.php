@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Events\Event;
 use App\Contracts\Events\Listener;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\DomainFiles;
@@ -50,14 +50,14 @@ final class EventMarkerTest extends TestCase
         ) as $file) {
             $class = self::classIn($file);
 
-            $type = $class === null ? None::create() : ReflectedType::find($class);
+            $type = $class === null ? None::create() : Reflector::find($class);
 
-            if ($type->filter(fn (ReflectedType $found) => ! $found->isInterface())->isEmpty()) {
+            if ($type->filter(fn (Reflector $found) => ! $found->isInterface())->isEmpty()) {
                 continue;
             }
 
             $inFolder = preg_match($folder, $file) === 1;
-            $marked = $class !== null && ReflectedType::factory()->isSubclassOf($class, $marker);
+            $marked = $class !== null && Reflector::factory()->isSubclassOf($class, $marker);
 
             if ($inFolder && ! $marked) {
                 $unmarked[] = $class;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\ReadsDeclaredAttributes;
-use App\Contracts\Reflection\ReflectedType as ReflectedTypeContract;
+use App\Contracts\Reflection\Reflector as ReflectorContract;
 use App\Contracts\Reflection\ReflectorFactory;
 use App\Exceptions\ClassMissing;
 use App\Exceptions\MethodMissing;
@@ -28,9 +28,9 @@ use UnitEnum;
  *
  * @template-covariant T of object
  *
- * @implements ReflectedTypeContract<T>
+ * @implements ReflectorContract<T>
  */
-final class ReflectedType implements ReflectedTypeContract
+final class Reflector implements ReflectorContract
 {
     use ReadsDeclaredAttributes;
 
@@ -64,7 +64,7 @@ final class ReflectedType implements ReflectedTypeContract
     private array $allMethods;
 
     /**
-     * @var Option<ReflectedType<object>>
+     * @var Option<Reflector<object>>
      */
     private Option $parent;
 
@@ -97,7 +97,7 @@ final class ReflectedType implements ReflectedTypeContract
     }
 
     /**
-     * The one ReflectedType of the target's type in this process.
+     * The one Reflector of the target's type in this process.
      *
      * @template U of object
      *
@@ -112,7 +112,7 @@ final class ReflectedType implements ReflectedTypeContract
         $reflector = ReflectionCatalogue::current()->reflector($name, fn (string $canonical) => new self($canonical));
 
         /**
-         * The catalogue answers the ReflectedType of exactly the type the name names, which is U.
+         * The catalogue answers the Reflector of exactly the type the name names, which is U.
          *
          * @var self<U> $reflector
          */
@@ -131,7 +131,7 @@ final class ReflectedType implements ReflectedTypeContract
     }
 
     /**
-     * The ReflectedType of the type a name names; none when no autoloader can load it, and nothing is kept for such a
+     * The Reflector of the type a name names; none when no autoloader can load it, and nothing is kept for such a
      * name.
      *
      * @return Option<self<object>>
@@ -587,7 +587,7 @@ final class ReflectedType implements ReflectedTypeContract
     /**
      * The class it extends; none for a class that extends nothing, an interface, a trait or an enum.
      *
-     * @return Option<ReflectedType<object>>
+     * @return Option<Reflector<object>>
      */
     public function parent(): Option
     {
@@ -603,7 +603,7 @@ final class ReflectedType implements ReflectedTypeContract
     /**
      * This class and then each class it extends, nearest first, for a reader that walks the parents itself.
      *
-     * @return list<ReflectedType<object>>
+     * @return list<Reflector<object>>
      */
     public function lineage(): array
     {
@@ -630,7 +630,7 @@ final class ReflectedType implements ReflectedTypeContract
     /**
      * Every interface it implements, itself or through a parent or another interface.
      *
-     * @return list<ReflectedType<object>>
+     * @return list<Reflector<object>>
      */
     public function interfaces(): array
     {
@@ -640,7 +640,7 @@ final class ReflectedType implements ReflectedTypeContract
     /**
      * Every trait the class uses: its own, its parents' and those its traits use, each once.
      *
-     * @return list<ReflectedType<object>>
+     * @return list<Reflector<object>>
      */
     public function allTraits(): array
     {
@@ -662,7 +662,7 @@ final class ReflectedType implements ReflectedTypeContract
     /**
      * The traits the class itself uses, in the order it names them; not those of its parents or of other traits.
      *
-     * @return list<ReflectedType<object>>
+     * @return list<Reflector<object>>
      */
     public function traits(): array
     {

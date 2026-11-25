@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Closure;
 use PHPUnit\Framework\Assert;
 use Throwable;
@@ -63,7 +63,7 @@ trait AssertsResults
         try {
             $act();
         } catch (Throwable $failure) {
-            if (! ReflectedType::of($type)->isInstance($failure)) {
+            if (! Reflector::of($type)->isInstance($failure)) {
                 throw $failure;
             }
 

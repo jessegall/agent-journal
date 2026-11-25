@@ -8,7 +8,7 @@ use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Support\Attributes;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Routing\Route;
 
 /**
@@ -25,7 +25,7 @@ final readonly class DeclaredCommands
         // Laravel names an invokable controller's action by the controller itself.
         $action = $route->getActionMethod() === $controller ? '__invoke' : $route->getActionMethod();
 
-        return self::commandsOf(ReflectedType::of($controller)->method($action)->attributes(Dispatches::class));
+        return self::commandsOf(Reflector::of($controller)->method($action)->attributes(Dispatches::class));
     }
 
     /**
@@ -34,7 +34,7 @@ final readonly class DeclaredCommands
      */
     public static function ofTool(string $tool): array
     {
-        return self::commandsOf(ReflectedType::of($tool)->attributes(Dispatches::class));
+        return self::commandsOf(Reflector::of($tool)->attributes(Dispatches::class));
     }
 
     /**

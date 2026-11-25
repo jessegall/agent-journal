@@ -8,7 +8,7 @@ use App\Enums\Engine\TypeShape;
 use App\Exceptions\MethodMissing;
 use App\Exceptions\TypeNotNamed;
 use App\Support\ReflectedProperty;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Attributes\MemberMarker;
 use Tests\Fixtures\Reflection\Labelled;
@@ -18,7 +18,7 @@ use Tests\Fixtures\Reflection\Parcel;
 use Tests\Fixtures\Reflection\Stamps;
 
 /**
- * A ReflectedType's properties, methods and parameters answer as PHP declares them, each read once, with their own
+ * A Reflector's properties, methods and parameters answer as PHP declares them, each read once, with their own
  * attributes and their types written as PHP writes them.
  */
 final class ReflectedMembersTest extends TestCase
@@ -27,7 +27,7 @@ final class ReflectedMembersTest extends TestCase
 
     public function test_a_repeated_read_reuses_the_kept_descriptor(): void
     {
-        $reflector = ReflectedType::of(MemberParcel::class);
+        $reflector = Reflector::of(MemberParcel::class);
 
         $this->assertSame($reflector->method('weight'), $reflector->method('WEIGHT'));
         $this->assertSame($reflector->properties(), $reflector->properties());
@@ -37,7 +37,7 @@ final class ReflectedMembersTest extends TestCase
 
     public function test_a_property_and_a_method_of_one_name_keep_their_own_markers(): void
     {
-        $reflector = ReflectedType::of(MemberParcel::class);
+        $reflector = Reflector::of(MemberParcel::class);
         $property = self::propertyNamed($reflector->properties(), 'weight');
 
         $this->assertSame('property', $property->attribute(MemberMarker::class)->label);
@@ -50,18 +50,18 @@ final class ReflectedMembersTest extends TestCase
 
     public function test_an_inherited_and_an_overridden_method_each_give_their_own_declarations(): void
     {
-        $child = ReflectedType::of(MemberParcelChild::class);
+        $child = Reflector::of(MemberParcelChild::class);
 
         $this->assertSame('inherited', $child->method('inherited')->attribute(MemberMarker::class)->label);
         $this->assertSame(MemberParcel::class, $child->method('inherited')->declaringClass()->name());
         $this->assertSame('child', $child->method('overridden')->attribute(MemberMarker::class)->label);
         $this->assertSame(MemberParcelChild::class, $child->method('overridden')->declaringClass()->name());
-        $this->assertSame('parent', ReflectedType::of(MemberParcel::class)->method('overridden')->attribute(MemberMarker::class)->label);
+        $this->assertSame('parent', Reflector::of(MemberParcel::class)->method('overridden')->attribute(MemberMarker::class)->label);
     }
 
     public function test_types_are_described_as_php_writes_them(): void
     {
-        $reflector = ReflectedType::of(MemberParcel::class);
+        $reflector = Reflector::of(MemberParcel::class);
         $weight = $reflector->method('weight');
         $grams = $weight->parameters()[0]->type()->get();
         $parcel = $weight->parameters()[1]->type()->get();
@@ -93,7 +93,7 @@ final class ReflectedMembersTest extends TestCase
         $this->expectException(MethodMissing::class);
         $this->expectExceptionMessage(MethodMissing::on(MemberParcel::class, 'absent')->getMessage());
 
-        ReflectedType::of(MemberParcel::class)->method('absent');
+        Reflector::of(MemberParcel::class)->method('absent');
     }
 
     /**

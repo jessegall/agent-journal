@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Support\Domain;
 use App\Support\DomainEntry;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -34,7 +34,7 @@ final readonly class DeclarationRules
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                $declaration = ReflectedType::exists($name) ? ReflectedType::of($name) : null;
+                $declaration = Reflector::exists($name) ? Reflector::of($name) : null;
 
                 if ($declaration === null || ! $declaration->isSubclassOf(Domain::class) || $declaration->isAbstract()) {
                     continue;

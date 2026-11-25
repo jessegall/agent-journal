@@ -10,7 +10,7 @@ use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RequiresRequestKey;
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Support\CommandRegistry;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use App\Support\RegisteredMiddleware;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\TypesDeclared;
@@ -68,7 +68,7 @@ final class CommandFolderTest extends TestCase
         $misplaced = [];
 
         foreach ($this->allClasses() as $class) {
-            $declaration = ReflectedType::of($class);
+            $declaration = Reflector::of($class);
 
             foreach ([
                 RepeatableRead::class,
@@ -90,7 +90,7 @@ final class CommandFolderTest extends TestCase
         $static = [];
 
         foreach ([...array_values($this->app->make(CommandRegistry::class)->handlerMap()), ...$this->classesIn('CommandMiddleware')] as $class) {
-            foreach (ReflectedType::of($class)->properties() as $property) {
+            foreach (Reflector::of($class)->properties() as $property) {
                 if ($property->isStatic()) {
                     $static[] = "{$class}::\${$property->name()}";
                 }
@@ -160,7 +160,7 @@ final class CommandFolderTest extends TestCase
         ) as $declaration) {
             $name = $declaration['name'];
 
-            if (ReflectedType::exists($name) && ReflectedType::of($name)->not()->isTrait()) {
+            if (Reflector::exists($name) && Reflector::of($name)->not()->isTrait()) {
                 $classes[] = $name;
             }
         }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Attributes\States\StateType;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
@@ -23,7 +23,7 @@ final class StateTypeKeyTest extends TestCase
         $misnamed = [];
 
         foreach ($this->stateClasses() as $class) {
-            $key = ReflectedType::of($class)->attribute(StateType::class)->key;
+            $key = Reflector::of($class)->attribute(StateType::class)->key;
             $owner = self::ownerKeyOf($class);
 
             if (! str_starts_with($key, "{$owner}.")) {
@@ -43,7 +43,7 @@ final class StateTypeKeyTest extends TestCase
         $later = [];
 
         foreach ($this->stateClasses() as $class) {
-            $version = ReflectedType::of($class)->attribute(StateType::class)->schemaVersion;
+            $version = Reflector::of($class)->attribute(StateType::class)->schemaVersion;
 
             if ($version !== 1) {
                 $later[] = "{$class} declares schema version {$version}";
@@ -88,7 +88,7 @@ final class StateTypeKeyTest extends TestCase
 
             $class = "{$namespace[1]}\\{$file->getFilenameWithoutExtension()}";
 
-            if (ReflectedType::exists($class) && ReflectedType::of($class)->hasAttribute(StateType::class)) {
+            if (Reflector::exists($class) && Reflector::of($class)->hasAttribute(StateType::class)) {
                 $classes[] = $class;
             }
         }

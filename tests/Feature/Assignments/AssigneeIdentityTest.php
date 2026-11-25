@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignee;
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;
 use Tests\TestCase;
@@ -26,6 +26,6 @@ final class AssigneeIdentityTest extends TestCase
 
     public function test_an_assignee_is_not_an_actor_by_contract(): void
     {
-        $this->assertFalse(ReflectedType::of(Assignee::class)->implements(Actor::class));
+        $this->assertFalse(Reflector::of(Assignee::class)->implements(Actor::class));
     }
 }
