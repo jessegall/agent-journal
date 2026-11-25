@@ -157,7 +157,6 @@ final class EventPayloads
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
-                    'authorizedSource' => '?App\Support\RecordIdentity',
                 ],
             ],
             StartAccepted::class => [
@@ -165,7 +164,6 @@ final class EventPayloads
                     'requestId' => 'string',
                     'agentId' => 'string',
                     'sessionId' => 'string',
-                    'authorizedSource' => '?App\Support\RecordIdentity',
                     'parentAgentId' => '?string',
                 ],
             ],

@@ -43,12 +43,11 @@ final readonly class StartSessions
         string $requestId,
         AgentSession|null $parent = null,
         RuntimeIntent|null $intent = null,
-        RecordIdentity|null $authorizedSource = null,
     ): StartedAgent {
         $settings = $this->settingsFor($selection);
 
         return $this->transaction->run(
-            fn () => $this->open($agent, $selection, $requestId, $parent, $settings, $intent, $authorizedSource),
+            fn () => $this->open($agent, $selection, $requestId, $parent, $settings, $intent),
         );
     }
 
@@ -62,18 +61,9 @@ final readonly class StartSessions
         SelectedDriver $selection,
         string $requestId,
         AgentSession|null $parent = null,
-        RecordIdentity|null $authorizedSource = null,
         RuntimeIntent|null $intent = null,
     ): StartedAgent {
-        return $this->open(
-            $agent,
-            $selection,
-            $requestId,
-            $parent,
-            $this->settingsFor($selection),
-            $intent,
-            $authorizedSource,
-        );
+        return $this->open($agent, $selection, $requestId, $parent, $this->settingsFor($selection), $intent);
     }
 
     /**
@@ -102,7 +92,6 @@ final readonly class StartSessions
         AgentSession|null $parent,
         IsolatedHookSettings $settings,
         RuntimeIntent|null $intent,
-        RecordIdentity|null $authorizedSource,
     ): StartedAgent {
         $session = $this->sessions->start($agent, $selection, $requestId, $parent);
         $token = $this->credentials->issue($session);
@@ -115,7 +104,7 @@ final readonly class StartSessions
             $session->keepDriverLabel($runtime->driver_label);
         }
 
-        $this->facts->publishAfterCommit(new SessionOpened($agent->id, $session->id, $authorizedSource));
+        $this->facts->publishAfterCommit(new SessionOpened($agent->id, $session->id));
         $this->facts->runTransactionListeners();
 
         return new StartedAgent(

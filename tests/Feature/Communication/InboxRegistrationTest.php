@@ -36,7 +36,7 @@ final class InboxRegistrationTest extends TestCase
 
         $inbox = $this->app->make(InboxResolver::class)->resolve($record->id);
 
-        $this->assertSame([$record->id, 'Team '.TestIds::of(2)], [$inbox->inboxId(), $inbox->inboxLabel()]);
+        $this->assertSame($record->id, $inbox->inboxId());
     }
 
     public function test_a_provider_key_registered_twice_is_refused(): void

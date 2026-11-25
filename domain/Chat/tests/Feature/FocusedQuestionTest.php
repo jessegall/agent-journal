@@ -11,6 +11,7 @@ use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Desks\DeskRecord;
 use App\Models\Messages\Message;
+use App\Models\Notifications\NotificationOccurrence;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Resolvers\QuestionNotificationTarget;
@@ -166,6 +167,9 @@ final class FocusedQuestionTest extends TestCase
 
         $key = QuestionNotificationTarget::occurrenceKey($messageId);
 
-        return NotificationReceipt::findForOccurrence($scope->id, $key)->get();
+        return NotificationReceipt::query()
+            ->inScope($scope->id)
+            ->ofOccurrences(NotificationOccurrence::query()->keyed($key))
+            ->sole();
     }
 }

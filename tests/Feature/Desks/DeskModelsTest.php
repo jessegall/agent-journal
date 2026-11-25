@@ -8,9 +8,9 @@ use App\Contracts\Inboxes\InboxResolver;
 use App\Exceptions\DeskSeatCountInvalid;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\Agent;
-use App\Models\Inboxes\Inbox;
 use App\Models\Desks\DeskRecord;
 use App\Models\Desks\DeskSeat;
+use App\Models\Inboxes\Inbox;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\DeskInboxAccess;
@@ -33,7 +33,7 @@ final class DeskModelsTest extends TestCase
         $this->assertSame([1, 2, 3], DeskSeat::query()->ofDesk($desk)->orderBy('number')->pluck('number')->all());
         $this->assertSame(1, Inbox::query()->count());
         $this->assertSame($desk->id, $this->app->make(InboxResolver::class)->resolve($desk->inboxId())->deskId());
-        $this->assertSame('Team', $desk->inboxLabel());
+        $this->assertSame('Team', $desk->label);
         $this->assertTrue($desk->assigneeIdentity()->isSameAs(new AssigneeIdentity('desk', $desk->id)));
     }
 

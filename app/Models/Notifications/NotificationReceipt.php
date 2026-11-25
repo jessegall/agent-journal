@@ -271,21 +271,6 @@ final class NotificationReceipt extends Model implements EventSource, ReadableMo
         return Option::fromValue($receipt);
     }
 
-    /**
-     * The scope's receipt of the occurrence with this key, when the scope holds one.
-     *
-     * @return Option<self>
-     */
-    public static function findForOccurrence(string $scopeId, string $occurrenceKey): Option
-    {
-        $receipt = self::query()
-            ->inScope($scopeId)
-            ->ofOccurrences(NotificationOccurrence::query()->keyed($occurrenceKey))
-            ->first();
-
-        return Option::fromValue($receipt);
-    }
-
     // ----------[ Scopes ]----------
 
     /**

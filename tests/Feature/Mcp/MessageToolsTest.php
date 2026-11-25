@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Models\Agents\AgentSession;
 use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
 use Tests\Fixtures\Agents\TestStart;
@@ -53,7 +52,6 @@ final class MessageToolsTest extends MessagingTestCase
             'uri' => "journal://v1/messages/{$question}?view=context",
         ])->assertOk()->json('result.contents.0.text');
         $this->assertSame($read['body'], json_decode($resource, true, flags: JSON_THROW_ON_ERROR)['body']);
-        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
         $this->assertNull(Message::query()->acrossInboxes()->findOrFail($question)->read_at);
     }
 
@@ -67,7 +65,6 @@ final class MessageToolsTest extends MessagingTestCase
             ->assertJsonPath('result.structuredContent.message_id', $question);
         $this->signed($caller, '/agent/communication/select', $select)->assertOk()
             ->assertJsonPath('message_id', $question);
-        $this->assertSame($question, AgentSession::selectedMessage($caller->session->id));
 
         $arguments = ['message_id' => $question, 'body' => 'Port 8080.', 'request_key' => 'reply-question'];
         $reply = $this->callMcpTool($caller, 'messages_reply', $arguments)

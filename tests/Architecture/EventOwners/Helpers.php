@@ -10,7 +10,6 @@ use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
 use Domain\Helpers\Events\HelperJobReopenedForAttempt;
-use Domain\Helpers\Events\HelperJobReopenedForRepair;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Events\HelperNoticeDelivered;
 use Domain\Helpers\Events\ReportJobLinked;
@@ -49,13 +48,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HelperJobReopenedForAttempt('job'),
-    ],
-    HelperJobReopenedForRepair::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'HelperJob::reopenForRepair',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new HelperJobReopenedForRepair('job', 'findings'),
     ],
     HelperJobAttached::class => [
         'role' => EventRole::RowFact,

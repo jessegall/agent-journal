@@ -131,7 +131,6 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->selection,
             $request->requestId,
             $parent,
-            $request->authorizedSource,
             $this->hostRuntimeOf($request),
         );
 
@@ -146,7 +145,6 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->requestId,
             $request->agentId,
             $started->session->id,
-            $request->authorizedSource,
             $parent?->agent_id,
         ));
 

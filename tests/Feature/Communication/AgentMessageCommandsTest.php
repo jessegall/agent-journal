@@ -7,12 +7,10 @@ namespace Tests\Feature\Communication;
 use App\Commands\Messages\AnswerMessage\AnswerMessageCommand;
 use App\Commands\Messages\DismissMessage\DismissMessageCommand;
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
-use App\Commands\Messages\SelectMessage\SelectMessageCommand;
 use App\Contracts\Inboxes\InboxResolver;
 use App\Enums\Messages\MessageState;
 use App\Events\Messages\MessageAnswered;
 use App\Exceptions\MessageMissing;
-use App\Models\Agents\AgentSession;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Messages\Message;
 use App\Support\AcceptedOperation;
@@ -36,20 +34,6 @@ final class AgentMessageCommandsTest extends MessagingTestCase
     private const string RELEASE_QUESTION = 'Which release should I prepare?';
 
     private const string DISMISSAL = 'Already decided.';
-
-    public function test_select_changes_only_the_callers_selection_and_hides_other_messages(): void
-    {
-        $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Choose this request.');
-        $this->asAgent($this->builder);
-        $this->assertSame($question, $this->runOnBus(new SelectMessageCommand($question)));
-
-        $this->asAgent($this->reviewer);
-        $this->assertThrows(fn () => $this->runOnBus(new SelectMessageCommand($question)), MessageMissing::class);
-        $this->assertSame($question, AgentSession::selectedMessage($this->builder->id));
-        $this->assertNull(AgentSession::selectedMessage($this->reviewer->id));
-        $this->assertNull($this->stored($question)->read_at);
-        $this->assertSame(MessageState::WaitingForAnswer, $this->stored($question)->state);
-    }
 
     public function test_a_keyed_reply_preserves_the_author_session_and_sends_only_once(): void
     {

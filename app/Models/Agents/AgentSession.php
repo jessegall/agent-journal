@@ -64,8 +64,6 @@ use Illuminate\Support\Carbon;
  * @property string $start_request_id
  * @property ?string $skill_generation_id
  * @property ?string $current_conversation_id
- * @property ?string $selected_message_id
- * @property ?string $job_source_message_id
  * @property SessionStatus $status
  * @property ?CarbonImmutable $ended_at
  * @property ?CarbonImmutable $last_heartbeat_at
@@ -322,24 +320,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    public static function selectedMessage(string $sessionId): string|null
-    {
-        return self::query()->whereKey($sessionId)->value('selected_message_id');
-    }
-
-    public static function jobSourceMessage(string $sessionId): string|null
-    {
-        return self::jobSourceMessageIds($sessionId)->value('job_source_message_id');
-    }
-
-    /**
-     * @return Builder<self>
-     */
-    public static function jobSourceMessageIds(string $sessionId): Builder
-    {
-        return self::query()->whereKey($sessionId)->select('job_source_message_id');
-    }
 
     /**
      * Whether the session still runs and acts for this agent: it is one of the agent's own sessions, or a child the
@@ -812,10 +792,6 @@ final class AgentSession extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withoutJobSource(Builder $query): void
-    {
-        $query->whereNull('job_source_message_id');
-    }
 
     /**
      * The session whose start token hashes to the given hash.

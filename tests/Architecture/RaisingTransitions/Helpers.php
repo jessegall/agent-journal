@@ -10,7 +10,6 @@ return [
     'HelperIdentity::designate',
     'HelperIdentity::releaseDesignation',
     'HelperJob::reopenForAttempt',
-    'HelperJob::reopenForRepair',
     'HelperJob::attachTo',
     'HelperJob::addSteering',
     'HelperJob::finish',

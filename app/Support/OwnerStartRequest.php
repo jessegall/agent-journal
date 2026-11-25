@@ -39,7 +39,6 @@ final readonly class OwnerStartRequest
     public function startRequest(
         string|null $parentSessionId,
         DriverType $driverType,
-        RecordIdentity|null $authorizedSource = null,
     ): StartRequest {
         return new StartRequest(
             $this->requestId,
@@ -52,7 +51,6 @@ final readonly class OwnerStartRequest
             $parentSessionId,
             $this->policy,
             $driverType,
-            authorizedSource: $authorizedSource,
             conversationTarget: $this->conversationMode === ConversationModeType::Resume
                 ? DriverConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->driver)
                 : null,

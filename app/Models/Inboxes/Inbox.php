@@ -155,11 +155,6 @@ final class Inbox extends Model implements Assignee, EventSource, LabeledInbox, 
         return $this->id;
     }
 
-    public function inboxLabel(): string
-    {
-        return $this->label;
-    }
-
     public function assigneeIdentity(): AssigneeIdentity
     {
         return new AssigneeIdentity(self::ASSIGNEE_TYPE, $this->id);

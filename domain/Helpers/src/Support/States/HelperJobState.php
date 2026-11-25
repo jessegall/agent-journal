@@ -16,7 +16,6 @@ use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
-use Domain\Helpers\Events\HelperJobReopenedForRepair;
 use Domain\Helpers\Events\HelperJobSteered;
 use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 
@@ -82,11 +81,6 @@ final class HelperJobState extends AgentState
     public function onHelperJobSteered(HelperJobSteered $event): void
     {
         $this->addSteeringFor($event->jobId, $event->steering);
-    }
-
-    public function onHelperJobReopenedForRepair(HelperJobReopenedForRepair $event): void
-    {
-        $this->addSteeringFor($event->jobId, $event->findings);
     }
 
     public function onHelperJobHeld(HelperJobHeld $event): void

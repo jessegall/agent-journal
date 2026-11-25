@@ -15,8 +15,4 @@ final readonly class TeamInbox implements LabeledInbox
         return $this->id;
     }
 
-    public function inboxLabel(): string
-    {
-        return $this->label;
-    }
 }

@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Feature;
 
 use App\Commands\Messages\ReplyToMessage\ReplyToMessageCommand;
-use App\Contracts\Bus\RequestSource;
 use App\Contracts\Chat\AgentMessageReader;
 use App\Enums\Agents\AgentInboxState;
 use App\Enums\CommandRules\ReadView;
 use App\Exceptions\MessageMissing;
-use App\Models\Agents\Agent;
-use App\Models\Agents\AgentSession;
-use App\Models\Messages\Message;
 use App\Support\ActorIdentity;
-use App\Support\StartSessions;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsKeyedCommands;
@@ -62,7 +56,6 @@ final class AgentInboxTest extends TestCase
             'conversation_id',
         ]));
 
-        $this->assertTrue(Schema::hasColumn('agent_sessions', 'selected_message_id'));
         $this->assertTrue(Schema::hasColumn('agent_sessions', 'job_source_message_id'));
     }
 
@@ -88,7 +81,6 @@ final class AgentInboxTest extends TestCase
             ->assertJsonPath('result.structuredContent.sections.messages.counts.unread', 1)
             ->assertJsonPath('result.structuredContent.sections.messages.counts.pending', 1);
 
-        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
         $this->assertNull($own->refresh()->read_at);
     }
 
@@ -112,41 +104,5 @@ final class AgentInboxTest extends TestCase
         $ancestor = $reader->context($replyId, $reply->continuation);
 
         $this->assertSame($question->id, $ancestor->message->id);
-        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
-    }
-
-    public function test_a_start_keeps_the_source_it_captured_when_the_parent_selects_another_message(): void
-    {
-        $parent = TestStart::start();
-        $actor = ActorIdentity::of($parent->agent);
-        $first = $this->askInboxOf($actor, 'The start source.');
-        $second = $this->askInboxOf($actor, 'An unrelated next request.');
-        $parent->startRequest($this->app);
-        $this->selectMessage($parent->session->id, $first->id);
-        $source = $this->app->make(RequestSource::class)->selectedSource();
-        $child = Agent::create('Child', 'writing-helper');
-
-        $started = $this->app->make(StartSessions::class)->start(
-            $child,
-            TestSelections::of(),
-            TestSelections::requestId(),
-            $parent->session,
-            authorizedSource: $source,
-        );
-
-        $this->selectMessage($parent->session->id, $second->id);
-
-        $this->assertSame($first->id, AgentSession::jobSourceMessage($started->session->id));
-
-        $this->startRequestAs($child->id, $started->session->id);
-        $reader = $this->app->make(AgentMessageReader::class);
-        $this->assertTrue($reader->message($first->id, ReadView::Summary)->message->isJobSource);
-        $this->assertFalse($reader->message($first->id, ReadView::Summary)->message->isSelected);
-        $this->assertThrows(fn () => Message::visibleById($second->id), MessageMissing::class);
-    }
-
-    private function selectMessage(string $sessionId, string $messageId): void
-    {
-        AgentSession::query()->whereKey($sessionId)->update(['selected_message_id' => $messageId]);
     }
 }
