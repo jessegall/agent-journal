@@ -7,7 +7,7 @@ declare(strict_types=1);
  * variable, with whether it names an action, a question or a thing (name-grammar.php).
  */
 
-use App\Support\ReflectedType;
+use App\Support\Reflector;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -291,11 +291,11 @@ function parentsOf(ClassLike $type): array
 function overridesVendor(string $method, array $parents): bool
 {
     foreach ($parents as $parent) {
-        if (! ReflectedType::exists($parent)) {
+        if (! Reflector::exists($parent)) {
             continue;
         }
 
-        $type = ReflectedType::of($parent);
+        $type = Reflector::of($parent);
 
         if (! $type->hasMethod($method)) {
             continue;
