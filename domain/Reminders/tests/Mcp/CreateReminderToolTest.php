@@ -8,7 +8,6 @@ use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Mcp\Tools\CreateReminderTool;
 use Domain\Reminders\RemindersDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -31,8 +30,15 @@ final class CreateReminderToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
 
         return ToolCall::by($start)
-            ->arguments(['title' => 'Check the run', 'due_at' => '2026-12-01T09:00:00+00:00', 'request_key' => 'write-1'])
-            ->reply(CreateReminderCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(CreateReminderCommand::class, ['title' => 'Check the run', 'dueAt' => '2026-12-01T09:00:00+00:00']));
+            ->arguments([
+                'title' => 'Check the run',
+                'due_at' => '2026-12-01T09:00:00+00:00',
+                'request_key' => 'write-1',
+            ])
+            ->reply(CreateReminderCommand::class, Str::ulid())
+            ->expects(CreateReminderCommand::class, [
+                'title' => 'Check the run',
+                'dueAt' => '2026-12-01T09:00:00+00:00',
+            ]);
     }
 }

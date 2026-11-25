@@ -25,7 +25,6 @@ use App\Models\Sessions\SessionOutcomeDismissal;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Policies\AgentPolicy;
-use App\Support\ActorReference;
 use App\Support\AgentFacts;
 use App\Support\AgentInspection;
 use App\Support\AgentOption;
@@ -188,7 +187,7 @@ final readonly class AgentDirectory implements AgentDirectoryContract, AgentProj
         ));
 
         $dismissed = SessionOutcomeDismissal::resolveDismissedKeysOf(
-            ActorReference::of($this->actors->actor()),
+            $this->actors->actor(),
             array_values($startOutcomes->map(fn (SessionStartOutcome $start) => $start->requestId)->all()),
         );
 

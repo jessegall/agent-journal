@@ -43,6 +43,24 @@ final class HelperFixturesTest extends TestCase
         $this->assertNotSame($review->request_id, $trace->request_id);
     }
 
+    public function test_a_job_receipt_names_the_job_and_its_identity(): void
+    {
+        $receipt = $this->helpers->receiptOf('Review');
+
+        $this->assertSame(
+            [
+                $this->helpers->jobCalled('Review')->id,
+                $this->helpers->identityOf('Review')->id,
+                false,
+            ],
+            [
+                $receipt->jobId,
+                $receipt->identityId,
+                $receipt->isNewJob,
+            ],
+        );
+    }
+
     public function test_steering_reaches_the_job_it_was_sent_to(): void
     {
         $identity = $this->helpers->identityOf('Trace')->id;

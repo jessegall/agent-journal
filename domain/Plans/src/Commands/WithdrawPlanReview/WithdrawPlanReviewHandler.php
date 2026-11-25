@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\WithdrawPlanReview;
 
-use App\Support\ActorReference;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Exceptions\PlanReviewRefused;
@@ -27,7 +26,7 @@ final readonly class WithdrawPlanReviewHandler extends PlanCommandHandler
             throw PlanReviewRefused::notReviewing($plan->number, $plan->status->value);
         }
 
-        $edition->withdraw(ActorReference::of($command->dispatchedBy()));
+        $edition->withdraw($command->dispatchedBy());
         $plan->withdrawReview($edition->id);
     }
 }

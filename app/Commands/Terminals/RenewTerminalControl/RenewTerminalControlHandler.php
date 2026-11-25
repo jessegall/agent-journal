@@ -6,7 +6,6 @@ namespace App\Commands\Terminals\RenewTerminalControl;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorReference;
 use App\Support\TerminalControls;
 
 final readonly class RenewTerminalControlHandler implements CommandHandler
@@ -18,7 +17,7 @@ final readonly class RenewTerminalControlHandler implements CommandHandler
 
     public function handle(RenewTerminalControlCommand $command): string
     {
-        $writer = ActorReference::of($command->dispatchedBy());
+        $writer = $command->dispatchedBy();
 
         return $this->controls->renew($command->agentId, $writer, $command->grantId, $this->clock->now());
     }

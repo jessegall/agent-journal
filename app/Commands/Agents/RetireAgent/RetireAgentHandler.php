@@ -52,7 +52,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         // The exclusive lifecycle lock comes first, so a start of the same agent waits or is retried as a whole.
         $target = $this->lifecycle->lockExclusive($command->agentId);
-        $caller = ActorReference::of($command->dispatchedBy());
+        $caller = $command->dispatchedBy();
         $this->assertRetirable($caller, $target);
 
         if ($target->isRetired()) {

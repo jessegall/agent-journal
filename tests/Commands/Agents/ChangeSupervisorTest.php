@@ -28,7 +28,7 @@ final class ChangeSupervisorTest extends TestCase
     {
         $this->activate((array) config('profiles'));
         $agent = $this->journal->idleAgent('Worker', 'journal-worker')->agentCalled('Worker');
-        $actor = ActorReference::of(ActorReference::forAgent($agent->id));
+        $actor = ActorReference::forAgent($agent->id);
         $question = AskTypeKey::of('question');
         $receipt = $this->app->make(CommandBus::class)->run(
             new ChangeSupervisorCommand($actor, SupervisorTarget::parse('profile:journal-main'), 0, $question),

@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Mcp\Tools\MessageReadTool;
 use App\Support\ShownMessage;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -28,6 +27,6 @@ final class MessageReadToolTest extends McpToolEntryTestCase
         return ToolCall::by($start)
             ->arguments(['message_id' => $message->id, 'request_key' => 'read-1'])
             ->reply(ReadMessageCommand::class, ShownMessage::of($message))
-            ->expects(ExpectedCommand::of(ReadMessageCommand::class, ['messageId' => $message->id]));
+            ->expects(ReadMessageCommand::class, ['messageId' => $message->id]);
     }
 }

@@ -12,7 +12,6 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;
-use App\Support\ActorReference;
 use App\Support\ReaderProofCheck;
 
 /**
@@ -48,7 +47,7 @@ final readonly class ProveReaderHandler implements CommandHandler
         }
 
         $branches = $this->check->prove($request, $reader, $declaration->payload->contracts[0], $command->runIds);
-        $proof = ReaderProof::create($reader, $declaration, $branches, ActorReference::of($command->dispatchedBy()));
+        $proof = ReaderProof::create($reader, $declaration, $branches, $command->dispatchedBy());
         $request->prove();
 
         return $proof->id;

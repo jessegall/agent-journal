@@ -11,7 +11,6 @@ use Domain\Chat\Mcp\Tools\DockRemoveTool;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Values\DockResult;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -43,9 +42,9 @@ final class DockRemoveToolTest extends McpToolEntryTestCase
                 'request_key' => 'dock-remove-1',
             ])
             ->reply(UndockSourceCommand::class, DockResult::of(DockOutcome::Removed, $placement))
-            ->expects(ExpectedCommand::of(UndockSourceCommand::class, [
+            ->expects(UndockSourceCommand::class, [
                 'placementId' => $placement,
                 'type' => 'tasks.task',
-            ]));
+            ]);
     }
 }

@@ -42,7 +42,7 @@ final readonly class EnvironmentAccess
             $user,
             $environmentId,
             $permissions,
-            ActorReference::of($this->actors->actor()),
+            $this->actors->actor(),
             $now,
         );
     }

@@ -9,7 +9,6 @@ use Domain\Tasks\Mcp\Tools\LogTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -34,8 +33,17 @@ final class LogTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'run_number' => 1, 'text' => 'Wired the route.', 'request_key' => 'tasks-1'])
-            ->reply(LogTaskRunCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(LogTaskRunCommand::class, ['taskId' => $task->id, 'runNumber' => 1, 'text' => 'Wired the route.']));
+            ->arguments([
+                'task_id' => $task->id,
+                'run_number' => 1,
+                'text' => 'Wired the route.',
+                'request_key' => 'tasks-1',
+            ])
+            ->reply(LogTaskRunCommand::class, Str::ulid())
+            ->expects(LogTaskRunCommand::class, [
+                'taskId' => $task->id,
+                'runNumber' => 1,
+                'text' => 'Wired the route.',
+            ]);
     }
 }

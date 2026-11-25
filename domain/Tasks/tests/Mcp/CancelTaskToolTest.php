@@ -8,7 +8,6 @@ use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Mcp\Tools\CancelTaskTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -33,7 +32,14 @@ final class CancelTaskToolTest extends McpToolEntryTestCase
         $task = $tasks->taskCalled('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['task_id' => $task->id, 'reason' => 'Not needed.', 'request_key' => 'tasks-1'])
-            ->expects(ExpectedCommand::of(CancelTaskCommand::class, ['taskId' => $task->id, 'reason' => 'Not needed.']));
+            ->arguments([
+                'task_id' => $task->id,
+                'reason' => 'Not needed.',
+                'request_key' => 'tasks-1',
+            ])
+            ->expects(CancelTaskCommand::class, [
+                'taskId' => $task->id,
+                'reason' => 'Not needed.',
+            ]);
     }
 }

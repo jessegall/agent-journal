@@ -6,7 +6,6 @@ namespace Tests\Feature\Seeding;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Models\Agents\Agent;
-use App\Support\ActorReference;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Fixtures\Seeding\ReviewerJoins;
@@ -142,7 +141,7 @@ final class JournalScenariosTest extends TestCase
     {
         $this->assertEquals(
             $this->journal->actorCalled($name),
-            ActorReference::of($this->app->make(CurrentActor::class)->actor()),
+            $this->app->make(CurrentActor::class)->actor(),
         );
     }
 }

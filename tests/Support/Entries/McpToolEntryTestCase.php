@@ -72,7 +72,7 @@ abstract class McpToolEntryTestCase extends TestCase
 
         $this->assertTrue(
             $answer->json('error') !== null || $answer->json('result.isError') === true,
-            "{$this->toolName()} answered a start of {$profile?->value}, which does not see it.",
+            "{$this->toolName()} answered a start of {$profile->value}, which does not see it.",
         );
         $this->journal->assertNothingDispatched();
     }

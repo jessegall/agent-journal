@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
 use App\Mcp\Tools\CommandRequestProveTool;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -30,11 +29,11 @@ final class CommandRequestProveToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['request' => $request, 'reader_revision' => 'reader-1', 'runs' => [$run], 'request_key' => 'prove-1'])
-            ->reply(ProveReaderCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(ProveReaderCommand::class, [
+            ->reply(ProveReaderCommand::class, Str::ulid())
+            ->expects(ProveReaderCommand::class, [
                 'commandRequestId' => $request,
                 'readerRevisionId' => 'reader-1',
                 'runIds' => [$run],
-            ]));
+            ]);
     }
 }

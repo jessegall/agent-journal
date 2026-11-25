@@ -10,7 +10,6 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Engine\RefusalCode;
-use App\Support\ActorReference;
 use App\Support\TerminalControls;
 use App\Support\TerminalViewCloser;
 use Closure;
@@ -48,7 +47,7 @@ final readonly class TerminalAnswers
     public function control(Command $command): JsonResponse|Response
     {
         return $this->answer(fn () => $this->controls->answerFor(
-            ActorReference::of($this->actors->actor()),
+            $this->actors->actor(),
             $this->commands->run($command),
             $this->clock->now(),
         ));
@@ -62,7 +61,7 @@ final readonly class TerminalAnswers
     public function interest(Command $command): JsonResponse|Response
     {
         return $this->answer(fn () => $this->views->answerFor(
-            ActorReference::of($this->actors->actor()),
+            $this->actors->actor(),
             $this->commands->run($command),
             $this->clock->now(),
         ));

@@ -6,7 +6,6 @@ namespace Tests\Mcp;
 
 use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
 use App\Mcp\Tools\CommandTypeProposeTool;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -31,9 +30,9 @@ final class CommandTypeProposeToolTest extends McpToolEntryTestCase
         return ToolCall::by($start)
             ->arguments(['request' => $request, 'declaration_file' => $file, 'request_key' => 'propose-2'])
             ->reply(ProposeRuleDeclarationCommand::class, $receipt)
-            ->expects(ExpectedCommand::of(ProposeRuleDeclarationCommand::class, [
+            ->expects(ProposeRuleDeclarationCommand::class, [
                 'commandRequestId' => $request,
                 'declarationFile' => $file,
-            ]));
+            ]);
     }
 }

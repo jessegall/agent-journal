@@ -9,7 +9,6 @@ use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Mcp\Tools\QuestionAskTool;
 use Domain\Questions\QuestionsDomain;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -33,8 +32,27 @@ final class QuestionAskToolTest extends McpToolEntryTestCase
         $inbox = $journal->sharedInbox('Owner', 'Planner')->sharedInboxOf('Owner', 'Planner');
 
         return ToolCall::by($start)
-            ->arguments(['inbox_id' => $inbox->id, 'target_type' => 'user', 'target_id' => $journal->ownerUser()->id, 'text' => 'Which database?', 'type' => 'choice', 'options' => ['Postgres', 'SQLite'], 'request_key' => 'write-1'])
-            ->reply(AskQuestionCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(AskQuestionCommand::class, ['inboxId' => $inbox->id, 'text' => 'Which database?', 'type' => QuestionType::Choice, 'options' => ['Postgres', 'SQLite']]));
+            ->arguments([
+                'inbox_id' => $inbox->id,
+                'target_type' => 'user',
+                'target_id' => $journal->ownerUser()->id,
+                'text' => 'Which database?',
+                'type' => 'choice',
+                'options' => [
+                    'Postgres',
+                    'SQLite',
+                ],
+                'request_key' => 'write-1',
+            ])
+            ->reply(AskQuestionCommand::class, Str::ulid())
+            ->expects(AskQuestionCommand::class, [
+                'inboxId' => $inbox->id,
+                'text' => 'Which database?',
+                'type' => QuestionType::Choice,
+                'options' => [
+                    'Postgres',
+                    'SQLite',
+                ],
+            ]);
     }
 }

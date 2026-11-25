@@ -9,7 +9,6 @@ use Domain\Plans\Mcp\Tools\CreatePhaseTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -33,8 +32,15 @@ final class CreatePhaseToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments(['plan_id' => $plan->id, 'title' => 'Design', 'request_key' => 'plans-1'])
-            ->reply(AddPhaseCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(AddPhaseCommand::class, ['planId' => $plan->id, 'title' => 'Design']));
+            ->arguments([
+                'plan_id' => $plan->id,
+                'title' => 'Design',
+                'request_key' => 'plans-1',
+            ])
+            ->reply(AddPhaseCommand::class, Str::ulid())
+            ->expects(AddPhaseCommand::class, [
+                'planId' => $plan->id,
+                'title' => 'Design',
+            ]);
     }
 }

@@ -9,7 +9,6 @@ use Domain\Plans\Mcp\Tools\AddPhaseTasksTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -34,7 +33,15 @@ final class AddPhaseTasksToolTest extends McpToolEntryTestCase
         $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return ToolCall::by($start)
-            ->arguments(['phase_id' => $phase->id, 'task_ids' => [$task->id], 'expected_revision' => 1, 'request_key' => 'plans-1'])
-            ->expects(ExpectedCommand::of(AddPhaseTasksCommand::class, ['phaseId' => $phase->id, 'taskIds' => [$task->id]]));
+            ->arguments([
+                'phase_id' => $phase->id,
+                'task_ids' => [$task->id],
+                'expected_revision' => 1,
+                'request_key' => 'plans-1',
+            ])
+            ->expects(AddPhaseTasksCommand::class, [
+                'phaseId' => $phase->id,
+                'taskIds' => [$task->id],
+            ]);
     }
 }

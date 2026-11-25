@@ -13,7 +13,6 @@ use Domain\Plans\Mcp\Tools\UnassignPlanWorkTool;
 use Domain\Plans\PlansDomain;
 use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -40,10 +39,16 @@ final class UnassignPlanWorkToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments([
-                'root' => ['type' => 'plans.plan', 'id' => $plan->id],
+                'root' => [
+                    'type' => 'plans.plan',
+                    'id' => $plan->id,
+                ],
                 'expected_assignment' => [
                     'id' => (string) Str::ulid(),
-                    'holder' => ['type' => 'agent', 'id' => $holder->agent->id],
+                    'holder' => [
+                        'type' => 'agent',
+                        'id' => $holder->agent->id,
+                    ],
                 ],
                 'request_key' => 'plans-1',
             ])
@@ -51,6 +56,6 @@ final class UnassignPlanWorkToolTest extends McpToolEntryTestCase
                 [new AssignmentOutcome($root, null, AssignmentOutcomeType::Changed)],
                 [],
             ))
-            ->expects(ExpectedCommand::of(UnassignPlanWorkCommand::class, ['root' => $root]));
+            ->expects(UnassignPlanWorkCommand::class, ['root' => $root]);
     }
 }

@@ -78,7 +78,7 @@ final class ScriptDefinitionsTest extends TestCase
     private function context(string $trigger): ScriptContext
     {
         return new ScriptContext(
-            ActorReference::of(ActorReference::forUser('owner')),
+            ActorReference::forUser('owner'),
             WorkReference::free('ask'),
             new ProfileRevisionReference(ProfileKey::from('draft-test'), 1),
             $trigger,

@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Mcp\Tools\NavigationAnswerTool;
 use Tests\Support\Agents\HoldsNavigationRequests;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -34,10 +33,10 @@ final class NavigationAnswerToolTest extends McpToolEntryTestCase
                 'request_key' => 'answer-1',
             ])
             ->reply(AnswerNavigationCommand::class, $stalled->receipt)
-            ->expects(ExpectedCommand::of(AnswerNavigationCommand::class, [
+            ->expects(AnswerNavigationCommand::class, [
                 'navigationId' => $navigation->id,
                 'expectedRowVersion' => $navigation->row_version,
                 'generation' => $navigation->screen->generation,
-            ]));
+            ]);
     }
 }

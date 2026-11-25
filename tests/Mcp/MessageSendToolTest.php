@@ -7,7 +7,6 @@ namespace Tests\Mcp;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Mcp\Tools\MessageSendTool;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
@@ -27,7 +26,7 @@ final class MessageSendToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments(['inbox_id' => $inbox->id, 'body' => 'Half way.', 'request_key' => 'send-1'])
-            ->reply(SendMessageCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(SendMessageCommand::class, ['inboxId' => $inbox->id, 'body' => 'Half way.']));
+            ->reply(SendMessageCommand::class, Str::ulid())
+            ->expects(SendMessageCommand::class, ['inboxId' => $inbox->id, 'body' => 'Half way.']);
     }
 }

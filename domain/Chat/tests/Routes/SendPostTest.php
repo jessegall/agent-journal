@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Routes;
 
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use Domain\Chat\ChatDomain;
-use Tests\Support\Bus\ExpectedCommand;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -29,9 +29,10 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         $inbox = $journal->owner()->inboxCalled('Owner');
 
         return RouteCall::recorded('chat-send', ['01JPAGEREQUESTINBOX0000000' => $inbox->id])
-            ->expects(ExpectedCommand::of(SendMessageCommand::class, [
+            ->reply(SendMessageCommand::class, Str::ulid())
+            ->expects(SendMessageCommand::class, [
                 'inboxId' => $inbox->id,
                 'body' => 'Hello',
-            ]));
+            ]);
     }
 }

@@ -12,8 +12,10 @@ use App\Data\Layouts\LayoutShape;
 use App\Models\Records\Layout;
 use App\Support\CommandCall;
 use App\Support\CommandOwner;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Support\Bus\Exceptions\SunkReplyRefused;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
@@ -165,6 +167,7 @@ final class JournalSinksTest extends TestCase
     {
         $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();
         $inbox = $this->journal->sharedInboxOf('Owner', 'Ada');
+        $this->journal->sinkReply(SendMessageCommand::class, Str::ulid());
 
         $this->journal->run(new SendMessageCommand($inbox->id, '7'));
 
@@ -194,6 +197,32 @@ final class JournalSinksTest extends TestCase
         $this->assertThrows(
             fn () => $this->journal->dispatched(),
             fn (FixtureRefused $refused) => $refused->type === FixtureRefusalType::NoSink,
+        );
+    }
+
+    public function test_a_stringable_reply_to_a_command_that_returns_a_string_comes_back_as_that_string(): void
+    {
+        $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();
+        $inbox = $this->journal->sharedInboxOf('Owner', 'Ada');
+        $id = Str::ulid();
+        $this->journal->sinkReply(SendMessageCommand::class, $id);
+
+        $this->assertSame((string) $id, $this->journal->run(new SendMessageCommand($inbox->id, 'Hi')));
+    }
+
+    public function test_a_reply_its_handler_could_not_give_is_refused(): void
+    {
+        $this->journal->owner()->agent('Ada')->sharedInbox('Owner', 'Ada')->sinkCommands();
+        $inbox = $this->journal->sharedInboxOf('Owner', 'Ada');
+
+        $this->assertThrows(fn () => $this->journal->sinkReply(SendMessageCommand::class, 7), SunkReplyRefused::class);
+        $this->assertThrows(
+            fn () => $this->journal->sinkReply(SaveLayoutCommand::class, 'saved'),
+            SunkReplyRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->journal->run(new SendMessageCommand($inbox->id, 'Hi')),
+            SunkReplyRefused::class,
         );
     }
 }

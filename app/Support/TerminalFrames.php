@@ -59,6 +59,6 @@ final readonly class TerminalFrames
     {
         $this->authorizer->authorize(AgentMaintenancePolicy::class, Agent::class, AccessType::Read);
 
-        return ActorReference::of($this->actor->actor());
+        return $this->actor->actor();
     }
 }

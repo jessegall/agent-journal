@@ -10,7 +10,6 @@ use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
-use App\Support\ActorReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -41,7 +40,7 @@ final class MenuShowTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $owner = ActorReference::of($this->admission->owner());
+        $owner = $this->admission->owner();
 
         return ToolResult::ok($this->navigation->menuEntry($owner, $arguments->text('entry')), []);
     }

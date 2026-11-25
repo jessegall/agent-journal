@@ -43,7 +43,7 @@ final readonly class KeepStartReceipt implements CommandMiddleware
         }
 
         $request = $command->request;
-        $requester = ActorReference::of($command->dispatchedBy());
+        $requester = $command->dispatchedBy();
         $start = fn () => $next($call);
 
         return $this->locks->hold(

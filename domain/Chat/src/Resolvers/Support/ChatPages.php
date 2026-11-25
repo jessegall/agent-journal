@@ -55,7 +55,7 @@ final readonly class ChatPages
 
     public function pageFor(AgentOption|null $agent, Inbox $inbox, string|null $dockToken): ConversationData
     {
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
 
         $members = [
             ...InboxMember::resolveAttachedTo([$inbox->id], User::class),
@@ -140,7 +140,7 @@ final readonly class ChatPages
             ->mapWithKeys(fn (ChatMessage $row) => [$row->id => new DockIdentity($row->source_type, $row->source_id)])
             ->all());
 
-        $viewer = ActorReference::of($this->actors->actor());
+        $viewer = $this->actors->actor();
         $readIds = $this->readIdsAmong($rows);
         $questions = $this->questionsAmong($rows);
         $rows->loadMorph('source', [Message::class => ['target']]);

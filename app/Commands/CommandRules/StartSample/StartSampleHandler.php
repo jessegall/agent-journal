@@ -11,7 +11,6 @@ use App\Exceptions\RequestTransitionRefused;
 use App\Exceptions\SampleRefused;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\EvidencePermit;
-use App\Support\ActorReference;
 use App\Support\EvidenceRuns;
 
 /**
@@ -45,7 +44,7 @@ final readonly class StartSampleHandler implements CommandHandler
             throw SampleRefused::notReady($request->nextStep->command);
         }
 
-        $run = $this->evidence->start($permit, ActorReference::of($command->dispatchedBy()), $command->requestKey);
+        $run = $this->evidence->start($permit, $command->dispatchedBy(), $command->requestKey);
         $request->startSample();
 
         return $run->id;

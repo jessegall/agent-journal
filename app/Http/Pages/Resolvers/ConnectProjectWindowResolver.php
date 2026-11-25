@@ -124,7 +124,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         )));
 
         $labels = $this->labels->labelsFor(array_map(
-            fn (string $userId) => ActorReference::of(ActorReference::forUser($userId)),
+            fn (string $userId) => ActorReference::forUser($userId),
             array_values(array_unique($approvers)),
         ));
 
@@ -161,7 +161,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             return 'Not approved yet';
         }
 
-        $name = $labels->nameOf(ActorReference::of(ActorReference::forUser($grant->approved_by_user_id)));
+        $name = $labels->nameOf(ActorReference::forUser($grant->approved_by_user_id));
 
         return $name ?? 'An account that is gone';
     }

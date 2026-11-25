@@ -31,7 +31,7 @@ final readonly class StoredSkillWrites
 
     public function author(): ActorReference
     {
-        return ActorReference::of($this->actors->actor());
+        return $this->actors->actor();
     }
 
     /**

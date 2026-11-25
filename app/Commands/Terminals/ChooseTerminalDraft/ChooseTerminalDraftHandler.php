@@ -6,7 +6,6 @@ namespace App\Commands\Terminals\ChooseTerminalDraft;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Support\ActorReference;
 use App\Support\TerminalControls;
 
 final readonly class ChooseTerminalDraftHandler implements CommandHandler
@@ -18,7 +17,7 @@ final readonly class ChooseTerminalDraftHandler implements CommandHandler
 
     public function handle(ChooseTerminalDraftCommand $command): string
     {
-        $writer = ActorReference::of($command->dispatchedBy());
+        $writer = $command->dispatchedBy();
 
         return $this->controls->choose(
             $command->agentId,

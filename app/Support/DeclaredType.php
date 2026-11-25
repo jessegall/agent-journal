@@ -56,6 +56,32 @@ final readonly class DeclaredType
         $this->isBuiltin = $type instanceof ReflectionNamedType && $type->isBuiltin();
     }
 
+    /**
+     * Whether a value of this type could be the value: null where the type allows it, any member of a union, every
+     * member of an intersection, a builtin by PHP's own test of it and a class by instanceof. Void and never accept
+     * no value.
+     */
+    public function accepts(mixed $value): bool
+    {
+        if ($value === null) {
+            return $this->allowsNull;
+        }
+
+        return match ($this->shape) {
+            TypeShape::Union => array_any($this->members, fn (self $member) => $member->accepts($value)),
+            TypeShape::Intersection => array_all($this->members, fn (self $member) => $member->accepts($value)),
+            TypeShape::Named => $this->isBuiltin ? $this->isBuiltinMatch($value) : $value instanceof $this->name,
+        };
+    }
+
+    /**
+     * Whether it is void: what it types gives back nothing.
+     */
+    public function isVoid(): bool
+    {
+        return $this->shape === TypeShape::Named && $this->name === 'void';
+    }
+
     public function isNamed(): bool
     {
         return $this->shape === TypeShape::Named;
@@ -122,5 +148,23 @@ final readonly class DeclaredType
     public function isNamedAs(string $name): bool
     {
         return $this->isNamed() && $this->name === $name;
+    }
+
+    private function isBuiltinMatch(mixed $value): bool
+    {
+        return match ($this->name) {
+            'mixed' => true,
+            'int' => is_int($value),
+            'float' => is_float($value) || is_int($value),
+            'string' => is_string($value),
+            'bool' => is_bool($value),
+            'true' => $value === true,
+            'false' => $value === false,
+            'array' => is_array($value),
+            'iterable' => is_iterable($value),
+            'object' => is_object($value),
+            'callable' => is_callable($value),
+            default => false,
+        };
     }
 }

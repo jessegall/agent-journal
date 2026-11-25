@@ -90,7 +90,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         );
 
         $changes = array_map($this->changeOf(...), $definitions);
-        $author = ActorReference::of($actor);
+        $author = $actor;
         $current = ProfileRevision::resolveCurrentSources($keys);
 
         $compiled = array_map(

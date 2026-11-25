@@ -9,7 +9,6 @@ use Domain\Tasks\Mcp\Tools\RunTaskCheckTool;
 use Domain\Tasks\TasksDomain;
 use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Illuminate\Support\Str;
-use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
@@ -42,11 +41,11 @@ final class RunTaskCheckToolTest extends McpToolEntryTestCase
                 'operation' => 'Run the tests.',
                 'request_key' => 'tasks-1',
             ])
-            ->reply(RunTaskCheckCommand::class, (string) Str::ulid())
-            ->expects(ExpectedCommand::of(RunTaskCheckCommand::class, [
+            ->reply(RunTaskCheckCommand::class, Str::ulid())
+            ->expects(RunTaskCheckCommand::class, [
                 'taskId' => $task->id,
                 'runNumber' => 1,
                 'processRunId' => $check->id,
-            ]));
+            ]);
     }
 }

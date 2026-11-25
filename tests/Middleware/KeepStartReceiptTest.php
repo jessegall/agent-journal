@@ -137,7 +137,7 @@ final class KeepStartReceiptTest extends TestCase
         SessionRequest::create(
             $request,
             TestSelections::pinOf($request),
-            ActorReference::of(ActorReference::forUser($this->journal->ownerUser()->id)),
+            ActorReference::forUser($this->journal->ownerUser()->id),
             None::create(),
         );
 
