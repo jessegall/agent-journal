@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Processes\ProcessRunCallers;
+use App\Exceptions\ProcessRunOfAnotherCaller;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
@@ -77,7 +78,7 @@ final class RunTaskCheckTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $other, 'acme verify')),
-            TaskCheckRefused::class,
+            ProcessRunOfAnotherCaller::class,
         );
 
         $this->assertThrows(

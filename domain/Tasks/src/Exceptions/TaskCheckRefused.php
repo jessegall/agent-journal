@@ -12,11 +12,6 @@ use RuntimeException;
  */
 final class TaskCheckRefused extends RuntimeException implements CommandRefusal
 {
-    public static function notYourRun(string $processRunId): self
-    {
-        return new self("Process run {$processRunId} was not opened by you, so it cannot check your task run.");
-    }
-
     public static function alreadyRegistered(string $processRunId): self
     {
         return new self("Process run {$processRunId} already checks a task run.");

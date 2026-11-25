@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskRunStatus;
 use Domain\Tasks\Events\TaskRunEnded;
 use Domain\Tasks\Exceptions\TaskRunFinished;
+use Domain\Tasks\Exceptions\TaskRunMissing;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -167,6 +168,16 @@ final class TaskRun extends Model implements Assignable, EventSource, ReadableMo
     public static function findForTask(Task $task, int $number): self|null
     {
         return self::query()->ofRun($task->id, $number)->first();
+    }
+
+    /**
+     * The task's run of that number, which must exist.
+     *
+     * @throws TaskRunMissing
+     */
+    public static function findNumberedOf(Task $task, int $number): self
+    {
+        return self::query()->ofRun($task->id, $number)->firstOr(TaskRunMissing::throwing()->forRun($task->number, $number));
     }
 
     // ----------[ Scopes ]----------
