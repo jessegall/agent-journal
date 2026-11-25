@@ -44,7 +44,7 @@ final class MarkMenuEntryStaleTest extends TestCase
 
     public function test_the_entry_goes_stale_on_the_build_once_with_its_reason_and_screen(): void
     {
-        $this->journal->installInboxes()->owner();
+        $this->journal->installInboxes();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->with('runtime')->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
@@ -62,7 +62,7 @@ final class MarkMenuEntryStaleTest extends TestCase
 
     public function test_an_entry_the_owner_does_not_have_is_refused(): void
     {
-        $this->journal->installInboxes()->owner();
+        $this->journal->installInboxes();
         [$host, $opened] = $this->openRuntime();
 
         $this->journal->hostCall($host, 'POST', '/host/menu-entries/01jd8x0g9m3qz6v4k2t7r00000/stale', [

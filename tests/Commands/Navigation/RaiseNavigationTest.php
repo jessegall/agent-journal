@@ -40,7 +40,7 @@ final class RaiseNavigationTest extends TestCase
 
     public function test_a_stalled_key_script_raises_one_request_per_operation(): void
     {
-        $this->journal->installInboxes()->owner();
+        $this->journal->installInboxes();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
@@ -66,7 +66,7 @@ final class RaiseNavigationTest extends TestCase
 
     public function test_a_report_from_a_past_attempt_is_refused_and_raises_nothing(): void
     {
-        $this->journal->installInboxes()->owner();
+        $this->journal->installInboxes();
         [$host, $opened] = $this->openRuntime();
         $stalled = DriverRequest::query()->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']))->requestId,
