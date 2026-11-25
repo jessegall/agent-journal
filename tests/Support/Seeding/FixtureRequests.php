@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Api\Hooks\AgentStateMachine;
+use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Authorization\AuthoritySource;
 use App\Models\Access\User;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
+use App\Support\Drivers\DriverCapabilities;
+use App\Support\Drivers\DriverReplies;
+use App\Support\Inputs\Contracts\HookInput;
+use App\Support\OperationDeadline;
 use App\Support\SignedCall;
+use App\Support\Stack\HookAnswer;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
+use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
@@ -25,24 +33,44 @@ use Throwable;
  */
 final class FixtureRequests
 {
+    private const int HOOK_DEADLINE_MILLISECONDS = 3000;
+
     private Closure|null $selected = null;
+
+    private int $hookCallCount = 0;
 
     public function __construct(private readonly Application $app) {}
 
     public function asAgent(string $agentId, string $sessionId): void
     {
-        $this->select(function () use ($agentId, $sessionId): void {
-            $this->app->instance(AgentContext::class, new AgentContext(
-                $agentId,
-                $sessionId,
-                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
-                null,
-            ));
-            $this->app->make(CurrentActorSetter::class)->set(
-                ActorContext::forAgent($agentId),
-                TestStartAuthority::forAgent($agentId),
-            );
-        });
+        $this->select(fn () => $this->bindAgent(new StackTarget($agentId, $sessionId), 'call-1'));
+    }
+
+    /**
+     * Sends the hook through the target agent's state machine under a signed call id of its own, so it is answered
+     * rather than replayed, and returns the answer the stack gave it; the selection in place comes back on every exit.
+     */
+    public function answerHook(StackTarget $target, HookInput $input, DriverCapabilities $capabilities): HookAnswer
+    {
+        $answered = null;
+        $callId = 'hook-call-'.++$this->hookCallCount;
+        $render = function (HookAnswer $answer, AgentTexts $texts) use (&$answered) {
+            $answered = $answer;
+
+            return DriverReplies::allowTool($answer->shownContext($texts));
+        };
+
+        $this->during(
+            fn () => $this->bindAgent($target, $callId),
+            fn () => $this->app->make(AgentStateMachine::class)->answer(
+                $input,
+                $capabilities,
+                new OperationDeadline(self::HOOK_DEADLINE_MILLISECONDS),
+                $render,
+            ),
+        );
+
+        return $answered ?? throw FixtureRefused::hookReplayed($callId);
     }
 
     /**
@@ -140,6 +168,20 @@ final class FixtureRequests
         if ($prior !== null) {
             $prior();
         }
+    }
+
+    private function bindAgent(StackTarget $target, string $callId): void
+    {
+        $this->app->instance(AgentContext::class, new AgentContext(
+            $target->agentId,
+            $target->sessionId,
+            new SignedCall($callId, CarbonImmutable::now(), str_repeat('a', 64)),
+            null,
+        ));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($target->agentId),
+            TestStartAuthority::forAgent($target->agentId),
+        );
     }
 
     private function actAsUser(string $userId, AuthoritySource $authority): void

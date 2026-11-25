@@ -48,6 +48,7 @@ final class JournalSeed
     use AssertsResults;
     use ObservesEvents;
     use OpensRuntimes;
+    use PushesStates;
     use RunsCommands;
     use SendsRequests;
 

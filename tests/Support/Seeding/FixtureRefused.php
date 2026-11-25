@@ -80,4 +80,21 @@ final class FixtureRefused extends LogicException
     {
         return new self("A {$got} record was given where a {$expected} belongs: give a {$expected}.");
     }
+
+    public static function hookReplayed(string $callId): self
+    {
+        return new self(
+            "The hook of call {$callId} was replayed, not answered: send each hook under a call of its own.",
+        );
+    }
+
+    public static function notOneFrame(string $typeKey, int $count): self
+    {
+        return new self("The stack holds {$count} frames of {$typeKey} for this reference, not one: name its subject.");
+    }
+
+    public static function noHookAnswer(string $lastStep): self
+    {
+        return new self("The last step given was {$lastStep}, not a hook: an answer is read only after a hook input.");
+    }
 }
