@@ -6,11 +6,23 @@ namespace App\Models\Drivers;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Enums\Navigation\NavigationReason;
 use App\Enums\Navigation\NavigationState;
+use App\Events\Sessions\NavigationRequestAbandoned;
+use App\Events\Sessions\NavigationRequestAnswered;
+use App\Events\Sessions\NavigationRequestCancelled;
+use App\Events\Sessions\NavigationRequestExpired;
+use App\Events\Sessions\NavigationRequestInterrupted;
+use App\Events\Sessions\NavigationRequestProofGiven;
+use App\Events\Sessions\NavigationRequestProofRefused;
+use App\Events\Sessions\NavigationRequestProven;
+use App\Events\Sessions\NavigationRequestSaved;
+use App\Events\Sessions\NavigationRequestScreenShown;
 use App\Exceptions\NavigationTransitionRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\Accessor;
@@ -65,13 +77,14 @@ use Illuminate\Support\Carbon;
  * @property DriverRequest $driverRequest
  * @property AgentRuntime $runtime
  */
-final class NavigationRequest extends Model implements Assignable, ReadableModel
+final class NavigationRequest extends Model implements Assignable, EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -153,6 +166,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->library_entry_id = $entry->id;
         $this->change();
+        $this->raise(new NavigationRequestSaved($this->id));
     }
 
     /**
@@ -162,6 +176,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->screen = $screen;
         $this->change();
+        $this->raise(new NavigationRequestScreenShown($this->id));
     }
 
     /**
@@ -176,6 +191,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         }
 
         $this->moveTo(NavigationState::Answering);
+        $this->raise(new NavigationRequestAnswered($this->id));
     }
 
     /**
@@ -187,6 +203,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $this->next_step = $nextStep;
         $this->proof = $proof;
         $this->moveTo(NavigationState::Proving);
+        $this->raise(new NavigationRequestProofGiven($this->id));
     }
 
     /**
@@ -198,6 +215,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $this->next_step = null;
         $this->proof = null;
         $this->moveTo(NavigationState::Answering);
+        $this->raise(new NavigationRequestProofRefused($this->id));
     }
 
     /**
@@ -206,6 +224,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function markProven(): void
     {
         $this->moveTo(NavigationState::Proven);
+        $this->raise(new NavigationRequestProven($this->id));
     }
 
     /**
@@ -215,6 +234,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->abandon_reason = $reason;
         $this->moveTo(NavigationState::Abandoned);
+        $this->raise(new NavigationRequestAbandoned($this->id));
     }
 
     /**
@@ -223,6 +243,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function interrupt(): void
     {
         $this->moveTo(NavigationState::Interrupted);
+        $this->raise(new NavigationRequestInterrupted($this->id));
     }
 
     /**
@@ -231,6 +252,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function cancel(): void
     {
         $this->moveTo(NavigationState::Cancelled);
+        $this->raise(new NavigationRequestCancelled($this->id));
     }
 
     /**
@@ -239,6 +261,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function expire(): void
     {
         $this->moveTo(NavigationState::Expired);
+        $this->raise(new NavigationRequestExpired($this->id));
     }
 
     // ----------[ Predicates ]----------

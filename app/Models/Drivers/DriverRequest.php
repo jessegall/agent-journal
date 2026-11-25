@@ -20,11 +20,19 @@ use App\Enums\Drivers\RequestProgress;
 use App\Events\Sessions\DriverRequestAccepted;
 use App\Events\Sessions\DriverRequestApplied;
 use App\Events\Sessions\DriverRequestAttemptStarted;
+use App\Events\Sessions\DriverRequestCancelled;
+use App\Events\Sessions\DriverRequestFailed;
 use App\Events\Sessions\DriverRequestGivenBack;
 use App\Events\Sessions\DriverRequestHeld;
+use App\Events\Sessions\DriverRequestMarkedUnavailable;
+use App\Events\Sessions\DriverRequestMarkedUncertain;
+use App\Events\Sessions\DriverRequestPayloadForgotten;
+use App\Events\Sessions\DriverRequestRefusalRecorded;
+use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestRetried;
 use App\Events\Sessions\DriverRequestScriptProgressed;
 use App\Events\Sessions\DriverRequestStaged;
+use App\Events\Sessions\DriverRequestSuperseded;
 use App\Events\Sessions\DriverRequestSuspectedDuplicate;
 use App\Events\Sessions\DriverRequestWakeAcknowledged;
 use App\Events\Sessions\DriverRequestWakeClaimed;
@@ -283,6 +291,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->refusal_reason = $reason;
         $this->no_process_created = $hasCreatedNoProcess;
         $this->save();
+        $this->raise(new DriverRequestRefusalRecorded($this->id));
     }
 
     /**
@@ -293,6 +302,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
         $this->message = null;
         $this->parts = null;
         $this->save();
+        $this->raise(new DriverRequestPayloadForgotten($this->id));
     }
 
     /**
@@ -323,6 +333,7 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     public function resolveAsNotApplied(): void
     {
         $this->finish(RequestProgress::Unavailable, null);
+        $this->raise(new DriverRequestResolvedAsNotApplied($this->id));
     }
 
     /**
@@ -339,16 +350,19 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     public function supersede(): void
     {
         $this->finish(RequestProgress::Superseded, null);
+        $this->raise(new DriverRequestSuperseded($this->id));
     }
 
     public function cancel(): void
     {
         $this->finish(RequestProgress::Cancelled, null);
+        $this->raise(new DriverRequestCancelled($this->id));
     }
 
     public function fail(RequestOutcome $outcome): void
     {
         $this->finish(RequestProgress::Failed, $outcome);
+        $this->raise(new DriverRequestFailed($this->id));
     }
 
     /**
@@ -358,11 +372,13 @@ final class DriverRequest extends Model implements EventSource, ReadableModel
     public function markUnavailable(RequestOutcome $outcome): void
     {
         $this->finish(RequestProgress::Unavailable, $outcome);
+        $this->raise(new DriverRequestMarkedUnavailable($this->id));
     }
 
     public function markUncertain(): void
     {
         $this->finish(RequestProgress::DeliveryUncertain, null);
+        $this->raise(new DriverRequestMarkedUncertain($this->id));
     }
 
     /**

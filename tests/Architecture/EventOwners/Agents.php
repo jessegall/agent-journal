@@ -44,12 +44,20 @@ use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\DriverRequestAccepted;
 use App\Events\Sessions\DriverRequestApplied;
 use App\Events\Sessions\DriverRequestAttemptStarted;
+use App\Events\Sessions\DriverRequestCancelled;
+use App\Events\Sessions\DriverRequestFailed;
 use App\Events\Sessions\DriverRequestGivenBack;
 use App\Events\Sessions\DriverRequestHeld;
+use App\Events\Sessions\DriverRequestMarkedUnavailable;
+use App\Events\Sessions\DriverRequestMarkedUncertain;
+use App\Events\Sessions\DriverRequestPayloadForgotten;
 use App\Events\Sessions\DriverRequestRecovered;
+use App\Events\Sessions\DriverRequestRefusalRecorded;
+use App\Events\Sessions\DriverRequestResolvedAsNotApplied;
 use App\Events\Sessions\DriverRequestRetried;
 use App\Events\Sessions\DriverRequestScriptProgressed;
 use App\Events\Sessions\DriverRequestStaged;
+use App\Events\Sessions\DriverRequestSuperseded;
 use App\Events\Sessions\DriverRequestSuspectedDuplicate;
 use App\Events\Sessions\DriverRequestWakeAcknowledged;
 use App\Events\Sessions\DriverRequestWakeClaimed;
@@ -67,6 +75,16 @@ use App\Events\Sessions\MenuEntryProven;
 use App\Events\Sessions\MenuEntryRetired;
 use App\Events\Sessions\MenuEntrySuperseded;
 use App\Events\Sessions\MenuEntryUsed;
+use App\Events\Sessions\NavigationRequestAbandoned;
+use App\Events\Sessions\NavigationRequestAnswered;
+use App\Events\Sessions\NavigationRequestCancelled;
+use App\Events\Sessions\NavigationRequestExpired;
+use App\Events\Sessions\NavigationRequestInterrupted;
+use App\Events\Sessions\NavigationRequestProofGiven;
+use App\Events\Sessions\NavigationRequestProofRefused;
+use App\Events\Sessions\NavigationRequestProven;
+use App\Events\Sessions\NavigationRequestSaved;
+use App\Events\Sessions\NavigationRequestScreenShown;
 use App\Events\Sessions\ProfileRevisionHoldReconciled;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
@@ -815,5 +833,131 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ClosingWordsKeptPrivate('turn'),
+    ],
+    DriverRequestRefusalRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::recordRefusal',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestRefusalRecorded('request'),
+    ],
+    DriverRequestPayloadForgotten::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::forgetPayload',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestPayloadForgotten('request'),
+    ],
+    DriverRequestResolvedAsNotApplied::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::resolveAsNotApplied',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestResolvedAsNotApplied('request'),
+    ],
+    DriverRequestSuperseded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::supersede',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestSuperseded('request'),
+    ],
+    DriverRequestCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestCancelled('request'),
+    ],
+    DriverRequestFailed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::fail',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestFailed('request'),
+    ],
+    DriverRequestMarkedUnavailable::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::markUnavailable',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestMarkedUnavailable('request'),
+    ],
+    DriverRequestMarkedUncertain::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'DriverRequest::markUncertain',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DriverRequestMarkedUncertain('request'),
+    ],
+    NavigationRequestSaved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::savedAs',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestSaved('request'),
+    ],
+    NavigationRequestScreenShown::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::showScreen',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestScreenShown('request'),
+    ],
+    NavigationRequestAnswered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::answer',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestAnswered('request'),
+    ],
+    NavigationRequestProofGiven::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::prove',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestProofGiven('request'),
+    ],
+    NavigationRequestProofRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::refuseProof',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestProofRefused('request'),
+    ],
+    NavigationRequestProven::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::markProven',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestProven('request'),
+    ],
+    NavigationRequestAbandoned::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::abandon',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestAbandoned('request'),
+    ],
+    NavigationRequestInterrupted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::interrupt',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestInterrupted('request'),
+    ],
+    NavigationRequestCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestCancelled('request'),
+    ],
+    NavigationRequestExpired::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'NavigationRequest::expire',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NavigationRequestExpired('request'),
     ],
 ];

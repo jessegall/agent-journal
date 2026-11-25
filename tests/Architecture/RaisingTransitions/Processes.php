@@ -25,4 +25,9 @@ return [
     'PartRun::lose',
     'PartRun::failToSpawn',
     'PartRun::skip',
+    'ClassificationRule::activate',
+    'ClassificationRule::restoreFrom',
+    'CommandAlias::recordLine',
+    'RuleProposal::approve',
+    'RuleProposal::reject',
 ];

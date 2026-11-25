@@ -11,6 +11,8 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\ClassificationState;
+use App\Events\Processes\ClassificationRuleActivated;
+use App\Events\Processes\ClassificationRuleRestored;
 use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
 use App\Models\Support\NamedByRuleScope;
@@ -87,6 +89,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->assertNewer($revision);
 
         $this->point($revision, "Revision {$revision->revision} approved.");
+        $this->raise(new ClassificationRuleActivated($this->id));
     }
 
     /**
@@ -99,6 +102,7 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
         $this->assertExpectedRevision($expectedRevision);
         $this->assertOwnRevision($earlier);
         $this->point($earlier, "Revision {$earlier->revision} restored.");
+        $this->raise(new ClassificationRuleRestored($this->id));
     }
 
     // ----------[ Relations ]----------

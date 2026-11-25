@@ -12,6 +12,8 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\ProposalState;
 use App\Events\Processes\RuleProposalAdopted;
+use App\Events\Processes\RuleProposalApproved;
+use App\Events\Processes\RuleProposalRejected;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Exceptions\RuleProposalRefused;
 use App\Support\ActorIdentity;
@@ -150,6 +152,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     public function approve(): void
     {
         $this->end(ProposalState::Approved);
+        $this->raise(new RuleProposalApproved($this->id));
     }
 
     /**
@@ -158,6 +161,7 @@ final class RuleProposal extends Model implements EventSource, ReadableModel
     public function reject(): void
     {
         $this->end(ProposalState::Rejected);
+        $this->raise(new RuleProposalRejected($this->id));
     }
 
     // ----------[ Predicates ]----------

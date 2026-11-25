@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Events\Sessions;
+
+use App\Contracts\Drivers\NavigationRequestEvent;
+
+/**
+ * A navigation request was abandoned for the reason given.
+ */
+final readonly class NavigationRequestAbandoned extends SessionEvent implements NavigationRequestEvent
+{
+    public function __construct(public string $requestId) {}
+}

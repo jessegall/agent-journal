@@ -5,7 +5,10 @@ declare(strict_types=1);
 use App\Enums\Runs\CaptureState;
 use App\Enums\Runs\RunLogicalResult;
 use App\Events\Processes\BundleActivated;
+use App\Events\Processes\ClassificationRuleActivated;
+use App\Events\Processes\ClassificationRuleRestored;
 use App\Events\Processes\ClassificationRuleRetired;
+use App\Events\Processes\CommandAliasLineRecorded;
 use App\Events\Processes\EvidenceFoundInvalid;
 use App\Events\Processes\EvidencePermitConsumed;
 use App\Events\Processes\EvidencePermitExpired;
@@ -32,6 +35,8 @@ use App\Events\Processes\ReaderPositionRewound;
 use App\Events\Processes\ResultReceiptSuperseded;
 use App\Events\Processes\RuleActivated;
 use App\Events\Processes\RuleProposalAdopted;
+use App\Events\Processes\RuleProposalApproved;
+use App\Events\Processes\RuleProposalRejected;
 use App\Events\Processes\RuleProposalWithdrawn;
 use App\Events\Processes\RuleRejected;
 use App\Events\Processes\RuleRetired;
@@ -277,5 +282,40 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new PartRunSkipped('part'),
+    ],
+    ClassificationRuleActivated::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ClassificationRule::activate',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClassificationRuleActivated('rule'),
+    ],
+    ClassificationRuleRestored::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ClassificationRule::restoreFrom',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ClassificationRuleRestored('rule'),
+    ],
+    CommandAliasLineRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'CommandAlias::recordLine',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new CommandAliasLineRecorded('alias'),
+    ],
+    RuleProposalApproved::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RuleProposal::approve',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleProposalApproved('proposal'),
+    ],
+    RuleProposalRejected::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'RuleProposal::reject',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleProposalRejected('proposal'),
     ],
 ];

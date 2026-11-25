@@ -6,7 +6,10 @@ namespace App\Models\CommandRules;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
+use App\Events\Processes\CommandAliasLineRecorded;
 use App\Models\Support\Accessor;
 use App\Values\AliasLookup;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -28,11 +31,12 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property mixed $lookup attribute
  */
-final class CommandAlias extends Model implements ReadableModel
+final class CommandAlias extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @return array<string, string>
@@ -61,6 +65,7 @@ final class CommandAlias extends Model implements ReadableModel
         $this->body_digest = hash('sha256', $line);
         $this->revision = $this->revision + 1;
         $this->save();
+        $this->raise(new CommandAliasLineRecorded($this->id));
     }
 
     // ----------[ Accessors ]----------
