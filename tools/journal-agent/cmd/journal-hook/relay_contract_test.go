@@ -15,7 +15,7 @@ import (
 	"journal-agent/relaycontract"
 )
 
-// exchangeContract is the exchange the PHP hook relay's test (tests/Feature/Hooks/HookRelayTest.php) wrote against the
+// exchangeContract is the exchange the PHP hook relay's test (tests/Hooks/ClaudeCodeHooksTest.php) wrote against the
 // real endpoint: the payload, the start's profile, each call with the answer it got, and the reply printed.
 const exchangeContract = "../../../../tests/Contracts/relays/hook-exchange.json"
 

@@ -50,12 +50,16 @@ fwrite(STDOUT, "saw the hook waiting\n");
 $frames = json_decode((string) $row['frames'], true, flags: JSON_THROW_ON_ERROR);
 $frames['frames'][] = [
     'id' => 'pushed-by-other-process',
-    'typeKey' => 'test.tasks',
+    'typeKey' => 'tasks.work',
     'schemaVersion' => 1,
     'isBottom' => false,
-    'subject' => ['id' => (string) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
+    'subject' => ['id' => (string) $environment('LOCK_TASK_ID'), 'runNumber' => 1],
     'enteredAt' => new DateTimeImmutable()->format('Y-m-d\\TH:i:s.uP'),
-    'values' => ['number' => (int) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
+    'values' => [
+        'taskId' => (string) $environment('LOCK_TASK_ID'),
+        'number' => (int) $environment('LOCK_TASK_NUMBER'),
+        'runNumber' => 1,
+    ],
 ];
 
 $update = $database->prepare('UPDATE agent_stacks SET frames = ?, version = version + 1 WHERE id = ?');

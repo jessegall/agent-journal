@@ -8,7 +8,7 @@ declare(strict_types=1);
  *
  *   composer test:run
  *   composer test:run -- tests/Feature/Hooks
- *   composer test:run -- tests/Feature/Hooks/HookRelayTest.php tests/Unit/Hooks/DecisionTest.php
+ *   composer test:run -- tests/Hooks/ClaudeCodeHooksTest.php tests/Unit/Hooks/DecisionTest.php
  */
 
 $root = dirname(__DIR__, 2);

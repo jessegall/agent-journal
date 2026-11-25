@@ -7,11 +7,14 @@ namespace Tests\Hooks;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
+use App\Contracts\Files\Files;
 use App\Enums\Agents\StackStatus;
 use App\Enums\Drivers\DriverFailure;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Engine\NoSubject;
+use App\Enums\Files\Place;
 use App\Enums\Hooks\AnswerType;
+use App\Enums\Hooks\CallFailure;
 use App\Enums\Hooks\HookEvent;
 use App\Enums\Sessions\SessionStatus;
 use App\Events\Sessions\DriverFailed;
@@ -24,19 +27,26 @@ use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
+use App\Models\Sessions\ReportedBypass;
 use App\Support\ActorContext;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\Contracts\DriverAdapters;
+use App\Support\Drivers\DriverReply;
 use App\Support\HookRetryWindow;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\IsolatedHookSettings;
 use App\Support\Octane\GiveRequestItsTimeLimit;
 use App\Support\OperationDeadline;
+use App\Support\ProtectedAccounts;
 use App\Support\PruneHookHistory;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
+use App\Support\Relay\CallbackEnvelope;
+use App\Support\Relay\HookRelay;
+use App\Support\Relay\PreparationState;
+use App\Support\Relay\RelaySettings;
 use App\Support\RetentionPeriods;
 use App\Support\SignedCall;
 use App\Support\StackTransaction;
@@ -50,24 +60,33 @@ use App\Support\Storage\RecordedAnswer;
 use App\Support\Storage\RecordedSteps;
 use App\Support\Storage\WalkStep;
 use App\Support\Ticks\TickingTypes;
+use App\Values\AgentText;
+use App\Values\FilePath;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
+use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Laravel\Octane\Events\RequestReceived;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Fixtures\Hooks\JournalUnreachable;
+use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\Agents\BackdatesSessions;
+use Tests\Support\Agents\HostContract;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsHook;
@@ -75,6 +94,7 @@ use Tests\Support\HookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
@@ -96,6 +116,15 @@ final class ClaudeCodeHooksTest extends TestCase
     use CommitsHookRows;
 
     private const string SECRET_DETAIL = 'secret detail';
+
+    /**
+     * What the lock holder prints once it saw the hook wait and committed its push.
+     */
+    private const string WAITING_THEN_COMMITTED = <<<'TEXT'
+        saw the hook waiting
+        committed
+
+        TEXT;
 
     private const string OWN_SUBAGENTS_RULE = 'rule 36';
 
@@ -137,9 +166,32 @@ final class ClaudeCodeHooksTest extends TestCase
         'part_runs',
         'process_runs',
         'command_requests',
+        'reported_bypasses',
+    ];
+
+    private const string RELAY_STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
+
+    private const string RELAY_SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
+        .'"tool_input":{"command":"git status"}}';
+
+    private const string RELAY_ACCOUNT_READ = '{"session_id":"session-1","hook_event_name":"PreToolUse",'
+        .'"tool_name":"Read",'
+        .'"cwd":"/work","tool_input":{"file_path":"../journal/accounts/a/projects/-work/other.jsonl"}}';
+
+    private const array COMPARED_HEADERS = ['authorization', 'content-type', 'x-journal-'];
+
+    private const array VARYING_HEADERS = [
+        'authorization',
+        'x-journal-call-id',
+        'x-journal-call-issued-at',
+        'x-journal-call-signature',
     ];
 
     private TestStart $start;
+
+    private string $bypassLog;
+
+    private bool $isJournalDown = false;
 
     protected function setUp(): void
     {
@@ -158,7 +210,9 @@ final class ClaudeCodeHooksTest extends TestCase
      */
     public static function moments(): iterable
     {
-        yield 'session start' => ['{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}'];
+        yield 'session start' => [
+            '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}',
+        ];
 
         yield 'prompt' => ['{"session_id":"driver-session-1","hook_event_name":"UserPromptSubmit","prompt":"Go on."}'];
 
@@ -291,7 +345,8 @@ final class ClaudeCodeHooksTest extends TestCase
     {
         $this->hook('claude-code', '{"session_id":"session-redacted"}', 'call-1')->assertUnprocessable();
         $notification = '{"session_id":"session-redacted","hook_event_name":"Notification"}';
-        $noCommand = '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{}}';
+        $noCommand = '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash",'
+            .'"tool_input":{}}';
         $this->hook('claude-code', $notification, 'call-2')->assertUnprocessable();
         $this->hook('claude-code', $noCommand, 'call-3')->assertUnprocessable();
     }
@@ -419,7 +474,10 @@ final class ClaudeCodeHooksTest extends TestCase
         $this->heartbeats()->markExited($started->session, self::HOST_EXIT_CODE);
 
         $this->assertSame(SessionStatus::Ended, $started->session->refresh()->status);
-        $this->assertSame(sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE), $started->session->refresh()->end_evidence);
+        $this->assertSame(
+sprintf(self::HOST_EXIT_EVIDENCE, self::HOST_EXIT_CODE),
+ $started->session->refresh()->end_evidence,
+);
         $this->assertSame(StackStatus::Closed, $this->stackOf($started)->status);
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($started->token);
@@ -592,11 +650,19 @@ final class ClaudeCodeHooksTest extends TestCase
     public function test_one_hook_id_is_recorded_once_per_agent_and_session(): void
     {
         $this->asStoredAgent();
-        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor(
+$this->storedHook(),
+ RecordedAnswer::of(AnswerType::Allow, '{}'),
+ RecordedSteps::of([]),
+);
 
         $this->expectException(QueryException::class);
 
-        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor(
+$this->storedHook(),
+ RecordedAnswer::of(AnswerType::Allow, '{}'),
+ RecordedSteps::of([]),
+);
     }
 
     public function test_the_agent_and_session_cannot_be_mass_assigned(): void
@@ -622,7 +688,11 @@ final class ClaudeCodeHooksTest extends TestCase
     public function test_steps_without_their_fields_are_refused(): void
     {
         $this->asStoredAgent();
-        new HookCall()->recordFor($this->storedHook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor(
+$this->storedHook(),
+ RecordedAnswer::of(AnswerType::Allow, '{}'),
+ RecordedSteps::of([]),
+);
         DB::table('hook_calls')->update(['steps' => '{"version":1,"steps":[{"frameId":"frame-1"}]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -655,7 +725,10 @@ final class ClaudeCodeHooksTest extends TestCase
         $pruned = $this->app->make(PruneHookHistory::class)->prune();
 
         $this->assertSame(1, $pruned->hookCalls);
-        $this->assertSame(['recent'], HookCall::query()->authorizedFor(self::retainedTarget(1))->pluck('event_id')->all());
+        $this->assertSame(
+['recent'],
+ HookCall::query()->authorizedFor(self::retainedTarget(1))->pluck('event_id')->all(),
+);
     }
 
     public function test_closed_stacks_past_thirty_days_go_and_active_or_recently_closed_stacks_stay(): void
@@ -706,7 +779,418 @@ final class ClaudeCodeHooksTest extends TestCase
 
         $this->moveDays(8);
 
-        $this->artisan('hooks:prune')->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')->assertSuccessful();
+        $this->artisan('hooks:prune')
+            ->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')
+            ->assertSuccessful();
+    }
+
+    public function test_the_relay_carries_a_signed_call_to_the_endpoint_and_prints_its_reply(): void
+    {
+        $this->prepareRelay();
+        $this->forwardToTheEndpoint();
+
+        $reply = $this->relay(self::RELAY_STOP);
+
+        $this->assertSame(['{}', '', 0], [$reply->stdout, $reply->stderr, $reply->exitCode]);
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    /**
+     * The exchange the Go hook relay (tools/journal-agent/cmd/journal-hook) must hold to: the payload, the start it
+     * runs for, each call as it went to the real endpoint with its answer, and the reply printed.
+     */
+    public function test_the_calls_it_sends_and_the_reply_it_prints_hold_to_the_contract_the_go_relay_shares(): void
+    {
+        $this->prepareRelay();
+        $exchange = ['calls' => [], 'answers' => []];
+        Http::fake(function (Request $request) use (&$exchange) {
+            $answer = $this->forward($request);
+            $response = $answer->wait();
+            $exchange['calls'][] = [
+                'path' => (string) parse_url($request->url(), PHP_URL_PATH),
+                'body' => json_decode($request->body(), true, flags: JSON_THROW_ON_ERROR),
+                'headers' => $this->comparedHeaders($request->headers()),
+            ];
+            $exchange['answers'][] = ['status' => $response->getStatusCode(), 'body' => (string) $response->getBody()];
+
+            return $answer;
+        });
+
+        $reply = $this->relay(self::RELAY_STOP);
+
+        HostContract::of('relays/hook-exchange.json')->assertHolds([
+            'payload' => self::RELAY_STOP,
+            'profile' => $this->start->pin()->key,
+            'profileRevision' => $this->start->pin()->revision,
+            ...$exchange,
+            'printed' => ['stdout' => $reply->stdout, 'stderr' => $reply->stderr, 'exitCode' => $reply->exitCode],
+        ], []);
+    }
+
+    public function test_during_an_outage_the_main_agent_goes_on_and_the_bypass_is_logged(): void
+    {
+        $this->prepareRelay();
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay(self::RELAY_SHELL);
+
+        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
+        $this->assertStringContainsString(
+            '"nativeEvent":"PreToolUse","failure":"unreachable"',
+            (string) file_get_contents($this->bypassLog),
+        );
+    }
+
+    public function test_during_an_outage_a_main_agent_is_still_refused_saved_accounts_and_logs_no_bypass(): void
+    {
+        $this->prepareRelay();
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay(self::RELAY_ACCOUNT_READ);
+
+        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
+    public function test_during_an_outage_a_tool_call_the_relay_cannot_read_is_refused(): void
+    {
+        $this->prepareRelay();
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay(
+            '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":"unreadable"}',
+        );
+
+        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
+    public function test_a_gateway_failure_counts_as_an_outage(): void
+    {
+        $this->prepareRelay();
+        Http::fake(['*' => Http::response('', 502)]);
+
+        $this->assertSame('{}', $this->relay(self::RELAY_STOP)->stdout);
+        $this->assertFileExists($this->bypassLog);
+    }
+
+    /**
+     * @return iterable<string, array{int, string}>
+     */
+    public static function serverAnswers(): iterable
+    {
+        yield 'forbidden' => [403, ''];
+
+        yield 'not found' => [404, ''];
+
+        yield 'unavailable' => [503, ''];
+
+        yield 'a malformed success' => [200, '{"stdout":'];
+    }
+
+    #[DataProvider('serverAnswers')]
+    public function test_a_server_answer_is_passed_on_as_a_refusal_and_never_bypassed(int $status, string $body): void
+    {
+        $this->prepareRelay();
+        Http::fake(['*' => Http::response($body, $status)]);
+
+        $reply = $this->relay(self::RELAY_SHELL);
+
+        $this->assertStringContainsString('"permissionDecision":"deny"', $reply->stdout);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
+    public function test_a_helper_is_refused_during_an_outage_and_logs_nothing(): void
+    {
+        $this->prepareRelay();
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay(self::RELAY_SHELL, passesOutages: false);
+
+        $this->assertStringContainsString(TestText::words(AgentText::of('core.drivers.outage')), $reply->stdout);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
+    public function test_a_refused_credential_is_not_an_outage(): void
+    {
+        $this->prepareRelay();
+        $this->forwardToTheEndpoint();
+
+        $reply = $this->relay(self::RELAY_SHELL, token: 'not-the-start-token');
+
+        $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
+        $this->assertFileDoesNotExist($this->bypassLog);
+    }
+
+    public function test_the_bypasses_are_uploaded_once_the_journal_answers_again(): void
+    {
+        $this->prepareRelay();
+        $this->isJournalDown = true;
+        $this->forwardToTheEndpoint();
+        $this->relay(self::RELAY_SHELL);
+        $this->isJournalDown = false;
+
+        $this->relay(self::RELAY_STOP);
+
+        $this->assertSame(['PreToolUse'], ReportedBypass::query()->pluck('native_event')->all());
+        $this->assertSame($this->start->session->id, ReportedBypass::query()->value('agent_session_id'));
+        $this->assertFileDoesNotExist($this->bypassLog);
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    public function test_a_lost_reply_is_sent_again_as_the_same_call_and_gets_the_recorded_answer(): void
+    {
+        $this->prepareRelay();
+        $sent = [];
+        Http::fake(function (Request $request) use (&$sent) {
+            $sent[] = [
+                $request->header(SignedCall::ID_HEADER)[0],
+                $request->header(SignedCall::ISSUED_AT_HEADER)[0],
+                hash('sha256', $request->body()),
+            ];
+            $response = $this->forward($request);
+
+            if (count($sent) === 1) {
+                throw new ConnectionException('The reply was lost.');
+            }
+
+            return $response;
+        });
+
+        $reply = $this->relay(self::RELAY_STOP);
+
+        $this->assertCount(2, $sent);
+        $this->assertSame($sent[0], $sent[1]);
+        $this->assertSame(['{}', 0], [$reply->stdout, $reply->exitCode]);
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
+    public function test_a_retry_past_the_deadline_is_not_sent_and_the_deadline_is_never_extended(): void
+    {
+        $this->prepareRelay();
+        $sent = 0;
+        Http::fake(function () use (&$sent) {
+            $sent++;
+            CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(CallbackEnvelope::DEADLINE_SECONDS + 1));
+
+            throw new ConnectionException('The journal did not answer.');
+        });
+
+        $reply = $this->relay(self::RELAY_STOP);
+
+        $this->assertSame(1, $sent);
+        $this->assertEquals(TestText::outages()->for(CallFailure::Unreachable, true, 'Stop'), $reply);
+        $this->assertCount(1, glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
+    public function test_two_callbacks_with_the_same_text_get_two_envelopes(): void
+    {
+        $this->prepareRelay();
+        $ids = [];
+        Http::fake(function (Request $request) use (&$ids) {
+            $ids[] = $request->header(SignedCall::ID_HEADER)[0];
+
+            return $this->forward($request);
+        });
+
+        $this->relay(self::RELAY_STOP);
+        $this->relay(self::RELAY_STOP);
+
+        $this->assertCount(2, array_unique($ids));
+        $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
+        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
+    private function relay(string $payload, bool $passesOutages = true, string|null $token = null): DriverReply
+    {
+        $settings = new RelaySettings(
+            'http://journal.test',
+            $token ?? $this->start->token,
+            $this->start->pin(),
+            $passesOutages,
+            $this->bypassLog,
+            accounts: new ProtectedAccounts(['/journal/accounts']),
+        );
+
+        return $this->app->make(HookRelay::class)->relay(DefaultDrivers::CLAUDE_CODE, $payload, $settings);
+    }
+
+    /**
+     * Sends each of the relay's requests through the application's own HTTP kernel, so the relay talks to the real
+     * endpoint.
+     */
+    private function forwardToTheEndpoint(): void
+    {
+        Http::fake(function (Request $request) {
+            if ($this->isJournalDown) {
+                throw JournalUnreachable::now();
+            }
+
+            return $this->forward($request);
+        });
+    }
+
+    private function forward(Request $request): PromiseInterface
+    {
+        $server = [];
+
+        foreach ($request->headers() as $name => $values) {
+            $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
+        }
+
+        $server['CONTENT_TYPE'] = 'application/json';
+        $this->app->forgetScopedInstances();
+
+        $response = $this->call(
+            'POST',
+            (string) parse_url($request->url(), PHP_URL_PATH),
+            server: $server,
+            content: $request->body(),
+        );
+
+        return Http::response((string) $response->getContent(), $response->getStatusCode());
+    }
+
+    /**
+     * The headers both relays must send alike, by lowercase name; the token, signature, time and call id differ on
+     * every call and are written as varies.
+     *
+     * @param  array<string, list<string>>  $headers
+     * @return array<string, string>
+     */
+    private function comparedHeaders(array $headers): array
+    {
+        $compared = [];
+
+        foreach ($headers as $name => $values) {
+            $name = strtolower($name);
+
+            $isCompared = array_any(self::COMPARED_HEADERS, fn (string $start) => str_starts_with($name, $start));
+
+            if ($isCompared) {
+                $compared[$name] = in_array($name, self::VARYING_HEADERS, true) ? 'varies' : $values[0];
+            }
+        }
+
+        ksort($compared);
+
+        return $compared;
+    }
+
+    private function preparationState(): PreparationState
+    {
+        config([Place::HookRuntime->rootSetting() => dirname($this->bypassLog)]);
+
+        return new PreparationState(
+            $this->app->make(Files::class),
+            FilePath::in(Place::HookRuntime, basename($this->bypassLog).'.preparation.json'),
+        );
+    }
+
+    /**
+     * The relay's bypass log in the temporary folder and its first generation prepared; the log and its pending
+     * uploads are removed with the application.
+     */
+    private function prepareRelay(): void
+    {
+        $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
+        $preparation = $this->preparationState();
+        $preparation->openGeneration('generation-1');
+        $preparation->prepare('generation-1');
+        $this->beforeApplicationDestroyed(function (): void {
+            foreach ([$this->bypassLog, $this->bypassLog.'.preparation.json'] as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+            }
+
+            array_map(unlink(...), glob($this->bypassLog.'.pending/*.json') ?: []);
+        });
+    }
+
+    public function test_a_stop_waits_for_a_push_another_process_holds_and_then_answers_with_it(): void
+    {
+        $holder = $this->startLockHolder(taskNumber: 43);
+
+        try {
+            $this->waitForLine($holder['stdout'], 'locked');
+            $reply = $this->hook('claude-code', $this->stopBody())->assertOk();
+        } finally {
+            $this->assertSame(self::WAITING_THEN_COMMITTED, stream_get_contents($holder['stdout']));
+            proc_close($holder['handle']);
+        }
+
+        $this->assertStringContainsString(
+            TestText::words(AgentText::of('tasks.unfinished', ['task' => 43])),
+            (string) $reply->json('stdout'),
+        );
+        $this->assertSame(['pushed-by-other-process deny'], array_map(
+            fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
+            HookCall::query()->authorizedFor($this->target())->sole()->steps->steps,
+        ));
+    }
+
+    public function test_a_replayed_session_start_with_another_program_session_keeps_the_first(): void
+    {
+        $first = '{"session_id":"driver-session-1","hook_event_name":"SessionStart","source":"startup"}';
+        $replayed = '{"session_id":"driver-session-2","hook_event_name":"SessionStart","source":"startup"}';
+
+        $this->hook('claude-code', $first, 'call-start')->assertOk();
+        $this->hook('claude-code', $replayed, 'call-start')->assertStatus(409);
+
+        $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
+        $this->assertSame('driver-session-1', $conversation?->native_id);
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
+    }
+
+    /**
+     * A separate process that locks the agent's stack row, waits until it sees a hook waiting for it, pushes a frame
+     * of the task of this number and commits.
+     *
+     * @return array{handle: resource, stdout: resource}
+     */
+    private function startLockHolder(int $taskNumber): array
+    {
+        $connection = config('database.connections.'.config('database.default'));
+        $environment = [
+            ...getenv(),
+            'LOCK_DB_HOST' => (string) $connection['host'],
+            'LOCK_DB_PORT' => (string) $connection['port'],
+            'LOCK_DB_DATABASE' => (string) $connection['database'],
+            'LOCK_DB_USERNAME' => (string) $connection['username'],
+            'LOCK_DB_PASSWORD' => (string) $connection['password'],
+            'LOCK_AGENT_ID' => $this->target()->agentId,
+            'LOCK_SESSION_ID' => $this->target()->sessionId,
+            'LOCK_TASK_ID' => "task-{$taskNumber}",
+            'LOCK_TASK_NUMBER' => (string) $taskNumber,
+        ];
+
+        $handle = proc_open(
+            [PHP_BINARY, base_path('tests/bin/hold-stack-lock.php')],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes,
+            base_path(),
+            $environment,
+        );
+
+        if ($handle === false) {
+            throw TestFailure::lockHolderDidNotStart();
+        }
+
+        return ['handle' => $handle, 'stdout' => $pipes[1]];
+    }
+
+    /**
+     * @param  resource  $stream
+     */
+    private function waitForLine($stream, string $expected): void
+    {
+        $line = fgets($stream);
+
+        if ($line !== "{$expected}\n") {
+            throw TestFailure::lockHolderMessage(var_export($line, true));
+        }
     }
 
     /**

@@ -32,7 +32,7 @@ Task 93 measured the authenticated path the same way, with a throwaway agent on 
 
 The lock was held by a separate `psql` session (`SELECT ... FOR UPDATE` on the agent's `agent_stacks` row). The time after the release includes the `COMMIT` travelling through `docker compose exec`, so the call itself answers sooner than that. The refusal arrives at the lock wait limit, four fifths of the 5 second deadline, as configured.
 
-In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`HookTransactionTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
+In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`ClaudeCodeHooksTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
 
 ## Driver operations, proven live (plan 26, task 923)
 
