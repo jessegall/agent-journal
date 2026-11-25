@@ -70,8 +70,8 @@ final class Psr4ClassNames
     }
 
     /**
-     * The class name of a file under one of the roots, such as Domain\Plans\Listeners\MovePlan for
-     * domain/Plans/src/Listeners/MovePlan.php.
+     * The class name of a file under one of the roots, such as Domain\Library\Listeners\ShelveBook for
+     * domain/Library/src/Listeners/ShelveBook.php.
      *
      * @return class-string
      */

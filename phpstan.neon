@@ -27,6 +27,8 @@ parameters:
         - tests/Fixtures/PhpStan/*
         # The static factory scan's fixture repeats calls and passes loose names on purpose; StaticFactoryScanTest reads it.
         - tests/Fixtures/StaticFactories/*
+        # The core domain text fixture is a small project tree read as text; CoreNamesNoDomainTest reads it.
+        - tests/Fixtures/CoreDomainText/*
         # The affected tests' fixture is a small code tree read only for its syntax; AffectedTestsTest reads it.
         - tests/Fixtures/AffectedTests/*
         # The state return check's fixture answers with arrays on purpose; StateReturnsTest reads it.
