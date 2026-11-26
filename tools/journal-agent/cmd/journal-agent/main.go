@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"journal-agent/hostapi"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -50,6 +51,16 @@ func main() {
 			fmt.Fprintln(os.Stderr, "journal-agent:", err)
 			os.Exit(1)
 		}
+		os.Exit(0)
+	}
+
+	if len(os.Args) == 4 && os.Args[1] == "recording" && os.Args[2] == "render" {
+		rendered, err := hostapi.RenderFolder(os.Args[3])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("rendered %d recordings\n", len(rendered))
 		os.Exit(0)
 	}
 
@@ -435,7 +446,8 @@ func printScreen(folder string) error {
 		return err
 	}
 
-	reader, err := screen.NewEmulatorReader(120, 40, screen.DefaultLimits, nil)
+	geometry := fixture.StartGeometry()
+	reader, err := screen.NewEmulatorReader(int(geometry.Columns), int(geometry.Rows), screen.DefaultLimits, nil)
 	if err != nil {
 		return err
 	}
@@ -463,7 +475,8 @@ func annotate(folder string) error {
 		return err
 	}
 
-	reader, err := screen.NewEmulatorReader(120, 40, screen.DefaultLimits, nil)
+	geometry := fixture.StartGeometry()
+	reader, err := screen.NewEmulatorReader(int(geometry.Columns), int(geometry.Rows), screen.DefaultLimits, nil)
 	if err != nil {
 		return err
 	}

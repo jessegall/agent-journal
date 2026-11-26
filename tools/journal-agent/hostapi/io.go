@@ -87,11 +87,11 @@ func (outputs *Outputs) Open(processID string, plan OpenPlan) error {
 	outputs.mutex.Lock()
 	defer outputs.mutex.Unlock()
 	if plan.Type == "terminal" {
-		reader, err := screen.NewEmulatorReader(int(plan.Size.Columns), int(plan.Size.Rows), screen.DefaultLimits, nil)
+		shown, err := newScreen(int(plan.Size.Columns), int(plan.Size.Rows))
 		if err != nil {
 			return err
 		}
-		outputs.screens[processID] = &Screen{reader: reader}
+		outputs.screens[processID] = shown
 		return nil
 	}
 	spool, err := OpenSpool(filepath.Join(outputs.stateFolder, "spool", processID))

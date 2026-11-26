@@ -27,6 +27,17 @@ type Geometry struct {
 	Rows    uint16 `json:"rows"`
 }
 
+// UnrecordedGeometry is the size a recording's screen is replayed at when the recording did not keep its terminal's.
+var UnrecordedGeometry = Geometry{Columns: 120, Rows: 40}
+
+// StartGeometry is the terminal size the recording started at, or UnrecordedGeometry when it kept none.
+func (fixture Fixture) StartGeometry() Geometry {
+	if fixture.Geometry.Columns == 0 || fixture.Geometry.Rows == 0 {
+		return UnrecordedGeometry
+	}
+	return fixture.Geometry
+}
+
 // OutputChunk is a run of raw bytes the program wrote, at its offset from the start of the recording.
 type OutputChunk struct {
 	Offset time.Duration `json:"offset"`
