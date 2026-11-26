@@ -1,10 +1,15 @@
 #!/usr/bin/env sh
-# Refuses a commit whose staged files hold a name that breaks the naming rules, judged with the words of the whole
-# code that the last full names scan learned (docs/naming/README.md).
+# Formats the staged PHP files, then refuses a commit whose staged files hold a name that breaks the naming rules,
+# judged with the words of the whole code that the last full names scan learned (docs/naming/README.md).
 set -eu
 
 main() {
+    format_staged_php
     check_staged_names
+}
+
+format_staged_php() {
+    sh scripts/format-staged-php.sh
 }
 
 check_staged_names() {

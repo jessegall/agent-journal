@@ -27,6 +27,7 @@ Agent
 Agent terminal, read only
 Alias
 All caught up
+All projects
 All sources
 Allow one sample run of this exact line
 An agent asks a few questions, then drafts it.
@@ -59,7 +60,7 @@ Check status
 Checked reader revision
 Checking
 Checking the new session
-Checking the sign-in with {{ driverName(driver) }}…
+Checking the sign-in with {{ driverLabel(driver) }}…
 Checking your notifications again…
 Choices
 Choose a chat
@@ -70,6 +71,7 @@ Choose all on {{ machine }}
 Choose another way
 Choose one
 Chosen: {{ describeRange(chosen) }}.
+Claude Code
 Close
 Close all
 Close others
@@ -77,6 +79,7 @@ Close reader
 Close to the right
 Code from the sign-in page
 Code theme
+Codex
 Codex cannot run in a container yet: its sandbox does not keep its tools
 Coding where the way is clear.
 Color scheme
@@ -201,7 +204,6 @@ Leave terminal
 Left to spend
 Light
 Link copied.
-Link to Claude's sign-in page
 Load older
 Loading notifications…
 Make default
@@ -256,12 +258,10 @@ Notifications
 Off
 Offline
 One piece of text, without spaces.
-Only one new {{ driverName(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
+Only one new {{ driverLabel(shownDriver) }} account signs in at a time. Resume this one, or cancel it and choose again.
 Only when you ask for it.
 Open
 Open ${item.label}
-Open Claude's sign-in page and sign in.
-Open OpenAI's page and sign in with ChatGPT.
 Open a copy
 Open a window
 Open commands
@@ -270,6 +270,7 @@ Open in the document reader
 Open keyboard help
 Open terminal
 Open the draft
+Open the {{ label }} sign-in page and sign in.
 Open windows
 Open ↗
 Ordinary
@@ -515,7 +516,7 @@ Waiting for an answer
 Waiting for sign-in
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
-Waiting for you to finish on OpenAI's page…
+Waiting for you to finish on the {{ label }} sign-in page…
 What the journal is and how to read and write its records.
 What the line connects
 Where the request stands
@@ -546,7 +547,7 @@ from its sign-in.
 in the folder
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
-is saved as a {{ driverName(driver) }} account.
+is saved as a {{ driverLabel(driver) }} account.
 label
 model
 ms
