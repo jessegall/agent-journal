@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Values;
+
+use App\Enums\Hosts\HostOrderType;
+
+/**
+ * What one order tells a host to do, and the key that makes a repeated step of a driver request no second order.
+ */
+final readonly class HostOrderBody
+{
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public function __construct(
+        public HostOrderType $type,
+        public array $payload,
+        public string $idempotencyKey,
+        public string|null $driverRequestId = null,
+        public string|null $step = null,
+    ) {}
+}

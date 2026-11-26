@@ -18,6 +18,11 @@ return new class extends Migration
             // The latest protection report per driver and build (journal-agent protection), as a contained host sent it.
             $table->jsonb('protection')->default('{}');
             $table->string('arrangement')->default('local');
+            // The host protocol the host speaks, and the secret every order to it is signed with.
+            $table->unsignedSmallInteger('protocol')->default(1);
+            $table->text('order_secret')->nullable();
+            // The number of the host's last host-wide order: they are numbered under this row's lock.
+            $table->unsignedBigInteger('order_sequence')->default(0);
             // The combinations the host reported it can run.
             $table->jsonb('descriptors')->default('[]');
             // Whether the host's last claim said it carries out browser control of its terminals.

@@ -26,8 +26,10 @@ use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
+use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Support\Hosts\HostOrderPayload;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartPlace;
@@ -46,6 +48,9 @@ use Spatie\LaravelData\DataCollection;
  * @property list<string> $start_roots
  * @property DataCollection<int, ProtectionReportData> $protection
  * @property ArrangementType $arrangement
+ * @property int $protocol
+ * @property string|null $order_secret
+ * @property int $order_sequence
  * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property bool $browser_input
  * @property bool $browser_keys
@@ -79,6 +84,9 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         return [
             'arrangement' => ArrangementType::class,
+            'protocol' => 'integer',
+            'order_secret' => 'encrypted',
+            'order_sequence' => 'integer',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
             'descriptors' => DataCollection::class.':'.EnrolledDescriptorData::class,
@@ -113,12 +121,24 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->credential_hash = self::hashOf($secret);
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
+        $host->order_secret = bin2hex(random_bytes(32));
         $host->assertSaved($host->save());
 
         return $host;
     }
 
     // ----------[ Mutations ]----------
+
+    /**
+     * The next number of the host's orders that are about no process; the caller holds the row's lock.
+     */
+    public function takeOrderNumber(): int
+    {
+        $this->order_sequence++;
+        $this->assertSaved($this->save());
+
+        return $this->order_sequence;
+    }
 
     public function recordProtection(ProtectionReport $report): void
     {
@@ -333,6 +353,11 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             || $this->last_answered_at->lt($at->subMinute());
     }
 
+    public function acceptsProtocol(int $protocol): bool
+    {
+        return $this->protocol === $protocol;
+    }
+
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
@@ -357,6 +382,24 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Calculations ]----------
+
+    /**
+     * The order's signature the host checks: HMAC-SHA256, keyed by the host's order secret, of the order's id, number,
+     * type, process, the SHA-256 of its payload and its expiry, one to a line.
+     */
+    public function signOrder(HostOrder $order): string
+    {
+        $lines = implode("\n", [
+            $order->id,
+            (string) $order->sequence,
+            $order->type->value,
+            (string) $order->host_process_id,
+            hash('sha256', HostOrderPayload::encode($order->payload)),
+            $order->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
+        ]);
+
+        return hash_hmac('sha256', $lines, (string) $this->order_secret);
+    }
 
     /**
      * The folder a start the host was not asked for in a folder runs in: the first of its start roots; reading it on a

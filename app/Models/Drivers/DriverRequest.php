@@ -710,6 +710,18 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     }
 
     /**
+     * The runtime's requests a driver had begun and not finished, staged or applying, which a new worker takes up first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inFlightFor(Builder $query, AgentRuntime $runtime): void
+    {
+        $query->where('agent_runtime_id', $runtime->id)
+            ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying]);
+    }
+
+    /**
      * The requests a runtime is still carrying out.
      *
      * @param  Builder<self>  $query
