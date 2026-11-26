@@ -14,7 +14,7 @@ use App\Support\Command;
  *
  * @extends Command<PreparationProgress>
  */
-#[Entry(CommandEntry::SkillPublisher)]
+#[Entry(CommandEntry::SkillRefresh)]
 final readonly class PrepareSkillPublicationCommand extends Command
 {
     public function __construct(

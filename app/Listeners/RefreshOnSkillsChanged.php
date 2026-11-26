@@ -22,6 +22,6 @@ final readonly class RefreshOnSkillsChanged implements Listener
 
     public function handle(SkillsChanged $event): void
     {
-        $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill refresh', new RefreshSkillsCommand());
+        $this->dispatchers->runAsJournal(CommandEntry::SkillRefresh, 'skill refresh', new RefreshSkillsCommand());
     }
 }

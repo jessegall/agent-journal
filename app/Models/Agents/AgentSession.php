@@ -416,22 +416,6 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The sessions that may still act, oldest first, for trusted Core maintenance such as a skill refresh.
-     *
-     * @return list<self>
-     */
-    public static function findRunningForMaintenance(int $limit): array
-    {
-        $running = self::query()
-            ->running()
-            ->oldestFirst()
-            ->readExactly($limit)
-            ->get();
-
-        return array_values($running->all());
-    }
-
-    /**
      * The running sessions started for an owner's work, oldest first.
      *
      * @return list<self>

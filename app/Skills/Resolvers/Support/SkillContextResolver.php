@@ -100,35 +100,6 @@ final readonly class SkillContextResolver
         );
     }
 
-    /**
-     * The context of each of these sessions, by session id, reading their agents in one query, for trusted Core work
-     * such as a refresh; a session whose context is unavailable, such as a helper started without a profile, is
-     * left out, as it gets no selection of its own.
-     *
-     * @param  list<AgentSession>  $sessions
-     * @return array<string, SkillContext>
-     */
-    public function forSessions(array $sessions): array
-    {
-        $agentIds = array_map(fn (AgentSession $session) => $session->agent_id, $sessions);
-        $agents = Agent::findByIds(array_values(array_unique($agentIds)));
-        $profiles = [];
-        $contexts = [];
-
-        foreach ($sessions as $session) {
-            $pin = "{$session->profile_key}#{$session->profile_revision}";
-            $profiles[$pin] ??= $this->profileOf($session);
-
-            try {
-                $contexts[$session->id] = $this->contextOf($agents[$session->agent_id], $session, $profiles[$pin]);
-            } catch (SkillContextUnavailable) {
-                continue;
-            }
-        }
-
-        return $contexts;
-    }
-
     private function contextOf(Agent $agent, AgentSession $session, StartProfile $profile): SkillContext
     {
         $driver = StartDriver::of($session->driver_key, $this->drivers);

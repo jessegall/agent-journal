@@ -88,7 +88,7 @@ loads it once. The bus checks the caller's profile grants before the subject is 
 `App\Bus\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with
 `App\Exceptions\ActorNotAllowed`. A command with neither `Authorize` nor a trusted entry fails the boot with
 `App\Bus\Exceptions\CommandDeclarationInvalid`; a trusted entry is `#[Entry(CommandEntry::HostControl)]`,
-`ShareGateway`, `SkillPublisher` or `EngineMaintenance`. Such a command runs only through that entry's dispatcher, as
+`ShareGateway`, `SkillRefresh` or `EngineMaintenance`. Such a command runs only through that entry's dispatcher, as
 the journal itself, and never from a request. No command asks what kind of actor calls (rule 39); the guide in
 docs/domains/authorization.md shows how a module declares its policies.
 

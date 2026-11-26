@@ -106,6 +106,6 @@ final readonly class SkillPublishingService
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill publishing', $command);
+        return $this->dispatchers->runAsJournal(CommandEntry::SkillRefresh, 'skill publishing', $command);
     }
 }

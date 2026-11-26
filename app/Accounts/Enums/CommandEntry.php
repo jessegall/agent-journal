@@ -13,7 +13,7 @@ enum CommandEntry: string
     case Application = 'application';
     case HostControl = 'host_control';
     case ShareGateway = 'share_gateway';
-    case SkillPublisher = 'skill_publisher';
+    case SkillRefresh = 'skill_refresh';
     case EngineMaintenance = 'engine_maintenance';
     case AccountMaintenance = 'account_maintenance';
     case DriverWorker = 'driver_worker';

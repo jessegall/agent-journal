@@ -15,7 +15,7 @@ use App\Support\Command;
  *
  * @extends Command<PublicationClaim>
  */
-#[Entry(CommandEntry::SkillPublisher)]
+#[Entry(CommandEntry::SkillRefresh)]
 final readonly class PublishSkillsCommand extends Command
 {
     public function __construct(

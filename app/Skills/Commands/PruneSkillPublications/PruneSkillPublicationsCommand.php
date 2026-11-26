@@ -15,5 +15,5 @@ use App\Support\Command;
  *
  * @extends Command<PrunedPublications>
  */
-#[Entry(CommandEntry::SkillPublisher)]
+#[Entry(CommandEntry::SkillRefresh)]
 final readonly class PruneSkillPublicationsCommand extends Command {}

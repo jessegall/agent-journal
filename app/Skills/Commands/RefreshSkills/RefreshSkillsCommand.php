@@ -15,5 +15,5 @@ use App\Support\Command;
  *
  * @extends Command<RefreshResult>
  */
-#[Entry(CommandEntry::SkillPublisher)]
+#[Entry(CommandEntry::SkillRefresh)]
 final readonly class RefreshSkillsCommand extends Command {}
