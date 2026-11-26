@@ -109,6 +109,48 @@ func TestAnOrderHandedOutAgainIsAnsweredFromTheRecordAcrossARestart(t *testing.T
 	}
 }
 
+func TestAnOrderTheHostStoppedInIsRefusedUnlessItCanRunTwice(t *testing.T) {
+	state := t.TempDir()
+	var runs atomic.Int32
+	run := func(context.Context, Order) (map[string]any, error) {
+		runs.Add(1)
+		return nil, nil
+	}
+	executors := map[string]Executor{"write_keys": run, "snapshot": run}
+	crashed, err := OpenAnsweredRecord(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keys := signedOrder("keys", "p", 1)
+	snapshot := signedOrder("shot", "p", 2)
+	snapshot.Type = "snapshot"
+	snapshot.Signature = Sign(testSecret, snapshot)
+	for _, order := range []Order{keys, snapshot} {
+		if err := crashed.Start(order, testVerifier().Now()); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	restarted, err := OpenAnsweredRecord(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	answers := map[string]Answer{}
+	var mutex sync.Mutex
+	dispatcher := NewDispatcher(testVerifier(), restarted, executors, func(answer Answer) {
+		mutex.Lock()
+		defer mutex.Unlock()
+		answers[answer.OrderID] = answer
+	})
+	dispatcher.Submit(context.Background(), keys)
+	dispatcher.Submit(context.Background(), snapshot)
+	dispatcher.Wait()
+
+	if answers["keys"].Refusal != HostRestarted || answers["shot"].Status != Done || runs.Load() != 1 {
+		t.Fatalf("an interrupted write ran again or a snapshot did not: %+v, %d runs", answers, runs.Load())
+	}
+}
+
 func TestOneProcesssOrdersRunInSequenceAndTwoProcessesAtOnce(t *testing.T) {
 	release := make(chan struct{})
 	started := make(chan string, 8)

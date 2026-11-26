@@ -10,6 +10,10 @@ import (
 // Executor carries out one type of order and gives the facts of its answer, or a RefusalError.
 type Executor func(ctx context.Context, order Order) (map[string]any, error)
 
+// repeatableOrders are the order types that leave the same result when carried out twice, so one the host stopped in
+// the middle of runs again after a restart; any other such order is refused host_restarted and never run twice.
+var repeatableOrders = []string{"resize", "stop", "remove", "stream", "snapshot", "close_stdin", "stop_recording"}
+
 // Dispatcher runs the orders the host claimed: each is checked, answered from the record when it was answered
 // before, and otherwise carried out by the executor of its type. Orders of one process run one after another in the
 // order handed out; orders of different processes run at once; host-wide orders wait for none of them.
@@ -112,6 +116,13 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer 
 	executor, found := dispatcher.executors[order.Type]
 	if !found {
 		return RefusedFor(order, UnknownOrder, map[string]any{"reason": "this host does not carry out " + order.Type})
+	}
+	if dispatcher.record.IsInterrupted(order.ID) && !slices.Contains(repeatableOrders, order.Type) {
+		reason := "the host stopped while it carried this order out, so it is not carried out twice"
+		return RefusedFor(order, HostRestarted, map[string]any{"reason": reason})
+	}
+	if err := dispatcher.record.Start(order, dispatcher.verifier.Now()); err != nil {
+		return RefusedFor(order, Unsafe, map[string]any{"reason": "the host could not record the order: " + err.Error()})
 	}
 	facts, err := executor(ctx, order)
 	if err != nil {
