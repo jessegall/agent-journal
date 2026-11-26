@@ -9,6 +9,7 @@ use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
 use App\Contracts\Drivers\ProgramDriver;
+use App\Contracts\Hosts\HostChannel;
 use App\Data\Hosts\HostProcessReportData;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
@@ -21,6 +22,7 @@ use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
+use Tests\Support\Hosts\StandInHost;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -148,5 +150,23 @@ trait ArrangesHostProcesses
         Process::assertRan(fn (PendingProcess $process) => $process->command === $command);
 
         return $this;
+    }
+
+    /**
+     * The host channel plays the committed recording in the folder, relative to the recordings of the Go host.
+     */
+    public function playsRecording(string $recording): self
+    {
+        $this->app->instance(
+            HostChannel::class,
+            StandInHost::playing(base_path("tools/journal-agent/testdata/recordings/{$recording}")),
+        );
+
+        return $this;
+    }
+
+    public function standInHost(): StandInHost
+    {
+        return $this->app->make(HostChannel::class);
     }
 }
