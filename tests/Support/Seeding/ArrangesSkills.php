@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Inputs\Values\CompactionDetails;
+use App\Agents\Inputs\Values\SessionStartDetails;
+use App\Contracts\Work\StackTransactionRunner;
+use App\Hooks\ContextCollection;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\FinishedToolCalls;
 use App\Models\Agents\AgentSession;
@@ -13,6 +18,8 @@ use App\Models\Skills\SkillRevision;
 use App\Skills\Commands\CreateSkill\CreateSkillCommand;
 use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\Values\SkillDraft;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\HookIdentity;
@@ -75,6 +82,27 @@ trait ArrangesSkills
         $this->app->make(FinishedToolCalls::class)->announce(new StackTarget($session->agent_id, $session->id), $input);
 
         return $this;
+    }
+
+    /**
+     * The session's context starts again in the agent's own hook request, as its driver's start, clear, resume or
+     * compaction hook does; answers the reminders the listeners of that boundary added.
+     *
+     * @return list<string>
+     */
+    public function startContext(AgentSession $session, ContextStartType $type): array
+    {
+        $this->actAsAgentIds($session->agent_id, $session->id);
+        $hookId = 'hook-'.bin2hex(random_bytes(4));
+        $identity = new HookIdentity($session->agent_id, $session->id, $hookId, hash('sha256', $type->value));
+        $input = $type === ContextStartType::Compact
+            ? new ContextCompacted($identity, new CompactionDetails('compaction-'.bin2hex(random_bytes(4))))
+            : new SessionStarted($identity, new SessionStartDetails('vendor-session', $type, null));
+        $target = new StackTarget($session->agent_id, $session->id);
+
+        return $this->app->make(StackTransactionRunner::class)->run(
+            fn (): array => $this->app->make(ContextCollection::class)->collectReminders($target, $input),
+        );
     }
 
     /**
