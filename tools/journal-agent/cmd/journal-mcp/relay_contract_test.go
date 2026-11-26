@@ -18,7 +18,7 @@ import (
 	"journal-agent/relaycontract"
 )
 
-// exchangeContract is the exchange the PHP relay's test (tests/Feature/Mcp/RelayTest.php) wrote: the frames it was
+// exchangeContract is the exchange the PHP relay's test (tests/StandIn/Mcp/RelayTest.php) wrote: the frames it was
 // given, each call it sent as both relays must send it, and the lines it printed.
 const exchangeContract = "../../../../tests/Contracts/relays/mcp-exchange.json"
 
