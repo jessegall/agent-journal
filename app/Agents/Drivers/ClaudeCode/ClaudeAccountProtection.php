@@ -6,7 +6,7 @@ namespace App\Agents\Drivers\ClaudeCode;
 
 /**
  * The private per-start Claude Code settings that protect saved accounts: file tools may not read an account's sign-in
- * or change the accounts folder, the shell runs sandboxed, and the Keychain and sign-in commands are refused. Other
+ * or change the accounts folder, and the Keychain and sign-in commands are refused. Other
  * sessions' history is the journal's own per-session check.
  */
 final class ClaudeAccountProtection
@@ -44,7 +44,6 @@ final class ClaudeAccountProtection
 
         return (string) json_encode([
             'permissions' => ['deny' => [...$deny, ...self::SIGN_IN_COMMANDS]],
-            'sandbox' => ['enabled' => true, 'autoAllowBashIfSandboxed' => false, 'allowUnsandboxedCommands' => false],
         ], JSON_UNESCAPED_SLASHES);
     }
 }

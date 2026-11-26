@@ -13,7 +13,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * One scope a profile may work in on the host, with the accesses it permits there: a root path ('.' is the whole
- * workspace the driver's own sandbox confines it to) or a network destination ('*' is any destination).
+ * workspace) or a network destination ('*' is any destination).
  */
 #[MapName(SnakeCaseMapper::class)]
 final class HostAccess extends Data

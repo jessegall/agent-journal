@@ -10,9 +10,8 @@ use App\Agents\Values\SignInReport;
 use Tests\TestCase;
 
 /**
- * Pins what the sign-in runner runs for each program before its drivers move onto the driver setup (doc 137 revision
- * 3, step 9, run through the sign-in program since step 11): the argv, the environment it names and what it reads from each answer, for start, status, model check
- * and sign-out, recorded from a stand-in program the first time and compared on every run after.
+ * Pins what the sign-in runner runs for each driver: the argv, the environment it names and what it reads from each
+ * answer, for start, status, model check and sign-out, recorded from a stand-in the first time and compared after.
  */
 final class SignInProgramsTest extends TestCase
 {

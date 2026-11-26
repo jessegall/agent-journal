@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Resolvers;
 
 use App\Actors\Contracts\ActorResolver;
+use App\Actors\Contracts\CurrentAgentRuntimes as CurrentAgentRuntimesContract;
 use App\Agents\Values\RunningRuntime;
 use App\Models\Agents\Agent;
 use App\Support\ActorReference;
@@ -15,7 +16,7 @@ use PhpOption\Option;
  * Resolves the full actor identity first and asks the actor for its current runtime; an actor that runs in no
  * runtime has none.
  */
-final readonly class CurrentAgentRuntimes
+final readonly class CurrentAgentRuntimes implements CurrentAgentRuntimesContract
 {
     public function __construct(private ActorResolver $actors) {}
 

@@ -10,7 +10,9 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -18,6 +20,7 @@ use Tests\TestCase;
  * The journal opens an agent's runtime on a host it enrolled, through the real start path, and gives the one-session
  * agent shortcut its open runtime.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalRuntimesTest extends TestCase
 {
     use CommitsHookRows;

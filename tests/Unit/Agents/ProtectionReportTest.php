@@ -40,7 +40,7 @@ final class ProtectionReportTest extends TestCase
 
     public function test_a_judged_report_enforces_a_recorded_item_awaits_the_rest_and_names_a_missing_mechanism(): void
     {
-        $mechanisms = BoundaryMechanisms::allUnavailable('no sandbox here')
+        $mechanisms = BoundaryMechanisms::allUnavailable('nothing confines it here')
             ->with(BoundaryItem::AccountSecrets, BoundaryMechanism::native('the bubblewrap namespace'))
             ->with(BoundaryItem::Keychain, BoundaryMechanism::native('no D-Bus socket'));
         $evidence = new ProtectionEvidence(['claude-code@2.1.323' => ['account-secrets' => 'run-7']]);
@@ -52,7 +52,7 @@ final class ProtectionReportTest extends TestCase
             [
                 [true, 'run-7'],
                 [false, ProtectedItem::EVIDENCE_MISSING.': no recorded run showed it hold on this host'],
-                [false, 'no native mechanism: no sandbox here'],
+                [false, 'no native mechanism: nothing confines it here'],
                 false,
             ],
             [

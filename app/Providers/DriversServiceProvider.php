@@ -11,6 +11,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeAccountHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeContainerHome;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeIsolation;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeyScripts;
@@ -21,7 +22,6 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeModelAnswer;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeOwnTerminalHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodePlatform;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeProtectedShell;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeSeatbelt;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSettingsFile;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInEnvironment;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
@@ -38,6 +38,7 @@ use App\Agents\Drivers\Codex\CodexArguments;
 use App\Agents\Drivers\Codex\CodexFileCredentialStore;
 use App\Agents\Drivers\Codex\CodexHome;
 use App\Agents\Drivers\Codex\CodexHomeFiles;
+use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexKeySignIn;
 use App\Agents\Drivers\Codex\CodexLayout;
@@ -70,7 +71,6 @@ use App\Agents\Drivers\StartConditions\HostHomeStart;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Drivers\StartConditions\OwnTerminalStart;
 use App\Agents\Drivers\StartConditions\ProtectedAccount;
-use App\Agents\Drivers\StartConditions\SeatbeltedTurn;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Processes\AnyContext;
 use App\Processes\Negation;
@@ -152,8 +152,9 @@ final class DriversServiceProvider extends ServiceProvider
             accountSettings: CodexAccountSettings::class,
             skills: CodexSkills::class,
             hookAdapter: CodexAdapter::class,
+            isolation: CodexIsolation::class,
         )
-            // Codex's sandbox limits writes only, so its tools could read the sign-in a protected container keeps.
+            // Codex's tools run as its own user, so they could read the sign-in a protected container keeps.
             ->refusedWhen(new ProtectedAccount(), fn () => ProfileRefused::notContainable($driver))
             ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
             ->signInRefusedWhen(
@@ -174,7 +175,10 @@ final class DriversServiceProvider extends ServiceProvider
      */
     public static function setups(): array
     {
-        return [self::claudeCode(), self::codex()];
+        return [
+            self::claudeCode(),
+            self::codex(),
+        ];
     }
 
     private static function claudeCode(): DriverSetup
@@ -224,6 +228,7 @@ final class DriversServiceProvider extends ServiceProvider
             accountSettings: ClaudeAccountSettings::class,
             skills: ClaudeCodeSkills::class,
             hookAdapter: ClaudeCodeAdapter::class,
+            isolation: ClaudeCodeIsolation::class,
         )
             ->environment(
                 ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
@@ -238,7 +243,6 @@ final class DriversServiceProvider extends ServiceProvider
             ->startPlan(
                 ConditionalPart::for(new AnyContext(), ClaudeCodeSettingsFile::class),
                 ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class),
-                ConditionalPart::forAccount(new SeatbeltedTurn(), ClaudeCodeSeatbelt::class),
                 ConditionalPart::for(new HostAccountTerminal(), StatusLineSocket::class),
                 ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
                 ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),

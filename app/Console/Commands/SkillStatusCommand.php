@@ -73,7 +73,16 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Handed', 'Changed since start', 'Last read', 'Still to read'],
+            [
+                'Skill',
+                'Stored revision',
+                'Generated',
+                'Selected',
+                'Handed',
+                'Changed since start',
+                'Last read',
+                'Still to read',
+            ],
             array_map(fn (SessionSkillStatus $skill) => [
                 $skill->key,
                 $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,

@@ -17,6 +17,8 @@ use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
 use Tests\TestCase;
 
@@ -24,6 +26,7 @@ use Tests\TestCase;
  * The journal's event window opens after the arrangement, sees each event once by its own type or its group's, lets
  * the listeners run and counts nothing that a rollback took back.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalEventsTest extends TestCase
 {
     use CommitsHookRows;

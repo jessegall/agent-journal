@@ -16,6 +16,7 @@ use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostProtectionRecorded;
+use App\Events\Connections\HostProtectionRunsRecorded;
 use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
@@ -27,7 +28,6 @@ use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Profiles\Data\ProtectionReportData;
 use App\Profiles\Data\ProtectionRunData;
-use App\Profiles\Data\SandboxVerdictData;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
 use App\Projects\Values\ProtectionEvidence;
@@ -35,7 +35,6 @@ use App\Projects\Values\StartPlace;
 use App\Records\Contracts\ReadableModel;
 use App\Terminals\Enums\TerminalInputType;
 use App\Values\ProtectionReport;
-use App\Values\SandboxVerdict;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,7 +48,6 @@ use Spatie\LaravelData\DataCollection;
  * @property string $credential_hash
  * @property list<string> $start_roots
  * @property DataCollection<int, ProtectionReportData> $protection
- * @property DataCollection<int, SandboxVerdictData> $sandbox_verdicts
  * @property DataCollection<int, ProtectionRunData> $protection_runs
  * @property ArrangementType $arrangement
  * @property int $protocol
@@ -101,7 +99,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'allowed_images' => 'array',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
-            'sandbox_verdicts' => DataCollection::class.':'.SandboxVerdictData::class,
             'protection_runs' => DataCollection::class.':'.ProtectionRunData::class,
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
@@ -148,17 +145,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * The isolation probes found whether Claude Code's sandbox runs in the agent image.
-     */
-    public function recordSandboxVerdict(string $image, SandboxVerdict $verdict): void
-    {
-        $verdicts = $this->sandbox_verdicts->items();
-        $verdicts[$image] = new SandboxVerdictData($image, $verdict->isRunnable, $verdict->why);
-        $this->sandbox_verdicts = SandboxVerdictData::collect($verdicts, DataCollection::class);
-        $this->saveAndAssert();
-    }
-
-    /**
      * The operator recorded a run that showed each item hold under the report key.
      *
      * @param  list<BoundaryItem>  $items
@@ -173,6 +159,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
 
         $this->protection_runs = ProtectionRunData::collect($runs, DataCollection::class);
         $this->saveAndAssert();
+        $this->raise(new HostProtectionRunsRecorded($this->id));
     }
 
     /**
@@ -238,14 +225,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Predicates ]----------
-
-    /**
-     * Whether the isolation probes found yet whether Claude Code's sandbox runs in the image.
-     */
-    public function hasSandboxVerdictFor(string $image): bool
-    {
-        return array_key_exists($image, $this->sandbox_verdicts->items());
-    }
 
     /**
      * Whether the journal judged the protection kept under the report's key.
@@ -469,20 +448,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         }
 
         return $reports[$key]->report();
-    }
-
-    /**
-     * Whether Claude Code's sandbox runs in the image, as the probes found; refused while they have not run there.
-     */
-    public function sandboxVerdictFor(string $image): SandboxVerdict
-    {
-        $verdicts = $this->sandbox_verdicts->items();
-
-        if (! array_key_exists($image, $verdicts)) {
-            return SandboxVerdict::refused("the isolation probes have not run in the agent image {$image} yet");
-        }
-
-        return $verdicts[$image]->verdict();
     }
 
     /**

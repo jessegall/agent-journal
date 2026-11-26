@@ -39,9 +39,6 @@ type OpenPlan struct {
 	Folders     []string                `json:"folders"`
 	Inherit     []string                `json:"inherit"`
 	SideSockets []string                `json:"side_sockets"`
-	// Seatbelt names a plan file holding a Seatbelt profile the process runs under where the host has Seatbelt
-	// (macOS); empty runs it as it is.
-	Seatbelt string `json:"seatbelt,omitempty"`
 	// ReadFiles are files the host opens read-only for a process on this host, handed over as its descriptors 3 on,
 	// such as a token it reads on a descriptor instead of from its environment.
 	ReadFiles []string `json:"read_files,omitempty"`

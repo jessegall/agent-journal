@@ -15,6 +15,11 @@ use Illuminate\Container\Container;
  */
 final class TestText
 {
+    /**
+     * A value of a text that stands for any words in its pattern.
+     */
+    public const string ANY = "\u{1}any\u{1}";
+
     public static function of(string $text): AgentText
     {
         return AgentText::of('tests.said', ['text' => $text]);
@@ -26,6 +31,16 @@ final class TestText
     public static function words(AgentText $text): string
     {
         return self::renderer()->render($text);
+    }
+
+    /**
+     * A pattern of the text as the agent reads it, where each value given as ANY stands for any words.
+     */
+    public static function pattern(AgentText $text): string
+    {
+        $parts = explode(self::ANY, self::words($text));
+
+        return '/^'.implode('.+', array_map(fn (string $part) => preg_quote($part, '/'), $parts)).'$/s';
     }
 
     public static function renderer(): AgentTexts

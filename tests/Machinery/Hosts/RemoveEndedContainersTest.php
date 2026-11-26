@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Hosts;
+namespace Tests\Machinery\Hosts;
 
 use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessReportType;
+use App\Listeners\RemoveEndedContainers;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -13,6 +15,7 @@ use Tests\TestCase;
  * A process of a contained host that ends has its container removed; one of a host that runs its processes itself
  * leaves nothing to remove.
  */
+#[TestsMachinery(RemoveEndedContainers::class)]
 final class RemoveEndedContainersTest extends TestCase
 {
     use RefreshHookDatabase;

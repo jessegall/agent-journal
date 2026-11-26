@@ -10,8 +10,7 @@ use App\Support\Command;
 
 /**
  * Brings a contained host's protection reports up to date: each driver family's report on each container platform the
- * host has none of is judged, and where Claude Code's sandbox has not been probed in the agent image yet, the first
- * isolation probe is opened instead. Run by the journal on each claim of a contained host (internal, not exported).
+ * host has none of is judged. Run by the journal on each claim of a contained host (internal, not exported).
  *
  * @extends Command<null>
  */

@@ -21,12 +21,12 @@ final readonly class DocumentSummaries implements SummaryProvider
 {
     public function requireReadable(string $id): RecordSummary
     {
-        return self::summary(
-            Document::query()
-                ->sharedPublished()
-                ->whereKey($id)
-                ->firstOr(RecordUnavailable::throwing()->forModel(Document::class, $id)),
-        );
+        $document = Document::query()
+            ->sharedPublished()
+            ->whereKey($id)
+            ->firstOr(RecordUnavailable::throwing()->forModel(Document::class, $id));
+
+        return self::summary($document);
     }
 
     public function ownerOf(string $id): ProjectOwner

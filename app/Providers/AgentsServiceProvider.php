@@ -17,6 +17,7 @@ use App\Actors\ActorAttention;
 use App\Actors\Contracts\ActorAttention as ActorAttentionContract;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAgentRuntimes as CurrentAgentRuntimesContract;
 use App\Actors\Resolvers\CurrentAgentRuntimes;
 use App\Agents\Activity\Contracts\ActivityLog as ActivityLogContract;
 use App\Agents\ActivityLog;
@@ -188,7 +189,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentRequestClientContract::class, AgentRequestClient::class);
         $this->app->bind(StartHeartbeatsContract::class, StartHeartbeats::class);
         $this->app->bind(NavigationExpiryContract::class, NavigationExpiry::class);
-        $this->app->scoped(CurrentAgentRuntimes::class);
+        $this->app->scoped(CurrentAgentRuntimesContract::class, CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttentionContract::class, ActorAttention::class);
         $this->app->scoped(AgentContext::class, AgentContextMissing::throwing()->forRequest());
         $this->app->scoped(AgentAssignees::class);

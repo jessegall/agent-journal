@@ -10,6 +10,7 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Events\Skills\SkillRead;
+use App\Events\Skills\SkillReadForgotten;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
@@ -94,6 +95,7 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
     public function forget(): void
     {
         $this->delete();
+        $this->raise(new SkillReadForgotten($this->session_id, $this->skill_key));
     }
 
     // ----------[ Queries ]----------

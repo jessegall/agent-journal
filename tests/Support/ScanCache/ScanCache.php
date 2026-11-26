@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\ScanCache;
 
+use App\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 
@@ -106,11 +107,14 @@ final class ScanCache
      */
     private static function cacheFileFor(FileScan $scan): string
     {
+        // The scan's own code is part of the key, so a changed scan never reads the findings of its old self.
+        $code = Reflector::of($scan)->fileName()->map(fn (string $file) => (string) sha1_file($file))->getOrElse('');
+
         return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace(
             '/[^a-z0-9_.-]+/i',
             '-',
             $scan->key(),
-        ).'.cache';
+        ).'-'.substr($code, 0, 12).'.cache';
     }
 
     /**

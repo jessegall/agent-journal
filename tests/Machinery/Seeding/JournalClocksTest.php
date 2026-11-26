@@ -7,12 +7,15 @@ namespace Tests\Machinery\Seeding;
 use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The server clock, what commands read, and Carbon, what now() gives, move apart: moving one leaves the other.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalClocksTest extends TestCase
 {
     use RefreshHookDatabase;

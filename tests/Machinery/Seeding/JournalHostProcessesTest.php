@@ -15,7 +15,6 @@ use App\Agents\Values\ProviderKey;
 use App\Connections\PublishedReleases;
 use App\Hosts\ArrangementSetting;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
-use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Hosts\Enums\HostOrderStatus;
 use App\Hosts\Enums\HostOrderType;
@@ -33,14 +32,17 @@ use App\Values\DriverFamily;
 use App\Values\HostOrderSource;
 use Tests\Support\Drivers\AcceptingSignInReader;
 use Tests\Support\Drivers\StandInProcessDriver;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\TestHost;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
  * The test journal opens a host's processes through their real open order and moves them by their host's reports.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalHostProcessesTest extends TestCase
 {
     use RefreshHookDatabase;
@@ -304,16 +306,6 @@ final class JournalHostProcessesTest extends TestCase
                 array_column($this->journal->pipeInputOf('owner'), 'method'),
             ],
         );
-    }
-
-    public function test_a_hosts_own_process_is_called_by_its_purpose(): void
-    {
-        $this->journal->enrollContainedHost('Box', [base_path()]);
-        $this->journal->asSystem(new RequestHostProtectionCommand($this->journal->hostCalled('Box')->hostId));
-
-        $this->journal->callHostProcessOf('relay', 'Box', HostProcessPurpose::RelayProbe);
-
-        $this->journal->assertResult(HostProcessPurpose::RelayProbe, $this->journal->hostProcessCalled('relay')->purpose);
     }
 
     public function test_shown_driver_arrangements_let_the_journal_take_a_headless_start(): void

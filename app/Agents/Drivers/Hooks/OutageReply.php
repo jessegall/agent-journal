@@ -61,7 +61,7 @@ final readonly class OutageReply
     }
 
     /**
-     * The refusal of a tool that would start the driver's own child, which never runs here (rule 36).
+     * The refusal of a tool that would start the driver's own child, which never runs here.
      */
     public function ownChildRefusal(string $nativeEvent): DriverReply
     {

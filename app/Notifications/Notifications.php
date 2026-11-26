@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Notifications;
 
 use App\Bus\Contracts\CommandFacts;
 use App\Events\Messages\NotificationsWithdrawn;
@@ -11,9 +11,6 @@ use App\Models\Notifications\NotificationScope;
 use App\Notifications\Contracts\Notifications as NotificationsContract;
 use App\Notifications\Data\NotificationTarget;
 use App\Notifications\Enums\NotificationSourceType;
-use App\Notifications\NotificationDelivery;
-use App\Notifications\NotificationReceipts;
-use App\Notifications\NotificationScopes;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;

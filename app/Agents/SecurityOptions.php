@@ -25,7 +25,7 @@ final readonly class SecurityOptions
     }
 
     /**
-     * The profile every agent container runs under, which lets the sandbox of its driver make its namespaces.
+     * The seccomp profile every agent container runs under.
      *
      * @throws ManifestRefused
      */

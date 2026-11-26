@@ -17,12 +17,10 @@ func TestAConnectedHostOpensOnlyItsSealedPrograms(t *testing.T) {
 	listed := table.requireListed(OpenPlan{Argv: []string{"/sealed/bin/agent", "--print"}})
 	unlisted := table.requireListed(OpenPlan{Argv: []string{"/bin/sh", "-c", "id"}})
 	healed := table.requireListed(OpenPlan{Argv: []string{"/sealed/bin/agent"}, RestartArgv: []string{"/usr/bin/env"}})
-	seatbelted := table.requireListed(OpenPlan{Seatbelt: "session.sb",
-		Argv: []string{seatbeltExecutable, "-f", "/files/session.sb", "/sealed/bin/agent"}})
 
 	var refusal RefusalError
-	if listed != nil || seatbelted != nil {
-		t.Fatalf("a sealed program was refused: %v, %v", listed, seatbelted)
+	if listed != nil {
+		t.Fatalf("a sealed program was refused: %v", listed)
 	}
 	if !errors.As(unlisted, &refusal) || !errors.As(healed, &refusal) || refusal.Refusal != Unsafe {
 		t.Fatalf("an unlisted program was opened: %v, %v", unlisted, healed)

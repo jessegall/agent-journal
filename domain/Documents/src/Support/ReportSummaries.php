@@ -25,12 +25,12 @@ final readonly class ReportSummaries implements SummaryProvider
 
     public function requireReadable(string $id): RecordSummary
     {
-        return self::summary(
-            Report::query()
-                ->sharedPublished()
-                ->whereKey($id)
-                ->firstOr(RecordUnavailable::throwing()->forModel(Report::class, $id)),
-        );
+        $report = Report::query()
+            ->sharedPublished()
+            ->whereKey($id)
+            ->firstOr(RecordUnavailable::throwing()->forModel(Report::class, $id));
+
+        return self::summary($report);
     }
 
     public function ownerOf(string $id): ProjectOwner

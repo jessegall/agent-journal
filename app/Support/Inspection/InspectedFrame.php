@@ -56,6 +56,10 @@ final class InspectedFrame extends Data
     {
         $list = $this->values[$name] ?? [];
 
-        return is_array($list) ? array_values(array_filter($list, is_string(...))) : [];
+        if (is_array($list)) {
+            return array_values(array_filter($list, is_string(...)));
+        }
+
+        return [];
     }
 }

@@ -57,7 +57,10 @@ function replacementsOf(string $rows): array
     // A namespace line names a folder, never the moved class, so it is left as it is.
     $pattern = '~(?<!namespace )(?<![\\w\\\\/])(?:App(?:\\\\{1,2}\\w+)+|app/[\\w/]+\\.php)(?![\\w])~';
 
-    return ['pattern' => $pattern, 'to' => $to];
+    return [
+        'pattern' => $pattern,
+        'to' => $to,
+    ];
 }
 
 /**
@@ -84,7 +87,13 @@ function textFiles(string $root): iterable
         }
     }
 
-    foreach (['composer.json', 'phpstan.neon', 'phpunit.xml', 'CLAUDE.md', 'AGENTS.md'] as $file) {
+    foreach ([
+        'composer.json',
+        'phpstan.neon',
+        'phpunit.xml',
+        'CLAUDE.md',
+        'AGENTS.md',
+    ] as $file) {
         if (is_file("{$root}/{$file}")) {
             yield "{$root}/{$file}";
         }

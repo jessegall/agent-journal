@@ -62,7 +62,7 @@ func (table *ProcessTable) requireListed(plan OpenPlan) error {
 		return nil
 	}
 	for _, argv := range [][]string{plan.Argv, plan.RestartArgv} {
-		program := programOf(argv, plan.Seatbelt != "")
+		program := programOf(argv)
 		if program != "" && !table.allowed.Permits(program) {
 			return RefusalError{Refusal: Unsafe, Reason: "the executable " + program + " is not on the installer's list"}
 		}
@@ -71,11 +71,8 @@ func (table *ProcessTable) requireListed(plan OpenPlan) error {
 	return nil
 }
 
-// programOf is the program an argv runs, past the Seatbelt launcher the host itself put before it.
-func programOf(argv []string, isSeatbelted bool) string {
-	if isSeatbelted && len(argv) > 3 && argv[0] == seatbeltExecutable {
-		return argv[3]
-	}
+// programOf is the program an argv runs.
+func programOf(argv []string) string {
 	if len(argv) == 0 {
 		return ""
 	}

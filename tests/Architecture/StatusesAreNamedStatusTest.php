@@ -11,7 +11,7 @@ use Tests\Architecture\Support\ParsedFile;
 
 /**
  * A value whose type is a *Status enum is named status, never state, as a property, a parameter or a property of a
- * constructor (user message 26393).
+ * constructor.
  */
 final class StatusesAreNamedStatusTest extends TestCase
 {

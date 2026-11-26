@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Exceptions\SkillSessionHidden;
 use App\Models\Agents\AgentSession;
@@ -14,12 +14,14 @@ use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Values\SessionSkillStatus;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * skill:status shows each session's generation and handed keys, and for one session every skill with its selection and
  * whether it changed since the start; an agent sees only its own session.
  */
+#[TestsMachinery(SkillStatusResolver::class)]
 final class SkillStatusTest extends TestCase
 {
     use CommitsHookRows;

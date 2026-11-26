@@ -6,14 +6,17 @@ namespace Tests\Machinery\Seeding;
 
 use App\Access\AccessSettings;
 use App\Actors\Contracts\CurrentActor;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal has one owner, acts as users, admitted inbox members or no one, and never makes an ordinary user the
  * owner by acting as it.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalActorsTest extends TestCase
 {
     use RefreshHookDatabase;

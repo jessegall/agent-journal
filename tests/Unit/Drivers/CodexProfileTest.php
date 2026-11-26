@@ -86,23 +86,7 @@ final class CodexProfileTest extends TestCase
 
     public function test_a_start_on_a_protected_account_is_refused(): void
     {
-        $account = new DriverAccount(
-            new AccountStartRecipe(
-                environment: [],
-                emptyFolderVariables: [],
-                removedVariables: [],
-                startFlags: [],
-                accountSettings: [],
-                driverVersion: '0.165.0',
-                binaryDigest: '',
-                arrangement: 'contained',
-                protectionSettings: '',
-                transportProfile: TransportProfileType::Cli,
-                readFiles: [],
-            ),
-            'start-reference',
-            isProtected: true,
-        );
+        $account = $this->account(isProtected: true);
         $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', account: $account);
 
         $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($start));
@@ -111,7 +95,13 @@ final class CodexProfileTest extends TestCase
     public function test_a_connected_machine_runs_every_plan_from_its_sealed_program(): void
     {
         $profile = $this->profile();
-        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', executablePlace: ExecutablePlace::Sealed);
+        $start = new DriverStart(
+            self::CONVERSATION,
+            HostProcessType::Terminal,
+            '/work',
+            account: $this->account(isProtected: false),
+            executablePlace: ExecutablePlace::Sealed,
+        );
 
         $this->journal->assertResult(
             ['{host:CODEX_EXECUTABLE}', '{host:CODEX_EXECUTABLE}'],
@@ -148,6 +138,27 @@ final class CodexProfileTest extends TestCase
         $state['arguments'][0] = CodexArguments::EXECUTABLE;
 
         return $state;
+    }
+
+    private function account(bool $isProtected): DriverAccount
+    {
+        return new DriverAccount(
+            new AccountStartRecipe(
+                environment: [],
+                emptyFolderVariables: [],
+                removedVariables: [],
+                startFlags: [],
+                accountSettings: [],
+                driverVersion: '0.165.0',
+                binaryDigest: '',
+                arrangement: 'contained',
+                protectionSettings: '',
+                transportProfile: TransportProfileType::Cli,
+                readFiles: [],
+            ),
+            'start-reference',
+            isProtected: $isProtected,
+        );
     }
 
     private function profile(): DriverProfile

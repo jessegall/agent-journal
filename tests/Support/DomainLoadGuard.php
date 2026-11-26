@@ -39,6 +39,14 @@ final class DomainLoadGuard
         }
     }
 
+    /**
+     * Every domain's classes load again, so a test that boots no application is not held to the last test's domains.
+     */
+    public static function release(): void
+    {
+        self::$booted = null;
+    }
+
     private static function check(string $class): void
     {
         if (self::$booted === null || ! str_starts_with($class, self::DOMAIN_ROOT)) {

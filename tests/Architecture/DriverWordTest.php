@@ -33,8 +33,8 @@ final class DriverWordTest extends TestCase
     private const array EXECUTABLE_SENSE = [
         'app/Api/Processes/ProposalList.php',
         'app/Sharing/Commands/ConfigureShareGateway/ConfigureShareGatewayCommand.php',
-        'app/Console/Commands/Sharing/ConfigureShareGatewayCommand.php',
-        'app/Console/Commands/Sharing/SuperviseSharingCommand.php',
+        'app/Console/Commands/ConfigureShareGatewayCommand.php',
+        'app/Console/Commands/SuperviseSharingCommand.php',
         'app/Bus/Contracts/CommandClassifier.php',
         'app/Bus/Contracts/CommandRuleProvider.php',
         'app/Processes/Contracts/ProgramClassifier.php',

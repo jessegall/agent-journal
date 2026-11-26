@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\AgentSessionEnded;
 use App\Hosts\Commands\RemoveSessionContainer\RemoveSessionContainerCommand;
@@ -18,7 +19,9 @@ use App\Models\Agents\AgentRuntime;
 #[InCommandTransaction]
 final readonly class RemoveEndedSessionContainer implements Listener
 {
-    public function __construct(private CommandBus $commands) {}
+    private const string TRUSTED_ENTRY = 'removing what an ended session left';
+
+    public function __construct(private JournalCommands $commands) {}
 
     public function handle(AgentSessionEnded $fact): void
     {
@@ -28,6 +31,6 @@ final readonly class RemoveEndedSessionContainer implements Listener
             return;
         }
 
-        $this->commands->run(new RemoveSessionContainerCommand($runtime->host_id, $fact->sessionId));
+        $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, new RemoveSessionContainerCommand($runtime->host_id, $fact->sessionId));
     }
 }

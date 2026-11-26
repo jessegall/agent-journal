@@ -6,6 +6,7 @@ namespace App\Agents\Drivers\Setup;
 
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\Contracts\DriverLayout;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
@@ -31,6 +32,7 @@ final readonly class DriverSetup
      * @param  class-string<AccountSettingsFiller>  $accountSettings
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
+     * @param  class-string<DriverIsolation>  $isolation
      * @param  list<StartRefusal>  $refusals
      * @param  list<StartRefusal>  $signInRefusals
      * @param  list<ConditionalPart>  $environment
@@ -50,6 +52,7 @@ final readonly class DriverSetup
         public string $accountSettings,
         public string $skills,
         public string $hookAdapter,
+        public string $isolation,
         public array $refusals = [],
         public array $signInRefusals = [],
         public array $environment = [],
@@ -65,6 +68,7 @@ final readonly class DriverSetup
      * @param  class-string<AccountSettingsFiller>  $accountSettings
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
+     * @param  class-string<DriverIsolation>  $isolation
      */
     public static function of(
         string $family,
@@ -80,6 +84,7 @@ final readonly class DriverSetup
         string $accountSettings,
         string $skills,
         string $hookAdapter,
+        string $isolation,
     ): self {
         return new self(
             $family,
@@ -95,11 +100,12 @@ final readonly class DriverSetup
             $accountSettings,
             $skills,
             $hookAdapter,
+            $isolation,
         );
     }
 
     /**
-     * The same setup for another driver family, such as a family a module adds that runs this driver's program.
+     * The same setup for another driver family, such as a family a module adds that runs this driver's executable.
      */
     public function forFamily(string $family): self
     {
@@ -117,6 +123,7 @@ final readonly class DriverSetup
             $this->accountSettings,
             $this->skills,
             $this->hookAdapter,
+            $this->isolation,
             $this->refusals,
             $this->signInRefusals,
             $this->environment,

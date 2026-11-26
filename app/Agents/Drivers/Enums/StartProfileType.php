@@ -44,7 +44,7 @@ enum StartProfileType: string
 
     /**
      * The platform a contained host's protection report names for starts of this profile: a protected start keeps
-     * the account by its two users and the managed policy, not by the driver's own sandbox, so it has its own report.
+     * the account by its two users and the managed policy, so it has its own report.
      */
     public function protectionPlatform(): IsolationPlatform
     {

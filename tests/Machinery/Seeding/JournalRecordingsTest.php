@@ -6,13 +6,16 @@ namespace Tests\Machinery\Seeding;
 
 use App\Hosts\Contracts\HostChannel;
 use App\Values\HostOrderSource;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The host channel plays a committed recording: a driver that types what the recording's user typed passes each
  * checkpoint however it splits its writes, and one wrong byte fails naming the checkpoint.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalRecordingsTest extends TestCase
 {
     private const string RECORDING = 'claude-code/2.1.323/turns/terminal-turn';

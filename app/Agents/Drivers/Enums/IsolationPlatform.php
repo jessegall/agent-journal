@@ -17,7 +17,7 @@ enum IsolationPlatform: string
     case Other = 'other';
 
     /**
-     * Whether the platform is the agent image, whose evidence and sandbox verdict are kept per image digest.
+     * Whether the platform is the agent image, whose evidence is kept per image digest.
      */
     public function isContainer(): bool
     {

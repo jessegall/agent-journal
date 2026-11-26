@@ -6,13 +6,16 @@ namespace Tests\Machinery\Seeding;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Projects\Commands\EnrollHost\EnrollHostCommand;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal sends a named route as the user in place or as a guest, and a signed call as an agent's start or a host,
  * each with only its own credential; the selection in place stays afterwards.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalRoutesTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -7,6 +7,7 @@ namespace App\Agents\Drivers\Setup;
 use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Accounts\Contracts\SignInProtocol;
 use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Drivers\Contracts\DriverIsolation;
 use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\Contracts\TurnResult;
 use App\Agents\Drivers\Enums\ExecutablePlace;
@@ -91,7 +92,6 @@ final readonly class DriverProfile
             container: $start->container?->manifest,
             inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             sideSockets: $plan->sideSockets,
-            seatbelt: $plan->seatbelt,
             readFiles: $environment->readFiles,
             shieldRules: $isTerminal ? $this->layout()->shieldRules() : [],
             restartArgv: $plan->restartWhenFile === null
@@ -231,6 +231,14 @@ final readonly class DriverProfile
     }
 
     /**
+     * What this driver applies on each platform before its tools run.
+     */
+    public function isolation(): DriverIsolation
+    {
+        return $this->container->make($this->setup->isolation);
+    }
+
+    /**
      * What reads this driver's native hook payloads and answers them.
      */
     public function hookAdapter(): DriverAdapter
@@ -316,21 +324,24 @@ final readonly class DriverProfile
     }
 
     /**
-     * The argv with its driver named as the host must open it: a sealed driver by its sealed name, any other by the
-     * name it has on the host or in the agent image.
+     * The argv with its driver named as the host must open it: a sealed driver by its sealed name, a driver in the agent
+     * image by its plain name on the image's PATH, and one on the host as its setup names it.
      *
      * @param  list<string>  $argv
      * @return list<string>
      */
     private function placed(array $argv, ExecutablePlace $place): array
     {
-        if ($place !== ExecutablePlace::Sealed) {
-            return $argv;
-        }
-
-        return [
-            '{host:'.$this->executableHostName().'}',
-            ...array_slice($argv, 1),
-        ];
+        return match ($place) {
+            ExecutablePlace::Host => $argv,
+            ExecutablePlace::Sealed => [
+                '{host:'.$this->executableHostName().'}',
+                ...array_slice($argv, 1),
+            ],
+            ExecutablePlace::Image => [
+                $this->setup->driver,
+                ...array_slice($argv, 1),
+            ],
+        };
     }
 }

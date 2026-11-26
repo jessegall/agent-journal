@@ -60,8 +60,6 @@ final class CodexAppDriver implements ProcessDriver
      */
     private const string OWNER_EXITED = 'ownerExited';
 
-    private const string SANDBOX = 'workspace-write';
-
     private const int STOP_GRACE_MS = 5000;
 
     private const int STOP_FORCE_MS = 5000;
@@ -322,7 +320,7 @@ final class CodexAppDriver implements ProcessDriver
 
         $params = [
             'cwd' => $runtime->canonical_folder,
-            'sandbox' => self::SANDBOX,
+            'sandbox' => CodexArguments::NO_SANDBOX,
             'approvalPolicy' => 'never',
             'model' => $request->model ?? $runtime->requested_model,
             'config' => $this->featuresOff(),
@@ -403,7 +401,11 @@ final class CodexAppDriver implements ProcessDriver
             return DriverActions::none();
         }
 
-        $this->turns[$thread] = ['turn' => $turn, 'request' => $requestId, 'attempt' => $attempt];
+        $this->turns[$thread] = [
+            'turn' => $turn,
+            'request' => $requestId,
+            'attempt' => $attempt,
+        ];
 
         return DriverActions::of(new NotifyRequestProgressCommand(
             $this->process->host_id,
@@ -524,7 +526,10 @@ final class CodexAppDriver implements ProcessDriver
         $limitId = is_string($limits['limitId'] ?? null) ? $limits['limitId'] : 'codex';
         $readings = [];
 
-        foreach ([UsageWindowSlot::Primary, UsageWindowSlot::Secondary] as $slot) {
+        foreach ([
+            UsageWindowSlot::Primary,
+            UsageWindowSlot::Secondary,
+        ] as $slot) {
             $window = $limits[$slot->value] ?? null;
 
             if (! is_array($window) || ! is_numeric($window['usedPercent'] ?? null)) {
@@ -599,7 +604,11 @@ final class CodexAppDriver implements ProcessDriver
     {
         $parts = explode('.', $id);
 
-        return [$parts[0], (int) ($parts[1] ?? 0), $parts[2] ?? ''];
+        return [
+            $parts[0],
+            (int) ($parts[1] ?? 0),
+            $parts[2] ?? '',
+        ];
     }
 
     private function sourceOf(ClaimedRequest $request, string $step): HostOrderSource
@@ -626,7 +635,11 @@ final class CodexAppDriver implements ProcessDriver
      */
     private function count(array $counts, string $name): int|null
     {
-        return is_int($counts[$name] ?? null) ? $counts[$name] : null;
+        if (is_int($counts[$name] ?? null)) {
+            return $counts[$name];
+        }
+
+        return null;
     }
 
     /**
@@ -647,6 +660,10 @@ final class CodexAppDriver implements ProcessDriver
     {
         $message = json_decode($line, true);
 
-        return is_array($message) ? $message : [];
+        if (is_array($message)) {
+            return $message;
+        }
+
+        return [];
     }
 }

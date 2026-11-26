@@ -27,7 +27,7 @@ final readonly class AssignmentWriteScan implements FileScan
     /**
      * The assignment code a state never reaches: the contracts of assignments and their writers.
      */
-    private const string ASSIGNMENT_CONTRACTS = 'App\\Contracts\\Assignments\\';
+    private const string ASSIGNMENT_CONTRACTS = 'App\\Assignments\\Contracts\\';
 
     private const array WRITERS = ['App\\Assignments\\WriteAssignments', 'App\\Assignments\\ResponsibilityWriter'];
 

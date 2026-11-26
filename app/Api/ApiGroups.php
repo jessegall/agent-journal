@@ -22,6 +22,11 @@ use UnitEnum;
 final class ApiGroups
 {
     /**
+     * The widest line the generated code may hold.
+     */
+    private const int LINE_WIDTH = 120;
+
+    /**
      * The group of one Api folder as PHP source, or null when the folder declares no payload.
      *
      * @throws EndpointDeclarationInvalid
@@ -141,13 +146,18 @@ final class ApiGroups
             $parameters,
         ));
 
-        $parameterAssignments = implode('', array_map(
-            fn (ReflectedParameter $parameter) => <<<TEXT
-
-                        '{$parameter->name()}' => \${$parameter->name()},
-            TEXT,
+        $entries = array_map(
+            fn (ReflectedParameter $parameter) => "'{$parameter->name()}' => \${$parameter->name()}",
             $parameters,
-        ));
+        );
+
+        $oneLine = implode(', ', $entries);
+        $sentLine = "        return \$this->sender->send({$declaration->shortName()}::from([{$oneLine}]));";
+
+        // An argument array that fits its line stays on it; a longer one puts each entry on a line of its own.
+        $parameterAssignments = strlen($sentLine) <= self::LINE_WIDTH
+            ? $oneLine
+            : implode('', array_map(fn (string $entry) => "\n            {$entry},", $entries))."\n        ";
 
         $answer = '\\'.$endpoint->answer;
         $docblock = self::docblock($declaration);
@@ -156,8 +166,7 @@ final class ApiGroups
 
         {$docblock}    public function {$name}({$signature}
             ): {$answer} {
-                return \$this->sender->send(\\{$payload}::from([{$parameterAssignments}
-                ]));
+                return \$this->sender->send(\\{$payload}::from([{$parameterAssignments}]));
             }
 
         PHP;

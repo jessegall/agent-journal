@@ -20,11 +20,11 @@ final readonly class HeadlessTurns
     private function __construct(private string|null $turnResults, public array $ownerArgv) {}
 
     /**
-     * @param  class-string<TurnResults>  $turnResults
+     * @param  class-string<TurnResults>  $results
      */
-    public static function eachInAProcess(string $turnResults): self
+    public static function eachInAProcess(string $results): self
     {
-        return new self($turnResults, []);
+        return new self($results, []);
     }
 
     /**

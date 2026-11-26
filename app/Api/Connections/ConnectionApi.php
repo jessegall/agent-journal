@@ -18,9 +18,7 @@ final readonly class ConnectionApi
     public function cancelProjectCommand(
         string $requestKey,
     ): ApiAccepted {
-        return $this->sender->send(CancelProjectCommandPayload::from([
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(CancelProjectCommandPayload::from(['requestKey' => $requestKey]));
     }
 
     public function readProjectCommandStatus(

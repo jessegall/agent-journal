@@ -13,8 +13,8 @@ use Closure;
 use Illuminate\Support\Str;
 
 /**
- * The sealed reply file a start's hook answers from when the journal cannot answer in its budget (doc 135, Hook
- * binary): the driver's events, its tool events and the tools that start its own child, and the reply to each event
+ * The sealed reply file a start's hook answers from when the journal cannot answer in its budget: the
+ * driver's events, its tool events and the tools that start its own child, and the reply to each event
  * for each reason, sealed with a key made for that start alone and written beside it.
  */
 final readonly class HookReplies

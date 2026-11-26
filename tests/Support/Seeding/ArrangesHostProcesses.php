@@ -240,22 +240,6 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * Names the host's newest process of the purpose, one the journal opened for the host itself, such as a probe of
-     * the agent image, so the test can report on it.
-     */
-    public function callHostProcessOf(string $name, string $host, HostProcessPurpose $purpose): self
-    {
-        $this->hostProcesses[$name] = HostProcess::query()
-            ->where('host_id', $this->hostCalled($host)->hostId)
-            ->where('purpose', $purpose)
-            ->latest('id')
-            ->firstOrFail()
-            ->id;
-
-        return $this;
-    }
-
-    /**
      * The runtime's build probe, which the journal ordered, prints the pinned build, so its sign-in probe is ordered
      * next; both are named for the test as <name>-probe and <name>-sign-in.
      */
@@ -830,18 +814,6 @@ trait ArrangesHostProcesses
         $frame = $this->service(ProcessFeed::class)->latestFrame($this->hostProcessCalled($name)->id);
 
         return $frame === null ? [] : $frame->rows;
-    }
-
-    /**
-     * Each container the test host's stand-in Docker started, oldest first, as it recorded its shape.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function testHostContainers(): array
-    {
-        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'containers', self::OWNER);
-
-        return $host->startedContainers();
     }
 
     /**

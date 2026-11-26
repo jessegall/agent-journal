@@ -12,8 +12,8 @@ use App\Processes\ArgumentBuilder;
 use App\Values\DriverStart;
 
 /**
- * The command line of codex-cli 0.165.0 in a terminal: a resume only by the conversation Codex acknowledged, the
- * sandbox, no approval asked, the model and effort, every agent feature off.
+ * The command line of codex-cli 0.165.0 in a terminal: a resume only by the conversation Codex acknowledged, the one
+ * flag that skips every approval and sandbox, the model and effort, every agent feature off.
  *
  * @extends ArgumentBuilder<DriverStart>
  */
@@ -21,7 +21,11 @@ final readonly class CodexArguments extends ArgumentBuilder
 {
     public const string EXECUTABLE = 'codex';
 
-    private const string SANDBOX = 'workspace-write';
+    /**
+     * Codex's own sandbox setting for running with it off, as the app-server's threads name it: the journal's
+     * container is the only boundary.
+     */
+    public const string NO_SANDBOX = 'danger-full-access';
 
     protected function arguments(): array
     {
@@ -31,9 +35,8 @@ final readonly class CodexArguments extends ArgumentBuilder
                 'resume',
                 $start->sessionId,
             ]),
-            Argument::for(new AnyContext(), ['--sandbox', self::SANDBOX]),
-            // The journal's hook decides each call.
-            Argument::for(new AnyContext(), ['--ask-for-approval', 'never']),
+            // The journal's hook decides each call, and the container is the only boundary.
+            Argument::for(new AnyContext(), '--dangerously-bypass-approvals-and-sandbox'),
             Argument::option(['-m', '{value}'], fn (DriverStart $start) => $start->model),
             Argument::option(['-c', 'model_reasoning_effort={value}'], fn (DriverStart $start) => $start->effort),
             Argument::for(new AnyContext(), $this->featuresOff()),

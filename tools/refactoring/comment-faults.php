@@ -12,7 +12,20 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 chdir($root);
 
-const FOLDERS = ['app', 'domain', 'tests', 'database', 'config', 'routes', 'bootstrap', 'resources/js', 'tools', 'scripts', '.docker', 'bin'];
+const FOLDERS = [
+    'app',
+    'domain',
+    'tests',
+    'database',
+    'config',
+    'routes',
+    'bootstrap',
+    'resources/js',
+    'tools',
+    'scripts',
+    '.docker',
+    'bin',
+];
 
 const MOST_LINES = 3;
 
@@ -54,14 +67,22 @@ function commentRules(string $commentWords, string $forbiddenWords): array
 
     foreach (ruleLines($commentWords) as $line) {
         [$kind, $words, $why] = explode("\t", $line);
-        $rules[] = [$kind, rulePattern($words), $why];
+        $rules[] = [
+            $kind,
+            rulePattern($words),
+            $why,
+        ];
     }
 
     foreach (ruleLines($forbiddenWords) as $line) {
         [$word, $why] = explode("\t", $line);
 
         if (! str_starts_with($word, 'verb:')) {
-            $rules[] = ['poetry', '/(?<![\w-])'.preg_quote($word, '/').'(?![\w-])/i', $why];
+            $rules[] = [
+                'poetry',
+                '/(?<![\w-])'.preg_quote($word, '/').'(?![\w-])/i',
+                $why,
+            ];
         }
     }
 
@@ -136,7 +157,7 @@ function sourceFiles(array $paths): iterable
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)) as $file) {
             $name = $file->getPathname();
 
-            if (! preg_match('#/(vendor|node_modules|testdata|storage)/#', $name) && (! str_contains($name, SAMPLES) || str_contains($path, SAMPLES)) && languageOf($name) !== null) {
+            if (! preg_match('#/(vendor|node_modules|testdata|storage)/|(^|/)resources/js/(generated|actions|routes)/#', $name) && (! str_contains($name, SAMPLES) || str_contains($path, SAMPLES)) && languageOf($name) !== null) {
                 yield $name;
             }
         }
@@ -194,17 +215,26 @@ function phpComments(string $source): array
         }
 
         if ($pending !== []) {
-            $comments[] = [$pendingLine, prose($pending)];
+            $comments[] = [
+                $pendingLine,
+                prose($pending),
+            ];
             $pending = [];
         }
 
         if ($token[0] === T_DOC_COMMENT || $token[0] === T_COMMENT) {
-            $comments[] = [$token[2], prose(blockLines($token[1]))];
+            $comments[] = [
+                $token[2],
+                prose(blockLines($token[1])),
+            ];
         }
     }
 
     if ($pending !== []) {
-        $comments[] = [$pendingLine, prose($pending)];
+        $comments[] = [
+            $pendingLine,
+            prose($pending),
+        ];
     }
 
     return $comments;
@@ -230,7 +260,10 @@ function markedComments(string $source, string $marker, bool $hasBlocks): array
             $block[] = $line;
 
             if (str_contains($trimmed, '*/')) {
-                $comments[] = [$blockStart, prose(blockLines(implode("\n", $block)))];
+                $comments[] = [
+                    $blockStart,
+                    prose(blockLines(implode("\n", $block))),
+                ];
                 $block = null;
             }
 
@@ -239,7 +272,10 @@ function markedComments(string $source, string $marker, bool $hasBlocks): array
 
         if ($hasBlocks && str_starts_with($trimmed, '/*')) {
             if ($run !== []) {
-                $comments[] = [$runStart, prose($run)];
+                $comments[] = [
+                    $runStart,
+                    prose($run),
+                ];
                 $run = [];
             }
 
@@ -247,7 +283,10 @@ function markedComments(string $source, string $marker, bool $hasBlocks): array
             $blockStart = $index + 1;
 
             if (str_contains(substr($trimmed, 2), '*/')) {
-                $comments[] = [$blockStart, prose(blockLines($line))];
+                $comments[] = [
+                    $blockStart,
+                    prose(blockLines($line)),
+                ];
                 $block = null;
             }
 
@@ -262,13 +301,19 @@ function markedComments(string $source, string $marker, bool $hasBlocks): array
         }
 
         if ($run !== []) {
-            $comments[] = [$runStart, prose($run)];
+            $comments[] = [
+                $runStart,
+                prose($run),
+            ];
             $run = [];
         }
     }
 
     if ($run !== []) {
-        $comments[] = [$runStart, prose($run)];
+        $comments[] = [
+            $runStart,
+            prose($run),
+        ];
     }
 
     return $comments;

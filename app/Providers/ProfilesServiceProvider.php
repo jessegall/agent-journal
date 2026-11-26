@@ -23,7 +23,7 @@ use App\Accounts\Contracts\StartAccounts as StartAccountsContract;
 use App\Accounts\SignInProtocols;
 use App\Accounts\StartAccounts;
 use App\Actors\Contracts\CurrentActor;
-use App\Agents\Drivers\Isolation\IsolationProbes;
+use App\Agents\Drivers\Processes\AgentImageProbes;
 use App\Agents\Enums\AccessType;
 use App\Agents\SignInEgress;
 use App\Bus\Contracts\CommandAdmission as CommandAdmissionContract;
@@ -94,7 +94,7 @@ final class ProfilesServiceProvider extends ServiceProvider
             $this->app->make('config')->string('agents.agent_image'),
         ));
 
-        $this->app->bind(IsolationProbes::class, fn () => new IsolationProbes(
+        $this->app->bind(AgentImageProbes::class, fn () => new AgentImageProbes(
             $this->app->make(AgentImage::class),
             $this->app->make('config')->string('agents.security_profiles'),
         ));

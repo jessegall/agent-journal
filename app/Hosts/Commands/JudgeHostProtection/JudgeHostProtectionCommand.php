@@ -11,7 +11,7 @@ use App\Support\Command;
 
 /**
  * Judges the protection of a driver family's pinned build on a platform of a contained host, from the platform's
- * mechanisms, the host's sandbox verdict for the agent image and the runs recorded on it, and keeps the report the
+ * mechanisms and the runs recorded on it, and keeps the report the
  * contained starts are checked against (internal, not exported).
  *
  * @extends Command<null>

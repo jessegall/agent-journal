@@ -17,8 +17,6 @@ return new class extends Migration
             $table->jsonb('start_roots');
             // The latest protection report per driver, build and platform, as the journal judged it for a contained host.
             $table->jsonb('protection')->default('{}');
-            // Whether Claude Code's sandbox ran in each agent image, as the journal's isolation probes found it.
-            $table->jsonb('sandbox_verdicts')->default('{}');
             // The recorded runs that showed each boundary item hold, as the operator recorded them.
             $table->jsonb('protection_runs')->default('[]');
             $table->string('arrangement')->default('local');

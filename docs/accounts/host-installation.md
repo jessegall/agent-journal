@@ -88,6 +88,6 @@ the account's Codex owner and every execution on it; an account the host cannot 
 `php programs/accounts/check-claude.php` and `check-codex.php`, run on the host against journal accounts with
 `--host=<installed journal-agent> --host-state=<state folder>`, print one item per check, each pass, missing or
 fail, with the task that consumes it. An item stays missing until its procedure has run on this host for the pinned
-build; Codex's sandbox limits writes only, so its read items have no mechanism
+build; on a host no item has a mechanism, since the journal uses no driver sandbox
 ([host-protection.md](host-protection.md)). Tasks 243 and 265 consume these results; nothing is promoted until they
 pass.

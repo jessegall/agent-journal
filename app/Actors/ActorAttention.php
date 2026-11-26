@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actors;
 
 use App\Actors\Contracts\ActorAttention as ActorAttentionContract;
-use App\Actors\Resolvers\CurrentAgentRuntimes;
+use App\Actors\Contracts\CurrentAgentRuntimes;
 use App\Sessions\AgentWakes;
 use App\Support\ActorReference;
 

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Events\Skills\SkillRead;
 use App\Hooks\Enums\ContextStartType;
+use App\Listeners\AskRequiredSkillReads;
 use App\Models\Agents\AgentSession;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\SectionDraft;
@@ -15,6 +16,7 @@ use App\Values\ProfileBase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\ScenarioTick;
 use Tests\Support\Seeding\SessionHooks;
 use Tests\Support\Seeding\StateObservation;
@@ -25,6 +27,7 @@ use Tests\TestCase;
  * handed it, in the profile's order, for either driver; a resume, a profile requiring nothing and a session handed
  * nothing ask nothing, and an ask while the state is active neither adds a frame nor spends the tool uses again.
  */
+#[TestsMachinery(AskRequiredSkillReads::class)]
 final class AskRequiredSkillReadsTest extends TestCase
 {
     use CommitsHookRows;

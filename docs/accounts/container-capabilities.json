@@ -68,7 +68,7 @@
             "execution_mode": "required_container",
             "status": "unsupported",
             "evidence": "docs/accounts/contained-capability-runs.md#relay-protection-unsupported",
-            "reason": "Claude Code's sandbox does not start in the agent container (bwrap: Can't mount proc on /newroot/proc: Operation not permitted, under the masked /proc paths), so hook commands and the Bash tool run as one user and the relay material is readable by model-run descendants."
+            "reason": "The journal uses no driver sandbox, so in the standard container hook commands and the Bash tool run as one user and the relay material is readable by model-run descendants."
         },
         {
             "capability": "relay-protection",
@@ -78,7 +78,7 @@
             "execution_mode": "required_container",
             "status": "unverified",
             "evidence": "docs/hooks/driver-capabilities.md#container-capabilities",
-            "reason": "Hook commands run as the same user as the model's shell, so the relay material is readable by model-run descendants unless a separate user or Codex's own sandbox keeps it out; neither has been run and checked in a container."
+            "reason": "Hook commands run as the same user as the model's shell, so the relay material is readable by model-run descendants unless the protected container's separate user keeps it out; that has not been run and checked in a container."
         },
         {
             "capability": "process-tracking",

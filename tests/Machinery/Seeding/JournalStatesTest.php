@@ -25,12 +25,14 @@ use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
 use Tests\Fixtures\Hooks\Ticks\ScriptedTickState;
 use Tests\Fixtures\Hooks\Ticks\TickScript;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\RegistersTestStates;
 use Tests\Support\ScenarioTick;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\StateObservation;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 use Throwable;
 
@@ -38,6 +40,7 @@ use Throwable;
  * A state of a test on an agent's real stack: bound to its one frame, answering hooks as the agent, hearing facts
  * through the dispatcher and ticks through an engine pass, and observed after each given step.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalStatesTest extends TestCase
 {
     use CommitsHookRows;

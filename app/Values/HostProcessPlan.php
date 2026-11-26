@@ -48,10 +48,6 @@ final readonly class HostProcessPlan
         public array $inherit = [],
         public array $sideSockets = [],
         /**
-         * A plan file holding the Seatbelt profile the process runs under where the host has Seatbelt
-         */
-        public string|null $seatbelt = null,
-        /**
          * Files the host opens read-only for the process, handed over as its descriptors 3 on
          */
         public array $readFiles = [],
@@ -74,7 +70,7 @@ final readonly class HostProcessPlan
          */
         public ContainerLabels|null $labels = null,
         /**
-         * The files a device keeps for its binding between two sessions, such as the program's sign-in, each named
+         * The files a device keeps for its binding between two sessions, such as the driver's sign-in, each named
          * as the process sees it.
          */
         public array $keptFiles = [],
@@ -137,7 +133,6 @@ final readonly class HostProcessPlan
             'folders' => $this->folders,
             'inherit' => $this->inherit,
             'side_sockets' => $this->sideSockets,
-            'seatbelt' => $this->seatbelt,
             'read_files' => $this->readFiles,
             'shield_rules' => $this->shieldRules,
             'restart_argv' => $this->restartArgv,

@@ -158,6 +158,7 @@ abstract class TestCase extends BaseTestCase
         Relation::morphMap($this->applicationMorphMap, false);
 
         parent::tearDown();
+        DomainLoadGuard::release();
     }
 
     /**

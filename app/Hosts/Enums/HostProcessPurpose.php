@@ -15,8 +15,6 @@ enum HostProcessPurpose: string
     case Probe = 'probe';
     case BuildProbe = 'build_probe';
     case SignInProbe = 'sign_in_probe';
-    case RelayProbe = 'relay_probe';
-    case SandboxProbe = 'sandbox_probe';
 
     /**
      * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
@@ -24,19 +22,8 @@ enum HostProcessPurpose: string
      */
     public function isRuntimeProcess(): bool
     {
-        $ownedByNoRuntime = [self::AgentTurn, self::BuildProbe, self::SignInProbe, ...self::isolationProbes()];
+        $ownedByNoRuntime = [self::AgentTurn, self::BuildProbe, self::SignInProbe];
 
         return ! in_array($this, $ownedByNoRuntime, true);
-    }
-
-    /**
-     * The probes that show whether Claude Code's sandbox runs in the agent image: socat, the relay it needs, then
-     * bubblewrap.
-     *
-     * @return list<self>
-     */
-    public static function isolationProbes(): array
-    {
-        return [self::RelayProbe, self::SandboxProbe];
     }
 }

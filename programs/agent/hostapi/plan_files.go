@@ -3,7 +3,6 @@ package hostapi
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -80,28 +79,7 @@ func PrepareOpenPlan(processFolder string, plan OpenPlan, hostNames map[string]s
 			return plan, err
 		}
 	}
-	filled, err := fillPlan(plan, placeholders)
-	if err != nil {
-		return plan, err
-	}
-	if plan.Seatbelt != "" {
-		if !isInsidePath(plan.Seatbelt) {
-			return plan, RefusalError{Refusal: Unsafe, Reason: "the Seatbelt profile " + plan.Seatbelt + " leaves its folder"}
-		}
-		filled.Argv = underSeatbelt(filled.Argv, filepath.Join(folders[filesFolderName], plan.Seatbelt))
-	}
-	return filled, nil
-}
-
-// seatbeltExecutable is macOS's Seatbelt launcher, which runs a process under the profile it is given.
-const seatbeltExecutable = "/usr/bin/sandbox-exec"
-
-// underSeatbelt runs the argv under the profile where the host has Seatbelt, and as it is elsewhere.
-func underSeatbelt(argv []string, profile string) []string {
-	if runtime.GOOS != "darwin" {
-		return argv
-	}
-	return append([]string{seatbeltExecutable, "-f", profile}, argv...)
+	return fillPlan(plan, placeholders)
 }
 
 // isInsidePath answers whether a path is relative, clean, inside its folder and its first part not hidden.

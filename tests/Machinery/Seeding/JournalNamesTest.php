@@ -6,14 +6,17 @@ namespace Tests\Machinery\Seeding;
 
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal refuses a name it never arranged and a name already given to another actor, before it writes a row.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalNamesTest extends TestCase
 {
     use RefreshHookDatabase;

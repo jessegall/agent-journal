@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Events\Hooks\ContextStarted;
 use App\Hooks\Enums\ContextStartType;
@@ -13,6 +13,7 @@ use App\Models\Skills\SkillReadEntry;
 use App\Skills\Enums\ReadEvidence;
 use App\Values\StackTarget;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -20,6 +21,7 @@ use Tests\TestCase;
  * A session start leaves its agent with no skill read on record, a clear or a compaction keeps them, and another
  * agent's reads stay.
  */
+#[TestsMachinery(ClearAgentSkillReads::class)]
 final class ClearAgentSkillReadsTest extends TestCase
 {
     use RefreshHookDatabase;

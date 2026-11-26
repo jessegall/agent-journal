@@ -17,8 +17,8 @@ enum StartPreflightRefusal: string
     public function label(): string
     {
         return match ($this) {
-            self::DriverNotContainable => 'Codex cannot run in a container yet: its sandbox does not keep its tools '
-                .'from its sign-in.',
+            self::DriverNotContainable => 'Codex cannot run in a container yet: its tools would run as its own user '
+                .'and read its sign-in.',
             self::NoHost => 'No connected host runs agents in this place.',
         };
     }

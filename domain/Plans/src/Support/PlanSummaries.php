@@ -43,7 +43,9 @@ final readonly class PlanSummaries implements SummaryProvider
 
     public function visibleSummaries(array $ids): array
     {
-        return $this->summaries(Plan::query()->whereKey($ids)->readExactly(count($ids))->get());
+        $plans = Plan::query()->whereKey($ids)->readExactly(count($ids))->get();
+
+        return $this->summaries($plans);
     }
 
     /**

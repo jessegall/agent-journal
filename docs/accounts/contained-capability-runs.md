@@ -78,12 +78,9 @@ The runs of tasks 1634 and 1501 record a signed-in session using it.
 ## relay-protection: unsupported
 
 The contained host's protection report, recorded on the host's row (`hosts.protection`, `claude-code@2.1.323`,
-platform `linux-container`), sets every item unenforced with the same reason: Claude Code's sandbox does not start in
-the agent container, `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. The agent daemon gives each
-agent container Docker's masked `/proc` paths, and the kernel refuses a fresh `/proc` mount under them; lifting the
-mask for agent containers would expose the paths it hides to the model's tools. Without the sandbox, hook commands
-and the Bash tool run as the same user in the same container, so the relay's material is readable by model-run
-descendants.
+platform `linux-container`), sets every item unenforced with the same reason: the journal uses no driver sandbox, and
+in the standard container the driver and the commands it runs share one user. So hook commands and the Bash tool run
+as the same user in the same container, and the relay's material is readable by model-run descendants.
 
 ## The other three
 

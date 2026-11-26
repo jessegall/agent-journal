@@ -29,7 +29,7 @@ final class StateReturnsTest extends TestCase
             self::FIXTURE.':15 onEnter declares an array',
             self::FIXTURE.':17 onEnter gives an array',
             self::FIXTURE.':22 onSessionStart gives an array',
-            self::FIXTURE.':23 onSessionStart gives a plain value',
+            self::FIXTURE.':24 onSessionStart gives a plain value',
         ], $this->faultsIn([base_path('tests/Fixtures/StateReturns')]));
     }
 

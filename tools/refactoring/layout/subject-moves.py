@@ -22,7 +22,7 @@ LARAVEL = {"Http", "Models", "Providers", "Console", "Events", "Listeners", "Pol
 MOVABLE = {"Commands", "Contracts", "Enums", "Data", "Values", "Exceptions", "Pipes", "Pipelines", "Resolvers",
            "Concerns", "Declarations", "CommandMiddleware", "Attributes", "Pages", "Actions", "Support"}
 
-# Kinds that sit in the subject's root once moved, as the tree of report 415 places Support classes.
+# Kinds that sit in the subject's root once moved, as the subject tree places Support classes.
 ROOT_KINDS = {"Support"}
 
 # The subject folders of today's kind folders, named as report 415's subjects.

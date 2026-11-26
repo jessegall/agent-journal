@@ -6,14 +6,17 @@ namespace Tests\Machinery\Seeding;
 
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Agents\AgentSession;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * An agent the journal starts twice has two named starts, each its own session; asking for "its session" then names the
  * ambiguity, and a start the test signs with is the one the journal made.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalSessionsTest extends TestCase
 {
     use RefreshHookDatabase;

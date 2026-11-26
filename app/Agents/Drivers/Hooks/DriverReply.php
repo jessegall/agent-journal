@@ -78,7 +78,11 @@ final readonly class DriverReply implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['stdout' => $this->stdout, 'stderr' => $this->stderr, 'exitCode' => $this->exitCode];
+        return [
+            'stdout' => $this->stdout,
+            'stderr' => $this->stderr,
+            'exitCode' => $this->exitCode,
+        ];
     }
 
     public function recordedAs(AnswerType $type): RecordedAnswer

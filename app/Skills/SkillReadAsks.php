@@ -24,17 +24,17 @@ final readonly class SkillReadAsks
     ) {}
 
     /**
-     * @param  list<string>  $skillKeys
+     * @param  list<string>  $keys
      */
-    public function ask(StackTarget $target, array $skillKeys): void
+    public function ask(StackTarget $target, array $keys): void
     {
-        if ($skillKeys === []) {
+        if ($keys === []) {
             return;
         }
 
-        $this->transactions->run(function () use ($target, $skillKeys): void {
+        $this->transactions->run(function () use ($target, $keys): void {
             $this->stacks->push($target, ReadSkillStateReference::forSession($target->sessionId));
-            $this->facts->publishAfterCommit(new SkillReadAsked($target->sessionId, $skillKeys));
+            $this->facts->publishAfterCommit(new SkillReadAsked($target->sessionId, $keys));
         });
     }
 }

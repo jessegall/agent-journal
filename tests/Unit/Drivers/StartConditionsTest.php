@@ -14,7 +14,6 @@ use App\Agents\Drivers\StartConditions\ProtectedAccount;
 use App\Agents\Drivers\StartConditions\ResumedStart;
 use App\Agents\Drivers\StartConditions\ResumedTerminal;
 use App\Agents\Drivers\StartConditions\ResumedTurn;
-use App\Agents\Drivers\StartConditions\SeatbeltedTurn;
 use App\Agents\Drivers\StartConditions\TurnStart;
 use App\Hosts\Enums\HostProcessType;
 use App\Processes\Contracts\Condition;
@@ -38,7 +37,7 @@ final class StartConditionsTest extends TestCase
                 true,
                 $this->account(TransportProfileType::Cli),
             ),
-            'turn on a seatbelted account' => $this->start(
+            'turn on an account with a folder' => $this->start(
                 HostProcessType::Pipe,
                 account: $this->account(TransportProfileType::Mcp, '/accounts/a'),
             ),
@@ -48,21 +47,20 @@ final class StartConditionsTest extends TestCase
             ),
         ];
         $conditions = [
-            TurnStart::class => ['resumed turn', 'turn on a seatbelted account'],
+            TurnStart::class => ['resumed turn', 'turn on an account with a folder'],
             ResumedStart::class => ['resumed turn', 'resumed terminal on a CLI account'],
             ResumedTerminal::class => ['resumed terminal on a CLI account'],
             ResumedTurn::class => ['resumed turn'],
             AccountStart::class => [
                 'resumed terminal on a CLI account',
-                'turn on a seatbelted account',
+                'turn on an account with a folder',
                 'terminal on a protected account',
             ],
             AccountTerminal::class => ['resumed terminal on a CLI account', 'terminal on a protected account'],
             AccountWithoutFolder::class => ['resumed terminal on a CLI account'],
             ProtectedAccount::class => ['terminal on a protected account'],
-            JournalServerAccount::class => ['turn on a seatbelted account', 'terminal on a protected account'],
+            JournalServerAccount::class => ['turn on an account with a folder', 'terminal on a protected account'],
             CliTransportAccount::class => ['resumed terminal on a CLI account'],
-            SeatbeltedTurn::class => ['turn on a seatbelted account'],
         ];
 
         $this->journal->assertResult($conditions, array_map(

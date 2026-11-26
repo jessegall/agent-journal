@@ -29,7 +29,10 @@ final readonly class HostLinkAlarms
      */
     public function current(): array
     {
-        return [...$this->brokenLinks(), ...$this->outOfDateHosts()];
+        return [
+            ...$this->brokenLinks(),
+            ...$this->outOfDateHosts(),
+        ];
     }
 
     /**

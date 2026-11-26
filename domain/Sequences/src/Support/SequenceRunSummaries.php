@@ -24,12 +24,12 @@ final readonly class SequenceRunSummaries implements SummaryProvider
 {
     public function requireReadable(string $id): RecordSummary
     {
-        return self::summary(
-            SequenceRun::query()
-                ->acrossActors()
-                ->whereKey($id)
-                ->firstOr(RecordUnavailable::throwing()->forModel(SequenceRun::class, $id)),
-        );
+        $run = SequenceRun::query()
+            ->acrossActors()
+            ->whereKey($id)
+            ->firstOr(RecordUnavailable::throwing()->forModel(SequenceRun::class, $id));
+
+        return self::summary($run);
     }
 
     /**

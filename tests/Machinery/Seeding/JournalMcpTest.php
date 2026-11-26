@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal sends MCP frames signed by an agent's start: the transport answer, a tool's failure and the frame's own
  * JSON-RPC id are each seen apart.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalMcpTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -31,6 +31,11 @@ final readonly class StateEffectScan implements FileScan
     ];
 
     /**
+     * Classes whose static calls only build a value, which changes nothing.
+     */
+    private const array VALUE_CLASSES = ['PhpOption\\None', 'PhpOption\\Some', 'None', 'Some'];
+
+    /**
      * Functions that write files, start processes or send events.
      */
     private const array FUNCTIONS = [
@@ -83,9 +88,17 @@ final readonly class StateEffectScan implements FileScan
         }
 
         $isCall = $node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall
-            || $node instanceof Expr\StaticCall;
+            || ($node instanceof Expr\StaticCall && ! self::makesAValue($node));
 
         return $isCall && $node->name instanceof Node\Identifier && in_array($node->name->toString(), self::METHODS, true);
+    }
+
+    /**
+     * Whether the static call only builds a value, such as None::create() for an answer with nothing in it.
+     */
+    private static function makesAValue(Expr\StaticCall $call): bool
+    {
+        return $call->class instanceof Node\Name && in_array($call->class->toString(), self::VALUE_CLASSES, true);
     }
 
     private static function callOf(Node $call): string

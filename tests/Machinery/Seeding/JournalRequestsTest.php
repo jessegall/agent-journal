@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Tests\Machinery\Seeding;
 
 use App\Actors\Contracts\CurrentActor;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal acts as one actor at a time, a switch to an actor it cannot find leaves the actor before in place, and
  * an agent's console commands reach the journal signed by its start.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalRequestsTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -7,7 +7,6 @@ namespace App\Agents\Drivers\Processes;
 use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\Drivers\Contracts\ProcessDriver;
-use App\Hosts\Commands\JudgeIsolationProbe\JudgeIsolationProbeCommand;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
@@ -65,8 +64,8 @@ final class ProbeDriver implements ProcessDriver
      */
     private function streams(): array
     {
-        // An isolation probe's failure is the first line it printed on either stream.
-        if ($this->process->purpose === HostProcessPurpose::SignInProbe || $this->isIsolationProbe()) {
+        // A sign-in probe's failure is the first line it printed on either stream.
+        if ($this->process->purpose === HostProcessPurpose::SignInProbe) {
             return [
                 'stdout',
                 'stderr',
@@ -80,16 +79,7 @@ final class ProbeDriver implements ProcessDriver
     {
         return DriverActions::of(match ($this->process->purpose) {
             HostProcessPurpose::SignInProbe => new CheckSignInCommand($this->process->id, $this->printed),
-            HostProcessPurpose::RelayProbe, HostProcessPurpose::SandboxProbe => new JudgeIsolationProbeCommand(
-                $this->process->id,
-                $this->printed,
-            ),
             default => new CheckDriverBuildCommand($this->process->id, $this->printed),
         });
-    }
-
-    private function isIsolationProbe(): bool
-    {
-        return in_array($this->process->purpose, HostProcessPurpose::isolationProbes(), true);
     }
 }

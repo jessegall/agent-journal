@@ -1,6 +1,5 @@
 # The agent image: every agent's program runs inside one of these containers. No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when
-# building. bubblewrap and socat let the program sandbox its own tools and reach the host's relays; TOOLCHAIN_PACKAGES
-# names the apt packages of the project toolchains the main agent's workspace needs, none by default.
+# building. TOOLCHAIN_PACKAGES names the apt packages of the project toolchains the main agent's workspace needs, none by default.
 ARG BASE=debian:bookworm-slim
 ARG GO_IMAGE=golang:1.26.4-bookworm
 
@@ -37,7 +36,7 @@ ARG TOOLCHAIN_PACKAGES=""
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update \
-    && apt-get install -y --no-install-recommends git ca-certificates bash bubblewrap socat \
+    && apt-get install -y --no-install-recommends git ca-certificates bash \
         ${TOOLCHAIN_PACKAGES}
 
 COPY --from=programs --chown=root:root /out/claude /out/codex /usr/local/bin/

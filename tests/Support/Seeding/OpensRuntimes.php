@@ -10,6 +10,7 @@ use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Values\RuntimeIntent;
+use App\Hosts\Contracts\DockerImageVerifier;
 use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
@@ -21,6 +22,7 @@ use App\Projects\Enums\ArrangementType;
 use App\Sessions\AgentRuntimes;
 use App\Sessions\OpenedRuntime;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\VerifiedTestHostImage;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -79,6 +81,8 @@ trait OpensRuntimes
         }
 
         $this->hosts[$name] = $this->asSystem(new EnrollHostCommand($name, $folders, ArrangementType::Contained));
+        // A contained host runs the stand-in agent image, which this journal's image record verifies.
+        $this->app->instance(DockerImageVerifier::class, new VerifiedTestHostImage());
 
         return $this;
     }
@@ -162,7 +166,7 @@ trait OpensRuntimes
     /**
      * The folder a test saves the family's account in: plain letters and digits, as an account folder's name is.
      */
-    public static function accountFolderOf(string $folder, string $family): string
+    private static function accountFolderOf(string $folder, string $family): string
     {
         return "{$folder}/".str_replace('-', '', $family);
     }

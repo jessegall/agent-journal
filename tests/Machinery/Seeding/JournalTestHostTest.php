@@ -11,7 +11,9 @@ use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessStatus;
 use App\Hosts\ProcessFeed;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Hosts\EchoProcessDriver;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -19,6 +21,7 @@ use Tests\TestCase;
 /**
  * The test journal runs a host for real and opens the stand-in's echo program on it, then waits for its report.
  */
+#[TestsMachinery(TestJournal::class)]
 #[TimeLimit(seconds: 60, reason: 'It runs the test host, the Docker stand-in and a served journal.')]
 final class JournalTestHostTest extends TestCase
 {

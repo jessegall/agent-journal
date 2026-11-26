@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Events\Sessions\AgentSessionSkillsGenerated;
 use App\Models\Agents\AgentSession;
@@ -16,6 +16,7 @@ use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;
 use Tests\Fixtures\Profiles\TestStartPolicies;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * A session keeps the generation and the skill keys its start was handed, raises one event with both, and answers
  * which keys it was handed and which of its profile's required keys among them, in the profile's order.
  */
+#[TestsMachinery(AgentSession::class)]
 final class AgentSessionSkillsTest extends TestCase
 {
     use RefreshHookDatabase;

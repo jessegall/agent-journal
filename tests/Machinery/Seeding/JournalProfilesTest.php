@@ -13,12 +13,15 @@ use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal installs the built-in profiles only when a test asks, saves drafts and activates profiles through
  * their commands, and changes, reads and breaks a stored setting.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalProfilesTest extends TestCase
 {
     use CommitsHookRows;

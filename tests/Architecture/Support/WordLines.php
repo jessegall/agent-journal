@@ -22,9 +22,9 @@ final readonly class WordLines
         .'|PERSON(?!AL)|PEOPLE|HUMAN/';
 
     /**
-     * Claude Code, Codex and the like are drivers, never programs.
+     * Claude Code, Codex and the like are drivers, never programs; the programs/ folder of shipped programs is a path.
      */
-    public const string DRIVER_WORDS = '/program/i';
+    public const string DRIVER_WORDS = '/program(?!s\/)/i';
 
     /**
      * The Go host names a driver a program only in these shapes; program alone there is an OS executable.

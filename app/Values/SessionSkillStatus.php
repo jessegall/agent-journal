@@ -31,7 +31,11 @@ final readonly class SessionSkillStatus implements JsonSerializable
      */
     public function handedText(): string
     {
-        return $this->handedGeneration === null ? 'not handed' : "handed in {$this->handedGeneration}";
+        if ($this->handedGeneration === null) {
+            return 'not handed';
+        }
+
+        return "handed in {$this->handedGeneration}";
     }
 
     /**

@@ -72,9 +72,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
             ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
             ->with(HostProcessPurpose::AccountOwner, CodexAppDriver::class)
             ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
-            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class)
-            ->with(HostProcessPurpose::RelayProbe, ProbeDriver::class)
-            ->with(HostProcessPurpose::SandboxProbe, ProbeDriver::class));
+            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
 
         $this->app->singleton(WorkerLease::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);

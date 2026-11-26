@@ -35,7 +35,7 @@ final class UpdateTest extends TestCase
 
     private const string GENERATED_FILE = 'resources/js/generated/routes.ts';
 
-    private const string SANDBOX_TOOL_CHECK = '--entrypoint socat';
+    private const string PROTECTED_FILE_CHECK = '--entrypoint test';
 
     private const string MCP_RELAY_CHECK = '--entrypoint /opt/journal/bin/journal-mcp';
 
@@ -246,7 +246,7 @@ final class UpdateTest extends TestCase
         $pinned = $this->installation->setting(self::AGENT_PIN);
         $recorded = $this->installation->recordedImages();
         $this->installation->push(['programs/agent/relay.go' => 'package relay']);
-        $this->installation->docker->failCallsHolding(self::SANDBOX_TOOL_CHECK);
+        $this->installation->docker->failCallsHolding(self::PROTECTED_FILE_CHECK);
 
         $update = $this->installation->update();
 
@@ -257,14 +257,14 @@ final class UpdateTest extends TestCase
 
     public function test_an_image_check_that_meets_a_passing_docker_error_is_tried_again(): void
     {
-        $this->installation->docker->failOnceAsDocker(self::SANDBOX_TOOL_CHECK);
+        $this->installation->docker->failOnceAsDocker(self::PROTECTED_FILE_CHECK);
         $pushed = $this->installation->push(['README.md' => 'first']);
 
         $update = $this->installation->update();
 
         $this->assertSame(0, $update->getExitCode(), $update->getOutput().$update->getErrorOutput());
         $this->assertSame($pushed, $this->installation->installedCommit());
-        $this->assertCount(2, $this->installation->docker->callsHolding(self::SANDBOX_TOOL_CHECK));
+        $this->assertCount(2, $this->installation->docker->callsHolding(self::PROTECTED_FILE_CHECK));
     }
 
     public function test_an_agent_image_whose_mcp_relay_does_not_answer_is_not_pinned(): void

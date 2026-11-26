@@ -92,7 +92,7 @@ final class AccountProtectionTest extends TestCase
         $this->assertSame('deny', $this->decision('Bash', ['command' => 'ls $CLAUDE_CONFIG_DIR']));
     }
 
-    public function test_the_start_settings_deny_secrets_natively_and_close_the_unsandboxed_escape(): void
+    public function test_the_start_settings_deny_secrets_natively_and_set_no_sandbox(): void
     {
         $settings = json_decode(ClaudeAccountProtection::settingsFor('/journal/accounts/a', '/journal/accounts'), true);
 
@@ -101,8 +101,7 @@ final class AccountProtectionTest extends TestCase
         $this->assertContains('Edit(//journal/accounts/**)', $settings['permissions']['deny']);
         $this->assertContains('Bash(security:*)', $settings['permissions']['deny']);
         $this->assertNotContains('Read(//journal/accounts/a/**)', $settings['permissions']['deny']);
-        $this->assertTrue($settings['sandbox']['enabled']);
-        $this->assertFalse($settings['sandbox']['allowUnsandboxedCommands']);
+        $this->assertArrayNotHasKey('sandbox', $settings);
     }
 
     public function test_codex_commands_and_patches_reach_only_the_sessions_own_outputs(): void
@@ -118,11 +117,11 @@ final class AccountProtectionTest extends TestCase
         $this->assertTrue($protection->refusesCommand('session-2', 'tail '.self::OWN_OUTPUTS.'.jsonl', '/work'));
     }
 
-    public function test_each_codex_thread_gets_one_sandbox_and_no_account_folder_in_its_shell(): void
+    public function test_each_codex_thread_keeps_codexs_defaults_and_no_account_folder_in_its_shell(): void
     {
         $settings = json_decode(CodexAccountProtection::settingsFor(), true);
 
-        $this->assertSame('workspace-write', $settings['sandbox']);
+        $this->assertArrayNotHasKey('sandbox', $settings);
         $this->assertArrayNotHasKey('sandbox_mode', $settings['config']);
         $this->assertContains('CODEX_HOME', $settings['config']['shell_environment_policy']['exclude']);
     }

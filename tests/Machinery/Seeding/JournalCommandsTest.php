@@ -18,7 +18,9 @@ use LogicException;
 use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
 use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 use Throwable;
 
@@ -26,6 +28,7 @@ use Throwable;
  * The journal sends a command as the actor in place, keyed or not, or as the journal through a trusted entry, and
  * asserts the result or refusal it gave.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalCommandsTest extends TestCase
 {
     use RefreshHookDatabase;

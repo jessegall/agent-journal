@@ -167,7 +167,7 @@ final class DriverPlansTest extends TestCase
                 isProtected: true,
                 folder: '/accounts/a',
             ),
-            'a seatbelted account' => new DriverAccount(
+            'a host account with a folder' => new DriverAccount(
                 $this->recipe($family, TransportProfileType::Mcp),
                 'start-1',
                 $server,

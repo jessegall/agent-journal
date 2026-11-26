@@ -125,7 +125,11 @@ final class ReadSkillState extends AgentState implements UniqueState
             return;
         }
 
-        $this->skillKeys = [...$this->skillKeys, ...$added];
+        $this->skillKeys = [
+            ...$this->skillKeys,
+            ...$added,
+        ];
+
         $this->toolUses = 0;
     }
 

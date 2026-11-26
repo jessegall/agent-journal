@@ -31,6 +31,6 @@ final readonly class CommandEntries
         $name = substr(end($parts), 0, -strlen('Command'));
         $folder = EntryPoint::folderOf($command, EntryType::Command);
 
-        return $parts[0] === 'Domain' ? "{$folder}/{$name}Test.php" : "{$folder}/{$parts[2]}/{$name}Test.php";
+        return $parts[0] === 'Domain' ? "{$folder}/{$name}Test.php" : "{$folder}/{$parts[1]}/{$name}Test.php";
     }
 }

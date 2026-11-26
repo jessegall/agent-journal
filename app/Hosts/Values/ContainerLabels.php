@@ -23,6 +23,10 @@ final readonly class ContainerLabels implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['installation' => $this->installation, 'session' => $this->session, 'account' => $this->account];
+        return [
+            'installation' => $this->installation,
+            'session' => $this->session,
+            'account' => $this->account,
+        ];
     }
 }

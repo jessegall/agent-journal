@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Bus\Contracts\CommandBus;
 use App\Events\Sessions\SessionOpened;
@@ -19,6 +19,7 @@ use App\Values\ProfileBase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -27,6 +28,7 @@ use Tests\TestCase;
  * without a skill adapter and a required skill outside the selection still refuse; before the first refresh nothing
  * is recorded and the start goes ahead.
  */
+#[TestsMachinery(AdmitStartSkills::class)]
 final class AdmitStartSkillsTest extends TestCase
 {
     use CommitsHookRows;

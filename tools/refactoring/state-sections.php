@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Checks that every agent state lays out its methods as the state machine reads them: the constructor, reference makers
- * and own answers under no marker, then the sections Lifecycle, Hooks, Events and Internals, in that order (rule 94).
+ * and own answers under no marker, then the sections Lifecycle, Hooks, Events and Internals, in that order.
  *
  *   php tools/refactoring/state-sections.php app domain
  *       prints "file:line<TAB>what is wrong" and fails while there is one.

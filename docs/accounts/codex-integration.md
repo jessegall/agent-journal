@@ -119,9 +119,9 @@ it. Escalation and the retry after a sandbox denial only drop the sandbox wrappe
 | code mode | JavaScript host child | `code_mode`, `code_mode_only` and `code_mode_host` off |
 | collaboration tools | child agents | agent features off and the hook policy refuses them |
 | `!cmd` user shell | local login shell, no sandbox, no approval | `include_local = false`: no local environment, so it fails closed |
-| escalation and approvals | the same runtime without the sandbox wrapper | Codex's own sandbox is off (`danger-full-access`): its bwrap cannot run in the container, and uid 10002 plus the container are the boundary; an escalated call goes the same remote route |
+| escalation and approvals | the same runtime without the sandbox wrapper | the journal never uses Codex's own sandbox: every start runs with `--dangerously-bypass-approvals-and-sandbox`, and uid 10002 plus the container are the boundary; an escalated call goes the same remote route |
 | `exec resume` and `resume` | the thread's environments, read again from CODEX_HOME | the same `environments.toml`; a resumed thread's commands also ran as uid 10002 in the probe |
-| extra arguments | whatever the caller adds | `RejectContrary` refuses the sandbox, approvals, environments, `mcp_servers`, `--add-dir` and the in-process tools |
+| extra arguments | whatever the caller adds | passed through to Codex as the user gave them |
 
 The protected start writes `CODEX_HOME/environments.toml`, as root for uid 10001 before the container
 starts, with one `[[environments]]` entry whose `program` is `/opt/journal/shell/bash` with

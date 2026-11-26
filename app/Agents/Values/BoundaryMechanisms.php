@@ -33,6 +33,17 @@ final readonly class BoundaryMechanisms
         return new self(array_fill_keys($items, BoundaryMechanism::unavailable($why)));
     }
 
+    /**
+     * Every item unenforced: outside the protected container the driver and the commands it runs share one user.
+     */
+    public static function unconfined(): self
+    {
+        return self::allUnavailable(
+            'the journal confines a session only in the protected container; elsewhere the driver and the commands it '
+            .'runs share one user',
+        );
+    }
+
     public function of(BoundaryItem $item): BoundaryMechanism
     {
         return $this->mechanisms[$item->value];

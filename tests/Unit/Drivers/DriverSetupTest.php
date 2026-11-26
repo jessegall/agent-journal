@@ -7,6 +7,7 @@ namespace Tests\Unit\Drivers;
 use App\Agents\Drivers\Codex\CodexAccountSettings;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
+use App\Agents\Drivers\Codex\CodexIsolation;
 use App\Agents\Drivers\Codex\CodexKeyScripts;
 use App\Agents\Drivers\Codex\CodexLayout;
 use App\Agents\Drivers\Codex\CodexModelAnswer;
@@ -31,8 +32,8 @@ use App\Values\PlanAddition;
 use Tests\TestCase;
 
 /**
- * The drivers set up match the catalogue, a version line accepts only the pinned build, and a plan holds one Seatbelt
- * profile and one restart file.
+ * The drivers set up match the catalogue, a version line accepts only the pinned build, and a plan holds one restart
+ * file.
  */
 final class DriverSetupTest extends TestCase
 {
@@ -61,15 +62,13 @@ final class DriverSetupTest extends TestCase
         );
     }
 
-    public function test_a_plan_takes_one_seatbelt_and_one_restart_file(): void
+    public function test_a_plan_takes_one_restart_file(): void
     {
-        $seatbelt = new PlanAddition(seatbelt: 'session.sb');
         $restart = new PlanAddition(restartWhenFile: new RestartFile('/home', '*.jsonl'));
 
-        $joined = $seatbelt->with($restart)->with(new PlanAddition(sideSockets: ['status']));
+        $joined = $restart->with(new PlanAddition(sideSockets: ['status']));
 
-        $this->journal->assertResult(['session.sb', ['status']], [$joined->seatbelt, $joined->sideSockets]);
-        $this->journal->assertRefused(PlanAdditionClash::class, fn () => $seatbelt->with($seatbelt));
+        $this->journal->assertResult(['/home', ['status']], [$joined->restartWhenFile?->folder, $joined->sideSockets]);
         $this->journal->assertRefused(PlanAdditionClash::class, fn () => $restart->with($restart));
     }
 
@@ -109,6 +108,7 @@ final class DriverSetupTest extends TestCase
             accountSettings: CodexAccountSettings::class,
             skills: CodexSkills::class,
             hookAdapter: CodexAdapter::class,
+            isolation: CodexIsolation::class,
         );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Lists the queries written outside their model that do more than chain its scopes and read, since every filter or
- * order is a named scope (user message 22197): outside the model, a chain may call its scopes and then ALLOWED_READS.
+ * order is a named scope: outside the model, a chain may call its scopes and then ALLOWED_READS.
  *
  *   php tools/refactoring/outside-queries.php app domain
  *       prints "file:line<TAB>query of <Model> calls <method> ..." for each, and fails while there is one.

@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Agents\Values\PlanFile;
 use App\Skills\StartSkillFiles;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * A session's start writes the skills it was handed into its driver's skill folder, and nothing when it was handed none.
  */
+#[TestsMachinery(StartSkillFiles::class)]
 final class StartSkillFilesTest extends TestCase
 {
     use CommitsHookRows;

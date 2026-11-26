@@ -9,7 +9,7 @@ use App\Agents\Values\RestartFile;
 use App\Exceptions\PlanAdditionClash;
 
 /**
- * What start plan parts add to a start: files, side sockets, at most one Seatbelt profile and at most one restart file.
+ * What start plan parts add to a start: files, side sockets and at most one restart file.
  */
 final readonly class PlanAddition
 {
@@ -21,7 +21,6 @@ final readonly class PlanAddition
     public function __construct(
         public array $files = [],
         public array $sideSockets = [],
-        public string|null $seatbelt = null,
         public RestartFile|null $restartWhenFile = null,
         public array $keptFiles = [],
     ) {}
@@ -33,10 +32,6 @@ final readonly class PlanAddition
      */
     public function with(self $other): self
     {
-        if ($this->seatbelt !== null && $other->seatbelt !== null) {
-            throw PlanAdditionClash::of('seatbelt');
-        }
-
         if ($this->restartWhenFile !== null && $other->restartWhenFile !== null) {
             throw PlanAdditionClash::of('restart file');
         }
@@ -44,7 +39,6 @@ final readonly class PlanAddition
         return new self(
             [...$this->files, ...$other->files],
             [...$this->sideSockets, ...$other->sideSockets],
-            $this->seatbelt ?? $other->seatbelt,
             $this->restartWhenFile ?? $other->restartWhenFile,
             [...$this->keptFiles, ...$other->keptFiles],
         );

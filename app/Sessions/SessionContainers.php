@@ -52,7 +52,7 @@ final readonly class SessionContainers
         $manifest = ContainerManifest::compile(
             $sessionId,
             $runtime->canonical_folder,
-            $runtime->session->workspaceUse($policy->access),
+            $runtime->loadMissing('session')->session->workspaceUse($policy->access),
             $policy->execution->forDriverScreen($runtime->has_screen),
             $this->arrangement->sessionContainerName($sessionId),
             $this->arrangement->mountRules($account, ArrangementSetting::ENVIRONMENT),

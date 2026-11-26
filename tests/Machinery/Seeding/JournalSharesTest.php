@@ -6,7 +6,9 @@ namespace Tests\Machinery\Seeding;
 
 use App\Models\Sharing\ShareGatewayConfiguration;
 use Carbon\CarbonImmutable;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -15,6 +17,7 @@ use Tests\TestCase;
  * The journal grants shares that belong to its owner, name the root and configuration version they were given,
  * end when they were told to, and carry a token of their own.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalSharesTest extends TestCase
 {
     use RefreshHookDatabase;

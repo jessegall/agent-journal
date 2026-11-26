@@ -9,6 +9,8 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
 use Tests\TestCase;
 
@@ -16,6 +18,7 @@ use Tests\TestCase;
  * The journal asserts links by their two records either way round: a link made twice, once the other way, is one, and
  * a link to a third record is left alone.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalLinksTest extends TestCase
 {
     use CommitsHookRows;

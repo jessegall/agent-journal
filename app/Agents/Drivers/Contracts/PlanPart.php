@@ -8,7 +8,7 @@ use App\Values\DriverStart;
 use App\Values\PlanAddition;
 
 /**
- * A part of a driver's start plan: the files, side sockets, Seatbelt profile or restart file it adds.
+ * A part of a driver's start plan: the files, side sockets or restart file it adds.
  */
 interface PlanPart
 {

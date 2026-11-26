@@ -18,6 +18,8 @@ use App\Support\CommandRegistry;
 use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
+use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
 use Tests\TestCase;
 
@@ -26,6 +28,7 @@ use Tests\TestCase;
  * owner or a named actor for one command with the actor in place put back after, and the agent of a start the
  * journal signed for.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalActingTest extends TestCase
 {
     use CommitsHookRows;

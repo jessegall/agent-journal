@@ -20,6 +20,7 @@ use App\Events\Links\LinksRemoved;
 use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Events\Processes\RunOutcomeRecorded;
+use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\SessionClosed;
 use App\Events\Sessions\SessionOpened;
 use App\Events\Sessions\StartSessionOpened;
@@ -115,6 +116,7 @@ final class TransactionListenerLaneTest extends TestCase
                 LinksRemoved::class,
                 SessionOpened::class,
                 SessionClosed::class,
+                AgentSessionEnded::class,
                 OutputChunkCommitted::class,
                 MessageSent::class,
                 PlanReviewRequested::class,

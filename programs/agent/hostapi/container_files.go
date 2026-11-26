@@ -8,11 +8,10 @@ import (
 
 // placeContainerFiles writes a contained plan's files into its session's folder on the agent daemon, mounts each
 // plan-file mount read-only from there, and fills {folder:files} with the folder the container sees them in. A
-// contained plan names no host placeholder and nothing of this machine: no folders, side sockets, read files,
-// Seatbelt profile or inherited variables.
+// contained plan names no host placeholder and nothing of this machine: no folders, side sockets, read files or
+// inherited variables.
 func (table *ProcessTable) placeContainerFiles(ctx context.Context, processID string, plan OpenPlan) (OpenPlan, error) {
-	if len(plan.Folders) > 0 || len(plan.SideSockets) > 0 || len(plan.ReadFiles) > 0 || plan.Seatbelt != "" ||
-		len(plan.Inherit) > 0 {
+	if len(plan.Folders) > 0 || len(plan.SideSockets) > 0 || len(plan.ReadFiles) > 0 || len(plan.Inherit) > 0 {
 		return plan, RefusalError{Refusal: Unsafe, Reason: "a contained plan names nothing of the host it runs on"}
 	}
 

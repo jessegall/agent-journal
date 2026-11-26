@@ -43,7 +43,7 @@ final class SessionOutputGrantsTest extends TestCase
      */
     private array $owners = [];
 
-    private const string PROJECT = '/journal/accounts/claude-code/projects/-work';
+    private const string PROJECT = '/journal/accounts/claudecode/projects/-work';
 
     private Agent $agent;
 

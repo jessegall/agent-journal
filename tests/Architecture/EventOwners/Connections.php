@@ -31,6 +31,7 @@ use App\Events\Connections\HostProcessStarted;
 use App\Events\Connections\HostProcessWorkerClaimed;
 use App\Events\Connections\HostProcessWorkerRenewed;
 use App\Events\Connections\HostProtectionRecorded;
+use App\Events\Connections\HostProtectionRunsRecorded;
 use App\Events\Connections\HostRevoked;
 use App\Events\Connections\InstallAttemptCancelled;
 use App\Events\Connections\InstallAttemptOpened;
@@ -220,6 +221,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new HostProtectionRecorded('host'),
+    ],
+    HostProtectionRunsRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordProtectionRuns',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProtectionRunsRecorded('host'),
     ],
     HostCallFailed::class => [
         'role' => EventRole::RowFact,

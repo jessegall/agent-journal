@@ -8,13 +8,16 @@ use App\Bus\Exceptions\RaisedOutsideUnit;
 use App\Models\Projects\Project;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * A test seeds rows outside a command, while every way into the app refuses such a write as the running app does:
  * a request and an artisan command.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalOutsideWritesTest extends TestCase
 {
     use RefreshHookDatabase;

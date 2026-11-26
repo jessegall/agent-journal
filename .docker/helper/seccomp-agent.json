@@ -1246,17 +1246,6 @@
           "CAP_PERFMON"
         ]
       }
-    },
-    {
-      "names": [
-        "clone",
-        "unshare",
-        "mount",
-        "umount2",
-        "pivot_root",
-        "setns"
-      ],
-      "action": "SCMP_ACT_ALLOW"
     }
   ]
 }

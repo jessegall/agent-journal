@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Events\Skills\SkillRead;
 use App\Models\Skills\SkillReadEntry;
 use App\Skills\Enums\ReadEvidence;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ use Tests\TestCase;
  * Every proven read is a row that raises one fact; a second read is a second row; forgetting one agent's reads leaves
  * the others' and raises nothing.
  */
+#[TestsMachinery(SkillReadEntry::class)]
 final class SkillReadEntryTest extends TestCase
 {
     use RefreshHookDatabase;
@@ -49,7 +51,7 @@ final class SkillReadEntryTest extends TestCase
         $this->assertSame($second->id, $entries[0]->id);
     }
 
-    public function test_forgetting_an_agent_deletes_only_its_rows_and_raises_nothing(): void
+    public function test_forgetting_an_agents_reads_deletes_only_its_rows(): void
     {
         $this->journal->owner()->agent('Writer')->agent('Reader');
         $writer = $this->journal->sessionOf('Writer');
@@ -58,7 +60,9 @@ final class SkillReadEntryTest extends TestCase
         SkillReadEntry::record($writer, 'journal-plans', ReadEvidence::SkillShow);
         SkillReadEntry::record($reader, 'journal', ReadEvidence::SkillShow);
 
-        SkillReadEntry::forgetOfAgent($writer->agent_id);
+        foreach (SkillReadEntry::findBatchOfAgent($writer->agent_id) as $entry) {
+            $entry->forget();
+        }
 
         $this->assertSame([], SkillReadEntry::findLatestOfSession($writer->id, 10));
         $this->assertCount(1, SkillReadEntry::findLatestOfSession($reader->id, 10));

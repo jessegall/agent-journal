@@ -19,27 +19,19 @@ final readonly class CommunicationApi
         string $messageId,
         CallKey $requestKey = new CallKey(),
     ): MessageView {
-        return $this->sender->send(ReadMessagePayload::from([
-            'messageId' => $messageId,
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(ReadMessagePayload::from(['messageId' => $messageId, 'requestKey' => $requestKey]));
     }
 
     public function readUnreadMessages(
         CallKey $requestKey = new CallKey(),
     ): UnreadMessages {
-        return $this->sender->send(ReadUnreadMessagesPayload::from([
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(ReadUnreadMessagesPayload::from(['requestKey' => $requestKey]));
     }
 
     public function sendMessage(
         NewMessage $message,
         CallKey $requestKey = new CallKey(),
     ): MessageNamed {
-        return $this->sender->send(SendMessagePayload::from([
-            'message' => $message,
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(SendMessagePayload::from(['message' => $message, 'requestKey' => $requestKey]));
     }
 }

@@ -21,7 +21,7 @@ final readonly class PlanFile implements JsonSerializable
 
     /**
      * A file the journal generated for the start, such as a settings file, which names the start's folders and the
-     * host's programs by their placeholders.
+     * host's executables by their placeholders.
      */
     public static function template(string $name, string $content): self
     {

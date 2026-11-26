@@ -9,6 +9,7 @@ use App\Models\Agents\Agent;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Fixtures\Seeding\ReviewerJoins;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -21,6 +22,7 @@ use Tests\TestCase;
  * A shared start position runs on the journal only once what it needs is there and its names are free, gives back
  * what it started, and a step that fails leaves the actor before it in place.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalScenariosTest extends TestCase
 {
     use RefreshHookDatabase;

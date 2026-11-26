@@ -80,7 +80,7 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
         $settings = [
             'permissions' => [
                 'allow' => ClaudeCodeTools::ALLOWED_WITHOUT_ASKING,
-                // The key that seals the hook's reply file is the hook's alone (doc 135, Hook binary).
+                // The key that seals the hook's reply file is the hook's alone.
                 'deny' => [
                     ...ClaudeCodeTools::DELEGATION,
                     ...ClaudeCodeTools::NESTED_DRIVERS,
@@ -119,13 +119,7 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
             $settings = $this->withStatusLine($settings);
         }
 
-        if ($account->isProtected) {
-            // Bubblewrap cannot make its namespaces in the agent container, and every command already runs as the
-            // executor's user through the shell bridge, which with the container is the boundary there.
-            $settings['sandbox'] = ['enabled' => false];
-        }
-
-        $this->requireBoundary($settings, $account->isProtected);
+        $this->requireNoQuestions($settings);
 
         return $settings;
     }
@@ -186,27 +180,18 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
     }
 
     /**
-     * Every account start runs without permission questions and, unless protected, with every tool in Claude Code's
-     * sandbox; what a tool may do is decided by the journal's hook, the deny rules and the sandbox or the container.
+     * Every account start runs without permission questions; what a tool may do is decided by the journal's hook,
+     * the deny rules and, where it runs in one, the container.
      *
      * @param  array<string, mixed>  $settings
      */
-    private function requireBoundary(array $settings, bool $isProtected): void
+    private function requireNoQuestions(array $settings): void
     {
         $permissions = $settings['permissions'];
-        $sandbox = $settings['sandbox'] ?? [];
-
         $isBypassDisabled = ($permissions['disableBypassPermissionsMode'] ?? null) === 'disable';
 
         if ($permissions['defaultMode'] !== self::NEVER_ASKS || $isBypassDisabled) {
             throw ProfileRefused::asksUser();
-        }
-
-        $isSandboxed = ($sandbox['enabled'] ?? null) === true
-            && ($sandbox['allowUnsandboxedCommands'] ?? null) === false;
-
-        if (! $isProtected && ! $isSandboxed) {
-            throw ProfileRefused::toolsOutsideSandbox();
         }
     }
 }

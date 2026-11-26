@@ -6,7 +6,7 @@ namespace App\Agents\Commands\OpenHeadlessStart;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Agents\Drivers\Enums\ExecutablePlace;
-use App\Agents\Drivers\Isolation\IsolationProbes;
+use App\Agents\Drivers\Processes\AgentImageProbes;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Bus\Contracts\CommandHandler;
@@ -31,7 +31,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
         private StartClaims $claims,
         private DriverProfiles $profiles,
         private JournalCommands $commands,
-        private IsolationProbes $probes,
+        private AgentImageProbes $probes,
     ) {}
 
     public function handle(OpenHeadlessStartCommand $command): string|null

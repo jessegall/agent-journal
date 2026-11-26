@@ -8,12 +8,15 @@ use App\CommandRules\Enums\ReceiptStatus;
 use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use App\Terminals\Data\LayoutShape;
 use Tests\Commands\Layouts\SaveLayoutTest;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
  * The journal reads the receipt a keyed command left for the actor in place, and another actor sees none of it.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalReceiptsTest extends TestCase
 {
     use RefreshHookDatabase;

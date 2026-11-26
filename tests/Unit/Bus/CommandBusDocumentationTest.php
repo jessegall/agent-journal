@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Bus;
 
+use App\Support\DomainRegistry;
 use App\Support\Reflector;
 use Tests\Architecture\Support\FolderType;
 use Tests\TestCase;
@@ -14,6 +15,14 @@ use Tests\TestCase;
  */
 final class CommandBusDocumentationTest extends TestCase
 {
+    /**
+     * The page names commands of every domain, so every installed domain boots.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
     public function test_every_class_the_page_names_exists(): void
     {
         $page = (string) file_get_contents(base_path('docs/commands/command-bus.md'));

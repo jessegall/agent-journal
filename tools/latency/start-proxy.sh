@@ -1,5 +1,5 @@
 #!/bin/sh
-# Development only: puts the latency proxy between the local journal and its contained host (task 3436).
+# Development only: puts the latency proxy between the local journal and its contained host.
 #   sh tools/latency/start-proxy.sh [added latency, 300ms]   (tools/latency/stop-proxy.sh takes it away again)
 set -eu
 
@@ -25,7 +25,7 @@ start_proxy() {
 
 # A changed journal address enrolls the host again; the host is made anew so it reads the new enrollment.
 enroll_host() {
-    AGENTS_JOURNAL_URL=$1 docker compose --profile contained up -d --force-recreate agent-host-enroll agent-host
+    env "AGENTS_JOURNAL_URL=$1" docker compose --profile contained up -d --force-recreate agent-host-enroll agent-host
 }
 
 main "$@"

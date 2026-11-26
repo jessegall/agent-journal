@@ -9,9 +9,11 @@ use App\Models\Inboxes\InboxMember;
 use App\Notifications\Commands\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Support\ActorReference;
 use PHPUnit\Framework\AssertionFailedError;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -19,6 +21,7 @@ use Tests\TestCase;
  * a second time is refused before anything is written, and a post takes the inbox's next number. The journal installs
  * its own inboxes, makes an actor's own inbox once, and keeps each notification it delivers by name, read or unread.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalInboxesTest extends TestCase
 {
     use RefreshHookDatabase;

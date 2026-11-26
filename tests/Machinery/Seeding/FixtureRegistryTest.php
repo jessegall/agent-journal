@@ -10,10 +10,10 @@ use Domain\Plans\PlansDomain;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Tests\Fixtures\NoteFixtures;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\Seeding\FixtureRegistry;
-use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -21,6 +21,7 @@ use Tests\TestCase;
  * and a maker of the wrong type refused before anything is kept, and a class no booted domain registered refused by
  * name without a query.
  */
+#[TestsMachinery(FixtureRegistry::class)]
 final class FixtureRegistryTest extends TestCase
 {
     public function test_a_builder_is_made_once_and_handed_the_journal(): void

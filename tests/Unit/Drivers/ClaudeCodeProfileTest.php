@@ -14,7 +14,6 @@ use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Exceptions\BuildNotPinned;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\Values\JournalServer;
-use App\Agents\Values\PlanFile;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
@@ -137,7 +136,7 @@ final class ClaudeCodeProfileTest extends TestCase
                     '{folder:files}/mcp.json',
                 ],
                 true,
-                true,
+                false,
                 ['{host:INSTALLATION}/bin/journal-mcp'],
                 [
                     'home',
@@ -148,7 +147,7 @@ final class ClaudeCodeProfileTest extends TestCase
             [
                 array_slice($plan->argv, array_search('--mcp-config', $plan->argv, true), 2),
                 in_array('mcp__journal__*', $settings['permissions']['allow'], true),
-                $settings['sandbox']['enabled'],
+                array_key_exists('sandbox', $settings),
                 $descriptor['mcpServers']['journal']['args'],
                 $plan->folders,
                 in_array('--strict-mcp-config', $plan->argv, true),
@@ -219,50 +218,23 @@ final class ClaudeCodeProfileTest extends TestCase
         );
     }
 
-    public function test_an_account_turn_on_the_host_runs_under_its_seatbelt_profile(): void
+    public function test_an_account_turn_reads_its_token_from_the_file_its_recipe_names(): void
     {
-        $account = new DriverAccount($this->recipe(), 'start-1', new JournalServer('/i/bin/php', '/i/journal-mcp'), folder: '/accounts/a');
-
-        $plan = $this->profile()->startPlan($this->turn($account));
-        $profile = array_values(array_filter($plan->files, fn (PlanFile $file) => $file->name === $plan->seatbelt))[0];
-
-        $this->journal->assertResult(
-            ['session.sb', 'session.sb', true, true],
-            [
-                $plan->seatbelt,
-                $profile->name,
-                str_contains($profile->content, '(deny file-read* file-write* (subpath "/accounts/a/projects"))'),
-                str_contains($profile->content, '(allow file-read* file-write* (subpath "/accounts/a/projects/-work"))'),
-            ],
-        );
-        $this->journal->assertResult(null, $this->profile()->startPlan($this->turn($this->account()))->seatbelt);
         $this->journal->assertResult(['/accounts/a/token'], $this->profile()->startPlan($this->turn(new DriverAccount(
             $this->recipe(readFiles: ['/accounts/a/token']),
             'start-1',
             new JournalServer('/i/bin/php', '/i/journal-mcp'),
         )))->readFiles);
-        $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($this->turn(new DriverAccount(
-            $this->recipe(),
-            'start-1',
-            new JournalServer('/i/bin/php', '/i/journal-mcp'),
-            folder: '/accounts/"a',
-        ))));
     }
 
     public function test_account_settings_that_would_undo_the_profile_refuse_the_start(): void
     {
-        $replacing = '{"permissions":{"defaultMode":"default"},"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}';
-        $unsandboxed = '{"sandbox":{"enabled":false}}';
+        $asking = '{"permissions":{"defaultMode":"default"}}';
 
-        foreach ([
-            $replacing,
-            $unsandboxed,
-        ] as $protection) {
-            $this->journal->assertRefused(
-                ProfileRefused::class,
-                fn () => $this->profile()->startPlan($this->turn($this->account($protection))),
-            );
-        }
+        $this->journal->assertRefused(
+            ProfileRefused::class,
+            fn () => $this->profile()->startPlan($this->turn($this->account($asking))),
+        );
 
         $this->journal->assertRefused(
             ProfileRefused::class,

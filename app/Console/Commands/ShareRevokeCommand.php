@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands\Sharing;
+namespace App\Console\Commands;
 
 use App\Bus\ConsoleOwner;
 use App\Bus\Contracts\CommandBus;

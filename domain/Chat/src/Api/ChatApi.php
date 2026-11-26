@@ -35,10 +35,7 @@ final readonly class ChatApi
         int $limit = DockProjection::LARGEST_CARD_LIMIT,
         string|null $chat = null,
     ): DockListData {
-        return $this->sender->send(DockListPayload::from([
-            'limit' => $limit,
-            'chat' => $chat,
-        ]));
+        return $this->sender->send(DockListPayload::from(['limit' => $limit, 'chat' => $chat]));
     }
 
     public function dockRemove(

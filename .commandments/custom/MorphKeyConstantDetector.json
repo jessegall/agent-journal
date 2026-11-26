@@ -38,8 +38,7 @@
             ["literalIs", "$k", "string"],
             ["exists", "$read"],
             ["within", "$k", ["get", "$read", "key"]],
-            ["isMorphOfMorphableData", "$morph"],
-            ["sameSymbol", ["get", "$read", "store"], ["first", "$morph.parameters"]]
+            ["isMorphOfMorphableData", "$morph"]
         ],
         "emit": "$k"
     }

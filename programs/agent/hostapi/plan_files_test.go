@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"testing"
 
@@ -80,32 +79,6 @@ func TestAPlanFileOutsideItsFolderOrAnUnknownFolderIsRefused(t *testing.T) {
 		if !errors.As(err, &refusal) || refusal.Refusal != Unsafe {
 			t.Fatalf("the plan %+v was not refused as unsafe: %v", plan, err)
 		}
-	}
-}
-
-func TestAPlanWithASeatbeltProfileRunsUnderItOnMacOSOnly(t *testing.T) {
-	state := t.TempDir()
-	plan := OpenPlan{
-		Argv:     []string{"program", "--print"},
-		Files:    []PlanFile{{Name: "session.sb", Content: "(version 1)\n(allow default)\n"}},
-		Seatbelt: "session.sb",
-	}
-
-	filled, err := writePlanFiles(state, "p3", plan, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	wanted := []string{"program", "--print"}
-	if runtime.GOOS == "darwin" {
-		profile := filepath.Join(state, "processes", "p3", "files", "session.sb")
-		wanted = append([]string{"/usr/bin/sandbox-exec", "-f", profile}, wanted...)
-	}
-	if !slices.Equal(filled.Argv, wanted) {
-		t.Fatalf("the argv is %v, not %v", filled.Argv, wanted)
-	}
-	if _, err := writePlanFiles(state, "p4", OpenPlan{Argv: []string{"program"}, Seatbelt: "../session.sb"}, nil); err == nil {
-		t.Fatal("a Seatbelt profile outside the files folder was not refused")
 	}
 }
 

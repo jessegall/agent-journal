@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\ToolCheck;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * No row read is passed straight into another call and no null-safe call hangs on another call's result: the inner
  * result is bound first, and missing is handled before acting.
  * tools/refactoring/nested-calls.php lists every such nesting.
  */
+#[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
 final class NestedCallsTest extends TestCase
 {
     private const string HOW_TO_FIX = 'Bind the inner result to a variable, leave early when it is missing, then act: ';

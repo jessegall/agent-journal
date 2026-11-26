@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Core is laid out by subject (rule 68, task 3549): a project-own class sits in app/<Subject>/<Type>, so no app-level
+ * Core is laid out by subject: a project-own class sits in app/<Subject>/<Type>, so no app-level
  * type folder keeps a subject folder the subject also holds, and commands live only in their subject's Commands folder.
  * Laravel's own folders are not judged here.
  */

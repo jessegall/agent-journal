@@ -82,7 +82,6 @@ check_agent_image() {
     check_folders
     check_hook_refusal
     check_mcp_relay
-    check_sandbox_tools
     check_absent_programs
 }
 
@@ -120,11 +119,6 @@ check_mcp_relay() {
     run_in_image -i --read-only --network=none --env=JOURNAL_URL=http://journal.invalid --env=JOURNAL_START_TOKEN=check \
         --env=JOURNAL_PROFILE=check --env=JOURNAL_PROFILE_REVISION=1 /opt/journal/bin/journal-mcp \
         < .docker/helper/checks/mcp-initialize.json | grep -q '"code":"unavailable"'
-}
-
-check_sandbox_tools() {
-    run_in_image bwrap --version >/dev/null
-    run_in_image socat -V >/dev/null
 }
 
 check_absent_programs() {

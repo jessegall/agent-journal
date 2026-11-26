@@ -26,12 +26,12 @@ final readonly class RunDocking implements DockableProvider
 
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
-        return new DockedRun(
-            ProcessRun::query()
-                ->withAllParts()
-                ->whereKey($id)
-                ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id)),
-        );
+        $run = ProcessRun::query()
+            ->withAllParts()
+            ->whereKey($id)
+            ->firstOr(DockSourceUnavailable::throwing()->of($definition->type, $id));
+
+        return new DockedRun($run);
     }
 
     public function ownerOf(DockDefinition $definition, string $id): ProjectOwner

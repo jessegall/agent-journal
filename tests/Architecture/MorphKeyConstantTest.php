@@ -11,8 +11,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every morphed Data class of app and the domains names the key its morph() reads in a MORPHED_BY constant, and that
- * constant names a #[PropertyForMorph] property of the class, so renaming the property cannot leave the key stale
- * (user 26945). The project commandment MorphKeyConstantDetector refuses a written key in morph() itself.
+ * constant names a #[PropertyForMorph] property of the class, so renaming the property cannot leave the key stale.
+ * The project commandment MorphKeyConstantDetector refuses a written key in morph() itself.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every morphed Data file of app and the domains.')]
 final class MorphKeyConstantTest extends TestCase

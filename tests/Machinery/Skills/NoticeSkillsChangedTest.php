@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Commands\Skills;
+namespace Tests\Machinery\Skills;
 
 use App\Bus\Contracts\CommandBus;
 use App\Events\Hooks\ContextStarted;
@@ -18,18 +18,22 @@ use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
+use App\Values\AgentText;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
+use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
  * At a boundary a session whose skills changed since its start is told to start a new session, and nothing else
  * changes: an unchanged catalogue says nothing, a selection that cannot be made is told and the session keeps working.
  */
+#[TestsMachinery(NoticeSkillsChanged::class)]
 final class NoticeSkillsChangedTest extends TestCase
 {
     use CommitsHookRows;
@@ -77,7 +81,10 @@ final class NoticeSkillsChangedTest extends TestCase
         $reminders = $this->boundary($session);
 
         $this->assertCount(1, $reminders);
-        $this->assertStringContainsString('start a new session', $reminders[0]);
+        $this->assertMatchesRegularExpression(TestText::pattern(AgentText::of('core.skills.changed', [
+            'skills' => TestText::ANY,
+            'driver' => TestText::ANY,
+        ])), $reminders[0]);
         $this->assertStringContainsString('user-review-notes', $reminders[0]);
         $after = AgentSession::findById($session->id);
         $this->assertSame($handed->skill_generation_id, $after->skill_generation_id);
@@ -102,7 +109,10 @@ final class NoticeSkillsChangedTest extends TestCase
         $reminders = $this->boundary($session);
 
         $this->assertCount(1, $reminders);
-        $this->assertStringContainsString('could not be chosen', $reminders[0]);
+        $this->assertMatchesRegularExpression(
+            TestText::pattern(AgentText::of('core.skills.not_chosen', ['problem' => TestText::ANY])),
+            $reminders[0],
+        );
         $this->assertTrue(AgentSession::findById($session->id)->isActive());
     }
 

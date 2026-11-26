@@ -18,8 +18,10 @@ use Tests\Commands\Layouts\SaveLayoutTest;
 use Tests\Support\Bus\Exceptions\SunkReplyRefused;
 use Tests\Support\Bus\ExpectedCommand;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Seeding\Enums\FixtureRefusalType;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
@@ -27,6 +29,7 @@ use Tests\TestCase;
  * whole frame it passed and writes nothing, a refused request sinks nothing, an arranged reply comes back, a replayed
  * key reaches the sink once, and the asserts fail on other arguments, another order or a short trail.
  */
+#[TestsMachinery(TestJournal::class)]
 final class JournalSinksTest extends TestCase
 {
     use CommitsHookRows;

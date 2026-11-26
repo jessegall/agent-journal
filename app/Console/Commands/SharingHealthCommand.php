@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Console\Commands\Sharing;
+namespace App\Console\Commands;
 
 use App\Models\Sharing\ShareInstallation;
 use Illuminate\Console\Command;

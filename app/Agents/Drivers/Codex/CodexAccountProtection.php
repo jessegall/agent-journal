@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Codex;
 
 /**
- * The private settings each Codex thread on a saved account starts with: one sandbox writable only where the thread
- * works, and a shell environment that never names the account folder. Codex has no native rule hiding auth.json, so the
+ * The private settings each Codex thread on a saved account starts with: a shell environment that never names the
+ * account folder. Codex has no native rule hiding auth.json, so the
  * journal refuses commands and patches that reach the accounts folder.
  */
 final class CodexAccountProtection
@@ -21,7 +21,6 @@ final class CodexAccountProtection
     public static function settingsFor(): string
     {
         return (string) json_encode([
-            'sandbox' => 'workspace-write',
             'config' => [
                 'shell_environment_policy' => ['exclude' => self::HIDDEN_VARIABLES],
                 'mcp_servers' => (object) [],

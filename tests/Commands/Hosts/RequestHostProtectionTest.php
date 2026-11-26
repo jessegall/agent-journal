@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Agents\Drivers\Isolation\IsolationProbes;
 use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
-use App\Hosts\Enums\HostOrderType;
-use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -15,36 +12,35 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A contained host's protection is brought up to date: the reports that need no probe are judged at once, and the
- * relay probe of Claude Code's sandbox opens once in a container of the agent image with no network and no mount; a
- * local host is left alone.
+ * A contained host's protection is brought up to date: every driver's report on each container platform is judged
+ * once, and no probe opens; a local host is left alone.
  */
 #[TestsCommand(RequestHostProtectionCommand::class)]
 final class RequestHostProtectionTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    public function test_a_contained_host_judges_what_needs_no_probe_and_opens_the_relay_probe_once(): void
+    public function test_a_contained_host_judges_every_driver_on_both_container_platforms_once_and_opens_nothing(): void
     {
         $this->journal->enrollContainedHost('Box', [base_path()]);
         $hostId = $this->journal->hostCalled('Box')->hostId;
 
         $this->journal->asSystem(new RequestHostProtectionCommand($hostId));
         $this->journal->asSystem(new RequestHostProtectionCommand($hostId));
-        $this->journal->callHostProcessOf('relay', 'Box', HostProcessPurpose::RelayProbe);
-        $open = $this->journal->hostOrdersOf('relay')[0];
-        $container = $this->journal->payloadOf($open)['container'];
 
         $this->journal->assertResult(
             [
-                ['codex@0.165.0', 'codex@0.165.0/linux-container-protected', 'claude-code@2.1.323/linux-container-protected'],
-                1,
-                [HostOrderType::OpenContainer, IsolationProbes::SOCAT_ARGV, 'none', []],
+                [
+                    'claude-code@2.1.323',
+                    'claude-code@2.1.323/linux-container-protected',
+                    'codex@0.165.0',
+                    'codex@0.165.0/linux-container-protected',
+                ],
+                0,
             ],
             [
-                array_keys(Host::query()->whereKey($hostId)->sole()->protection->items()),
-                HostProcess::query()->where('purpose', HostProcessPurpose::RelayProbe)->count(),
-                [$open->type, $this->journal->payloadOf($open)['argv'], $container['network'], $container['mounts']],
+                $this->sorted(array_keys(Host::query()->whereKey($hostId)->sole()->protection->items())),
+                HostProcess::query()->count(),
             ],
         );
     }
@@ -60,5 +56,16 @@ final class RequestHostProtectionTest extends TestCase
             [[], 0],
             [Host::query()->whereKey($hostId)->sole()->protection->items(), HostProcess::query()->count()],
         );
+    }
+
+    /**
+     * @param  list<string>  $keys
+     * @return list<string>
+     */
+    private function sorted(array $keys): array
+    {
+        sort($keys);
+
+        return $keys;
     }
 }
