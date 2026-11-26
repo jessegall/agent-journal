@@ -59,15 +59,12 @@ type RemovePlan struct {
 	Session   string `json:"session"`
 }
 
-// OutputSink receives what a process prints, as the host reads it.
-type OutputSink func(processID string, printed []byte)
-
 // ProcessTable holds the processes the journal ordered the host to open: it starts each, keeps its terminal or
 // pipes, heals a crashed one whose restart policy asks it, and reports each change through the report queue.
 type ProcessTable struct {
 	containers host.Containers
 	reports    *ReportQueue
-	output     OutputSink
+	outputs    *Outputs
 
 	mutex     sync.Mutex
 	processes map[string]*heldProcess
@@ -86,9 +83,10 @@ type heldProcess struct {
 	exited     chan struct{}
 }
 
-// NewProcessTable holds processes on the daemon of these containers and reports through the queue.
-func NewProcessTable(containers host.Containers, reports *ReportQueue, output OutputSink) *ProcessTable {
-	return &ProcessTable{containers: containers, reports: reports, output: output, processes: map[string]*heldProcess{}}
+// NewProcessTable holds processes on the daemon of these containers, keeps their output and reports through the
+// queue.
+func NewProcessTable(containers host.Containers, reports *ReportQueue, outputs *Outputs) *ProcessTable {
+	return &ProcessTable{containers: containers, reports: reports, outputs: outputs, processes: map[string]*heldProcess{}}
 }
 
 // Executors are the process orders this table carries out.
@@ -116,6 +114,15 @@ func (table *ProcessTable) Live() []string {
 		}
 	}
 	return live
+}
+
+// PlanOf is what the process was opened with.
+func (table *ProcessTable) PlanOf(processID string) (OpenPlan, error) {
+	held, err := table.held(processID)
+	if err != nil {
+		return OpenPlan{}, err
+	}
+	return held.plan, nil
 }
 
 // Write writes into the process's terminal or standard input.
@@ -159,6 +166,9 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
+	if err := table.outputs.Open(held.id, plan); err != nil {
+		return nil, err
+	}
 	if err := table.startContainer(ctx, held); err != nil {
 		return nil, err
 	}
@@ -246,6 +256,9 @@ func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[stri
 		return nil, RefusalError{Refusal: Unsafe, Reason: "this host does not launch with " + plan.Isolation}
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
+	if err := table.outputs.Open(held.id, plan); err != nil {
+		return nil, err
+	}
 	if err := table.startNative(held, plan.Argv); err != nil {
 		return nil, err
 	}
@@ -436,8 +449,8 @@ func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
 	buffer := make([]byte, 32*1024)
 	for {
 		count, err := printed.Read(buffer)
-		if count > 0 && table.output != nil {
-			table.output(processID, append([]byte(nil), buffer[:count]...))
+		if count > 0 {
+			table.outputs.Printed(processID, append([]byte(nil), buffer[:count]...))
 		}
 		if err != nil {
 			return

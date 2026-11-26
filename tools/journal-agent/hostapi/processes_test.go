@@ -66,7 +66,8 @@ func standinTable(t *testing.T, daemon *dockerstandin.Daemon) (*ProcessTable, *s
 	stopped := make(chan struct{})
 	t.Cleanup(func() { close(stopped) })
 	go queue.Run(stopped)
-	return NewProcessTable(containers, queue, nil), sent
+	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
+	return NewProcessTable(containers, queue, outputs), sent
 }
 
 func openOrder(t *testing.T, processID, restart, image string) Order {

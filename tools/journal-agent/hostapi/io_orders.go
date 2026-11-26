@@ -1,0 +1,117 @@
+package hostapi
+
+import (
+	"context"
+)
+
+// StreamPlan is the payload of stream: how many frames a second, and whether raw terminal bytes go too.
+type StreamPlan struct {
+	FramesPerSecond int  `json:"frames_per_second"`
+	Raw             bool `json:"raw"`
+}
+
+// StdinWrite is the payload of write_stdin.
+type StdinWrite struct {
+	Bytes []byte `json:"bytes"`
+}
+
+// ProcessInput carries out the orders that write into a process, read its screen or record it.
+type ProcessInput struct {
+	table   *ProcessTable
+	outputs *Outputs
+}
+
+// NewProcessInput writes into the table's processes and reads their output.
+func NewProcessInput(table *ProcessTable, outputs *Outputs) ProcessInput {
+	return ProcessInput{table: table, outputs: outputs}
+}
+
+// Executors are the input and output orders this carries out.
+func (input ProcessInput) Executors() map[string]Executor {
+	return map[string]Executor{
+		"write_keys":     input.writeKeys,
+		"write_stdin":    input.writeStdin,
+		"close_stdin":    input.closeStdin,
+		"stream":         input.stream,
+		"snapshot":       input.snapshot,
+		"record":         input.record,
+		"stop_recording": input.stopRecording,
+	}
+}
+
+// writeKeys writes the user's keys at once and raises the input generation; any other write only while the rows it
+// was meant for and the input generation are as the journal saw them.
+func (input ProcessInput) writeKeys(_ context.Context, order Order) (map[string]any, error) {
+	write, err := decodePayload[KeyWrite](order)
+	if err != nil {
+		return nil, err
+	}
+	screen, found := input.outputs.ScreenOf(order.ProcessID)
+	if !found {
+		return nil, RefusalError{Refusal: NotRunning, Reason: "the process has no terminal"}
+	}
+	if write.AsUser {
+		if err := input.table.Write(order.ProcessID, write.Bytes); err != nil {
+			return nil, err
+		}
+		input.outputs.Typed(order.ProcessID, write.Bytes, false)
+		return map[string]any{"input_generation": screen.RaiseInputGeneration()}, nil
+	}
+	if write.IfRows == nil || write.IfInputGeneration == nil {
+		return nil, RefusalError{Refusal: Unsafe, Reason: "a key write of the journal names its rows and input generation"}
+	}
+	facts := map[string]any{
+		"row_hash":         screen.RowsHash(write.IfRows.From, write.IfRows.To),
+		"input_generation": screen.InputGeneration(),
+	}
+	if facts["row_hash"] != write.IfRows.Hash || screen.InputGeneration() != *write.IfInputGeneration {
+		return facts, RefusalError{Refusal: GuardMoved, Reason: "the rows or the input moved since the journal saw them"}
+	}
+	if err := input.table.Write(order.ProcessID, write.Bytes); err != nil {
+		return nil, err
+	}
+	input.outputs.Typed(order.ProcessID, write.Bytes, false)
+	return facts, nil
+}
+
+func (input ProcessInput) writeStdin(_ context.Context, order Order) (map[string]any, error) {
+	write, err := decodePayload[StdinWrite](order)
+	if err != nil {
+		return nil, err
+	}
+	input.outputs.Typed(order.ProcessID, write.Bytes, false)
+	return nil, input.table.Write(order.ProcessID, write.Bytes)
+}
+
+func (input ProcessInput) closeStdin(_ context.Context, order Order) (map[string]any, error) {
+	return nil, input.table.CloseInput(order.ProcessID)
+}
+
+func (input ProcessInput) stream(_ context.Context, order Order) (map[string]any, error) {
+	plan, err := decodePayload[StreamPlan](order)
+	if err != nil {
+		return nil, err
+	}
+	return nil, input.outputs.Stream(order.ProcessID, plan.FramesPerSecond)
+}
+
+func (input ProcessInput) snapshot(_ context.Context, order Order) (map[string]any, error) {
+	return nil, input.outputs.Snapshot(order.ProcessID)
+}
+
+func (input ProcessInput) record(_ context.Context, order Order) (map[string]any, error) {
+	plan, err := input.table.PlanOf(order.ProcessID)
+	if err != nil {
+		return nil, err
+	}
+	input.outputs.Record(order.ProcessID, plan)
+	return nil, nil
+}
+
+func (input ProcessInput) stopRecording(_ context.Context, order Order) (map[string]any, error) {
+	folder, err := input.outputs.StopRecording(order.ProcessID)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"folder": folder}, nil
+}

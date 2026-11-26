@@ -96,7 +96,7 @@ func (dispatcher *Dispatcher) carryOut(ctx context.Context, order Order) {
 
 func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer {
 	if err := dispatcher.verifier.Verify(order); err != nil {
-		return refusalAnswer(order, err)
+		return refusalAnswer(order, err, nil)
 	}
 	executor, found := dispatcher.executors[order.Type]
 	if !found {
@@ -104,15 +104,21 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer 
 	}
 	facts, err := executor(ctx, order)
 	if err != nil {
-		return refusalAnswer(order, err)
+		return refusalAnswer(order, err, facts)
 	}
 	return DoneWith(order, facts)
 }
 
-func refusalAnswer(order Order, err error) Answer {
+// refusalAnswer is the answer of a refused order, with the facts the host saw, such as the current row hash.
+func refusalAnswer(order Order, err error, facts map[string]any) Answer {
+	if facts == nil {
+		facts = map[string]any{}
+	}
 	var refusal RefusalError
 	if errors.As(err, &refusal) {
-		return RefusedFor(order, refusal.Refusal, map[string]any{"reason": refusal.Reason})
+		facts["reason"] = refusal.Reason
+		return RefusedFor(order, refusal.Refusal, facts)
 	}
-	return RefusedFor(order, Unsafe, map[string]any{"reason": err.Error()})
+	facts["reason"] = err.Error()
+	return RefusedFor(order, Unsafe, facts)
 }
