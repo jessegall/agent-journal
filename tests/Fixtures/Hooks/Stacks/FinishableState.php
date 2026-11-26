@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Support\States\AgentState;
 
 /**
@@ -14,9 +14,9 @@ final class FinishableState extends AgentState
 {
     public function __construct(private readonly string $subject, private readonly FinishedSubjects $hasFinished) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

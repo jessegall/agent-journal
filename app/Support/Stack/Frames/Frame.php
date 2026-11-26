@@ -80,11 +80,11 @@ final readonly class Frame
     }
 
     /**
-     * Whether a push of the reference finds this frame in place of adding one, as the state's frame reuse says.
+     * Whether a push of the reference finds this frame in place of adding one, as the state's frame scope says.
      */
     public function keepsOneFrameFor(StateReference $reference): bool
     {
-        return $this->state->frameReuse()->keepsOneFrame($this->reference, $reference);
+        return $this->state->frameScope()->keepsOneFrame($this->reference, $reference);
     }
 
     public function isFinished(): bool

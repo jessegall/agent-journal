@@ -7,7 +7,7 @@ namespace App\Support\States;
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
 use App\Contracts\Skills\SkillPublicationEvent;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationMoved;
@@ -30,9 +30,9 @@ final class AwaitSkillsState extends AgentState
 
     public function __construct(private readonly string $publicationId) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerType;
+        return FrameScope::PerType;
     }
 
     public function isFinished(): bool

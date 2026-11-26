@@ -6,7 +6,7 @@ namespace Domain\Plans\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperFinishedOnRecord;
@@ -43,9 +43,9 @@ final class ReviewPlanState extends AgentState
         $this->reviewersOut = new ReviewersOutData();
     }
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

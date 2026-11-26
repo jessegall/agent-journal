@@ -6,7 +6,7 @@ namespace App\Support\States;
 
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
@@ -34,9 +34,9 @@ abstract class AgentState implements HookAnswerer
     /**
      * How a push of this state finds a frame already on the stack instead of adding one; none by default.
      */
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::None;
+        return FrameScope::None;
     }
 
     /**

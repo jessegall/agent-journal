@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support\States;
 
 use App\Attributes\States\StateType;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
@@ -48,9 +48,9 @@ final class HelperJobState extends AgentState
         private readonly string $brief,
     ) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

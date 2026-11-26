@@ -10,7 +10,7 @@ use App\Support\References\StateReference;
  * How a push of a state finds a frame already on the stack instead of adding one: never, by the state type alone,
  * or by the state type and its subject.
  */
-enum FrameReuse
+enum FrameScope
 {
     case None;
     case PerType;

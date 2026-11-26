@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
@@ -21,9 +21,9 @@ final class InMemoryTaskState extends AgentState
 {
     public function __construct(private readonly int $number, private readonly int $runNumber, private readonly InMemoryTasks $tasks) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

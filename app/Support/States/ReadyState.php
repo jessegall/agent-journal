@@ -6,7 +6,7 @@ namespace App\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Sessions\StopCheckSettled;
 use App\Support\Decisions\Decision;
@@ -56,9 +56,9 @@ class ReadyState extends AgentState
         private readonly StopConditionGate $stops,
     ) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerType;
+        return FrameScope::PerType;
     }
 
     // ----------[ Hooks ]----------

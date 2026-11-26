@@ -6,7 +6,7 @@ namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
@@ -39,9 +39,9 @@ final class LogDueState extends AgentState
 
     public function __construct(private readonly string $taskId, private readonly int $number) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Support\States\AgentState;
 
 /**
@@ -12,8 +12,8 @@ use App\Support\States\AgentState;
  */
 final class SingleState extends AgentState
 {
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerType;
+        return FrameScope::PerType;
     }
 }

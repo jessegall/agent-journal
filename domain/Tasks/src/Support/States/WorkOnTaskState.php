@@ -6,7 +6,7 @@ namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Assignments\AssignmentsEnded;
 use App\Support\Decisions\Decision;
@@ -67,9 +67,9 @@ final class WorkOnTaskState extends AgentState
         private readonly int $runNumber,
     ) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

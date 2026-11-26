@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\States\StateType;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
@@ -42,9 +42,9 @@ final class AnswerMessageState extends AgentState
         private readonly AnswerBudget $budget,
     ) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool

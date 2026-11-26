@@ -7,7 +7,7 @@ namespace App\Support\States;
 use App\Attributes\States\StateType;
 use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameReuse;
+use App\Enums\Engine\FrameScope;
 use App\Enums\Sessions\SessionTransferType;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskEvent;
@@ -31,9 +31,9 @@ final class AnswerAskState extends AgentState
         private readonly string $hopId
     ) {}
 
-    public function frameReuse(): FrameReuse
+    public function frameScope(): FrameScope
     {
-        return FrameReuse::PerSubject;
+        return FrameScope::PerSubject;
     }
 
     public function isFinished(): bool
