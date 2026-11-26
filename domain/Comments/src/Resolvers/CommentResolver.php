@@ -14,14 +14,12 @@ use App\Support\MarkdownText;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
-use App\Values\TextAnchor;
 use Domain\Comments\Contracts\CommentResolver as CommentResolverContract;
 use Domain\Comments\Data\CommentList;
 use Domain\Comments\Data\RecordCommentLocation;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Data\TextCommentLocation;
 use Domain\Comments\Data\TextCommentView;
-use Domain\Comments\Enums\WholeRecord;
 use Domain\Comments\Exceptions\CommentUnavailable;
 use Domain\Comments\Exceptions\TargetNotCommentable;
 use Domain\Comments\Models\Comment;
@@ -69,10 +67,9 @@ final readonly class CommentResolver implements CommentResolverContract
             CommentUnavailable::throwing()->for($commentId),
         );
 
-        $subject = $comment->subject();
         $card = $this->records->card($target);
 
-        if ($subject instanceof WholeRecord) {
+        if ($comment->anchor === null) {
             if ($selection->isOutlineOnly()) {
                 return new RecordCommentLocation($card);
             }
@@ -80,16 +77,18 @@ final readonly class CommentResolver implements CommentResolverContract
             throw CommentUnavailable::selectionOnWholeRecord($commentId);
         }
 
+        $anchor = $comment->anchor->text();
+
         $text = $record instanceof TextContent ? $record->textVersion(
-            $subject->versionId,
+            $anchor->versionId,
         ) : throw TargetHasNoText::for($target->type);
 
         $chosen = $selection->isOutlineOnly() ? TextSelection::from([
-            'firstLine' => $subject->firstLine,
-            'lastLine' => $subject->lastLine,
+            'firstLine' => $anchor->firstLine,
+            'lastLine' => $anchor->lastLine,
         ]) : $selection;
 
-        return new TextCommentLocation($card, $subject, MarkdownText::body($text->text)->part($chosen));
+        return new TextCommentLocation($card, $anchor, MarkdownText::body($text->text)->part($chosen));
     }
 
     /**
@@ -99,7 +98,7 @@ final readonly class CommentResolver implements CommentResolverContract
      */
     private static function commentsOf(Model $record): ReadBuilder
     {
-        return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey());
+        return Comment::query()->onTarget($record->getMorphClass(), (string) $record->getKey())->with('anchor');
     }
 
     /**
@@ -118,12 +117,10 @@ final readonly class CommentResolver implements CommentResolverContract
 
     private static function viewOf(RecordCard $card, Comment $comment): RecordCommentView|TextCommentView
     {
-        $subject = $comment->subject();
-
-        if ($subject instanceof TextAnchor) {
-            return new TextCommentView($card, $comment->details, $subject);
+        if ($comment->anchor === null) {
+            return new RecordCommentView($card, $comment->details);
         }
 
-        return new RecordCommentView($card, $comment->details);
+        return new TextCommentView($card, $comment->details, $comment->anchor->text());
     }
 }

@@ -17,8 +17,9 @@ final readonly class CommentedFileVersions implements HeldFileVersions
     public function leaveOutHeld(Builder $versions): void
     {
         $versions->whereNotExists(fn (QueryBuilder $comments) => $comments->from('comments')
+            ->join('comment_anchors', 'comment_anchors.comment_id', '=', 'comments.id')
             ->where('comments.target_type', ProjectFile::linkType())
             ->whereColumn('comments.target_id', 'project_file_versions.project_file_id')
-            ->whereColumn('comments.version_id', 'project_file_versions.digest'));
+            ->whereColumn('comment_anchors.version_id', 'project_file_versions.digest'));
     }
 }

@@ -10,8 +10,6 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
-use App\Enums\Records\TextAnchorType;
-use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
@@ -20,15 +18,14 @@ use App\Support\ShareRelationSet;
 use App\Values\TextAnchor;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Data\CommentDetails;
-use Domain\Comments\Enums\WholeRecord;
 use Domain\Comments\Events\CommentPosted;
-use Domain\Comments\Exceptions\CommentAnchorCorrupt;
 use Domain\Comments\Exceptions\CommentImmutable;
 use Domain\Comments\Support\CommentDetailsFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Override;
 
 /**
@@ -38,18 +35,10 @@ use Override;
  * @property string $author_type
  * @property string $author_id
  * @property string $body
- * @property string|null $version_id
- * @property string|null $version_label
- * @property string|null $anchor_type
- * @property int|null $section_number
- * @property int|null $first_line
- * @property int|null $last_line
- * @property string|null $quote
- * @property int|null $start_offset
- * @property int|null $end_offset
  * @property string $submission_key
  * @property string $submission_hash
  * @property CarbonImmutable $created_at
+ * @property-read CommentAnchor|null $anchor
  * @property-read mixed $details
  * @property-read mixed $place_label
  * @property-read mixed $target
@@ -63,20 +52,6 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     use RaisesEvents;
 
     public const null UPDATED_AT = null;
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'section_number' => 'integer',
-            'first_line' => 'integer',
-            'last_line' => 'integer',
-            'start_offset' => 'integer',
-            'end_offset' => 'integer',
-        ];
-    }
 
     protected static function booted(): void
     {
@@ -105,19 +80,8 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         $comment->author_type = $author->type;
         $comment->author_id = $author->id;
 
-        if ($anchor !== null) {
-            $comment->version_id = $anchor->versionId;
-            $comment->version_label = $anchor->versionLabel;
-            $comment->anchor_type = $anchor->type->value;
-            $comment->section_number = $anchor->sectionNumber === 0 ? null : $anchor->sectionNumber;
-            $comment->first_line = $anchor->firstLine;
-            $comment->last_line = $anchor->lastLine;
-            $comment->quote = $anchor->quote === '' ? null : $anchor->quote;
-            $comment->start_offset = $anchor->quote === '' ? null : $anchor->startOffset;
-            $comment->end_offset = $anchor->quote === '' ? null : $anchor->endOffset;
-        }
-
         $comment->assertSaved($comment->save());
+        $comment->setRelation('anchor', $anchor === null ? null : CommentAnchor::create($comment, $anchor));
         $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;
@@ -128,32 +92,6 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     public function shareIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::linkType(), $this->id);
-    }
-
-    /**
-     * What the comment is about: the whole record when no anchor column is set, otherwise the complete anchor.
-     *
-     * @throws CommentAnchorCorrupt when only some anchor columns are set
-     */
-    public function subject(): WholeRecord|TextAnchor
-    {
-        $columns = [
-            $this->version_id,
-            $this->version_label,
-            $this->anchor_type,
-            $this->section_number,
-            $this->first_line,
-            $this->last_line,
-            $this->quote,
-            $this->start_offset,
-            $this->end_offset,
-        ];
-
-        if (array_filter($columns, fn (mixed $column) => $column !== null) === []) {
-            return WholeRecord::Record;
-        }
-
-        return $this->anchor();
     }
 
     // ----------[ Accessors ]----------
@@ -186,13 +124,11 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     protected function placeLabel(): Attribute
     {
         return Accessor::get(function () {
-            $subject = $this->subject();
-
-            if ($subject instanceof TextAnchor) {
-                return "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}";
+            if ($this->anchor === null) {
+                return 'on the whole record';
             }
 
-            return 'on the whole record';
+            return "on {$this->anchor->version_label}, lines {$this->anchor->first_line}-{$this->anchor->last_line}";
         });
     }
 
@@ -208,67 +144,16 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         throw CommentImmutable::for($this->id);
     }
 
-    /**
-     * Refuses an anchor with no known type or a column its type needs left empty, as a corrupt comment.
-     *
-     * @throws CommentAnchorCorrupt
-     */
-    private function assertAnchorComplete(): void
-    {
-        $type = TextAnchorType::tryFrom((string) $this->anchor_type);
-
-        if ($type === null) {
-            throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::withoutType());
-        }
-
-        $columns = [
-            'versionId' => 'version_id',
-            'versionLabel' => 'version_label',
-            'firstLine' => 'first_line',
-            'lastLine' => 'last_line',
-        ];
-
-        if ($type === TextAnchorType::Section) {
-            $columns['sectionNumber'] = 'section_number';
-        }
-
-        if ($type === TextAnchorType::Quote) {
-            $columns = [...$columns, 'quote' => 'quote', 'startOffset' => 'start_offset', 'endOffset' => 'end_offset'];
-        }
-
-        foreach ($columns as $field => $name) {
-            if ($this->getAttribute($name) === null) {
-                throw CommentAnchorCorrupt::for($this->id, IncompleteTextAnchor::missing($type->value, $field));
-            }
-        }
-    }
-
-    // ----------[ Internals ]----------
+    // ----------[ Relations ]----------
 
     /**
-     * The anchor its columns hold, refused when a column its type needs is empty.
+     * The place in the record's text the comment is about; a comment about the whole record has none.
      *
-     * @throws IncompleteTextAnchor
+     * @return HasOne<CommentAnchor, $this>
      */
-    private function anchor(): TextAnchor
+    public function anchor(): HasOne
     {
-        $this->assertAnchorComplete();
-        $type = TextAnchorType::from((string) $this->anchor_type);
-
-        $column = fn (string $field, string $name): string|int => $this->getAttribute($name);
-        $isQuote = $type === TextAnchorType::Quote;
-
-        return TextAnchor::restored(
-            (string) $column('versionId', 'version_id'),
-            (string) $column('versionLabel', 'version_label'),
-            $type,
-            $type === TextAnchorType::Section ? (int) $column('sectionNumber', 'section_number') : 0,
-            (int) $column('firstLine', 'first_line'),
-            (int) $column('lastLine', 'last_line'),
-            $isQuote ? (string) $column('quote', 'quote') : '',
-            $isQuote ? (int) $column('startOffset', 'start_offset') : 0,
-            $isQuote ? (int) $column('endOffset', 'end_offset') : 0,
-        );
+        return $this->hasOne(CommentAnchor::class);
     }
 
     // ----------[ Queries ]----------
@@ -320,8 +205,8 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     }
 
     /**
-     * The columns a public page shows: the id, written time and quote, and the body cut to its first characters by
-     * the database, so a long body is never loaded.
+     * The columns a public page shows: the id and written time, the quote of its anchor, and the body cut to its first
+     * characters by the database, so a long body is never loaded.
      *
      * @param  Builder<self>  $query
      */
@@ -331,8 +216,7 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         $query->select([
             'id',
             'created_at',
-            'quote',
-        ])->selectRaw('left(body, ?) as excerpt', [$characters]);
+        ])->selectRaw('left(body, ?) as excerpt', [$characters])->with('anchor:comment_id,quote');
     }
 
     /**

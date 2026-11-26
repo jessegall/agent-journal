@@ -22,6 +22,7 @@ final class CommentFixturesTest extends TestCase
     use InstallsNotesModule;
 
     private const array TABLES = [
+        'comment_anchors',
         'comments',
         'users',
         'agents',
@@ -64,6 +65,7 @@ final class CommentFixturesTest extends TestCase
             2,
             3,
         ])
+            ->assertNoAnchor('Whole')
             ->assertComment('Whole', author: 'Writer', body: 'All of it.')
             ->assertCount($target, 2)
             ->assertCount($other, 0);

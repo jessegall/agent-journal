@@ -69,6 +69,7 @@ final class CommentFixtures
         array $lines,
     ): self {
         $comment = $this->commentCalled($name);
+        $anchor = $comment->anchor()->firstOrFail();
 
         Assert::assertSame(
             [
@@ -81,14 +82,27 @@ final class CommentFixtures
             [
                 $comment->target_type,
                 $comment->target_id,
-                $comment->anchor_type,
-                $comment->version_id,
+                $anchor->anchor_type,
+                $anchor->version_id,
                 [
-                    $comment->first_line,
-                    $comment->last_line,
+                    $anchor->first_line,
+                    $anchor->last_line,
                 ],
             ],
             "The comment {$name} is anchored otherwise.",
+        );
+
+        return $this;
+    }
+
+    /**
+     * The comment is about the whole record: it has no anchor row.
+     */
+    public function assertNoAnchor(string $name): self
+    {
+        Assert::assertFalse(
+            $this->commentCalled($name)->anchor()->exists(),
+            "The comment {$name} has an anchor.",
         );
 
         return $this;
