@@ -212,6 +212,13 @@ func serve(arguments []string) error {
 	for _, outcome := range outcomes {
 		log.Printf("after the restart, start %s is %s", outcome.StartKey, outcome.Outcome)
 	}
+	release := "development"
+	if *installationFolder != "" {
+		release = filepath.Base(*installationFolder)
+	}
+	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, opener.containers, release); err != nil {
+		return err
+	}
 	if *startSocketFolder == "" {
 		*startSocketFolder = *stateFolder
 	}

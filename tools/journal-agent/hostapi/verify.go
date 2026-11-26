@@ -56,3 +56,14 @@ func Sign(secret []byte, order Order) string {
 	mac.Write([]byte(lines))
 	return hex.EncodeToString(mac.Sum(nil))
 }
+
+// OrderSecretContext is what the order secret is worked out for, on both sides of the wire.
+const OrderSecretContext = "journal host protocol 1 orders"
+
+// OrderSecretOf is the secret the journal signs this host's orders with, worked out from the host's credential the
+// way the journal works it out (App\Models\Projects\Host::orderSecretOf), so enrolment hands over nothing more.
+func OrderSecretOf(credential string) []byte {
+	mac := hmac.New(sha256.New, []byte(credential))
+	mac.Write([]byte(OrderSecretContext))
+	return []byte(hex.EncodeToString(mac.Sum(nil)))
+}

@@ -77,6 +77,11 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     use RaisesEvents;
 
     /**
+     * What the order secret is worked out for, on both sides.
+     */
+    public const string ORDER_SECRET_CONTEXT = 'journal host protocol 1 orders';
+
+    /**
      * @return array<string, string>
      *
      * @column start_roots list<string>
@@ -123,7 +128,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->credential_hash = self::hashOf($secret);
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
-        $host->order_secret = bin2hex(random_bytes(32));
+        $host->order_secret = self::orderSecretOf($secret);
         $host->assertSaved($host->save());
 
         return $host;
@@ -515,6 +520,15 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      *
      * @throws HostCredentialRejected
      */
+    /**
+     * The secret the host's orders are signed with, worked out from its credential the way the host works it out, so
+     * enrolment hands over nothing more.
+     */
+    public static function orderSecretOf(string $credential): string
+    {
+        return hash_hmac('sha256', self::ORDER_SECRET_CONTEXT, $credential);
+    }
+
     /**
      * The host, locked until the transaction ends, so its host-wide orders are numbered one at a time.
      */
