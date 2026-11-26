@@ -46,7 +46,7 @@ final readonly class AttentionOrigin
     }
 
     /**
-     * A navigation request in one of its rounds: each round wakes the answerer once. The host's raise that opened it
+     * A navigation request in one of its rounds: each round wakes the one who answers it once. The host's raise that opened it
      * has no bus receipt; its operation key stands in for one.
      */
     public static function navigation(string $requestId, int $round, string $raiseKey): self

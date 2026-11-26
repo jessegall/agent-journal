@@ -23,7 +23,7 @@ use App\Support\References\StateReference;
  * context or message line, a command or an event to run after the hook, several of those to yield with at most one
  * decision, last. It always answers: a delegate passes the hook to the state below.
  */
-interface HookAnswerer
+interface HookHandler
 {
     /**
      * The agent's session started.

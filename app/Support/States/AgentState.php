@@ -9,7 +9,7 @@ use App\Contracts\Events\Event;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
-use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
 use App\Support\Inputs\SessionEnded;
@@ -28,7 +28,7 @@ use PhpOption\Option;
  * overrides it, and the first deny answers the hook. A state only answers: its hook methods, its listeners and its
  * ticks never perform an external effect themselves; what they return is run by their one caller.
  */
-abstract class AgentState implements HookAnswerer
+abstract class AgentState implements HookHandler
 {
     /**
      * Whether the work this state stands for is done. A finished frame stays stored but a walk passes over it, as if it

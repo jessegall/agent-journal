@@ -41,7 +41,7 @@ interface HookInput
      *
      * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|StateReference|iterable;
+    public function answerBy(HookHandler $state): AnswerPart|Command|Event|StateReference|iterable;
 
     /**
      * Whether an answer of that type leaves the agent idle, so the reply's context reaches nobody: only an allowed stop

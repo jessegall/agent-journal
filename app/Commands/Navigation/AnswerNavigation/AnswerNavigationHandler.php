@@ -33,7 +33,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
      */
     public function handle(AnswerNavigationCommand $command): DriverReceipt
     {
-        $navigation = $this->answering->lockedForAnswerer($command->navigationId);
+        $navigation = $this->answering->lockedForHandler($command->navigationId);
 
         $sent = DriverRequest::query()
             ->ofNavigationRequest($navigation->id)

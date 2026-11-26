@@ -24,13 +24,13 @@ final readonly class AnswerQuestionHandler extends QuestionCommandHandler
      */
     public function handle(AnswerQuestionCommand $command): void
     {
-        $answerer = $command->dispatchedBy();
+        $answeredBy = $command->dispatchedBy();
         $question = Question::findLockedById($command->questionId);
 
-        if (! InboxMember::isAttached($question->inbox_id, $answerer)) {
+        if (! InboxMember::isAttached($question->inbox_id, $answeredBy)) {
             throw InboxUnavailable::forActor($question->inbox_id);
         }
 
-        $question->answer($answerer, trim($command->answer), $this->clock->now());
+        $question->answer($answeredBy, trim($command->answer), $this->clock->now());
     }
 }

@@ -11,7 +11,7 @@ use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidStateMethod;
 use App\Support\Decisions\Contracts\AnswerPart;
 use App\Support\DeclaredType;
-use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\References\StateReference;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
@@ -203,7 +203,7 @@ final class StateMethods
             throw InvalidStateClass::for($state->name());
         }
 
-        $hooks = Reflector::of(HookAnswerer::class);
+        $hooks = Reflector::of(HookHandler::class);
         $methods = [];
         $events = [];
 
@@ -245,7 +245,7 @@ final class StateMethods
             || ! $this->isPublicInstanceMethod($method)
             || ! $this->hasRequiredArgument($method)
             || $this->argumentClass($method) !== $this->argumentClass($hook)) {
-            throw InvalidStateMethod::for($method, 'must match the signature on '.HookAnswerer::class.'.');
+            throw InvalidStateMethod::for($method, 'must match the signature on '.HookHandler::class.'.');
         }
 
         return true;

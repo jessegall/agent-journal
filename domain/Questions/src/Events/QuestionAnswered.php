@@ -11,5 +11,5 @@ use App\Support\ActorReference;
  */
 final readonly class QuestionAnswered implements QuestionEvent
 {
-    public function __construct(public string $questionId, public string $inboxId, public ActorReference $answerer) {}
+    public function __construct(public string $questionId, public string $inboxId, public ActorReference $answeredBy) {}
 }

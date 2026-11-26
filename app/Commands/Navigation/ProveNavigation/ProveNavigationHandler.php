@@ -33,7 +33,7 @@ final readonly class ProveNavigationHandler implements CommandHandler
      */
     public function handle(ProveNavigationCommand $command): DriverReceipt
     {
-        $navigation = $this->answering->lockedForAnswerer($command->navigationId);
+        $navigation = $this->answering->lockedForHandler($command->navigationId);
 
         if (! $navigation->isAnswering()) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->status->value);

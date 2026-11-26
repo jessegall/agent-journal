@@ -110,15 +110,15 @@ final class Question extends JournalModel implements AuthoredModel, EventSource,
      *
      * @throws QuestionRefused
      */
-    public function answer(ActorReference $answerer, string $answer, CarbonImmutable $at): void
+    public function answer(ActorReference $answeredBy, string $answer, CarbonImmutable $at): void
     {
-        $this->assertAnswerable($answerer, $answer);
+        $this->assertAnswerable($answeredBy, $answer);
 
         $this->answer = $answer;
         $this->answered_at = $at;
         $this->save();
 
-        $this->raise(new QuestionAnswered($this->id, $this->inbox_id, $answerer));
+        $this->raise(new QuestionAnswered($this->id, $this->inbox_id, $answeredBy));
     }
 
     // ----------[ Predicates ]----------
@@ -201,9 +201,9 @@ final class Question extends JournalModel implements AuthoredModel, EventSource,
      *
      * @throws QuestionRefused
      */
-    private function assertAnswerable(ActorReference $answerer, string $answer): void
+    private function assertAnswerable(ActorReference $answeredBy, string $answer): void
     {
-        if (! $this->target->isSameAs($answerer)) {
+        if (! $this->target->isSameAs($answeredBy)) {
             throw QuestionRefused::notTheTarget($this->id);
         }
 

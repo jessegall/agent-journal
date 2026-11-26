@@ -10,7 +10,7 @@ use App\Enums\Hooks\AnswerType;
 use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Sessions\StopCheckSettled;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
@@ -207,7 +207,7 @@ final class ReadyStateTest extends TestCase
      */
     private function hooksNotAnsweredBy(string $class): array
     {
-        $hooks = Reflector::of(HookAnswerer::class)->methods();
+        $hooks = Reflector::of(HookHandler::class)->methods();
         $state = Reflector::of($class);
 
         return array_values(array_map(

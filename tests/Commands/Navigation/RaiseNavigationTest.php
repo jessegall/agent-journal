@@ -11,8 +11,8 @@ use App\Contracts\Assignments\AssignmentStorage;
 use App\Contracts\Assignments\AssignmentTransaction;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Navigation\MenuEntryStatus;
-use App\Enums\Navigation\NavigationAnswerer;
 use App\Enums\Navigation\NavigationCompletion;
+use App\Enums\Navigation\NavigationHandler;
 use App\Enums\Navigation\NavigationReason;
 use App\Enums\Navigation\NavigationStatus;
 use App\Models\Access\User;
@@ -134,8 +134,8 @@ final class RaiseNavigationTest extends TestCase
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
         $dispatch = $this->app->make(NavigationDispatch::class);
 
-        $answerer = $this->inTransaction(fn () => $dispatch->answererFor($this->runtimeOf($navigation)));
-        $this->assertSame(NavigationAnswerer::MainInbox, $answerer);
+        $handler = $this->inTransaction(fn () => $dispatch->handlerFor($this->runtimeOf($navigation)));
+        $this->assertSame(NavigationHandler::MainInbox, $handler);
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
         $this->inTransaction(fn () => $dispatch->deliver($navigation, 2));
@@ -163,9 +163,9 @@ final class RaiseNavigationTest extends TestCase
         $this->seat($runtime->session->agent);
 
         $dispatch = $this->app->make(NavigationDispatch::class);
-        $answerer = $this->inTransaction(fn () => $dispatch->answererFor($runtime));
+        $handler = $this->inTransaction(fn () => $dispatch->handlerFor($runtime));
 
-        $this->assertSame(NavigationAnswerer::User, $answerer);
+        $this->assertSame(NavigationHandler::User, $handler);
     }
 
     public function test_with_nobody_attached_the_request_waits_at_the_inbox_and_wakes_nobody(): void

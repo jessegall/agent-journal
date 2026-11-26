@@ -28,7 +28,7 @@ final readonly class AbandonNavigationHandler implements CommandHandler
      */
     public function handle(AbandonNavigationCommand $command): string
     {
-        $navigation = $this->answering->lockedForAnswerer($command->navigationId);
+        $navigation = $this->answering->lockedForHandler($command->navigationId);
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
 
         $this->endings->abandon($navigation, $command->reason);

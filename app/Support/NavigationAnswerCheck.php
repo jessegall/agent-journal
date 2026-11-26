@@ -29,7 +29,7 @@ final readonly class NavigationAnswerCheck
      * @throws NavigationRaiseRefused
      * @throws NavigationAnswerRefused
      */
-    public function lockedForAnswerer(string $navigationId): NavigationRequest
+    public function lockedForHandler(string $navigationId): NavigationRequest
     {
         $navigation = NavigationRequest::query()
             ->acrossActors()
@@ -37,7 +37,7 @@ final readonly class NavigationAnswerCheck
             ->lockForUpdate()
             ->firstOr(NavigationRaiseRefused::throwing()->unknownRequest($navigationId));
 
-        $this->checkAnswerer($navigation);
+        $this->checkHandler($navigation);
 
         return $navigation;
     }
@@ -47,7 +47,7 @@ final readonly class NavigationAnswerCheck
      *
      * @throws NavigationAnswerRefused
      */
-    public function checkAnswerer(NavigationRequest $navigation): void
+    public function checkHandler(NavigationRequest $navigation): void
     {
         $actor = $this->actors->actor();
         $owner = $this->admission->owner();

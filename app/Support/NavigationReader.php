@@ -94,7 +94,7 @@ final readonly class NavigationReader implements NavigationReaderContract
             NavigationRaiseRefused::throwing()->unknownRequest($id),
         );
 
-        $this->transaction->run(fn () => $this->answering->checkAnswerer($navigation));
+        $this->transaction->run(fn () => $this->answering->checkHandler($navigation));
         $runtime = AgentRuntime::query()->withSessionAgent()->findOrFail($navigation->agent_runtime_id);
         $roundQuery = DriverRequest::query()->ofNavigationRequest($navigation->id);
         $roundCount = $roundQuery->clone()->count();

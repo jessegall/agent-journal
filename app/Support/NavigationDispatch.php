@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Contracts\Actors\ActorAttention;
 use App\Contracts\Inboxes\MainInbox;
-use App\Enums\Navigation\NavigationAnswerer;
+use App\Enums\Navigation\NavigationHandler;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\NavigationRequest;
 
@@ -25,7 +25,7 @@ final readonly class NavigationDispatch
      * Who answers a key script stopped on the runtime: the user for main's agent's own runtime, the main
      * desk for any other.
      */
-    public function answererFor(AgentRuntime $runtime): NavigationAnswerer
+    public function handlerFor(AgentRuntime $runtime): NavigationHandler
     {
         $owner = ActorReference::of($runtime->session->agent);
 
@@ -34,10 +34,10 @@ final readonly class NavigationDispatch
             ->getOrElse(false);
 
         if ($ownRuntime) {
-            return NavigationAnswerer::User;
+            return NavigationHandler::User;
         }
 
-        return NavigationAnswerer::MainInbox;
+        return NavigationHandler::MainInbox;
     }
 
     /**

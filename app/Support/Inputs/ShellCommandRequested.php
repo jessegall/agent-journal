@@ -10,7 +10,7 @@ use App\Contracts\Events\Event;
 use App\Contracts\Sessions\ConversationVisits;
 use App\Enums\Hooks\AnswerType;
 use App\Support\Decisions\Contracts\AnswerPart;
-use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\References\StateReference;
@@ -60,7 +60,7 @@ final readonly class ShellCommandRequested implements HookInput
     /**
      * @return AnswerPart|Command<mixed>|Event|StateReference|iterable<AnswerPart|Command<mixed>|Event|StateReference>
      */
-    public function answerBy(HookAnswerer $state): AnswerPart|Command|Event|StateReference|iterable
+    public function answerBy(HookHandler $state): AnswerPart|Command|Event|StateReference|iterable
     {
         return $state->onShellCommand($this);
     }
