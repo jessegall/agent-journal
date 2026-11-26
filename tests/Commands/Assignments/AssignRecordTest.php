@@ -16,6 +16,7 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
+use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
@@ -165,41 +166,19 @@ final class AssignRecordTest extends TestCase
             ->assertExitCode(1);
     }
 
-    public function test_the_admitted_user_assigns_over_the_web_as_itself_without_an_agent_session(): void
+    public function test_the_admitted_user_assigns_as_itself_without_an_agent_session(): void
     {
         $this->owner = $this->journal->ownerUser();
-        $this->main = TestStart::start('main-agent');
         $this->helper = TestStart::start('read-only-helper');
-        $this->task = $this->tasks()->createTask('Write the commands');
-
-        $other = $this->tasks()->createTask('For an agent');
+        $ownTask = $this->tasks()->createTask('Write the commands')->assignmentIdentity();
+        $helperTask = $this->tasks()->createTask('For an agent')->assignmentIdentity();
         $sessions = AgentSession::query()->withoutGlobalScopes()->count();
 
-        $this->actingAs($this->owner)->postJson(
-            '/assignments/assign',
-            [
-                'recordType' => 'tasks.task',
-                'recordId' => $this->task->id,
-                'recipientType' => 'user',
-                'recipientId' => $this->owner->id,
-            ],
-        )
-            ->assertOk()->assertJson(
-                ['outcomes' => [['record' => ['holder' => ['type' => 'user', 'id' => (string) $this->owner->id]]]]],
-            );
-        $this->actingAs($this->owner)->postJson(
-            '/assignments/assign',
-            [
-                'recordType' => 'tasks.task',
-                'recordId' => $other->id,
-                'recipientType' => 'agent',
-                'recipientId' => $this->helper->agent->id,
-            ],
-        )
-            ->assertOk();
-        $this->actingAs($this->owner)->getJson('/assignments/show?recordType=tasks.task&recordId='.$other->id)
-            ->assertOk()->assertJson(['holder' => ['type' => 'agent', 'name' => 'Test agent']]);
+        $this->journal->asOwner(new AssignRecordCommand($ownTask, AssigneeIdentity::of($this->owner)));
+        $this->journal->asOwner(new AssignRecordCommand($helperTask, AssigneeIdentity::of($this->helper->agent)));
 
+        $this->assertTrue($this->holderOf($ownTask)->isSameAs(AssigneeIdentity::of($this->owner)));
+        $this->assertTrue($this->holderOf($helperTask)->isSameAs(AssigneeIdentity::of($this->helper->agent)));
         $this->assertSame($sessions, AgentSession::query()->withoutGlobalScopes()->count());
     }
 
@@ -253,5 +232,10 @@ final class AssignRecordTest extends TestCase
     private function tasks(): TaskFixtures
     {
         return $this->journal->fixtures(TaskFixtures::class);
+    }
+
+    private function holderOf(RecordIdentity $record): AssigneeIdentity
+    {
+        return AssignmentRecord::query()->forRecord($record)->sole()->toAssignment->holder();
     }
 }

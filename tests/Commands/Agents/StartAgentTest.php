@@ -336,39 +336,6 @@ final class StartAgentTest extends TestCase
         }
     }
 
-    public function test_a_named_program_and_model_start_the_agent(): void
-    {
-        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
-
-        $response = $this->actingAs($this->journal->ownerUser())->postJson(route('agents.start', $agent->id), [
-            'requestId' => (string) Str::ulid(),
-            'driver' => 'codex',
-            'model' => 'gpt-6-luna',
-        ]);
-
-        $response->assertOk();
-        $response->assertJsonPath('driver', 'codex');
-        $response->assertJsonPath('requestedModel', 'gpt-6-luna');
-        $this->assertSame(1, AgentSession::query()->where('agent_id', $agent->id)->count());
-    }
-
-    public function test_a_missing_program_or_model_or_the_default_model_is_refused_without_a_session(): void
-    {
-        $agent = Agent::create('Started by hand', 'read-only-helper', $this->localProject());
-        $inputs = [['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']];
-
-        foreach ($inputs as $input) {
-            $response = $this->actingAs($this->journal->ownerUser())->postJson(
-                route('agents.start', $agent->id),
-                ['requestId' => (string) Str::ulid(), ...$input],
-            );
-
-            $this->assertGreaterThanOrEqual(400, $response->status(), json_encode($input, JSON_THROW_ON_ERROR));
-        }
-
-        $this->assertSame(0, AgentSession::query()->where('agent_id', $agent->id)->count());
-    }
-
     public function test_a_host_without_a_proven_container_runtime_refuses_before_reserving(): void
     {
         $this->signIn();

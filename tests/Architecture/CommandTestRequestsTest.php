@@ -76,9 +76,6 @@ final class CommandTestRequestsTest extends TestCase
     private const array REWRITING = [
         'domain/Chat/tests/Commands/DockSourceTest.php',
         'domain/Chat/tests/Commands/UndockSourceTest.php',
-        'tests/Commands/Agents/StartAgentTest.php',
-        'tests/Commands/Agents/SwitchAgentDriverTest.php',
-        'tests/Commands/Assignments/AssignRecordTest.php',
         'tests/Commands/Layouts/SaveLayoutTest.php',
         'tests/Commands/Messages/SendMessageTest.php',
     ];

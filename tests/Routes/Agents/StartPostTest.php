@@ -25,6 +25,23 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'agents.start')]
 final class StartPostTest extends GuardedRouteEntryTestCase
 {
+    public function test_a_missing_program_or_model_or_the_default_model_is_refused_and_nothing_is_sent(): void
+    {
+        $agent = $this->journal->owner()->signedStart('Main')->agent;
+        $this->journal->sinkCommands();
+
+        foreach ([['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']] as $input) {
+            $status = $this->journal->jsonRoute('POST', 'agents.start', ['agent' => $agent->id], payload: [
+                'requestId' => strtolower((string) Str::ulid()),
+                ...$input,
+            ])->status();
+
+            $this->assertGreaterThanOrEqual(400, $status, json_encode($input, JSON_THROW_ON_ERROR));
+        }
+
+        $this->journal->assertNothingDispatched();
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Main');

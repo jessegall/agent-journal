@@ -89,33 +89,17 @@ final class SwitchAgentDriverTest extends TestCase
         $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
     }
 
-    public function test_a_repeated_switch_makes_one_switch_and_its_stage_is_read_back(): void
+    public function test_a_repeated_switch_makes_one_switch_refused_for_lack_of_a_host(): void
     {
         $this->activate(self::main(ModelTier::Inventive, DefaultDrivers::CLAUDE_CODE));
         $old = $this->start('default', null);
         Host::query()->update(['descriptors' => []]);
-        $codex = $this->accounts['codex'];
-        $switch = [
-            'requestId' => strtolower((string) Str::ulid()),
-            'agentId' => $this->main->id,
-            'expectedSessionId' => $old->sessionId,
-            'expectedGeneration' => self::generationOf($old->sessionId),
-            'driver' => DefaultDrivers::CODEX,
-            'driverType' => DriverType::Headless->value,
-            'accountId' => $codex->id,
-            'accountRevision' => $codex->sign_in_generation,
-            'model' => 'default',
-        ];
+        $requestId = strtolower((string) Str::ulid());
 
-        $this->actingAs($this->journal->ownerUser())->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
-            ->assertRedirect('/');
-        $this->actingAs($this->journal->ownerUser())->from('/')->post(route('profiles.switch', 'journal-main'), $switch)
-            ->assertRedirect('/');
+        $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
+        $this->switchTo($requestId, $old->sessionId, $this->accounts['codex']);
 
-        $made = DriverSwitch::query()->where('request_id', $switch['requestId'])->sole();
-        $this->actingAs($this->journal->ownerUser())->getJson(route('profiles.switch-stage', $switch['requestId']))
-            ->assertJsonPath('switchId', $made->id)
-            ->assertJsonPath('stage', DriverSwitchStage::Refused->value);
+        $this->assertSame(DriverSwitchStage::Refused, DriverSwitch::query()->where('request_id', $requestId)->sole()->stage);
     }
 
     public function test_a_switch_that_expects_another_session_is_stale(): void
