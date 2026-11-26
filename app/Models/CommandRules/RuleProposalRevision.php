@@ -128,15 +128,6 @@ final class RuleProposalRevision extends Model implements ReadableModel
     }
 
     /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->whereRelation('proposal', 'project_key', $projectKey);
-    }
-
-    /**
      * The revision of the given number.
      *
      * @param  Builder<self>  $query

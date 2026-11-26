@@ -7,9 +7,11 @@ namespace Domain\Helpers\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -27,6 +29,7 @@ use PhpOption\Some;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $profile_key
@@ -41,9 +44,10 @@ use PhpOption\Some;
  * @mixin \Eloquent
  */
 #[Table('helper_purposes')]
-final class HelperPurpose extends Model implements ReadableModel
+final class HelperPurpose extends Model implements ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use InsertsAbsentRows;
@@ -60,12 +64,17 @@ final class HelperPurpose extends Model implements ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
-     * start reads the one that won. Its label is the record's alias and id, never a fetched title.
+     * The one purpose of the parent and profile for the record in the project, made by the first of any concurrent
+     * starts; a later start reads the one that won. Its label is the record's alias and id, never a fetched title.
      */
-    public static function create(ActorReference $parent, string $profileKey, RecordIdentity $subject): self
-    {
+    public static function create(
+        string $projectId,
+        ActorReference $parent,
+        string $profileKey,
+        RecordIdentity $subject,
+    ): self {
         $purpose = new self();
+        $purpose->project_id = $projectId;
         $purpose->profile_key = $profileKey;
         $purpose->purpose_type = PurposeType::Subject;
         $purpose->subject_type = $subject->type;
@@ -76,7 +85,7 @@ final class HelperPurpose extends Model implements ReadableModel
         $purpose->belongTo($parent);
         $purpose->insertIfAbsent();
 
-        return self::findOfSubject($parent, $profileKey, $subject);
+        return self::findOfSubject($projectId, $parent, $profileKey, $subject);
     }
 
     // ----------[ Accessors ]----------
@@ -106,6 +115,7 @@ final class HelperPurpose extends Model implements ReadableModel
     }
 
     private static function start(
+        string $projectId,
         ActorReference $parent,
         string $profileKey,
         PurposeType $type,
@@ -113,6 +123,7 @@ final class HelperPurpose extends Model implements ReadableModel
         string $label,
     ): self {
         $purpose = new self();
+        $purpose->project_id = $projectId;
         $purpose->profile_key = $profileKey;
         $purpose->purpose_type = $type;
         $purpose->subject_type = $subject?->type;
@@ -127,24 +138,43 @@ final class HelperPurpose extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The parent's own purpose with that id for the profile; none when it belongs to another parent or profile.
+     * The parent's own purpose in the project with that id for the profile; none when it belongs to another
+     * project, parent or profile.
      */
-    public static function findForParent(ActorReference $parent, string $profileKey, string $purposeId): self|null
-    {
-        return self::query()->ownedBy($parent)->ofProfile($profileKey)->whereKey($purposeId)->first();
+    public static function findForParent(
+        string $projectId,
+        ActorReference $parent,
+        string $profileKey,
+        string $purposeId,
+    ): self|null {
+        return self::query()
+            ->inProject($projectId)
+            ->ownedBy($parent)
+            ->ofProfile($profileKey)
+            ->whereKey($purposeId)
+            ->first();
     }
 
-    public static function findFree(ActorReference $parent, string $profileKey, string $label): self
+    public static function findFree(string $projectId, ActorReference $parent, string $profileKey, string $label): self
     {
-        return self::start($parent, $profileKey, PurposeType::Free, null, $label);
+        return self::start($projectId, $parent, $profileKey, PurposeType::Free, null, $label);
     }
 
     /**
-     * The parent's purpose for this profile about the subject.
+     * The parent's purpose in the project for this profile about the subject.
      */
-    public static function findOfSubject(ActorReference $parent, string $profileKey, RecordIdentity $subject): self
-    {
-        return self::query()->ownedBy($parent)->ofProfile($profileKey)->aboutSubject($subject)->sole();
+    public static function findOfSubject(
+        string $projectId,
+        ActorReference $parent,
+        string $profileKey,
+        RecordIdentity $subject,
+    ): self {
+        return self::query()
+            ->inProject($projectId)
+            ->ownedBy($parent)
+            ->ofProfile($profileKey)
+            ->aboutSubject($subject)
+            ->sole();
     }
 
     // ----------[ Scopes ]----------

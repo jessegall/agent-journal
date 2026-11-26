@@ -8,6 +8,7 @@ use App\Contracts\Actors\Actor;
 use App\Contracts\Reads\ReadMeter;
 use App\Contracts\Sharing\SharePolicy;
 use App\Support\ActorReference;
+use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;
@@ -34,6 +35,7 @@ final readonly class ShareGrants
         private SharePolicy $policy,
         private ShareScope $scope,
         private ReadMeter $meter,
+        private ShareRecordRegistry $shareable,
     ) {}
 
     public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
@@ -43,6 +45,7 @@ final readonly class ShareGrants
 
         $share = Share::create(
             $consumed->root,
+            $this->shareable->ownerOf($consumed->root),
             $duration->deadlineFrom(CarbonImmutable::now()),
             new ShareGrant(
                 $owner->actorId(),

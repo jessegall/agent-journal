@@ -23,6 +23,7 @@ use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 #[TestsCommand(EditDocumentCommand::class)]
 final class EditDocumentTest extends TestCase
@@ -51,7 +52,12 @@ final class EditDocumentTest extends TestCase
         $designer = $this->journal->signedStart('Test agent', 'writing-helper');
         $designer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));
+        $created = $bus->run(new CreateDocumentCommand(
+            'Design',
+            'The next design.',
+            "# Design\nOld text.\n",
+            TestProjects::local()->id,
+        ));
         $draft = $bus->run(new OpenDocumentCommand($created->id, 1));
         $target = new DraftTarget($created->id, $draft->token, 1);
         $replacement = str_repeat('a', 1024 * 1024);
@@ -60,6 +66,7 @@ final class EditDocumentTest extends TestCase
             UploadType::EditReplacement,
             strlen($replacement),
             hash('sha256', $replacement),
+            TestProjects::local()->id,
         ));
 
         foreach (str_split($replacement, TextUpload::CHUNK_BYTES) as $index => $chunk) {
@@ -86,7 +93,12 @@ final class EditDocumentTest extends TestCase
         $other = $this->journal->signedStart('Test agent 3');
         $author->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $created = $bus->run(new CreateDocumentCommand('Design', 'The next design.', "# Design\nOld text.\n"));
+        $created = $bus->run(new CreateDocumentCommand(
+            'Design',
+            'The next design.',
+            "# Design\nOld text.\n",
+            TestProjects::local()->id,
+        ));
         $draft = $bus->run(new OpenDocumentCommand($created->id, 1));
 
         $other->startRequest($this->app);

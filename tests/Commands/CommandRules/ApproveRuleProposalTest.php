@@ -17,11 +17,13 @@ use App\Exceptions\CommandAdmissionRefused;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleRevision;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\OwnerApproval;
 use App\Values\ProgramSpellings;
+use App\Values\ProjectSelection;
 use App\Values\ReaderApproval;
 use App\Values\RuleScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -101,20 +103,19 @@ final class ApproveRuleProposalTest extends TestCase
         $this->assertSame(0, ClassificationRule::query()->count());
     }
 
-    public function test_another_projects_proposal_is_not_found_by_its_owner(): void
+    public function test_another_projects_proposal_is_not_found_under_a_selection_of_one_project(): void
     {
-        config(['processes.project_key' => 'project-a']);
+        $this->journal->project('Shop');
         $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
             new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
         );
         $proposal = RuleProposal::query()->latest('id')->firstOrFail();
-
-        config(['processes.project_key' => 'project-b']);
+        $shop = ProjectSelection::of($this->journal->projectCalled('Shop')->id);
 
         $this->assertThrows(
-            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+            fn () => $this->app->make(ProjectSelectionStore::class)->within($shop, fn () => $this->journal->runUnkeyed(
                 new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b')),
-            ),
+            )),
             ModelNotFoundException::class,
         );
     }

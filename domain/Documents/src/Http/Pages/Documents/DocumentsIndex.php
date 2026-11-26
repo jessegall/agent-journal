@@ -18,6 +18,9 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
+use App\Support\Layout\ProjectField;
+use App\Support\Layout\ProjectRowLabel;
+use App\Values\ProjectOwner;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
@@ -34,7 +37,12 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class DocumentsIndex extends DocumentsPage
 {
-    public function __construct(private RecordMenus $menus, private DraftProducers $producers) {}
+    public function __construct(
+        private RecordMenus $menus,
+        private DraftProducers $producers,
+        private ProjectField $projectField,
+        private ProjectRowLabel $projectLabel,
+    ) {}
 
     public function of(
         DocumentFilters $filters,
@@ -80,6 +88,7 @@ final readonly class DocumentsIndex extends DocumentsPage
             'value' => $card->attention->value,
             'detail' => $card->summaryLine(),
             'href' => "/documents/{$path}/{$card->number}",
+            'trailing' => $this->projectLabel->partsFor(ProjectOwner::fromKey($card->ownerKey)),
             'menu' => $hasMenu
                 ? $this->menus->onRecord(DocumentsDomain::DOCUMENT_ACTIONS, $card->number)
                 : Optional::create(),
@@ -118,8 +127,8 @@ final readonly class DocumentsIndex extends DocumentsPage
     }
 
     /**
-     * A dialog that files a document or a report from its Title, One line about it and Text, sent to the registered
-     * create action of its type.
+     * A dialog that files a document or a report from its Title, One line about it and Text, under All projects with
+     * the project it goes to (Global too for a document), sent to the registered create action of its type.
      */
     private function creation(
         string $type,
@@ -155,6 +164,7 @@ final readonly class DocumentsIndex extends DocumentsPage
                     'text',
                 ),
                 LayoutPartData::field('body', 'Text', LayoutFieldData::from(['name' => 'body']), 'area'),
+                ...($type === 'doc' ? $this->projectField->forProjectOrGlobal() : $this->projectField->forProject()),
             ],
         );
     }

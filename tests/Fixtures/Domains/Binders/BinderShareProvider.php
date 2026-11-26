@@ -15,6 +15,7 @@ use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
 use Illuminate\Support\Facades\DB;
+use App\Values\ProjectOwner;
 
 /**
  * Reads every batch of binder pages with one query, at the versions BinderPublications names; the record with the
@@ -31,6 +32,11 @@ final class BinderShareProvider implements ShareRecordProvider
     public function mayDisclose(RecordIdentity $record): bool
     {
         return ! in_array($record->id, [self::INELIGIBLE_ID, self::HIDDEN_ROOT_ID], true);
+    }
+
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        return ProjectOwner::global();
     }
 
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard

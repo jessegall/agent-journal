@@ -42,7 +42,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
         $this->checks->check($command->proposed->rule, $request->hold_reason->needsReader());
 
         $proposal = $this->proposals->open(
-            $request->project_key,
+            $request->project,
             $actor,
             $command->requestId,
             $command->proposed,

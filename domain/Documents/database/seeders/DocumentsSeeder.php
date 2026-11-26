@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Database\Seeders;
 
 use App\Contracts\Actors\Actor;
+use App\Values\ProjectOwner;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Illuminate\Database\Seeder;
@@ -43,7 +44,7 @@ final class DocumentsSeeder extends Seeder
             return;
         }
 
-        $document = Document::create($author);
+        $document = Document::create($author, ProjectOwner::global());
 
         $document->startWith(DocumentRevision::create(
             $document,

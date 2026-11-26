@@ -18,6 +18,7 @@ use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\ProcessRun;
 use App\Support\Admission\OutputPolicy;
+use App\Support\Projects\SelectedProject;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\CommandRule;
@@ -41,7 +42,7 @@ final readonly class EvidenceRuns
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
         private CommandPermissionResolver $permissions,
-        private ServedEnvironment $projects,
+        private SelectedProject $projects,
         private VerificationTiming $timing,
         private AgentTexts $texts,
     ) {}
@@ -57,7 +58,7 @@ final readonly class EvidenceRuns
     ): EvidencePermit {
         $permitted = $this->permitted($line, $workingFolder, $runner, []);
 
-        return EvidencePermit::create($this->projects->current(), $permitted, $runner, $limits, null, []);
+        return EvidencePermit::create($this->projects->find(), $permitted, $runner, $limits, null, []);
     }
 
     /**
@@ -71,7 +72,7 @@ final readonly class EvidenceRuns
         $permitted = $this->permitted($request->source_line, $request->working_folder, $request->actor(), [$proposed]);
 
         return EvidencePermit::create(
-            $request->project_key,
+            $request->project,
             $permitted,
             $request->actor(),
             PermitLimits::forSample(),
@@ -125,7 +126,7 @@ final readonly class EvidenceRuns
         $run = ProcessRun::create($runner, new RunAdmission(
             "evidence-{$permit->id}",
             RunMode::Evidence,
-            $permit->project_key,
+            $permit->project_id,
             $permit->source_digest,
             ShellDialect::Bash,
             $permit->classification_digest,

@@ -264,7 +264,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             return new PartClassification($node, [], [$program], CommandType::Unknown);
         }
 
-        $alias = $this->aliasOf($program, $boundWords, $context);
+        $alias = $this->aliasOf($program, $boundWords);
 
         if ($alias->isFound) {
             return $this->aliasPart($program, $alias, $boundWords, $node, $depth, $context);
@@ -454,7 +454,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
      *
      * @param  list<Word>  $words
      */
-    private function aliasOf(ProgramIdentity $program, array $words, ExecutionContext $context): AliasLookup
+    private function aliasOf(ProgramIdentity $program, array $words): AliasLookup
     {
         $name = count($words) > 2 && $words[1]->literal() === 'run' ? $words[2]->literal() : null;
 
@@ -462,7 +462,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             return AliasLookup::missing('');
         }
 
-        return $this->aliases->find($name, $context->projectKey());
+        return $this->aliases->find($name);
     }
 
     /**

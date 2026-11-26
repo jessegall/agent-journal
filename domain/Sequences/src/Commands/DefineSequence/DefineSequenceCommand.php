@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace Domain\Sequences\Commands\DefineSequence;
 
 use App\Attributes\Commands\Authorize;
+use App\Contracts\Projects\ProjectCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
+use App\Values\ProjectOwner;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Values\SequenceStep;
 
 /**
- * Stores a new sequence with its name and steps; answers its id.
+ * Stores a new sequence with its name and steps, of a project or Global by its owner key; answers its id.
  *
  * @extends Command<string>
  */
 #[Authorize(StoredSequencePolicy::class, AccessType::Create)]
-final readonly class DefineSequenceCommand extends Command
+final readonly class DefineSequenceCommand extends Command implements ProjectCommand
 {
     /**
      * @param  list<SequenceStep>  $steps
@@ -24,5 +26,11 @@ final readonly class DefineSequenceCommand extends Command
     public function __construct(
         public string $name,
         public array $steps,
+        public string $ownerKey,
     ) {}
+
+    public function owner(): ProjectOwner
+    {
+        return ProjectOwner::fromKey($this->ownerKey);
+    }
 }

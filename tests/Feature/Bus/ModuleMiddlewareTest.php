@@ -68,6 +68,7 @@ use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * Module middleware on the Cards and Notes test modules: the order by stage, owner and declaration,
@@ -224,7 +225,9 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
                     'Phases ended untested.',
                     null,
                     ActorReference::forAgent(TestIds::of(10)),
+                    TestProjects::localOwner(),
                 )->id,
+                TestProjects::localOwner()->key(),
             ),
         );
         $bus->run(new WriteNoteCommand('not a rules command'));
@@ -251,7 +254,9 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         )->ruleCalled('Settled rule');
 
         try {
-            $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($settled->id));
+            $this->app->make(CommandBus::class)->run(
+                new ApproveRuleCommand($settled->id, TestProjects::localOwner()->key()),
+            );
             $this->fail('A settled rule was approved.');
         } catch (RuleNotProposed) {
             $this->assertSame(

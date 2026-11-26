@@ -10,7 +10,9 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Connections\ProjectCreated;
+use App\Exceptions\ModelMissing;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -45,16 +47,35 @@ final class Project extends Model implements EventSource, ReadableModel
         return $project;
     }
 
+    /**
+     * The journal's own project, made under the label the first time it is asked for, as seeding and tests do.
+     */
+    public static function findOrCreateLocal(string $label): self
+    {
+        return self::query()->withKey(self::localKey())->first() ?? self::create(self::localKey(), $label);
+    }
+
     // ----------[ Queries ]----------
 
+    /**
+     * @throws ModelMissing when there is no project of this id
+     */
     public static function findForId(string $id): self
     {
-        return self::query()->whereKey($id)->firstOrFail();
+        return self::query()->whereKey($id)->firstOr(static fn () => throw ModelMissing::for(self::class, $id));
     }
 
     public static function findForKey(string $key): self
     {
         return self::query()->withKey($key)->firstOrFail();
+    }
+
+    /**
+     * The journal's own project, the one its configured key names.
+     */
+    public static function findLocal(): self
+    {
+        return self::findForKey(self::localKey());
     }
 
     /**
@@ -67,6 +88,23 @@ final class Project extends Model implements EventSource, ReadableModel
         return array_values(
             self::query()->inLabelOrder()->readAll('an installation connects a handful of projects')->get()->all(),
         );
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether this is the journal's own project rather than a connected one.
+     */
+    public function isLocal(): bool
+    {
+        return $this->key === self::localKey();
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function localKey(): string
+    {
+        return Container::getInstance()->make('config')->string('processes.project_key');
     }
 
     // ----------[ Scopes ]----------

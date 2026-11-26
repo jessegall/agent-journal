@@ -7,10 +7,12 @@ namespace App\Support;
 use App\Contracts\Sharing\Shareable;
 use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\InvalidRecordIdentity;
+use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareRecordInvalid;
 use App\Exceptions\ShareRelationInvalid;
 use App\Exceptions\UnknownShareRecordType;
 use App\Exceptions\UnknownShareRelation;
+use App\Values\ProjectOwner;
 use Illuminate\Container\Container;
 
 /**
@@ -115,6 +117,17 @@ final class ShareRecordRegistry
     public function provider(string $alias): ShareRecordProvider
     {
         return Container::getInstance()->make($this->get($alias)->providerClass);
+    }
+
+    /**
+     * The owner of a share's root, as its type's provider answers it: the root's project, or Global.
+     *
+     * @throws UnknownShareRecordType
+     * @throws RecordUnavailable when the root is missing
+     */
+    public function ownerOf(RecordIdentity $root): ProjectOwner
+    {
+        return $this->provider($root->type)->ownerOf($root);
     }
 
     /**

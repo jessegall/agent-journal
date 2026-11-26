@@ -22,6 +22,12 @@ final readonly class ProposeRuleHandler extends RuleCommandHandler
             );
         }
 
-        return Rule::create($command->text, $command->reason, $command->replacesRuleId, $command->dispatchedBy())->id;
+        return Rule::create(
+            $command->text,
+            $command->reason,
+            $command->replacesRuleId,
+            $command->dispatchedBy(),
+            $command->owner(),
+        )->id;
     }
 }

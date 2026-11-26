@@ -17,6 +17,7 @@ use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\TestProjects;
 use Tests\TestCase;
 
 /**
@@ -89,8 +90,18 @@ final class JournalEventsTest extends TestCase
     private function linkedTasks(): array
     {
         $this->journal->owner();
-        $first = Task::create('First', 'One.', $this->journal->ownerUser())->assignmentIdentity();
-        $second = Task::create('Second', 'Two.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'First',
+            'One.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
+        $second = Task::create(
+            'Second',
+            'Two.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
         $this->journal->run(new LinkRecordsCommand($first, $second));
 
         return [$first, $second];

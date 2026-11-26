@@ -11,6 +11,7 @@ use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 
 /**
  * An agent begins an upload in its session of a declared type, size and digest, which waits for its parts; a size past the upload
@@ -26,7 +27,12 @@ final class BeginUploadTest extends TestCase
         $this->journal->owner()->agent('Writer', 'writing-helper')->actAs('Writer');
         $text = "# Goal\nShip it.\n";
 
-        $uploadId = $this->journal->run(new BeginUploadCommand(UploadType::DocumentBody, strlen($text), hash('sha256', $text)));
+        $uploadId = $this->journal->run(new BeginUploadCommand(
+            UploadType::DocumentBody,
+            strlen($text),
+            hash('sha256', $text),
+            TestProjects::local()->id,
+        ));
 
         $upload = TextUpload::query()->findOrFail($uploadId);
         $this->assertSame([
@@ -46,7 +52,12 @@ final class BeginUploadTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->journal->run(
-                new BeginUploadCommand(UploadType::DocumentBody, BeginUploadCommand::MAX_BYTES + 1, hash('sha256', '')),
+                new BeginUploadCommand(
+                    UploadType::DocumentBody,
+                    BeginUploadCommand::MAX_BYTES + 1,
+                    hash('sha256', ''),
+                    TestProjects::local()->id,
+                ),
             ),
             UploadInvalid::class,
         );

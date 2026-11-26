@@ -10,7 +10,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * A layout field's binding: the query key it writes in its own window, the value it shows now and the keys a new
  * value clears, such as the page or the chosen row, so a new filter starts at the first page, and for a choice field the
- * values it offers.
+ * values it offers with the label shown for each, the value itself where none is given.
  */
 #[TypeScript]
 final class LayoutFieldData extends Data
@@ -18,11 +18,13 @@ final class LayoutFieldData extends Data
     /**
      * @param  list<string>  $clears
      * @param  list<string>  $options
+     * @param  list<string>  $optionLabels  the label of each option, in the order of the options
      */
     public function __construct(
         public readonly string $name,
         public readonly string $value = '',
         public readonly array $clears = [],
         public readonly array $options = [],
+        public readonly array $optionLabels = [],
     ) {}
 }

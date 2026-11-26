@@ -12,6 +12,7 @@ use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
+use App\Values\ProjectOwner;
 use Domain\Comments\Contracts\PublicCommentResolver;
 use Domain\Documents\Concerns\SharesPublishedRecords;
 use Domain\Documents\Models\Report;
@@ -38,6 +39,17 @@ final readonly class ReportShareProvider implements ShareRecordProvider
         return $record->type === Report::linkType() && Report::query()->sharedPublished()->whereKey(
             $record->id,
         )->exists();
+    }
+
+    /**
+     * @throws RecordUnavailable when the report is missing
+     */
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        return Report::query()
+            ->whereKey($record->id)
+            ->firstOr(RecordUnavailable::throwing()->forActor($record))
+            ->projectOwner();
     }
 
     /**

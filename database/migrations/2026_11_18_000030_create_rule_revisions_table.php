@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('rule_revisions', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('scope_type', 16);
             $table->string('scope_owner');
             $table->string('scope_version');
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->string('approver_id');
             $table->timestampTz('approved_at');
 
-            $table->unique(['project_key', 'scope_type', 'scope_owner', 'rule_id', 'revision']);
+            $table->unique(['project_id', 'scope_type', 'scope_owner', 'rule_id', 'revision']);
         });
     }
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Attributes\Rules\OutsideThePlaces;
-use App\Enums\Files\PlaceExemption;
 use App\Enums\Processes\ShellDialect;
 
 /**
@@ -42,15 +40,6 @@ final readonly class ExecutionContext
     public static function inFolder(string $folder): self
     {
         return new self(ShellDialect::Bash, $folder, $folder);
-    }
-
-    /**
-     * The key that scopes a project's saved aliases: a digest of its root folder.
-     */
-    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
-    public function projectKey(): string
-    {
-        return hash('sha256', realpath($this->projectRoot) ?: $this->projectRoot);
     }
 
     public function withWorkingFolder(string $folder): self

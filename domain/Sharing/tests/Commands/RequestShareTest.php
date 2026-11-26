@@ -37,6 +37,7 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -103,7 +104,7 @@ final class RequestShareTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
@@ -242,6 +243,7 @@ final class RequestShareTest extends TestCase
     {
         $first = Share::create(
             $this->root,
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(ActorReference::ofClass(Agent::class, $this->start->agent->id)),
         );

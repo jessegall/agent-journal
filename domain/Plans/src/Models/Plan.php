@@ -12,6 +12,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
@@ -19,12 +20,14 @@ use App\Exceptions\AssignmentPoolTooLarge;
 use App\Exceptions\AssignmentPoolUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRelationSet;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanReviewStatus;
@@ -62,6 +65,7 @@ use PhpOption\Option;
  * @property string $id
  * @property string $number_group_id
  * @property int $number
+ * @property string $project_id
  * @property string $title
  * @property string $brief
  * @property string $creator_type
@@ -89,9 +93,10 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[UseFactory(PlanFactory::class)]
-final class Plan extends Model implements Assignable, EventSource, Numbered, ReadableModel, Shareable
+final class Plan extends Model implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel, Shareable
 {
     use AssignableListing;
+    use BelongsToProject;
     use BoundedReads;
 
     /**
@@ -155,9 +160,15 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     /**
      * A new plan an actor drafts, with its title, brief and type.
      */
-    public static function create(string $title, string $brief, PlanType $type, Actor $creator): self
-    {
+    public static function create(
+        string $title,
+        string $brief,
+        PlanType $type,
+        Actor $creator,
+        ProjectOwner $owner,
+    ): self {
         $plan = new self();
+        $plan->project_id = $owner->projectId();
         $plan->title = $title;
         $plan->brief = $brief;
         $plan->type = $type;
@@ -366,6 +377,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
             $progress,
             $currentPhase,
             $holder,
+            $this->projectOwner(),
         );
     }
 

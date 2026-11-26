@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Database\Seeders;
 
+use App\Values\ProjectOwner;
 use Domain\Sequences\Models\Sequence;
 use Domain\Sequences\Values\SequenceStep;
 use Illuminate\Database\Seeder;
 
 /**
- * A local sequence of three steps, so the running app shows a sequence row and its reader. Once seeded, seeding again
- * adds nothing.
+ * A Global sequence of three steps, so the running app shows a sequence row and its reader under every project.
+ * Once seeded, seeding again adds nothing.
  */
 final class SequencesSeeder extends Seeder
 {
@@ -26,6 +27,6 @@ final class SequencesSeeder extends Seeder
             new SequenceStep('test', 'Run the full suite', 'a release is due', 'every test passes'),
             new SequenceStep('notes', 'Write the release notes', 'the suite passed', 'the notes name every change'),
             new SequenceStep('tag', 'Tag the release', 'the notes are written', 'the tag is pushed'),
-        ]);
+        ], ProjectOwner::global());
     }
 }

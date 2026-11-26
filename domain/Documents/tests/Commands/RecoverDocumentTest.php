@@ -22,6 +22,7 @@ use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A user recovers an agent's draft and the revision keeps the agent as author; a blank reason is refused and the
@@ -58,7 +59,7 @@ final class RecoverDocumentTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
     }
 
     public function test_a_blank_recovery_reason_is_refused_and_the_draft_stays_held(): void

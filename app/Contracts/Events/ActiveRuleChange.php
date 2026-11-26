@@ -9,12 +9,10 @@ namespace App\Contracts\Events;
  */
 interface ActiveRuleChange extends Event
 {
-    public string $projectKey { get; }
-
     /**
-     * The key of the project whose active rules changed.
+     * The id of the project whose active rules changed.
      */
-    public function project(): string;
+    public string $projectId { get; }
 
     /**
      * The stable reason an unfinished run of the project is refused with, and how to go on.

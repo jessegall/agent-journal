@@ -12,11 +12,12 @@ use App\Contracts\Assignments\AssignmentDestinationResolver;
 use App\Contracts\Assignments\AssignmentProviders;
 use App\Contracts\Authorization\CurrentAuthorizer;
 use App\Policies\AssignmentRecipientPolicy;
+use App\Support\Projects\ProjectEdges;
 
 /**
  * Admits public assignments in one order: public purpose, the caller's authority over the requested recipient, the
- * recipient's lock, one resolution of the recipient, the final holder's lock and the record. The caller's own seat
- * never takes part.
+ * recipient's lock, one resolution of the recipient, the final holder's lock, the record and that holder and record
+ * are of one project. The caller's own seat never takes part.
  */
 final readonly class AdmitPublicAssignments
 {
@@ -27,6 +28,7 @@ final readonly class AdmitPublicAssignments
         private AssigneeLocks $locks,
         private AssignmentDestinationResolver $destinations,
         private MaintenanceAdmission $maintenance,
+        private ProjectEdges $edges,
     ) {}
 
     public function admitPublic(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
@@ -50,9 +52,11 @@ final readonly class AdmitPublicAssignments
     private function resolve(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
         $this->locks->lockShared([$requested]);
-        $resolved = $this->destinations->resolve($requested)->assigneeIdentity();
+        $holder = $this->destinations->resolve($requested);
+        $resolved = $holder->assigneeIdentity();
         $this->locks->lockShared([$resolved]);
-        $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $assignable = $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $this->edges->assertJoinable($holder, $assignable);
 
         return new AdmittedAssignment($record, $requested, $resolved);
     }

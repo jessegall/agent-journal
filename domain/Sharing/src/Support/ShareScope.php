@@ -4,31 +4,37 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use App\Contracts\Sharing\ShareRecordProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Support\ReadMeter;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
 use App\Support\ShareRecordRegistry;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use App\Values\ProjectSelection;
 use Domain\Sharing\Exceptions\ShareScopeTooLarge;
 
 /**
  * Finds what a share of a root could include, for the owner's preview: the root's card from its own provider, then
  * the records linked to it through each linked relation, read by their own providers in batches of at most 100 per
  * provider, and so on from those records up to the budget's hops. A target whose type advertises none of the needed
- * capabilities, or whose provider calls it ineligible, is dropped without its title. The batches repeat their reads
- * on purpose and are bounded by the budget. Owned children are not candidates: their parent's provider reads them
- * live.
+ * capabilities, or whose provider calls it ineligible, is dropped without its title. The walk reads only what the
+ * root's project reaches, so a Global record never leads into another project. The batches repeat their reads on
+ * purpose and are bounded by the budget. Owned children are not candidates: their parent's provider reads them live.
  */
 final readonly class ShareScope
 {
     private const int TARGET_BATCH = 100;
 
-    public function __construct(private ShareRecordRegistry $records) {}
+    public function __construct(
+        private ShareRecordRegistry $records,
+        private ProjectSelectionStore $selections,
+    ) {}
 
     /**
      * @throws UnknownShareRecordType when the root's type is not registered for sharing
@@ -38,7 +44,20 @@ final readonly class ShareScope
     public function discover(RecordIdentity $root, ShareBudget $budget): ShareCandidates
     {
         $provider = $this->records->provider($root->type);
+        $reach = ProjectSelection::reachableFrom($provider->ownerOf($root));
 
+        return $this->selections->within($reach, fn () => $this->discoverFrom($root, $provider, $budget));
+    }
+
+    /**
+     * @throws RecordUnavailable
+     * @throws ShareScopeTooLarge
+     */
+    private function discoverFrom(
+        RecordIdentity $root,
+        ShareRecordProvider $provider,
+        ShareBudget $budget,
+    ): ShareCandidates {
         try {
             if (! $budget->run(fn () => $provider->mayDisclose($root))) {
                 throw RecordUnavailable::forActor($root);

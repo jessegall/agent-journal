@@ -18,7 +18,7 @@ final readonly class RunAdmission
     public function __construct(
         public string $admissionId,
         public RunMode $mode,
-        public string $projectKey,
+        public string $projectId,
         public string $sourceDigest,
         public ShellDialect $dialect,
         public string $registryRevision,

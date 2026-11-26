@@ -10,6 +10,7 @@ use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Data\Processes\RunOutcomeSummaryData;
 use App\Resolvers\Support\RunOutcomeSummaries;
+use App\Values\ProjectSelection;
 use PhpOption\Option;
 
 /**
@@ -37,7 +38,10 @@ final readonly class RunNotificationTarget implements NotificationTargetResolver
     {
         return $this->summaries->summaryOf($targetId)->map(fn (RunOutcomeSummaryData $summary) => new NotificationLink(
             $summary->label,
-            $this->pages->addressOf(self::OUTCOME_PAGE, ['run' => $summary->runId]),
+            $this->pages->addressOf(self::OUTCOME_PAGE, [
+                'run' => $summary->runId,
+                ProjectSelection::ADDRESS_PARAMETER => $summary->projectId,
+            ]),
         ));
     }
 

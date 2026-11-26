@@ -25,9 +25,11 @@ use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostArrangementRefused;
 use App\Exceptions\HostCredentialRejected;
 use App\Exceptions\HostUnavailable;
+use App\Exceptions\StartRefused;
 use App\Models\Support\Accessor;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
+use App\Values\StartPlace;
 use App\Values\StartProposal;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -506,17 +508,26 @@ final class Host extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The first serving enrolled host that runs this placement and declared the driver build and driver type; a relay
-     * host starts only through its binding.
+     * Where a main start of an agent of the project runs: for the local project the first serving enrolled host that
+     * runs this placement and declared the driver build and driver type, in its start folder; for a connected project
+     * the relay host of one of its serving bindings, in that binding's folder.
      *
      * @throws HostUnavailable
+     * @throws StartRefused when no folder of the connected project serves it now
      */
     public static function findRunningStart(
+        Project $project,
         string $driver,
         string $build,
         ExecutionModeType $placement,
         DriverType $driverType,
-    ): self {
+    ): StartPlace {
+        if (! $project->isLocal()) {
+            $binding = ProjectBinding::findServingStart($project, $driver, $build, $placement, $driverType);
+
+            return new StartPlace($binding->host_id, $binding->canonical_root);
+        }
+
         $hosts = array_values(array_filter(
             self::findServingEnrolled(),
             fn (self $host) => $host->runsPlacement($placement) && $host->declaresRun(
@@ -529,7 +540,7 @@ final class Host extends Model implements EventSource, ReadableModel
 
         self::assertServesStart($hosts, $driver, $driverType);
 
-        return $hosts[0];
+        return new StartPlace($hosts[0]->id, $hosts[0]->startFolder());
     }
 
     // ----------[ Scopes ]----------

@@ -23,6 +23,7 @@ use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * An agent closes only the reports it created.
@@ -67,18 +68,18 @@ final class CloseReportTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
     }
 
     public function test_an_agent_settles_only_the_reports_it_created(): void
     {
         $this->journal->actAsAgentIds(TestIds::of(9), TestIds::of(90));
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n"));
+        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n", TestProjects::local()->id));
         $this->bus()->run(new CloseReportCommand('1', 'Checked.'));
         $this->assertSame(AttentionStatus::Settled, Report::query()->sole()->attention);
 
         $this->journal->actAsUserId(TestIds::of(1));
-        $this->bus()->run(new CreateReportCommand('Other', 'By a user', "Text\n"));
+        $this->bus()->run(new CreateReportCommand('Other', 'By a user', "Text\n", TestProjects::local()->id));
         $this->journal->actAsAgentIds(TestIds::of(8), TestIds::of(80));
         $this->expectException(ActorNotAllowed::class);
 
@@ -90,14 +91,24 @@ final class CloseReportTest extends TestCase
         $writer = $this->journal->signedStart('Writer', 'writing-helper');
         $writer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
-        $source = $bus->run(new CreateDocumentCommand('Source', 'Design under review.', 'Published design.'));
+        $source = $bus->run(new CreateDocumentCommand(
+            'Source',
+            'Design under review.',
+            'Published design.',
+            TestProjects::local()->id,
+        ));
 
         $reviewer = $this->journal->signedStart('Reader', 'read-only-helper');
         $reviewer->startRequest($this->app);
         $findings = str_pad('', 300 * 1024, 'Finding and evidence. ');
 
         $upload = $bus->run(
-            new BeginUploadCommand(UploadType::ReportBody, strlen($findings), hash('sha256', $findings)),
+            new BeginUploadCommand(
+                UploadType::ReportBody,
+                strlen($findings),
+                hash('sha256', $findings),
+                TestProjects::local()->id,
+            ),
         );
 
         foreach (str_split($findings, TextUpload::CHUNK_BYTES) as $index => $part) {

@@ -11,10 +11,12 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Events\PhaseProgressRecorded;
@@ -35,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property string $id
  * @property string $plan_id
+ * @property string $project_id
  * @property string $number_group_id
  * @property int $number
  * @property string $title
@@ -51,8 +54,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class Phase extends Model implements Assignable, EventSource, Numbered, ReadableModel
+final class Phase extends Model implements Assignable, EventSource, Numbered, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
@@ -97,6 +101,7 @@ final class Phase extends Model implements Assignable, EventSource, Numbered, Re
         $phase = new self();
         $phase->title = $title;
         $phase->plan_id = $plan->id;
+        $phase->project_id = $plan->project_id;
         $phase->setRelation('plan', $plan);
         $phase->save();
 

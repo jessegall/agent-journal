@@ -9,6 +9,7 @@ use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 
 /**
  * Reads fixture sources: every id exists and every viewer may read it.
@@ -18,6 +19,11 @@ final readonly class FixtureDockableProvider implements DockableProvider
     public function requireReadable(DockDefinition $definition, string $id): Dockable
     {
         return new FixtureDockable($id);
+    }
+
+    public function ownerOf(DockDefinition $definition, string $id): ProjectOwner
+    {
+        return ProjectOwner::global();
     }
 
     public function cardsFor(DockDefinition $definition, array $ids, CardContext $context): array

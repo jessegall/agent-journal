@@ -6,6 +6,7 @@ namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\CommandTransaction;
+use App\Values\ProjectOwner;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
@@ -19,6 +20,7 @@ use Domain\Documents\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 #[TestsCommand(CommitUploadCommand::class)]
 final class CommitUploadTest extends TestCase
@@ -28,6 +30,7 @@ final class CommitUploadTest extends TestCase
     private const array TABLES = [
         'text_upload_chunks',
         'text_uploads',
+        'projects',
         'links',
         'agents',
         'agent_sessions',
@@ -65,10 +68,28 @@ final class CommitUploadTest extends TestCase
         $this->assertThrows(fn () => $this->consume($id, UploadType::DocumentBody), UploadExpired::class);
     }
 
+    public function test_an_upload_of_another_project_is_missing_to_the_agent(): void
+    {
+        $this->journal->project('Shop');
+        $this->journal->signedStart('Test agent')->startRequest($this->app);
+        $shop = ProjectOwner::ofProject($this->journal->projectCalled('Shop')->id);
+        $elsewhere = TextUpload::create(UploadType::DocumentBody, 4, hash('sha256', 'text'), $shop);
+
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new CommitUploadCommand($elsewhere->id)),
+            UploadExpired::class,
+        );
+    }
+
     private function begin(string $text): string
     {
         return $this->app->make(CommandBus::class)->run(
-            new BeginUploadCommand(UploadType::DocumentBody, strlen($text), hash('sha256', $text)),
+            new BeginUploadCommand(
+                UploadType::DocumentBody,
+                strlen($text),
+                hash('sha256', $text),
+                TestProjects::local()->id,
+            ),
         );
     }
 

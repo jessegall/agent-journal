@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('classification_rules', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('scope_type', 16);
             $table->string('scope_owner');
             $table->string('scope_version');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('state_reason');
             $table->timestampsTz();
 
-            $table->unique(['project_key', 'scope_type', 'scope_owner', 'rule_id']);
+            $table->unique(['project_id', 'scope_type', 'scope_owner', 'rule_id']);
         });
     }
 

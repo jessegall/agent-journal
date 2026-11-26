@@ -22,8 +22,10 @@ use App\Enums\Processes\OutputStream;
 use App\Exceptions\ShippedReaderUnmatched;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
+use App\Models\Projects\Project;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Support\Rules\ShippedReaders;
 use App\Values\CapturedChunk;
 use App\Values\CommandRule;
@@ -31,6 +33,7 @@ use App\Values\EvidenceRange;
 use App\Values\OwnerApproval;
 use App\Values\PartKey;
 use App\Values\ProgressPolicy;
+use App\Values\ProjectSelection;
 use App\Values\ProofSample;
 use App\Values\ProposedRule;
 use App\Values\ReaderApproval;
@@ -58,14 +61,26 @@ final readonly class ShippedReaderInstaller
         private OutputRecorder $recorder,
         private OutputSummaries $summaries,
         private ActiveRules $rules,
+        private ProjectSelectionStore $projects,
     ) {}
 
     /**
-     * The tools installed, by the shipped readers that matched them.
+     * The tools installed, by the shipped readers that matched them, approved into the project alone.
      *
      * @return list<string>
      */
-    public function install(ToolVersions $installed, string $folder): array
+    public function install(ToolVersions $installed, string $folder, Project $project): array
+    {
+        return $this->projects->within(
+            ProjectSelection::of($project->id),
+            fn (): array => $this->installMatching($installed, $folder),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function installMatching(ToolVersions $installed, string $folder): array
     {
         $done = [];
 

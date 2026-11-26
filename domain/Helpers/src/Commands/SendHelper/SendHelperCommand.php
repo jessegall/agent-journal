@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands\SendHelper;
 
 use App\Attributes\Commands\Authorize;
+use App\Contracts\Projects\ProjectCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
+use App\Values\ProjectOwner;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Gives new work to the one helper identity the caller names and starts it; the work is never redirected to
- * another helper.
+ * Gives new work in the project to the one helper identity the caller names there and starts it; the work is never
+ * redirected to another helper.
  *
  * @extends Command<HelperReceipt>
  */
 #[Authorize(HelperPolicy::class, AccessType::Create)]
-final readonly class SendHelperCommand extends Command
+final readonly class SendHelperCommand extends Command implements ProjectCommand
 {
     public function __construct(
         #[Required]
@@ -32,5 +34,11 @@ final readonly class SendHelperCommand extends Command
         public string $model,
         public string|null $driverKey,
         public HelperWork $work,
+        public string $projectId,
     ) {}
+
+    public function owner(): ProjectOwner
+    {
+        return ProjectOwner::ofProject($this->projectId);
+    }
 }

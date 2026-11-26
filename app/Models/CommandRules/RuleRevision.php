@@ -7,9 +7,12 @@ namespace App\Models\CommandRules;
 use App\Casts\RuleScopeCast;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Exceptions\RuleRevisionInvalid;
+use App\Models\Projects\Project;
+use App\Models\Support\BelongsToProject;
 use App\Models\Support\NamedByRuleScope;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
@@ -25,7 +28,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $scope_type
  * @property string $scope_owner
  * @property string $scope_version
@@ -45,8 +48,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class RuleRevision extends Model implements ReadableModel
+final class RuleRevision extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -88,7 +92,7 @@ final class RuleRevision extends Model implements ReadableModel
      */
     public static function create(
         RuleProposalRevision $proposed,
-        string $projectKey,
+        Project $project,
         ActorReference $approver,
         array $readers,
         array $scripts,
@@ -96,10 +100,10 @@ final class RuleRevision extends Model implements ReadableModel
         $rule = $proposed->payload;
         self::assertReadersFit($rule, $readers);
 
-        $approved = $rule->ownedBy($rule->scope, self::resolveNextRevision($projectKey, $rule));
+        $approved = $rule->ownedBy($rule->scope, self::resolveNextRevision($project, $rule));
 
         $ruleRevision = new self();
-        $ruleRevision->project_key = $projectKey;
+        $ruleRevision->project_id = $project->id;
         $ruleRevision->scope = $approved->scope;
         $ruleRevision->rule_id = $approved->id;
         $ruleRevision->revision = $approved->revision;
@@ -124,7 +128,7 @@ final class RuleRevision extends Model implements ReadableModel
      */
     public function belongsToRule(ClassificationRule $rule): bool
     {
-        return $this->project_key === $rule->project_key
+        return $this->project_id === $rule->project_id
             && $this->scope->isSameOwner($rule->scope)
             && $this->rule_id === $rule->rule_id;
     }
@@ -164,21 +168,12 @@ final class RuleRevision extends Model implements ReadableModel
     /**
      * The revision the rule's next approval in the project takes: one past its newest.
      */
-    public static function resolveNextRevision(string $projectKey, CommandRule $rule): int
+    public static function resolveNextRevision(Project $project, CommandRule $rule): int
     {
-        return (int) self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision') + 1;
+        return (int) self::query()->inProject($project->id)->ofRule($rule->scope, $rule->id)->max('revision') + 1;
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * The rows of the given revision.

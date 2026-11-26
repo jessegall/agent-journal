@@ -13,11 +13,13 @@ use Domain\Questions\Models\Question;
 use Domain\Questions\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
+use Tests\Support\TestProjects;
 
 /**
  * A member of a chat asks another member an open question or a choice between options: it keeps its text, asker,
  * target and trimmed options; a blank text, an open question with options, a choice without two distinct options, a
- * chat the asker is not in and a target outside the chat are refused and ask nothing.
+ * chat the asker is not in and a target outside the chat are refused and ask nothing; a question is of the asker's
+ * project and missing under another.
  */
 #[TestsCommand(AskQuestionCommand::class)]
 final class AskQuestionTest extends TestCase
@@ -119,6 +121,7 @@ final class AskQuestionTest extends TestCase
                 $this->journal->actorCalled('Stranger'),
                 'Which?',
                 QuestionType::Open,
+                TestProjects::local()->id,
             )),
             QuestionRefused::class,
             QuestionRefused::targetNotInInbox($this->journal->actorCalled('Stranger'))->getMessage(),
@@ -134,11 +137,37 @@ final class AskQuestionTest extends TestCase
         $this->assertSame(0, Question::query()->count());
     }
 
+    public function test_a_question_asked_by_an_agent_of_one_project_is_missing_under_another(): void
+    {
+        $this->journal->project('A')->project('B')->agent('Shopper', project: 'A')->sharedInbox('Owner', 'Shopper');
+        $projectA = $this->journal->projectCalled('A');
+
+        $questionId = $this->journal->actAs('Shopper')->run(new AskQuestionCommand(
+            $this->journal->sharedInboxOf('Owner', 'Shopper')->id,
+            $this->journal->actorCalled('Owner'),
+            'Which database?',
+            QuestionType::Open,
+            $projectA->id,
+        ));
+
+        $this->journal->actAs('Owner')->selectProject('B');
+        $this->assertFalse(Question::query()->whereKey($questionId)->exists());
+        $this->journal->selectProject('A');
+        $this->assertSame($projectA->id, Question::query()->findOrFail($questionId)->project_id);
+    }
+
     /**
      * @param  list<string>  $options
      */
     private function ask(string $text, QuestionType $type, array $options = []): AskQuestionCommand
     {
-        return new AskQuestionCommand($this->chatId, $this->journal->actorCalled('Owner'), $text, $type, $options);
+        return new AskQuestionCommand(
+            $this->chatId,
+            $this->journal->actorCalled('Owner'),
+            $text,
+            $type,
+            TestProjects::local()->id,
+            $options,
+        );
     }
 }

@@ -7,6 +7,7 @@ namespace App\Models\CommandRules;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\EvidenceSource;
 use App\Enums\CommandRules\ProposalStatus;
@@ -14,9 +15,11 @@ use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Enums\Processes\OutputStream;
 use App\Exceptions\RequestTransitionRefused;
+use App\Models\Projects\Project;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Models\Support\HasActorColumns;
 use App\Support\ActorReference;
 use App\Values\ExitBranch;
@@ -31,7 +34,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $operation
@@ -48,8 +51,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class CommandRequest extends Model implements ReadableModel
+final class CommandRequest extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasActorColumns;
     use HasActorColumns;
@@ -74,10 +78,10 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * A new request holding the actor's command line in the project, collecting its declaration first.
      */
-    public static function create(string $projectKey, ActorReference $actor, OpenCommandRequestCommand $command): self
+    public static function create(Project $project, ActorReference $actor, OpenCommandRequestCommand $command): self
     {
         $commandRequest = new self();
-        $commandRequest->project_key = $projectKey;
+        $commandRequest->project_id = $project->id;
         $commandRequest->actor_type = $actor->type;
         $commandRequest->actor_id = $actor->id;
         $commandRequest->operation = $command->operation;
@@ -340,15 +344,6 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * @param  Builder<self>  $query

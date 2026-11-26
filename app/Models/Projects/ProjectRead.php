@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use PhpOption\Option;
 use Spatie\LaravelData\DataCollection;
 
@@ -42,6 +43,7 @@ use Spatie\LaravelData\DataCollection;
  * @property ProjectReadFailure|null $failure
  * @property DataCollection<int, ProjectEntryData>|null $entries
  * @property string|null $text
+ * @property-read ProjectBinding $binding
  * @property string|null $digest
  * @property int|null $size
  * @property bool $is_truncated
@@ -208,6 +210,16 @@ final class ProjectRead extends Model implements EventSource, ReadableModel
     public function listedEntries(): array
     {
         return $this->entries?->items() ?? [];
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<ProjectBinding, $this>
+     */
+    public function binding(): BelongsTo
+    {
+        return $this->belongsTo(ProjectBinding::class);
     }
 
     // ----------[ Internals ]----------

@@ -18,6 +18,7 @@ use App\Enums\Agents\ConversationModeType;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Projects\ArrangementType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
 use App\Enums\Sessions\SessionStatus;
@@ -39,7 +40,9 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
+use App\Models\Projects\ProjectBinding;
 use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
@@ -48,7 +51,9 @@ use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\StartReceipt;
+use App\Values\BindingFolder;
 use App\Values\HostCapacity;
+use App\Values\PresenceReport;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
@@ -278,6 +283,32 @@ final class StartAgentTest extends TestCase
         $this->assertSame(0, SessionRequest::query()->count());
     }
 
+    public function test_an_agent_of_a_connected_project_starts_on_its_serving_bindings_host_in_its_folder(): void
+    {
+        $binding = $this->servingBindingOf('Shop');
+        $shopper = $this->journal->idleAgent('Shopper', 'read-only-helper', 'Shop')->agentCalled('Shopper');
+
+        $receipt = $this->start($this->mainStartOf($shopper->id));
+
+        $runtime = AgentRuntime::findForSession($receipt->sessionId);
+        $this->assertSame([$binding->host_id, '/Users/owner/shop'], [$runtime?->host_id, $runtime?->canonical_folder]);
+    }
+
+    public function test_an_agent_of_a_project_no_folder_serves_is_refused_and_nothing_is_reserved(): void
+    {
+        $this->journal->project('Shop');
+        $shopper = $this->journal->idleAgent('Shopper', 'read-only-helper', 'Shop')->agentCalled('Shopper');
+
+        $this->assertThrows(
+            fn () => $this->start($this->mainStartOf($shopper->id)),
+            StartRefused::class,
+            'No folder of Shop is connected right now.',
+        );
+
+        $this->assertSame(0, CapacityReservation::query()->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $shopper->id)->count());
+    }
+
     public function test_unproven_account_transport_refuses_before_account_selection_or_host_preparation(): void
     {
         $this->journal->actAsUserId(TestIds::of(1));
@@ -385,5 +416,47 @@ final class StartAgentTest extends TestCase
         $this->assertThrows(fn () => $this->start($this->newAgentContainerRequest()), CapacityUnavailable::class);
         $this->assertSame(1, CapacityReservation::query()->count());
         $this->assertSame(1, AgentSession::query()->count());
+    }
+
+    /**
+     * A new connected project of that name with one ready binding, in /Users/owner/shop, whose relay declares what
+     * the enrolled host declares.
+     */
+    private function servingBindingOf(string $name): ProjectBinding
+    {
+        $project = $this->journal->project($name)->projectCalled($name);
+        $relay = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
+        $relay->recordDescriptors(Host::query()->enrolled()->sole()->descriptors->items());
+        $binding = ProjectBinding::create(
+            $relay,
+            $project,
+            Environment::create($project, "{$name} work"),
+            $this->researcher,
+            new BindingFolder(
+                'root-'.bin2hex(random_bytes(4)),
+                '/Users/owner/shop',
+                'Owner laptop',
+                bin2hex(random_bytes(8)),
+            ),
+        );
+        $binding->recordPresence(new PresenceReport('boot-1', 1, '1.0.0', true, false, 0, [], true));
+
+        return $binding;
+    }
+
+    private function mainStartOf(string $agentId): StartRequest
+    {
+        return new StartRequest(
+            TestSelections::requestId(),
+            $agentId,
+            TestSelections::of(),
+            StartOriginType::MainStart,
+            null,
+            null,
+            ConversationModeType::New,
+            null,
+            StartPolicy::withoutProfile(TestSelections::onHost()),
+            driverType: DriverType::Headless,
+        );
     }
 }

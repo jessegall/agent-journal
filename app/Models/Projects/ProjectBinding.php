@@ -9,8 +9,11 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
+use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Connections\BindingReadiness;
+use App\Enums\Drivers\DriverType;
 use App\Enums\Projects\ArrangementType;
 use App\Events\Connections\ProjectBindingCreated;
 use App\Events\Connections\ProjectBindingEnvironmentAssigned;
@@ -21,8 +24,10 @@ use App\Events\Connections\ProjectBindingRevoked;
 use App\Exceptions\BindingRuntimeRefused;
 use App\Exceptions\BindingUnrecoverable;
 use App\Exceptions\PresenceRefused;
+use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Values\BindingFolder;
 use App\Values\DriverFamily;
 use App\Values\PresenceReceipt;
@@ -72,8 +77,9 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-final class ProjectBinding extends Model implements EventSource, ReadableModel
+final class ProjectBinding extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -121,10 +127,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         Agent $mainAgent,
         BindingFolder $folder,
     ): self {
-        $mainAgent->assertOfProject($project);
         $binding = new self();
         $binding->host_id = $host->id;
         $binding->project_id = $project->id;
+        $mainAgent->assertSameProjectAs($binding);
         $binding->environment_id = $environment->id;
         $binding->main_agent_id = $mainAgent->id;
         $binding->root_id = $folder->rootId;
@@ -386,14 +392,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     // ----------[ Relations ]----------
 
     /**
-     * @return BelongsTo<Project, $this>
-     */
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class);
-    }
-
-    /**
      * @return BelongsTo<Environment, $this>
      */
     public function environment(): BelongsTo
@@ -463,6 +461,35 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The first unrevoked binding of the connected project that is ready now and whose relay runs the placement and
+     * declared the driver build and driver type, for a main start of one of the project's agents.
+     *
+     * @throws StartRefused when no folder of the project serves it now
+     */
+    public static function findServingStart(
+        Project $project,
+        string $driver,
+        string $build,
+        ExecutionModeType $placement,
+        DriverType $driverType,
+    ): self {
+        $now = CarbonImmutable::now();
+        $bindings = self::query()
+            ->inProject($project->id)
+            ->unrevoked()
+            ->with('host')
+            ->readAll('a project connects a handful of folders')
+            ->get();
+
+        return $bindings->first(
+            fn (self $binding) => $binding->readinessAt($now) === BindingReadiness::Ready
+                && $binding->host->runsPlacement($placement)
+                && $binding->host->declaresRun($driver, $build, $placement, $driverType),
+            fn () => throw StartRefused::projectNotServed($project->label),
+        );
+    }
 
     /**
      * The binding this host's redemption made under its installation nonce.

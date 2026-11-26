@@ -108,6 +108,7 @@ final readonly class RecordViews
             'title' => $revision->title,
             'abstract' => $revision->abstract,
             'attention' => $document->attention,
+            'ownerKey' => $document->projectOwner()->key(),
         ]);
     }
 
@@ -122,6 +123,7 @@ final readonly class RecordViews
             'title' => $report->title,
             'abstract' => $report->abstract,
             'attention' => $report->attention,
+            'ownerKey' => $report->projectOwner()->key(),
         ]);
     }
 

@@ -11,12 +11,14 @@ use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Reads\TextContent;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sharing\Shareable;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
@@ -25,6 +27,7 @@ use App\Support\ShareRecordCard;
 use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -50,6 +53,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property string $number_group_id
  * @property int $number
  * @property string $title
@@ -68,8 +72,17 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
+final class Report extends Model implements
+    Commentable,
+    Dockable,
+    EventSource,
+    Numbered,
+    ProjectOwned,
+    ReadableModel,
+    Shareable,
+    TextContent
 {
+    use BelongsToProject;
     use BoundedReads;
     use CreatedWithAttention;
     use HasNumber;
@@ -100,11 +113,17 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     // ----------[ Constructors ]----------
 
     /**
-     * A new report, filed now with the given text.
+     * A new report of the project, filed now with the given text.
      */
-    public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
-    {
+    public static function create(
+        string $title,
+        string $abstract,
+        MarkdownText $body,
+        Actor $author,
+        ProjectOwner $owner,
+    ): self {
         $report = new self();
+        $report->project_id = $owner->projectId();
         $report->title = trim($title);
         $report->abstract = trim($abstract);
         $report->body = $body->text;

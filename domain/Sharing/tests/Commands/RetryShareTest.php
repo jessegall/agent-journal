@@ -9,6 +9,7 @@ use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
@@ -35,6 +36,7 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A retry of a failed share adds one open request and keeps its deadline; a share that expired, was revoked or is
@@ -67,7 +69,13 @@ final class RetryShareTest extends TestCase
             101,
             102,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
     }
 
@@ -100,6 +108,7 @@ final class RetryShareTest extends TestCase
 
         $proposal = Share::create(
             $this->root,
+            TestProjects::localOwner(),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
             new ShareProposal(TestActors::agentIdentity(5)),
         );

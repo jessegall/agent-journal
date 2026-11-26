@@ -12,24 +12,22 @@ use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ReaderPosition;
-use App\Support\ServedEnvironment;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The snapshot of one run of the current project that the caller may see: every part with its lifecycle,
+ * The snapshot of one run of the selected project that the caller may see: every part with its lifecycle,
  * capture, live reading, latest assessment and receipt kept apart, and the run's last update number.
  */
 final readonly class RunSnapshotResolver
 {
     public function __construct(
-        private ServedEnvironment $projects,
         private ActivityProjection $activity,
         private ResultReceipts $receipts,
     ) {}
 
     /**
-     * Whether the run is one of the current project that the caller may see.
+     * Whether the run is one of the selected project that the caller may see.
      */
     public function canSee(string $runId): bool
     {
@@ -57,7 +55,7 @@ final readonly class RunSnapshotResolver
      */
     private function visibleRuns(): Builder
     {
-        return ProcessRun::query()->forActor()->withProjectKey($this->projects->current());
+        return ProcessRun::query()->forActor();
     }
 
     private function partOf(PartRun $part): PartSnapshotData

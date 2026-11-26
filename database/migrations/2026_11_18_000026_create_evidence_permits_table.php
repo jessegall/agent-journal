@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('evidence_permits', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('working_folder');
             $table->text('source_line');
             $table->string('source_digest', 64);
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->jsonb('candidate_rules');
             $table->timestampsTz();
 
-            $table->index(['project_key', 'runner_type', 'runner_id']);
+            $table->index(['project_id', 'runner_type', 'runner_id']);
         });
     }
 

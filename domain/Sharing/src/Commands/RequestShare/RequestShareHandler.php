@@ -34,6 +34,7 @@ final readonly class RequestShareHandler extends SharingCommandHandler
         $root = new RecordIdentity($command->rootType, $command->rootId);
         $this->shareable->requireShareable($root->type);
         $this->records->requireReadable($root);
+        $rootOwner = $this->shareable->ownerOf($root);
 
         ShareInstallation::create();
 
@@ -43,7 +44,7 @@ final readonly class RequestShareHandler extends SharingCommandHandler
 
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
         $actor = $agent;
-        $proposal = Share::create($root, $expiry, new ShareProposal($actor));
+        $proposal = Share::create($root, $rootOwner, $expiry, new ShareProposal($actor));
         ShareAudit::create($proposal, ShareAuditType::Created, $actor, null);
 
         return $proposal->proposalStatus;

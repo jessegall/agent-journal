@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('sequences', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->string('name');
             $table->string('summary')->default('');
             $table->jsonb('steps');

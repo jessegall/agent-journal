@@ -9,6 +9,7 @@ use App\Contracts\Navigation\DeclaredPages;
 use App\Contracts\Notifications\NotificationTargetResolver;
 use App\Data\Notifications\NotificationLink;
 use App\Support\ActorReference;
+use App\Values\ProjectSelection;
 use Domain\Documents\Models\Report;
 
 /**
@@ -42,7 +43,10 @@ final readonly class ReportNotificationTarget implements NotificationTargetResol
 
             $links[(string) $report->number] = new NotificationLink(
                 $name === null ? $report->title : "{$report->title}, from {$name}",
-                $this->pages->addressOf(self::REPORT_PAGE, ['report' => (string) $report->number]),
+                $this->pages->addressOf(self::REPORT_PAGE, [
+                    'report' => (string) $report->number,
+                    ProjectSelection::ADDRESS_PARAMETER => $report->project_id,
+                ]),
             );
         }
 

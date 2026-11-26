@@ -15,6 +15,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->string('creator_type', 16);
             $table->ulid('creator_id');
             $table->string('attention', 16)->default('active');
@@ -55,6 +56,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->string('title');
             $table->string('abstract', 1000);
             $table->longText('body');

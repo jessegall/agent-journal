@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table): void {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('inbox_id')->constrained('inboxes')->restrictOnDelete();
             $table->string('sender_type', 16);
             $table->string('sender_id', 64);

@@ -17,6 +17,7 @@ use App\Enums\Projects\CapabilityStatusType;
 use App\Enums\Projects\HostCapabilityType;
 use App\Events\Hooks\HelperAssigned;
 use App\Exceptions\AccountContainerUnsupported;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
@@ -40,16 +41,19 @@ use Domain\Helpers\Exceptions\HelperRetired;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Support\Readers\HelperRecords;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
+use Domain\Tasks\Models\Task;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -111,6 +115,7 @@ final class StartHelperTest extends TestCase
             'default',
             null,
             new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
+            TestProjects::local()->id,
             DriverType::Terminal,
         ));
     }
@@ -296,6 +301,7 @@ final class StartHelperTest extends TestCase
             'default',
             null,
             new HelperWork($plan, null, null, 'Review it.', [], false),
+            TestProjects::local()->id,
         ));
 
         $identity = HelperIdentity::query()->findOrFail(HelperJob::query()->sole()->helper_identity_id);
@@ -325,7 +331,75 @@ final class StartHelperTest extends TestCase
         $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
 
         $this->assertNotSame($first->identityId, $second->identityId);
-        $this->assertSame($second->identityId, HelperIdentity::findDesignatedFor('lone-reviewer')->get()->id);
+        $designated = HelperIdentity::findDesignatedFor(TestProjects::local()->id, 'lone-reviewer');
+        $this->assertSame($second->identityId, $designated->get()->id);
+    }
+
+    public function test_an_agents_helper_its_purpose_and_its_job_belong_to_the_agents_project(): void
+    {
+        $projectId = $this->startAsAgentOf('A');
+
+        $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+            (string) Str::ulid(),
+            'plan-reviewer',
+            'default',
+            null,
+            new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
+            $projectId,
+        ));
+
+        $job = HelperJob::query()->acrossActors()->sole();
+        $identity = HelperIdentity::query()->acrossActors()->findOrFail($job->helper_identity_id);
+        $purpose = HelperPurpose::query()->acrossActors()->findOrFail($job->helper_purpose_id);
+        $this->assertSame(
+            array_fill(0, 4, $projectId),
+            [
+                $job->project_id,
+                $identity->project_id,
+                $purpose->project_id,
+                Agent::findProjectIdOf($identity->helper_actor_id),
+            ],
+        );
+    }
+
+    public function test_a_single_profile_keeps_one_designated_helper_in_each_project_without_a_clash(): void
+    {
+        $local = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $projectId = $this->startAsAgentOf('B');
+
+        $inB = $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+            (string) Str::ulid(),
+            'lone-reviewer',
+            'default',
+            null,
+            new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
+            $projectId,
+        ));
+
+        $this->assertNotSame($local->identityId, $inB->identityId);
+        $this->assertSame($inB->identityId, HelperIdentity::findDesignatedFor($projectId, 'lone-reviewer')->get()->id);
+    }
+
+    public function test_a_source_of_another_project_is_refused_and_nothing_is_written(): void
+    {
+        $this->journal->project('B');
+        $task = Task::factory()->create(['project_id' => $this->journal->projectCalled('B')->id]);
+        $this->journal->actAs('Owner');
+        $this->supportContainers();
+
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new StartHelperCommand(
+                (string) Str::ulid(),
+                'plan-reviewer',
+                'default',
+                null,
+                new HelperWork(null, null, 'Review it', 'Review it.', [Task::linkType().':'.$task->id], false),
+                TestProjects::local()->id,
+            )),
+            CrossProjectEdge::class,
+        );
+
+        $this->assertSame(0, HelperJob::query()->acrossActors()->count());
     }
 
     public function test_the_single_helper_cannot_review_a_purpose_it_worked_on_independently(): void
@@ -340,6 +414,7 @@ final class StartHelperTest extends TestCase
             'default',
             null,
             new HelperWork(null, null, 'Review plan 7', 'Review it again.', [], true),
+            TestProjects::local()->id,
         ));
     }
 
@@ -363,6 +438,7 @@ final class StartHelperTest extends TestCase
             'default',
             null,
             new HelperWork(null, null, $purpose, 'Review it.', [], false),
+            TestProjects::local()->id,
         ));
     }
 
@@ -385,5 +461,17 @@ final class StartHelperTest extends TestCase
         );
 
         $this->endSessionOf($receipt);
+    }
+
+    /**
+     * Acts as a started agent of a new project of that name, and answers the project's id.
+     */
+    private function startAsAgentOf(string $project): string
+    {
+        $this->journal->project($project);
+        $this->journal->signedStart("{$project} agent", project: $project)->startRequest($this->app);
+        $this->supportContainers();
+
+        return $this->journal->projectCalled($project)->id;
     }
 }

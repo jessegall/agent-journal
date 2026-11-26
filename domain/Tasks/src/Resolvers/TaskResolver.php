@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Projects\ProjectOwned;
 use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -38,6 +39,18 @@ final readonly class TaskResolver implements TaskResolverContract
         ));
 
         $this->assertAllFound($requestedTaskIds, $visibleTaskIds);
+    }
+
+    public function requireAllVisibleBeside(array $taskIds, ProjectOwned $joined): void
+    {
+        $this->actors->actor();
+        $requestedTaskIds = array_values(array_unique($taskIds));
+        $tasks = Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->get();
+        $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->modelKeys())));
+
+        foreach ($tasks as $task) {
+            $task->assertSameProjectAs($joined);
+        }
     }
 
     /**

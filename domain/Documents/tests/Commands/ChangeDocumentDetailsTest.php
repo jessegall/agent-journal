@@ -15,6 +15,7 @@ use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A title over its limit is refused and the draft keeps its text.
@@ -53,7 +54,7 @@ final class ChangeDocumentDetailsTest extends TestCase
         parent::setUp();
 
         $this->journal->actAsUserId(TestIds::of(1));
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY, TestProjects::local()->id));
     }
 
     public function test_a_title_over_its_limit_is_refused_and_the_draft_keeps_its_text(): void

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('reader_proofs', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('command_request_id')->constrained('command_requests')->cascadeOnDelete();
             $table->foreignUlid('reader_revision_id')->constrained('reader_revisions')->cascadeOnDelete();
             $table->foreignUlid('rule_proposal_revision_id')->constrained('rule_proposal_revisions')->cascadeOnDelete();
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('actor_id');
             $table->timestampTz('created_at');
 
-            $table->index(['project_key', 'command_request_id']);
+            $table->index(['project_id', 'command_request_id']);
         });
     }
 

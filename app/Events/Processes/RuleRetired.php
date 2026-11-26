@@ -13,7 +13,7 @@ use App\Models\CommandRules\ClassificationRule;
 final readonly class RuleRetired implements ActiveRuleChange, ProcessEvent
 {
     public function __construct(
-        public string $projectKey,
+        public string $projectId,
         public string $ruleId,
         public int $revision,
         public string $reason,
@@ -21,12 +21,7 @@ final readonly class RuleRetired implements ActiveRuleChange, ProcessEvent
 
     public static function forRule(ClassificationRule $rule, string $reason): self
     {
-        return new self($rule->project_key, $rule->rule_id, $rule->active_revision, $reason);
-    }
-
-    public function project(): string
-    {
-        return $this->projectKey;
+        return new self($rule->project_id, $rule->rule_id, $rule->active_revision, $reason);
     }
 
     public function staleReason(): string

@@ -16,6 +16,7 @@ use Domain\Helpers\Support\PurposeChoice;
 use Domain\Helpers\Support\PurposeResolver;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
+use Tests\Support\TestProjects;
 
 /**
  * A helper job's purpose comes from exactly one of a subject, a purpose or words:
@@ -58,7 +59,14 @@ final class HelperPurposeTest extends TestCase
     private function resolve(RecordIdentity|null $subject, string|null $purposeId, string|null $text): HelperPurpose
     {
         return $this->app->make(PurposeResolver::class)->resolve(
-            new PurposeChoice($this->parent, 'read-only-helper', $subject, $purposeId, $text),
+            new PurposeChoice(
+                TestProjects::local()->id,
+                $this->parent,
+                'read-only-helper',
+                $subject,
+                $purposeId,
+                $text,
+            ),
         );
     }
 }

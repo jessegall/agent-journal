@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('dock_placements', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('inbox_id')->constrained('inboxes')->cascadeOnDelete();
             $table->string('dockable_type', 64);
             $table->string('dockable_id');

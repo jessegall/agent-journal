@@ -27,6 +27,7 @@ use App\Support\ActiveRules;
 use App\Support\ActorReference;
 use App\Support\ExecutionPlanner;
 use App\Support\OutputDiskCapacity;
+use App\Support\Projects\SelectedProject;
 use App\Support\RunnerCapability;
 use App\Support\ServedEnvironment;
 use App\Support\Syntax\TreeParser;
@@ -66,6 +67,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         private CommandBus $commands,
         private ServedEnvironment $projects,
         private OutputDiskCapacity $capacity,
+        private SelectedProject $selected,
     ) {}
 
     public function admit(
@@ -345,7 +347,7 @@ final readonly class ShellAdmission implements ShellAdmissionContract
         $stored = ProcessRun::create($actor, new RunAdmission(
             $requestKey,
             RunMode::Normal,
-            $this->projects->current(),
+            $this->selected->find()->id,
             hash('sha256', $tree->source),
             $tree->dialect,
             $this->rules->registry()->revision(),

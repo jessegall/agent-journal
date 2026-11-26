@@ -14,6 +14,7 @@ use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\ShareRecordRegistry;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
 use Domain\Plans\Enums\PlanType;
@@ -38,6 +39,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * The owner saves a preview of a root with some of its linked candidates and gets a checksum; anyone else is refused,
@@ -95,7 +97,13 @@ final class SaveSharePreviewTest extends TestCase
             102,
             103,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
     }
 
@@ -197,7 +205,7 @@ final class SaveSharePreviewTest extends TestCase
         # Goal
         Ship it.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $document = Document::query()->where('number', 1)->sole();
 

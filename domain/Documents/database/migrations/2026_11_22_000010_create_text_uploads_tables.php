@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('text_uploads', function (Blueprint $table): void {
             $table->ulid('id')->primary();
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->string('type', 32);
             $table->unsignedInteger('bytes');
             $table->char('digest', 64);

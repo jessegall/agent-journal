@@ -10,12 +10,16 @@ use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\InstalledVersion;
 use App\Contracts\Navigation\NavigationRecords;
+use App\Contracts\Projects\CurrentProject;
+use App\Contracts\Projects\ProjectDirectory;
 use App\Contracts\Settings\SettingsResolver;
 use App\Contracts\Sharing\SharePolicy;
 use App\Data\Drivers\DriverLookData;
+use App\Data\Projects\ProjectData;
 use App\Data\Web\AppContextData;
 use App\Data\Web\InstallationData;
 use App\Data\Web\ViewerData;
+use App\Enums\Projects\ProjectSelectionType;
 use App\Enums\Web\ViewerType;
 use App\Support\ActorReference;
 use App\Support\CoreSettings;
@@ -30,7 +34,8 @@ use Spatie\LaravelData\Optional;
 
 /**
  * The app context of one request, read from who views it: a guest sees the installation's name and version, the owner
- * its faults, the driver looks, the navigation and its counts, and an inbox member the driver looks and the navigation.
+ * its faults, the driver looks, the navigation and its counts and the projects to choose, and an inbox member the
+ * driver looks and the navigation.
  * It holds nothing between requests.
  */
 final readonly class AppContext
@@ -48,6 +53,8 @@ final readonly class AppContext
         private InstallationFaults $installationFaults,
         private HostLinkAlarms $hostLinkAlarms,
         private DriverCatalogue $drivers,
+        private ProjectDirectory $projects,
+        private CurrentProject $selection,
     ) {}
 
     public function data(Request $request): AppContextData
@@ -75,7 +82,27 @@ final readonly class AppContext
                     LiveListeners::pageChanges($signedIn->id),
                 ))
                 ->getOrElse(new Optional()),
+            ...$this->projectChoice($type),
         ]);
+    }
+
+    /**
+     * The projects the owner may choose and the one chosen, null for All projects; no one else chooses.
+     *
+     * @return array{projects?: list<ProjectData>, selectedProject?: string|null}
+     */
+    private function projectChoice(ViewerType $type): array
+    {
+        if ($type !== ViewerType::Owner) {
+            return [];
+        }
+
+        $selection = $this->selection->selection();
+
+        return [
+            'projects' => $this->projects->listed(),
+            'selectedProject' => $selection->type === ProjectSelectionType::Project ? $selection->projectId() : null,
+        ];
     }
 
     /**

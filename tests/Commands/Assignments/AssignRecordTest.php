@@ -6,6 +6,7 @@ namespace Tests\Commands\Assignments;
 
 use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RequestKeyConflict;
 use App\Models\Access\User;
 use App\Models\Agents\AgentSession;
@@ -29,8 +30,8 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A record given to an actor at main is held by main and names both, an actor in no forwarding inbox keeps it, and
- * a changed recipient under the same key conflicts.
+ * A record given to an actor at main is held by main and names both, an actor in no forwarding inbox keeps it, an
+ * agent of another project is refused, and a changed recipient under the same key conflicts.
  */
 #[TestsCommand(AssignRecordCommand::class)]
 final class AssignRecordTest extends TestCase
@@ -112,6 +113,23 @@ final class AssignRecordTest extends TestCase
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment->holder();
         $this->assertTrue($held->isSameAs($agent->assigneeIdentity()));
+    }
+
+    public function test_a_task_given_to_an_agent_of_another_project_is_refused_and_stays_unassigned(): void
+    {
+        $this->journal->project('Shop');
+        $agent = $this->journal->idleAgent('Shopper', 'read-only-helper', 'Shop')->agentCalled('Shopper');
+        $task = Task::factory()->create()->assignmentIdentity();
+
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(
+                new AssignRecordCommand($task, $agent->assigneeIdentity()),
+            ),
+            CrossProjectEdge::class,
+        );
+        $this->assertSame(0, AssignmentRecord::query()->forRecord($task)->count());
     }
 
     public function test_a_changed_recipient_under_the_same_key_conflicts(): void

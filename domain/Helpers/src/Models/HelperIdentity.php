@@ -8,9 +8,11 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Events\HelperDesignated;
@@ -26,6 +28,7 @@ use PhpOption\Option;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $profile_key
@@ -40,9 +43,10 @@ use PhpOption\Option;
  * @mixin \Eloquent
  */
 #[Table('helper_identities')]
-final class HelperIdentity extends Model implements EventSource, ReadableModel
+final class HelperIdentity extends Model implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -52,6 +56,7 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
      * The columns a declared identity never changes.
      */
     private const array FIXED_COLUMNS = [
+        'project_id',
         'actor_type',
         'actor_id',
         'profile_key',
@@ -68,16 +73,18 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * Declares the parent's helper for the agent actor it represents; Agents offers it only while that actor is an
-     * agent with the same profile key.
+     * Declares the parent's helper in the project for the agent actor it represents; Agents offers it only while that
+     * actor is an agent with the same profile key.
      */
     public static function create(
+        string $projectId,
         ActorReference $parent,
         ActorReference $helper,
         string $profileKey,
         string $profileBase,
     ): self {
         $identity = new self();
+        $identity->project_id = $projectId;
         $identity->profile_key = $profileKey;
         $identity->profile_base = $profileBase;
         $identity->helper_actor_type = $helper->type;
@@ -91,8 +98,8 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Makes this the one helper the whole installation keeps for a profile whose instances are single; the unique
-     * designation refuses a second one.
+     * Makes this the one helper its project keeps for a profile whose instances are single; the unique designation
+     * refuses a second one in that project.
      */
     public function designate(): self
     {
@@ -147,13 +154,13 @@ final class HelperIdentity extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * The helper designated for the profile, whoever holds it.
+     * The project's helper designated for the profile, whoever holds it.
      *
      * @return Option<self>
      */
-    public static function findDesignatedFor(string $profileKey): Option
+    public static function findDesignatedFor(string $projectId, string $profileKey): Option
     {
-        $helperIdentity = self::query()->acrossActors()->designatedAs($profileKey)->first();
+        $helperIdentity = self::query()->acrossActors()->inProject($projectId)->designatedAs($profileKey)->first();
 
         return Option::fromValue($helperIdentity);
     }

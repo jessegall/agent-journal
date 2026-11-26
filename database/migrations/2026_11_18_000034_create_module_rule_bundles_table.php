@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('module_rule_bundles', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('module');
             $table->string('version');
             $table->string('digest', 64);
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('approver_id');
             $table->timestampTz('approved_at');
 
-            $table->unique(['project_key', 'module', 'version', 'digest']);
+            $table->unique(['project_id', 'module', 'version', 'digest']);
         });
     }
 

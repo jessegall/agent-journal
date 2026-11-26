@@ -7,6 +7,7 @@ namespace Domain\Questions\Mcp\Tools;
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Actors\ActorTypes;
 use App\Contracts\Bus\Command;
+use App\Contracts\Projects\ProjectDestination;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
 use App\Support\ActorReference;
@@ -17,6 +18,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+use PhpOption\None;
 
 #[IsIdempotent]
 #[IsDestructive(false)]
@@ -25,7 +27,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Description('Ask an actor attached to an inbox a question: open, or a choice between two or more options.')]
 final class QuestionAskTool extends MessageWriteTool
 {
-    public function __construct(private readonly ActorTypes $actorTypes) {}
+    public function __construct(
+        private readonly ActorTypes $actorTypes,
+        private readonly ProjectDestination $destination,
+    ) {}
 
     protected function writeSchema(JsonSchema $schema): array
     {
@@ -46,6 +51,7 @@ final class QuestionAskTool extends MessageWriteTool
             $this->targetOf($arguments),
             $arguments->text('text'),
             $arguments->enum('type', QuestionType::class),
+            $this->destination->projectFor(None::create()),
             $arguments->optionalList('options'),
         );
     }

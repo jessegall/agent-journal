@@ -9,11 +9,12 @@ use App\Support\RecordIdentity;
 
 /**
  * What a parent says a helper job is for: exactly one of a subject record, an existing purpose or a new purpose in
- * words, for one helper profile.
+ * words, for one helper profile in the job's project.
  */
 final readonly class PurposeChoice
 {
     public function __construct(
+        public string $projectId,
         public ActorReference $parent,
         public string $profileKey,
         public RecordIdentity|null $subject,

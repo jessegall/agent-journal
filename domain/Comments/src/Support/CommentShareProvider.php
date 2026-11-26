@@ -15,6 +15,7 @@ use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use App\Values\ProjectOwner;
 
 /**
  * Comments as share records: they advertise only the parent-bound capability, so a share reaches a comment through
@@ -27,6 +28,16 @@ final readonly class CommentShareProvider implements ShareRecordProvider
     public function mayDisclose(RecordIdentity $record): bool
     {
         return false;
+    }
+
+    /**
+     * A comment is never a share's root: its parent's provider reads it.
+     *
+     * @throws RecordUnavailable
+     */
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        throw RecordUnavailable::forActor($record);
     }
 
     /**

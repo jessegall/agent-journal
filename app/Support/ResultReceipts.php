@@ -11,16 +11,13 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The current project's current result receipts, read through named scopes.
+ * The selected project's current result receipts, read through named scopes.
  */
 final readonly class ResultReceipts implements ResultReceiptsContract
 {
-    public function __construct(private ServedEnvironment $projects) {}
-
     public function find(string $receiptId): Option
     {
         $receipt = ResultReceipt::query()
-            ->ofProject($this->projects->current())
             ->current()
             ->whereKey($receiptId)
             ->first();
@@ -35,7 +32,6 @@ final readonly class ResultReceipts implements ResultReceiptsContract
     public function forPart(string $runId): Option
     {
         $receipt = ResultReceipt::query()
-            ->ofProject($this->projects->current())
             ->current()
             ->ofPartRun($runId)
             ->first();

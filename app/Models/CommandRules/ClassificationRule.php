@@ -9,12 +9,15 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\CommandRules\ClassificationStatus;
 use App\Events\Processes\ClassificationRuleActivated;
 use App\Events\Processes\ClassificationRuleRestored;
 use App\Events\Processes\ClassificationRuleRetired;
 use App\Exceptions\ClassificationRuleRefused;
+use App\Models\Projects\Project;
+use App\Models\Support\BelongsToProject;
 use App\Models\Support\NamedByRuleScope;
 use App\Values\CommandRule;
 use App\Values\RuleScope;
@@ -27,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $scope_type
  * @property string $scope_owner
  * @property string $scope_version
@@ -43,8 +46,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class ClassificationRule extends Model implements EventSource, ReadableModel
+final class ClassificationRule extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -68,16 +72,16 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     /**
      * The project's classification rule of a declaration, or a new one not yet active when it has none.
      */
-    public static function create(string $projectKey, CommandRule $rule): self
+    public static function create(Project $project, CommandRule $rule): self
     {
-        $existing = self::findForRule($projectKey, $rule);
+        $existing = self::findForRule($project, $rule);
 
         if ($existing !== null) {
             return $existing;
         }
 
         $classification = new self();
-        $classification->project_key = $projectKey;
+        $classification->project_id = $project->id;
         $classification->scope = $rule->scope;
         $classification->rule_id = $rule->id;
         $classification->active_revision = 0;
@@ -203,21 +207,12 @@ final class ClassificationRule extends Model implements EventSource, ReadableMod
     /**
      * The rule's classification in the project; none before its first.
      */
-    public static function findForRule(string $projectKey, CommandRule $rule): self|null
+    public static function findForRule(Project $project, CommandRule $rule): self|null
     {
-        return self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->first();
+        return self::query()->inProject($project->id)->ofRule($rule->scope, $rule->id)->first();
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * @param  Builder<self>  $query

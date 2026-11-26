@@ -107,7 +107,7 @@ final class RecordEvidenceReadsTest extends TestCase
             TestRunAdmissions::of(
                 admissionId: 'sample',
                 mode: RunMode::Evidence,
-                projectKey: $this->request->project_key,
+                projectId: $this->request->project_id,
             ),
         );
         $part = PartRun::create($run, new PartKey(1, 1, self::OPERATION));

@@ -7,6 +7,8 @@ namespace App\Data\Web;
 use App\Data\Drivers\DriverLookData;
 use App\Data\Navigation\NavigationCountsData;
 use App\Data\Navigation\NavigationData;
+use App\Data\Projects\ProjectData;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Lazy;
 use Spatie\LaravelData\Optional;
@@ -14,8 +16,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * What every page receives beside its own page object: the installation, the viewer, how each driver family is
- * shown, the stable code of the refusal the last form was answered with, and the navigation the viewer may see with
- * its counts.
+ * shown, the stable code of the refusal the last form was answered with, the navigation the viewer may see with
+ * its counts, and for the owner the projects to choose and the one chosen.
  */
 #[TypeScript]
 final class AppContextData extends Data
@@ -28,5 +30,10 @@ final class AppContextData extends Data
         public readonly string|Optional $refusalCode,
         public readonly Lazy|NavigationData|Optional $navigation,
         public readonly Lazy|NavigationCountsData|Optional $navigationCounts,
+        /** @var list<ProjectData>|Optional */
+        #[DataCollectionOf(ProjectData::class)]
+        public readonly array|Optional $projects = new Optional(),
+        // The chosen project's id; null while All projects are shown.
+        public readonly string|null|Optional $selectedProject = new Optional(),
     ) {}
 }

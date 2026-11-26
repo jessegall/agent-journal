@@ -18,12 +18,15 @@ use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
+use App\Support\Layout\ProjectField;
+use App\Support\Layout\ProjectRowLabel;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;
 use Domain\Plans\Enums\PlanStateGroup;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Values\PlanCard;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -36,6 +39,8 @@ final readonly class PlansIndex extends PlansPage
     public function __construct(
         private PlanResolver $plans,
         private DraftProducers $producers,
+        private ProjectField $projectField,
+        private ProjectRowLabel $projectLabel,
     ) {}
 
     /**
@@ -48,7 +53,7 @@ final readonly class PlansIndex extends PlansPage
 
         return ListPage::make(
             'Plans',
-            array_map(fn ($card) => $this->rowOf(PlanCardData::fromPlanCard($card), $settled), $page->cards),
+            array_map(fn (PlanCard $card) => $this->rowOf($card, $settled), $page->cards),
             $this->emptyFor($settled),
         )
             ->counting($page->total)
@@ -59,9 +64,10 @@ final readonly class PlansIndex extends PlansPage
             ->layout();
     }
 
-    private function rowOf(PlanCardData $card, PlanFiltersData $filters): LayoutRowData
+    private function rowOf(PlanCard $plan, PlanFiltersData $filters): LayoutRowData
     {
-        $trailing = [];
+        $card = PlanCardData::fromPlanCard($plan);
+        $trailing = $this->projectLabel->partsFor($plan->owner);
 
         if ($card->state === PlanStatus::Cancelled) {
             $trailing[] = LayoutPartData::badge('state', 'Cancelled', 'quiet');
@@ -149,6 +155,7 @@ final readonly class PlansIndex extends PlansPage
                     new LayoutFieldData('type', '', [], $this->typeNames()),
                     'choice',
                 ),
+                ...$this->projectField->forProject(),
             ],
         );
     }

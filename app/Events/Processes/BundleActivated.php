@@ -12,16 +12,11 @@ use App\Models\CommandRules\ModuleRuleBundle;
  */
 final readonly class BundleActivated implements ActiveRuleChange, ProcessEvent
 {
-    public function __construct(public string $projectKey, public string $module, public string $digest) {}
+    public function __construct(public string $projectId, public string $module, public string $digest) {}
 
     public static function forApproval(ModuleRuleBundle $approval): self
     {
-        return new self($approval->project_key, $approval->module, $approval->digest);
-    }
-
-    public function project(): string
-    {
-        return $this->projectKey;
+        return new self($approval->project_id, $approval->module, $approval->digest);
     }
 
     public function staleReason(): string

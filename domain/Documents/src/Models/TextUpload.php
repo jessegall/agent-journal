@@ -8,8 +8,11 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Contracts\Sessions\SessionProvenance;
+use App\Models\Support\BelongsToProject;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Events\TextUploadChunkCounted;
@@ -26,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
+ * @property string $project_id
  * @property UploadType $type
  * @property int $bytes
  * @property string $digest
@@ -39,8 +43,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class TextUpload extends Model implements EventSource, ReadableModel
+final class TextUpload extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -69,11 +74,12 @@ final class TextUpload extends Model implements EventSource, ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(UploadType $type, int $bytes, string $digest): self
+    public static function create(UploadType $type, int $bytes, string $digest, ProjectOwner $owner): self
     {
         self::assertDeclarationValid($bytes, $digest);
 
         $textUpload = new self();
+        $textUpload->project_id = $owner->projectId();
         $textUpload->type = $type;
         $textUpload->bytes = $bytes;
         $textUpload->digest = strtolower($digest);

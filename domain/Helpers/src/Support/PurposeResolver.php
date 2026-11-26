@@ -33,14 +33,23 @@ final readonly class PurposeResolver
                 throw SubjectUnavailable::forJob();
             }
 
-            return HelperPurpose::create($choice->parent, $choice->profileKey, $choice->subject);
+            return HelperPurpose::create($choice->projectId, $choice->parent, $choice->profileKey, $choice->subject);
         }
 
         if ($choice->purposeId !== null) {
-            return HelperPurpose::findForParent($choice->parent, $choice->profileKey, $choice->purposeId)
-                ?? throw SubjectUnavailable::forJob();
+            return HelperPurpose::findForParent(
+                $choice->projectId,
+                $choice->parent,
+                $choice->profileKey,
+                $choice->purposeId,
+            ) ?? throw SubjectUnavailable::forJob();
         }
 
-        return HelperPurpose::findFree($choice->parent, $choice->profileKey, (string) $choice->purposeText);
+        return HelperPurpose::findFree(
+            $choice->projectId,
+            $choice->parent,
+            $choice->profileKey,
+            (string) $choice->purposeText,
+        );
     }
 }

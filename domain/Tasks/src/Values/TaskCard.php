@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Values;
 
 use App\Support\AssignmentHolder;
+use App\Values\ProjectOwner;
 use Domain\Tasks\Enums\TaskStatus;
 use PhpOption\Option;
 
@@ -24,5 +25,6 @@ final readonly class TaskCard
         public TaskStatus $state,
         public Option $holder,
         public TaskExecution|null $execution,
+        public ProjectOwner $owner,
     ) {}
 }

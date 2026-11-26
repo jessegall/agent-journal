@@ -11,6 +11,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
+use Tests\Support\TestProjects;
 
 /**
  * A Plans test reaches its plan fixture through the journal: plans, paused plans, numbered phases and placed tasks are
@@ -48,7 +49,12 @@ final class PlanFixturesTest extends TestCase
     public function test_a_task_placed_in_a_phase_stands_at_its_place(): void
     {
         $this->journal->owner();
-        $task = Task::create('Write it', 'The first step.', $this->journal->ownerUser())->assignmentIdentity();
+        $task = Task::create(
+            'Write it',
+            'The first step.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
 
         $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')
@@ -105,8 +111,18 @@ final class PlanFixturesTest extends TestCase
     public function test_tasks_placed_in_a_phase_stand_in_the_order_given(): void
     {
         $this->journal->owner();
-        $first = Task::create('Design', 'The first step.', $this->journal->ownerUser())->assignmentIdentity();
-        $second = Task::create('Build', 'The second step.', $this->journal->ownerUser())->assignmentIdentity();
+        $first = Task::create(
+            'Design',
+            'The first step.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
+        $second = Task::create(
+            'Build',
+            'The second step.',
+            $this->journal->ownerUser(),
+            TestProjects::ownerOf($this->journal->ownerUser()),
+        )->assignmentIdentity();
 
         $this->journal->fixtures(PlanFixtures::class)
             ->plan('Release')

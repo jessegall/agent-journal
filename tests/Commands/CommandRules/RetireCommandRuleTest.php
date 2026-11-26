@@ -60,7 +60,7 @@ final class RetireCommandRuleTest extends TestCase
     {
         return ProcessRun::create(
             $actor,
-            TestRunAdmissions::of(projectKey: (string) config('processes.project_key'), line: $line),
+            TestRunAdmissions::of(line: $line),
         );
     }
 

@@ -6,34 +6,21 @@ namespace App\Support;
 
 use App\Contracts\Hosts\ServedEnvironment as ServedEnvironmentContract;
 use App\Exceptions\FolderOutsideProject;
-use Illuminate\Contracts\Config\Repository;
 
 /**
- * The key of the project a request serves: the project of the connected folder the request
- * came from, once the request named one, else the project this installation serves, from configuration. It lives for
- * one request (Octane), never longer, and is never taken from what a client sends.
+ * The connected folder a request serves, once the request came through one: its environment and the folder its work
+ * may run in. It lives for one request (Octane), never longer, and is never taken from what a client sends.
  */
 final class ServedEnvironment implements ServedEnvironmentContract
 {
     private ConnectedProject|null $connectedProject = null;
 
-    public function __construct(private readonly Repository $config) {}
-
     /**
-     * Makes this request one of a connected project: its key, and the folder its work may run in.
+     * Makes this request one of a connected folder: its environment, and the folder its work may run in.
      */
     public function connect(ConnectedProject $project): void
     {
         $this->connectedProject = $project;
-    }
-
-    public function current(): string
-    {
-        if ($this->connectedProject === null) {
-            return (string) $this->config->get('processes.project_key');
-        }
-
-        return $this->connectedProject->key;
     }
 
     /**

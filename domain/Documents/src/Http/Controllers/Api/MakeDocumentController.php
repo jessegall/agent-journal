@@ -6,11 +6,13 @@ namespace Domain\Documents\Http\Controllers\Api;
 
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\ProjectDestination;
 use App\Contracts\Records\RecordResolver;
 use App\Support\RecordReference;
 use Domain\Documents\Api\MakeDocumentPayload;
 use Domain\Documents\Api\RecordFiled;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use PhpOption\None;
 
 /**
  * Files a document and answers its number and label.
@@ -18,8 +20,12 @@ use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 final readonly class MakeDocumentController
 {
     #[Dispatches(CreateDocumentCommand::class)]
-    public function __invoke(MakeDocumentPayload $call, CommandBus $commands, RecordResolver $records): RecordFiled
-    {
+    public function __invoke(
+        MakeDocumentPayload $call,
+        CommandBus $commands,
+        RecordResolver $records,
+        ProjectDestination $destination,
+    ): RecordFiled {
         $relatedRecords = array_map(
             fn (string $name) => $records->identify(RecordReference::parse(trim($name))),
             $call->relatedRecords,
@@ -29,6 +35,7 @@ final readonly class MakeDocumentController
             $call->title,
             $call->abstract,
             $call->body,
+            $destination->ownerFor(None::create())->key(),
             $relatedRecords,
             $call->uploadId,
         ));

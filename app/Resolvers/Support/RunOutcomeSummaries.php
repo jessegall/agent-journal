@@ -8,20 +8,16 @@ use App\Contracts\Actors\CurrentActor;
 use App\Data\Processes\RunOutcomeSummaryData;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\RunOutcome;
-use App\Support\ServedEnvironment;
 use PhpOption\Option;
 
 /**
  * Reads a run's outcome for the reader beside RunSnapshotResolver, but only its safe summary: the run must belong to
- * the current project, and the reader must be its responsible actor, the user its request entitled, or someone the
+ * the selected project, and the reader must be its responsible actor, the user its request entitled, or someone the
  * actor-and-project policy lets read the whole run. Who may open the full run is asked again of that policy.
  */
 final readonly class RunOutcomeSummaries
 {
-    public function __construct(
-        private CurrentActor $actors,
-        private ServedEnvironment $projects,
-    ) {}
+    public function __construct(private CurrentActor $actors) {}
 
     /**
      * @return Option<RunOutcomeSummaryData>
@@ -30,7 +26,6 @@ final readonly class RunOutcomeSummaries
     {
         $run = ProcessRun::query()
             ->acrossActors()
-            ->withProjectKey($this->projects->current())
             ->whereKey($runId)
             ->firstOption();
 
@@ -47,7 +42,6 @@ final readonly class RunOutcomeSummaries
     {
         return ProcessRun::query()
             ->forActor()
-            ->withProjectKey($this->projects->current())
             ->whereKey($runId)
             ->exists();
     }
@@ -62,6 +56,7 @@ final readonly class RunOutcomeSummaries
         return new RunOutcomeSummaryData(
             $run->id,
             $outcome->result->summaryFor($run->plan),
+            $run->project_id,
             substr($outcome->attempt_id, -8),
             $outcome->result->value,
             $outcome->updated_at->toIso8601String(),

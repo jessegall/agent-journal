@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\FixtureAliases;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * Helper jobs kept under the names a test gives them: each job has a writing helper of its own, an agent the journal
@@ -48,8 +49,9 @@ final class HelperFixtures
         $this->aliases->claim($name);
         $owner = $this->journal->actorCalled($parent);
         $helper = $this->journal->idleAgent("{$name} helper", self::PROFILE)->actorCalled("{$name} helper");
-        $identity = HelperIdentity::create($owner, $helper, self::PROFILE, self::PROFILE);
-        $purpose = HelperPurpose::findFree($owner, self::PROFILE, "{$name} work");
+        $projectId = TestProjects::local()->id;
+        $identity = HelperIdentity::create($projectId, $owner, $helper, self::PROFILE, self::PROFILE);
+        $purpose = HelperPurpose::findFree($projectId, $owner, self::PROFILE, "{$name} work");
         $job = HelperJob::create($identity, $purpose, $owner, $brief, [], self::startDetails((string) Str::ulid()));
         $this->aliases->remember($name, $job);
 

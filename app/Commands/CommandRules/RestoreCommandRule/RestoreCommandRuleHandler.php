@@ -11,7 +11,6 @@ use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\CommandRules\RuleRevision;
 use App\Support\RuleProposals;
-use App\Support\ServedEnvironment;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 
@@ -21,10 +20,7 @@ use App\Values\ProposedRule;
  */
 final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
-    public function __construct(
-        private ServedEnvironment $projects,
-        private RuleProposals $proposals,
-    ) {}
+    public function __construct(private RuleProposals $proposals) {}
 
     /**
      * @throws ClassificationRuleRefused
@@ -33,7 +29,6 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
     public function handle(RestoreCommandRuleCommand $command): ProposalReceipt
     {
         $rule = ClassificationRule::query()
-            ->ofProject($this->projects->current())
             ->whereKey($command->classificationRuleId)
             ->lockForUpdate()
             ->sole();
@@ -43,7 +38,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         }
 
         $earlier = RuleRevision::query()
-            ->ofProject($rule->project_key)
+            ->inProject($rule->project_id)
             ->ofRule($rule->scope, $rule->rule_id)
             ->withRevision($command->fromRevision)
             ->sole();
@@ -54,7 +49,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         $owner = $command->dispatchedBy();
 
         return ProposalReceipt::of(
-            $this->proposals->open($rule->project_key, $owner, $command->requestId, $proposed, null),
+            $this->proposals->open($rule->project, $owner, $command->requestId, $proposed, null),
             $proposed,
         );
     }

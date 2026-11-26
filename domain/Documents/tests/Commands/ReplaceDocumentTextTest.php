@@ -20,6 +20,7 @@ use Domain\Documents\Values\DraftTarget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A save replaces text in the open draft; a save on an old version, an edit with no open draft and an edit the text
@@ -70,7 +71,7 @@ final class ReplaceDocumentTextTest extends TestCase
         parent::setUp();
 
         $this->journal->actAsUserId(TestIds::of(1));
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY, TestProjects::local()->id));
     }
 
     public function test_a_save_on_an_old_version_is_refused_and_the_first_save_stands(): void
@@ -127,7 +128,12 @@ final class ReplaceDocumentTextTest extends TestCase
         $author = $this->journal->signedStart('Writer', 'writing-helper');
         $author->startRequest($this->app);
         $commands = $this->app->make(CommandBus::class);
-        $document = $commands->run(new CreateDocumentCommand('Design', 'Current design.', 'Original text.'));
+        $document = $commands->run(new CreateDocumentCommand(
+            'Design',
+            'Current design.',
+            'Original text.',
+            TestProjects::local()->id,
+        ));
         $draft = $commands->run(new OpenDocumentCommand($document->id, 1));
 
         $this->journal->agentCall($author, 'POST', '/agent/docs/edit', [

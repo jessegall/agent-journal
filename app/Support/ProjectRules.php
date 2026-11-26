@@ -12,12 +12,12 @@ use App\Models\CommandRules\RuleRevision;
 use Illuminate\Database\QueryException;
 
 /**
- * The current project's active rule revisions, with the reader and proof each check was approved with, and its
+ * The selected project's active rule revisions, with the reader and proof each check was approved with, and its
  * approved module bundles, read through named scopes; a store that cannot be read refuses classification.
  */
 final readonly class ProjectRules
 {
-    public function __construct(private ServedEnvironment $projects, private AgentTexts $texts) {}
+    public function __construct(private AgentTexts $texts) {}
 
     /**
      * @return list<RuleRevision>
@@ -28,7 +28,6 @@ final readonly class ProjectRules
     {
         try {
             return array_values(ClassificationRule::query()
-                ->ofProject($this->projects->current())
                 ->active()
                 ->withActiveRevision()
                 ->readLimit(1_000)
@@ -49,7 +48,7 @@ final readonly class ProjectRules
     {
         try {
             return array_values(
-                ModuleRuleBundle::query()->ofProject($this->projects->current())->readLimit(500)->get()->all(),
+                ModuleRuleBundle::query()->readLimit(500)->get()->all(),
             );
         } catch (QueryException $failure) {
             throw ClassificationUnavailable::storeFailed($failure, $this->texts);

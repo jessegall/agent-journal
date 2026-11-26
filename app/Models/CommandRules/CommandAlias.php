@@ -8,9 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Events\Processes\CommandAliasLineRecorded;
+use App\Models\Projects\Project;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProject;
 use App\Values\AliasLookup;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -21,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $name
  * @property string $line
  * @property int $revision
@@ -33,8 +36,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class CommandAlias extends Model implements EventSource, ReadableModel
+final class CommandAlias extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -58,16 +62,16 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
     /**
      * The project's alias of this name, or a new one at revision 0 that is saved with its first body.
      */
-    public static function create(string $projectKey, string $name): self
+    public static function create(Project $project, string $name): self
     {
-        $existing = self::findNamedInProject($projectKey, $name);
+        $existing = self::findNamedInProject($project, $name);
 
         if ($existing !== null) {
             return $existing;
         }
 
         $alias = new self();
-        $alias->project_key = $projectKey;
+        $alias->project_id = $project->id;
         $alias->name = $name;
         $alias->revision = 0;
 
@@ -115,21 +119,12 @@ final class CommandAlias extends Model implements EventSource, ReadableModel
     /**
      * The project's alias of this name; none before its first.
      */
-    public static function findNamedInProject(string $projectKey, string $name): self|null
+    public static function findNamedInProject(Project $project, string $name): self|null
     {
-        return self::query()->named($name, $projectKey)->first();
+        return self::query()->inProject($project->id)->withName($name)->first();
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function named(Builder $query, string $name, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey)->where('name', $name);
-    }
 
     /**
      * The rows of the given name.

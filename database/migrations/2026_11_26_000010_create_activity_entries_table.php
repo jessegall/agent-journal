@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('actor_type');
             $table->string('actor_id');
             $table->string('environment_id')->nullable()->index();
+            $table->foreignUlid('project_id')->nullable()->index()->constrained('projects')->restrictOnDelete();
             $table->unsignedTinyInteger('level');
             $table->string('type', 32);
             $table->string('subject', 300);

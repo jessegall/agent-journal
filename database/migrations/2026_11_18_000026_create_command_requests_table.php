@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('command_requests', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->string('operation');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('status', 32);
             $table->timestampsTz();
 
-            $table->index(['project_key', 'actor_type', 'actor_id', 'operation', 'binding_digest']);
+            $table->index(['project_id', 'actor_type', 'actor_id', 'operation', 'binding_digest']);
         });
     }
 

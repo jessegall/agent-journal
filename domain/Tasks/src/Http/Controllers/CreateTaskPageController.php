@@ -6,6 +6,7 @@ namespace Domain\Tasks\Http\Controllers;
 
 use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\ProjectDestination;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Http\Requests\CreateTaskRequest;
 use Domain\Tasks\Models\Task;
@@ -18,9 +19,17 @@ use Illuminate\Routing\Redirector;
 final readonly class CreateTaskPageController
 {
     #[Dispatches(CreateTaskCommand::class)]
-    public function __invoke(CreateTaskRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
-    {
-        $id = $commands->run(new CreateTaskCommand($request->title(), $request->brief()));
+    public function __invoke(
+        CreateTaskRequest $request,
+        CommandBus $commands,
+        ProjectDestination $destination,
+        Redirector $redirect,
+    ): RedirectResponse {
+        $id = $commands->run(new CreateTaskCommand(
+            $request->title(),
+            $request->brief(),
+            $destination->projectFor($request->chosenProject()),
+        ));
 
         return $redirect->to(route('tasks.task', ['task' => Task::resolveNumberOf($id)], false), 303);
     }

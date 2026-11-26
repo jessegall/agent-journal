@@ -12,6 +12,7 @@ use App\Concerns\RaisesEvents;
 use App\Contracts\Actors\Actor;
 use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Commentable;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
@@ -19,6 +20,7 @@ use App\Contracts\Work\Focusable;
 use App\Enums\Assignments\PoolMembersType;
 use App\Models\Support\Accessor;
 use App\Models\Support\AssignableListing;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorLabelSet;
 use App\Support\ActorReference;
 use App\Support\AssignmentHolder;
@@ -27,6 +29,7 @@ use App\Support\PoolMembers;
 use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Data\TaskDetails;
 use Domain\Tasks\Database\Factories\TaskFactory;
@@ -77,6 +80,7 @@ use PhpOption\Some;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property string|null $environment_id
+ * @property string $project_id
  * @property-read mixed $state_text
  * @property-read mixed $summary
  *
@@ -86,9 +90,17 @@ use PhpOption\Some;
  */
 #[UseFactory(TaskFactory::class)]
 #[UsePolicy(RecordPolicy::class)]
-final class Task extends Model implements Assignable, Commentable, EventSource, Focusable, Numbered, ReadableModel
+final class Task extends Model implements
+    Assignable,
+    Commentable,
+    EventSource,
+    Focusable,
+    Numbered,
+    ProjectOwned,
+    ReadableModel
 {
     use AssignableListing;
+    use BelongsToProject;
     use BoundedReads;
 
     /**
@@ -141,13 +153,19 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      *
      * @param  list<string>  $environmentIds
      */
-    public static function create(string $title, string $brief, Actor $creator, array $environmentIds = []): self
-    {
+    public static function create(
+        string $title,
+        string $brief,
+        Actor $creator,
+        ProjectOwner $owner,
+        array $environmentIds = [],
+    ): self {
         $task = new self();
         $task->title = $title;
         $task->brief = $brief;
         $task->creator_type = $creator->actorType();
         $task->creator_id = $creator->actorId();
+        $task->project_id = $owner->projectId();
         $task->environment_id = $environmentIds[0] ?? null;
         $task->assertSaved($task->save());
 
@@ -287,7 +305,15 @@ final class Task extends Model implements Assignable, Commentable, EventSource, 
      */
     public function card(Option $holder, TaskExecution|null $execution): TaskCard
     {
-        return new TaskCard($this->id, $this->number, $this->title, $this->status, $holder, $execution);
+        return new TaskCard(
+            $this->id,
+            $this->number,
+            $this->title,
+            $this->status,
+            $holder,
+            $execution,
+            $this->projectOwner(),
+        );
     }
 
     /**

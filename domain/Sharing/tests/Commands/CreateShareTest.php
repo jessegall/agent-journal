@@ -6,6 +6,7 @@ namespace Domain\Sharing\Tests\Commands;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RequestKeyConflict;
 use App\Exceptions\RequestKeyMissing;
 use App\Exceptions\StackLockTimedOut;
@@ -18,6 +19,7 @@ use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
 use App\Values\OwnerAuthority;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
@@ -37,9 +39,12 @@ use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Models\ShareMember;
 use Domain\Sharing\Models\SharePreview;
 use Domain\Sharing\Support\SavedSharePreview;
+use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareDuration;
 use Domain\Sharing\Support\ShareGrant;
+use Domain\Sharing\Support\ShareLinkedCandidate;
 use Domain\Sharing\Support\ShareLinkResolver;
+use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSummary;
 use Domain\Sharing\Support\ShareToken;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
@@ -55,6 +60,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -121,7 +127,13 @@ final class CreateShareTest extends TestCase
             101,
             102,
         ] as $number) {
-            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                'binders.sheet',
+                TestIds::of($number),
+                ProjectOwner::global(),
+            );
         }
 
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
@@ -287,6 +299,7 @@ final class CreateShareTest extends TestCase
         for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
             Share::create(
                 TestActors::record('binders.binder', 1000 + $index),
+                TestProjects::localOwner(),
                 CarbonImmutable::now()->subMinute(),
                 new ShareGrant(
                     $this->journal->ownerUser()->id,
@@ -298,6 +311,46 @@ final class CreateShareTest extends TestCase
         }
 
         $this->assertSame(ShareStatus::Pending, $this->create($this->preview([]))->state);
+    }
+
+    public function test_a_share_carries_its_roots_project(): void
+    {
+        $this->app->make(CommandBus::class)->run(
+            new CreateDocumentCommand('Design', 'What we build', 'Ship it.', TestProjects::local()->id),
+        );
+        $this->root = Document::query()->sole()->shareIdentity();
+
+        $summary = $this->create($this->preview([]));
+
+        $this->assertSame(TestProjects::local()->id, Share::query()->findOrFail($summary->shareId)->project_id);
+    }
+
+    public function test_a_walk_from_a_global_root_stops_at_global_records(): void
+    {
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new CreateDocumentCommand('Local design', 'Ours', 'Ship it.', TestProjects::local()->id));
+        $bus->run(new CreateDocumentCommand('Shared design', 'Everyone\'s', 'Ship it.', ProjectOwner::GLOBAL_KEY));
+        $local = Document::query()->where('title', 'Local design')->sole();
+        $global = Document::query()->where('title', 'Shared design')->sole();
+
+        foreach ([$local, $global] as $document) {
+            Link::create(
+                $this->root->type,
+                $this->root->id,
+                Document::linkType(),
+                $document->id,
+                $document->projectOwner(),
+            );
+        }
+
+        $candidates = $this->app->make(ShareScope::class)->discover(
+            $this->root,
+            ShareBudget::forPreview($this->app->make(ReadMeter::class)),
+        );
+
+        $found = array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked);
+        $this->assertContains($global->id, $found);
+        $this->assertNotContains($local->id, $found);
     }
 
     public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
@@ -312,7 +365,7 @@ final class CreateShareTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
-        TEXT));
+        TEXT, TestProjects::local()->id));
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();

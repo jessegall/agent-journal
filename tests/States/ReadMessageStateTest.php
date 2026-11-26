@@ -5,17 +5,23 @@ declare(strict_types=1);
 namespace Tests\States;
 
 use App\Contracts\Processes\ShellCommandParser;
+use App\Contracts\Projects\AgentProjects;
+use App\Contracts\Projects\CurrentProject;
 use App\Enums\Hooks\AnswerType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
+use App\Resolvers\AgentDirectory;
 use App\Support\ActorReference;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Support\States\ReadMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\States\Support\ReadMessageStateReference;
 use App\Values\AnswerBudget;
+use App\Values\ProjectSelection;
+use Tests\Fixtures\Projects\AskedAgentProjects;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
@@ -162,6 +168,27 @@ final class ReadMessageStateTest extends TestCase
                 $this->hooks->stopAfterRefusal(),
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
             );
+    }
+
+    public function test_a_send_by_an_owner_on_another_project_is_read_under_the_agents_own_project(): void
+    {
+        $this->journal->project('Shop');
+        $asked = new AskedAgentProjects($this->app->make(AgentDirectory::class));
+        $this->app->instance(AgentProjects::class, $asked);
+        $this->app->forgetInstance(ProjectSelectionStore::class);
+        $chosen = ProjectSelection::of($this->journal->projectCalled('Shop')->id);
+        $this->app->make(ProjectSelectionStore::class)->select($chosen);
+
+        $this->reading()->given(
+            new MessageSent('sent-3', $this->inbox->id, 3, null, $this->journal->actorCalled('Owner')),
+            fn (StateObservation $state) => $state->assertValue(
+                'unreadIds',
+                [$this->first->id, $this->second->id, 'sent-3'],
+            ),
+        );
+
+        $this->assertContains($this->writerId(), $asked->askedAgentIds);
+        $this->assertEquals($chosen, $this->app->make(CurrentProject::class)->selection());
     }
 
     private function reading(): StateHandle

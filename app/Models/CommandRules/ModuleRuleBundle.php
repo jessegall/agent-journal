@@ -7,7 +7,10 @@ namespace App\Models\CommandRules;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
+use App\Models\Projects\Project;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\RuleBundle;
 use Carbon\CarbonImmutable;
@@ -18,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $module
  * @property string $version
  * @property string $digest
@@ -28,8 +31,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class ModuleRuleBundle extends Model implements ReadableModel
+final class ModuleRuleBundle extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use InsertsAbsentRows;
@@ -49,10 +53,10 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function create(string $projectKey, RuleBundle $bundle, ActorReference $approver): self
+    public static function create(Project $project, RuleBundle $bundle, ActorReference $approver): self
     {
         $approval = new self();
-        $approval->project_key = $projectKey;
+        $approval->project_id = $project->id;
         $approval->module = $bundle->module;
         $approval->version = $bundle->version;
         $approval->digest = $bundle->digest();
@@ -61,7 +65,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
         $approval->insertIfAbsent();
 
-        return self::findOfBundle($projectKey, $bundle);
+        return self::findOfBundle($project, $bundle);
     }
 
     // ----------[ Predicates ]----------
@@ -78,32 +82,22 @@ final class ModuleRuleBundle extends Model implements ReadableModel
     /**
      * The project's approval of this bundle.
      */
-    public static function findOfBundle(string $projectKey, RuleBundle $bundle): self
+    public static function findOfBundle(Project $project, RuleBundle $bundle): self
     {
-        return self::query()->ofBundle($projectKey, $bundle)->sole();
+        return self::query()->inProject($project->id)->ofBundle($bundle)->sole();
     }
 
     // ----------[ Scopes ]----------
 
     /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
-
-    /**
-     * The project's approval of exactly this bundle: its module, version and digest.
+     * The approval of exactly this bundle: its module, version and digest.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofBundle(Builder $query, string $projectKey, RuleBundle $bundle): void
+    protected function ofBundle(Builder $query, RuleBundle $bundle): void
     {
-        $query->ofProject($projectKey)
-            ->where('module', $bundle->module)
+        $query->where('module', $bundle->module)
             ->where('version', $bundle->version)
             ->where('digest', $bundle->digest());
     }

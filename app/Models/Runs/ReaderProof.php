@@ -6,9 +6,11 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\ProvenBranch;
 use Carbon\CarbonImmutable;
@@ -20,7 +22,7 @@ use Spatie\LaravelData\DataCollection;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $command_request_id
  * @property string $reader_revision_id
  * @property string $rule_proposal_revision_id
@@ -31,8 +33,9 @@ use Spatie\LaravelData\DataCollection;
  *
  * @mixin \Eloquent
  */
-final class ReaderProof extends Model implements ReadableModel
+final class ReaderProof extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -64,7 +67,7 @@ final class ReaderProof extends Model implements ReadableModel
         ActorReference $prover,
     ): self {
         $readerProof = new self();
-        $readerProof->project_key = $reader->project_key;
+        $readerProof->project_id = $reader->project_id;
         $readerProof->command_request_id = $reader->command_request_id;
         $readerProof->reader_revision_id = $reader->id;
         $readerProof->rule_proposal_revision_id = $declaration->id;
@@ -89,15 +92,6 @@ final class ReaderProof extends Model implements ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * The rows of the given reader revision.

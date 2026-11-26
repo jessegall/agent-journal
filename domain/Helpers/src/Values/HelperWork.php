@@ -38,9 +38,19 @@ final readonly class HelperWork
         array $sourceSubjects,
         bool $isIndependent,
     ): self {
-        $subjectRecord = $subject === null ? null : new RecordIdentity(...explode(':', $subject, 2));
+        $subjectRecord = $subject === null ? null : self::recordOf($subject);
 
         return new self($subjectRecord, $purposeId, $purposeText, $brief, $sourceSubjects, $isIndependent);
+    }
+
+    /**
+     * The records the work names as its source, each written as type:id.
+     *
+     * @return list<RecordIdentity>
+     */
+    public function sourceRecords(): array
+    {
+        return array_map(self::recordOf(...), $this->sourceSubjects);
     }
 
     /**
@@ -57,5 +67,13 @@ final readonly class HelperWork
             $this->sourceSubjects,
             $this->isIndependent,
         ];
+    }
+
+    /**
+     * The record a work argument writes as type:id.
+     */
+    private static function recordOf(string $written): RecordIdentity
+    {
+        return new RecordIdentity(...explode(':', $written, 2));
     }
 }

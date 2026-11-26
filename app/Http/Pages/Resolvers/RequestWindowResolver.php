@@ -23,7 +23,6 @@ use App\Models\Runs\ReaderRevision;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
-use App\Support\ServedEnvironment;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\ProvenBranch;
@@ -35,12 +34,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final readonly class RequestWindowResolver implements PageResolver
 {
-    public function __construct(private RequestPageRequest $page, private ServedEnvironment $projects) {}
+    public function __construct(private RequestPageRequest $page) {}
 
     public function read(): DeclaredLayoutData
     {
         $request = CommandRequest::query()
-            ->ofProject($this->projects->current())
             ->whereKey($this->page->requestId())
             ->firstOr(fn () => throw new NotFoundHttpException());
 
@@ -87,7 +85,7 @@ final readonly class RequestWindowResolver implements PageResolver
         }
 
         return ClassificationRule::query()
-            ->ofProject($request->project_key)
+            ->inProject($request->project_id)
             ->ofRule($declared->scope, $declared->id)
             ->withActiveRevision()
             ->first();

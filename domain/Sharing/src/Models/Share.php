@@ -10,13 +10,16 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\Numbered;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneRoot;
+use App\Models\Support\BelongsToProjectOrGlobal;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Events\ShareActivated;
@@ -50,6 +53,7 @@ use PhpOption\Option;
 
 /**
  * @property string $id
+ * @property string|null $project_id
  * @property string $number_group_id
  * @property int $number
  * @property ShareStatus $status
@@ -82,9 +86,10 @@ use PhpOption\Option;
     'token_digest',
     'token_ciphertext',
 ])]
-final class Share extends Model implements EventSource, Numbered, ReadableModel
+final class Share extends Model implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
     use BelongsToOneRoot;
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use FindsForUpdate;
     use HasNumber;
@@ -135,17 +140,18 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * A share of the root until its expiry. From an agent's request it is a proposal with no token and no gateway,
-     * kept until the owner approves it or it expires; from the owner's grant it holds a new token under a gateway
-     * configuration at its first scope version, waiting for its gateway.
+     * A share of the root, of the root's owner, until its expiry. From an agent's request it is a proposal with no
+     * token and no gateway, kept until the owner approves it or it expires; from the owner's grant it holds a new token
+     * under a gateway configuration at its first scope version, waiting for its gateway.
      */
     public static function create(
         RecordIdentity $root,
+        ProjectOwner $rootOwner,
         CarbonImmutable $expiresAt,
         ShareProposal|ShareGrant $origin,
     ): self {
         if ($origin instanceof ShareProposal) {
-            $share = self::forRoot($root, ShareStatus::Proposed, $expiresAt);
+            $share = self::forRoot($root, $rootOwner, ShareStatus::Proposed, $expiresAt);
             $share->requester_type = $origin->requester->type;
             $share->requester_id = $origin->requester->id;
             $share->assertSaved($share->save());
@@ -154,7 +160,7 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
             return $share;
         }
 
-        $share = self::forRoot($root, ShareStatus::Pending, $expiresAt);
+        $share = self::forRoot($root, $rootOwner, ShareStatus::Pending, $expiresAt);
         $share->owner_user_id = $origin->ownerUserId;
         $share->scope_version = self::FIRST_SCOPE_VERSION;
         $share->share_gateway_configuration_id = $origin->configurationId;
@@ -469,9 +475,14 @@ final class Share extends Model implements EventSource, Numbered, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private static function forRoot(RecordIdentity $root, ShareStatus $state, CarbonImmutable $expiresAt): self
-    {
+    private static function forRoot(
+        RecordIdentity $root,
+        ProjectOwner $rootOwner,
+        ShareStatus $state,
+        CarbonImmutable $expiresAt,
+    ): self {
         $share = new self();
+        $share->assignOwner($rootOwner);
         $share->status = $state;
         $share->root_type = $root->type;
         $share->root_id = $root->id;

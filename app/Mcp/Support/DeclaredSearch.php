@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Projects\CurrentProject;
 use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
 use App\Enums\Search\SearchSurface;
@@ -37,6 +38,7 @@ final readonly class DeclaredSearch
         private ContinuationsContract $continuations,
         private AgentContext $agent,
         private ServedEnvironment $environment,
+        private CurrentProject $projects,
     ) {}
 
     public function search(ToolArguments $arguments): ToolResult
@@ -164,6 +166,7 @@ final readonly class DeclaredSearch
             $this->agent->sessionId,
             ActorReference::forAgent($this->agent->agentId),
             implode(',', $this->environment->environmentIds()),
+            $this->projects->selection()->key(),
             self::TOOL,
             SearchSurface::AgentTool,
         );

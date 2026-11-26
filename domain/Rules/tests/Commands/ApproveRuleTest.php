@@ -7,8 +7,10 @@ namespace Domain\Rules\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Exceptions\CommandAdmissionRefused;
+use App\Exceptions\CrossProjectEdge;
 use App\Support\ActorReference;
 use App\Support\UserChannel;
+use App\Values\ProjectOwner;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
@@ -22,11 +24,12 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\TestText;
 
 /**
- * The user approves a proposed rule, which then holds; an agent may not approve one, and a rule already reviewed is
- * refused and stays as it was.
+ * The user approves a proposed rule for its project or as Global, and it then holds; an agent may not approve one, a
+ * rule already reviewed is refused and stays as it was, and a replacement must end with its replaced rule's owner.
  */
 #[TestsCommand(ApproveRuleCommand::class)]
 final class ApproveRuleTest extends TestCase
@@ -54,7 +57,7 @@ final class ApproveRuleTest extends TestCase
 
     public function test_an_approved_rule_holds_and_says_so(): void
     {
-        $this->journal->run(new ApproveRuleCommand($this->proposed->id));
+        $this->journal->run($this->approval($this->proposed, TestProjects::localOwner()));
 
         $this->assertSame(RuleStatus::Active, $this->proposed->refresh()->status);
 
@@ -74,7 +77,7 @@ final class ApproveRuleTest extends TestCase
         $this->journal->actAs('Planner');
 
         $this->assertThrows(
-            fn () => $this->journal->run(new ApproveRuleCommand($this->proposed->id)),
+            fn () => $this->journal->run($this->approval($this->proposed, TestProjects::localOwner())),
             CommandAdmissionRefused::class,
         );
 
@@ -87,7 +90,7 @@ final class ApproveRuleTest extends TestCase
         $this->journal->run(new DenyRuleCommand($this->proposed->id));
 
         $this->assertThrows(
-            fn () => $this->journal->run(new ApproveRuleCommand($this->proposed->id)),
+            fn () => $this->journal->run($this->approval($this->proposed, TestProjects::localOwner())),
             RuleNotProposed::class,
         );
 
@@ -103,9 +106,10 @@ final class ApproveRuleTest extends TestCase
             'Agents keep forgetting it.',
             null,
             ActorReference::forUser(TestIds::of(7)),
+            TestProjects::localOwner(),
         );
 
-        $this->app->make(CommandBus::class)->run(new ApproveRuleCommand($rule->id));
+        $this->app->make(CommandBus::class)->run($this->approval($rule, TestProjects::localOwner()));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
 
@@ -114,5 +118,45 @@ final class ApproveRuleTest extends TestCase
         ]
             && $change->broadcastOn()[0]->name === 'private-'.UserChannel::nameFor($this->journal->ownerUser()->id)
             && $change->broadcastWith() === []);
+    }
+
+    public function test_the_owner_approves_an_agents_proposal_as_global(): void
+    {
+        $this->journal->project('Shop')->agent('Shopper', project: 'Shop');
+        $proposal = $this->journal->fixtures(RuleFixtures::class)
+            ->proposedRule('Shop rule', 'Ship on Fridays.', 'Shopper')
+            ->ruleCalled('Shop rule');
+
+        $this->journal->run($this->approval($proposal, ProjectOwner::global()));
+
+        $approved = Rule::query()->findOrFail($proposal->id);
+        $this->assertSame([RuleStatus::Active, null], [$approved->status, $approved->project_id]);
+    }
+
+    public function test_a_replacement_ending_with_another_owner_than_its_replaced_rule_is_refused(): void
+    {
+        $global = $this->journal->fixtures(RuleFixtures::class)
+            ->proposedRule('Global', 'Every phase ends with its tests.', 'Planner')
+            ->ruleCalled('Global');
+        $global->approveBy($this->journal->actorCalled('Owner'), ProjectOwner::global());
+        $replacement = Rule::create(
+            'Every phase ends with its tests and its checks.',
+            'The checks were forgotten.',
+            $global->id,
+            ActorReference::of($this->journal->agentCalled('Planner')),
+            TestProjects::localOwner(),
+        );
+
+        $this->assertThrows(
+            fn () => $this->journal->run($this->approval($replacement, TestProjects::localOwner())),
+            CrossProjectEdge::class,
+        );
+
+        $this->assertSame(RuleStatus::Proposed, $replacement->refresh()->status);
+    }
+
+    private function approval(Rule $rule, ProjectOwner $owner): ApproveRuleCommand
+    {
+        return new ApproveRuleCommand($rule->id, $owner->key());
     }
 }

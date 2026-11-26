@@ -5,22 +5,24 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands\StartHelper;
 
 use App\Attributes\Commands\Authorize;
+use App\Contracts\Projects\ProjectCommand;
 use App\Enums\Agents\AccessType;
 use App\Enums\Drivers\DriverType;
 use App\Support\Command;
+use App\Values\ProjectOwner;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Gives new work to one of the caller's helpers of a profile, the best one that may take it or a new one, on the
- * model it names or the profile's default, and starts it.
+ * Gives new work in the project to one of the caller's helpers there of a profile, the best one that may take it or
+ * a new one, on the model it names or the profile's default, and starts it.
  *
  * @extends Command<HelperReceipt>
  */
 #[Authorize(HelperPolicy::class, AccessType::Create)]
-final readonly class StartHelperCommand extends Command
+final readonly class StartHelperCommand extends Command implements ProjectCommand
 {
     public function __construct(
         #[Required]
@@ -31,6 +33,12 @@ final readonly class StartHelperCommand extends Command
         public string $model,
         public string|null $driverKey,
         public HelperWork $work,
+        public string $projectId,
         public DriverType|null $driverType = null,
     ) {}
+
+    public function owner(): ProjectOwner
+    {
+        return ProjectOwner::ofProject($this->projectId);
+    }
 }

@@ -89,20 +89,17 @@ final class SaveCommandRuleTest extends TestCase
         $this->assertSame(ProposalStatus::Pending, RuleProposal::query()->sole()->status);
     }
 
-    public function test_two_project_keys_in_one_worker_see_only_their_own_rules(): void
+    public function test_a_rule_of_one_project_never_classifies_a_command_of_another(): void
     {
-        config(['processes.project_key' => 'project-a']);
+        $this->journal->project('Shop')->idleAgent('Cy', 'main-agent', 'Shop');
         $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(
             new SaveCommandRuleCommand('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'),
         );
-        $this->assertTrue($this->isKnown('tidy list'));
         $this->assertCount(1, $this->app->make(ActiveRules::class)->approvedFor('tidy list'));
 
-        config(['processes.project_key' => 'project-b']);
-        $this->assertFalse($this->isKnown('tidy list'));
-
-        config(['processes.project_key' => 'project-a']);
-        $this->assertTrue($this->isKnown('tidy list'));
+        $this->assertTrue($this->isKnownTo($this->start->agent->id, 'tidy list'));
+        $this->assertFalse($this->isKnownTo($this->journal->agentCalled('Cy')->id, 'tidy list'));
+        $this->assertTrue($this->isKnownTo($this->start->agent->id, 'tidy list'));
     }
 
     private function saveOrdinary(string $requestId, int $expectedActive): ApprovalReceipt
@@ -137,9 +134,13 @@ final class SaveCommandRuleTest extends TestCase
         )->ownedBy(RuleScope::project(), 1);
     }
 
-    private function isKnown(string $line): bool
+    /**
+     * Whether the line is known to the agent, classified under the agent's own project.
+     */
+    private function isKnownTo(string $agentId, string $line): bool
     {
         $this->app->forgetScopedInstances();
+        $this->journal->actAsAgentIds($agentId, $this->start->session->id);
         $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
 
         $classifier = $this->app->make(CommandClassifier::class);

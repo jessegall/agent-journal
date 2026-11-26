@@ -8,8 +8,8 @@ use App\Enums\Search\SearchSurface;
 use App\Support\ActorReference;
 
 /**
- * Whom a search belongs to: the authenticated session, the actor, the environment, the tool and the surface. A
- * handle opens only for the same owner on every replay.
+ * Whom a search belongs to: the authenticated session, the actor, the environment, the project selection's key, the
+ * tool and the surface. A handle opens only for the same owner on every replay.
  */
 final readonly class SearchOwner
 {
@@ -17,6 +17,7 @@ final readonly class SearchOwner
         public string $sessionId,
         public ActorReference $actor,
         public string $environmentId,
+        public string $projectKey,
         public string $tool,
         public SearchSurface $surface,
     ) {}
@@ -31,6 +32,7 @@ final readonly class SearchOwner
             $this->actor->type,
             $this->actor->id,
             $this->environmentId,
+            $this->projectKey,
             $this->tool,
             $this->surface->value,
         ]);

@@ -6,19 +6,16 @@ namespace App\Commands\CommandRules\OpenCommandRequest;
 
 use App\Contracts\Bus\CommandHandler;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\ServedEnvironment;
+use App\Support\Projects\SelectedProject;
 
 final readonly class OpenCommandRequestHandler implements CommandHandler
 {
-    public function __construct(private ServedEnvironment $projects) {}
+    public function __construct(private SelectedProject $projects) {}
 
     public function handle(OpenCommandRequestCommand $command): string
     {
         $actor = $command->dispatchedBy();
-        $projectKey = $this->projects->current();
-
         $open = CommandRequest::query()
-            ->ofProject($projectKey)
             ->byActor($actor)
             ->forOperation($command->operation, $command->bindingDigest)
             ->stillOpen()
@@ -29,6 +26,6 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             return $open->id;
         }
 
-        return CommandRequest::create($projectKey, $actor, $command)->id;
+        return CommandRequest::create($this->projects->find(), $actor, $command)->id;
     }
 }

@@ -70,6 +70,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -513,7 +514,7 @@ final class ActivateProfilesTest extends TestCase
     private function propose(): void
     {
         $this->app->make(CommandBus::class)->run(
-            new ProposeRuleCommand('Write tests first.', 'It keeps the work honest.'),
+            new ProposeRuleCommand('Write tests first.', 'It keeps the work honest.', TestProjects::local()->id),
         );
     }
 

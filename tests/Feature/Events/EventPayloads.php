@@ -217,7 +217,7 @@ final class EventPayloads
             ],
             BundleActivated::class => [
                 'fields' => [
-                    'projectKey' => 'string',
+                    'projectId' => 'string',
                     'module' => 'string',
                     'digest' => 'string',
                 ],
@@ -241,7 +241,7 @@ final class EventPayloads
             ],
             RuleActivated::class => [
                 'fields' => [
-                    'projectKey' => 'string',
+                    'projectId' => 'string',
                     'ruleId' => 'string',
                     'revision' => 'int',
                     'digest' => 'string',
@@ -258,7 +258,7 @@ final class EventPayloads
             ],
             RuleRetired::class => [
                 'fields' => [
-                    'projectKey' => 'string',
+                    'projectId' => 'string',
                     'ruleId' => 'string',
                     'revision' => 'int',
                     'reason' => 'string',

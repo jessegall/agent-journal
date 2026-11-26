@@ -25,6 +25,7 @@ final readonly class StartHelperHandler extends HelperCommandHandler
             $command->model,
             $command->driverKey,
             $command->work,
+            $command->projectId,
             null,
             $command->driverType,
         ));

@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * A reader comments on a document named by its number or id, as themselves; a document that is not there is refused
@@ -81,7 +82,7 @@ final class CommentOnDocumentTest extends TestCase
         ## Risks
         None.
 
-        TEXT));
+        TEXT, TestProjects::local()->id));
     }
 
     public function test_a_comment_by_number_lands_on_the_document_as_its_author(): void
@@ -160,6 +161,7 @@ final class CommentOnDocumentTest extends TestCase
                 Still third.
 
                 TEXT,
+                TestProjects::local()->id,
             ),
         );
 
@@ -271,7 +273,7 @@ final class CommentOnDocumentTest extends TestCase
         $author->startRequest($this->app);
 
         $document = $this->app->make(CommandBus::class)->run(
-            new CreateDocumentCommand('Design', 'Current design.', 'Published text.'),
+            new CreateDocumentCommand('Design', 'Current design.', 'Published text.', TestProjects::local()->id),
         );
 
         $this->journal->agentCall($author, 'POST', '/agent/docs/comment', [

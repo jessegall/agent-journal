@@ -8,6 +8,7 @@ use App\Attributes\Bus\Dispatches;
 use App\Contracts\Bus\CommandBus;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Http\Requests\ReviewRuleRequest;
+use Domain\Rules\Models\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -21,7 +22,8 @@ final readonly class ApproveRuleController
     #[Dispatches(ApproveRuleCommand::class)]
     public function __invoke(ReviewRuleRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new ApproveRuleCommand($request->ruleId()));
+        $owner = $request->chosenProject()->getOrCall(fn (): string => Rule::findOwnerKeyOf($request->ruleId()));
+        $commands->run(new ApproveRuleCommand($request->ruleId(), $owner));
 
         return $redirect->back(303);
     }

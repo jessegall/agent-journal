@@ -6,6 +6,7 @@ namespace App\Http\Loaders\Shell;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Hosts\ServedEnvironment;
+use App\Contracts\Projects\CurrentProject;
 use App\Contracts\Records\RecordResolver;
 use App\Contracts\Search\RecordSearch;
 use App\Contracts\Search\SearchSources;
@@ -40,6 +41,7 @@ final readonly class SearchLoader
         private CurrentActor $actors,
         private ServedEnvironment $environment,
         private Session $session,
+        private CurrentProject $projects,
     ) {}
 
     public function __invoke(SearchInput $input): PaletteSearchData
@@ -146,6 +148,7 @@ final readonly class SearchLoader
             $this->session->getId(),
             $this->actors->actor(),
             implode(',', $this->environment->environmentIds()),
+            $this->projects->selection()->key(),
             DeclaredSearch::TOOL,
             SearchSurface::Palette,
         );

@@ -12,6 +12,7 @@ use Domain\Sequences\Tests\TestCase;
 use Domain\Sequences\Values\SequenceStep;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestProjects;
 
 /**
  * A user changes a sequence at the version they opened: it goes one version on and a run it already started keeps
@@ -29,7 +30,12 @@ final class ChangeSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->sequence = Sequence::create('Release', 'Ship a version', [self::step('tests')]);
+        $this->sequence = Sequence::create(
+            'Release',
+            'Ship a version',
+            [self::step('tests')],
+            TestProjects::localOwner(),
+        );
     }
 
     public function test_a_change_goes_one_version_on_and_a_started_run_keeps_its_own_steps(): void

@@ -15,6 +15,7 @@ use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
+use Tests\Support\TestProjects;
 
 /**
  * An open starts a draft at version one and opening again returns the same draft; another user is refused naming
@@ -54,7 +55,7 @@ final class OpenDocumentTest extends TestCase
         parent::setUp();
 
         $this->journal->actAsUserId(TestIds::of(1));
-        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY));
+        $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY, TestProjects::local()->id));
     }
 
     public function test_an_open_starts_at_version_one_and_opening_again_returns_the_same_draft(): void
@@ -81,7 +82,7 @@ final class OpenDocumentTest extends TestCase
 
     public function test_another_user_is_refused_naming_the_holder_who_cannot_open_a_second_document(): void
     {
-        $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n"));
+        $this->bus()->run(new CreateDocumentCommand('Notes', 'What we saw', "Text\n", TestProjects::local()->id));
         $this->bus()->run(new OpenDocumentCommand('1'));
 
         try {

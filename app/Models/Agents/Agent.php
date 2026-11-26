@@ -14,6 +14,7 @@ use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
 use App\Contracts\Messages\MessageReceiver;
 use App\Contracts\Messages\MessageSender;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Questions\QuestionRecipient;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Drivers\DriverType;
@@ -21,11 +22,14 @@ use App\Events\Sessions\AgentDriverTypePreferred;
 use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimesFenced;
-use App\Exceptions\AgentOfAnotherProject;
+use App\Exceptions\ModelMissing;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\Project;
+use App\Models\Support\HasProjectColumn;
+use App\Models\Support\ProjectScope;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
+use App\Values\ProjectSelection;
 use App\Values\RunningRuntime;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
@@ -61,11 +65,13 @@ final class Agent extends Model implements
     EventSource,
     MessageReceiver,
     MessageSender,
+    ProjectOwned,
     QuestionRecipient,
     ReadableModel,
     RecipientActor
 {
     use BoundedReads;
+    use HasProjectColumn;
     use HasUlids;
     use Linkable;
     use OrdersById;
@@ -197,22 +203,6 @@ final class Agent extends Model implements
         return $this->id;
     }
 
-    // ----------[ Asserts ]----------
-
-    /**
-     * Refuses an agent that belongs to another project than the one given.
-     *
-     * @throws AgentOfAnotherProject
-     */
-    public function assertOfProject(Project $project): void
-    {
-        if ($this->project_id === $project->id) {
-            return;
-        }
-
-        throw AgentOfAnotherProject::for($this->id, $project->id);
-    }
-
     // ----------[ Queries ]----------
 
     #[Override]
@@ -229,6 +219,18 @@ final class Agent extends Model implements
     public static function findWithId(string $id): Option
     {
         return self::query()->whereKey($id)->firstOption();
+    }
+
+    /**
+     * The id of the project the agent belongs to.
+     *
+     * @throws ModelMissing when there is no such agent
+     */
+    public static function findProjectIdOf(string $agentId): string
+    {
+        return self::query()->whereKey($agentId)->firstOr(
+            static fn () => throw ModelMissing::for(self::class, $agentId),
+        )->project_id;
     }
 
     /**
@@ -307,5 +309,16 @@ final class Agent extends Model implements
     protected function byName(Builder $query): void
     {
         $query->orderBy('name');
+    }
+
+    /**
+     * The agents of the selection's projects, for an agent list; agents carry no scope of their own.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inSelection(Builder $query, ProjectSelection $selection): void
+    {
+        (new ProjectScope(static fn (): ProjectSelection => $selection, false))->apply($query, $query->getModel());
     }
 }

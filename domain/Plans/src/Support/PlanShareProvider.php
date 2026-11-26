@@ -15,6 +15,7 @@ use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
+use App\Values\ProjectOwner;
 use Domain\Plans\Models\Plan;
 
 /**
@@ -32,6 +33,17 @@ final readonly class PlanShareProvider implements ShareRecordProvider
     public function mayDisclose(RecordIdentity $record): bool
     {
         return $record->type === Plan::linkType() && Plan::query()->whereKey($record->id)->exists();
+    }
+
+    /**
+     * @throws RecordUnavailable when the plan is missing
+     */
+    public function ownerOf(RecordIdentity $record): ProjectOwner
+    {
+        return Plan::query()
+            ->whereKey($record->id)
+            ->firstOr(RecordUnavailable::throwing()->forActor($record))
+            ->projectOwner();
     }
 
     /**

@@ -21,8 +21,10 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
+use App\Values\ProjectSelection;
 use App\Values\SelectedDriver;
 use App\Values\StackTarget;
 use Carbon\Carbon;
@@ -203,9 +205,9 @@ final class TestJournal
      * An agent of the local project on the profile, running one session started as the journal starts one, with its
      * stack and its driver's runtime, and a personal inbox; the start is named after the agent.
      */
-    public function agent(string $name, string $profile = 'main-agent'): self
+    public function agent(string $name, string $profile = 'main-agent', string|null $project = null): self
     {
-        $this->idleAgent($name, $profile);
+        $this->idleAgent($name, $profile, $project);
         $this->startSession($name, trim($name));
         $this->syntheticRuntime($name);
 
@@ -266,6 +268,26 @@ final class TestJournal
         }
 
         $this->projects[$name] = Project::create(Str::slug($name), $name);
+
+        return $this;
+    }
+
+    /**
+     * The browser's choice of the named project, as the owner's reads follow it from here on.
+     */
+    public function selectProject(string $name): self
+    {
+        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::of($this->projectCalled($name)->id));
+
+        return $this;
+    }
+
+    /**
+     * The browser's choice of All projects, the owner's selection when none is chosen.
+     */
+    public function inAllProjects(): self
+    {
+        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::all());
 
         return $this;
     }
@@ -525,12 +547,12 @@ final class TestJournal
     }
 
     /**
-     * A new agent of this name on the profile, started once in a session named after it, as a TestStart that signs
-     * with the credential the start was issued.
+     * A new agent of this name on the profile, in the local project or the named one, started once in a session named
+     * after it, as a TestStart that signs with the credential the start was issued.
      */
-    public function signedStart(string $name, string $profile = 'main-agent'): TestStart
+    public function signedStart(string $name, string $profile = 'main-agent', string|null $project = null): TestStart
     {
-        return $this->idleAgent($name, $profile)->startSession($name, $name)->testStartCalled($name);
+        return $this->idleAgent($name, $profile, $project)->startSession($name, $name)->testStartCalled($name);
     }
 
     /**

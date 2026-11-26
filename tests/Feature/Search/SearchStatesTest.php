@@ -70,7 +70,7 @@ final class SearchStatesTest extends TestCase
         $states = $this->app->make(SearchStates::class);
         $handle = $states->start(self::owner(self::OWNER_ID), 'state');
         $agent = ActorReference::forAgent(self::OWNER_ID);
-        $palette = new SearchOwner('session', $agent, 'main', 'search', SearchSurface::Palette);
+        $palette = new SearchOwner('session', $agent, 'main', 'all', 'search', SearchSurface::Palette);
 
         $this->expectException(SearchHandleRefused::class);
 
@@ -134,8 +134,26 @@ final class SearchStatesTest extends TestCase
         $states->start(self::owner(self::OWNER_ID), str_repeat('x', SearchStates::STATE_BYTE_LIMIT));
     }
 
-    private static function owner(string $agentId): SearchOwner
+    public function test_a_handle_made_under_one_project_selection_is_refused_under_another(): void
     {
-        return new SearchOwner('session', ActorReference::forAgent($agentId), 'main', 'search', SearchSurface::AgentTool);
+        $states = $this->app->make(SearchStates::class);
+        $handle = $states->start(self::owner(self::OWNER_ID, 'project-a'), 'state');
+
+        $this->assertNotSame($handle, $states->start(self::owner(self::OWNER_ID, 'project-b'), 'state'));
+        $this->expectException(SearchHandleRefused::class);
+
+        $states->resume(self::owner(self::OWNER_ID, 'project-b'), $handle);
+    }
+
+    private static function owner(string $agentId, string $projectKey = 'all'): SearchOwner
+    {
+        return new SearchOwner(
+            'session',
+            ActorReference::forAgent($agentId),
+            'main',
+            $projectKey,
+            'search',
+            SearchSurface::AgentTool,
+        );
     }
 }

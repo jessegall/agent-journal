@@ -8,12 +8,15 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Models\Inboxes\Inbox;
 use App\Models\Support\Accessor;
+use App\Models\Support\BelongsToProjectOrGlobal;
 use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\DockDefinition;
+use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Events\DockChanged;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -24,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
+ * @property string|null $project_id
  * @property string $inbox_id
  * @property string $dockable_type
  * @property string $dockable_id
@@ -37,8 +41,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin \Eloquent
  */
-final class DockPlacement extends Model implements EventSource, ReadableModel
+final class DockPlacement extends Model implements EventSource, ProjectOwned, ReadableModel
 {
+    use BelongsToProjectOrGlobal;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -59,15 +64,18 @@ final class DockPlacement extends Model implements EventSource, ReadableModel
     // ----------[ Constructors ]----------
 
     /**
-     * Docks the source in the locked chat; its caller has found no placement of it there.
+     * Docks the source in the locked chat, of the source's project or Global; its caller has found no placement of
+     * it there.
      */
     public static function create(
         Inbox $inbox,
         DockIdentity $source,
+        ProjectOwner $sourceOwner,
         string $presentation,
         ActorReference $assignedBy,
     ): self {
         $placement = new self();
+        $placement->assignOwner($sourceOwner);
         $placement->inbox_id = $inbox->id;
         $placement->dockable_type = $source->type;
         $placement->dockable_id = $source->id;

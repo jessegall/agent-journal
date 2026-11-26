@@ -40,7 +40,6 @@ final class RevokeRunOutcomeAccessTest extends TestCase
         $atlas = TestActors::agentIdentity(3);
         $kim = TestActors::userIdentity(4);
         $run = ProcessRun::create($atlas, TestRunAdmissions::of(
-            projectKey: (string) config('processes.project_key'),
             outcomeUserId: $kim->id,
         ));
         $this->app->make(RunOutcomes::class)->record($run, RunLogicalResult::Failed, RunResultSource::Signed);

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('rule_proposals', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('project_key', 64);
+            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
             $table->string('scope_type', 16);
             $table->string('scope_owner');
             $table->string('scope_version');
@@ -28,8 +28,8 @@ return new class extends Migration
             $table->unsignedInteger('current_revision');
             $table->timestampsTz();
 
-            $table->unique(['project_key', 'author_type', 'author_id', 'request_id']);
-            $table->index(['project_key', 'status']);
+            $table->unique(['project_id', 'author_type', 'author_id', 'request_id']);
+            $table->index(['project_id', 'status']);
         });
     }
 

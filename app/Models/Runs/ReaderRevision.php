@@ -6,9 +6,11 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
+use App\Contracts\Projects\ProjectOwned;
 use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\CommandRequest;
+use App\Models\Support\BelongsToProject;
 use App\Support\ActorReference;
 use App\Values\ReaderDefinition;
 use Carbon\CarbonImmutable;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $id
- * @property string $project_key
+ * @property string $project_id
  * @property string $command_request_id
  * @property int $declaration_revision
  * @property string $operation
@@ -37,8 +39,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class ReaderRevision extends Model implements ReadableModel
+final class ReaderRevision extends Model implements ProjectOwned, ReadableModel
 {
+    use BelongsToProject;
     use BoundedReads;
     use HasUlids;
     use Linkable;
@@ -74,7 +77,7 @@ final class ReaderRevision extends Model implements ReadableModel
         ActorReference $author,
     ): self {
         $readerRevision = new self();
-        $readerRevision->project_key = $request->project_key;
+        $readerRevision->project_id = $request->project_id;
         $readerRevision->command_request_id = $request->id;
         $readerRevision->declaration_revision = $declarationRevision;
         $readerRevision->operation = $request->operation;
@@ -123,15 +126,6 @@ final class ReaderRevision extends Model implements ReadableModel
     }
 
     // ----------[ Scopes ]----------
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
 
     /**
      * The rows of the given command request.

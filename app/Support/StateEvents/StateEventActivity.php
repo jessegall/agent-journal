@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\StateEvents;
 
 use App\Exceptions\StateEventReentry;
+use App\Support\Projects\ProjectSelectionStore;
 use App\Values\StackTarget;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
@@ -27,7 +28,11 @@ final class StateEventActivity
      */
     private array $deliveries = [];
 
+    public function __construct(private readonly ProjectSelectionStore $projects) {}
+
     /**
+     * Runs a state's listener for its target under the target agent's project, whoever raised the fact.
+     *
      * @template TResult
      *
      * @param  Closure(): TResult  $work
@@ -39,7 +44,7 @@ final class StateEventActivity
         $this->evaluating[$target->description()] = true;
 
         try {
-            return $work();
+            return $this->projects->forTarget($target, $work);
         } finally {
             $this->evaluating = $before;
         }

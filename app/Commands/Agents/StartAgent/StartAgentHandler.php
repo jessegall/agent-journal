@@ -22,6 +22,7 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
+use App\Models\Projects\Project;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
@@ -98,9 +99,10 @@ final readonly class StartAgentHandler implements CommandHandler
             return $this->receiptOf($request, $session, false);
         }
 
-        // The agent's lifecycle and start reservation, then the host's capacity, then the driver's account, then
-        // the session: the order of every start.
+        // Where the start runs, then the agent's lifecycle and start reservation, then the host's capacity, then the
+        // driver's account, then the session: the order of every start.
         $agent = Agent::query()->findOrFail($request->agentId);
+        $runtime = $this->hostRuntimeOf($request, $agent);
         $this->sessions->reserveStart($agent);
 
         if (DriverSwitch::findOpenOf($agent->id)?->stage->blocksWriter() === true) {
@@ -130,7 +132,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->selection,
             $request->requestId,
             $parent,
-            $this->hostRuntimeOf($request),
+            $runtime,
         );
 
         $started->session->keepDriverLabel($record->driver_label);
@@ -151,12 +153,14 @@ final readonly class StartAgentHandler implements CommandHandler
     }
 
     /**
-     * A main start runs on the host that runs its driver build, placement and driver type, in that host's start folder; a
-     * start an owner runs through its own host's start socket opens no runtime here.
+     * A main start runs where its agent's project runs it: the local project's host that runs its driver build,
+     * placement and driver type in that host's start folder, or a connected project's serving binding in its folder;
+     * a start an owner runs through its own host's start socket opens no runtime here.
      *
      * @throws HostUnavailable
+     * @throws StartRefused when no folder of the agent's connected project serves it now
      */
-    private function hostRuntimeOf(StartRequest $request): RuntimeIntent|null
+    private function hostRuntimeOf(StartRequest $request, Agent $agent): RuntimeIntent|null
     {
         if ($request->origin !== StartOriginType::MainStart) {
             return null;
@@ -164,11 +168,17 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $driver = $request->selection->driver;
         $build = $this->builds->versionOf($driver);
-        $host = Host::findRunningStart($driver, $build, $request->execution()->mode, $request->driverType);
+        $place = Host::findRunningStart(
+            Project::findForId($agent->project_id),
+            $driver,
+            $build,
+            $request->execution()->mode,
+            $request->driverType,
+        );
 
         return new RuntimeIntent(
-            $host->id,
-            $host->startFolder(),
+            $place->hostId,
+            $place->folder,
             $driver,
             $build,
             $driver,
