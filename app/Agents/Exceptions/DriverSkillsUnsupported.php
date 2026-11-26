@@ -19,6 +19,11 @@ final class DriverSkillsUnsupported extends RuntimeException implements CodedRef
         return new self("The journal cannot deliver skills to the driver {$driver->key}.");
     }
 
+    public static function forNamed(string $name): self
+    {
+        return new self("The journal cannot deliver skills to the driver {$name}.");
+    }
+
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::Unavailable;
