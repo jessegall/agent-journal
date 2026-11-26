@@ -50,6 +50,14 @@ Load the `journal` skill first in every session; the journal blocks writes until
 Answer the user's messages before anything else. At a context mark, decide what to keep from it.
 A guard that raises lets the event through and says so in the chat: a block is never the result of a fault.
 
+## Projects in one journal
+
+The journal is one; its projects are a scope over it. `CurrentProject` answers which projects a read sees. A pin set by `ProjectSelectionStore::within` or `forTarget` comes first, whoever acts. Without one, an agent sees its own project, the journal itself sees all projects, and the owner sees what the browser chose, or all projects when nothing was chosen. Anyone else sees none: only Global rows.
+
+A state, a tick or a share walk runs inside `forTarget` or `within`, so it reads only its agent's project and Global rows, whoever raised the fact. A read across every project goes through the named lift `acrossProjects()`, and a read of one named project goes through `inProject($id)`. ProjectOwnedModelsTest keeps the list of `acrossProjects()` callers short.
+
+A new model whose table has `project_id` uses `BelongsToProject`. A model whose record may be Global, such as a document, rule or sequence, uses `BelongsToProjectOrGlobal`. Its create migration indexes the column, and its command carries the project as a plain string through `ProjectCommand::owner()`.
+
 ## Code Commandments — the disciplines in force here
 
 This project's architecture is judged by code-commandments: each discipline is a skill in

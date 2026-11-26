@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('project_bindings', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('host_id')->constrained('hosts');
-            $table->foreignUlid('project_id')->constrained('projects')->restrictOnDelete();
+            $table->foreignUlid('project_id')->index()->constrained('projects')->restrictOnDelete();
             $table->foreignUlid('main_agent_id')->constrained('agents');
             // The opaque id the relay gives the folder; the canonical path stays out of labels and logs.
             $table->string('root_id');
