@@ -50,7 +50,8 @@ final readonly class SendMessageHandler implements CommandHandler
     }
 
     /**
-     * An agent writes only to the personal inbox of an agent of its own project; a user or a chat is not checked.
+     * An agent writes only to the personal inbox of an agent of its own project; a user or a shared inbox is not
+     * checked.
      *
      * @throws CrossProjectEdge
      */
@@ -62,6 +63,7 @@ final readonly class SendMessageHandler implements CommandHandler
             return;
         }
 
-        $this->edges->assertJoinable(Agent::query()->findOrFail($owner->get()->id), $sender);
+        $ownerAgent = Agent::query()->findOrFail($owner->get()->id);
+        $this->edges->assertJoinable($ownerAgent, $sender);
     }
 }

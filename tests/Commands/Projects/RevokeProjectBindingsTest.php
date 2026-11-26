@@ -49,7 +49,7 @@ final class RevokeProjectBindingsTest extends TestCase
 
         $this->assertSame(
             [BindingReadiness::Revoked, BindingReadiness::Revoked],
-            $this->bindings()->orderBy('created_at')->get()
+            ProjectBinding::query()->orderBy('created_at')->get()
                 ->map(fn (ProjectBinding $binding) => $binding->readiness)->all(),
         );
     }

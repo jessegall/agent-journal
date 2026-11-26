@@ -73,7 +73,7 @@ final class RecordBindingRuntimeTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return $this->bindings()->findOrFail($this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'));
+        return ProjectBinding::query()->findOrFail($this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'));
     }
 
     /**

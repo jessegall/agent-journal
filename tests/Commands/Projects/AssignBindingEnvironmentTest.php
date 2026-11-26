@@ -35,7 +35,7 @@ final class AssignBindingEnvironmentTest extends TestCase
     {
         $binding = $this->connected('new-ticket', 'nonce-aaaaaaaaaaaaaaaa');
         $main = $binding->environment_id;
-        $this->bindings()->whereKey($binding->id)->update(['environment_id' => null]);
+        ProjectBinding::query()->whereKey($binding->id)->update(['environment_id' => null]);
 
         $refused = $this->start($binding)->assertForbidden();
         $this->assertStringContainsString(self::NO_ENVIRONMENT, (string) $refused->json('message'));
@@ -43,7 +43,7 @@ final class AssignBindingEnvironmentTest extends TestCase
         $this->actingAs($this->owner)
             ->putJson("/project-connections/bindings/{$binding->id}/environment/{$main}")
             ->assertNoContent();
-        $this->assertFalse($this->bindings()->findOrFail($binding->id)->isEnvironmentUnassigned());
+        $this->assertFalse(ProjectBinding::query()->findOrFail($binding->id)->isEnvironmentUnassigned());
     }
 
     private function connected(string $ticket, string $nonce): ProjectBinding
@@ -53,7 +53,7 @@ final class AssignBindingEnvironmentTest extends TestCase
         $redeemed = $this->redeemLine($ticket, $nonce)->assertCreated();
         $this->notifyClaudeCode($nonce, (string) $redeemed->json('bindingId'));
 
-        return $this->bindings()->findOrFail($redeemed->json('bindingId'));
+        return ProjectBinding::query()->findOrFail($redeemed->json('bindingId'));
     }
 
     private function start(ProjectBinding $binding): TestResponse

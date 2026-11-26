@@ -9,6 +9,7 @@ use App\Enums\Connections\ConnectionAuditType;
 use App\Models\Access\User;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\DeviceGrant;
+use App\Models\Projects\ProjectBinding;
 use App\Support\Access\AccessSettings;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -139,7 +140,7 @@ final class ApproveDeviceGrantTest extends TestCase
         $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
 
         $audits = array_reverse(ConnectionAudit::findNewestOfBindings([$binding]));
-        $project = $this->bindings()->findOrFail($binding)->project_id;
+        $project = ProjectBinding::query()->findOrFail($binding)->project_id;
 
         $this->assertSame(
             [ConnectionAuditType::Redeemed, ConnectionAuditType::DeviceApproved, ConnectionAuditType::BindingRevoked],

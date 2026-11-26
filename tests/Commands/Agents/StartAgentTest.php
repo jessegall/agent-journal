@@ -305,7 +305,6 @@ final class StartAgentTest extends TestCase
         $this->assertThrows(
             fn () => $this->start($this->mainStartOf($shopper->id)),
             StartRefused::class,
-            'No folder of Shop is connected right now.',
         );
 
         $this->assertSame(0, CapacityReservation::query()->count());

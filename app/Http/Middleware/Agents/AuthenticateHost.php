@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
+use App\Attributes\Bus\Dispatches;
 use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Commands\Projects\RecordHostCallFailure\RecordHostCallFailureCommand;
 use App\Contracts\Bus\CommandBus;
@@ -35,6 +36,8 @@ use Symfony\Component\HttpFoundation\Response;
  * relay must have a live binding and is scoped to it. The host is bound for this request only (Octane), never kept on
  * a singleton. Each answered call is kept on the host for its link alarm: a server error, or an answer after failures.
  */
+#[Dispatches(RecordHostCallFailureCommand::class)]
+#[Dispatches(RecordHostCallAnsweredCommand::class)]
 final readonly class AuthenticateHost
 {
     /**

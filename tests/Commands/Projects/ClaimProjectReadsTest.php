@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\ClaimProjectReads\ClaimProjectReadsCommand;
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
 use App\Models\Access\User;
@@ -17,8 +18,9 @@ use App\Models\Projects\ProjectRead;
 use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use App\Values\BindingFolder;
+use App\Values\ProjectFileText;
+use App\Values\ProjectReadClaim;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -35,8 +37,6 @@ final class ClaimProjectReadsTest extends TestCase
         'project_reads', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
         'hook_calls',
     ];
-
-    private const string CLAIM = '/host/claim?limit=1&wait=0&watched_version=0';
 
     private const string SOURCE = "package main\n";
 
@@ -57,11 +57,18 @@ final class ClaimProjectReadsTest extends TestCase
         $read = $this->read(ProjectReadType::File, 'src/main.go');
         $other = $this->journal->enrolledHost();
 
-        $this->assertSame([], $this->journal->hostCall($other, 'POST', self::CLAIM)->assertOk()->json('project_reads'));
-        $this->assertSame([$read->id], array_column($this->claim()->json('project_reads'), 'id'));
-        $this->assertSame([], $this->claim()->json('project_reads'));
+        $this->assertSame([], $this->claimedReadIds($other));
+        $this->assertSame([$read->id], $this->claimedReadIds($this->host));
+        $this->assertSame([], $this->claimedReadIds($this->host));
 
-        $this->reportText($read)->assertNoContent();
+        $this->journal->asSystem(new NotifyProjectReadCommand(
+            $this->host->hostId,
+            $read->id,
+            [],
+            new ProjectFileText(self::SOURCE, hash('sha256', self::SOURCE), strlen(self::SOURCE)),
+            false,
+            null,
+        ));
 
         $answered = ProjectRead::query()->findOrFail($read->id);
         $this->assertSame(ProjectReadStatus::Answered, $answered->status);
@@ -79,30 +86,14 @@ final class ClaimProjectReadsTest extends TestCase
         return ActorReference::ofClass(User::class, '01jqzr0000000000000000user');
     }
 
-    private function claim(): TestResponse
-    {
-        return $this->journal->hostCall($this->host, 'POST', self::CLAIM)->assertOk();
-    }
-
-    private function reportText(ProjectRead $read): TestResponse
-    {
-        return $this->notify($read, $this->textAnswer());
-    }
-
     /**
-     * @return array<string, mixed>
+     * @return list<string>
      */
-    private function textAnswer(): array
+    private function claimedReadIds(EnrolledHost $host): array
     {
-        return ['text' => self::SOURCE, 'digest' => hash('sha256', self::SOURCE), 'size' => strlen(self::SOURCE)];
-    }
+        $claims = $this->journal->asSystem(new ClaimProjectReadsCommand($host->hostId))->claims;
 
-    /**
-     * @param  array<string, mixed>  $answer
-     */
-    private function notify(ProjectRead $read, array $answer): TestResponse
-    {
-        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
+        return array_map(fn (ProjectReadClaim $claim) => $claim->id, $claims);
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

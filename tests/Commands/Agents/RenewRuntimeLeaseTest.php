@@ -103,7 +103,7 @@ final class RenewRuntimeLeaseTest extends TestCase
         $this->issueLine('the-ticket');
         $redeemed = $this->redeemLine('the-ticket', self::NONCE)->assertCreated();
 
-        return $this->bindings()->whereKey($redeemed->json('bindingId'))->sole();
+        return ProjectBinding::query()->whereKey($redeemed->json('bindingId'))->sole();
     }
 
     private function runtimeOf(Agent $agent, ProjectBinding $binding): AgentRuntime

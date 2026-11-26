@@ -33,7 +33,7 @@ final class ReactPostTest extends GuardedRouteEntryTestCase
         $inbox = $chats->pairChatOf('Owner', 'Ada');
 
         $messageId = $journal->actAsAgentIds($start->agent->id, $start->session->id)
-            ->run(new SendMessageCommand($inbox->id, 'Which port?'), (string) Str::uuid());
+            ->run(new SendMessageCommand($inbox->id, 'Which port?'));
 
         $journal->actAs('Owner');
 

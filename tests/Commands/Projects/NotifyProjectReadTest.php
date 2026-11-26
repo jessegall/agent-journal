@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Data\Connections\ProjectEntryData;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Enums\Projects\ProjectReadStatus;
 use App\Enums\Projects\ProjectReadType;
+use App\Exceptions\ProjectReadRefused;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
@@ -19,9 +21,9 @@ use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use App\Support\ProjectReadRetentionService;
 use App\Values\BindingFolder;
+use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -58,10 +60,10 @@ final class NotifyProjectReadTest extends TestCase
     {
         $read = $this->read(ProjectReadType::Directory, '');
 
-        $this->notify($read, ['entries' => [
-            ['name' => 'src', 'is_folder' => true, 'size' => 0],
-            ['name' => 'README.md', 'is_folder' => false, 'size' => 6],
-        ]])->assertNoContent();
+        $this->notify($read, entries: [
+            new ProjectEntryData('src', true, 0),
+            new ProjectEntryData('README.md', false, 6),
+        ]);
 
         $entries = ProjectRead::query()->findOrFail($read->id)->listedEntries();
         $this->assertSame(['src', 'README.md'], array_column($entries, 'name'));
@@ -72,29 +74,34 @@ final class NotifyProjectReadTest extends TestCase
         $read = $this->read(ProjectReadType::File, 'src/main.go');
         $folder = $this->read(ProjectReadType::Directory, 'src');
 
-        $this->journal->hostCall(
-            $this->journal->enrolledHost(),
-            'POST',
-            "/host/reports/project-reads/{$read->id}",
-            $this->textAnswer(),
-        )
-            ->assertClientError();
-        $this->notify($folder, ['entries' => [['name' => '../x', 'is_folder' => false, 'size' => 1]]])
-            ->assertClientError();
-        $this->notify($read, [...$this->textAnswer(), 'digest' => 'not-a-digest'])->assertClientError();
+        $other = $this->journal->enrolledHost();
+        $this->assertThrows(
+            fn () => $this->journal->asSystem(
+                new NotifyProjectReadCommand($other->hostId, $read->id, [], $this->text(), false, null),
+            ),
+            ProjectReadRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->notify($folder, entries: [new ProjectEntryData('../x', false, 1)]),
+            ProjectReadRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->notify($read, new ProjectFileText(self::SOURCE, 'not-a-digest', strlen(self::SOURCE))),
+            ProjectReadRefused::class,
+        );
 
         $this->assertSame(ProjectReadStatus::Pending, ProjectRead::query()->findOrFail($read->id)->status);
         $this->assertSame(ProjectReadStatus::Pending, ProjectRead::query()->findOrFail($folder->id)->status);
 
-        $this->reportText($read)->assertNoContent();
-        $this->reportText($read)->assertClientError();
+        $this->notify($read, $this->text());
+        $this->assertThrows(fn () => $this->notify($read, $this->text()), ProjectReadRefused::class);
     }
 
     public function test_a_failure_from_the_allowlist_settles_the_read(): void
     {
         $read = $this->read(ProjectReadType::File, 'missing.txt');
 
-        $this->notify($read, ['failure' => ProjectReadFailure::Missing->value])->assertNoContent();
+        $this->notify($read, failure: ProjectReadFailure::Missing);
 
         $this->assertSame(ProjectReadFailure::Missing, ProjectRead::query()->findOrFail($read->id)->failure);
     }
@@ -106,7 +113,7 @@ final class NotifyProjectReadTest extends TestCase
             CarbonImmutable::now()->addSeconds(ProjectRead::PENDING_SECONDS_LIMIT + 1),
         );
 
-        $this->reportText($read)->assertNoContent();
+        $this->notify($read, $this->text());
         $this->assertSame(ProjectReadStatus::Expired, ProjectRead::query()->findOrFail($read->id)->status);
 
         $this->app->make(ProjectReadRetentionService::class)->prune(
@@ -125,25 +132,25 @@ final class NotifyProjectReadTest extends TestCase
         return ActorReference::ofClass(User::class, '01jqzr0000000000000000user');
     }
 
-    private function reportText(ProjectRead $read): TestResponse
+    private function text(): ProjectFileText
     {
-        return $this->notify($read, $this->textAnswer());
+        return new ProjectFileText(self::SOURCE, hash('sha256', self::SOURCE), strlen(self::SOURCE));
     }
 
     /**
-     * @return array<string, mixed>
+     * The host's answer to the read, as the journal settles it.
+     *
+     * @param  list<ProjectEntryData>  $entries
      */
-    private function textAnswer(): array
-    {
-        return ['text' => self::SOURCE, 'digest' => hash('sha256', self::SOURCE), 'size' => strlen(self::SOURCE)];
-    }
-
-    /**
-     * @param  array<string, mixed>  $answer
-     */
-    private function notify(ProjectRead $read, array $answer): TestResponse
-    {
-        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
+    private function notify(
+        ProjectRead $read,
+        ProjectFileText|null $text = null,
+        array $entries = [],
+        ProjectReadFailure|null $failure = null,
+    ): void {
+        $this->journal->asSystem(
+            new NotifyProjectReadCommand($this->host->hostId, $read->id, $entries, $text, false, $failure),
+        );
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

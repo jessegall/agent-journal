@@ -10,7 +10,6 @@ use App\Models\Messages\Message;
 use App\Support\ShownMessage;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
-use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -35,7 +34,7 @@ final class ReadPostTest extends GuardedRouteEntryTestCase
         $inbox = $chats->pairChatOf('Owner', 'Ada');
 
         $messageId = $journal->actAsAgentIds($start->agent->id, $start->session->id)
-            ->run(new SendMessageCommand($inbox->id, 'Which port?'), (string) Str::uuid());
+            ->run(new SendMessageCommand($inbox->id, 'Which port?'));
 
         $journal->actAs('Owner');
 

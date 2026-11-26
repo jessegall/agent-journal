@@ -103,7 +103,7 @@ final class AssertBindingRuntimeTest extends TestCase
     {
         $binding = $this->connected('the-ticket', self::NONCE);
         $this->start($binding, ['startId' => 'start-1'])->assertCreated();
-        $this->bindings()->whereKey($binding->id)->update(['readiness' => 'revoked']);
+        ProjectBinding::query()->whereKey($binding->id)->update(['readiness' => 'revoked']);
 
         $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
     }
@@ -123,7 +123,7 @@ final class AssertBindingRuntimeTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return $this->bindings()->findOrFail(
+        return ProjectBinding::query()->findOrFail(
             $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'),
         );
     }

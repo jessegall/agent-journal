@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Commands\Projects\RequestProjectRead\RequestProjectReadCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Hosts\ProjectFiles;
@@ -23,9 +24,9 @@ use App\Support\ActorReference;
 use App\Support\EnrolledHost;
 use App\Values\BindingFolder;
 use App\Values\InboxMemberAuthority;
+use App\Values\ProjectFileText;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;
@@ -85,7 +86,7 @@ final class RequestProjectReadTest extends TestCase
         $this->assertSame(ProjectReadStatus::Pending, $pending->state);
 
         $read = ProjectRead::query()->findOrFail($pending->readId);
-        $this->reportText($read)->assertNoContent();
+        $this->notifyText($read);
         $this->journal->actAsUserId(TestIds::of(7));
 
         $answered = $files->file($this->binding, 'src/main.go');
@@ -135,25 +136,16 @@ final class RequestProjectReadTest extends TestCase
         return ActorReference::ofClass(User::class, '01jqzr0000000000000000user');
     }
 
-    private function reportText(ProjectRead $read): TestResponse
+    private function notifyText(ProjectRead $read): void
     {
-        return $this->notify($read, $this->textAnswer());
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function textAnswer(): array
-    {
-        return ['text' => self::SOURCE, 'digest' => hash('sha256', self::SOURCE), 'size' => strlen(self::SOURCE)];
-    }
-
-    /**
-     * @param  array<string, mixed>  $answer
-     */
-    private function notify(ProjectRead $read, array $answer): TestResponse
-    {
-        return $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", $answer);
+        $this->journal->asSystem(new NotifyProjectReadCommand(
+            $this->host->hostId,
+            $read->id,
+            [],
+            new ProjectFileText(self::SOURCE, hash('sha256', self::SOURCE), strlen(self::SOURCE)),
+            false,
+            null,
+        ));
     }
 
     private function bindingOn(EnrolledHost $host): ProjectBinding

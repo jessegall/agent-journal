@@ -7,6 +7,7 @@ namespace Tests\Support\Seeding;
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Messages\InboxPermission;
@@ -34,6 +35,7 @@ use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\FakeServerClock;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\Support\TestProjects;
@@ -422,6 +424,16 @@ final class TestJournal
         }
 
         $this->requests->asUserId($userId);
+
+        return $this;
+    }
+
+    /**
+     * Agents known only by their id, with no agent row, work in the local project from here on.
+     */
+    public function placeBareAgentsInLocalProject(): self
+    {
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         return $this;
     }

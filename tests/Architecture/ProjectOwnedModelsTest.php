@@ -47,7 +47,8 @@ final class ProjectOwnedModelsTest extends TestCase
      * The files that call acrossProjects(), each with its reason.
      */
     private const array ACROSS_PROJECTS_CALLERS = [
-        'app/Models/Projects/Host.php' => 'a host is the relay of a connected folder in any project; its calls belong to none',
+        'app/Models/Projects/Host.php' => 'a host relays connected folders of any project; its calls belong to none',
+        'domain/Sharing/src/Models/Share.php' => 'a token opens its share in any project; a public reader is in none',
     ];
 
     /**

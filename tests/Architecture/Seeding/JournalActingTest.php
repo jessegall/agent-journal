@@ -11,9 +11,12 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CommandRegistry;
+use App\Support\Projects\CurrentProject;
 use App\Support\ShownMessage;
+use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestProjects;
 use Tests\TestCase;
 
 /**
@@ -25,7 +28,7 @@ final class JournalActingTest extends TestCase
 {
     use CommitsHookRows;
 
-    protected const array TABLES = [];
+    protected const array TABLES = ['projects', 'project_environments'];
 
     public function test_a_user_known_by_id_acts_and_stands_in_as_owner_while_the_journal_has_none(): void
     {
@@ -47,6 +50,28 @@ final class JournalActingTest extends TestCase
         $this->journal->actAsAgentOf(new StackTarget('agent-3', 'session-3'));
         $this->assertActor(ActorReference::forAgent('agent-3'));
         $this->assertSame('session-3', $this->app->make(AgentContext::class)->sessionId);
+    }
+
+    public function test_an_agent_known_only_by_id_works_in_the_local_project_once_bare_agents_are_placed_there(): void
+    {
+        $this->journal->placeBareAgentsInLocalProject()->actAsAgentId('agent-1');
+
+        $this->assertEquals(
+            ProjectSelection::of(TestProjects::local()->id),
+            $this->app->make(CurrentProject::class)->selection(),
+        );
+    }
+
+    public function test_the_owner_reads_the_project_the_browser_chose_or_all_of_them(): void
+    {
+        $this->journal->owner()->project('Shop')->selectProject('Shop');
+        $this->assertEquals(
+            ProjectSelection::of($this->journal->projectCalled('Shop')->id),
+            $this->app->make(CurrentProject::class)->selection(),
+        );
+
+        $this->journal->inAllProjects();
+        $this->assertEquals(ProjectSelection::all(), $this->app->make(CurrentProject::class)->selection());
     }
 
     public function test_a_command_run_as_a_named_actor_is_sent_by_them_and_the_actor_in_place_comes_back(): void

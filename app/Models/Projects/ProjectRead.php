@@ -280,6 +280,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     public static function findLockedById(string $readId): self
     {
         return self::query()
+            ->with('binding')
             ->whereKey($readId)
             ->lockForUpdate()
             ->firstOr(ProjectReadRefused::throwing()->missing($readId));

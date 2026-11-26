@@ -29,7 +29,7 @@ final class AskGetTest extends GuardedRouteEntryTestCase
     {
         $journal->owner()
             ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
-            ->idleAgent('Requester', 'journal-worker');
+            ->agent('Requester', 'journal-worker');
         $journal->idleAgent('Supervisor', 'journal-code-reviewer');
         $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'first'));
 

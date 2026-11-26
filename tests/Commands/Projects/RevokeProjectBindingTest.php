@@ -70,7 +70,7 @@ final class RevokeProjectBindingTest extends TestCase
             ->deleteJson("/project-connections/bindings/{$binding}")
             ->assertOk();
 
-        $revoked = $this->bindings()->findOrFail($binding);
+        $revoked = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame('Revoked', $first->json('result'));
         $this->assertSame(self::ALREADY_REVOKED, $second->json('result'));
         $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
@@ -94,13 +94,13 @@ final class RevokeProjectBindingTest extends TestCase
             ->assertOk();
 
         $this->relayClaim()->assertUnauthorized();
-        $this->assertSame(1, $this->bindings()->count());
+        $this->assertSame(1, ProjectBinding::query()->count());
     }
 
     public function test_a_relay_is_refused_an_enrolled_hosts_route(): void
     {
         $this->issueLine('the-ticket');
-        $binding = $this->bindings()->findOrFail(
+        $binding = ProjectBinding::query()->findOrFail(
             $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId'),
         );
 
@@ -112,7 +112,7 @@ final class RevokeProjectBindingTest extends TestCase
     public function test_a_revoked_bindings_host_is_refused_while_the_projects_other_binding_answers(): void
     {
         $this->issueLine('ticket-one');
-        $first = $this->bindings()->findOrFail(
+        $first = ProjectBinding::query()->findOrFail(
             $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId'),
         );
         ProjectInvitation::create(
@@ -126,10 +126,10 @@ final class RevokeProjectBindingTest extends TestCase
             ->assertOk();
 
         $this->relayClaim('nonce-aaaaaaaaaaaaaaaa')->assertUnauthorized();
-        $revoked = $this->bindings()->findOrFail($first->id);
+        $revoked = ProjectBinding::query()->findOrFail($first->id);
         $this->assertSame(BindingReadiness::Revoked, $revoked->readinessAt(CarbonImmutable::now()));
         $this->assertSame(2, $revoked->authority_generation);
-        $this->assertSame(2, $this->bindings()->where('project_id', $first->project_id)->count());
+        $this->assertSame(2, ProjectBinding::query()->where('project_id', $first->project_id)->count());
         $this->recoverBinding('nonce-bbbbbbbbbbbbbbbb')->assertOk();
     }
 
@@ -163,7 +163,7 @@ final class RevokeProjectBindingTest extends TestCase
     public function test_a_binding_refuses_a_main_agent_of_another_project(): void
     {
         $this->issueLine('the-ticket');
-        $binding = $this->bindings()->findOrFail(
+        $binding = ProjectBinding::query()->findOrFail(
             $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId'),
         );
         $project = Project::query()->sole();

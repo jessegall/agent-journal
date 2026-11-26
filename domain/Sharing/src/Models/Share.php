@@ -717,7 +717,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
      */
     public static function findForTokenDigest(string $digest): Option
     {
-        $share = self::query()->openedByDigest($digest)->first([
+        $share = self::query()->acrossProjects()->openedByDigest($digest)->first([
             'id',
             'status',
             'scope_version',

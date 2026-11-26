@@ -41,7 +41,10 @@ final class ApproveShareRequestPostTest extends GuardedRouteEntryTestCase
         $root = Document::query()->findOrFail($document->id)->shareIdentity();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $start = $journal->signedStart('Writer');
-        $journal->runAsStart($start, new RequestShareCommand($root->type, $root->id, 'request-1'));
+
+        $journal->actAsAgentIds($start->agent->id, $start->session->id)
+            ->run(new RequestShareCommand($root->type, $root->id, 'request-1'));
+
         $journal->actAs('Owner');
         $share = Share::query()->sole();
         $preview = $journal->run(new SaveSharePreviewCommand($root->type, $root->id, [], $configuration->id));

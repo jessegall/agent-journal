@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
+use App\Models\Projects\ProjectBinding;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -34,7 +35,7 @@ final class RecordBindingRuntimeStopTest extends TestCase
         $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         $this->notifyClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
         $runtime = '01JAAAAAAAAAAAAAAAAAAAAAAA';
-        $this->bindings()->findOrFail($binding)->holdLease($runtime, CarbonImmutable::now()->subMinute());
+        ProjectBinding::query()->findOrFail($binding)->holdLease($runtime, CarbonImmutable::now()->subMinute());
 
         $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
             AssertableInertia $page,

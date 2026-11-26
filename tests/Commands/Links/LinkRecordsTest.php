@@ -7,7 +7,6 @@ namespace Tests\Commands\Links;
 use App\Commands\Links\LinkRecords\LinkRecordsCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RecordUnavailable;
@@ -34,7 +33,6 @@ use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -82,7 +80,7 @@ final class LinkRecordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+        $this->journal->placeBareAgentsInLocalProject();
     }
 
     public function test_two_records_are_linked_once_whichever_way_round(): void

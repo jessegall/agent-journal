@@ -260,11 +260,13 @@ final readonly class DomainClient
      */
     public function typesOfLoader(string $declaration, string $reader): LoaderTypes
     {
-        if (! $this->owns($reader) || ! Reflector::of($reader)->hasMethod('__invoke')) {
+        $reflected = Reflector::of($reader);
+
+        if (! $this->owns($reader) || ! $reflected->hasMethod('__invoke')) {
             throw ClientResolverInvalid::loaderNotOwned($declaration, $reader);
         }
 
-        $invoke = Reflector::of($reader)->method('__invoke');
+        $invoke = $reflected->method('__invoke');
         $input = count($invoke->parameters()) === 1 ? $invoke->firstParameterClass()->getOrElse('') : '';
 
         $answer = $invoke->returnType()

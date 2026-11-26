@@ -31,7 +31,7 @@ final class AgentReplyPostTest extends GuardedRouteEntryTestCase
     {
         $journal->owner()
             ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
-            ->idleAgent('Requester', 'journal-worker');
+            ->agent('Requester', 'journal-worker');
         $start = $journal->signedStart('Supervisor', 'journal-code-reviewer');
         $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'first'));
 

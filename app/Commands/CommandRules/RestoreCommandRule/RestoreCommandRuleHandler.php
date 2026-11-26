@@ -29,6 +29,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
     public function handle(RestoreCommandRuleCommand $command): ProposalReceipt
     {
         $rule = ClassificationRule::query()
+            ->with('project')
             ->whereKey($command->classificationRuleId)
             ->lockForUpdate()
             ->sole();

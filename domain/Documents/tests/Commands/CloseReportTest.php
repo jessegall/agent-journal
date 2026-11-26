@@ -6,7 +6,6 @@ namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\AgentProjects;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\RecordIdentity;
 use Domain\Comments\Models\Comment;
@@ -24,7 +23,6 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
-use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
@@ -67,7 +65,7 @@ final class CloseReportTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+        $this->journal->placeBareAgentsInLocalProject();
 
         $this->journal->actAsUserId(TestIds::of(1));
 
@@ -137,7 +135,7 @@ final class CloseReportTest extends TestCase
         $id = $filed->id;
 
         $comment = new CommentOnReportCommand((string) $filed->number, 'Clarification on the first finding.');
-        $this->journal->runAsStart($reviewer, $comment);
+        $this->journal->actAsAgentIds($reviewer->agent->id, $reviewer->session->id)->run($comment);
         $this->assertSame($comment->body, Comment::query()->sole()->body);
 
         $this->journal->runAsStart($reviewer, new CloseReportCommand((string) $filed->number, self::SETTLEMENT_REASON));

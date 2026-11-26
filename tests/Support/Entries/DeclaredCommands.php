@@ -9,7 +9,10 @@ use App\Contracts\Bus\Command;
 use App\Mcp\Tools\JournalTool;
 use App\Support\Attributes;
 use App\Support\Reflector;
+use Illuminate\Container\Container;
 use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Str;
 
 /**
  * The commands an entry point declares it sends with #[Dispatches]: on a route's action method, or on a tool's class.
@@ -25,7 +28,29 @@ final readonly class DeclaredCommands
         // Laravel names an invokable controller's action by the controller itself.
         $action = $route->getActionMethod() === $controller ? '__invoke' : $route->getActionMethod();
 
-        return self::commandsOf(Reflector::of($controller)->method($action)->attributes(Dispatches::class));
+        $declared = self::commandsOf(Reflector::of($controller)->method($action)->attributes(Dispatches::class));
+
+        return [...$declared, ...self::ofMiddleware($route)];
+    }
+
+    /**
+     * The commands the route's middleware declares it sends itself, such as a host call's recorded answer.
+     *
+     * @return list<class-string<Command<mixed>>>
+     */
+    private static function ofMiddleware(Route $route): array
+    {
+        $commands = [];
+
+        foreach (Container::getInstance()->make(Router::class)->gatherRouteMiddleware($route) as $middleware) {
+            $class = Str::before((string) $middleware, ':');
+
+            if (Reflector::exists($class)) {
+                $commands = [...$commands, ...self::commandsOf(Reflector::of($class)->attributes(Dispatches::class))];
+            }
+        }
+
+        return $commands;
     }
 
     /**

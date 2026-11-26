@@ -132,6 +132,13 @@ yours to resolve at its source.
 - A screen the navigation does not know ends the start with what the screen shows; it never waits forever.
 - One exception (rule 81; user message 19430): a first-run screen may also be avoided by settling the account once, in exactly one named place, the account's first-run step of the sign-in service, and only together with the navigation knowing the same screen. Both exist: the account is left ready so the screen never shows, and the navigation can still pass it if it does.
 
+## A test works through the test journal (rule 107; user messages 25380, 25383)
+
+- A test seeds with the test journal's verbs, sends every command with `run`, `runAs`, `runAsStart`, `asSystem` or
+  `asOwner`, and asserts with the journal's assertions, written fluently.
+- A test never binds a stand-in into the container, sets an actor by hand or keeps a private helper where a journal
+  verb fits. A missing verb is added to the test journal and proven by a test of the fixture (FixtureVerbsProvenTest).
+
 ## Names are checked by a scan, never approved by list (rule 99; user messages 21092 to 21121)
 
 - No name is written down as approved. `php tools/refactoring/name-faults.php` reads every name of the project fresh

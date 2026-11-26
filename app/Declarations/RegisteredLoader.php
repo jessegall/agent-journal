@@ -7,7 +7,7 @@ namespace App\Declarations;
 use Spatie\LaravelData\Data;
 
 /**
- * A checked loader of an installed owner: its full key, such as chat.rows, the browser prop its answer comes back
+ * A checked loader of an installed owner: its full key, such as plans.rows, the browser prop its answer comes back
  * under, its reader with the input and answer Data it declares, and the page whose visibility guards it, if any.
  */
 final readonly class RegisteredLoader
