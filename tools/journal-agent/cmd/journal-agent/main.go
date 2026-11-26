@@ -64,7 +64,7 @@ func main() {
 	}
 
 	hostCommands := map[string]func([]string) error{
-		"enroll": enroll, "serve": serve, "protection": protection,
+		"enroll": enroll, "serve": serve,
 		"install": install, "installation": installation, "status-line": statusLine,
 		"protection-probe": protectionProbe, "connect": connect,
 		"install-release": installRelease, "relay": relay, "upgrade-binding": upgradeBinding, "protocol": protocolOnly,
@@ -83,7 +83,7 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "record" {
-		fmt.Fprintln(os.Stderr, "usage: journal-agent record --driver <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | protection --program claude|codex --build <version> | install --manifest <file> --into <dir> | installation --folder <dir>")
+		fmt.Fprintln(os.Stderr, "usage: journal-agent record --driver <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | install --manifest <file> --into <dir> | installation --folder <dir>")
 		os.Exit(2)
 	}
 

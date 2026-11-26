@@ -23,6 +23,7 @@ import (
 	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
 	"journal-agent/host"
+	"journal-agent/upgrade"
 	"journal-agent/hostapi"
 	"journal-agent/lease"
 	"journal-agent/localsession"
@@ -88,7 +89,7 @@ func main() {
 // connected folder of the machine.
 type dispatcher struct {
 	stateFolder string
-	wake        func(stateFolder string, bindingID string) error
+	wake        func(state host.ConnectionState, bindingID string) error
 	grant       func(binding host.Binding) (client.StartGrant, bool)
 	transport   *http.Client
 	approval    func(binding host.Binding, state host.ConnectionState, selector string, stderr io.Writer) (host.TerminalSignIn, error)
@@ -138,7 +139,7 @@ func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding,
 	}
 
 	if !state.RelayIsRunning() {
-		if err := commands.wake(commands.stateFolder, binding.BindingID); err != nil {
+		if err := commands.wake(state, binding.BindingID); err != nil {
 			return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
 		}
 	}
@@ -876,8 +877,9 @@ func standardInput() []byte {
 	return piped
 }
 
-// wakeRelay starts the binding's relay with the journal-agent installed beside this command.
-func wakeRelay(stateFolder string, bindingID string) error {
+// wakeRelay starts the binding's relay from the release the binding switched to, or else from the journal-agent
+// installed beside this command.
+func wakeRelay(state host.ConnectionState, bindingID string) error {
 	program, err := os.Executable()
 	if err != nil {
 		return err
@@ -886,8 +888,9 @@ func wakeRelay(stateFolder string, bindingID string) error {
 	if err != nil {
 		return err
 	}
+	beside := filepath.Join(filepath.Dir(program), "journal-agent")
 
-	return host.StartRelay(filepath.Join(filepath.Dir(program), "journal-agent"), stateFolder, bindingID)
+	return host.StartRelay(upgrade.Binding{State: state}.RelayProgram(beside), state.Folder, bindingID)
 }
 
 func newRequestKey() (string, error) {

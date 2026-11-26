@@ -44,23 +44,6 @@ const (
 	WindowSecondary = "secondary"
 )
 
-// ProtectionReport mirrors App\Agents\Data\ProtectionReportData: what a contained host found of one program's
-// protected arrangement in the agent image, item by item.
-type ProtectionReport struct {
-	Driver   string           `json:"driver"`
-	Build    string           `json:"build"`
-	Platform string           `json:"platform"`
-	Items    []ProtectionItem `json:"items"`
-}
-
-// ProtectionItem mirrors App\Agents\Data\ProtectedItemData.
-type ProtectionItem struct {
-	Item       string `json:"item"`
-	IsEnforced bool   `json:"isEnforced"`
-	Evidence   string `json:"evidence"`
-	Reason     string `json:"reason"`
-}
-
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
 var ErrRefused = errors.New("the journal refused the call")
 
@@ -155,10 +138,6 @@ type ProjectReadReport struct {
 // NotifyProjectRead answers one project read the journal handed this host.
 func (client *Client) NotifyProjectRead(ctx context.Context, readID string, report ProjectReadReport) error {
 	return client.call(ctx, "/host/reports/project-reads/"+url.PathEscape(readID), report, nil)
-}
-
-func (client *Client) NotifyProtection(ctx context.Context, report ProtectionReport) error {
-	return client.call(ctx, "/host/reports/protection", report, nil)
 }
 
 // answerOf posts the body to the target and decodes the journal's answer as an A.

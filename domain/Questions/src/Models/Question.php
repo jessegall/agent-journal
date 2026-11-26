@@ -96,7 +96,7 @@ final class Question extends JournalModel implements AuthoredModel, EventSource,
         $question->text = $text;
         $question->type = $type;
         $question->options = $options;
-        $question->assertSaved($question->save());
+        $question->saveAndAssert();
 
         $question->raise(new QuestionAsked($question->id, $inboxId, $sender, $target));
 

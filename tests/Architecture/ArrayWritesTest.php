@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * A model writes a row one way, assigning each column as a property and saving, never through an array, so the
@@ -33,9 +33,8 @@ final class ArrayWritesTest extends TestCase
 
     private function checkOutput(string ...$paths): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/array-writes.php', ...$paths], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/array-writes.php', ...$paths]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

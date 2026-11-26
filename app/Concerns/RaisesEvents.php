@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Keeps the facts a model's own transitions establish, for EventSource. A transition raises only after its own save
- * returned true: assertSaved first, so a refused write raises nothing. A recording model writes only through what
+ * returned true: saveAndAssert first, so a refused write raises nothing. A recording model writes only through what
  * the capture sees: a counter changes as an attribute and its own save, never increment; rows go one delete at a
  * time, the ids a fact carries read first, never a bulk delete; and an insert that may meet the row inserts through
  * insertIfAbsent.
@@ -58,11 +58,27 @@ trait RaisesEvents
     }
 
     /**
+     * Saves the row, and refuses the write when the save did not happen.
+     *
      * @throws RowWriteRefused
      */
-    protected function assertSaved(bool $isSaved): void
+    protected function saveAndAssert(): void
     {
-        if ($isSaved) {
+        if ($this->save()) {
+            return;
+        }
+
+        throw RowWriteRefused::for(static::class);
+    }
+
+    /**
+     * Deletes the row, and refuses the write when the delete did not happen.
+     *
+     * @throws RowWriteRefused
+     */
+    protected function deleteAndAssert(): void
+    {
+        if ($this->delete()) {
             return;
         }
 

@@ -69,7 +69,7 @@ final class MessageReadEntry extends JournalModel implements EventSource, Readab
             $entry->reader_id = $reader->participantId();
             $entry->read_at = $at;
             $entry->last_read_at = $at;
-            $entry->assertSaved($entry->save());
+            $entry->saveAndAssert();
         }
 
         if ($entry->wasRecentlyCreated) {

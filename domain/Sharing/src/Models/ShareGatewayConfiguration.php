@@ -71,7 +71,7 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
         $configuration->configuration_version = self::resolveNextVersion($settings->gatewayKey);
         $configuration->settings = $settings;
         $configuration->is_default = false;
-        $configuration->assertSaved($configuration->save());
+        $configuration->saveAndAssert();
         $configuration->raise($configuration->changedEvent());
 
         return $configuration;
@@ -87,7 +87,7 @@ final class ShareGatewayConfiguration extends JournalModel implements EventSourc
     {
         $this->disabled_at = CarbonImmutable::now();
         $this->is_default = false;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise($this->changedEvent());
     }
 

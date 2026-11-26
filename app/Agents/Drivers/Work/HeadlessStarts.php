@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
+use App\Commands\Agents\OpenAccountOwner\OpenAccountOwnerCommand;
 use App\Commands\Agents\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Commands\Agents\OpenJournalTerminal\OpenJournalTerminalCommand;
 use App\Contracts\Bus\JournalCommands;
@@ -50,14 +51,19 @@ final readonly class HeadlessStarts
         private DriverCatalogue $drivers,
         private JournalCommands $commands,
         private SessionTokens $tokens,
+        private AccountOwners $owners,
     ) {}
 
     /**
-     * The journal opens the headless runtime's next turn, when its start is proven, no turn runs and work waits.
+     * The journal opens what runs the headless runtime's next turn: its account's owner when its driver runs turns on
+     * one, else a turn of its own when its start is proven, no turn runs and work waits.
      */
-    public function openNextTurn(string $runtimeId): void
+    public function openNextTurn(AgentRuntime $runtime): void
     {
-        $open = new OpenHeadlessTurnCommand($runtimeId);
+        $open = $this->owners->serves($runtime)
+            ? new OpenAccountOwnerCommand($runtime->id)
+            : new OpenHeadlessTurnCommand($runtime->id);
+
         $this->commands->runAsJournal(CommandEntry::DriverWorker, self::TRUSTED_ENTRY, $open);
     }
 
@@ -73,7 +79,7 @@ final readonly class HeadlessStarts
             return;
         }
 
-        $this->openNextTurn($runtime->id);
+        $this->openNextTurn($runtime);
     }
 
     /**

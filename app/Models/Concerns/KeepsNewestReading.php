@@ -38,7 +38,7 @@ trait KeepsNewestReading
      */
     private function saveReading(string $driver): void
     {
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountUsageChanged($driver, $this->account_id));
     }
 

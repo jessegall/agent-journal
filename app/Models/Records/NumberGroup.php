@@ -67,7 +67,7 @@ final class NumberGroup extends JournalModel implements EventSource, ReadableMod
         $numberGroup->holder_type = $holderType;
         $numberGroup->holder_id = $holderId;
         $numberGroup->record_type = $recordType;
-        $numberGroup->assertSaved($numberGroup->save());
+        $numberGroup->saveAndAssert();
     }
 
     // ----------[ Mutations ]----------
@@ -80,7 +80,7 @@ final class NumberGroup extends JournalModel implements EventSource, ReadableMod
         $this->assertNumberLeft();
 
         $this->last_number++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NumberTaken($this->id, $this->last_number));
 
         return $this->last_number;
@@ -92,7 +92,7 @@ final class NumberGroup extends JournalModel implements EventSource, ReadableMod
     public function retire(): void
     {
         $this->retired_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NumberGroupRetired($this->id));
     }
 

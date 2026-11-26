@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
@@ -151,6 +152,26 @@ trait OpensRuntimes
     public function chosenAccounts(): array
     {
         return $this->chosenAccounts;
+    }
+
+    /**
+     * The owner opens a headless Codex runtime of the agent on the host, on the pinned build, through the real start
+     * path; the test chose the driver's account first.
+     */
+    public function openCodexRuntimeOn(string $agent, string $host, string $folder, string|null $firstMessage = null): OpenedRuntime
+    {
+        $build = $this->service(DriverProfiles::class)->ofFamily(DefaultDrivers::CODEX)->build();
+
+        return $this->openRuntimeOn(
+            $agent,
+            $host,
+            $folder,
+            DefaultDrivers::CODEX,
+            $build,
+            'codex',
+            model: 'gpt-5.5',
+            firstMessage: $firstMessage,
+        );
     }
 
     /**

@@ -353,17 +353,13 @@ services:
             - --installation-name=${AGENTS_INSTALLATION_NAME:-journal}
             - --agent-image=${AGENT_IMAGE:-}
             - --runner-image=${RUNNER_IMAGE:-}
-            - --seccomp-profile=/etc/journal/security/seccomp-agent.json
-            - --protected-trial=${AGENTS_PROTECTED_ACCOUNT_TRIAL:-}
-            # A session container shares no network with the app, so its relays ask the journal at its public address.
-            - --session-journal=${AGENTS_SESSION_JOURNAL_URL:-${APP_URL:-}}
         # Each environment's deploy key, for its workspace clone (secrets below); only agent-host mounts them.
         # secrets:
         #     - deploy_key_main
         volumes:
             - host-state:/var/lib/journal-host
             - agent-docker-socket:/run/agent-docker
-            # The seccomp profile agent containers run under, read by the Docker client (docs/accounts/host-protection.md).
+            # The seccomp profile agent containers run under, which the journal's manifests name.
             - ./.docker/helper/seccomp-agent.json:/etc/journal/security/seccomp-agent.json:ro
         networks:
             - journal-api

@@ -115,7 +115,7 @@ final class ShareGatewayOperation extends JournalModel implements EventSource, R
         $this->endpoint_version = $endpoint->endpoint_version;
         $this->lease_token = $leaseToken;
         $this->lease_ends_at = $leaseEndsAt;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareGatewayOperationClaimed($this->id, $runId));
 
         return new GatewayOperation(
@@ -131,7 +131,7 @@ final class ShareGatewayOperation extends JournalModel implements EventSource, R
     public function finish(GatewayOutcome $outcome): void
     {
         $this->outcome_code = $outcome;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareGatewayOperationFinished($this->id, $outcome));
     }
 

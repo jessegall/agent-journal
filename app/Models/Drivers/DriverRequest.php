@@ -54,6 +54,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\LaravelData\DataCollection;
@@ -162,7 +163,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $this->moveTo(RequestProgress::Accepted);
         $this->hold_reason = HoldReason::None;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestAccepted($this->id));
     }
 
@@ -175,7 +176,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->script_step = $progress->step;
         $this->script_generation = $progress->generation;
         $this->script_evidence = mb_substr($progress->evidence, 0, 500);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestScriptProgressed($this->id));
     }
 
@@ -189,7 +190,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->wake_claimed = null;
         $this->staged_at = null;
         $this->offer_after = $offerAfter;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestGivenBack($this->id));
     }
 
@@ -202,7 +203,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->wake_claimed = $this->wake_requested;
         $this->staged_at = $at;
         $this->offer_after = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestStaged($this->id));
     }
 
@@ -213,7 +214,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $this->moveTo(RequestProgress::Applying);
         $this->attempt_version = $attempt;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestAttemptStarted($this->id, $attempt));
     }
 
@@ -222,7 +223,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->moveTo(RequestProgress::Applied);
         $this->actual_binding = $actualBinding;
         $this->outcome = $outcome;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestApplied($this->id));
     }
 
@@ -241,7 +242,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
         $this->attempt_version++;
         $this->outcome = null;
         $this->moveTo(RequestProgress::Accepted);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestRetried($this->id));
     }
 
@@ -251,7 +252,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     public function markPossibleDuplicateOf(self $original): void
     {
         $this->possible_duplicate_of_id = $original->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestSuspectedDuplicate($this->id, $original->id));
     }
 
@@ -259,7 +260,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $this->hold_reason = $reason;
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestHeld($this->id, $reason));
     }
 
@@ -270,7 +271,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $this->wake_requested = max($requested, $this->wake_requested);
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestWakeClaimed($this->id, $requested));
     }
 
@@ -278,7 +279,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     {
         $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverRequestWakeAcknowledged($this->id, $acknowledged));
     }
 
@@ -701,14 +702,15 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     }
 
     /**
-     * The runtime's requests a driver had begun and not finished, staged or applying, which a new worker takes up first.
+     * The runtimes' requests a driver had begun and not finished, staged or applying, which a new worker takes up first.
      *
      * @param  Builder<self>  $query
+     * @param  Collection<int, AgentRuntime>  $runtimes
      */
     #[Scope]
-    protected function inFlightFor(Builder $query, AgentRuntime $runtime): void
+    protected function inFlightForAny(Builder $query, Collection $runtimes): void
     {
-        $query->where('agent_runtime_id', $runtime->id)
+        $query->whereIn('agent_runtime_id', $runtimes->modelKeys())
             ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying]);
     }
 

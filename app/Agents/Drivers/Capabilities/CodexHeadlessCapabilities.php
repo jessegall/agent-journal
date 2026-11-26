@@ -21,8 +21,6 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
      */
     public const string NOT_CONTAINABLE = "Codex's sandbox does not keep tools from its sign-in; container starts wait for the provider transport";
 
-    public const string RUNS_ALONE = 'Codex headless refreshes its own sign-in in each turn, so it runs alone on its account.';
-
     public const string NO_EXACT_RESUME = 'Codex headless cannot reopen an earlier thread yet; start it in a new conversation.';
 
     public function capabilities(BoundTarget $target): SupportSnapshot
@@ -31,7 +29,6 @@ final readonly class CodexHeadlessCapabilities implements DriverCapabilities
             ...HeadlessCapabilities::unsupportedWithoutTerminal(),
             [DriverCapability::ExactResume, OperationSupport::unsupported(self::NO_EXACT_RESUME)],
             [DriverCapability::RunContained, OperationSupport::unsupported(self::NOT_CONTAINABLE)],
-            [DriverCapability::SharedAccount, OperationSupport::unsupported(self::RUNS_ALONE)],
         ]);
     }
 }

@@ -139,7 +139,7 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
     public function markClaimed(CarbonImmutable $now): void
     {
         $this->claimed_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectReadClaimed($this->id));
     }
 

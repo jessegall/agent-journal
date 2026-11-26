@@ -15,8 +15,12 @@ return new class extends Migration
             $table->string('installation_name');
             $table->char('credential_hash', 64)->unique();
             $table->jsonb('start_roots');
-            // The latest protection report per driver and build (journal-agent protection), as a contained host sent it.
+            // The latest protection report per driver, build and platform, as the journal judged it for a contained host.
             $table->jsonb('protection')->default('{}');
+            // Whether Claude Code's sandbox ran in each agent image, as the journal's isolation probes found it.
+            $table->jsonb('sandbox_verdicts')->default('{}');
+            // The recorded runs that showed each boundary item hold, as the operator recorded them.
+            $table->jsonb('protection_runs')->default('[]');
             $table->string('arrangement')->default('local');
             // The host protocol the host speaks, and the secret every order to it is signed with.
             $table->unsignedSmallInteger('protocol')->default(1);

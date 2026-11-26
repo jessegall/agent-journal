@@ -30,13 +30,13 @@ final readonly class SilentMutationScan implements FileScan
     /**
      * The model's own helpers that write its row, besides Eloquent's writes.
      */
-    private const array OWN_WRITES = ['assertSaved', 'insertIfAbsent', 'saveOrFail'];
+    private const array OWN_WRITES = ['saveAndAssert', 'deleteAndAssert', 'insertIfAbsent', 'saveOrFail'];
 
     private const string RAISE = 'raise';
 
     public function key(): string
     {
-        return 'silent-mutations-1';
+        return 'silent-mutations-2';
     }
 
     public function findingsIn(ParsedFile $file): array

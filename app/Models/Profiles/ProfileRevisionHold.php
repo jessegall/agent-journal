@@ -65,7 +65,7 @@ final class ProfileRevisionHold extends JournalModel implements EventSource, Rea
     public function markReconciledAt(CarbonImmutable $time): void
     {
         $this->reconciled_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRevisionHoldReconciled($this->id));
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * tools/refactoring/test-overlap.php lists tests that rest on near-identical facts and tests a command test already
@@ -16,9 +16,8 @@ final class TestOverlapTest extends TestCase
 
     public function test_two_tests_on_the_same_facts_overlap_and_a_test_inside_a_command_test_is_covered(): void
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/test-overlap.php', self::FIXTURE], base_path());
-        $check->run();
-        $lines = array_map(fn (string $line) => explode("\t", $line), explode("\n", trim($check->getOutput())));
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/test-overlap.php', self::FIXTURE]);
+        $lines = array_map(fn (string $line) => explode("\t", $line), explode("\n", trim($check->output())));
 
         $this->assertSame([
             ['overlap', '1.00', 'test_a_stacked_book_is_on_the_shelf', 'test_a_stacked_book_is_the_only_one'],

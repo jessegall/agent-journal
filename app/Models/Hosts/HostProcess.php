@@ -46,7 +46,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property HostProcessPurpose $purpose
  * @property HostProcessType $type
  * @property int $generation
- * @property string|null $container_name
  * @property RestartPolicy $restart
  * @property HostProcessStatus $status
  * @property string|null $execution_identity
@@ -77,13 +76,18 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     use RaisesEvents;
 
     /**
-     * How long a worker holds a process after its last renewal; it renews well inside it.
+     * The start of the name of every container the host opens a process in, followed by the process's id.
      */
+    private const string CONTAINER_PREFIX = 'journal-process-';
+
     /**
      * How many heartbeats in a row may leave a process out before it is lost.
      */
     public const int HEARTBEATS_MISSED_LIMIT = 2;
 
+    /**
+     * How long a worker holds a process after its last renewal; it renews well inside it.
+     */
     public const int WORKER_LEASE_SECONDS = 10;
 
     /**
@@ -128,7 +132,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $process->type = $plan->type;
         $process->restart = $plan->restart;
         $process->status = HostProcessStatus::Ordered;
-        $process->assertSaved($process->save());
+        $process->saveAndAssert();
         $process->raise(new HostProcessOpened($process->id, $process->agent_runtime_id));
 
         return $process;
@@ -173,7 +177,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->execution_identity = $identity;
         $this->generation = $generation;
         $this->started_at ??= $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessStarted($this->id, $this->agent_runtime_id, $generation, $identity));
     }
 
@@ -185,7 +189,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->status = HostProcessStatus::Running;
         $this->execution_identity = $identity;
         $this->generation++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessRestarted($this->id, $this->agent_runtime_id, $this->generation, $identity));
     }
 
@@ -196,7 +200,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->exit_signal = $exit->signal;
         $this->exit_evidence = $exit->evidence;
         $this->ended_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         $this->raise(new HostProcessExited(
             $this->id,
@@ -212,7 +216,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->status = HostProcessStatus::Lost;
         $this->exit_evidence = $evidence;
         $this->ended_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessLost($this->id, $this->agent_runtime_id, $evidence));
     }
 
@@ -227,7 +231,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         }
 
         $this->output_offset = $offset;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessOutputRecorded($this->id, $offset));
     }
 
@@ -250,7 +254,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         }
 
         $this->missed_heartbeats = 0;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessSeenInHeartbeat($this->id));
     }
 
@@ -260,7 +264,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public function missInHeartbeat(CarbonImmutable $at): void
     {
         $this->missed_heartbeats++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         if ($this->missed_heartbeats >= self::HEARTBEATS_MISSED_LIMIT) {
             $this->lose('two heartbeats of its host in a row left it out', $at);
@@ -274,7 +278,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $this->worker_generation++;
         $this->worker_until = $now->addSeconds(self::WORKER_LEASE_SECONDS);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessWorkerClaimed($this->id, $this->worker_generation));
 
         return $this->worker_generation;
@@ -287,7 +291,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $this->assertWorker($generation);
         $this->worker_until = $now->addSeconds(self::WORKER_LEASE_SECONDS);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessWorkerRenewed($this->id, $generation));
     }
 
@@ -297,7 +301,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public function takeOrderNumber(): int
     {
         $this->order_sequence++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessOrderNumbered($this->id, $this->order_sequence));
 
         return $this->order_sequence;
@@ -306,7 +310,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public function holdOpenOrder(string $orderId): void
     {
         $this->open_order_id = $orderId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessOpenOrderHeld($this->id, $orderId));
     }
 
@@ -316,10 +320,18 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public function raiseInputGeneration(): int
     {
         $this->input_generation++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProcessInputGenerationRaised($this->id, $this->input_generation));
 
         return $this->input_generation;
+    }
+
+    /**
+     * The name the host gives the container a contained process runs in.
+     */
+    public function containerName(): string
+    {
+        return self::CONTAINER_PREFIX.$this->id;
     }
 
     // ----------[ Predicates ]----------
@@ -393,6 +405,29 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public static function findLocked(string $id): self
     {
         return self::query()->with('host')->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Whether a live process of one of the purposes runs on the host.
+     *
+     * @param  list<HostProcessPurpose>  $purposes
+     */
+    public static function hasLiveOfPurposesOn(string $hostId, array $purposes): bool
+    {
+        return self::query()->where('host_id', $hostId)->ofPurposes($purposes)->live()->exists();
+    }
+
+    /**
+     * Whether a live owner on the host runs the headless turns of the start's account and sign-in generation.
+     */
+    public static function hasLiveOwnerOf(string $hostId, SessionProcess $start): bool
+    {
+        return self::query()
+            ->where('host_id', $hostId)
+            ->ofPurposes([HostProcessPurpose::AccountOwner])
+            ->live()
+            ->whereHas('sessionProcess', fn (Builder $owned) => $owned->onAccountGenerationOf($start))
+            ->exists();
     }
 
     /**

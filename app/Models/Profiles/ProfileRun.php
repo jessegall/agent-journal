@@ -129,7 +129,7 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
     public function startOn(int $generation): void
     {
         $this->generation = $generation;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRunStarted($this->id, $generation));
     }
 
@@ -141,7 +141,7 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
         $this->cursor = $line;
         $this->status = ProfileRunStatus::Suspended;
         $this->awaited_step = $stepReference;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRunSuspended($this->id, $line));
     }
 
@@ -156,7 +156,7 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
 
         $this->status = ProfileRunStatus::Running;
         $this->awaited_step = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRunResumed($this->id));
     }
 
@@ -169,7 +169,7 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
         $this->message = $message;
         $this->unchanged_returns = $unchangedReturns;
         $this->awaited_step = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRunFinished($this->id, $status));
     }
 

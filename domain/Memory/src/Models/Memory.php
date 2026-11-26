@@ -85,7 +85,7 @@ final class Memory extends JournalModel implements EventSource, Numbered, Readab
         $this->text = $text === null ? $this->text : $text;
         $this->weight = $weight === null ? $this->weight : $weight;
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new MemoryRevised($this->id));
     }
 
@@ -101,7 +101,7 @@ final class Memory extends JournalModel implements EventSource, Numbered, Readab
     public function saveFor(ActorReference $actor): void
     {
         $this->belongTo($actor);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new MemorySaved($this->id));
     }
 

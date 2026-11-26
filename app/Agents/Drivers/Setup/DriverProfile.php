@@ -93,6 +93,40 @@ final readonly class DriverProfile
         );
     }
 
+    /**
+     * Whether the driver runs an account's headless turns on one owner process its runtimes share.
+     */
+    public function hasAccountOwner(): bool
+    {
+        return $this->setup->headlessTurns->isOnAccountOwner();
+    }
+
+    /**
+     * The plan of the process that runs every headless turn of the start's account, in the start's environment.
+     *
+     * @throws ProfileRefused
+     */
+    public function ownerPlan(DriverStart $start): HostProcessPlan
+    {
+        foreach ($this->setup->refusals as $refusal) {
+            $refusal->assertAllows($start);
+        }
+
+        $environment = $this->environmentOf($start);
+
+        return new HostProcessPlan(
+            purpose: HostProcessPurpose::AccountOwner,
+            type: HostProcessType::Pipe,
+            restart: RestartPolicy::Never,
+            argv: $this->placed($this->setup->headlessTurns->ownerArgv, $start->executablePlace),
+            environment: $environment->variables,
+            folder: $start->workFolder,
+            folders: $environment->folders,
+            inherit: $environment->inherited,
+            readFiles: $environment->readFiles,
+        );
+    }
+
     public function versionProbe(string $workFolder, ExecutablePlace $place): HostProcessPlan
     {
         return new HostProcessPlan(
@@ -223,7 +257,7 @@ final readonly class DriverProfile
 
     public function turnResult(string $processId): TurnResult
     {
-        return $this->container->make($this->setup->turnResults)($processId);
+        return $this->container->make($this->setup->headlessTurns->turnResults($this->setup->family))($processId);
     }
 
     private function environmentOf(DriverStart $start): EnvironmentAddition

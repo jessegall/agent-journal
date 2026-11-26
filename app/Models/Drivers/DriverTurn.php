@@ -81,7 +81,7 @@ final class DriverTurn extends JournalModel implements EventSource, ReadableMode
         $driverTurn->process_generation = $processGeneration;
         $driverTurn->native_prompt_id = $nativePromptId;
         $driverTurn->started_at = $startedAt;
-        $driverTurn->assertSaved($driverTurn->save());
+        $driverTurn->saveAndAssert();
 
         return $driverTurn;
     }
@@ -141,7 +141,7 @@ final class DriverTurn extends JournalModel implements EventSource, ReadableMode
     {
         $this->outcome = $outcome;
         $this->finished_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverTurnFinished($this->id, $outcome));
     }
 

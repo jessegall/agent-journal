@@ -102,6 +102,33 @@ final readonly class ContainerManifest implements JsonSerializable
     }
 
     /**
+     * The manifest of a throwaway check of the agent image: its standard user on a read-only root, no capability, no
+     * network and no mount, under the security profiles the agent containers run under.
+     */
+    public static function probe(string $image, SecurityOptions $securityOptions): self
+    {
+        $profile = StartProfileType::Standard;
+
+        return new self(
+            $image,
+            $profile->user(),
+            self::WORKDIR,
+            true,
+            $profile->capabilities(),
+            true,
+            $securityOptions,
+            false,
+            'none',
+            [],
+            [],
+            ExecutionBudgets::defaults(),
+            false,
+            null,
+            $profile,
+        );
+    }
+
+    /**
      * @param  list<string>  $capabilities
      * @param  list<ManifestMount>  $mounts
      * @param  list<int>  $publishedPorts

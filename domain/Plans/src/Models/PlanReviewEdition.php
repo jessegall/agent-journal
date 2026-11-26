@@ -73,7 +73,7 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
         $planReviewEdition->requested_by_id = $actor->id;
         $planReviewEdition->plan_revision = $plan->revision;
         $planReviewEdition->status = PlanReviewStatus::Requested;
-        $planReviewEdition->assertSaved($planReviewEdition->save());
+        $planReviewEdition->saveAndAssert();
 
         return $planReviewEdition;
     }
@@ -89,7 +89,7 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
         $this->decided_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanReviewEditionWithdrawn($this->plan_id, $this->id));
     }
 
@@ -117,7 +117,7 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
     public function markHistorical(): void
     {
         $this->is_historical = true;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanReviewEditionOutdated($this->plan_id, $this->id));
     }
 

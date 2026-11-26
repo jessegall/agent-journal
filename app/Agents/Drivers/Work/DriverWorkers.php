@@ -13,6 +13,7 @@ use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\MonotonicClock;
 use App\Contracts\Time\ServerClock;
+use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Exceptions\WorkerFenced;
 use App\Models\Drivers\DriverRequest;
@@ -55,6 +56,7 @@ final readonly class DriverWorkers
         private DriverRestartSignal $restart,
         private CommandRegistry $registry,
         private WorkerLease $lease,
+        private AccountOwners $owners,
     ) {}
 
     /**
@@ -71,10 +73,17 @@ final readonly class DriverWorkers
             $streams[] = HostWake::runtimeKey($process->agent_runtime_id);
         }
 
+        $isOwner = $process->purpose === HostProcessPurpose::AccountOwner;
+
+        if ($isOwner) {
+            $streams[] = HostWake::accountKey($process->sessionProcess()->sole());
+        }
+
         $cursors = array_combine($streams, array_map($this->feed->lastCursor(...), $streams));
 
-        // The process's first worker reads all it printed, as a short process may print before a worker begins.
-        if ($generation === 1) {
+        // The process's first worker reads all it printed, as a short process may print before a worker begins; an
+        // owner's later worker reads it all again too, to rebuild the threads and turns its runtimes stand at.
+        if ($generation === 1 || $isOwner) {
             $cursors[$output] = ProcessFeed::FIRST_CURSOR;
         }
 
@@ -159,11 +168,8 @@ final readonly class DriverWorkers
 
     private function resumed(DriverWork $work, HostProcess $process): DriverActions
     {
-        if ($process->runtime === null) {
-            return $work->driver->resume([], []);
-        }
-
-        $inFlight = array_values(DriverRequest::query()->inFlightFor($process->runtime)->get()->all());
+        $runtimes = $this->owners->runtimesOf($process)->get();
+        $inFlight = array_values(DriverRequest::query()->inFlightForAny($runtimes)->get()->all());
         $ordered = array_merge(...array_map(fn (DriverRequest $request) => HostOrder::orderedFor($request), $inFlight));
 
         return $work->driver->resume($inFlight, $ordered);

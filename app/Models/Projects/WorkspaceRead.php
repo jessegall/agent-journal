@@ -109,7 +109,7 @@ final class WorkspaceRead extends JournalModel implements EventSource, ReadableM
         $this->checkout_id = $facts->commit->checkoutId;
         $this->head_oid = $facts->commit->headOid;
         $this->unavailable_reason = $facts->commit->reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new WorkspaceReadAnswered($this->id));
     }
 

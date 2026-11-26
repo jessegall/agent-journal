@@ -101,7 +101,7 @@ final class ClassificationRule extends JournalModel implements EventSource, Proj
 
         $this->status = ClassificationStatus::Retired;
         $this->state_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ClassificationRuleRetired($this->id, $reason));
     }
 

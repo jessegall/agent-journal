@@ -82,7 +82,7 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
         $textUpload->bytes = $bytes;
         $textUpload->digest = strtolower($digest);
         $textUpload->expires_at = CarbonImmutable::now()->addDay();
-        $textUpload->assertSaved($textUpload->save());
+        $textUpload->saveAndAssert();
 
         return $textUpload;
     }
@@ -118,7 +118,7 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
     {
         $this->received_bytes += $bytes;
         $this->next_index++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TextUploadChunkCounted($this->id));
     }
 
@@ -131,7 +131,7 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
         $this->assertComplete();
 
         $this->sealed_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TextUploadSealed($this->id));
     }
 
@@ -141,7 +141,7 @@ final class TextUpload extends JournalModel implements EventSource, ProjectOwned
 
         $body = $this->body();
         $this->consumed_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TextUploadConsumed($this->id));
 
         return $body;

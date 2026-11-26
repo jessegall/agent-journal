@@ -382,7 +382,7 @@ function assertFaultsOf(Class_ $class): array
                     .' with firstOr or findOr and the exception\'s throwing()';
             }
 
-            // An assert of what a call returned (assertSaved($this->save())) checks that call, not a precondition.
+            // An assert of what a call returned checks that call, not a precondition.
             $checksACall = isOwnAssert($statement) && array_any(
                 $statement->expr->getArgs(),
                 fn (Node\Arg $argument) => $argument->value instanceof Node\Expr\CallLike,

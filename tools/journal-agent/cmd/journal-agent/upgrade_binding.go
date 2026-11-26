@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -18,6 +19,7 @@ import (
 	"journal-agent/hostapi"
 	"journal-agent/release"
 	"journal-agent/upgrade"
+	"journal-agent/userservice"
 )
 
 const (
@@ -95,7 +97,9 @@ func (binder bindingRelay) installUpgrade(ctx context.Context, plan UpgradePlan)
 		PublicKey:   key,
 		ProgramPath: os.Getenv("PATH"),
 	}
-	folder := filepath.Join(filepath.Dir(binder.installation.Folder), plan.Version)
+	// The running installation sits in <root>/releases; the new one goes beside it, named for its version and list.
+	folder := release.InstallationFolder(filepath.Dir(filepath.Dir(binder.installation.Folder)), plan.Version,
+		[]byte(plan.Programs))
 	if err := installer.Install(ctx, []byte(plan.Manifest), signature, programs, folder); err != nil {
 		return "", err
 	}
@@ -153,7 +157,26 @@ func upgradeBinding(arguments []string) error {
 		return restartPrevious(*previous, *stateFolder, *bindingID, err)
 	}
 
-	return nil
+	return repointService(*stateFolder, *bindingID, *newRelease, *previous)
+}
+
+// repointService points the binding's user service, when one is enabled, at the release it switched to.
+func repointService(stateFolder, bindingID, newRelease, previous string) error {
+	if previous == "" {
+		return nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	service := userservice.Service{Home: home, BindingID: bindingID, StateFolder: stateFolder,
+		Program: filepath.Join(newRelease, "bin", "journal-agent")}
+	err = service.Replace(filepath.Join(previous, "bin", "journal-agent"))
+	if errors.Is(err, userservice.ErrNoServiceManager) {
+		return nil
+	}
+
+	return err
 }
 
 // awaitReadyRelay waits for a ready presence report the relay acknowledged after the switch.

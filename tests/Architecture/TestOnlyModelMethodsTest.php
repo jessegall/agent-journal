@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -19,9 +19,8 @@ final class TestOnlyModelMethodsTest extends TestCase
 
     public function test_no_new_model_method_is_called_only_by_tests(): void
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/test-only-methods.php'], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/test-only-methods.php']);
 
-        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
+        $this->assertSame('', trim($check->output()), self::HOW_TO_FIX.$check->output());
     }
 }

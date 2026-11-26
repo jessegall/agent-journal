@@ -118,14 +118,14 @@ final class EvidencePermit extends JournalModel implements EventSource, ProjectO
         $this->request_id = $requestId;
         $this->consumed_at = CarbonImmutable::now();
         $this->process_run_id = $run->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new EvidencePermitConsumed($this->id, $run->id));
     }
 
     public function expire(): void
     {
         $this->expires_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new EvidencePermitExpired($this->id));
     }
 

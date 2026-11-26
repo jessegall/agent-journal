@@ -72,7 +72,7 @@ final class InboxMember extends JournalModel implements EventSource, ReadableMod
         $member->actor_type = $actor->type;
         $member->actor_id = $actor->id;
         $member->joined_at = $at;
-        $member->assertSaved($member->save());
+        $member->saveAndAssert();
         $member->raise(new InboxJoined($inboxId, $actor));
     }
 

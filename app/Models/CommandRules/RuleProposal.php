@@ -115,7 +115,7 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
         $proposal->payload_digest = $proposed->digest();
         $proposal->replaces = RuleReference::collect($proposed->rule->replaces, DataCollection::class);
         $proposal->current_revision = 0;
-        $proposal->assertSaved($proposal->save());
+        $proposal->saveAndAssert();
 
         return $proposal;
     }
@@ -133,7 +133,7 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
         $this->assertOpen();
 
         $this->status = ProposalStatus::Withdrawn;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RuleProposalWithdrawn($this->id));
     }
 
@@ -148,7 +148,7 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
         $this->replaces = RuleReference::collect($proposed->rule->replaces, DataCollection::class);
         $this->current_revision = $revision->revision;
         $this->status = $proposed->isComplete() ? ProposalStatus::Pending : ProposalStatus::Draft;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RuleProposalAdopted($this->id));
     }
 

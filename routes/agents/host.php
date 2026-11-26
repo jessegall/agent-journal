@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\Projects\HostRouteRole;
 use App\Http\Controllers\Agents\Host\ProjectReadReportController;
-use App\Http\Controllers\Agents\Host\ProtectionReportController;
 use App\Http\Controllers\Agents\Host\WorkspaceReadController;
 use App\Http\Controllers\Hosts\AnswerOrderController;
 use App\Http\Controllers\Hosts\ClaimOrdersController;
@@ -19,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 // live binding.
 Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)->name('agents.host.')->group(function (): void {
     Route::post('/reports/project-reads/{read}', ProjectReadReportController::class)->name('reports.project-reads');
-    Route::post('/reports/protection', ProtectionReportController::class)->name('reports.protection');
     Route::get('/workspace-reads', [WorkspaceReadController::class, 'index'])->name('workspace-reads.pending');
     Route::post('/workspace-reads/{reference}', WorkspaceReadController::class)->name('workspace-reads.report');
     Route::post('/orders/claim', ClaimOrdersController::class)->name('orders.claim');

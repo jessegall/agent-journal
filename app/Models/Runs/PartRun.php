@@ -119,7 +119,7 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $partRun->part_id = $part->partId();
         $partRun->attempt = $part->attempt;
         $partRun->operation = $part->operation;
-        $partRun->assertSaved($partRun->save());
+        $partRun->saveAndAssert();
 
         return $partRun;
     }
@@ -136,7 +136,7 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->pid = $pid;
         $this->host = $host;
         $this->started_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PartRunStarted($this->id, $host));
     }
 
@@ -149,7 +149,7 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->end_type = $end->type;
         $this->end_code = $end->code;
         $this->end_reason = $end->reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PartRunProcessFinished($this->id));
     }
 
@@ -162,7 +162,7 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->moveTo(LifecycleStatus::Ended);
         $this->streams_drained = true;
         $this->ended_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PartRunDrained($this->id));
     }
 
@@ -176,14 +176,14 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
             $chunk->stream->value => $chunk->offset + $chunk->length,
         ];
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PartRunCaptured($this->id));
     }
 
     public function markCapture(CaptureStatus $status): void
     {
         $this->capture_state = $status;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PartRunCaptureMarked($this->id, $status));
     }
 

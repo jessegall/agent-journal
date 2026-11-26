@@ -22,13 +22,16 @@ func installRelease(arguments []string) error {
 	signaturePath := flags.String("signature", "", "the manifest's detached signature")
 	programsPath := flags.String("programs", "", "the journal's list of the programs to seal")
 	folder := flags.String("into", "", "the absolute installation folder")
+	root := flags.String("into-root", "", "the folder whose releases/<version>-<list digest> folder the release is sealed in")
+	version := flags.String("version", "", "the release's version, naming its folder under --into-root")
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder the allow list is written to")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	if *origin == "" || *manifestPath == "" || *signaturePath == "" || *programsPath == "" || *folder == "" {
+	if *origin == "" || *manifestPath == "" || *signaturePath == "" || *programsPath == "" ||
+		(*folder == "") == (*root == "" || *version == "") {
 		return fmt.Errorf("usage: journal-agent install-release --origin <url> --manifest <file> --signature <file> " +
-			"--programs <file> --into <folder>")
+			"--programs <file> (--into <folder> | --into-root <folder> --version <version>)")
 	}
 
 	key, err := release.PinnedPublicKey()
@@ -51,6 +54,9 @@ func installRelease(arguments []string) error {
 	if err != nil {
 		return err
 	}
+	if *root != "" {
+		*folder = release.InstallationFolder(*root, *version, listed)
+	}
 
 	installer := release.Installer{
 		Origin:    *origin,
@@ -66,5 +72,11 @@ func installRelease(arguments []string) error {
 	}
 
 	// A rerun with the folder already there writes the list again, from what that installation sealed.
-	return release.WriteAllowList(*stateFolder, *folder, programs)
+	if err := release.WriteAllowList(*stateFolder, *folder, programs); err != nil {
+		return err
+	}
+	// The folder is the last line, so the install line knows where the release was sealed.
+	fmt.Println(*folder)
+
+	return nil
 }

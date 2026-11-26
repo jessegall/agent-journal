@@ -87,7 +87,7 @@ final class RunOutcome extends JournalModel implements EventSource, ReadableMode
         $this->result = $result;
         $this->source = $source;
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RunOutcomeRecorded($this->run_id, $this->attempt_id, $result, true));
     }
 

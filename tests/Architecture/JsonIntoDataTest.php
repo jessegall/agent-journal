@@ -47,7 +47,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Support\\WorkspaceSources::fromJson',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeFirstRun::__invoke',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeResult::readLine',
-        'App\\Agents\\Drivers\\Codex\\CodexResult::readLine',
+        'App\\Agents\\Drivers\\Codex\\CodexAppDriver::readLine',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeSettingsMerge::withProtection',
     ];
 

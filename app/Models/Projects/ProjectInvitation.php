@@ -77,7 +77,7 @@ final class ProjectInvitation extends JournalModel implements EventSource, Reada
         $invitation->environment_id = $attempt->environment_id;
         $invitation->install_attempt_id = $attempt->id;
         $invitation->expires_at = CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES);
-        $invitation->assertSaved($invitation->save());
+        $invitation->saveAndAssert();
 
         $invitation->raise(
             new ProjectInvitationIssued($invitation->id, $invitation->expires_at, CarbonImmutable::now()),
@@ -91,7 +91,7 @@ final class ProjectInvitation extends JournalModel implements EventSource, Reada
     public function revoke(): void
     {
         $this->revoked_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectInvitationRevoked($this->id, $this->revoked_at));
     }
 
@@ -102,7 +102,7 @@ final class ProjectInvitation extends JournalModel implements EventSource, Reada
     {
         $this->spent_at = CarbonImmutable::now();
         $this->binding_id = $binding->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectInvitationSpent($this->id, $binding->id, $this->spent_at));
     }
 

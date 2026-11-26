@@ -25,7 +25,7 @@ final class AssertsThatJudgeReads extends Model
 
         $this->assertOpen();
         $this->state = 'closed';
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     public function reopen(): void

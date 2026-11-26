@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -68,13 +68,9 @@ final class ModelSectionsTest extends TestCase
 
     public function test_every_model_method_sits_in_a_known_section_in_order(): void
     {
-        $check = new Process(
-            [PHP_BINARY, 'tools/refactoring/model-sections.php', 'app', 'domain'],
-            base_path(),
-        );
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/model-sections.php', 'app', 'domain']);
 
-        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
+        $this->assertSame('', trim($check->output()), self::HOW_TO_FIX.$check->output());
     }
 
     public function test_an_accessor_outside_accessors_and_a_plain_method_inside_it_are_flagged(): void
@@ -153,9 +149,8 @@ final class ModelSectionsTest extends TestCase
 
     private function checkOutput(string $path): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/model-sections.php', $path], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/model-sections.php', $path]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

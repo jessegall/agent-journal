@@ -70,7 +70,7 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
         $skill->owner_type = $owner->type;
         $skill->owner_id = $owner->id;
         $skill->environment = $environment;
-        $skill->assertSaved($skill->save());
+        $skill->saveAndAssert();
 
         return $skill;
     }
@@ -83,7 +83,7 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
     public function makeCurrent(SkillRevision $revision): void
     {
         $this->current_revision_id = $revision->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SkillsChanged($this->id, $revision->revision));
     }
 
@@ -98,7 +98,7 @@ final class Skill extends JournalModel implements EventSource, Numbered, Readabl
         $this->assertOwnedBy($actor);
 
         $this->retired_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $current = SkillRevision::findCurrentOf($this);
         $this->raise(new SkillsChanged($this->id, $current->revision));
 

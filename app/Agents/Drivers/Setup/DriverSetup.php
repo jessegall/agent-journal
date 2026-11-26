@@ -10,7 +10,6 @@ use App\Contracts\CommandLines\Condition;
 use App\Contracts\Drivers\DriverAdapter;
 use App\Contracts\Drivers\DriverKeyScripts;
 use App\Contracts\Drivers\DriverLayout;
-use App\Contracts\Drivers\TurnResults;
 use App\Contracts\Skills\DriverSkills;
 use App\Exceptions\ProfileRefused;
 use App\Support\CommandLines\ArgumentBuilder;
@@ -29,7 +28,6 @@ final readonly class DriverSetup
      * @param  class-string<SignInReader>  $signInReader
      * @param  class-string<DriverLayout>  $layout
      * @param  class-string<DriverKeyScripts>  $keyScripts
-     * @param  class-string<TurnResults>  $turnResults
      * @param  class-string<AccountSettingsFiller>  $accountSettings
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
@@ -47,7 +45,7 @@ final readonly class DriverSetup
         public string $signInReader,
         public string $layout,
         public string $keyScripts,
-        public string $turnResults,
+        public HeadlessTurns $headlessTurns,
         public SignInSetup $signIn,
         public string $accountSettings,
         public string $skills,
@@ -64,7 +62,6 @@ final readonly class DriverSetup
      * @param  class-string<SignInReader>  $signInReader
      * @param  class-string<DriverLayout>  $layout
      * @param  class-string<DriverKeyScripts>  $keyScripts
-     * @param  class-string<TurnResults>  $turnResults
      * @param  class-string<AccountSettingsFiller>  $accountSettings
      * @param  class-string<DriverSkills>  $skills
      * @param  class-string<DriverAdapter>  $hookAdapter
@@ -78,7 +75,7 @@ final readonly class DriverSetup
         string $signInReader,
         string $layout,
         string $keyScripts,
-        string $turnResults,
+        HeadlessTurns $headlessTurns,
         SignInSetup $signIn,
         string $accountSettings,
         string $skills,
@@ -93,7 +90,7 @@ final readonly class DriverSetup
             $signInReader,
             $layout,
             $keyScripts,
-            $turnResults,
+            $headlessTurns,
             $signIn,
             $accountSettings,
             $skills,

@@ -61,7 +61,7 @@ final class QuestionAnswerNotice extends JournalModel implements EventSource, Re
         $notice->question_id = $question->id;
         $notice->recipient_type = $recipient->type;
         $notice->recipient_id = $recipient->id;
-        $notice->assertSaved($notice->save());
+        $notice->saveAndAssert();
         $notice->raise(new QuestionAnswerNoticeWritten($notice->id, $question->id, $recipient));
 
         return $notice;

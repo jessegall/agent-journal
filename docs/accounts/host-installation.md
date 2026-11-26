@@ -42,7 +42,7 @@ before the next step (`starts/<runtime>.json`):
 1. The runtime's one-use grant is saved; then the account claim is sent and its answer saved. A claim whose answer
    was lost is never sent again: reconciliation settles it.
 2. The start is refused unless the installation verifies, the claim's recipe is for the runtime's build and
-   `journal-agent protection` reports the program's arrangement available on this host.
+   the journal's protection report of the host reports the program's arrangement available on this host.
 3. The output grants the journal sealed for the start are saved; without them the start does not run.
 4. The program starts from the installation with a clean environment: the host's platform variables, an empty home,
    the installation's PATH and the account recipe's settings. No inherited key, token or endpoint reaches it.
@@ -63,7 +63,7 @@ the account's Codex owner and every execution on it; an account the host cannot 
 |---|---|---|
 | no protected installation | serve or attach ran without `--installation` | install, then pass the folder |
 | the installation changed | an artifact's digest, mode or place differs | install anew into a new folder |
-| the protected arrangement is not available | `journal-agent protection` names a missing mechanism or missing native evidence | run the native evidence procedures; a missing mechanism stays until the pinned client has one |
+| the protected arrangement is not available | the journal's protection report of the host names a missing mechanism or missing native evidence | run the native evidence procedures; a missing mechanism stays until the pinned client has one |
 | the account claim may have been taken | a claim's answer was lost | the host's reconciliation settles it; nothing to retry |
 | not assigned to this host | the runtime belongs to another host | none: another host's account start is never claimed |
 | no saved-account transport into a container | a required-container start on an account in the local arrangement, or a Codex start in the contained one | unsupported there; in the contained arrangement a Claude Code account's own sign-in folder is mounted into its own session's container |

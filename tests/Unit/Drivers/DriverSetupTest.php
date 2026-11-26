@@ -13,10 +13,10 @@ use App\Agents\Drivers\Codex\CodexModelAnswer;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
-use App\Agents\Drivers\Codex\CodexTurnResults;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
+use App\Agents\Drivers\Setup\HeadlessTurns;
 use App\Agents\Drivers\Setup\ModelCheck;
 use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
@@ -89,16 +89,16 @@ final class DriverSetupTest extends TestCase
     {
         return DriverSetup::of(
             family: $family,
-            program: CodexArguments::PROGRAM,
+            driver: CodexArguments::EXECUTABLE,
             arguments: CodexArguments::class,
             versionProbe: new VersionProbe(['codex', '--version'], [], VersionLine::exactly('codex-cli {build}')),
             signInProbe: ['codex', 'login', 'status'],
             signInReader: CodexSignInReader::class,
             layout: CodexLayout::class,
             keyScripts: CodexKeyScripts::class,
-            turnResults: CodexTurnResults::class,
+            headlessTurns: HeadlessTurns::onAccountOwner(['codex', 'app-server']),
             signIn: new SignInSetup(
-                programSetting: 'accounts.codex_program',
+                executableSetting: 'accounts.codex_program',
                 environment: CodexSignInEnvironment::class,
                 modelCheck: new ModelCheck(['exec', 'Reply with OK.'], CodexModelAnswer::class, 1),
                 signOut: ['logout'],

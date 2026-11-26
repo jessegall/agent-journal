@@ -65,7 +65,7 @@ final class Environment extends JournalModel implements EventSource, ProjectOwne
         $environment = new self();
         $environment->project_id = $project->id;
         $environment->label = $label;
-        $environment->assertSaved($environment->save());
+        $environment->saveAndAssert();
         $environment->raise(new EnvironmentOpened($environment->id, $project->id, CarbonImmutable::now()));
 
         return $environment;

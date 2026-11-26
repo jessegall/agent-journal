@@ -83,7 +83,7 @@ final class AskHop extends JournalModel implements EventSource, ReadableModel
         $hop->route_version = $routeVersion;
         $hop->accepted_at = CarbonImmutable::now();
 
-        $hop->assertSaved($hop->save());
+        $hop->saveAndAssert();
         $hop->raise(new AskHopAssigned($ask->id, $hop->id, $hop->type_key, $holder));
 
         return $hop;

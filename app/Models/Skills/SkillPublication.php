@@ -97,7 +97,7 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
         $skillPublication->expected_previous_generation_id = $expectedPreviousGenerationId;
         $skillPublication->status = PublicationStatus::Pending;
         $skillPublication->open_key = self::resolveOpenKeyOf($intent->sessionId, $intent->target);
-        $skillPublication->assertSaved($skillPublication->save());
+        $skillPublication->saveAndAssert();
 
         return $skillPublication;
     }

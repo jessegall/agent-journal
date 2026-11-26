@@ -90,8 +90,8 @@ final class StartHelperTest extends TestCase
         $this->assertTrue($receipt->startDetails->isNewIdentity);
         $this->assertTrue($receipt->isNewJob);
         $this->assertTrue($receipt->start->isNewSession);
-        $this->assertSame('gpt-6.2-sol', $selection->model);
-        $this->assertSame(DefaultDrivers::CODEX, $selection->driver);
+        $this->assertSame('opus', $selection->model);
+        $this->assertSame(DefaultDrivers::CLAUDE_CODE, $selection->driver);
         $this->assertSame(1, $receipt->startDetails->profileRevision);
         $this->assertSame('read-only-helper', $receipt->profileType);
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);
@@ -102,7 +102,7 @@ final class StartHelperTest extends TestCase
         $this->assertSame(1, AssignmentRecord::query()->where('record_id', $receipt->jobId)->count());
     }
 
-    public function test_a_helper_starts_in_its_profile_mode_and_a_saved_mode_it_cannot_run_is_refused(): void
+    public function test_a_helper_starts_in_its_profile_mode_and_a_send_runs_the_mode_saved_on_its_agent(): void
     {
         $first = $this->start('request-1', 'Review plan 7');
         $record = SessionRequest::query()->where('request_id', $first->start->startReference)->sole();
@@ -110,19 +110,19 @@ final class StartHelperTest extends TestCase
 
         Agent::query()->findOrFail($record->agent_id)->preferDriverType(DriverType::Terminal);
         $this->finish($first);
+        $second = $this->send('request-2', $first->identityId, 'Review plan 8');
+        $sent = SessionRequest::query()->where('request_id', $second->start->startReference)->sole();
 
-        $this->expectException(DriverCapabilityUnsupported::class);
-
-        $this->send('request-2', $first->identityId, 'Review plan 8');
+        $this->assertSame($this->keyOf($record->family, DriverType::Terminal), $sent->driver_key);
     }
 
-    public function test_a_helper_started_with_a_named_mode_runs_it_or_is_refused_never_swapped(): void
+    public function test_a_helper_started_with_a_mode_its_driver_cannot_run_contained_is_refused_never_swapped(): void
     {
         $this->expectException(DriverCapabilityUnsupported::class);
 
         $this->app->make(CommandBus::class)->run(new StartHelperCommand(
             'request-1',
-            'plan-reviewer',
+            'codex-reviewer',
             'default',
             null,
             new HelperWork(null, null, 'Review plan 7', 'Review it.', [], false),
@@ -222,7 +222,7 @@ final class StartHelperTest extends TestCase
 
         $this->assertSame($receipt->start->startReference, $read->start->startReference);
         $this->assertSame($receipt->startDetails->conversationReason, $read->startDetails->conversationReason);
-        $this->assertSame('gpt-6.2-sol', $read->start->selection->model);
+        $this->assertSame('opus', $read->start->selection->model);
 
         $this->journal->signedStart('Test agent 2')->startRequest($this->app);
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap, the
@@ -42,9 +42,8 @@ final class CoreNamesNoDomainTest extends TestCase
 
     private function checkOutput(string $root): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/core-domain-text.php', $root], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/core-domain-text.php', $root]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

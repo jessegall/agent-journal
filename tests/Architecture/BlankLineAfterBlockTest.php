@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -19,15 +19,11 @@ final class BlankLineAfterBlockTest extends TestCase
 
     public function test_a_statement_after_a_closing_brace_has_a_blank_line_above_it(): void
     {
-        $check = new Process(
-            [PHP_BINARY, 'tools/refactoring/blank-line-after-block.php', '--check', 'app', 'domain', 'tests'],
-            base_path(),
-        );
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/blank-line-after-block.php', '--check', 'app', 'domain', 'tests']);
 
         $this->assertTrue(
             $check->isSuccessful(),
-            self::HOW_TO_FIX.$check->getOutput(),
+            self::HOW_TO_FIX.$check->output(),
         );
     }
 }

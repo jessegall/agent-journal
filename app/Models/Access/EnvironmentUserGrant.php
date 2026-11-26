@@ -92,7 +92,7 @@ final class EnvironmentUserGrant extends JournalModel implements EventSource, Re
     public function revoke(CarbonImmutable $at): void
     {
         $this->revoked_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new EnvironmentUserGrantRevoked($this->id));
     }
 

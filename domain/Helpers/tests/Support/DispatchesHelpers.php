@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Support;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Hosts\DockerImageVerifier;
@@ -46,6 +47,11 @@ trait DispatchesHelpers
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),
             TestProposals::profile('lone-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::Single),
             TestProposals::profile('job-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::PerJob),
+            TestProposals::profile(
+                'codex-reviewer',
+                ProfileBase::readOnlyHelper(),
+                preferredDriver: DefaultDrivers::CODEX,
+            ),
         )));
 
         $this->parent = $this->journal->signedStart('Parent agent');

@@ -120,7 +120,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
     public function restartWith(string $codeDigest): void
     {
         $this->device_code_digest = $codeDigest;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DeviceGrantRestarted($this->id));
     }
 
@@ -128,7 +128,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
     {
         $this->approved_by_user_id = $userId;
         $this->status = DeviceGrantStatus::Approved;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DeviceGrantApproved($this->id, $userId));
     }
 
@@ -143,7 +143,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
         $this->assertPollDue($now);
 
         $this->last_polled_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DeviceGrantPolled($this->id));
     }
 
@@ -155,14 +155,14 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
         $this->grant_digest = $digest;
         $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
         $this->status = DeviceGrantStatus::Issued;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DeviceGrantIssued($this->id));
     }
 
     public function revoke(): void
     {
         $this->status = DeviceGrantStatus::Revoked;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DeviceGrantRevoked($this->id));
     }
 

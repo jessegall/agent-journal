@@ -82,7 +82,7 @@ final class DockPlacement extends JournalModel implements EventSource, ProjectOw
         $placement->assigned_by_id = $assignedBy->id;
         $placement->assigned_at = CarbonImmutable::now();
 
-        $placement->assertSaved($placement->save());
+        $placement->saveAndAssert();
         $placement->raise(new DockChanged($inbox->id));
 
         return $placement;
@@ -92,7 +92,7 @@ final class DockPlacement extends JournalModel implements EventSource, ProjectOw
 
     public function remove(): void
     {
-        $this->assertSaved((bool) $this->delete());
+        $this->deleteAndAssert();
         $this->raise(new DockChanged($this->inbox_id));
     }
 

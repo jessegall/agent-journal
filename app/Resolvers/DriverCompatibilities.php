@@ -32,7 +32,7 @@ final readonly class DriverCompatibilities implements DriverCompatibilitiesContr
             return $pinned;
         }
 
-        $platform = $this->startProfiles->forSignedIn($driver)->protectionPlatform();
+        $platform = $this->startProfiles->forSignedIn($driver)->protectionPlatform()->value;
         $report = Host::resolveContainedProtectionOf(ProtectionReport::unreported($driver, $pinned->version, $platform));
 
         if ($report->isEnforcedInContainer()) {

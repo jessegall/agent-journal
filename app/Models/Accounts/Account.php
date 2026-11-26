@@ -167,7 +167,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $this->workspace = $identity->workspace;
         $this->expires_at = $identity->expiry();
         $this->checked_at = $checkedAt;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountSignedIn($this->account_protocol, $this->id));
         $this->releaseWriter($attempt->id);
     }
@@ -202,7 +202,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $this->assertRecheckPending();
 
         $this->check_inconclusive_at = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountRecheckRequested($this->account_protocol, $this->id));
     }
 
@@ -238,7 +238,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
 
         if ($isHeldForCheck && $check === AccountCheckResult::Unknown) {
             $this->check_inconclusive_at = $now;
-            $this->assertSaved($this->save());
+            $this->saveAndAssert();
 
             return false;
         }
@@ -256,7 +256,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
             $this->status = AccountStatus::Unauthenticated;
         }
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         if ($isSignedOut) {
             $this->raise(new AccountSignedOut($this->account_protocol, $this->id));
@@ -284,7 +284,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $this->assertLabelFree($label);
         $this->name($label);
         $this->name_revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountRenamed($this->account_protocol, $this->id));
     }
 
@@ -331,7 +331,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         }
 
         $this->maintenance = true;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountHeldForMaintenance($this->account_protocol, $this->id));
     }
 
@@ -350,7 +350,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $this->check_requested_generation = null;
         $this->operation_id = strtolower((string) Str::ulid());
         $this->sign_in_generation++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountRemovalStarted($this->account_protocol, $this->id));
     }
 
@@ -411,7 +411,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
         $this->maintenance = false;
         $this->cleanup_pending = false;
         $this->live_writer_attempt_id = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountRemoved($this->account_protocol, $this->id));
     }
 

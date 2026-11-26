@@ -137,7 +137,7 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
     public function reopenForAttempt(): void
     {
         $this->moveTo(JobStatus::Accepted);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobReopenedForAttempt($this->id));
     }
 
@@ -147,7 +147,7 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
     public function attachTo(string $sessionId): void
     {
         $this->moveTo(JobStatus::Running);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobAttached($this->id, $sessionId));
     }
 
@@ -160,7 +160,7 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
             $steering,
         ];
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobSteered($this->id, $steering));
     }
 
@@ -172,14 +172,14 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
         $this->moveTo(JobStatus::Finished);
         $this->stop_evidence_reference = $reference;
         $this->finished_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobFinished($this->id, $reference));
     }
 
     public function cancel(): void
     {
         $this->moveTo(JobStatus::Cancelled);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobCancelled($this->id));
     }
 
@@ -190,7 +190,7 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
     {
         $this->moveTo(JobStatus::Held);
         $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobHeld($this->id));
     }
 
@@ -198,7 +198,7 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
     {
         $this->moveTo(JobStatus::Unfinished);
         $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperJobLeftUnfinished($this->id));
     }
 

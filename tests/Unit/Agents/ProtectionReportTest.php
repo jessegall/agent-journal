@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Enums\Drivers\BoundaryItem;
+use App\Enums\Drivers\IsolationPlatform;
+use App\Values\BoundaryMechanism;
+use App\Values\BoundaryMechanisms;
 use App\Values\ProtectedItem;
+use App\Values\ProtectionEvidence;
 use App\Values\ProtectionReport;
 use PHPUnit\Framework\TestCase;
 
@@ -31,6 +36,32 @@ final class ProtectionReportTest extends TestCase
 
         $this->assertFalse($withoutMechanism->awaitsEvidenceOnly());
         $this->assertFalse($this->report()->awaitsEvidenceOnly());
+    }
+
+    public function test_a_judged_report_enforces_a_recorded_item_awaits_the_rest_and_names_a_missing_mechanism(): void
+    {
+        $mechanisms = BoundaryMechanisms::allUnavailable('no sandbox here')
+            ->with(BoundaryItem::AccountSecrets, BoundaryMechanism::native('the bubblewrap namespace'))
+            ->with(BoundaryItem::Keychain, BoundaryMechanism::native('no D-Bus socket'));
+        $evidence = new ProtectionEvidence(['claude-code@2.1.323' => ['account-secrets' => 'run-7']]);
+
+        $report = ProtectionReport::judge('claude-code', '2.1.323', IsolationPlatform::Container, $mechanisms, $evidence);
+        [$secrets, , $keychain, $sockets] = $report->items;
+
+        $this->assertSame(
+            [
+                [true, 'run-7'],
+                [false, ProtectedItem::EVIDENCE_MISSING.': no recorded run showed it hold on this host'],
+                [false, 'no native mechanism: no sandbox here'],
+                false,
+            ],
+            [
+                [$secrets->isEnforced, $secrets->evidence],
+                [$keychain->isEnforced, $keychain->reason],
+                [$sockets->isEnforced, $sockets->reason],
+                $report->awaitsEvidenceOnly(),
+            ],
+        );
     }
 
     private function report(ProtectedItem ...$items): ProtectionReport

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('purpose', 24);
             $table->string('type', 16);
             $table->unsignedInteger('generation')->default(0);
-            $table->string('container_name')->nullable();
             $table->string('restart', 16);
             $table->string('status', 16);
             $table->string('execution_identity')->nullable();

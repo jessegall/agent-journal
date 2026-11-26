@@ -73,7 +73,7 @@ Status: unverified for both programs.
 
 The protected host (task 258, [host-installation.md](host-installation.md)) claims, prepares, starts, stops and
 reconciles account starts, but it starts none yet: neither program's protected arrangement is available on any host
-(`journal-agent protection` names what is missing, [host-protection.md](host-protection.md)), so every account start
+(the journal's protection report of the host names what is missing, [host-protection.md](host-protection.md)), so every account start
 is refused before release. The rows stay unverified until the native evidence procedures show the arrangement hold;
 only then may `ProgramCompatibility` mark a build, platform and arrangement native shown.
 

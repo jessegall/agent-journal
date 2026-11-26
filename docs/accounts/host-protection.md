@@ -16,23 +16,23 @@ Command-text checks and folder modes do not count: a tool runs as the same user 
 Only what the pinned client applies natively before its tools run counts, and only once a private native procedure
 has shown it hold on this host.
 
-## Asking the host
+## How the journal judges a contained host
 
-`journal-agent protection --program claude --build 2.1.323` prints, for this host's platform, each item with the
-native mechanism the pinned client has for it or why it has none, the evidence run that showed it hold, and whether
-the whole arrangement is available. An item with a mechanism but no recorded evidence is reported as missing native
-evidence; an item with no mechanism stays unavailable whatever evidence says. Evidence is per program, build and
-platform: a record for another build or another platform does not count.
+The journal judges each contained host itself (`App\Agents\Drivers\Isolation`): for every driver family on the
+standard and the protected container it keeps a report of each item with the native mechanism the pinned client has
+for it or why it has none, the recorded run that showed it hold, and whether the whole arrangement is enforced. An item
+with a mechanism but no recorded run is reported as missing native evidence; an item with no mechanism stays
+unavailable whatever is recorded. A run is per driver, build and platform.
 
-The evidence file is `native-evidence.json` in the host's private state folder, readable by the host's owner alone;
-the native evidence procedures write it (doc 57 step 28).
+Whether Claude Code's own sandbox runs in the agent image is shown by two probes the journal opens on the host's
+first claim, and again for each new agent image: `socat -V`, then bubblewrap with Claude Code's sandbox flags, each in
+a throwaway container of the image as the agent's user, under `seccomp-agent.json` from `AGENTS_SECURITY_PROFILES`,
+with no network and no mount. A failed probe keeps its first printed line as the reason every Claude Code item is
+unavailable.
 
-A contained host asks about the agent image, where its tools run: `journal-agent protection --program claude --build
-2.1.323 --arrangement=contained --docker=<agent daemon socket> --installation-name=<name> --agent-image=<image id>
---seccomp-profile=/etc/journal/security/seccomp-agent.json` reports platform `linux-container`. It runs socat and
-bubblewrap with Claude Code's sandbox flags in throwaway containers of the agent image, as the agent's user, with no
-network and no account, and never looks at the host's own PATH. Its evidence is kept under
-`linux-container@<agent image id>`, so a new image needs new evidence.
+The operator records a run of the native procedures with
+`php artisan accounts:record-protection-run <host> <family> <platform> <run> <items...>`, which judges that report
+again.
 
 ## The protected-account trial
 
@@ -96,6 +96,6 @@ Per item, in the agent container (platform `linux-container`, evidence per agent
 | process-inspection | none: the `/proc` masks stop bubblewrap's PID namespace |
 | install-writes | Claude Code's sandbox, so unavailable while it does not start; the images are pinned by digest and the container holds no installation folder |
 
-While bubblewrap does not start, `journal-agent protection --arrangement=contained` reports every item unavailable
+While bubblewrap does not start, the journal's protection report of the host reports every item unavailable
 with that one reason (`tools/journal-agent/host/sandbox_mechanisms.go`); the container's own limits (dropped
 capabilities, no-new-privileges, the budgets, the one account mount) hold regardless.

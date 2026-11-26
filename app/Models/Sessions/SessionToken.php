@@ -50,7 +50,7 @@ final class SessionToken extends JournalModel implements EventSource, ReadableMo
     {
         $this->agent_session_id = $session->id;
         $this->token_hash = $hash;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SessionTokenIssued($this->id, $session->id));
     }
 
@@ -61,14 +61,14 @@ final class SessionToken extends JournalModel implements EventSource, ReadableMo
     {
         $this->token_hash = $hash;
         $this->revoked_at = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SessionTokenRotated($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SessionTokenRevoked($this->id));
     }
 

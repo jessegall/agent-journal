@@ -63,8 +63,13 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     /**
      * A comment on a record; an anchor written for it makes it about an exact place in one version of its text.
      */
-    public static function create(Model&Commentable $target, ActorReference $author, string $body, string $key, string $hash): self
-    {
+    public static function create(
+        Model&Commentable $target,
+        ActorReference $author,
+        string $body,
+        string $key,
+        string $hash,
+    ): self {
         $comment = new self();
         $comment->body = $body;
         $comment->submission_key = $key;
@@ -74,7 +79,7 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         $comment->author_type = $author->type;
         $comment->author_id = $author->id;
 
-        $comment->assertSaved($comment->save());
+        $comment->saveAndAssert();
         $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;

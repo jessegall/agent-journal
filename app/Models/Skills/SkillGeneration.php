@@ -79,7 +79,7 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
         $skillGeneration->entries = GeneratedSkillData::collect($definitions, DataCollection::class);
         $skillGeneration->status = $status;
         $skillGeneration->error_reason = $errorReason;
-        $skillGeneration->assertSaved($skillGeneration->save());
+        $skillGeneration->saveAndAssert();
 
         return $skillGeneration;
     }
@@ -89,7 +89,7 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
     public function retire(): void
     {
         $this->status = GenerationStatus::Retired;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SkillGenerationRetired($this->id));
     }
 

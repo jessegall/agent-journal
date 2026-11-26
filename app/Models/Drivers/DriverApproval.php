@@ -70,7 +70,7 @@ final class DriverApproval extends JournalModel implements EventSource, Readable
     public function approveBuilds(array $pins): void
     {
         $this->build_pins = $pins;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DriverBuildsApproved($this->id));
     }
 

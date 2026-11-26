@@ -93,7 +93,7 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
     public function moveTo(GatewayEndpointStatus $status): void
     {
         $this->status = $status;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareGatewayEndpointMoved($this->id, $status));
     }
 
@@ -103,7 +103,7 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
     public function recordHealthy(): void
     {
         $this->last_health_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareGatewayEndpointFoundHealthy($this->id));
     }
 

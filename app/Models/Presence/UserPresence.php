@@ -67,7 +67,7 @@ final class UserPresence extends JournalModel implements EventSource, ReadableMo
     public function beatAt(CarbonImmutable $time): void
     {
         $this->last_heartbeat_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new UserPresenceConfirmed($this->id));
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -32,9 +32,8 @@ final class ModelThrowsTest extends TestCase
 
     private function checkOutput(string ...$paths): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/model-throws.php', ...$paths], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/model-throws.php', ...$paths]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

@@ -112,7 +112,7 @@ final class SharePreview extends JournalModel implements EventSource, ReadableMo
         $this->assertUnchanged($ownerUserId, $checksum, $selection);
 
         $this->consumed_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SharePreviewConsumed($this->id));
 
         return $selection;

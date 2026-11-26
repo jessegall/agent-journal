@@ -105,7 +105,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $order->kept_payload = HostOrderPayload::encode($body->keptPayload());
         $order->expires_at = $expires;
         $order->status = HostOrderStatus::Pending;
-        $order->assertSaved($order->save());
+        $order->saveAndAssert();
         $order->raise(new HostOrderMade($order->id, $process?->id, $host->id));
 
         return $order;
@@ -117,7 +117,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     {
         $this->status = HostOrderStatus::Claimed;
         $this->claimed_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostOrderClaimed($this->id, $this->host_process_id));
     }
 
@@ -137,7 +137,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->status = HostOrderStatus::Done;
         $this->answer = $answer;
         $this->answered_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostOrderAnswered($this->id, $this->host_process_id, $this->type));
     }
 
@@ -154,7 +154,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->refusal = $refusal;
         $this->answer = new HostAnswerData(HostOrderStatus::Refused, $refusal, $facts);
         $this->answered_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostOrderRefused($this->id, $this->host_process_id, $this->type, $refusal));
     }
 
@@ -370,6 +370,17 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
                     ->where('claimed_at', '<', $now->subSeconds(self::CLAIM_SECONDS)),
             ),
         );
+    }
+
+    /**
+     * The orders the host answered done before the moment.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answeredDoneBefore(Builder $query, CarbonImmutable $before): void
+    {
+        $query->where('status', HostOrderStatus::Done)->where('answered_at', '<', $before);
     }
 
     /**

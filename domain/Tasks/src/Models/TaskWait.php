@@ -65,7 +65,7 @@ final class TaskWait extends JournalModel implements EventSource, ReadableModel
         $wait->created_by_type = $actor->type;
         $wait->created_by_id = $actor->id;
 
-        $wait->assertSaved($wait->save());
+        $wait->saveAndAssert();
 
         $wait->raise(new TaskWaitChanged(
             $wait->id,
@@ -88,7 +88,7 @@ final class TaskWait extends JournalModel implements EventSource, ReadableModel
         $this->waived_by_type = $actor->type;
         $this->waived_by_id = $actor->id;
         $this->waive_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         $this->raise(new TaskWaitChanged(
             $this->id,

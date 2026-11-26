@@ -264,7 +264,7 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
 
         $this->stage = $next;
         $this->failure_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     // ----------[ Queries ]----------

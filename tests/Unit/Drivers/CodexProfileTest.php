@@ -10,6 +10,7 @@ use App\Agents\Drivers\Setup\DriverProfile;
 use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
+use App\Enums\Hosts\RestartPolicy;
 use App\Enums\Sessions\TransportProfileType;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
@@ -19,8 +20,8 @@ use App\Values\DriverStart;
 use Tests\TestCase;
 
 /**
- * The PHP profile plans a Codex terminal and an exec turn exactly as the pinned build was recorded running them,
- * apart from paths and ids; it refuses another build, a protected account and an argument that would undo it.
+ * The PHP profile plans a Codex terminal exactly as the pinned build was recorded running it, apart from paths and
+ * ids, and an account's headless turns on one app-server; it refuses another build, a protected account and an argument that would undo it.
  */
 final class CodexProfileTest extends TestCase
 {
@@ -28,22 +29,15 @@ final class CodexProfileTest extends TestCase
 
     private const string CONVERSATION = '019a0000-0000-7000-8000-000000000001';
 
-    public function test_an_exec_turn_is_planned_as_the_recorded_turn_ran(): void
+    public function test_an_accounts_headless_turns_run_on_one_app_server_that_is_never_restarted(): void
     {
-        $recorded = $this->recordedStart('turns/process-turn');
-        $arguments = $recorded['arguments'];
-        $start = new DriverStart(
-            sessionId: self::CONVERSATION,
-            type: HostProcessType::Pipe,
-            workFolder: $recorded['working_folder'],
-            prompt: $arguments[array_key_last($arguments)],
-        );
+        $start = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work');
 
-        $plan = $this->profile()->startPlan($start);
+        $plan = $this->profile()->ownerPlan($start);
 
         $this->journal->assertResult(
-            [$arguments, HostProcessPurpose::AgentTurn],
-            [$plan->argv, $plan->purpose],
+            [['codex', 'app-server'], HostProcessPurpose::AccountOwner, HostProcessType::Pipe, RestartPolicy::Never],
+            [$plan->argv, $plan->purpose, $plan->type, $plan->restart],
         );
     }
 
@@ -72,26 +66,13 @@ final class CodexProfileTest extends TestCase
         $this->journal->assertResult($expected, $planned);
     }
 
-    public function test_a_resumed_turn_names_the_conversation_after_its_options_and_a_terminal_before_them(): void
+    public function test_a_resumed_terminal_names_the_conversation_first(): void
     {
-        $turn = new DriverStart(self::CONVERSATION, HostProcessType::Pipe, '/work', prompt: 'go on', isResume: true);
         $terminal = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', isResume: true);
 
-        $turnArguments = $this->profile()->startPlan($turn)->argv;
         $terminalArguments = $this->profile()->startPlan($terminal)->argv;
 
-        $this->journal->assertResult(
-            [[
-                'resume',
-                self::CONVERSATION,
-                'go on',
-            ], [
-                'codex',
-                'resume',
-                self::CONVERSATION,
-            ]],
-            [array_slice($turnArguments, -3), array_slice($terminalArguments, 0, 3)],
-        );
+        $this->journal->assertResult(['codex', 'resume', self::CONVERSATION], array_slice($terminalArguments, 0, 3));
     }
 
     public function test_only_the_pinned_build_is_accepted(): void

@@ -170,7 +170,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         $sessionRequest->payload_digest = $request->digest();
         $sessionRequest->disposition = StartDisposition::Accepted;
         $sessionRequest->readiness = StartReadiness::Accepted;
-        $sessionRequest->assertSaved($sessionRequest->save());
+        $sessionRequest->saveAndAssert();
 
         return $sessionRequest;
     }
@@ -183,7 +183,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
     public function prepareIdentity(): void
     {
         $this->readiness = StartReadiness::PreparingIdentity;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StartIdentityPrepared($this->id));
     }
 
@@ -199,7 +199,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
 
         $this->native_id = $nativeId;
         $this->readiness = StartReadiness::Ready;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StartIdentityBound($this->id, $nativeId));
 
         return true;
@@ -212,7 +212,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
     public function markIdentityUncertain(): void
     {
         $this->readiness = StartReadiness::Uncertain;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StartIdentityBecameUncertain($this->id));
     }
 
@@ -239,7 +239,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         }
 
         $this->readiness = StartReadiness::Cancelled;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StartVerificationCancelled($this->id));
     }
 
@@ -247,7 +247,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
     {
         $this->session_id = $session->id;
         $this->disposition = StartDisposition::Started;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $ownerWork = $this->owner_reference === null ? null : $this->owner_work;
         $this->raise(new StartSessionOpened($this->id, $this->agent_id, $session->id, $ownerWork));
     }
@@ -271,7 +271,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
         $this->readiness = StartReadiness::Refused;
         $this->refusal_reason = $reason->value;
         $this->refused_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SessionRequestRefused($this->id, $reason->value));
     }
 

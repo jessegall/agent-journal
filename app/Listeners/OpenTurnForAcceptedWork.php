@@ -25,7 +25,7 @@ final readonly class OpenTurnForAcceptedWork implements Listener
         $isTurnByTurn = $this->headless->drives($runtime) && ! $this->headless->opensTerminal($runtime);
 
         if ($request->operation->startsWork() && $isTurnByTurn) {
-            $this->headless->openNextTurn($request->agent_runtime_id);
+            $this->headless->openNextTurn($runtime);
         }
     }
 }

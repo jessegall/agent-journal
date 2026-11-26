@@ -202,7 +202,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         $this->status = SessionProcessStatus::Stopped;
         $this->ended_at = CarbonImmutable::now();
         $this->refusal = $refusal;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StartRefused($this->agent_id, $this->session_id, $refusal, $this->ended_at));
     }
 
@@ -245,6 +245,23 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     public static function findLockedById(string $id): self
     {
         return self::query()->supervised()->whereKey($id)->lockForUpdate()->sole();
+    }
+
+    /**
+     * The unresolved starts on the host with the start's account and sign-in generation, locked.
+     *
+     * @return list<self>
+     */
+    public static function findLockedOnAccountOf(self $start, string $hostId): array
+    {
+        return array_values(self::query()
+            ->supervised()
+            ->unresolved()
+            ->onAccountGenerationOf($start)
+            ->onHost($hostId)
+            ->lockForUpdate()
+            ->get()
+            ->all());
     }
 
     /**
@@ -410,6 +427,19 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     protected function onAccount(Builder $query, RecordIdentity $account): void
     {
         $query->where('account_type', $account->type)->where('account_id', $account->id);
+    }
+
+    /**
+     * The starts on the same account and sign-in generation as the start.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onAccountGenerationOf(Builder $query, self $start): void
+    {
+        $query->where('account_type', $start->account_type)
+            ->where('account_id', $start->account_id)
+            ->where('account_generation', $start->account_generation);
     }
 
     /**

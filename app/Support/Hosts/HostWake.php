@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Hosts;
 
+use App\Models\Sessions\SessionProcess;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection;
 
@@ -55,6 +56,16 @@ final readonly class HostWake
     }
 
     /**
+     * Wakes the owner that runs the headless turns of the start's account and sign-in generation.
+     */
+    public function wakeAccount(SessionProcess $start): void
+    {
+        $key = self::accountKey($start);
+        $this->connection()->xadd($key, '*', ['wake' => 'request'], self::RUNTIME_WAKE_LIMIT, true);
+        $this->connection()->expire($key, ProcessFeed::TTL_SECONDS);
+    }
+
+    /**
      * Wakes the worker supervisor: a process was made, changed or ended.
      */
     public function wakeSupervisor(): void
@@ -83,6 +94,11 @@ final readonly class HostWake
     public static function runtimeKey(string $runtimeId): string
     {
         return "driver:wake:{$runtimeId}";
+    }
+
+    public static function accountKey(SessionProcess $start): string
+    {
+        return "driver:wake:account:{$start->account_type}:{$start->account_id}:{$start->account_generation}";
     }
 
     private function connection(): Connection

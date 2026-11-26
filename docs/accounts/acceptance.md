@@ -8,7 +8,7 @@ native behaviour.
 
 Today: **8 contract passed, 42 prerequisite missing, 0 native shown.** No real-browser account test exists; the
 accounts page beside Rules is observed by hand, not tested. Nothing here is product-complete: every saved-account start
-is refused until `journal-agent protection` reports an available arrangement and the native procedures pass
+is refused until the journal's protection report of the host reports an available arrangement and the native procedures pass
 ([host-protection.md](host-protection.md), task 258). Protected concurrent execution (main and helper on one account,
 own-output and foreign denial) is task 243 and is prerequisite missing for both programs.
 

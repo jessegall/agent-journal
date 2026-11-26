@@ -30,4 +30,14 @@ final class DriverSetupInvalid extends LogicException
     {
         return new self("The driver family {$family} of the catalogue is set up nowhere.");
     }
+
+    public static function noTurnProcess(string $family): self
+    {
+        return new self("The driver family {$family} runs its headless turns on an account owner, never one process each.");
+    }
+
+    public static function itemWithoutMechanism(string $item): self
+    {
+        return new self("The isolation table names no mechanism for the boundary item {$item}.");
+    }
 }

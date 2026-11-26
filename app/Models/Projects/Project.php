@@ -39,7 +39,7 @@ final class Project extends JournalModel implements EventSource, ReadableModel
         $project = new self();
         $project->key = $key;
         $project->label = $label;
-        $project->assertSaved($project->save());
+        $project->saveAndAssert();
         $project->raise(new ProjectCreated($project->id, CarbonImmutable::now()));
 
         return $project;

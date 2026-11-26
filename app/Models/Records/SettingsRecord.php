@@ -72,7 +72,7 @@ final class SettingsRecord extends JournalModel implements EventSource, Readable
     {
         $this->document = $document;
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SettingsRevised($this->id));
     }
 

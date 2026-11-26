@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * A model or an Eloquent cast never writes or reads a column's JSON by hand: a column holding an object or a list of
@@ -36,9 +36,8 @@ final class ColumnJsonTest extends TestCase
 
     private function checkOutput(string ...$paths): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/column-json.php', ...$paths], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/column-json.php', ...$paths]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

@@ -113,7 +113,7 @@ final class Rule extends JournalModel implements EventSource, Numbered, ProjectO
     public function remove(): void
     {
         $this->status = RuleStatus::Removed;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RuleRemoved($this->id));
     }
 
@@ -227,7 +227,7 @@ final class Rule extends JournalModel implements EventSource, Numbered, ProjectO
         $this->assertProposed();
 
         $this->status = $outcome;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     // ----------[ Queries ]----------

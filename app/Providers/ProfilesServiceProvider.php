@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Agents\Drivers\Isolation\IsolationProbes;
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Accounts\ActiveAccountReader;
 use App\Contracts\Accounts\StartAccounts as StartAccountsContract;
@@ -91,6 +92,11 @@ final class ProfilesServiceProvider extends ServiceProvider
 
         $this->app->singleton(AgentImage::class, fn () => AgentImage::fromConfig(
             $this->app->make('config')->string('agents.agent_image'),
+        ));
+
+        $this->app->bind(IsolationProbes::class, fn () => new IsolationProbes(
+            $this->app->make(AgentImage::class),
+            $this->app->make('config')->string('agents.security_profiles'),
         ));
 
         $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(

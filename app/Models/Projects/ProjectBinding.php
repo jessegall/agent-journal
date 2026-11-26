@@ -140,7 +140,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         $binding->report_sequence = 0;
         $binding->boot_generation = 0;
         $binding->setup_generation = 0;
-        $binding->assertSaved($binding->save());
+        $binding->saveAndAssert();
         $binding->raise(new ProjectBindingCreated($binding->id, $project->id, $host->id, CarbonImmutable::now()));
 
         return $binding;
@@ -188,7 +188,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         $this->readiness = $readiness;
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         if ($changed) {
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
@@ -205,7 +205,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
     {
         $this->leased_runtime_id = $runtimeId;
         $this->lease_expires_at = $expiresAt;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectBindingLeased($this->id, $runtimeId));
     }
 
@@ -221,7 +221,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
 
         $this->leased_runtime_id = null;
         $this->lease_expires_at = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectBindingLeaseEnded($this->id, $runtimeId));
     }
 
@@ -238,7 +238,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         $this->authority_generation++;
         $this->readiness = BindingReadiness::Revoked;
         $this->revoked_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, $now));
     }
 
@@ -252,7 +252,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
         $this->assertOwnProjects($environment);
 
         $this->environment_id = $environment->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectBindingEnvironmentAssigned($this->id, $environment->id, CarbonImmutable::now()));
     }
 

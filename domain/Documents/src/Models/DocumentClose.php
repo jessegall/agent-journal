@@ -91,7 +91,7 @@ final class DocumentClose extends JournalModel implements EventSource, ReadableM
         $close->published = $isPublished;
         $close->closed_at = CarbonImmutable::now();
 
-        $close->assertSaved($close->save());
+        $close->saveAndAssert();
         $close->raise(new DocumentClosed($document->id, $document->number, $resultNumber));
 
         return $close;

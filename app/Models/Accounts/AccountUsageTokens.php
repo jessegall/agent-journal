@@ -79,7 +79,7 @@ final class AccountUsageTokens extends JournalModel implements EventSource, Read
         $snapshot->thread_id = $tokens->threadId;
 
         $snapshot->fillWith($tokens);
-        $snapshot->assertSaved($snapshot->save());
+        $snapshot->saveAndAssert();
         $snapshot->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 

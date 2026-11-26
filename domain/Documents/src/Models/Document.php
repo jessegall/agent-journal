@@ -129,7 +129,7 @@ final class Document extends JournalModel implements
         $document->assignOwner($owner);
         $document->creator_type = $author->actorType();
         $document->creator_id = $author->actorId();
-        $document->assertSaved($document->save());
+        $document->saveAndAssert();
         $document->raise(new DocumentCreated($document->id, $document->number, ActorReference::of($author)));
 
         return $document;
@@ -143,7 +143,7 @@ final class Document extends JournalModel implements
     public function startWith(DocumentRevision $revision): void
     {
         $this->current_revision_id = $revision->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DocumentFirstRevisionSet($this->id, $revision->id));
         $this->setRelation('currentRevision', $revision);
     }
@@ -160,7 +160,7 @@ final class Document extends JournalModel implements
             $this->attention = AttentionStatus::Active;
         }
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->setRelation('currentRevision', $revision);
         $this->raise(new DocumentPublished($this->id, $this->number, $revision->number));
     }

@@ -19,10 +19,22 @@ final readonly class HostLinkAlarms
      */
     private const int HOST_LIMIT = 10;
 
+    public function __construct(private PublishedReleases $releases) {}
+
     /**
+     * The hosts whose link fails or went quiet, then the hosts that run another release than the journal's.
+     *
      * @return list<string>
      */
     public function current(): array
+    {
+        return [...$this->brokenLinks(), ...$this->outOfDateHosts()];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function brokenLinks(): array
     {
         $now = CarbonImmutable::now();
         $failingSince = $now->subMinute();
@@ -35,6 +47,28 @@ final readonly class HostLinkAlarms
             ->limit(self::HOST_LIMIT)
             ->get()
             ->map(fn (Host $host): string => $host->link_alarm)
+            ->all());
+    }
+
+    /**
+     * The hosts on another release than the journal's; none while the journal publishes no release.
+     *
+     * @return list<string>
+     */
+    private function outOfDateHosts(): array
+    {
+        if (! $this->releases->hasCompatibleRelease()) {
+            return [];
+        }
+
+        $release = $this->releases->current()->version;
+
+        return array_values(Host::query()
+            ->unrevoked()
+            ->runningAnotherReleaseThan($release)
+            ->limit(self::HOST_LIMIT)
+            ->get()
+            ->map(fn (Host $host) => $host->releaseAlarm($release))
             ->all());
     }
 }

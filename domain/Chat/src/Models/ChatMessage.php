@@ -97,7 +97,7 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
         $entry->group_number = self::groupAfter($latest, $author, $at);
         $entry->author_type = $author->type;
         $entry->author_id = $author->id;
-        $entry->assertSaved($entry->save());
+        $entry->saveAndAssert();
 
         $entry->raise(new ChatMessageChanged($inboxId, $entry->id));
 

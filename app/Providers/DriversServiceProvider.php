@@ -40,7 +40,6 @@ use App\Agents\Drivers\Codex\CodexSignIn;
 use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
-use App\Agents\Drivers\Codex\CodexTurnResults;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Parts\HostHomeAndPath;
 use App\Agents\Drivers\Parts\StartReference;
@@ -48,6 +47,7 @@ use App\Agents\Drivers\Parts\StatusLineSocket;
 use App\Agents\Drivers\Setup\ConditionalPart;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
+use App\Agents\Drivers\Setup\HeadlessTurns;
 use App\Agents\Drivers\Setup\ModelCheck;
 use App\Agents\Drivers\Setup\SignInSetup;
 use App\Agents\Drivers\Setup\VersionLine;
@@ -121,7 +121,7 @@ final class DriversServiceProvider extends ServiceProvider
             signInReader: CodexSignInReader::class,
             layout: CodexLayout::class,
             keyScripts: CodexKeyScripts::class,
-            turnResults: CodexTurnResults::class,
+            headlessTurns: HeadlessTurns::onAccountOwner([$driver, 'app-server']),
             signIn: new SignInSetup(
                 executableSetting: 'accounts.codex_program',
                 environment: CodexSignInEnvironment::class,
@@ -172,7 +172,7 @@ final class DriversServiceProvider extends ServiceProvider
             signInReader: ClaudeCodeSignInReader::class,
             layout: ClaudeCodeLayout::class,
             keyScripts: ClaudeCodeKeyScripts::class,
-            turnResults: ClaudeCodeTurnResults::class,
+            headlessTurns: HeadlessTurns::eachInAProcess(ClaudeCodeTurnResults::class),
             signIn: new SignInSetup(
                 executableSetting: 'accounts.claude_program',
                 environment: ClaudeCodeSignInEnvironment::class,

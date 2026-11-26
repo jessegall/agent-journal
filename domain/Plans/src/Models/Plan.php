@@ -172,7 +172,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $plan->type = $type;
         $plan->creator_type = $creator->actorType();
         $plan->creator_id = $creator->actorId();
-        $plan->assertSaved($plan->save());
+        $plan->saveAndAssert();
 
         return $plan;
     }
@@ -200,7 +200,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->status = PlanStatus::Done;
         $this->finish_note = $note;
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanFinished($this->id, $actor));
     }
 
@@ -212,7 +212,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->status = PlanStatus::Cancelled;
         $this->cancel_reason = $reason;
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanCancelled($this->id, $actor));
     }
 
@@ -229,7 +229,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->assertStartable();
 
         $this->status = PlanStatus::Started;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanStarted($this->id, $actor));
         $this->recordProgress($this->progress);
 
@@ -249,7 +249,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->assertPlanned();
 
         $this->status = PlanStatus::Reviewing;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanReviewRequested($this->id, $review->id, $reviewers, $this->number));
     }
 
@@ -263,7 +263,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->assertReviewing();
 
         $this->status = PlanStatus::Planned;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanReviewWithdrawn($this->id, $editionId));
     }
 
@@ -277,7 +277,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->assertReviewing();
 
         $this->status = PlanStatus::Planned;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PlanReviewDecided($this->id, $editionId, $decision));
     }
 
@@ -291,7 +291,7 @@ final class Plan extends JournalModel implements Assignable, EventSource, Number
         $this->cancelled_tasks = $progress->cancelled;
         $this->blocked_tasks = $progress->blocked;
         $this->started_tasks = $progress->started;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         $this->raise(new PlanProgressChanged(
             $this->id,

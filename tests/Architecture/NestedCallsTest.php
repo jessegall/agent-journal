@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * No row read is passed straight into another call and no null-safe call hangs on another call's result: the inner
@@ -36,10 +36,8 @@ final class NestedCallsTest extends TestCase
 
     private function checkOutput(string ...$paths): string
     {
-        $check = new Process([PHP_BINARY, '-d', 'memory_limit=4G', 'tools/refactoring/nested-calls.php', ...$paths], base_path());
-        $check->setTimeout(300);
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, '-d', 'memory_limit=4G', 'tools/refactoring/nested-calls.php', ...$paths]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

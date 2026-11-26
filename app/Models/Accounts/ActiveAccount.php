@@ -85,7 +85,7 @@ final class ActiveAccount extends JournalModel implements EventSource, ReadableM
         $this->account_id = $account->id;
         $this->has_selected = true;
         $this->change_number++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ActiveAccountSelected($this->account_protocol, $account->id));
 
         return true;

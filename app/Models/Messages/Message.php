@@ -74,7 +74,7 @@ final class Message extends JournalModel implements AuthoredModel, EventSource, 
         $message->sender_id = $from->participantId();
         $message->body = $body;
         $message->target_message_id = $target?->id;
-        $message->assertSaved($message->save());
+        $message->saveAndAssert();
 
         $message->raise(
             new MessageSent($message->id, $inbox->id, $message->number, $target?->id, ActorReference::of($from)),

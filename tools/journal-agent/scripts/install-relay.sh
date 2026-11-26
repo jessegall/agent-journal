@@ -12,9 +12,8 @@ main() {
     root=$(find_project_root)
     echo "journal: connecting the project folder $root"
     check_project_folder "$root"
-    installation="$HOME/.journal-agent/releases/$version"
     placement=$(find_command_placement) || exit 1
-    install_release "$origin" "$version" "$downloads" "$target" "$installation"
+    installation=$(install_release "$origin" "$version" "$downloads" "$target" "$HOME/.journal-agent") || exit 1
     connect_folder "$root" "$ticket" "$origin" "$installation"
     connected=$?
     place_command "$placement" "$installation/bin/journal" "$root"
@@ -122,9 +121,10 @@ find_existing_command_placement() {
     refuse "another journal command wins on PATH at $1. Remove it or put it later on PATH, then run the install line again."
 }
 
-# journal-agent is checked against the manifest before it runs; it verifies the manifest's signature and the program list.
+# journal-agent is checked against the manifest before it runs; it verifies the manifest's signature and the program list,
+# and prints the folder it sealed the release in, named for the version and the program list.
 install_release() {
-    local program="$3/journal-agent" line sha256
+    local program="$3/journal-agent" line sha256 printed
     line="\"name\":\"bin/journal-agent\",\"source\":\"$4/bin/journal-agent\",\"sha256\":\""
     sha256=$(grep -o "$line[0-9a-f]*" "$3/manifest.json" | sed "s/.*sha256\":\"//")
     [ -n "$sha256" ] ||
@@ -136,9 +136,10 @@ install_release() {
     chmod 700 "$program"
     fetch_file "$1/releases/current/programs.json" "$3/programs.json" ||
         refuse "the download step failed: the journal's program list could not be downloaded from $1."
-    "$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" \
-        --programs "$3/programs.json" --into "$5" ||
+    printed=$("$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" \
+        --programs "$3/programs.json" --into-root "$5" --version "$2") ||
         refuse "the install-release step failed: the release could not be installed."
+    printf '%s\n' "$printed" | tail -n 1
 }
 
 # Ends 0 once the journal acknowledged the setup, 2 when its relay has not reached the journal yet; the line is spent.

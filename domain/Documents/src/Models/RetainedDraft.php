@@ -71,7 +71,7 @@ final class RetainedDraft extends JournalModel implements EventSource, ReadableM
         $kept->author_type = $draft->author_type;
         $kept->author_id = $draft->author_id;
 
-        $kept->assertSaved($kept->save());
+        $kept->saveAndAssert();
         $kept->raise(new DraftKept($kept->id, $kept->document_id, $parent));
 
         return $kept;

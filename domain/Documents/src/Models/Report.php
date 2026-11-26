@@ -130,7 +130,7 @@ final class Report extends JournalModel implements
         $report->creator_id = $author->actorId();
         $report->filed_at = CarbonImmutable::now();
 
-        $report->assertSaved($report->save());
+        $report->saveAndAssert();
         $report->raise(new ReportFiled($report->id, $report->number, ActorReference::of($author)));
 
         return $report;

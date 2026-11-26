@@ -38,3 +38,12 @@ func TestALocalHostRunsAnyImageAndAContainedOneWithNoSetNone(t *testing.T) {
 		t.Fatal("a local host refused an image, or a contained host with no set permitted one")
 	}
 }
+
+func TestAContainedHostAllowsAProbeThatMountsNothingButNotMoreMountsThanItsTargets(t *testing.T) {
+	rules := ContainerRules{Arrangement: Contained, InstallationName: "journal"}
+	tooMany := make([]ContainerMount, len(containedTargets)+1)
+
+	if !rules.permit(nil) || rules.permit(tooMany) {
+		t.Fatalf("a probe with no mount was refused (%v) or more mounts than targets allowed", rules.permit(nil))
+	}
+}

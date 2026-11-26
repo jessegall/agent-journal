@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 
 /**
  * A model's Attribute accessor is read by its snake case name, as the generated @property block names it, never by its
@@ -36,9 +36,8 @@ final class AccessorReadsTest extends TestCase
 
     private function checkOutput(string ...$paths): string
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/accessor-reads.php', ...$paths], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/accessor-reads.php', ...$paths]);
 
-        return $check->getOutput();
+        return $check->output();
     }
 }

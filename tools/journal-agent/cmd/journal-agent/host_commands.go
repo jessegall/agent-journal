@@ -97,7 +97,6 @@ func serve(arguments []string) error {
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
 	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
-	seccomp := flags.String("seccomp-profile", "", "the seccomp profile a contained host's agent containers run under")
 	developmentPrograms := flags.String("development-programs", os.Getenv("JOURNAL_DEVELOPMENT_PROGRAMS"),
 		"local development only: a daemon folder of the checkout's builds of the image's programs, mounted over them")
 	if err := flags.Parse(arguments); err != nil {
@@ -132,11 +131,6 @@ func serve(arguments []string) error {
 		containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err
-		}
-		evidence := host.NativeEvidence{Folder: *stateFolder}
-		// Without a report the journal refuses every contained start, so a failed report stops no other work.
-		if err := host.NotifyContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
-			log.Printf("the protection of the agent image was not reported: %v", err)
 		}
 	}
 	release := "development"

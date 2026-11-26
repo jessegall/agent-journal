@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Work\AccountOwners;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\DriverRequestAccepted;
 use App\Models\Drivers\DriverRequest;
+use App\Models\Sessions\SessionProcess;
 use App\Support\Hosts\HostWake;
 
 /**
@@ -14,10 +16,16 @@ use App\Support\Hosts\HostWake;
  */
 final readonly class WakeWorkerForRequest implements Listener
 {
-    public function __construct(private HostWake $wake) {}
+    public function __construct(private HostWake $wake, private AccountOwners $owners) {}
 
     public function handle(DriverRequestAccepted $fact): void
     {
-        $this->wake->wakeRuntime(DriverRequest::query()->whereKey($fact->requestId)->sole()->agent_runtime_id);
+        $request = DriverRequest::query()->with('runtime')->whereKey($fact->requestId)->sole();
+        $this->wake->wakeRuntime($request->agent_runtime_id);
+        $start = SessionProcess::findCurrentOf($request->runtime->agent_session_id);
+
+        if ($start !== null && $this->owners->serves($request->runtime)) {
+            $this->wake->wakeAccount($start);
+        }
     }
 }

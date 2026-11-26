@@ -81,7 +81,7 @@ final class DocumentDraft extends JournalModel implements EventSource, ReadableM
         $draft->body = $baseRevision->body;
         $draft->opened_at = CarbonImmutable::now();
 
-        $draft->assertSaved($draft->save());
+        $draft->saveAndAssert();
         $draft->raise(new DocumentOpened($document->id, $document->number));
 
         return $draft;
@@ -98,7 +98,7 @@ final class DocumentDraft extends JournalModel implements EventSource, ReadableM
         $this->abstract = $text->abstract;
         $this->body = $text->body->text;
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new DocumentDraftSaved($this->document_id, $this->version));
     }
 

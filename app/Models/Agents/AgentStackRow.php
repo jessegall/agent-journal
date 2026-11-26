@@ -108,7 +108,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
         $this->frames = $frames;
         $this->has_ticking_frames = $frames->holdTicking($ticking);
         $this->status = StackStatus::Active;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentStackStarted($this->id));
     }
 
@@ -118,7 +118,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
     public function holdForInvestigation(CarbonImmutable $time): void
     {
         $this->held_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentStackHeldForInvestigation($this->id));
     }
 
@@ -127,7 +127,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
         $this->frames = $frames;
         $this->has_ticking_frames = $frames->holdTicking($ticking);
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentStackFramesSaved($this->id));
     }
 
@@ -135,7 +135,7 @@ final class AgentStackRow extends JournalModel implements EventSource, ReadableM
     {
         $this->status = StackStatus::Closed;
         $this->closed_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentStackClosed($this->id));
     }
 

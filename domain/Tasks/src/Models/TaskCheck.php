@@ -80,7 +80,7 @@ final class TaskCheck extends JournalModel implements EventSource, ReadableModel
         $check->caller_id = $caller->id;
         $check->process_run_id = $processRunId;
 
-        $check->assertSaved($check->save());
+        $check->saveAndAssert();
 
         return $check;
     }
@@ -99,7 +99,7 @@ final class TaskCheck extends JournalModel implements EventSource, ReadableModel
         $this->result_receipt_id = $result->receiptId;
         $this->outcome = $result->outcome->value;
         $this->bound_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskCheckRecorded($this->task_id, $this->id));
     }
 

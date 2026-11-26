@@ -79,7 +79,7 @@ final class HelperNotice extends JournalModel implements EventSource, ReadableMo
     public function markDelivered(): void
     {
         $this->delivered_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperNoticeDelivered($this->id));
     }
 

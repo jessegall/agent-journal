@@ -91,7 +91,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
         $this->next_sequence++;
         $this->unread_count++;
         $this->mutation_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsChanged($this->id));
     }
 
@@ -102,7 +102,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     {
         $this->unread_count++;
         $this->mutation_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsChanged($this->id));
     }
 
@@ -113,7 +113,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     {
         $this->unread_count--;
         $this->mutation_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsChanged($this->id));
     }
 
@@ -128,7 +128,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
         }
 
         $this->mark_all_through = $through;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsMarkAllStarted($this->id, $through));
     }
 
@@ -138,7 +138,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     public function advanceMarkAll(int $sequence): void
     {
         $this->mark_all_after = $sequence;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsMarkAllAdvanced($this->id, $sequence));
     }
 
@@ -146,7 +146,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     {
         $this->mark_all_through = null;
         $this->mark_all_after = 0;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsMarkAllFinished($this->id));
     }
 
@@ -156,7 +156,7 @@ final class NotificationScope extends JournalModel implements EventSource, Reada
     public function recordChange(): void
     {
         $this->mutation_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationsChanged($this->id));
     }
 

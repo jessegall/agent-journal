@@ -136,7 +136,7 @@ final class InstallAttempt extends JournalModel implements EventSource, Readable
     {
         $this->assertChangeable($seenVersion);
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new InstallAttemptReplaced($this->id, $this->version, CarbonImmutable::now()));
     }
 
@@ -150,7 +150,7 @@ final class InstallAttempt extends JournalModel implements EventSource, Readable
         $this->assertChangeable($seenVersion);
         $this->status = InstallAttemptStatus::Cancelled;
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new InstallAttemptCancelled($this->id, CarbonImmutable::now()));
     }
 
@@ -162,7 +162,7 @@ final class InstallAttempt extends JournalModel implements EventSource, Readable
         $this->status = InstallAttemptStatus::Spent;
         $this->binding_id = $binding->id;
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new InstallAttemptSpent($this->id, $binding->id, CarbonImmutable::now()));
     }
 

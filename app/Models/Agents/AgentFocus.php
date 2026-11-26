@@ -82,7 +82,7 @@ final class AgentFocus extends JournalModel implements EventSource, ReadableMode
         $this->focused_type = $record->type;
         $this->focused_id = $record->id;
         $this->focused_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentFocusMoved($this->agent_id, $record->type, $record->id));
     }
 

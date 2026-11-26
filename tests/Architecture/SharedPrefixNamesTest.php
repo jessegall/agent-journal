@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -19,12 +19,8 @@ final class SharedPrefixNamesTest extends TestCase
 
     public function test_no_parameter_keeps_a_leading_word_its_context_already_says(): void
     {
-        $check = new Process(
-            [PHP_BINARY, '-d', 'memory_limit=2G', 'tools/refactoring/shared-prefix-names.php', 'app', 'domain'],
-            base_path(),
-        );
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, '-d', 'memory_limit=2G', 'tools/refactoring/shared-prefix-names.php', 'app', 'domain']);
 
-        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
+        $this->assertSame('', trim($check->output()), self::HOW_TO_FIX.$check->output());
     }
 }

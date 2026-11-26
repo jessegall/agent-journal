@@ -134,7 +134,7 @@ final class MenuEntry extends JournalModel implements EventSource, ReadableModel
     {
         $this->uses++;
         $this->last_used_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new MenuEntryUsed($this->id));
     }
 
@@ -145,7 +145,7 @@ final class MenuEntry extends JournalModel implements EventSource, ReadableModel
     {
         $this->status = MenuEntryStatus::Superseded;
         $this->superseded_by_id = $entry->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new MenuEntrySuperseded($this->id, $entry->id));
     }
 

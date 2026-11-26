@@ -149,7 +149,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
             $share = self::forRoot($root, $rootOwner, ShareStatus::Proposed, $expiresAt);
             $share->requester_type = $origin->requester->type;
             $share->requester_id = $origin->requester->id;
-            $share->assertSaved($share->save());
+            $share->saveAndAssert();
             $share->raise(new ShareRequested($share->fact));
 
             return $share;
@@ -162,7 +162,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
         $share->configuration_version = $origin->configurationVersion;
         $share->token_digest = $origin->token->digest;
         $share->token_ciphertext = $origin->token->token;
-        $share->assertSaved($share->save());
+        $share->saveAndAssert();
         $share->raise(new ShareCreated($share->fact));
 
         return $share;
@@ -188,7 +188,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
         $this->configuration_version = $configuration->configuration_version;
         $this->token_digest = $token->digest;
         $this->token_ciphertext = $token->token;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareCreated($this->fact));
     }
 
@@ -210,7 +210,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
         $this->status = $terminal;
         $this->terminal_at = $endedAt;
         $this->token_ciphertext = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         if ($terminal === ShareStatus::Revoked) {
             $this->raise(new ShareRevoked($this->factAt($endedAt)));
@@ -229,7 +229,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public function advanceScope(): void
     {
         $this->scope_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareScopeChanged($this->fact));
     }
 
@@ -267,7 +267,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public function activate(): void
     {
         $this->status = ShareStatus::Active;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareActivated($this->fact));
     }
 
@@ -277,7 +277,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     public function failActivation(): void
     {
         $this->status = ShareStatus::Failed;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareFailed($this->fact));
     }
 

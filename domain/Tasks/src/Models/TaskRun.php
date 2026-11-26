@@ -96,7 +96,7 @@ final class TaskRun extends JournalModel implements Assignable, EventSource, Rea
 
         $this->status = TaskRunStatus::Finished;
         $this->outcome = $outcome;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskRunEnded($this->id, $this->task_id));
     }
 

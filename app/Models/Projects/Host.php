@@ -11,7 +11,10 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Data\Hosts\FailedHostCallData;
 use App\Data\Profiles\ProtectionReportData;
+use App\Data\Profiles\ProtectionRunData;
+use App\Data\Profiles\SandboxVerdictData;
 use App\Enums\Agents\ExecutionModeType;
+use App\Enums\Drivers\BoundaryItem;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostOrderType;
@@ -29,7 +32,9 @@ use App\Exceptions\StartRefused;
 use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Values\ProtectionEvidence;
 use App\Values\ProtectionReport;
+use App\Values\SandboxVerdict;
 use App\Values\StartPlace;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -44,6 +49,8 @@ use Spatie\LaravelData\DataCollection;
  * @property string $credential_hash
  * @property list<string> $start_roots
  * @property DataCollection<int, ProtectionReportData> $protection
+ * @property DataCollection<int, SandboxVerdictData> $sandbox_verdicts
+ * @property DataCollection<int, ProtectionRunData> $protection_runs
  * @property ArrangementType $arrangement
  * @property int $protocol
  * @property string|null $order_secret
@@ -94,6 +101,8 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'allowed_images' => 'array',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
+            'sandbox_verdicts' => DataCollection::class.':'.SandboxVerdictData::class,
+            'protection_runs' => DataCollection::class.':'.ProtectionRunData::class,
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
             'failing_since' => 'immutable_datetime',
@@ -122,7 +131,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $host->start_roots = $startRoots;
         $host->arrangement = $arrangement;
         $host->order_secret = self::orderSecretOf($secret);
-        $host->assertSaved($host->save());
+        $host->saveAndAssert();
 
         return $host;
     }
@@ -134,8 +143,36 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $reports = $this->protection->items();
         $reports[$report->key()] = $report->data();
         $this->protection = ProtectionReportData::collect($reports, DataCollection::class);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostProtectionRecorded($this->id));
+    }
+
+    /**
+     * The isolation probes found whether Claude Code's sandbox runs in the agent image.
+     */
+    public function recordSandboxVerdict(string $image, SandboxVerdict $verdict): void
+    {
+        $verdicts = $this->sandbox_verdicts->items();
+        $verdicts[$image] = new SandboxVerdictData($image, $verdict->isRunnable, $verdict->why);
+        $this->sandbox_verdicts = SandboxVerdictData::collect($verdicts, DataCollection::class);
+        $this->saveAndAssert();
+    }
+
+    /**
+     * The operator recorded a run that showed each item hold under the report key.
+     *
+     * @param  list<BoundaryItem>  $items
+     */
+    public function recordProtectionRuns(string $key, array $items, string $run): void
+    {
+        $runs = $this->protection_runs->items();
+
+        foreach ($items as $item) {
+            $runs[] = new ProtectionRunData($key, $item->value, $run);
+        }
+
+        $this->protection_runs = ProtectionRunData::collect($runs, DataCollection::class);
+        $this->saveAndAssert();
     }
 
     /**
@@ -144,7 +181,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function recordHeartbeat(CarbonImmutable $at): void
     {
         $this->last_heartbeat_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostHeartbeatRecorded($this->id));
     }
 
@@ -157,7 +194,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->failing_since ??= $at;
         $this->failing_route ??= $route;
         $this->last_failure = "{$route} answered {$status}: {$reason}";
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostCallFailed($this->id));
     }
 
@@ -189,18 +226,34 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             $this->reported_failures = FailedHostCallData::collect($reported, DataCollection::class);
         }
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostCallAnswered($this->id));
     }
 
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HostRevoked($this->id));
     }
 
     // ----------[ Predicates ]----------
+
+    /**
+     * Whether the isolation probes found yet whether Claude Code's sandbox runs in the image.
+     */
+    public function hasSandboxVerdictFor(string $image): bool
+    {
+        return array_key_exists($image, $this->sandbox_verdicts->items());
+    }
+
+    /**
+     * Whether the journal judged the protection kept under the report's key.
+     */
+    public function hasProtectionOf(ProtectionReport $unreported): bool
+    {
+        return array_key_exists($unreported->key(), $this->protection->items());
+    }
 
     /**
      * Whether the host runs starts of this placement: a contained host in containers, a local one on the host.
@@ -291,7 +344,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function recordCapabilities(array $capabilities): void
     {
         $this->capabilities = $capabilities;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -302,7 +355,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function allowImages(array $images): void
     {
         $this->allowed_images = $images;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -335,7 +388,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             $this->upgrade_order_id = null;
         }
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -346,7 +399,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->upgrade_release = $release;
         $this->upgrade_order_id = null;
         $this->upgrade_failure = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -355,7 +408,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public function orderUpgrade(string $orderId): void
     {
         $this->upgrade_order_id = $orderId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -366,7 +419,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         $this->upgrade_release = null;
         $this->upgrade_order_id = null;
         $this->upgrade_failure = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
     }
 
     /**
@@ -411,6 +464,34 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         }
 
         return $reports[$key]->report();
+    }
+
+    /**
+     * Whether Claude Code's sandbox runs in the image, as the probes found; refused while they have not run there.
+     */
+    public function sandboxVerdictFor(string $image): SandboxVerdict
+    {
+        $verdicts = $this->sandbox_verdicts->items();
+
+        if (! array_key_exists($image, $verdicts)) {
+            return SandboxVerdict::refused("the isolation probes have not run in the agent image {$image} yet");
+        }
+
+        return $verdicts[$image]->verdict();
+    }
+
+    /**
+     * The runs recorded on this host, by report key and item; a later run of an item replaces an earlier one.
+     */
+    public function protectionEvidence(): ProtectionEvidence
+    {
+        $runs = [];
+
+        foreach ($this->protection_runs->items() as $recorded) {
+            $runs[$recorded->key][$recorded->item] = $recorded->run;
+        }
+
+        return new ProtectionEvidence($runs);
     }
 
     // ----------[ Calculations ]----------
@@ -465,6 +546,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             return "The host {$this->installation_name} has not called the journal since "
                 ."{$this->last_answered_at?->format('H:i T')}.";
         });
+    }
+
+    /**
+     * The sentence a host running another release than the journal's shows, with what the owner can do about it.
+     *
+     * @return non-falsy-string
+     */
+    public function releaseAlarm(string $journalRelease): string
+    {
+        return "The host {$this->installation_name} runs release {$this->release}, not the journal's {$journalRelease}: "
+            .'run its install line again on that machine to bring it up to date.';
     }
 
     // ----------[ Asserts ]----------
@@ -561,6 +653,22 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     public static function findSilentSince(CarbonImmutable $since): array
     {
         return array_values(self::query()->unrevoked()->silentSince($since)->lockForUpdate()->get()->all());
+    }
+
+    /**
+     * The hosts, locked, whose awaited upgrade order was answered done before the moment while no inventory has named
+     * the release it brings.
+     *
+     * @return list<self>
+     */
+    public static function findUpgradesAnsweredDoneBefore(CarbonImmutable $before): array
+    {
+        return array_values(self::query()->unrevoked()
+            ->whereNotNull('upgrade_release')
+            ->whereIn('upgrade_order_id', HostOrder::query()->answeredDoneBefore($before)->select('id'))
+            ->lockForUpdate()
+            ->get()
+            ->all());
     }
 
     public static function findForSecret(string $secret): self
@@ -735,6 +843,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             ->orWhere(fn (Builder $quiet) => $quiet
                 ->where('arrangement', ArrangementType::Contained)
                 ->where('last_answered_at', '<', $quietSince)));
+    }
+
+    /**
+     * The hosts whose inventory named a release other than the given one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runningAnotherReleaseThan(Builder $query, string $release): void
+    {
+        $query->whereNotNull('release')->where('release', '!=', $release);
     }
 
     /**

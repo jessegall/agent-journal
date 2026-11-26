@@ -59,7 +59,7 @@ final class ReaderPosition extends JournalModel implements EventSource, Readable
     public function markFailed(): void
     {
         $this->interpretation = InterpretationStatus::ReaderFailed;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ReaderPositionFailed($this->id));
     }
 
@@ -70,14 +70,14 @@ final class ReaderPosition extends JournalModel implements EventSource, Readable
     {
         $this->checkpoint = $consumed;
         $this->interpretation = InterpretationStatus::Provisional;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ReaderPositionRewound($this->id));
     }
 
     public function advance(ReaderCheckpoint $checkpoint): void
     {
         $this->checkpoint = $checkpoint;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ReaderPositionAdvanced($this->id));
     }
 

@@ -52,7 +52,7 @@ final class Layout extends JournalModel implements EventSource, ReadableModel
         $layout->user_id = $userId;
         $layout->name = $name;
         $layout->shape = $shape;
-        $layout->assertSaved($layout->save());
+        $layout->saveAndAssert();
 
         return $layout;
     }
@@ -66,7 +66,7 @@ final class Layout extends JournalModel implements EventSource, ReadableModel
     {
         $this->name = $name;
         $this->shape = $shape;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new LayoutSaved($this->id));
     }
 

@@ -67,7 +67,7 @@ final class SkillContextEpoch extends JournalModel implements EventSource, Reada
     public function advance(): void
     {
         $this->epoch++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SkillContextEpochAdvanced($this->id));
     }
 

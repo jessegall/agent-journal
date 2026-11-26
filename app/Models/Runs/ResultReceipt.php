@@ -80,7 +80,7 @@ final class ResultReceipt extends JournalModel implements EventSource, ProjectOw
         $resultReceipt->manifest_digest = $verified->manifestDigest;
         $resultReceipt->output_assessment_id = $verified->assessment->id;
         $resultReceipt->outcome = $verified->assessment->outcome;
-        $resultReceipt->assertSaved($resultReceipt->save());
+        $resultReceipt->saveAndAssert();
 
         return $resultReceipt;
     }
@@ -93,7 +93,7 @@ final class ResultReceipt extends JournalModel implements EventSource, ProjectOw
     public function supersedeBy(self $newer): void
     {
         $this->superseded_by_id = $newer->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ResultReceiptSuperseded($this->id, $newer->id));
     }
 

@@ -24,7 +24,7 @@ final class FixtureNote extends Model implements EventSource
     public function finish(): void
     {
         $this->state = 'finished';
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new FixtureFinished((string) $this->id));
     }
 

@@ -99,7 +99,7 @@ final class Agent extends JournalModel implements
         $agent->name = $name;
         $agent->project_id = $project->id;
         $agent->profile_key = $profileKey;
-        $agent->assertSaved($agent->save());
+        $agent->saveAndAssert();
 
         return $agent;
     }
@@ -113,7 +113,7 @@ final class Agent extends JournalModel implements
     public function preferDriverType(DriverType $driverType): void
     {
         $this->driver_type_preference = $driverType;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentDriverTypePreferred($this->id, $driverType));
     }
 
@@ -124,7 +124,7 @@ final class Agent extends JournalModel implements
     {
         $this->runtime_generation++;
         $this->current_session_id = $session->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeAdopted($this->id, $session->id, $this->runtime_generation));
     }
 
@@ -135,14 +135,14 @@ final class Agent extends JournalModel implements
     {
         $this->runtime_generation++;
         $this->current_session_id = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimesFenced($this->id, $this->runtime_generation));
     }
 
     public function retireAt(CarbonInterface $retiredAt): void
     {
         $this->retired_at = CarbonImmutable::instance($retiredAt);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRetired($this->id));
     }
 

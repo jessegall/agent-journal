@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Enums\Agents\ConversationModeType;
+use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverCapability;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartOriginType;
@@ -35,17 +36,24 @@ final readonly class StartRequest
     ) {}
 
     /**
-     * What the start needs of its driver beyond its profiles' requirements: a resume needs the exact conversation.
+     * What the start needs of its driver beyond its profiles' requirements: a resume needs the exact conversation, and
+     * a start that must run in a container needs a driver that can.
      *
      * @return list<DriverCapability>
      */
     public function neededCapabilities(): array
     {
+        $needed = [];
+
         if ($this->conversationMode === ConversationModeType::Resume) {
-            return [DriverCapability::ExactResume];
+            $needed[] = DriverCapability::ExactResume;
         }
 
-        return [];
+        if ($this->execution()->mode === ExecutionModeType::RequiredContainer) {
+            $needed[] = DriverCapability::RunContained;
+        }
+
+        return $needed;
     }
 
     public function execution(): ExecutionPolicy

@@ -6,6 +6,8 @@ namespace App\Values;
 
 use App\Data\Profiles\ProtectedItemData;
 use App\Data\Profiles\ProtectionReportData;
+use App\Enums\Drivers\BoundaryItem;
+use App\Enums\Drivers\IsolationPlatform;
 use App\Enums\Drivers\StartProfileType;
 
 /**
@@ -33,12 +35,36 @@ final readonly class ProtectionReport
     }
 
     /**
+     * The report of a driver's build on a platform, each item judged from the platform's mechanisms and the host's
+     * recorded runs.
+     */
+    public static function judge(
+        string $driver,
+        string $build,
+        IsolationPlatform $platform,
+        BoundaryMechanisms $mechanisms,
+        ProtectionEvidence $evidence,
+    ): self {
+        $key = self::keyOf($driver, $build, $platform->value);
+
+        $judged = fn (BoundaryItem $item) => ProtectedItem::judged(
+            $item,
+            $mechanisms->of($item),
+            $evidence->runOf($key, $item),
+        );
+
+        $items = array_map($judged, BoundaryItem::cases());
+
+        return new self($driver, $build, $platform->value, $items);
+    }
+
+    /**
      * The key a host keeps a report under, one per driver, build and platform; the standard container's keeps the
      * key reports had before protected starts had their own.
      */
     private static function keyOf(string $driver, string $build, string $platform): string
     {
-        if ($platform === StartProfileType::Standard->protectionPlatform()) {
+        if ($platform === StartProfileType::Standard->protectionPlatform()->value) {
             return "{$driver}@{$build}";
         }
 
@@ -103,7 +129,7 @@ final readonly class ProtectionReport
     {
         if ($this->items === []) {
             return "no contained host has reported the protection of {$this->driver} {$this->build} in the "
-                ."agent image for {$this->platform} (journal-agent protection --arrangement=contained)";
+                ."agent image for {$this->platform}";
         }
 
         $unenforced = $this->unenforced();

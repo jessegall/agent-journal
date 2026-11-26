@@ -124,7 +124,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->profile_key = $selection->source->profileKey;
         $this->profile_revision = $selection->source->profileRevision;
         $this->start_request_id = $requestId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionSelectionUsed($this->id, $requestId));
     }
 
@@ -134,14 +134,14 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     public function recordSkillGeneration(string $generationId): void
     {
         $this->skill_generation_id = $generationId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionSkillsGenerated($this->id, $generationId));
     }
 
     public function enterConversation(DriverConversation $conversation): void
     {
         $this->current_conversation_id = $conversation->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionConversationEntered($this->id));
     }
 
@@ -152,7 +152,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     public function keepDriverLabel(string $label): void
     {
         $this->driver_label = $label;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionDriverLabelKept($this->id, $label));
     }
 
@@ -160,7 +160,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     {
         $this->status = SessionStatus::Ended;
         $this->ended_at = $time;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionEnded($this->id));
     }
 
@@ -172,7 +172,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         $this->last_heartbeat_at = $time;
         $this->silent_since = null;
         $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentSessionHeartbeatRecorded($this->id));
     }
 

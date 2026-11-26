@@ -185,7 +185,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     {
         $this->status = $status;
         $this->cleanup_pending = $status !== SignInStatus::Complete;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $status));
     }
 
@@ -276,7 +276,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     public function releaseForHost(): void
     {
         $this->waits_for_uses = false;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SignInAttemptReleased($this->account_protocol, $this->id, $this->account_id));
     }
 
@@ -462,7 +462,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     {
         $this->status = SignInStatus::Starting;
         $this->expires_at = $expiresAt;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SignInAttemptStarted($this->account_protocol, $this->id, $this->account_id));
     }
 

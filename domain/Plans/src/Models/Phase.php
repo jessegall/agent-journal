@@ -115,7 +115,7 @@ final class Phase extends JournalModel implements Assignable, EventSource, Numbe
     public function advanceRevision(): void
     {
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PhaseRevisionAdvanced($this->plan_id, $this->id));
     }
 
@@ -129,7 +129,7 @@ final class Phase extends JournalModel implements Assignable, EventSource, Numbe
         $this->cancelled_tasks = $progress->cancelled;
         $this->blocked_tasks = $progress->blocked;
         $this->started_tasks = $progress->started;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new PhaseProgressRecorded($this->plan_id, $this->id));
     }
 

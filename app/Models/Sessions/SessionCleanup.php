@@ -101,7 +101,7 @@ final class SessionCleanup extends JournalModel implements EventSource, Readable
         $this->last_error = $report->failure;
         $this->attempts += $report->hasFailed() ? 1 : 0;
         $this->status = $this->stateAfterPass();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new CleanupPassRecorded($this->id, $this->status));
     }
 

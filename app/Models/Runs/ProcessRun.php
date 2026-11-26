@@ -240,7 +240,7 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
             $this->shown_at = $this->heartbeat_at;
         }
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
 
         if ($outlasted) {
             $this->raise(new ProcessRunOutlasted($this->id, $this->owningActor()));

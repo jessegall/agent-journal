@@ -77,7 +77,7 @@ final class AccountUsageWindow extends JournalModel implements EventSource, Read
         $window->slot = $reading->slot;
 
         $window->fillWith($reading);
-        $window->assertSaved($window->save());
+        $window->saveAndAssert();
         $window->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 

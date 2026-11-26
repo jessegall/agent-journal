@@ -79,7 +79,7 @@ final class Sequence extends JournalModel implements EventSource, ProjectOwned, 
         $sequence->name = $name;
         $sequence->summary = $summary;
         $sequence->steps = self::stored($steps);
-        $sequence->assertSaved($sequence->save());
+        $sequence->saveAndAssert();
         $sequence->raise(new SequenceDefined($sequence->id));
 
         return $sequence;
@@ -98,7 +98,7 @@ final class Sequence extends JournalModel implements EventSource, ProjectOwned, 
         $this->summary = $summary;
         $this->steps = self::stored($steps);
         $this->version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SequenceChanged($this->id));
     }
 

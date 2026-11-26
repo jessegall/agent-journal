@@ -125,14 +125,14 @@ final class TerminalView extends JournalModel implements EventSource, ReadableMo
     {
         $this->agent_runtime_id = $runtime->id;
         $this->process_generation = $runtime->process_generation;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalViewFollowed($this->id, $runtime->id));
     }
 
     public function close(CarbonImmutable $now): void
     {
         $this->closed_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalViewClosed($this->id));
     }
 

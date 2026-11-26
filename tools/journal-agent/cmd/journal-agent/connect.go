@@ -14,6 +14,7 @@ import (
 
 	"journal-agent/client"
 	"journal-agent/host"
+	"journal-agent/upgrade"
 	"journal-agent/project"
 )
 
@@ -78,7 +79,8 @@ func connect(arguments []string) error {
 	if err != nil {
 		return err
 	}
-	if err := host.StartRelay(program, *stateFolder, binding.BindingID); err != nil {
+	relay := upgrade.Binding{State: connection.state}.RelayProgram(program)
+	if err := host.StartRelay(relay, *stateFolder, binding.BindingID); err != nil {
 		return err
 	}
 	dispatcher := filepath.Join(installation.Folder, "bin", "journal")

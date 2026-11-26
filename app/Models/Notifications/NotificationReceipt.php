@@ -84,7 +84,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
         }
 
         $this->read_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationReceiptRead($this->id));
 
         return true;
@@ -100,7 +100,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
         }
 
         $this->hidden_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationReceiptHidden($this->id));
 
         return true;
@@ -116,7 +116,7 @@ final class NotificationReceipt extends JournalModel implements EventSource, Rea
         }
 
         $this->hidden_at = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new NotificationReceiptRevealed($this->id));
 
         return true;

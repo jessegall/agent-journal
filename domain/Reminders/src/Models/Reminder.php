@@ -85,7 +85,7 @@ final class Reminder extends JournalModel implements EventSource, ReadableModel
         $this->assertWaiting();
 
         $this->status = ReminderStatus::Done;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ReminderFinished($this->id));
     }
 

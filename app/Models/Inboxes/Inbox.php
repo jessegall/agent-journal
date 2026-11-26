@@ -93,7 +93,7 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
         $inbox->name = $name;
         $inbox->label = $label;
         $inbox->forwards_members = $forwardsMembers;
-        $inbox->assertSaved($inbox->save());
+        $inbox->saveAndAssert();
 
         $inbox->raise(new InboxOpened($inbox->id));
 
@@ -108,7 +108,7 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
     public function takeMessageNumber(): int
     {
         $this->last_message_number++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new InboxMessageNumberTaken($this->id));
 
         return $this->last_message_number;

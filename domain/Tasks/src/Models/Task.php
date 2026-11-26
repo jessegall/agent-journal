@@ -165,7 +165,7 @@ final class Task extends JournalModel implements
         $task->creator_id = $creator->actorId();
         $task->project_id = $owner->projectId();
         $task->environment_id = $environmentIds[0] ?? null;
-        $task->assertSaved($task->save());
+        $task->saveAndAssert();
 
         return $task;
     }
@@ -180,7 +180,7 @@ final class Task extends JournalModel implements
         $this->title = $title;
         $this->brief = $brief;
         $this->revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskDescribed($this->id));
     }
 
@@ -200,7 +200,7 @@ final class Task extends JournalModel implements
 
         $previousState = $this->status;
         $this->status = TaskStatus::Started;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskStarted($this->id, $actor, $previousState, (string) Str::ulid()));
     }
 
@@ -209,7 +209,7 @@ final class Task extends JournalModel implements
         $previousState = $this->status;
         $this->status = TaskStatus::Finished;
         $this->result_note = $note;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskFinished($this->id, $previousState, (string) Str::ulid()));
     }
 
@@ -218,7 +218,7 @@ final class Task extends JournalModel implements
         $previousState = $this->status;
         $this->status = TaskStatus::Blocked;
         $this->block_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskBlocked($this->id, $previousState, (string) Str::ulid()));
     }
 
@@ -227,7 +227,7 @@ final class Task extends JournalModel implements
         $previousState = $this->status;
         $this->status = TaskStatus::Cancelled;
         $this->cancel_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 

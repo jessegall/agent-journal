@@ -166,7 +166,7 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
         $this->version++;
         $this->open = false;
         $this->pending_target = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AskClosed($this->id, $this->type_key->key));
     }
 

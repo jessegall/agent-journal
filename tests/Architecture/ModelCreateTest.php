@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use Symfony\Component\Process\Process;
+use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -19,9 +19,8 @@ final class ModelCreateTest extends TestCase
 
     public function test_every_model_makes_its_new_rows_through_create(): void
     {
-        $check = new Process([PHP_BINARY, 'tools/refactoring/model-constructors.php', 'app', 'domain'], base_path());
-        $check->run();
+        $check = ToolCheck::run([PHP_BINARY, 'tools/refactoring/model-constructors.php', 'app', 'domain']);
 
-        $this->assertSame('', trim($check->getOutput()), self::HOW_TO_FIX.$check->getOutput());
+        $this->assertSame('', trim($check->output()), self::HOW_TO_FIX.$check->output());
     }
 }

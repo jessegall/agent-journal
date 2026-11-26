@@ -78,7 +78,7 @@ final class SupervisorLink extends JournalModel implements EventSource, Readable
             $key => $this->versionFor($type) + 1,
         ];
 
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SupervisorLinkChanged($this->id));
     }
 

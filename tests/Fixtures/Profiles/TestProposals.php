@@ -34,6 +34,7 @@ final class TestProposals
         array $requiredSkills = [],
         array $withheldGrants = [],
         InstancePolicy $instances = InstancePolicy::Reusable,
+        string $preferredDriver = DefaultDrivers::CLAUDE_CODE,
     ): ProposedProfile {
         return new ProposedProfile(
             ProfileKey::from($key),
@@ -41,7 +42,7 @@ final class TestProposals
             $type,
             $instructions,
             $tier,
-            DefaultDrivers::CODEX,
+            $preferredDriver,
             $skillAllowlist,
             $requiredSkills,
             null,

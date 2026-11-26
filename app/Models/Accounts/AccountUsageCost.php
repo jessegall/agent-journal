@@ -81,7 +81,7 @@ final class AccountUsageCost extends JournalModel implements EventSource, Readab
         $entry->usd = $cost->usd->amount;
         $entry->observed_at = $cost->observedTime();
 
-        $entry->assertSaved($entry->save());
+        $entry->saveAndAssert();
         $entry->raise(new AccountUsageChanged($account->account_protocol, $account->id));
     }
 

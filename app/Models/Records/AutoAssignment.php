@@ -106,7 +106,7 @@ final class AutoAssignment extends JournalModel implements EventSource, Readable
         $this->pool = $pool;
         $this->size = $size;
         $this->configuration_revision++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AutoAssignmentConfigured($this->id, $isEnabled, $size));
 
         return true;

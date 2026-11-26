@@ -73,7 +73,7 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
         $entry->text = $text;
         $entry->sequence = self::resolveNextSequence($task);
 
-        $entry->assertSaved($entry->save());
+        $entry->saveAndAssert();
         $entry->raise(new TaskLogged($task->id, $entry->id));
 
         return $entry;

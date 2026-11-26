@@ -102,7 +102,7 @@ final class HelperIdentity extends JournalModel implements EventSource, ProjectO
     public function designate(): self
     {
         $this->designated_profile = $this->profile_key;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperDesignated($this->id));
 
         return $this;
@@ -119,7 +119,7 @@ final class HelperIdentity extends JournalModel implements EventSource, ProjectO
         }
 
         $this->designated_profile = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HelperDesignationReleased($this->id));
     }
 

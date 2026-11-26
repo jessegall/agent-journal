@@ -55,7 +55,7 @@ final class Profile extends JournalModel implements EventSource, ReadableModel
         $profile = new self();
         $profile->key = $key->key;
         $profile->name($label, $description);
-        $profile->assertSaved($profile->save());
+        $profile->saveAndAssert();
 
         return $profile;
     }
@@ -68,7 +68,7 @@ final class Profile extends JournalModel implements EventSource, ReadableModel
     public function retire(): void
     {
         $this->retired_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProfileRetired($this->id));
     }
 

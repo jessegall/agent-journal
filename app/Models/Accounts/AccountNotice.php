@@ -59,7 +59,7 @@ final class AccountNotice extends JournalModel implements EventSource, ReadableM
         $notice = new self();
         $notice->driver = $driver;
         $notice->reason = $reason;
-        $notice->assertSaved($notice->save());
+        $notice->saveAndAssert();
         $notice->raise(new AccountNoticeRecorded($notice->driver, $notice->id));
 
         return $notice;
@@ -73,7 +73,7 @@ final class AccountNotice extends JournalModel implements EventSource, ReadableM
     public function countAgain(): void
     {
         $this->times++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountNoticeRecorded($this->driver, $this->id));
     }
 
@@ -83,7 +83,7 @@ final class AccountNotice extends JournalModel implements EventSource, ReadableM
     public function resolveAt(CarbonImmutable $now): void
     {
         $this->resolved_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AccountNoticeResolved($this->driver, $this->id));
     }
 

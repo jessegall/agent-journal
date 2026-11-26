@@ -32,6 +32,20 @@ func (binding Binding) Release() string {
 	return strings.TrimSpace(string(content))
 }
 
+// RelayProgram is the journal-agent a relay of this binding starts from: the switched release's when its folder
+// verifies, else the fallback, the installation the caller runs from.
+func (binding Binding) RelayProgram(fallback string) string {
+	release := binding.Release()
+	if release == "" {
+		return fallback
+	}
+	if _, err := (host.Installation{Folder: release}).Verify(); err != nil {
+		return fallback
+	}
+
+	return filepath.Join(release, "bin", "journal-agent")
+}
+
 // IsDraining is whether the binding refuses new starts while an upgrade waits for its last runtime.
 func (binding Binding) IsDraining() bool {
 	_, err := os.Stat(binding.drainMark())

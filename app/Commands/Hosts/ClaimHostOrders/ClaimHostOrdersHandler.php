@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Commands\Hosts\ClaimHostOrders;
 
 use App\Commands\Hosts\AllowHostImages\AllowHostImagesCommand;
+use App\Commands\Hosts\RequestHostProtection\RequestHostProtectionCommand;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\ServerClock;
@@ -38,6 +39,12 @@ final readonly class ClaimHostOrdersHandler implements CommandHandler
     {
         $host = $this->placement->orderingHost($command->hostId);
         $this->allowAgentImageOn($host);
+
+        if ($host->arrangement->isContained()) {
+            $protection = new RequestHostProtectionCommand($host->id);
+            $this->commands->runAsJournal(CommandEntry::HostControl, self::TRUSTED_ENTRY, $protection);
+        }
+
         $now = $this->clock->now();
         $claimed = [];
 

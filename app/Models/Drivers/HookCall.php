@@ -63,7 +63,7 @@ final class HookCall extends JournalModel implements EventSource, ReadableModel
         $this->input_digest = $hook->inputDigest;
         $this->answer = $answer;
         $this->steps = $steps;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new HookCallRecorded($this->id));
     }
 

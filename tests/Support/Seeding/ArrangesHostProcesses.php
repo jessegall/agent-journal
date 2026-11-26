@@ -11,6 +11,7 @@ use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\DriverWork;
 use App\Agents\Drivers\Work\DriverWorkers;
 use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
+use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
@@ -19,10 +20,14 @@ use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
 use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Contracts\Drivers\ProcessDriver;
+use App\Contracts\Files\Files;
 use App\Contracts\Hosts\HostChannel;
 use App\Data\Hosts\HostProcessReportData;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Agents\WorkspaceUse;
+use App\Enums\Files\Permissions;
+use App\Enums\Files\Place;
+use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
@@ -223,6 +228,22 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * Names the host's newest process of the purpose, one the journal opened for the host itself, such as a probe of
+     * the agent image, so the test can report on it.
+     */
+    public function callHostProcessOf(string $name, string $host, HostProcessPurpose $purpose): self
+    {
+        $this->hostProcesses[$name] = HostProcess::query()
+            ->where('host_id', $this->hostCalled($host)->hostId)
+            ->where('purpose', $purpose)
+            ->latest('id')
+            ->firstOrFail()
+            ->id;
+
+        return $this;
+    }
+
+    /**
      * The runtime's build probe, which the journal ordered, prints the pinned build, so its sign-in probe is ordered
      * next; both are named for the test as <name>-probe and <name>-sign-in.
      */
@@ -233,6 +254,67 @@ trait ArrangesHostProcesses
         $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "{$build} (Claude Code)\n"));
 
         return $this->callJournalProcess("{$name}-sign-in", $runtimeId, HostProcessPurpose::SignInProbe);
+    }
+
+    /**
+     * The Codex runtime's build probe prints the pinned build, its account holds a sign-in file and its sign-in probe
+     * prints a ChatGPT sign-in, so its start is proven; the probes are named <name>-probe and <name>-sign-in.
+     */
+    public function passCodexProbes(string $name, string $runtimeId): self
+    {
+        $build = $this->driverProfile(DefaultDrivers::CODEX)->build();
+        $this->callJournalProcess("{$name}-probe", $runtimeId, HostProcessPurpose::BuildProbe);
+        $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "codex-cli {$build}\n"));
+        $this->callJournalProcess("{$name}-sign-in", $runtimeId, HostProcessPurpose::SignInProbe);
+        $signIn = $this->hostProcessCalled("{$name}-sign-in");
+        $files = $this->service(Files::class);
+        $folder = $files->pathIn(Place::Accounts, $signIn->sessionProcess()->sole()->directory);
+        $files->makeFolder($folder, Permissions::OwnerOnly);
+        $files->write($folder->child('auth.json'), '{}', Permissions::OwnerOnly);
+        $this->asSystem(new CheckSignInCommand($signIn->id, "Logged in using ChatGPT\n"));
+
+        return $this;
+    }
+
+    /**
+     * Every JSON line the journal ordered written to the named pipe process's input, decoded, in order.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function pipeInputOf(string $name): array
+    {
+        $writes = array_filter(
+            $this->hostOrdersOf($name),
+            fn (HostOrder $order) => $order->type === HostOrderType::WriteStdin,
+        );
+
+        return array_values(array_map(
+            fn (HostOrder $order) => json_decode(base64_decode($this->payloadOf($order)['bytes']), true, flags: JSON_THROW_ON_ERROR),
+            $writes,
+        ));
+    }
+
+    /**
+     * Names the live owner that runs the headless turns of the runtime's current start's account.
+     */
+    public function callAccountOwner(string $name, string $runtimeId): self
+    {
+        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
+        $start = SessionProcess::findCurrentOf($runtime->agent_session_id) ?? throw FixtureRefused::missingAlias(
+            'current start',
+            $runtimeId,
+            self::OWNER,
+        );
+
+        $this->hostProcesses[$name] = HostProcess::query()
+            ->ofPurposes([HostProcessPurpose::AccountOwner])
+            ->live()
+            ->whereHas('sessionProcess', fn ($owned) => $owned->onAccountGenerationOf($start))
+            ->latest('id')
+            ->firstOrFail()
+            ->id;
+
+        return $this;
     }
 
     /**

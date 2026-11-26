@@ -116,7 +116,7 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
         $receipt->answers_until = $retention->answersUntil($now);
         $receipt->refuses_until = $retention->refusesUntil($now);
         $receipt->status = ReceiptStatus::Taken;
-        $receipt->assertSaved($receipt->save());
+        $receipt->saveAndAssert();
 
         return $receipt;
     }
@@ -127,7 +127,7 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
     {
         $this->status = ReceiptStatus::Completed;
         $this->result = ReceiptResultData::of($reply);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new CommandReceiptCompleted($this->id));
     }
 
@@ -145,7 +145,7 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
         $this->refusal_code = $code->value;
         $this->refusal_message = $message;
         $this->refusal_recovery = $recovery;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new CommandReceiptRefused($this->id, $code));
     }
 

@@ -46,7 +46,7 @@ final class BindingRuntime extends JournalModel implements EventSource, Readable
         $start->start_id = $startId;
         $start->session_id = $sessionId;
         $start->runtime_id = $runtimeId;
-        $start->assertSaved($start->save());
+        $start->saveAndAssert();
         $start->raise(new BindingRuntimeRecorded($bindingId, $startId, $runtimeId, CarbonImmutable::now()));
 
         return $start;

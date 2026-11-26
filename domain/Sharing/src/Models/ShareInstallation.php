@@ -82,7 +82,7 @@ final class ShareInstallation extends JournalModel implements EventSource, Reada
         $takesOver = $this->run_id !== $runId;
         $this->run_id = $runId;
         $this->run_lease_ends_at = CarbonImmutable::now()->addSeconds(self::RUN_LEASE_SECONDS);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ShareInstallationHeld($this->id, $runId));
 
         return $takesOver;

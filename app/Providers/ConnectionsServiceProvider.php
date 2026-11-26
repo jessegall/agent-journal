@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Agents\Drivers\Codex\CodexAppDriver;
 use App\Agents\Drivers\Processes\HeadlessDriver;
 use App\Agents\Drivers\Processes\ProbeDriver;
 use App\Agents\Drivers\Processes\ProcessDrivers;
 use App\Agents\Drivers\Processes\TerminalDriver;
 use App\Agents\Drivers\Work\WorkerLease;
+use App\Commands\Hosts\MarkFailedUpgrades\MarkFailedUpgradesCommand;
 use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Commands\Hosts\SweepHostOrders\SweepHostOrdersCommand;
 use App\Concerns\LoadsCoreRoutes;
@@ -68,8 +70,11 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
             ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
             ->with(HostProcessPurpose::AgentTerminal, TerminalDriver::class)
+            ->with(HostProcessPurpose::AccountOwner, CodexAppDriver::class)
             ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
-            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
+            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class)
+            ->with(HostProcessPurpose::RelayProbe, ProbeDriver::class)
+            ->with(HostProcessPurpose::SandboxProbe, ProbeDriver::class));
 
         $this->app->singleton(WorkerLease::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);
@@ -115,6 +120,14 @@ final class ConnectionsServiceProvider extends ServiceProvider
                     CommandEntry::HostControl,
                     'silent host check',
                     new MarkSilentHostsCommand(),
+                ))
+                ->everyThirtySeconds();
+
+            $schedule
+                ->call(fn (JournalCommands $commands) => $commands->runAsJournal(
+                    CommandEntry::HostControl,
+                    'failed upgrade check',
+                    new MarkFailedUpgradesCommand(),
                 ))
                 ->everyThirtySeconds();
 

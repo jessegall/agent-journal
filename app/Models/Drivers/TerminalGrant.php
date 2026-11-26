@@ -111,7 +111,7 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
     public function sendTakeWith(DriverRequest $request): void
     {
         $this->take_request_id = $request->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalTakeSent($this->id, $request->id));
     }
 
@@ -126,21 +126,21 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
 
         $this->grant_id = $grantId;
         $this->status = TerminalGrantStatus::Granted;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantIssued($this->id));
     }
 
     public function refuse(): void
     {
         $this->status = TerminalGrantStatus::Refused;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantRefused($this->id));
     }
 
     public function renew(CarbonImmutable $now): void
     {
         $this->expires_at = $now->addSeconds(self::LIFETIME_SECONDS);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantRenewed($this->id));
     }
 
@@ -151,7 +151,7 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
     {
         $this->status = TerminalGrantStatus::Releasing;
         $this->release_request_id = $request->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantGivenBack($this->id, $request->id));
     }
 
@@ -165,7 +165,7 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
         }
 
         $this->status = TerminalGrantStatus::Released;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantReleased($this->id));
     }
 
@@ -176,7 +176,7 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
     {
         $this->status = TerminalGrantStatus::Retired;
         $this->release_request_id = $release->id;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantRetired($this->id, $release->id));
     }
 
@@ -187,7 +187,7 @@ final class TerminalGrant extends JournalModel implements EventSource, ReadableM
     {
         $sequence = $this->next_sequence;
         $this->next_sequence++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new TerminalGrantSequenceTaken($this->id, $sequence));
 
         return $sequence;

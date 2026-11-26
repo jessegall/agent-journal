@@ -153,7 +153,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function markStopping(): void
     {
         $this->activity = RuntimeActivity::Stopping;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeStopRequested($this->id));
     }
 
@@ -163,7 +163,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function holdFor(HoldReason $reason): void
     {
         $this->hold_reason = $reason;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeHeld($this->id, $reason));
     }
 
@@ -174,7 +174,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function closeAfterExit(): void
     {
         $this->activity = RuntimeActivity::Stopped;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeClosed($this->id));
     }
 
@@ -187,7 +187,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->hold_reason = HoldReason::None;
         $this->process_generation = 1;
         $this->generation_started_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeStarted($this->id));
     }
 
@@ -199,7 +199,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     {
         $this->last_observed_at = $at;
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeConfirmedAlive($this->id));
     }
 
@@ -226,7 +226,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->last_observed_at = $at;
         $this->observation_sequence++;
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeObserved($this->id, $activity, $processGeneration));
 
         return true;
@@ -240,7 +240,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->observed_model = $model ?? $this->observed_model;
         $this->observed_effort = $effort ?? $this->observed_effort;
         $this->settings_observed_at = $at;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeSettingsObserved($this->id));
     }
 
@@ -250,7 +250,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function holdStartGrant(string $token): void
     {
         $this->start_grant = $token;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeStartGrantHeld($this->id));
     }
 
@@ -271,12 +271,13 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The conversation every turn of a runtime the journal opens itself continues, chosen once when it opens.
+     * The conversation every turn of a runtime the journal opens itself continues, chosen when it opens, or when its
+     * driver names the conversation it started.
      */
     public function chooseConversation(string $conversationId): void
     {
         $this->conversation_id = $conversationId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeConversationChosen($this->id));
     }
 
@@ -286,7 +287,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function proveStart(CarbonImmutable $now): void
     {
         $this->start_proven_at = $now;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeStartProven($this->id));
     }
 
@@ -333,7 +334,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     {
         $token = $this->start_grant;
         $this->start_grant = null;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeStartGrantClaimed($this->id));
 
         return $token;
@@ -359,7 +360,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
 
         $this->requested_model = $modelChange?->model;
         $this->requested_effort = $effortChange?->effort;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeRequestedSettingsRecomputed($this->id));
     }
 
@@ -372,7 +373,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->process_generation++;
         $this->generation_started_at = $at;
         $this->row_version++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeProcessGenerationAdvanced($this->id, $this->process_generation));
     }
 
@@ -387,7 +388,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->activity = RuntimeActivity::Starting;
         $this->hold_reason = HoldReason::None;
         $this->start_grant = $sessionToken;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new AgentRuntimeHostChanged($this->id, $hostId, $this->process_generation));
     }
 

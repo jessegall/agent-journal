@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Contracts;
 
-use App\Contracts\Events\EventSource;
 use App\Concerns\RaisesEvents;
+use App\Contracts\Events\EventSource;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -42,7 +42,7 @@ final class RaisingRow extends Model implements EventSource
     public function rename(string $name): void
     {
         $this->name = $name;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RowRenamed($this->id, $name));
     }
 
@@ -52,7 +52,7 @@ final class RaisingRow extends Model implements EventSource
     public function countVisit(): void
     {
         $this->times++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RowRenamed($this->id, $this->name));
     }
 

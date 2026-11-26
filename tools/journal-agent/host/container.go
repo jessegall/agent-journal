@@ -325,13 +325,14 @@ func (rules ContainerRules) permitsImage(image string) bool {
 }
 
 // permit is whether the mounts fit the arrangement: a local helper has exactly one folder of this machine; a
-// contained one has one to four mounts of the agent daemon, each on its own allowed folder.
+// contained one has at most four mounts of the agent daemon, each on its own allowed folder.
 func (rules ContainerRules) permit(mounts []ContainerMount) bool {
 	if !rules.Arrangement.IsContained() {
 		return len(mounts) == 1 && mounts[0].Type == MountBind
 	}
 
-	if len(mounts) == 0 || len(mounts) > len(containedTargets) {
+	// A probe of the image mounts nothing; a session mounts at most one of each contained target.
+	if len(mounts) > len(containedTargets) {
 		return false
 	}
 
@@ -608,19 +609,7 @@ const agentUser = "10001:10001"
 // agentUID is the agent's user id, the owner every folder it works in must have.
 const agentUID = 10001
 
-// RunCheck runs one program of the agent image in a throwaway container, as the agent's user, with no account, no
-// network, every capability dropped and the seccomp profile agent containers run under, and answers what it printed.
-// The container is removed with its anonymous volumes when the program ends.
-func (containers Containers) RunCheck(ctx context.Context, seccomp, program string, arguments ...string) (string, error) {
-	security, err := SecurityOptions{Seccomp: seccomp}.options()
-	if err != nil {
-		return "", err
-	}
-
-	return containers.runCheck(ctx, throwaway{Program: program, Arguments: arguments, SecurityOptions: security})
-}
-
-// runCheck runs a check as RunCheck does, as the agent's user, with what the throwaway adds, such as a read-only
+// runCheck runs a check in a throwaway container of the agent image, as the agent's user, with what the throwaway adds, such as a read-only
 // mount.
 func (containers Containers) runCheck(ctx context.Context, check throwaway) (string, error) {
 	check.User = agentUser
@@ -718,4 +707,12 @@ func (containers Containers) Stop(ctx context.Context, id string, seconds int) e
 	}
 
 	return nil
+}
+
+// failureLine is the first line a failed call printed, or its error when it printed nothing.
+func failureLine(output string, err error) string {
+	if line, _, _ := strings.Cut(output, "\n"); line != "" {
+		return line
+	}
+	return err.Error()
 }

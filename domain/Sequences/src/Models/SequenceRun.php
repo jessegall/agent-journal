@@ -141,7 +141,7 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
         $this->current_step = 1;
         $this->status = SequenceRunStatus::Running;
         $this->belongTo($follower);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SequenceStarted($this->id, new StackTarget($follower->id, $sessionId)));
         $this->raise(new SequenceStepReached($this->id, $this->owningActor(), $this->current_step));
     }
@@ -155,7 +155,7 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
 
         if ($ended >= count($this->steps)) {
             $this->status = SequenceRunStatus::Finished;
-            $this->assertSaved($this->save());
+            $this->saveAndAssert();
             $this->raise(new SequenceStepEnded($this->id, $this->owningActor(), $ended));
             $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->status));
 
@@ -163,7 +163,7 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
         }
 
         $this->current_step++;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SequenceStepEnded($this->id, $this->owningActor(), $ended));
         $this->raise(new SequenceStepReached($this->id, $this->owningActor(), $this->current_step));
     }
@@ -171,7 +171,7 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
     public function cancel(): void
     {
         $this->status = SequenceRunStatus::Cancelled;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new SequenceEnded($this->id, $this->owningActor(), $this->status));
     }
 

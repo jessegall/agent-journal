@@ -80,6 +80,39 @@ func (service Service) Disable() error {
 	return nil
 }
 
+// Replace points an enabled service at this service's program instead of the previous one, after a binding switched
+// release; with no service file there is nothing to point, and a file changed by hand is left in place.
+func (service Service) Replace(previousProgram string) error {
+	previous := service
+	previous.Program = previousProgram
+	path, previousContent, _, err := previous.definition()
+	if err != nil {
+		return err
+	}
+	existing, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(existing, previousContent) {
+		return fmt.Errorf("%s was changed by hand, so it is left in place", path)
+	}
+	_, content, _, err := service.definition()
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		return err
+	}
+	if runtime.GOOS == "linux" {
+		return service.run("systemctl", "--user", "daemon-reload")
+	}
+
+	return nil
+}
+
 // definition is the service file's path and content and the command that loads it, for this platform.
 func (service Service) definition() (string, []byte, []string, error) {
 	arguments := []string{service.Program, "relay", "--binding", service.BindingID, "--state", service.StateFolder}

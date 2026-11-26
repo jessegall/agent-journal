@@ -76,7 +76,6 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Projects/CancelProjectCommandRunTest.php',
         'tests/Commands/Projects/FinishProjectCommandRunTest.php',
         'tests/Commands/Projects/RecordHostCallAnsweredTest.php',
-        'tests/Commands/Projects/RecordHostProtectionTest.php',
         'tests/Commands/Projects/RecordProjectCommandProcessTest.php',
         'tests/Commands/Projects/StartProjectCommandRunTest.php',
     ];

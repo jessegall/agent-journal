@@ -51,6 +51,7 @@
         <env name="AGENTS_PROTECTED_ACCOUNT_TRIAL" value="" force="true"/>
         <!-- The server's agent image digest is a deployment's; a test names the image it needs itself. -->
         <env name="AGENT_IMAGE" value="" force="true"/>
+        <env name="AGENTS_SECURITY_PROFILES" value="/etc/journal/security" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

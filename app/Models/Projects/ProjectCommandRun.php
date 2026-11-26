@@ -96,7 +96,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
     public function recordProcess(int $pid): void
     {
         $this->pid = $pid;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectCommandProcessRecorded($this->id, $pid));
     }
 
@@ -108,7 +108,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
         $this->frames = ProjectCommandFrame::collect($frames, DataCollection::class);
         $this->exit_code = $exitCode;
         $this->status = $this->status->settledBy($exitCode);
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectCommandFinished($this->id, $exitCode));
     }
 
@@ -118,7 +118,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
     public function requestCancellation(): void
     {
         $this->status = CommandRunStatus::CancellationRequested;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectCommandCancellationRequested($this->id));
     }
 
@@ -128,7 +128,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
     public function cancel(): void
     {
         $this->status = CommandRunStatus::Cancelled;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectCommandCancelled($this->id));
     }
 
@@ -146,7 +146,7 @@ final class ProjectCommandRun extends JournalModel implements EventSource, Reada
         }
 
         $this->status = $settled;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new ProjectCommandReconciled($this->id, $settled));
     }
 

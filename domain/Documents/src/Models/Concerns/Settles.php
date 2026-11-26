@@ -33,7 +33,7 @@ trait Settles
         }
 
         $this->attention = AttentionStatus::Settled;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new RecordSettled(static::linkType(), $this->id));
 
         return true;

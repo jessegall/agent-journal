@@ -2,6 +2,8 @@ package upgrade
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -56,5 +58,24 @@ func TestAReleaseThatNeverReportsReadyIsSwitchedBack(t *testing.T) {
 
 	if !errors.Is(err, ErrNotReady) || upgraded.Release() != "/releases/6.0.0" {
 		t.Fatalf("the failed switch answered %v and left the binding on %q", err, upgraded.Release())
+	}
+}
+
+func TestARelayStartsFromTheInstallationItRunsFromWhenNoVerifiedReleaseIsSwitchedTo(t *testing.T) {
+	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: t.TempDir()}
+	binding := Binding{State: state}
+	fallback := "/installed/bin/journal-agent"
+
+	none := binding.RelayProgram(fallback)
+	unverified := t.TempDir()
+	if err := os.MkdirAll(filepath.Dir(binding.pointer()), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(binding.pointer(), []byte(unverified+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if none != fallback || binding.RelayProgram(fallback) != fallback {
+		t.Fatalf("a binding with no verified release started from %q and %q, not %q", none, binding.RelayProgram(fallback), fallback)
 	}
 }

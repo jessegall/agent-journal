@@ -117,7 +117,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     {
         $this->status = $status;
         $this->submission_digest = $submissionDigest;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StopCheckSettled($this->id, $status, $this->outcomeOf($failureSummary)));
     }
 
@@ -127,7 +127,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     public function runUnder(string $orderId): void
     {
         $this->fence_order_id = $orderId;
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StopCheckConditionsOrdered($this->id, $orderId));
     }
 
@@ -137,7 +137,7 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     public function certify(): void
     {
         $this->certified_at = CarbonImmutable::now();
-        $this->assertSaved($this->save());
+        $this->saveAndAssert();
         $this->raise(new StopCheckCertified($this->id));
     }
 

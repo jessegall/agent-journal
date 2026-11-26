@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\Hosts\ClaimRuntimeRequests;
 
+use App\Agents\Drivers\Work\AccountOwners;
 use App\Agents\Drivers\Work\DriverRequestClaims;
 use App\Contracts\Bus\CommandHandler;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Support\ClaimedRequests;
 
@@ -16,16 +16,15 @@ use App\Support\ClaimedRequests;
  */
 final readonly class ClaimRuntimeRequestsHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestClaims $claims) {}
+    public function __construct(private DriverRequestClaims $claims, private AccountOwners $owners) {}
 
     public function handle(ClaimRuntimeRequestsCommand $command): ClaimedRequests
     {
         $process = HostProcess::findLocked($command->processId);
         $process->assertWorker($command->workerGeneration);
 
-        $runtimes = AgentRuntime::query()
+        $runtimes = $this->owners->runtimesOf($process)
             ->withSessionAgent()
-            ->whereKey($process->agent_runtime_id)
             ->withAcceptedRequest()
             ->get()
             ->keyBy('id');
