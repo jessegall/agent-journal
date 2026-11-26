@@ -9,6 +9,7 @@ use App\Agents\AgentInspection;
 use App\Exceptions\SkillSessionHidden;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
+use App\Models\Skills\SkillReadEntry;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -25,6 +26,8 @@ use App\Values\SkillStatus;
 final readonly class SkillStatusResolver
 {
     private const int MOST_SESSIONS = 200;
+
+    private const int MOST_READS = 200;
 
     public function __construct(
         private CurrentActor $actors,
@@ -52,8 +55,15 @@ final readonly class SkillStatusResolver
             : SkillGeneration::findById($session->skill_generation_id);
 
         $latest = SkillGeneration::findLatestReady();
+        $lastReads = $this->lastReadsOf($session);
 
-        return array_map(function (SkillEntry $entry) use ($session, $selection, $handedGeneration, $latest) {
+        return array_map(function (SkillEntry $entry) use (
+            $session,
+            $selection,
+            $handedGeneration,
+            $latest,
+            $lastReads,
+        ) {
             $key = $entry->key->key;
             $selected = in_array($key, $selection['selected'], true);
             $handedDigest = $session->hasSkill($key) ? $handedGeneration?->entry($key)?->digest : null;
@@ -69,8 +79,25 @@ final readonly class SkillStatusResolver
                 $selected ? 'selected' : $selection['reasons'][$key] ?? 'not-selected',
                 $handedDigest === null ? null : $session->skill_generation_id,
                 $changed,
+                $lastReads[$key] ?? null,
             );
         }, $skillEntries);
+    }
+
+    /**
+     * The session's newest read of each skill, by key.
+     *
+     * @return array<string, SkillReadEntry>
+     */
+    private function lastReadsOf(AgentSession $session): array
+    {
+        $lastReads = [];
+
+        foreach (SkillReadEntry::findLatestOfSession($session->id, self::MOST_READS) as $read) {
+            $lastReads[$read->skill_key] ??= $read;
+        }
+
+        return $lastReads;
     }
 
     /**

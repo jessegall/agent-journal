@@ -8,7 +8,9 @@ use App\Events\Sessions\SessionOpened;
 use App\Exceptions\SkillSessionHidden;
 use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\AgentSession;
+use App\Models\Skills\SkillReadEntry;
 use App\Resolvers\Support\SkillStatusResolver;
+use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Values\SessionSkillStatus;
@@ -75,6 +77,24 @@ final class SkillStatusTest extends TestCase
             $skills,
             fn (SessionSkillStatus $s) => $s->key === 'user-review-notes' && $s->handedGeneration !== null,
         ));
+    }
+
+    public function test_a_key_read_in_the_session_shows_its_last_read_and_an_unread_key_shows_none(): void
+    {
+        $session = $this->admitted('Writer');
+        $key = $session->skill_keys[0];
+        SkillReadEntry::record($session, $key, ReadEvidence::FullFileRead);
+        SkillReadEntry::record($session, $key, ReadEvidence::SkillShow);
+
+        $skills = $this->skillsOf($session);
+
+        $read = array_values(array_filter($skills, fn (SessionSkillStatus $skill) => $skill->key === $key))[0];
+        $this->assertSame(ReadEvidence::SkillShow, $read->lastRead?->evidence);
+        $this->assertSame([$key], $this->keysOf($skills, fn (SessionSkillStatus $skill) => $skill->lastRead !== null));
+
+        $this->artisan('skill:status', ['--session' => $session->id])
+            ->expectsOutputToContain('skill-show at')
+            ->assertSuccessful();
     }
 
     public function test_an_agent_sees_its_own_session_and_no_other(): void
