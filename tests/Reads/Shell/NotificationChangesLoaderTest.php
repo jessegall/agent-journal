@@ -9,6 +9,7 @@ use App\Data\Notifications\NotificationChangesInput;
 use App\Exceptions\NotificationCursorInvalid;
 use App\Http\Loaders\Shell\NotificationChangesLoader;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use Tests\TestCase;
 #[TestsRead(NotificationChangesLoader::class)]
 final class NotificationChangesLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_cursor_of_another_scope_is_refused_as_an_invalid_cursor(): void
     {
         $this->journal->owner();
@@ -29,7 +32,7 @@ final class NotificationChangesLoaderTest extends TestCase
             $this->fail('A foreign cursor was read.');
         } catch (NotificationCursorInvalid $refusal) {
             $this->assertInstanceOf(FieldRefusal::class, $refusal);
-            $this->assertSame(['cursor'], array_keys($refusal->fieldErrors()));
+            $this->assertSame('cursor', $refusal->field());
         }
     }
 }

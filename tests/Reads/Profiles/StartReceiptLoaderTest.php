@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Mockery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,8 @@ use Tests\TestCase;
 #[TestsRead(StartReceiptLoader::class)]
 final class StartReceiptLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_an_accepted_start_is_pending_and_names_nothing_more(): void
     {
         $this->bindReceipt(StartDisposition::Accepted, null);

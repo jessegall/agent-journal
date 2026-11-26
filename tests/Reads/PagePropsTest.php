@@ -13,6 +13,7 @@ use App\Support\Web\PageProps;
 use Closure;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -22,6 +23,8 @@ use Tests\TestCase;
 #[TestsRead(PageProps::class)]
 final class PagePropsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const array EVENTS = [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME];
 
     public function test_every_on_screen_prop_listens_on_the_viewers_channel_for_the_page_events(): void

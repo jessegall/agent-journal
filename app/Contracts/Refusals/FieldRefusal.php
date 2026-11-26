@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Contracts\Refusals;
 
-use Throwable;
+use App\Contracts\Bus\CommandRefusal;
 
 /**
- * A refusal of a request's own input that names the fields it refuses, so a reader's answer can show each message
- * beside its field, as a validation error would.
+ * A refusal a form shows beside one of its fields, in a sentence for whoever sent it.
  */
-interface FieldRefusal extends Throwable
+interface FieldRefusal extends CommandRefusal
 {
     /**
-     * @return array<string, string> the message of each refused field, by its name
+     * The form field the refusal is shown beside.
      */
-    public function fieldErrors(): array;
+    public function field(): string;
+
+    /**
+     * The sentence the form shows.
+     */
+    public function fieldError(): string;
 }

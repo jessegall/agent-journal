@@ -7,6 +7,7 @@ namespace Tests\Reads\Shell;
 use App\Data\Notifications\NotificationPageInput;
 use App\Http\Loaders\Shell\NotificationsLoader;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,8 @@ use Tests\TestCase;
 #[TestsRead(NotificationsLoader::class)]
 final class NotificationsLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_an_owner_with_no_notifications_reads_an_empty_newest_page(): void
     {
         $this->journal->owner();

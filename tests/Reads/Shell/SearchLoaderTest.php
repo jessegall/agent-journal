@@ -9,6 +9,7 @@ use App\Data\Palette\SearchInput;
 use App\Http\Loaders\Shell\SearchLoader;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use Tests\TestCase;
 #[TestsRead(SearchLoader::class)]
 final class SearchLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_words_too_short_give_hints_and_no_hits(): void
     {
         $this->journal->owner();

@@ -7,6 +7,7 @@ namespace Tests\Reads\Shell;
 use App\Data\Palette\SearchSourcesInput;
 use App\Http\Loaders\Shell\SearchSourcesLoader;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,8 @@ use Tests\TestCase;
 #[TestsRead(SearchSourcesLoader::class)]
 final class SearchSourcesLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_picker_offers_sources_before_a_word_is_typed_and_by_their_prefix(): void
     {
         $this->journal->owner();

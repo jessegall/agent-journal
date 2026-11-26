@@ -20,9 +20,14 @@ final class NotificationCursorInvalid extends RuntimeException implements CodedR
         return new self('This notification cursor is not valid for you.');
     }
 
-    public function fieldErrors(): array
+    public function field(): string
     {
-        return ['cursor' => $this->getMessage()];
+        return 'cursor';
+    }
+
+    public function fieldError(): string
+    {
+        return $this->getMessage();
     }
 
     public function refusalCode(): RefusalCode
@@ -38,7 +43,7 @@ final class NotificationCursorInvalid extends RuntimeException implements CodedR
         return new JsonResponse(
             [
                 'message' => $this->getMessage(),
-                'errors' => array_map(fn (string $message) => [$message], $this->fieldErrors()),
+                'errors' => [$this->field() => [$this->fieldError()]],
             ],
             $this->refusalCode()->status(),
         );

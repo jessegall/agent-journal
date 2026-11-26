@@ -108,10 +108,10 @@ final readonly class LoaderProps
 
         try {
             $value = $this->read($loader, $input);
+        } catch (FieldRefusal $refusal) {
+            return [self::FAILURE => self::invalid($call, [$refusal->field() => $refusal->fieldError()])];
         } catch (CommandRefusal|ModelNotFoundException|NotFoundHttpException) {
             return [self::FAILURE => self::unavailable($call)];
-        } catch (FieldRefusal $refusal) {
-            return [self::FAILURE => self::invalid($call, $refusal->fieldErrors())];
         }
 
         return [$loader->prop => LoaderReplyData::from([

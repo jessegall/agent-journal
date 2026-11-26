@@ -10,6 +10,7 @@ use App\Support\DraftProducers;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\ClientDeclarations\StubDraftProducer;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
 #[TestsRead(DraftRecordLoader::class)]
 final class DraftRecordLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

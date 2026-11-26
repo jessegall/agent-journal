@@ -27,6 +27,7 @@ use Inertia\SupportsLiveUpdates;
 use Mockery;
 use Spatie\LaravelData\Data;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -37,6 +38,8 @@ use Tests\TestCase;
 #[TestsRead(AppContext::class)]
 final class AppContextTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string FAULT = 'The updater could not restart the queue.';
 
     protected function setUp(): void
@@ -171,7 +174,7 @@ final class AppContextTest extends TestCase
     public function test_the_refusal_code_of_the_last_form_is_shown_on_the_next_page_alone(): void
     {
         $this->journal->owner();
-        $session = $this->session();
+        $session = $this->sessionStore();
         $session->flash(CommandRefusal::CODE_FLASH_KEY, 'quota-reached');
 
         $this->assertSame('quota-reached', $this->props()['refusalCode']);
@@ -232,12 +235,12 @@ final class AppContextTest extends TestCase
     private function request(): Request
     {
         $request = Request::create('/');
-        $request->setLaravelSession($this->session());
+        $request->setLaravelSession($this->sessionStore());
 
         return $request;
     }
 
-    private function session(): Store
+    private function sessionStore(): Store
     {
         return $this->app->make('session.store');
     }

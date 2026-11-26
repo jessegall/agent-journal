@@ -10,6 +10,7 @@ use App\Http\Loaders\Agents\StartPreviewLoader;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
 #[TestsRead(StartPreviewLoader::class)]
 final class StartPreviewLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_preview_of_the_agents_start_is_its_answer(): void
     {
         $this->journal->owner()->idleAgent('Writer');
