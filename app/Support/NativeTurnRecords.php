@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Commands\Drivers\RecordPromptTurn\RecordPromptTurnCommand;
+use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\NativeTurnRecords as NativeTurnRecordsContract;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Enums\Drivers\DriverOperation;
@@ -11,7 +13,6 @@ use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\StaleProcessGeneration;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Models\Drivers\DriverTurn;
 use Carbon\CarbonImmutable;
 
 /**
@@ -21,7 +22,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NativeTurnRecords implements NativeTurnRecordsContract
 {
-    public function __construct(private StackTransactionRunner $transaction) {}
+    public function __construct(private StackTransactionRunner $transaction, private CommandBus $commands) {}
 
     /**
      * @throws StaleProcessGeneration
@@ -66,18 +67,10 @@ final readonly class NativeTurnRecords implements NativeTurnRecordsContract
      */
     public function recordPrompt(string $sessionId, int|null $generation, string|null $promptId): void
     {
-        $runtime = AgentRuntime::findForSession($sessionId);
-
-        if ($runtime === null || $promptId === null) {
+        if ($promptId === null) {
             return;
         }
 
-        $turnGeneration = $generation ?? $runtime->process_generation;
-
-        // Like the wake's acknowledgement, the turn is written before the hook's own transaction, in one of its own, so
-        // its facts reach their listeners.
-        $this->transaction->run(
-            fn () => DriverTurn::create($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now()),
-        );
+        $this->commands->run(new RecordPromptTurnCommand($sessionId, $generation, $promptId));
     }
 }

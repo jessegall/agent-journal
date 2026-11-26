@@ -40,6 +40,15 @@ abstract class AgentState implements HookAnswerer
     }
 
     /**
+     * Whether the state listens to the event, asked before its listener for it is called; a state that follows one subject
+     * answers no for the events of any other, so its listeners need no check of their own.
+     */
+    public function listensTo(Event $event): bool
+    {
+        return true;
+    }
+
+    /**
      * The instruction the agent is shown while this is the top live state that has one; none by default.
      *
      * @return Option<AgentText>
@@ -58,15 +67,6 @@ abstract class AgentState implements HookAnswerer
     public function workRecordType(): Option
     {
         return None::create();
-    }
-
-    /**
-     * Whether the state listens to the event, asked before its listener for it is called; a state that follows one subject
-     * answers no for the events of any other, so its listeners need no check of their own.
-     */
-    public function listensTo(Event $event): bool
-    {
-        return true;
     }
 
     // ----------[ Lifecycle ]----------
