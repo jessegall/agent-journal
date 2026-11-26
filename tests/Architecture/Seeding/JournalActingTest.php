@@ -7,12 +7,14 @@ namespace Tests\Architecture\Seeding;
 use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Actors\CurrentActor;
+use App\Contracts\Actors\CurrentActorSetter;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CommandRegistry;
 use App\Support\Projects\CurrentProject;
 use App\Support\ShownMessage;
+use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;
@@ -90,6 +92,16 @@ final class JournalActingTest extends TestCase
         $this->journal->owner();
 
         $this->get('/up');
+
+        $this->assertActor(ActorReference::of($this->journal->ownerUser()));
+    }
+
+    public function test_reselecting_puts_back_the_actor_the_journal_had_in_place(): void
+    {
+        $this->journal->owner();
+        $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('stranger'), new OwnerAuthority('test'));
+
+        $this->journal->reselect();
 
         $this->assertActor(ActorReference::of($this->journal->ownerUser()));
     }

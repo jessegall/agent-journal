@@ -64,10 +64,11 @@ final class DeclaredRoutesTest extends TestCase
         $router = $this->app->make(Router::class);
         $router->setCompiledRoutes($router->getRoutes()->compile());
 
-        $this->get('/library/hidden')->assertRedirect('/login');
         $this->actingAs($this->owner)->get('/library')->assertOk();
         $this->actingAs($this->owner)->get('/library/hidden')->assertNotFound();
         $this->actingAs($this->owner)->post('/library/hidden/books')->assertNotFound();
+        $this->journal->asGuest();
+        $this->get('/library/hidden')->assertRedirect('/login');
     }
 
     private function declarations(): ClientDeclarations

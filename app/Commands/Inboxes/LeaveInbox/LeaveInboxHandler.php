@@ -18,7 +18,13 @@ final readonly class LeaveInboxHandler implements CommandHandler
     public function handle(LeaveInboxCommand $command): void
     {
         foreach ($command->actors as $actor) {
-            InboxMember::findActive($command->inboxId, $actor)?->leave($this->clock->now());
+            $member = InboxMember::findActive($command->inboxId, $actor);
+
+            if ($member === null) {
+                continue;
+            }
+
+            $member->leave($this->clock->now());
         }
     }
 }

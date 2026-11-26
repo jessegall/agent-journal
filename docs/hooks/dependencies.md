@@ -14,7 +14,7 @@ Question 10 had approved edges from the domains to Hooks, Agents and Links. With
 | Web | Chat | Home's chat pane reads conversations and sends messages | approved (question 13) |
 | Web | Rules | the rules page reads rules and approves or denies proposed ones | approved (question 13) |
 | Helpers | Documents | a filed report is linked to the helper job that wrote it, through Documents' `ReportFiled` (plan 54) | approved (doc 31, section 91) |
-| Comments | Chat | a comment notifies its record's people through the pair chats (`PairChats`) | declared in its requires() |
+| Comments | Chat | a comment notifies the users and agents of its record through the pair chats (`PairChats`) | declared in its requires() |
 | Tasks | Comments | a task's page shows its comments (`CommentResolver`, `RecordCommentsPartData`) | declared in its requires() |
 | Documents | Chat | a filed document or report is told in the pair chats (`PairChats`) | declared in its requires() |
 | Documents | Comments | a document's page and its revisions show and check comments (`CommentResolver`, `CommentPolicy`) | declared in its requires() |

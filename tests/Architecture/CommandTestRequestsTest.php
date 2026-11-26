@@ -15,9 +15,8 @@ use Tests\Architecture\Support\ParsedFile;
 use Tests\TestCase;
 
 /**
- * A command test runs its command; a request to a route, an MCP tool or a host belongs to the route or tool test
- * (rule 106). The command tests of the old host protocol still send one until plan 80 removes their routes (task 3443),
- * and each leaves the waiting list once it stops.
+ * A command test runs its command; a request to a route, an MCP tool or a host belongs to the route or tool test.
+ * The command tests of the host routes still send host calls, and each leaves the waiting list once it stops.
  */
 final class CommandTestRequestsTest extends TestCase
 {
@@ -71,8 +70,7 @@ final class CommandTestRequestsTest extends TestCase
     ];
 
     /**
-     * The command tests of the old host and relay protocol, which plan 80 task 3443 rewrites or removes with their
-     * routes.
+     * The command tests that still send host calls, each left off the list once its host route is gone.
      */
     private const array WAITING = [
         'tests/Commands/Agents/ChangeAgentModelTest.php',

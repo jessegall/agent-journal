@@ -25,7 +25,7 @@ final class CreateGroupInput extends Data
     ) {}
 
     /**
-     * The users may be none: the owner starts a group alone and adds people later.
+     * The users may be none: the owner starts a group alone and adds members later.
      *
      * @return array<string, list<string>>
      */

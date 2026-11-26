@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Symfony\Component\Process\Process;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Outside its own model, a query chains only the model's scopes and then a read, so every way a model is filtered or
@@ -16,6 +17,7 @@ final class OutsideQueriesTest extends TestCase
 
     private const string FIXTURE = 'tests/Fixtures/OutsideQueries';
 
+    #[TimeLimit(seconds: 20, reason: 'It parses every PHP file of app and domain in a child process.')]
     public function test_no_query_filters_or_orders_outside_its_model(): void
     {
         $output = $this->checkOutput('app', 'domain');

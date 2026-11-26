@@ -172,7 +172,7 @@ final readonly class ActorReference implements Actor
     }
 
     /**
-     * Whether this names the journal itself, acting for no person or agent.
+     * Whether this names the journal itself, acting for no user or agent.
      */
     public function isJournal(): bool
     {
