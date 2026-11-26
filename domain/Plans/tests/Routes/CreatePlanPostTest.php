@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
+use Domain\Plans\Enums\PlanType;
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.create-plan, as the generator wrote it.
+ * The owner files a new plan and is sent to its page.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.create-plan')]
 final class CreatePlanPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,20 @@ final class CreatePlanPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.create-plan', [
-            'the payload',
-            'the expected commands',
-        ]);
+        // The page answers with the new plan's address, so the reply is a plan that exists.
+        $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
+
+        return RouteCall::as(Caller::User)
+            ->payload([
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => 'build',
+            ])
+            ->reply(CreatePlanCommand::class, $plan->id)
+            ->expects(CreatePlanCommand::class, [
+                'title' => 'Release',
+                'brief' => 'Ship version 6.',
+                'type' => PlanType::Build,
+            ]);
     }
 }

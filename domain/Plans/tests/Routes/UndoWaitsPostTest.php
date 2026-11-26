@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Routes;
 
 use Domain\Plans\PlansDomain;
+use Domain\Plans\Support\PlanGraphService;
+use Domain\Plans\Tests\Fixtures\PlanFixtures;
+use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST plans.undo-waits, as the generator wrote it.
+ * The owner undoes the waits they last applied to a plan's tasks.
  */
-#[Generated]
 #[TestsRoute('POST', 'plans.undo-waits')]
 final class UndoWaitsPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +28,16 @@ final class UndoWaitsPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST plans.undo-waits', [
-            '{plan}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
+        $graph = $journal->service(PlanGraphService::class);
+        $graph->suggest($plan);
+        $graph->apply($plan);
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'plan' => $plan->number,
+            ])
+            ->reply(ApplyTaskWaitsCommand::class, 'graph-3')
+            ->expects(ApplyTaskWaitsCommand::class);
     }
 }

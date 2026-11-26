@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\DocumentsDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.docs.draft, as the generator wrote it.
+ * An agent reads the draft it holds of a document.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.docs.draft')]
 final class AgentDocsDraftPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,8 +27,13 @@ final class AgentDocsDraftPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.docs.draft', [
-            'the payload',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'number' => (string) $document->number,
+            ]);
     }
 }

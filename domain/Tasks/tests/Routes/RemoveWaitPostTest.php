@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Routes;
 
+use Domain\Tasks\Commands\RemoveTaskWait\RemoveTaskWaitCommand;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST tasks.remove-wait, as the generator wrote it.
+ * The owner takes away the wait of a task on another task.
  */
-#[Generated]
 #[TestsRoute('POST', 'tasks.remove-wait')]
 final class RemoveWaitPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +27,24 @@ final class RemoveWaitPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST tasks.remove-wait', [
-            '{task}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $tasks = $journal->owner()->fixtures(TaskFixtures::class);
+        $task = $tasks->createTask('Ship the dock');
+        $prerequisite = $tasks->createTask('Review the dock');
+        $tasks->waitFor('Ship the dock', 'Review the dock');
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'task' => $task->number,
+            ])
+            ->headers([
+                'Idempotency-Key' => 'wait-1',
+            ])
+            ->payload([
+                'prerequisite' => (string) $prerequisite->number,
+            ])
+            ->expects(RemoveTaskWaitCommand::class, [
+                'dependentTaskId' => $task->id,
+                'prerequisiteTaskId' => $prerequisite->id,
+            ]);
     }
 }

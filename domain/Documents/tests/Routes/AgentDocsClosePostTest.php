@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\DocumentsDomain;
+use Domain\Documents\Values\CloseResult;
+use Domain\Documents\Values\DraftTarget;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.docs.close, as the generator wrote it.
+ * An agent closes the draft it holds of a document.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.docs.close')]
 final class AgentDocsClosePostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +30,19 @@ final class AgentDocsClosePostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.docs.close', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'number' => (string) $document->number,
+                'token' => $opened->token,
+                'request_key' => 'documents-1',
+            ])
+            ->reply(CloseDocumentCommand::class, new CloseResult(2, true))
+            ->expects(CloseDocumentCommand::class, [
+                'draft' => new DraftTarget((string) $document->number, $opened->token, null),
+            ]);
     }
 }

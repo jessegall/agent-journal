@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Routes;
 
+use Domain\Tasks\Commands\EditTask\EditTaskCommand;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST tasks.edit, as the generator wrote it.
+ * An agent changes a task's title at the revision it read.
  */
-#[Generated]
 #[TestsRoute('POST', 'tasks.edit')]
 final class EditPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +27,22 @@ final class EditPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST tasks.edit', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $task = $journal->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'task_id' => $task->id,
+                'expected_revision' => 1,
+                'title' => 'Ship the dock today',
+                'brief' => null,
+                'request_key' => 'tasks-1',
+            ])
+            ->reply(EditTaskCommand::class, 2)
+            ->expects(EditTaskCommand::class, [
+                'taskId' => $task->id,
+                'expectedRevision' => 1,
+                'title' => 'Ship the dock today',
+            ]);
     }
 }

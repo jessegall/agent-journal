@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET documents.revision, as the generator wrote it.
+ * The owner opens a revision of a document.
  */
-#[Generated]
 #[TestsRoute('GET', 'documents.revision')]
 final class RevisionGetTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +26,13 @@ final class RevisionGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET documents.revision', [
-            '{document}',
-            '{revision}',
-        ]);
+        $journal->owner();
+        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'document' => $document->number,
+                'revision' => 1,
+            ]);
     }
 }

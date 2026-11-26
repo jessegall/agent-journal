@@ -40,6 +40,8 @@ final class StartReceiptLoaderTest extends TestCase
 
     public function test_a_refused_start_names_its_reason_explanation_and_next_step(): void
     {
+        // The next step is worded for the reader's grants, so the read runs as a signed-in reader, the owner.
+        $this->journal->owner();
         $this->bindReceipt(StartDisposition::Refused, 'unknown');
 
         $answer = $this->read('request-1')->toArray();

@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Routes;
 
 use Domain\Sequences\SequencesDomain;
+use Domain\Sequences\Tests\Fixtures\SequenceFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET sequences.run, as the generator wrote it.
+ * The owner opens a run of a sequence.
  */
-#[Generated]
 #[TestsRoute('GET', 'sequences.run')]
 final class RunGetTest extends GuardedRouteEntryTestCase
 {
@@ -27,8 +26,15 @@ final class RunGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET sequences.run', [
-            '{run}',
+        $journal->owner();
+        $run = $journal->fixtures(SequenceFixtures::class)->createRun('Release', [
+            'Build',
+            'Ship',
         ]);
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'run' => $run->number,
+            ]);
     }
 }

@@ -11,6 +11,7 @@ use App\Support\UserChannel;
 use App\Support\Web\LiveProps;
 use App\Support\Web\PageProps;
 use Closure;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
@@ -32,24 +33,18 @@ final class PagePropsTest extends TestCase
         $this->journal->owner();
         $channel = UserChannel::nameFor((string) $this->journal->ownerUser()->id);
 
-        $this->actingAs($this->journal->ownerUser())->get(route('home'))->assertInertia(
-            function (AssertableInertia $page) use ($channel): void {
-                $live = $page->toArray()['liveProps'];
+        $live = $this->pageObject($this->actingAs($this->journal->ownerUser())->get(route('home')))['liveProps'];
 
-                $this->assertArrayHasKey('page', $live);
-                $this->assertArrayHasKey('inspector', $live);
-                $windows = array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_'));
+        $this->assertArrayHasKey('page', $live);
+        $this->assertArrayHasKey('inspector', $live);
+        $this->assertNotEmpty(array_filter(array_keys($live), fn (string $prop) => str_starts_with($prop, 'window_')));
 
-                $this->assertNotEmpty($windows);
-
-                foreach ($live as $prop) {
-                    $this->assertSame(
-                        [['channel' => ['name' => $channel, 'type' => 'private'], 'events' => self::EVENTS]],
-                        $prop['listeners'],
-                    );
-                }
-            },
-        );
+        foreach ($live as $prop) {
+            $this->assertSame(
+                [['channel' => ['name' => $channel, 'type' => 'private'], 'events' => self::EVENTS]],
+                $prop['listeners'],
+            );
+        }
     }
 
     public function test_a_guests_props_listen_to_nothing(): void
@@ -72,5 +67,16 @@ final class PagePropsTest extends TestCase
                 fn (AssertableInertia $reload) => $reload->where('inspector', null),
             ),
         );
+    }
+
+    /**
+     * The page object the response renders, with the live props Inertia lists beside the props; the Inertia assert
+     * leaves those out.
+     *
+     * @return array<string, mixed>
+     */
+    private function pageObject(TestResponse $response): array
+    {
+        return json_decode((string) json_encode($response->viewData('page')), true);
     }
 }

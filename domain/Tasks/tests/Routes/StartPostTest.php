@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Routes;
 
+use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST tasks.start, as the generator wrote it.
+ * The owner starts a run of a task.
  */
-#[Generated]
 #[TestsRoute('POST', 'tasks.start')]
 final class StartPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +27,15 @@ final class StartPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST tasks.start', [
-            '{task}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $task = $journal->owner()->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'task' => $task->number,
+            ])
+            ->reply(StartTaskCommand::class, 1)
+            ->expects(StartTaskCommand::class, [
+                'taskId' => $task->id,
+            ]);
     }
 }

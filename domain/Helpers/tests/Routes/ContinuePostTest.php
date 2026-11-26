@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Routes;
 
+use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\HelpersDomain;
+use Domain\Helpers\Tests\Fixtures\HelperFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST helpers.continue, as the generator wrote it.
+ * An agent continues a helper's job with a model.
  */
-#[Generated]
 #[TestsRoute('POST', 'helpers.continue')]
 final class ContinuePostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +27,23 @@ final class ContinuePostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST helpers.continue', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Planner');
+        $helpers = $journal->fixtures(HelperFixtures::class)->openJob('Review', 'Planner', 'Review the change.');
+        $job = $helpers->jobCalled('Review');
+        $identity = $helpers->identityOf('Review');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'identity_id' => $identity->id,
+                'job_id' => $job->id,
+                'model' => 'claude-sonnet-5-5',
+                'driver_key' => null,
+                'request_key' => 'helper-1',
+            ])
+            ->reply(ContinueHelperCommand::class, $helpers->receiptOf('Review'))
+            ->expects(ContinueHelperCommand::class, [
+                'identityId' => $identity->id,
+                'jobId' => $job->id,
+            ]);
     }
 }

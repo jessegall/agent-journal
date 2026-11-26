@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CommentOnReport\CommentOnReportCommand;
+use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.reports.comment, as the generator wrote it.
+ * An agent comments on a report.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.reports.comment')]
 final class AgentReportsCommentPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,19 @@ final class AgentReportsCommentPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.reports.comment', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it."));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'report_id' => $report->id,
+                'body' => 'Confirmed.',
+                'request_key' => 'documents-1',
+            ])
+            ->reply(CommentOnReportCommand::class, Str::ulid())
+            ->expects(CommentOnReportCommand::class, [
+                'reportId' => $report->id,
+                'body' => 'Confirmed.',
+            ]);
     }
 }

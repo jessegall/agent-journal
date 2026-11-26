@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
+use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
+use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\DocumentsDomain;
+use Domain\Documents\Values\DraftTarget;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.docs.edit, as the generator wrote it.
+ * An agent replaces a section of the draft it holds of a document.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.docs.edit')]
 final class AgentDocsEditPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +29,29 @@ final class AgentDocsEditPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.docs.edit', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'number' => (string) $document->number,
+                'token' => $opened->token,
+                'version' => $opened->version,
+                'mode' => 'section',
+                'section' => '1',
+                'body' => 'New text.',
+                'old' => null,
+                'new' => null,
+                'title' => null,
+                'abstract' => null,
+                'request_key' => 'documents-1',
+            ])
+            ->reply(EditDocumentCommand::class, $opened)
+            ->expects(EditDocumentCommand::class, [
+                'draft' => new DraftTarget((string) $document->number, $opened->token, $opened->version),
+                'section' => '1',
+                'body' => 'New text.',
+            ]);
     }
 }

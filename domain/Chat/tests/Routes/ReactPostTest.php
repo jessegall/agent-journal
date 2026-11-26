@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
+use App\Commands\Messages\SendMessage\SendMessageCommand;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Commands\React\ReactCommand;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST chat.react, as the generator wrote it.
+ * The owner reacts to an agent's message in their chat, with the payload the page records.
  */
-#[Generated]
 #[TestsRoute('POST', 'chat.react')]
 final class ReactPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +28,20 @@ final class ReactPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST chat.react', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request chat-react',
-        ]);
+        $start = $journal->owner()->signedStart('Ada');
+        $chats = $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Ada');
+        $inbox = $chats->pairChatOf('Owner', 'Ada');
+        $messageId = $journal->runAsStart($start, new SendMessageCommand($inbox->id, 'Which port?'));
+        $journal->actAs('Owner');
+
+        return RouteCall::recorded('chat-react', [
+            '01JPAGEREQUESTINBOX0000000' => $inbox->id,
+            '01JPAGEREQUESTMESSAGE00000' => $messageId,
+        ])
+            ->reply(ReactCommand::class, Str::ulid())
+            ->expects(ReactCommand::class, [
+                'messageId' => $messageId,
+                'emoji' => '👍',
+            ]);
     }
 }

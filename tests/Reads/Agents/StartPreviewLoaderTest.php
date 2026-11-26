@@ -24,7 +24,7 @@ final class StartPreviewLoaderTest extends TestCase
 
     public function test_the_preview_of_the_agents_start_is_its_answer(): void
     {
-        $this->journal->owner()->idleAgent('Writer');
+        $this->journal->owner()->installProfiles()->idleAgent('Writer');
 
         $answer = $this->read(['agent' => $this->journal->agentCalled('Writer')->id]);
 

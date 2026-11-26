@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace Domain\Chat\Tests\Routes;
 
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Commands\DockSource\DockSourceCommand;
+use Domain\Chat\Enums\DockOutcome;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
+use Domain\Chat\Values\DockResult;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST chat.agent.dock.add, as the generator wrote it.
+ * An agent in a chat with the owner docks a task above their conversation.
  */
-#[Generated]
 #[TestsRoute('POST', 'chat.agent.dock.add')]
 final class AgentDockAddPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +30,22 @@ final class AgentDockAddPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST chat.agent.dock.add', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Builder');
+        $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Builder');
+        $taskId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'type' => 'tasks.task',
+                'id' => $taskId,
+                'chat' => null,
+                'request_key' => 'dock-add-1',
+            ])
+            ->reply(DockSourceCommand::class, DockResult::of(DockOutcome::Added, strtolower((string) Str::ulid())))
+            ->expects(DockSourceCommand::class, [
+                'chat' => null,
+                'type' => 'tasks.task',
+                'id' => $taskId,
+            ]);
     }
 }

@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
+use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
+use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
+use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Support\PairChats;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST chat.add-member, as the generator wrote it.
+ * The owner adds a user to a group chat they manage, with the payload the page records.
  */
-#[Generated]
 #[TestsRoute('POST', 'chat.add-member')]
 final class AddMemberPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +29,19 @@ final class AddMemberPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST chat.add-member', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request chat-add-member',
-        ]);
+        $journal->owner()->user('Cy');
+        $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
+            $journal->actorCalled('Owner'),
+        ]));
+        $candidate = $journal->userCalled('Cy');
+
+        return RouteCall::recorded('chat-add-member', [
+            '01JPAGEREQUESTINBOX0000000' => $group,
+            '01JPAGEREQUESTCANDIDATE000' => $candidate->id,
+        ])
+            ->expects(JoinInboxCommand::class, [
+                'inboxId' => $group,
+                'actor' => ActorReference::forUser($candidate->id),
+            ]);
     }
 }

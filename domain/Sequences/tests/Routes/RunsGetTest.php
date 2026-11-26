@@ -6,7 +6,6 @@ namespace Domain\Sequences\Tests\Routes;
 
 use Domain\Sequences\SequencesDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -14,9 +13,8 @@ use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET sequences.runs, as the generator wrote it.
+ * The owner opens the list of sequence runs.
  */
-#[Generated]
 #[TestsRoute('GET', 'sequences.runs')]
 final class RunsGetTest extends GuardedRouteEntryTestCase
 {

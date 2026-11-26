@@ -187,8 +187,9 @@ final class AppContextTest extends TestCase
 
     public function test_two_viewers_one_after_the_other_in_one_worker_each_see_their_own(): void
     {
-        $context = $this->app->make(AppContext::class);
+        // The request scope starts when the owner acts; the one context then serves both viewers in turn.
         $this->journal->owner()->user('Sam')->admitInboxMember('Sam');
+        $context = $this->app->make(AppContext::class);
 
         $ownerProps = $context->data($this->request())->toArray();
         $this->journal->actAsInboxMember('Sam');

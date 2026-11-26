@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Routes;
 
 use Domain\Tasks\TasksDomain;
+use Domain\Tasks\Tests\Fixtures\TaskFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET tasks.task, as the generator wrote it.
+ * The owner opens a task's page.
  */
-#[Generated]
 #[TestsRoute('GET', 'tasks.task')]
 final class TaskGetTest extends GuardedRouteEntryTestCase
 {
@@ -27,8 +26,11 @@ final class TaskGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET tasks.task', [
-            '{task}',
-        ]);
+        $task = $journal->owner()->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'task' => $task->number,
+            ]);
     }
 }
