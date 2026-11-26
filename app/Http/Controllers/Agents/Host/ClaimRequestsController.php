@@ -29,8 +29,8 @@ use Illuminate\Validation\Rule;
  */
 final readonly class ClaimRequestsController
 {
-    #[Dispatches(ClaimDriverRequestsCommand::class)]
     #[Dispatches(ClaimProjectReadsCommand::class)]
+    #[Dispatches(ClaimDriverRequestsCommand::class)]
     public function __invoke(
         Request $request,
         HostContext $host,

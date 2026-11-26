@@ -30,14 +30,15 @@ final readonly class NamedTwiceScan implements FileScan
     {
         $found = [];
 
-        /**
-         * @var list<Expr\MethodCall> $readers
-         */
-        $readers = new NodeFinder()->find($file->statements, fn (Node $node) => self::isReader($node));
+        foreach (new NodeFinder()->findInstanceOf($file->statements, Expr\MethodCall::class) as $reader) {
+            $method = $reader->name;
 
-        foreach ($readers as $reader) {
+            if (! $method instanceof Node\Identifier || ! self::isReader($method->toString(), $reader)) {
+                continue;
+            }
+
             $name = self::firstLiteral($reader);
-            $verb = substr((string) $reader->name, 0, -strlen(self::READER_SUFFIX));
+            $verb = substr($method->toString(), 0, -strlen(self::READER_SUFFIX));
 
             if (self::isMadeJustBefore($reader->var, $verb, $name)) {
                 $found[] = ['line' => $reader->getStartLine(), 'verb' => $verb, 'name' => $name];
@@ -47,13 +48,11 @@ final readonly class NamedTwiceScan implements FileScan
         return $found;
     }
 
-    private static function isReader(Node $node): bool
+    private static function isReader(string $method, Expr\MethodCall $call): bool
     {
-        return $node instanceof Expr\MethodCall
-            && $node->name instanceof Node\Identifier
-            && str_ends_with($node->name->toString(), self::READER_SUFFIX)
-            && strlen($node->name->toString()) > strlen(self::READER_SUFFIX)
-            && self::firstLiteral($node) !== '';
+        return str_ends_with($method, self::READER_SUFFIX)
+            && strlen($method) > strlen(self::READER_SUFFIX)
+            && self::firstLiteral($call) !== '';
     }
 
     /**

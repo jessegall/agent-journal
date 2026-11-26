@@ -162,7 +162,7 @@ final class CommandRequest extends Model implements ProjectOwned, ReadableModel
      */
     public static function findLockedForChange(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->sole();
+        return self::query()->with('project')->whereKey($id)->lockForUpdate()->sole();
     }
 
     /**

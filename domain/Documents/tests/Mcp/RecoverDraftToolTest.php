@@ -34,6 +34,7 @@ final class RecoverDraftToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Writer');
         $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
         $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
+
         $retained = RetainedDraft::create(
             DocumentDraft::query()->where('document_id', $document->id)->sole(),
             'The session ended.',

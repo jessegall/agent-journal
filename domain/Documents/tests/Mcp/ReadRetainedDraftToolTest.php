@@ -41,20 +41,24 @@ final class ReadRetainedDraftToolTest extends McpToolEntryTestCase
         $parent = $journal->owner()->signedStart('Writer');
         $journal->syntheticRuntime($parent->session);
         $helper = $journal->idleAgent('Document editor', 'writing-helper')->agentCalled('Document editor');
+
         $session = $this->app->make(AgentSessions::class)->start(
             $helper,
             TestSelections::of(),
             TestSelections::requestId(),
             $parent->session,
         );
+
         $journal->actAsAgentIds($helper->id, $session->id);
         $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
         $opened = $journal->run(new OpenDocumentCommand($document->id, 1));
+
         $journal->run(new EditDocumentCommand(
             new DraftTarget($document->id, $opened->token, $opened->version),
             '1',
             "| Missing | Dashes |\n| A | B |",
         ));
+
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(CloseEndedSessionDraft::class)->handle(new SessionClosed($helper->id, $session->id)),
         );

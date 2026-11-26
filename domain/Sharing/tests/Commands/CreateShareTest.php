@@ -318,6 +318,7 @@ final class CreateShareTest extends TestCase
         $this->app->make(CommandBus::class)->run(
             new CreateDocumentCommand('Design', 'What we build', 'Ship it.', TestProjects::local()->id),
         );
+
         $this->root = Document::query()->sole()->shareIdentity();
 
         $summary = $this->create($this->preview([]));

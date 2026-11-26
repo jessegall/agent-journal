@@ -452,6 +452,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
 
         foreach ($domains as $owner) {
             $pageLoaders = array_merge([], ...array_map(fn (Page $page) => $page->loaders, $owner->pages));
+
             self::assertUniqueKeys(
                 $owner,
                 'loader',
@@ -534,6 +535,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
     private function refuseRepeatedPropNames(): void
     {
         $seen = [];
+
         $props = [
             ...array_map(
                 fn (RegisteredPage|RegisteredSection $declaration) => [$declaration->propName, $declaration->key],

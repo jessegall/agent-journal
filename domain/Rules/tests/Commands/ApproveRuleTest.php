@@ -123,6 +123,7 @@ final class ApproveRuleTest extends TestCase
     public function test_the_owner_approves_an_agents_proposal_as_global(): void
     {
         $this->journal->project('Shop')->agent('Shopper', project: 'Shop');
+
         $proposal = $this->journal->fixtures(RuleFixtures::class)
             ->proposedRule('Shop rule', 'Ship on Fridays.', 'Shopper')
             ->ruleCalled('Shop rule');
@@ -138,7 +139,9 @@ final class ApproveRuleTest extends TestCase
         $global = $this->journal->fixtures(RuleFixtures::class)
             ->proposedRule('Global', 'Every phase ends with its tests.', 'Planner')
             ->ruleCalled('Global');
+
         $global->approveBy($this->journal->actorCalled('Owner'), ProjectOwner::global());
+
         $replacement = Rule::create(
             'Every phase ends with its tests and its checks.',
             'The checks were forgotten.',

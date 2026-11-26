@@ -33,10 +33,12 @@ final class DockAddToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
+
         $journal->fixtures(ChatFixtures::class)->pairChat(
             ActorReference::of($journal->ownerUser()),
             ActorReference::of($start->agent),
         );
+
         $task = Task::factory()->create(['title' => 'Ship the dock']);
 
         return ToolCall::by($start)

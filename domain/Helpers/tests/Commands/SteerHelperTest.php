@@ -21,8 +21,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  * A parent steers its helper: the words reach the live job, and with none live they are kept as a message with the
  * command that continues it.
  */
-#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(SteerHelperCommand::class)]
+#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class SteerHelperTest extends TestCase
 {
     use DispatchesHelpers;

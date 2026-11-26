@@ -115,8 +115,7 @@ final readonly class AppContext
     {
         return match (true) {
             $user->isEmpty() => ViewerType::Guest,
-            $this->actors->hasActor() && $this->actors->authority() instanceof InboxMemberAuthority
-                => ViewerType::InboxMember,
+            $this->actors->hasActor() && $this->actors->authority() instanceof InboxMemberAuthority => ViewerType::InboxMember,
             default => ViewerType::Owner,
         };
     }

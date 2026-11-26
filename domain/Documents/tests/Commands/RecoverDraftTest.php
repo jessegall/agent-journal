@@ -72,12 +72,14 @@ final class RecoverDraftTest extends TestCase
 
         $this->journal->actAsAgentIds($child->id, $session->id);
         $bus = $this->app->make(CommandBus::class);
+
         $created = $bus->run(new CreateDocumentCommand(
             'Design',
             'Current plan.',
             "# Design\nPublished text.",
             TestProjects::local()->id,
         ));
+
         $opened = $bus->run(new OpenDocumentCommand($created->id, 1));
         $badText = "| Missing | Dashes |\n| A | B |";
 

@@ -46,7 +46,7 @@ final class NamedTwiceTest extends TestCase
     {
         $chains = ScanCache::findingsByFile(new NamedTwiceScan(), [base_path(self::FIXTURE)])[base_path(self::FIXTURE)];
 
-        $this->assertSame([15], array_column($chains, 'line'));
+        $this->assertSame([17], array_column($chains, 'line'));
     }
 
     /**

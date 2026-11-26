@@ -35,6 +35,7 @@ final class TaskFixturesTest extends TestCase
         $this->tasks->task('Write it')->assertRunCount('Write it', 0);
 
         $task = $this->tasks->taskCalled('Write it');
+
         $this->assertSame([
             TaskStatus::Open,
             $this->journal->ownerUser()->id,
@@ -96,6 +97,7 @@ final class TaskFixturesTest extends TestCase
             $task->status,
             $task->creator_id,
         ]);
+
         $this->tasks->assertRunCount('Blocked work', 0);
     }
 
@@ -133,6 +135,7 @@ final class TaskFixturesTest extends TestCase
             $run->run_number,
             $this->tasks->currentRunOf('Write it')->id,
         ]);
+
         $this->assertThrows(fn () => $this->tasks->runOf('Write it', 2), AssertionFailedError::class);
         $this->assertThrows(fn () => $this->tasks->task('Idle')->currentRunOf('Idle'), AssertionFailedError::class);
     }

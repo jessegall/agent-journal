@@ -36,12 +36,14 @@ final class ReplaceDocumentBodyTest extends TestCase
     public function test_the_body_is_replaced_and_a_save_on_an_older_version_is_refused(): void
     {
         $this->journal->owner();
+
         $this->journal->run(new CreateDocumentCommand(
             'Design',
             'What we build',
             "# Goal\nShip it.\n",
             TestProjects::local()->id,
         ));
+
         $opened = $this->journal->run(new OpenDocumentCommand('1'));
 
         $this->journal->run(new ReplaceDocumentBodyCommand($opened->target(), self::SECOND_BODY));

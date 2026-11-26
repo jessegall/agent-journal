@@ -267,6 +267,7 @@ final readonly class DomainClient
 
         $invoke = Reflector::of($reader)->method('__invoke');
         $input = count($invoke->parameters()) === 1 ? $invoke->firstParameterClass()->getOrElse('') : '';
+
         $answer = $invoke->returnType()
             ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin() && ! $type->allowsNull)
             ->map(fn (DeclaredType $type) => $type->name())

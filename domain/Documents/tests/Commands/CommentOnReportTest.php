@@ -35,6 +35,7 @@ final class CommentOnReportTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->journal->run(new CreateReportCommand(
             'Design',
             'What we build',

@@ -48,8 +48,8 @@ use Throwable;
  * nested in another transaction is refused before anything is read; a linked record whose disclosure is withdrawn is
  * denied while its sibling reads; a read waits for a revoke holding the share and is denied once it committed.
  */
-#[TimeLimit(seconds: 10, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
 #[TestsCommand(ReadShareCommand::class)]
+#[TimeLimit(seconds: 10, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;

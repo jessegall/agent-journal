@@ -11,7 +11,6 @@ use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;
 use Domain\Chat\Data\ChatCandidatesData;
 use Domain\Chat\Data\ChatInput;
-use Domain\Chat\Data\ParticipantData;
 use Domain\Chat\Support\PairChats;
 
 /**

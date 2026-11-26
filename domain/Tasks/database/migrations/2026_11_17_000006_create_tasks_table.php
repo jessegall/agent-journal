@@ -38,6 +38,7 @@ return new class extends Migration
             // The environment of the connected binding a task was made through, which must be of the task's project;
             // none for a task made here.
             $table->ulid('environment_id')->nullable()->index();
+
             $table->foreign(['environment_id', 'project_id'])
                 ->references(['id', 'project_id'])
                 ->on('project_environments')

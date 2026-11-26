@@ -153,6 +153,7 @@ final class CreateTaskTest extends TestCase
         $this->journal->assertRefused(CrossProjectWrite::class, fn () => $this->journal->run(
             new CreateTaskCommand('Elsewhere', 'Not mine.', $this->journal->projectCalled('Shop')->id),
         ));
+
         $this->assertSame(0, Task::query()->acrossProjects()->count());
     }
 

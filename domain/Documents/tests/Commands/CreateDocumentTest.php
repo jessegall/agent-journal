@@ -188,6 +188,7 @@ final class CreateDocumentTest extends TestCase
             "Text\n",
             TestProjects::local()->id,
         ));
+
         $this->bus()->run(new CreateReportCommand(
             '  Plan for May  ',
             ' What we found ',
@@ -284,6 +285,7 @@ final class CreateDocumentTest extends TestCase
         $this->bus()->run(
             new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id, [$task]),
         );
+
         $this->assertSame(1, Link::query()->count());
 
         $message = $this->messageFor(8);
@@ -291,15 +293,18 @@ final class CreateDocumentTest extends TestCase
 
         try {
             $about = [new RecordIdentity(Message::linkType(), $message->id)];
+
             $this->bus()->run(
                 new CreateDocumentCommand('Leak', 'Should not exist', "Text\n", TestProjects::local()->id, $about),
             );
+
             $this->fail('A document about a private message was created.');
         } catch (RecordUnavailable) {
             $this->assertSame(1, Document::query()->count());
         }
 
         $this->expectException(CommandInputInvalid::class);
+
         $this->bus()->run(new CreateDocumentCommand(
             'Many',
             'Too many links',
@@ -350,6 +355,7 @@ final class CreateDocumentTest extends TestCase
         $this->journal->assertRefused(CrossProjectWrite::class, fn () => $this->bus()->run(
             new CreateDocumentCommand('Guide', 'For everyone', "Text\n", ProjectOwner::GLOBAL_KEY),
         ));
+
         $this->assertSame(0, Document::query()->acrossProjects()->count());
     }
 

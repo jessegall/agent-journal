@@ -132,6 +132,7 @@ final class CreatePlanTest extends TestCase
         $plan = Plan::query()->findOrFail(
             $this->journal->run(new CreatePlanCommand('Stock', 'Fill the shelves.', PlanType::Build, $shop)),
         );
+
         $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'First');
 
         $this->assertSame([$shop, $shop], [$plan->project_id, $phase->project_id]);

@@ -30,6 +30,7 @@ final class ChangeSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
+
         $this->sequence = Sequence::create(
             'Release',
             'Ship a version',

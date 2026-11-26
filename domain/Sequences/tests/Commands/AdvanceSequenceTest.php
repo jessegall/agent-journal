@@ -36,6 +36,7 @@ final class AdvanceSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Writer')->actAs('Writer');
+
         $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, [
             'Read the brief.',
             'Run the phase tests.',

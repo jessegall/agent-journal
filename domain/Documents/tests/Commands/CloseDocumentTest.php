@@ -170,6 +170,7 @@ final class CloseDocumentTest extends TestCase
             "# Goal\nShip it.\n",
             TestProjects::local()->id,
         ));
+
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $draft = $this->bus()->run(new ReplaceDocumentTextCommand($draft->target(), 'Ship it.', 'Ship it soon.'));
         $this->bus()->run(new CloseDocumentCommand($draft->target()));
@@ -210,6 +211,7 @@ final class CloseDocumentTest extends TestCase
             "# Goal\nShip it.\n",
             TestProjects::local()->id,
         ));
+
         $draft = $this->bus()->run(new OpenDocumentCommand('1'));
         $this->facts = [];
 

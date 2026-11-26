@@ -34,9 +34,9 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
         $this->app->singleton(
             TypeOwners::class,
             fn () => TypeOwners::of(
-$this->app->make(DomainRegistry::class),
- $this->app->make(ClientDeclarations::class),
-),
+                $this->app->make(DomainRegistry::class),
+                $this->app->make(ClientDeclarations::class),
+            ),
         );
     }
 

@@ -102,9 +102,9 @@ final class ClientManifestTest extends TestCase
             $components,
         );
         $this->assertStringContainsString(
-'tests/Fixtures/ClientDeclarations/Shelf/Resources/js/pages/shelf/Index.vue',
- $components,
-);
+            'tests/Fixtures/ClientDeclarations/Shelf/Resources/js/pages/shelf/Index.vue',
+            $components,
+        );
 
         foreach ([
             'resources/js/generated/ui-manifest.ts',

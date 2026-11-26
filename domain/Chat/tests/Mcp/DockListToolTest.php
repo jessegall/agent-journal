@@ -28,6 +28,7 @@ final class DockListToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
+
         $journal->fixtures(ChatFixtures::class)->pairChat(
             ActorReference::of($journal->ownerUser()),
             ActorReference::of($start->agent),

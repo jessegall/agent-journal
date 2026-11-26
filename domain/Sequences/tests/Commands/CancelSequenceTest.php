@@ -37,6 +37,7 @@ final class CancelSequenceTest extends TestCase
         parent::setUp();
 
         $this->journal->owner()->agent('Writer')->actAs('Writer');
+
         $this->runs = $this->journal->fixtures(SequenceFixtures::class)->run(self::RUN, [
             'Read the brief.',
             'Run the phase tests.',
@@ -50,6 +51,7 @@ final class CancelSequenceTest extends TestCase
         $this->journal->run(new CancelSequenceCommand($this->runs->runCalled(self::RUN)->id));
 
         $run = $this->runs->runCalled(self::RUN);
+
         $this->assertSame([
             SequenceRunStatus::Cancelled,
             1,

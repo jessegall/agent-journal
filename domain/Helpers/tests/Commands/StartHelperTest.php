@@ -62,8 +62,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  * written; a repeat finds the same job, a nested refusal rolls everything back, and two starts never both hold one
  * helper's reservation.
  */
-#[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(StartHelperCommand::class)]
+#[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class StartHelperTest extends TestCase
 {
     use DispatchesHelpers;
@@ -351,6 +351,7 @@ final class StartHelperTest extends TestCase
         $job = HelperJob::query()->acrossActors()->sole();
         $identity = HelperIdentity::query()->acrossActors()->findOrFail($job->helper_identity_id);
         $purpose = HelperPurpose::query()->acrossActors()->findOrFail($job->helper_purpose_id);
+
         $this->assertSame(
             array_fill(0, 4, $projectId),
             [

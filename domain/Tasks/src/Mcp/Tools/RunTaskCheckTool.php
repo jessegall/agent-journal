@@ -43,7 +43,7 @@ final class RunTaskCheckTool extends TaskWriteTool
     protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok([
-            'check_id' => $commandResult
+            'check_id' => $commandResult,
         ]);
     }
 }

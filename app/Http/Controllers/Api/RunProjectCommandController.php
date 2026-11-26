@@ -21,9 +21,9 @@ use Illuminate\Http\Request;
  */
 final readonly class RunProjectCommandController
 {
+    #[Dispatches(StartProjectCommandRunCommand::class)]
     #[Dispatches(FinishProjectCommandRunCommand::class)]
     #[Dispatches(RecordProjectCommandProcessCommand::class)]
-    #[Dispatches(StartProjectCommandRunCommand::class)]
     public function __invoke(
         RunProjectCommandPayload $call,
         Request $request,

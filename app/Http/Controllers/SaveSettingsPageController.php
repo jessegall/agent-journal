@@ -29,10 +29,10 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class SaveSettingsPageController
 {
-    #[Dispatches(SetBooleanSettingCommand::class)]
-    #[Dispatches(SetIntegerSettingCommand::class)]
     #[Dispatches(SetStringChoiceCommand::class)]
     #[Dispatches(SetStringSettingCommand::class)]
+    #[Dispatches(SetBooleanSettingCommand::class)]
+    #[Dispatches(SetIntegerSettingCommand::class)]
     public function __invoke(
         SaveSettingsRequest $request,
         SettingsCatalogue $catalogue,

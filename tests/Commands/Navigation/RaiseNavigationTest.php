@@ -389,7 +389,7 @@ final class RaiseNavigationTest extends TestCase
         $this->assertSame(21, MenuEntry::query()->acrossActors()->count());
     }
 
-    public function test_a_stale_or_retired_entry_is_not_answered(): void
+    public function test_a_stale_entry_is_not_answered(): void
     {
         $this->journal->installInboxes();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
@@ -398,7 +398,6 @@ final class RaiseNavigationTest extends TestCase
 
         $this->seat(Agent::create('Main', 'main-agent', $this->localProject()));
         $this->libraryEntry('2.1.323')->markStaleOn('2.1.323', 'label-missing', []);
-        $this->libraryEntry('2.1.323')->retire();
         [$host, $opened, $request] = $this->stalledScriptOnHost();
 
         $this->assertSame('opened', $this->raiseThroughHost($host, $opened, $request)->assertOk()->json('answer'));

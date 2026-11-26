@@ -19,8 +19,8 @@ use Illuminate\Http\RedirectResponse;
  */
 final readonly class SwitchSettingsGroupPageController
 {
-    #[Dispatches(DisableSettingGroupCommand::class)]
     #[Dispatches(EnableSettingGroupCommand::class)]
+    #[Dispatches(DisableSettingGroupCommand::class)]
     public function __invoke(
         SwitchSettingsGroupRequest $request,
         CommandBus $commands,

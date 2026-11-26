@@ -45,11 +45,11 @@ use Tests\Support\TimeLimits\TimeLimit;
  * a share itself. The owner approves the proposal from a fresh preview into a pending grant. Open proposals are
  * capped at 100, and an expired one frees its slot at once. The requester is kept as an actor, never by session.
  */
+#[TestsCommand(RequestShareCommand::class)]
 #[TimeLimit(
     seconds: 10,
     reason: 'It commits a document and a hundred proposals, and empties the sharing and agent tables around each test.',
 )]
-#[TestsCommand(RequestShareCommand::class)]
 final class RequestShareTest extends TestCase
 {
     use CommitsHookRows;

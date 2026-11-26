@@ -126,6 +126,7 @@ final class StartTaskTest extends TestCase
             $run,
             $retry,
         ]);
+
         $this->tasks->assertStarted('Owned work', by: 'First')->assertRunCount('Owned work', 1);
     }
 
@@ -239,6 +240,7 @@ final class StartTaskTest extends TestCase
             TaskStarted::class,
             TaskStarted::class,
         ], $classes);
+
         $this->assertSame($this->journal->ownerUser()->id, $sent()[0]->actor->id);
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
     }
@@ -319,6 +321,7 @@ final class StartTaskTest extends TestCase
     public function test_a_start_onto_a_closed_stack_rolls_the_start_back(): void
     {
         $task = $this->tasks->taskCalled('Owned work');
+
         AgentStackRow::query()->withoutGlobalScopes()->forTarget($this->journal->sessionOf('First')->target)->sole()
             ->closeAt(CarbonImmutable::now());
 
@@ -326,6 +329,7 @@ final class StartTaskTest extends TestCase
 
         $this->assertThrows(fn () => $this->journal->run(new StartTaskCommand($task->id)), StackAlreadyClosed::class);
         $stored = $task->refresh();
+
         $this->assertSame([
             TaskStatus::Open,
             0,

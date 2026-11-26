@@ -31,10 +31,12 @@ final class CommitUploadToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Writer');
+
         $upload = $journal->runAs(
             'Writer',
             new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes')),
         );
+
         $journal->runAs('Writer', new AppendUploadCommand($upload, 0, 'notes', hash('sha256', 'notes')));
 
         return ToolCall::by($start)

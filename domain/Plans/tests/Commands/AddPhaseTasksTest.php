@@ -99,6 +99,7 @@ final class AddPhaseTasksTest extends TestCase
     public function test_a_task_of_another_project_is_refused_and_both_stay_as_they_were(): void
     {
         $this->journal->project('Shop');
+
         $elsewhere = Task::create(
             'Elsewhere',
             'Shop work.',

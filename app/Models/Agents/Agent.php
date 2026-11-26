@@ -319,6 +319,6 @@ final class Agent extends Model implements
     #[Scope]
     protected function inSelection(Builder $query, ProjectSelection $selection): void
     {
-        (new ProjectScope(static fn (): ProjectSelection => $selection, false))->apply($query, $query->getModel());
+        new ProjectScope(static fn (): ProjectSelection => $selection, false)->apply($query, $query->getModel());
     }
 }

@@ -65,7 +65,7 @@ final class PagePropsOwnersTest extends TestCase
     {
         $declarations = $this->app->make(ClientDeclarations::class);
         $inertia = new class extends Middleware {};
-        $context = (new ReflectionClass(AppContextData::class))->getConstructor()?->getParameters() ?? [];
+        $context = new ReflectionClass(AppContextData::class)->getConstructor()?->getParameters() ?? [];
 
         return [
             ...array_keys($inertia->share($request)),

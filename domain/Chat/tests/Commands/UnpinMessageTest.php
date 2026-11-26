@@ -37,6 +37,7 @@ final class UnpinMessageTest extends TestCase
         $this->journal->owner()->agent('Planner');
         $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
         $this->chatId = $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner')->id;
+
         $this->message = $this->journal->post(
             'Planner',
             $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner'),

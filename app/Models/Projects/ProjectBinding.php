@@ -476,6 +476,7 @@ final class ProjectBinding extends Model implements EventSource, ProjectOwned, R
         DriverType $driverType,
     ): self {
         $now = CarbonImmutable::now();
+
         $bindings = self::query()
             ->inProject($project->id)
             ->unrevoked()

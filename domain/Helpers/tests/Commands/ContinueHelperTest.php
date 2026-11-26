@@ -28,8 +28,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  * same job; a driver that cannot reopen a conversation refuses by its reason, a finished job refuses with a send
  * command and a live one as uncertain.
  */
-#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(ContinueHelperCommand::class)]
+#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class ContinueHelperTest extends TestCase
 {
     use DispatchesHelpers;

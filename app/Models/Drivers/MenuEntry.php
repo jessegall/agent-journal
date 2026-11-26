@@ -13,7 +13,6 @@ use App\Enums\Navigation\MenuEntryStatus;
 use App\Enums\Navigation\NavigationCompletion;
 use App\Events\Sessions\MenuEntryMarkedStale;
 use App\Events\Sessions\MenuEntryProven;
-use App\Events\Sessions\MenuEntryRetired;
 use App\Events\Sessions\MenuEntrySuperseded;
 use App\Events\Sessions\MenuEntryUsed;
 use App\Models\Agents\AgentRuntime;
@@ -150,16 +149,6 @@ final class MenuEntry extends Model implements EventSource, ReadableModel
         $this->superseded_by_id = $entry->id;
         $this->assertSaved($this->save());
         $this->raise(new MenuEntrySuperseded($this->id, $entry->id));
-    }
-
-    /**
-     * The owner takes the entry out of the library.
-     */
-    public function retire(): void
-    {
-        $this->status = MenuEntryStatus::Retired;
-        $this->assertSaved($this->save());
-        $this->raise(new MenuEntryRetired($this->id));
     }
 
     /**

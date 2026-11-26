@@ -144,6 +144,7 @@ final class DockSourceTest extends TestCase
         $other = Task::factory()->create(['project_id' => $this->journal->projectCalled('B')->id]);
 
         $local = $this->runKeyed($this->dockTask(), (string) Str::ulid());
+
         $inB = $this->runKeyed(
             new DockSourceCommand($this->conversationId, 'tasks.task', $other->id),
             (string) Str::ulid(),
@@ -241,6 +242,7 @@ final class DockSourceTest extends TestCase
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
 
         $this->journal->relayAgentCommands($helper);
+
         $this->artisan('dock:add', [
             'type' => 'tasks.task',
             'id' => $this->task->id,
@@ -253,6 +255,7 @@ final class DockSourceTest extends TestCase
     {
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
+
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorReference::of($owner),
             ActorReference::of($this->start->agent),
@@ -290,6 +293,7 @@ final class DockSourceTest extends TestCase
     {
         $owner = $this->journal->ownerUser();
         $this->start = $this->journal->signedStart('Main agent', 'main-agent');
+
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorReference::of($owner),
             ActorReference::of($this->start->agent),
@@ -421,6 +425,7 @@ final class DockSourceTest extends TestCase
     private function startInConversation(string $profile): TestStart
     {
         $start = $this->journal->signedStart("Started {$profile}", $profile);
+
         $this->journal->fixtures(ChatFixtures::class)->pairChat(
             ActorReference::of($this->owner),
             ActorReference::of($start->agent),

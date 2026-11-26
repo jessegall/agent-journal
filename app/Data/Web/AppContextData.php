@@ -34,6 +34,6 @@ final class AppContextData extends Data
         #[DataCollectionOf(ProjectData::class)]
         public readonly array|Optional $projects = new Optional(),
         // The chosen project's id; null while All projects are shown.
-        public readonly string|null|Optional $selectedProject = new Optional(),
+        public readonly string|Optional|null $selectedProject = new Optional(),
     ) {}
 }

@@ -72,7 +72,6 @@ use App\Events\Sessions\DriverSwitchStopRequested;
 use App\Events\Sessions\DriverTurnFinished;
 use App\Events\Sessions\MenuEntryMarkedStale;
 use App\Events\Sessions\MenuEntryProven;
-use App\Events\Sessions\MenuEntryRetired;
 use App\Events\Sessions\MenuEntrySuperseded;
 use App\Events\Sessions\MenuEntryUsed;
 use App\Events\Sessions\NavigationRequestAbandoned;
@@ -539,13 +538,6 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new MenuEntrySuperseded('entry', 'newer'),
-    ],
-    MenuEntryRetired::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'MenuEntry::retire',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new MenuEntryRetired('entry'),
     ],
     TerminalTakeSent::class => [
         'role' => EventRole::RowFact,

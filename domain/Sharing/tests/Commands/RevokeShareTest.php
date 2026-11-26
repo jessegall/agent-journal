@@ -35,8 +35,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * A revoke that rolls back raises nothing, and a second revoke of an ended share raises nothing.
  */
-#[TimeLimit(seconds: 5, reason: 'Its commands commit for real, and it empties nine tables around each test.')]
 #[TestsCommand(RevokeShareCommand::class)]
+#[TimeLimit(seconds: 5, reason: 'Its commands commit for real, and it empties nine tables around each test.')]
 final class RevokeShareTest extends TestCase
 {
     use CommitsHookRows;
@@ -130,10 +130,12 @@ final class RevokeShareTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
+
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::of($this->journal->ownerUser()),
             new OwnerAuthority('test'),
         );
+
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);

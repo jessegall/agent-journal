@@ -120,6 +120,7 @@ final class StartPlanTest extends TestCase
             $this->plans->planCalled('Release')->id,
             $this->plans->planCalled('Later')->id,
         ];
+
         $this->assertSame([
             true,
             false,

@@ -54,6 +54,7 @@ final class ReopenSharedGatewaysTest extends TestCase
             $first,
             $second,
         ]);
+
         $this->assertSame(1, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
     }
 

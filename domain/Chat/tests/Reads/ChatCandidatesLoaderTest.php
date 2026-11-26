@@ -37,8 +37,10 @@ final class ChatCandidatesLoaderTest extends TestCase
     public function test_a_pair_chat_has_no_candidates_to_read(): void
     {
         $this->journal->owner()->agent('Planner');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
+
         $this->journal->actAs('Owner');
 
         $this->expectException(ChatUnavailable::class);

@@ -18,8 +18,8 @@ final class StartReceiptData extends Data
     public function __construct(
         public readonly string $requestId,
         public readonly string $state,
-        public readonly string|null|Optional $sessionId,
-        public readonly int|null|Optional $generation,
+        public readonly string|Optional|null $sessionId,
+        public readonly int|Optional|null $generation,
         public readonly string|Optional $reasonCode,
         public readonly string|Optional $explanation,
         public readonly string|Optional $remedy,

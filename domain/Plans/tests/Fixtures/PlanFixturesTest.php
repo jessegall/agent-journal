@@ -49,6 +49,7 @@ final class PlanFixturesTest extends TestCase
     public function test_a_task_placed_in_a_phase_stands_at_its_place(): void
     {
         $this->journal->owner();
+
         $task = Task::create(
             'Write it',
             'The first step.',
@@ -111,12 +112,14 @@ final class PlanFixturesTest extends TestCase
     public function test_tasks_placed_in_a_phase_stand_in_the_order_given(): void
     {
         $this->journal->owner();
+
         $first = Task::create(
             'Design',
             'The first step.',
             $this->journal->ownerUser(),
             TestProjects::ownerOf($this->journal->ownerUser()),
         )->assignmentIdentity();
+
         $second = Task::create(
             'Build',
             'The second step.',

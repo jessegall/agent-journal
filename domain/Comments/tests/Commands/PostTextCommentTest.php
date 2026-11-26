@@ -118,6 +118,7 @@ final class PostTextCommentTest extends TestCase
 
         $comment = Comment::query()->findOrFail($commentId);
         $this->assertSame(self::LINES_QUESTION, $comment->body);
+
         $this->assertSame([
             2,
             3,
@@ -211,6 +212,7 @@ final class PostTextCommentTest extends TestCase
 
         $kept = ProjectFileVersion::query()->pluck('text')->all();
         sort($kept);
+
         $this->assertSame([
             'fifth',
             'first',

@@ -28,8 +28,8 @@ use Tests\Support\TimeLimits\TimeLimit;
  * A parent sends a helper it already has new work: the helper keeps the identity it names on a new conversation, and
  * a busy, unfinished, retired or foreign helper refuses with its own refusal.
  */
-#[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(SendHelperCommand::class)]
+#[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class SendHelperTest extends TestCase
 {
     use DispatchesHelpers;

@@ -22,9 +22,9 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class BindingRuntimeController
 {
-    #[Dispatches(OpenBindingMainRuntimeCommand::class)]
     #[Dispatches(AssertBindingRuntimeCommand::class)]
     #[Dispatches(RecordBindingRuntimeCommand::class)]
+    #[Dispatches(OpenBindingMainRuntimeCommand::class)]
     public function __invoke(
         string $binding,
         BindingRuntimeRequestData $request,

@@ -20,8 +20,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * An attempt that ended leaves its open job unfinished, with a notice that holds the exact continue command.
  */
-#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(MarkHelperJobUnfinishedCommand::class)]
+#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class MarkHelperJobUnfinishedTest extends TestCase
 {
     use DispatchesHelpers;

@@ -20,8 +20,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * A parent cancels a job of its helper, which marks it cancelled.
  */
-#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 #[TestsCommand(CancelHelperJobCommand::class)]
+#[TimeLimit(seconds: 8, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class CancelHelperJobTest extends TestCase
 {
     use DispatchesHelpers;

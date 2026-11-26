@@ -39,6 +39,7 @@ final class HelperFixturesTest extends TestCase
             $this->helpers->jobCalled('Review'),
             $this->helpers->jobCalled('Trace'),
         ];
+
         $this->assertNotSame($review->helper_purpose_id, $trace->helper_purpose_id);
         $this->assertNotSame($review->request_id, $trace->request_id);
     }

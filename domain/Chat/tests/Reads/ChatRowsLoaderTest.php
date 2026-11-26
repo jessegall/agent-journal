@@ -24,8 +24,10 @@ final class ChatRowsLoaderTest extends TestCase
     public function test_a_member_of_the_chat_reads_its_rows(): void
     {
         $this->journal->owner()->agent('Planner');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
+
         $this->journal->post('Planner', $chat, 'Ready.');
         $this->journal->actAs('Owner');
 
@@ -37,8 +39,10 @@ final class ChatRowsLoaderTest extends TestCase
     public function test_an_admitted_inbox_member_in_the_chat_reads_its_rows(): void
     {
         $this->journal->owner()->user('Sam')->admitInboxMember('Sam');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Sam')
             ->pairChatOf('Owner', 'Sam');
+
         $this->journal->actAsInboxMember('Sam');
 
         $this->assertInstanceOf(ChatRowsPageData::class, $this->read($chat->id));
@@ -47,8 +51,10 @@ final class ChatRowsLoaderTest extends TestCase
     public function test_a_viewer_not_in_the_chat_is_refused(): void
     {
         $this->journal->owner()->agent('Planner')->user('Kim');
+
         $chat = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner')
             ->pairChatOf('Owner', 'Planner');
+
         $this->journal->actAs('Kim');
 
         $this->expectException(ChatUnavailable::class);

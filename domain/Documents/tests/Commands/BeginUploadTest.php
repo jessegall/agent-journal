@@ -35,6 +35,7 @@ final class BeginUploadTest extends TestCase
         ));
 
         $upload = TextUpload::query()->findOrFail($uploadId);
+
         $this->assertSame([
             UploadType::DocumentBody,
             strlen($text),

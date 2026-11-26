@@ -66,6 +66,7 @@ final class RuleFixturesTest extends TestCase
                 $rule->text,
             ],
         );
+
         $this->assertThrows(fn () => $this->rules->assertHolds('Idea'), AssertionFailedError::class);
     }
 }

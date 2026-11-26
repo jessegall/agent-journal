@@ -22,6 +22,7 @@ trait GrantsDraftReads
         $source = ResourceRequest::record('documents.document:'.$documentId);
         $grant = new OperationGrant('docs_drafts_read', [$source]);
         $access = new AccessPolicy([], [], $start->access->processes, [$grant]);
+
         SessionPolicy::create($parent->session, new StartPolicy(
             $access,
             $start->stopConditions,

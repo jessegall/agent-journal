@@ -29,6 +29,7 @@ final class DiscardUploadToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Writer');
+
         $upload = $journal->runAs(
             'Writer',
             new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes')),

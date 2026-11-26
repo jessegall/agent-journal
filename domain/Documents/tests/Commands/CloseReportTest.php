@@ -91,6 +91,7 @@ final class CloseReportTest extends TestCase
         $writer = $this->journal->signedStart('Writer', 'writing-helper');
         $writer->startRequest($this->app);
         $bus = $this->app->make(CommandBus::class);
+
         $source = $bus->run(new CreateDocumentCommand(
             'Source',
             'Design under review.',

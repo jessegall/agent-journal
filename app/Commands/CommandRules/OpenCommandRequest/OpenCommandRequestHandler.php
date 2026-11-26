@@ -15,6 +15,7 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
     public function handle(OpenCommandRequestCommand $command): string
     {
         $actor = $command->dispatchedBy();
+
         $open = CommandRequest::query()
             ->byActor($actor)
             ->forOperation($command->operation, $command->bindingDigest)

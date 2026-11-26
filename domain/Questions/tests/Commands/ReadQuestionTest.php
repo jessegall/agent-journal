@@ -42,6 +42,7 @@ final class ReadQuestionTest extends TestCase
         );
 
         $this->journal->actAs('Planner');
+
         $this->assertSame(
             $this->question->text,
             $this->journal->run(new ReadQuestionCommand($this->question->id))->text,

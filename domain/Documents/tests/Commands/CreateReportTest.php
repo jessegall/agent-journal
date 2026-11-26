@@ -50,6 +50,7 @@ final class CreateReportTest extends TestCase
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
     {
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "Text\n", TestProjects::local()->id));
+
         $report = $this->bus()->run(new CreateReportCommand(
             'Check',
             'What we found',

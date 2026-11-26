@@ -128,12 +128,14 @@ final class ReplaceDocumentTextTest extends TestCase
         $author = $this->journal->signedStart('Writer', 'writing-helper');
         $author->startRequest($this->app);
         $commands = $this->app->make(CommandBus::class);
+
         $document = $commands->run(new CreateDocumentCommand(
             'Design',
             'Current design.',
             'Original text.',
             TestProjects::local()->id,
         ));
+
         $draft = $commands->run(new OpenDocumentCommand($document->id, 1));
 
         $this->journal->agentCall($author, 'POST', '/agent/docs/edit', [

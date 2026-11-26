@@ -18,10 +18,10 @@ use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
  */
 final readonly class EditDocumentController
 {
-    #[Dispatches(ChangeDocumentDetailsCommand::class)]
     #[Dispatches(EditDocumentCommand::class)]
     #[Dispatches(ReplaceDocumentBodyCommand::class)]
     #[Dispatches(ReplaceDocumentTextCommand::class)]
+    #[Dispatches(ChangeDocumentDetailsCommand::class)]
     public function __invoke(EditDocumentPayload $call, CommandBus $commands): DraftHeld
     {
         $target = $call->target();

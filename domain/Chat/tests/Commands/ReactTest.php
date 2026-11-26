@@ -31,6 +31,7 @@ final class ReactTest extends TestCase
 
         $this->journal->owner()->agent('Planner');
         $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
+
         $this->message = $this->journal->post(
             'Planner',
             $this->journal->fixtures(ChatFixtures::class)->pairChatOf('Owner', 'Planner'),
@@ -43,6 +44,7 @@ final class ReactTest extends TestCase
         $replyId = $this->journal->run(new ReactCommand($this->message->id, '👍'));
 
         $reply = Message::query()->findOrFail($replyId);
+
         $this->assertSame([
             '👍',
             $this->message->id,

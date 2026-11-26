@@ -160,6 +160,7 @@ final class WorkOnTaskStateTest extends TestCase
     public function test_a_newer_run_of_its_task_ends_the_older_run(): void
     {
         $this->startWork();
+
         $newer = new TaskRunClaimed(
             $this->work->task->id,
             $this->work->task->run_number + 1,

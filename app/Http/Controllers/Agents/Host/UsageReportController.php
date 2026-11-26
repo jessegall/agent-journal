@@ -20,8 +20,8 @@ use Illuminate\Http\Response;
 final readonly class UsageReportController
 {
     #[Dispatches(AddUsageCostCommand::class)]
-    #[Dispatches(RecordThreadTokensCommand::class)]
     #[Dispatches(RecordUsageWindowCommand::class)]
+    #[Dispatches(RecordThreadTokensCommand::class)]
     public function __invoke(UsageReportData $report, HostContext $host, CommandBus $commands): Response
     {
         $commands->run($report->commandFor($host->hostId));

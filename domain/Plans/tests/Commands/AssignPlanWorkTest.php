@@ -177,10 +177,12 @@ final class AssignPlanWorkTest extends TestCase
         $owner = $this->journal->ownerUser();
         $this->main = $this->journal->signedStart('Main agent', 'main-agent');
         $this->helper = $this->journal->signedStart('Reader', 'read-only-helper');
+
         $plan = Plan::factory()->create([
             'title' => 'Release',
             'type' => PlanType::Build,
         ]);
+
         $open = $this->tasks()->createTask('Open command');
         $finished = $this->tasks()->createTask('Finished command');
         $finished->finish('Done.');

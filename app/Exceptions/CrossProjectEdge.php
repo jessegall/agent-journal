@@ -21,7 +21,7 @@ final class CrossProjectEdge extends RuntimeException implements CodedRefusal
      */
     public static function forRecord(string $record): self
     {
-        return new self(ucfirst($record) . ' belongs to another project');
+        return new self(ucfirst($record).' belongs to another project');
     }
 
     public function refusalCode(): RefusalCode

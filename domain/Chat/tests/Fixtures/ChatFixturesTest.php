@@ -35,6 +35,7 @@ final class ChatFixturesTest extends TestCase
                 $chats->pairChatOf('Owner', 'Planner')->id,
             ],
         );
+
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Owner')));
         $this->assertTrue(InboxMember::isAttached($chat->id, $this->journal->actorCalled('Planner')));
     }
@@ -42,9 +43,11 @@ final class ChatFixturesTest extends TestCase
     public function test_a_member_takes_away_only_their_own_pin_and_the_message_stays(): void
     {
         $this->journal->owner()->agent('Planner');
+
         $chat = $this->journal->fixtures(
             ChatFixtures::class,
         )->pairChatBetween('Owner', 'Planner')->pairChatOf('Owner', 'Planner');
+
         $message = $this->journal->post('Planner', $chat, 'Keep this.');
 
         $pins = $this->journal->fixtures(ChatFixtures::class)

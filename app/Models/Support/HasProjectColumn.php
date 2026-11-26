@@ -46,7 +46,7 @@ trait HasProjectColumn
             return;
         }
 
-        throw CrossProjectEdge::forRecord(Str::snake(class_basename($this), ' ') . ' ' . $this->getKey());
+        throw CrossProjectEdge::forRecord(Str::snake(class_basename($this), ' ').' '.$this->getKey());
     }
 
     /**

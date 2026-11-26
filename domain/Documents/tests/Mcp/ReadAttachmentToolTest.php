@@ -30,10 +30,12 @@ final class ReadAttachmentToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Writer');
+
         $upload = $journal->runAs(
             'Writer',
             new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes')),
         );
+
         $journal->runAs('Writer', new AppendUploadCommand($upload, 0, 'notes', hash('sha256', 'notes')));
         $attachment = $journal->runAs('Writer', new CommitUploadCommand($upload));
 

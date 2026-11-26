@@ -29,6 +29,7 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
     protected function arrange(TestJournal $journal): ToolCall
     {
         $start = $journal->owner()->signedStart('Builder');
+
         $reminder = $journal->fixtures(ReminderFixtures::class)
             ->createReminder('Check', 'Builder', CarbonImmutable::now()->addHour());
 

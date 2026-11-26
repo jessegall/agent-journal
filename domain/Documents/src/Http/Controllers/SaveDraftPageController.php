@@ -17,8 +17,8 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SaveDraftPageController
 {
-    #[Dispatches(ChangeDocumentDetailsCommand::class)]
     #[Dispatches(ReplaceDocumentBodyCommand::class)]
+    #[Dispatches(ChangeDocumentDetailsCommand::class)]
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $saved = $commands->run(
