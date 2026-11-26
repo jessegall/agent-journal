@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use PHPUnit\Framework\TestCase;
+use Tests\Architecture\Support\EntryPoints\EntryAttributes;
 use Tests\Architecture\Support\EntryPoints\EntryPoint;
 use Tests\Architecture\Support\EntryPoints\EntryTestFindings;
 use Tests\Architecture\Support\EntryPoints\EntryType;
@@ -15,8 +16,8 @@ use Tests\Fixtures\EntryPointTests\UntestedRead;
 
 /**
  * The entry test findings on fixture entries: an entry no test names is listed with what to write, a test at its
- * entry's path without the attribute with the attribute to add, and a test outside its folder with the folder to move
- * it to.
+ * entry's path without the attribute with the attribute to add, a test outside its folder with the folder to move it
+ * to, and a test of no kind with what to do about it.
  */
 final class EntryPointTestsFixtureTest extends TestCase
 {
@@ -75,6 +76,16 @@ final class EntryPointTestsFixtureTest extends TestCase
             'The middleware App\\Http\\Middleware\\Gate has no test: write it at tests/Middleware/GateTest.php with '
                 .'#[TestsMiddleware].',
         ], $findings->untested());
+    }
+
+    public function test_a_test_outside_every_kind_is_listed_and_a_unit_or_stand_in_test_is_not(): void
+    {
+        $attributes = new EntryAttributes(base_path('tests/Fixtures/EntryPointTests/Kinds'));
+
+        $this->assertSame(
+            ['tests/Loose/LooseTest.php is a test of no kind: move what only it proves, then delete it.'],
+            $attributes->ofNoKind(),
+        );
     }
 
     public function test_an_entry_two_test_classes_name_is_listed_with_both_files(): void

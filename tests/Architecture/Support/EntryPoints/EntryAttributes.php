@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support\EntryPoints;
 
 use App\Support\Reflector;
+use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\ClassesDeclared;
+use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * The entries the test classes of core and of every domain name in their Tests attributes, read by reflection; the
- * fixtures, the test machinery, abstract classes and the test case bases name none.
+ * The entries the test classes of core and of every domain name in their Tests attributes, read by reflection, and
+ * the test classes of no kind; the fixtures, the test machinery, abstract classes and the test case bases name none.
  */
 final readonly class EntryAttributes
 {
@@ -18,7 +20,12 @@ final readonly class EntryAttributes
      * The folders whose classes are machinery or material for tests, never tests of an entry.
      */
     private const string UNJUDGED
-        = '#^(tests/(Fixtures|Support|bin|Contracts|Measurements)/|domain/[^/]+/tests/Fixtures/)#';
+        = '#^(tests/(Fixtures|Support|bin|Contracts|Measurements)/|domain/[^/]+/tests/(Fixtures|Support)/)#';
+
+    /**
+     * The folders whose tests are of their folder's kind: unit, machinery and architecture tests.
+     */
+    private const string KIND_FOLDERS = '#^((tests|domain/[^/]+/tests)/(Unit|Machinery)/|tests/Architecture/)#';
 
     private const string TEST_CASE_FILE = 'TestCase.php';
 
@@ -51,6 +58,31 @@ final readonly class EntryAttributes
     }
 
     /**
+     * Each test class of no kind, by its file: outside the unit, machinery and architecture folders, it names no entry
+     * and runs against no stand-in.
+     *
+     * @return list<string>
+     */
+    public function ofNoKind(): array
+    {
+        $found = [];
+
+        foreach ($this->testClasses() as $file => $classes) {
+            if (preg_match(self::KIND_FOLDERS, $file) === 1) {
+                continue;
+            }
+
+            foreach ($classes as $class) {
+                if ($this->isTestOfNoKind($file, $class)) {
+                    $found[] = "{$file} is a test of no kind: move what only it proves, then delete it.";
+                }
+            }
+        }
+
+        return $found;
+    }
+
+    /**
      * Each declared class under the tests that does not load, by its file: its namespace does not match its folder.
      *
      * @return list<string>
@@ -68,6 +100,20 @@ final readonly class EntryAttributes
         }
 
         return $unloadable;
+    }
+
+    private function isTestOfNoKind(string $file, string $class): bool
+    {
+        if (! Reflector::exists($class)) {
+            return false;
+        }
+
+        $type = Reflector::of($class);
+
+        return ! $type->isAbstract()
+            && $type->isSubclassOf(TestCase::class)
+            && $this->namedBy($file, $class) === []
+            && $type->attributes(TestsAgainstStandIn::class)->entries() === [];
     }
 
     /**

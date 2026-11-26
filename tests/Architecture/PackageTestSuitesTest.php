@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SimpleXMLElement;
 
 /**
- * Every package's Unit, Feature and entry tests (Commands, States, Routes, Mcp, Middleware, Reads) sit in a suite of
+ * Every package's Unit, Machinery and entry tests (Commands, States, Routes, Mcp, Middleware, Reads) sit in a suite of
  * phpunit.xml, so the full run reaches a new package's tests without anyone editing the file.
  */
 final class PackageTestSuitesTest extends TestCase
@@ -25,7 +25,7 @@ final class PackageTestSuitesTest extends TestCase
 
         $folders = [];
 
-        foreach (['Unit', 'Feature', 'Commands', 'States', 'Routes', 'Mcp', 'Middleware', 'Reads'] as $kind) {
+        foreach (['Unit', 'Machinery', 'Commands', 'States', 'Routes', 'Mcp', 'Middleware', 'Reads'] as $kind) {
             $folders = [...$folders, ...(glob($root."/domain/*/tests/{$kind}", GLOB_ONLYDIR) ?: [])];
         }
 

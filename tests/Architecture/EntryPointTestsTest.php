@@ -101,6 +101,11 @@ final class EntryPointTestsTest extends TestCase
         $this->assertSame([], $this->findings()->misplaced());
     }
 
+    public function test_every_test_class_is_of_a_kind(): void
+    {
+        $this->assertSame([], $this->attributes()->ofNoKind());
+    }
+
     public function test_every_entry_has_a_test_naming_it(): void
     {
         $this->assertSame([], $this->findings()->untested());
