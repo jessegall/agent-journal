@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
+use App\Contracts\Hosts\HostChannel;
 use App\Contracts\Hosts\HostOperatorAccess as HostOperatorAccessContract;
 use App\Contracts\Hosts\LocalProjectHosts as LocalProjectHostsContract;
 use App\Contracts\Hosts\ProjectFiles as ProjectFilesContract;
@@ -23,6 +24,7 @@ use App\Policies\ProjectFilesPolicy;
 use App\Resolvers\AgentDirectory;
 use App\Support\CommandRunEvidence;
 use App\Support\HostOperatorAccess;
+use App\Support\Hosts\HostOrders;
 use App\Support\JournalCommands;
 use App\Support\JournalRoutes;
 use App\Support\Links\ProjectFileLinkRecords;
@@ -51,6 +53,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
+        $this->app->bind(HostChannel::class, HostOrders::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);
         $this->app->bind(ProjectFilesContract::class, ProjectFiles::class);
         $this->app->bindIf(FileComments::class, NoFileComments::class);

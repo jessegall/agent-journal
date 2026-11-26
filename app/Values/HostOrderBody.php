@@ -21,4 +21,12 @@ final readonly class HostOrderBody
         public string|null $driverRequestId = null,
         public string|null $step = null,
     ) {}
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public static function from(HostOrderType $type, array $payload, HostOrderSource $source): self
+    {
+        return new self($type, $payload, $source->idempotencyKey(), $source->driverRequestId, $source->step);
+    }
 }

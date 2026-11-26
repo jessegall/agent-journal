@@ -17,7 +17,7 @@ final class HostProcessReportData extends Data
 {
     public function __construct(
         public readonly HostProcessReportType $report,
-        public readonly string|null $identity = null,
+        public readonly string $identity = '',
         public readonly int $generation = 0,
         public readonly int|null $exitCode = null,
         public readonly string|null $signal = null,

@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\Hosts\StopHostProcess;
+
+use App\Attributes\Commands\Entry;
+use App\Enums\Accounts\CommandEntry;
+use App\Support\Command;
+use App\Values\HostOrderSource;
+
+/**
+ * Orders the host to stop a process: it gets the grace time to end, then the force time before it is killed. Run by the journal itself (internal, not exported).
+ *
+ * @extends Command<string>
+ */
+#[Entry(CommandEntry::HostControl)]
+final readonly class StopHostProcessCommand extends Command
+{
+    public function __construct(
+        public string $processId,
+        public int $graceMs,
+        public int $forceMs,
+        public HostOrderSource $source,
+    ) {}
+}

@@ -504,6 +504,14 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      *
      * @throws HostCredentialRejected
      */
+    /**
+     * The host, locked until the transaction ends, so its host-wide orders are numbered one at a time.
+     */
+    public static function findLocked(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
     public static function findForSecret(string $secret): self
     {
         $host = self::query()->withSecret($secret)->firstOr(HostCredentialRejected::throwing()->unknown());

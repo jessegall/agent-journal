@@ -26,7 +26,7 @@ type OpenPlan struct {
 	Argv        []string                `json:"argv"`
 	RestartArgv []string                `json:"restart_argv"`
 	RestartWhen host.RestartFile        `json:"restart_when_file"`
-	Environment map[string]string       `json:"environment"`
+	Environment []string                `json:"environment"`
 	Folder      string                  `json:"folder"`
 	Isolation   string                  `json:"isolation"`
 	Container   *host.ContainerManifest `json:"container"`
@@ -184,7 +184,7 @@ func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess
 	}
 	process := host.ContainerProcess{
 		Command:        plan.Argv,
-		Environment:    environmentOf(plan.Environment),
+		Environment:    plan.Environment,
 		Restart:        plan.RestartArgv,
 		RestartWhen:    plan.RestartWhen,
 		IsHealedByHost: true,
@@ -274,7 +274,7 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 	}
 	command := exec.Command(argv[0], argv[1:]...)
 	command.Dir = held.plan.Folder
-	command.Env = environmentOf(held.plan.Environment)
+	command.Env = held.plan.Environment
 	if held.plan.Type == "terminal" {
 		terminal, err := pty.StartWithAttrs(command, &pty.Winsize{Rows: held.plan.Size.Rows, Cols: held.plan.Size.Columns},
 			&syscall.SysProcAttr{Setsid: true, Setctty: true})
@@ -480,14 +480,6 @@ func signalOf(state *os.ProcessState) string {
 		return ""
 	}
 	return status.Signal().String()
-}
-
-func environmentOf(environment map[string]string) []string {
-	listed := make([]string, 0, len(environment))
-	for name, value := range environment {
-		listed = append(listed, name+"="+value)
-	}
-	return listed
 }
 
 // decodePayload reads an order's payload into its shape; a payload of another shape is unsafe.

@@ -12,13 +12,13 @@ use App\Support\ContainerManifest;
 
 /**
  * How a host is to open one process: what it is for, terminal or pipes, whether it is healed, its argv and
- * environment, its folder, and the container it runs in when it is contained.
+ * environment, each variable as NAME=value, its folder, and the container it runs in when it is contained.
  */
 final readonly class HostProcessPlan
 {
     /**
      * @param  list<string>  $argv
-     * @param  array<string, string>  $environment
+     * @param  list<string>  $environment
      */
     public function __construct(
         public HostProcessPurpose $purpose,

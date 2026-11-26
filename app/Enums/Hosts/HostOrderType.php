@@ -43,4 +43,17 @@ enum HostOrderType: string
             default => false,
         };
     }
+
+    /**
+     * Whether this order can be carried out on a process of that type: keys and screens need a terminal, standard
+     * input needs pipes.
+     */
+    public function suits(HostProcessType $type): bool
+    {
+        return match ($this) {
+            self::WriteKeys, self::Resize, self::Stream, self::Snapshot => $type === HostProcessType::Terminal,
+            self::WriteStdin, self::CloseStdin => $type === HostProcessType::Pipe,
+            default => true,
+        };
+    }
 }

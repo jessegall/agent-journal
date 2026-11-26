@@ -47,6 +47,7 @@ use Tests\Support\TestProjects;
  */
 final class TestJournal
 {
+    use ArrangesHostProcesses;
     use ArrangesProcessRuns;
     use ArrangesProfiles;
     use ArrangesSettings;

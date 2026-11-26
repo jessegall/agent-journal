@@ -181,6 +181,24 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The orders made for the process, by their number.
+     *
+     * @return list<self>
+     */
+    public static function findForProcess(string $processId): array
+    {
+        return array_values(self::query()->where('host_process_id', $processId)->orderBy('sequence')->get()->all());
+    }
+
+    /**
+     * The order made under the key before, so a repeated step makes no second one.
+     */
+    public static function findWithKey(string $idempotencyKey): self|null
+    {
+        return self::query()->where('idempotency_key', $idempotencyKey)->first();
+    }
+
+    /**
      * The orders the host may take now, by their number: those waiting and in time, and those it claimed that write
      * nothing into a process and went unanswered too long, locked so a claim beside this one skips them.
      *
