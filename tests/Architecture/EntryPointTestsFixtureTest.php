@@ -25,7 +25,7 @@ final class EntryPointTestsFixtureTest extends TestCase
     public function test_a_read_with_no_test_and_a_read_test_in_the_wrong_folder_are_listed(): void
     {
         $misplacedTest = new NamedEntry(
-            'tests/Feature/TestedReadTest.php',
+            'tests/Machinery/TestedReadTest.php',
             'TestedReadTest',
             EntryType::Read,
             TestedRead::class,
@@ -41,7 +41,7 @@ final class EntryPointTestsFixtureTest extends TestCase
                 .'tests/Reads/UntestedReadTest.php.',
         ], $findings->untested());
         $this->assertSame([
-            'tests/Feature/TestedReadTest.php tests the read Tests\\Fixtures\\EntryPointTests\\TestedRead: move '
+            'tests/Machinery/TestedReadTest.php tests the read Tests\\Fixtures\\EntryPointTests\\TestedRead: move '
                 .'it to tests/Reads.',
         ], $findings->misplaced());
     }

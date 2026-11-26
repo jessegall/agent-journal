@@ -9,28 +9,27 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase as BaseTestCase;
 
 /**
- * Each domain with feature tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared
- * Tests\TestCase,
- * and every feature test of the domain extends it; a unit test may stay on PHPUnit's own TestCase.
+ * Each domain with machinery tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared
+ * Tests\TestCase, and every machinery test of the domain extends it; a unit test may stay on PHPUnit's own TestCase.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainTestCaseTest extends TestCase
 {
-    public function test_every_domain_feature_test_extends_its_domains_test_case(): void
+    public function test_every_domain_machinery_test_extends_its_domains_test_case(): void
     {
         $wrong = [];
 
-        foreach (glob(base_path('domain/*/tests/Feature'), GLOB_ONLYDIR) ?: [] as $folder) {
+        foreach (glob(base_path('domain/*/tests/Machinery'), GLOB_ONLYDIR) ?: [] as $folder) {
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Tests\\TestCase";
 
             if (! Reflector::factory()->isSubclassOf($base, BaseTestCase::class)) {
-                $wrong[] = "{$domain} has feature tests but no {$base} extending Tests\\TestCase";
+                $wrong[] = "{$domain} has machinery tests but no {$base} extending Tests\\TestCase";
 
                 continue;
             }
 
-            foreach ($this->featureTestClassesIn($folder, "Domain\\{$domain}\\Tests\\Feature") as $class) {
+            foreach ($this->machineryTestClassesIn($folder, "Domain\\{$domain}\\Tests\\Machinery") as $class) {
                 if (! Reflector::factory()->isSubclassOf($class, $base)) {
                     $wrong[] = "{$class} does not extend {$base}";
                 }
@@ -43,7 +42,7 @@ final class DomainTestCaseTest extends TestCase
     /**
      * @return list<string>
      */
-    private function featureTestClassesIn(string $folder, string $namespace): array
+    private function machineryTestClassesIn(string $folder, string $namespace): array
     {
         $classes = [];
 

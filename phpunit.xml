@@ -29,9 +29,9 @@
             <directory>domain/*/tests/Middleware</directory>
             <directory>domain/*/tests/Reads</directory>
         </testsuite>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-            <directory>domain/*/tests/Feature</directory>
+        <testsuite name="Machinery">
+            <directory>tests/Machinery</directory>
+            <directory>domain/*/tests/Machinery</directory>
         </testsuite>
         <testsuite name="Architecture">
             <directory>tests/Architecture</directory>

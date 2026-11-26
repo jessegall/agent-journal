@@ -7,7 +7,7 @@ declare(strict_types=1);
  * test does, and several paths run through one temporary configuration that lists them all.
  *
  *   composer test:run
- *   composer test:run -- tests/Feature/Hooks
+ *   composer test:run -- tests/Machinery/Hooks
  *   composer test:run -- tests/Hooks/ClaudeCodeHooksTest.php tests/Unit/Hooks/DecisionTest.php
  */
 
