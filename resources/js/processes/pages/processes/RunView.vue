@@ -47,6 +47,23 @@ function clean(): void {
     );
 }
 
+const isOutputMissing = computed(() =>
+    data.snapshot.parts.some((part) =>
+        ['incomplete', 'corrupt', 'removed'].includes(part.capture),
+    ),
+);
+
+function checkRestoredOutput(): void {
+    router.post(
+        `/processes/runs/${data.snapshot.runId}/restored-output-check`,
+        {},
+        {
+            headers: { 'Idempotency-Key': crypto.randomUUID() },
+            preserveScroll: true,
+        },
+    );
+}
+
 function stop(): void {
     router.post(
         `/processes/runs/${data.snapshot.runId}/stop`,
@@ -85,6 +102,11 @@ function stop(): void {
             <Button variant="bordered" @click="clean">
                 Remove stored output ({{ storedBytes }} bytes)
             </Button>
+            <template v-if="isOutputMissing">
+                <Button variant="bordered" @click="checkRestoredOutput">
+                    Check output restored to the disk
+                </Button>
+            </template>
         </template>
         <template v-for="part in data.snapshot.parts" :key="part.id">
             <PartCard

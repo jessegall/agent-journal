@@ -92,7 +92,10 @@ use App\Http\Controllers\ApproveProposalPageController;
 use App\Http\Controllers\ApproveSamplePageController;
 use App\Http\Controllers\CleanRunPageController;
 use App\Http\Controllers\RejectProposalPageController;
+use App\Http\Controllers\RestoreRulePageController;
+use App\Http\Controllers\RetireRulePageController;
 use App\Http\Controllers\StopRunPageController;
+use App\Http\Controllers\VerifyRestoredOutputPageController;
 use App\Http\Pages\Resolvers\RequestListResolver;
 use App\Http\Pages\Resolvers\RequestWindowResolver;
 use App\Http\Pages\Resolvers\RunListResolver;
@@ -252,9 +255,12 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
             'reject-proposal',
         );
 
+        $retire = ActionRoute::post('rules/{rule}/retirement', RetireRulePageController::class, 'retire-rule');
+        $restore = ActionRoute::post('rules/{rule}/restoration', RestoreRulePageController::class, 'restore-rule');
+
         return Page::layout('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class)
             ->at('requests/{request}')
-            ->actions($sample, $approve, $reject);
+            ->actions($sample, $approve, $reject, $retire, $restore);
     }
 
     private function runsPage(): Page
@@ -280,6 +286,11 @@ final class ProcessPages implements NativePartProvider, PageProvider, TypeProvid
             ->actions(
                 ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'),
                 ActionRoute::post('runs/{run}/clean', CleanRunPageController::class, 'clean-run'),
+                ActionRoute::post(
+                    'runs/{run}/restored-output-check',
+                    VerifyRestoredOutputPageController::class,
+                    'verify-restored-output',
+                ),
             );
     }
 }

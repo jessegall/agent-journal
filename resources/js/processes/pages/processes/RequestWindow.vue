@@ -5,6 +5,7 @@ import type { RequestWindowData } from '@generated/types/processes';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ReviewRequestForm from './partials/ReviewRequestForm.vue';
+import RuleActions from './partials/RuleActions.vue';
 
 /**
  * One command request for its owner, a native part of the request's layout page: where it stands and the steps it still requires, every proposal revision with its effects
@@ -26,6 +27,9 @@ const refusal = computed(() => page.props.errors.review ?? '');
             <p role="alert">{{ refusal }}</p>
         </template>
         <DataSection :data="data" />
+        <template v-if="data.activeRuleId !== null">
+            <RuleActions :data="data" :rule-id="data.activeRuleId" />
+        </template>
         <template v-for="proposal in data.proposals" :key="proposal.id">
             <section :aria-label="`Proposal ${proposal.id}`">
                 <h2>

@@ -37,6 +37,7 @@ final class RequestWindowData extends Data
         #[DataCollectionOf(ReaderProofData::class)]
         public readonly array $readers,
         public readonly array $unsampledStatuses,
+        public readonly string|null $activeRuleId,
         public readonly int $activeRevision,
         public readonly string $lineDigest,
     ) {}

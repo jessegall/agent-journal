@@ -62,6 +62,7 @@ final readonly class RequestWindowResolver implements PageResolver
             'samples' => $this->samplesOf($request),
             'readers' => $this->readersOf($request),
             'unsampledStatuses' => $this->unsampledOf($request, $latest),
+            'activeRuleId' => $active?->id,
             'activeRevision' => $active === null ? 0 : $active->active_revision,
             'lineDigest' => $request->source_digest,
         ]);
