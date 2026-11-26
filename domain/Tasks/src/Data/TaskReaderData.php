@@ -14,11 +14,8 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One task's reader: its number, title, state and revision, and three separate facts: the standing holder, the latest
- * run's number, and who runs it now, each absent when there is none; the sections other domains add beside the facts,
- * such as Plans' plan of the task; then its brief, never its result note in its place, and the Logs and Proofs the
- * reader asked for, its waits when asked, the reason of a block, and its comments under the label they are written
- * against.
+ * One task's reader: its number, title, state and revision, its holder, latest run and who runs it now, the sections
+ * other domains add, its brief, the Logs, Proofs and waits it asked for, a block's reason, and its comments.
  */
 #[TypeScript]
 final class TaskReaderData extends Data

@@ -23,10 +23,9 @@ use App\Processes\Values\ReaderCheckpoint;
 use App\Processes\Values\VerifiedOutput;
 
 /**
- * The one boundary between a run and a result: a normal run whose part ended
- * with its own exit, whose capture is complete and verified, whose approved reader consumed every byte without a
- * problem and claimed what the exit branch means, and whose empty policy holds. Anything else is a problem with a
- * stable code; an execution error is never findings.
+ * The one boundary between a run and a result: a normal run with its own exit, a complete verified capture, a reader
+ * that consumed every byte and claimed what the exit means, and a held empty policy. Anything else is a problem with a
+ * stable code.
  */
 final readonly class EvidenceValidator
 {

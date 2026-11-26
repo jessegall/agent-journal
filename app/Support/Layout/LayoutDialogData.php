@@ -9,10 +9,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A dialog a layout opens from one of its own parts: its title, the sentence a toast says once the form is accepted,
- * the inverse action that toast offers as Undo, only when the record's domain has one, and the noun whose registered
- * draft producer offers the guided entry, only when there is one. A dialog opened from a page header names the words of
- * its other ways, and its opener is then drawn as a split button with a menu of them.
+ * A dialog a layout opens from one of its parts: its title, the toast's sentence once the form is accepted, the Undo
+ * action when the domain has one, and the noun whose draft producer offers the guided entry. A dialog opened from a
+ * page header names its other ways, shown as a split button.
  */
 #[TypeScript]
 final class LayoutDialogData extends Data

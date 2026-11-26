@@ -9,7 +9,7 @@ use App\Models\CommandRules\CommandReceipt;
 use Carbon\CarbonImmutable;
 
 /**
- * Expires the command receipts past their retention: each keeps its key as a tombstone and forgets its result.
+ * Expires the command receipts past their retention: each keeps its key, refused for good, and forgets its result.
  */
 final readonly class ExpiredReceipts
 {

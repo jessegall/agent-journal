@@ -4,10 +4,9 @@ import Card from './Card.vue';
 import Icon from './Icon.vue';
 
 /**
- * A document in a chat, on a plain Card with the field radius: one button with the docs Icon 14, the title, and a small
- * line (its revision and, until it is handed over, "Drag onto an agent"). The bar can be dragged. The button is
- * labelled "Doc N: title. Enter opens it; Shift+Enter hands it to an agent."; Enter opens it, and Shift+Enter or the
- * Menu key asks to hand it to an agent. Hover takes --border-3, focus the ring at offset 1, lifting scales it down.
+ * A document in a chat: one draggable button with the docs icon, the title and a line with its revision and, until
+ * handed over, Drag onto an agent. Enter opens it, and Shift+Enter or the Menu key asks to hand it to an agent.
+ * Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{
     number: number;

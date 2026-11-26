@@ -12,10 +12,9 @@ import { computed, ref } from 'vue';
 import RetryLine from './RetryLine.vue';
 
 /**
- * A file's lines a reader comments on: select lines, then Comment, and the bar opens under the last one. The draft is
- * kept for the version and range; a send that fails keeps its text and offers Retry, which sends the same comment
- * again. The threads of this version show under the line each ends on. A comment to the project's main agent tells it
- * in the chat once the comment is saved; when that message fails the comment stays and Send again sends only the message.
+ * A file's lines a reader comments on: select lines, then Comment, and the bar opens under the last one; the draft is
+ * kept for the version and range, and a failed send offers Retry. A comment to the main agent also tells it in the
+ * chat, and Send again resends only that message.
  */
 const props = defineProps<{
     target: string;

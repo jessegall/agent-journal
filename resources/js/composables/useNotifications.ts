@@ -31,8 +31,8 @@ export function onNotificationArrivals(present: (arrivals: NotificationItem[]) =
 }
 
 /**
- * A live signal said the notifications changed: every tab catches up, and the new arrivals go to the presenter,
- * which decides whether this tab speaks.
+ * A live signal reported that the notifications changed: every tab catches up, and the new arrivals go to the
+ * presenter, which decides whether this tab announces them.
  */
 export function followNotificationsSignal(): void {
     void store.catchUp().then((arrivals) => presentArrivals(arrivals));

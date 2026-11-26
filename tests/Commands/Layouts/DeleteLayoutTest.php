@@ -14,7 +14,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A user deletes a layout of theirs; another user's layout is not there for them and stays.
+ * A user deletes one of their own layouts; another user's layout is not there for them and stays.
  */
 #[TestsCommand(DeleteLayoutCommand::class)]
 final class DeleteLayoutTest extends TestCase

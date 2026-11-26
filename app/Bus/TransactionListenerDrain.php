@@ -10,10 +10,9 @@ use App\Engine\Enums\ListenerLane;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Applies the transaction listeners of a unit's facts inside the transaction: it seals the open slot, then takes the
- * facts first in first out and runs each one's transaction listeners in their order, directly, never through the
- * dispatcher; a fact a listener raises joins the end of the queue one step deeper in its chain. One pump runs at a
- * time, and a listener's failure marks the unit failed and propagates.
+ * Runs the transaction listeners of a unit's facts inside the transaction: it seals the open slot, takes the facts
+ * first in first out and runs each one's listeners in order, never through the dispatcher. One drain runs at a time,
+ * and a listener's failure marks the unit failed.
  */
 final readonly class TransactionListenerDrain
 {

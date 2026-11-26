@@ -184,10 +184,9 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * A recheck of a stop or start that has no answer yet, from the process state the host last reported: without one
-     * the switch is marked unconfirmed and waits; a proven stop moves on to the replacement, and an old process cancels
-     * the switch only when it was observed running after its stop was accepted; a replacement that runs is confirmed
-     * and one that ended failed.
+     * Rechecks a stop or start with no answer yet from the process state the host last reported: without one the switch
+     * waits unconfirmed; a proven stop moves on to the replacement, an old process seen running after its stop cancels
+     * the switch, and a replacement is confirmed or failed.
      */
     public function recheck(SessionProcessStatus|null $reported, AgentRuntime|null $source): void
     {

@@ -33,10 +33,8 @@ use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
- * The app context of one request, read from who views it: a guest sees the installation's name and version, the owner
- * its faults, the driver looks, the navigation and its counts and the projects to choose, and an inbox member the
- * driver looks and the navigation.
- * It holds nothing between requests.
+ * The app context of one request, by who views it: a guest sees the installation's name and version, the owner its
+ * faults, the driver looks, the navigation and the projects, and an inbox member the driver looks and the navigation.
  */
 final readonly class AppContext
 {

@@ -20,10 +20,9 @@ use App\Skills\Values\SkillEntry;
 use App\Values\AgentText;
 
 /**
- * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh from today's facts and
- * revisions and tells the agent what it cannot reach itself: a selection that cannot be made, and skills that differ
- * from the ones its start was handed when its driver loads skills only at a new session. It changes nothing: the
- * session keeps the files and the row its start gave it.
+ * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh and tells the agent what
+ * it cannot reach itself: a selection that cannot be made, and skills that differ from its start's when its driver
+ * loads skills only at a new session. It changes nothing.
  */
 final readonly class NoticeSkillsChanged implements Listener
 {

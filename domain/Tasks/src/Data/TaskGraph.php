@@ -10,10 +10,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The tasks of one plan and the waits among them as a graph reader draws them: the plan, a version that changes when
- * any task state or wait does, the nodes and edges, the selected task when one is chosen, and the address a task opens
- * back to, which restores the selected node. A suggestion and the addresses its steps are sent to are there only when
- * a service gives them.
+ * The tasks of one plan and their waits as a graph reader draws them: the plan, a version that changes with any task
+ * state or wait, the nodes and edges, the selected task, and the address a task opens back to. A suggestion and its
+ * step addresses come only when a service gives them.
  */
 #[TypeScript]
 final class TaskGraph extends Data

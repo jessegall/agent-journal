@@ -14,10 +14,9 @@ use Tests\Support\Seeding\TestJournal;
 use Tests\TestCase;
 
 /**
- * The entry test of one MCP tool, named by the class's #[TestsMcpTool]: the arranged tools/call answers a result that
- * is no error; a write tool sends on exactly the expected commands, each one it declares with #[Dispatches] and each
- * through every middleware, and answers text built from the reply; a read tool sends nothing. An unsigned frame is
- * refused, and so is a start whose profile does not see the tool.
+ * The entry test of one MCP tool, named by #[TestsMcpTool]: the arranged call answers no error, a write tool sends
+ * exactly the commands it declares with #[Dispatches] through every middleware, and a read tool sends nothing. An
+ * unsigned frame and a profile that does not see the tool are refused.
  */
 abstract class McpToolEntryTestCase extends TestCase
 {

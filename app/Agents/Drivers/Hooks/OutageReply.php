@@ -11,11 +11,9 @@ use App\Hooks\Enums\HookEvent;
 use App\Values\AgentText;
 
 /**
- * The reply the host gives a driver when a hook call to the journal fails. During an outage a start granted the
- * neutral
- * reply goes on and the host logs the bypass; any other start is refused. Any other failure is refused for every
- * start.
- * The host holds these replies; a journal that is down cannot send them.
+ * The reply the host gives a driver when a hook call to the journal fails: during an outage a start granted the neutral
+ * reply goes on and the host logs the bypass, and every other start or failure is refused. The host holds these
+ * replies, since a journal that is down cannot send them.
  */
 final readonly class OutageReply
 {

@@ -7,12 +7,9 @@ import type { PaletteHitData } from '@/types/generated';
 import type { useSearchPalette } from './useSearchPalette';
 
 /**
- * The search palette's results: the direct open of a complete reference first, labelled such as Open Task 2241, then
- * the hits in the server's order, each named by its title and its section or line; arrows and Enter move and open
- * from the words field. The matched words are marked in plain text. More hits are appended and their count announced
- * without moving the selection. Each end of a search says what it is: no matches with Search all inside one source,
- * no sources, a failed read that keeps the words and the hits with Retry, an incomplete search with narrower scopes,
- * an expired search, a scope to choose, and a hit that is gone.
+ * The search palette's results: the direct open of a complete reference first, such as Open Task 2241, then the hits in
+ * the server's order with their matched words marked. More hits are appended and announced, and each end of a search,
+ * such as no matches or a failed read, says what it is.
  */
 const props = defineProps<{ search: ReturnType<typeof useSearchPalette>; unavailable: boolean }>();
 const emit = defineEmits<{ open: [hit: PaletteHitData] }>();

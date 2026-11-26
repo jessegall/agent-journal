@@ -17,10 +17,8 @@ use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentPolicy;
 
 /**
- * The journal's owner reads and changes anyone's auto-assignments, its own included. A dispatching agent reads and
- * changes another agent's, never its own and never a user's; an actor with no stored authority, such as the engine,
- * neither. Any other agent only reads its own; nobody else
- * anything.
+ * The owner reads and changes anyone's auto-assignments; a dispatching agent those of another agent, never its own or a
+ * user's; any other agent only reads its own. An actor with no stored authority, such as the engine, does neither.
  */
 final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
 {

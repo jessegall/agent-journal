@@ -20,13 +20,9 @@ use App\Values\AgentText;
 use App\Values\ExecutionContext;
 
 /**
- * Core's mandatory admission of a shell line the frames let through: whatever a frame
- * answered, a line that would run is admitted first, the replacement when a state rewrote it. A refused line is denied
- * on the stack from before the walk; an admitted one reaches the agent as the supervised runner's line. A driver
- * that cannot take a rewrite, or a session with no runtime to run in, is refused, since the runner cannot reach it.
- * The hook id is the admission's request key, so a repeated delivery is answered by the replay and admits nothing new.
- * A session in a container of its own is judged by the same rules, and its allowed line runs in the container as
- * the frames answered: the container is only where the line runs, and no supervised runner reaches into it yet.
+ * Core's admission of a shell line the frames let through: a refused line is denied, an admitted one reaches the agent
+ * as the supervised runner's line, and a driver that cannot take a rewrite or a session with no runtime is refused. The
+ * hook id is the request key, so a repeated delivery is answered by its replay.
  */
 final readonly class HookShellAdmission
 {

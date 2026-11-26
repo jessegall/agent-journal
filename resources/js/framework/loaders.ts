@@ -13,8 +13,8 @@ export const LOADER_HEADER = 'X-Journal-Loader';
 export type Loader<I, O> = { readonly key: string; readonly prop: string; readonly input?: I; readonly answer?: O };
 
 /**
- * How one loader call was answered: its value, the message of each invalid field, or unavailable, which is said the
- * same way whatever the reason.
+ * How one loader call was answered: its value, the message of each invalid field, or unavailable, the same whatever the
+ * reason.
  */
 export type LoaderAnswer<O> =
     | { status: 'ok'; value: O }

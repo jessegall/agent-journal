@@ -20,11 +20,9 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 
 /**
- * The owner's share gateways as settings rows: Offline while the sharing service is not running, what the provider
- * can see, then one row per settings revision with its label, where it sends, its secrets by name, what it still
- * needs or that it is ready, whether its endpoint answers, the shares disabling it would revoke, and Make default and
- * Disable as keyed forms, Disable asking first; and the form that configures a gateway, native because its secrets
- * are typed into password fields that grow and are never shown again.
+ * The owner's share gateways as settings rows: Offline while sharing is not running, then one row per revision with its
+ * label, target, secrets by name, readiness, endpoint, the shares disabling it would revoke, and Make default and
+ * Disable; and the native form that configures a gateway with password fields.
  */
 final readonly class GatewaySettingsResolver implements PageResolver
 {

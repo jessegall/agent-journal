@@ -5,13 +5,9 @@ import { useMenuKeys } from '@/composables/useMenuKeys';
 import Icon from './Icon.vue';
 
 /**
- * A button that opens a labelled menu of MenuItems, MenuGroups and MenuSeparators. Enter, Space or Down opens it on
- * its first enabled item and Up on its last; Down and Up then move and wrap, Home and End jump, and typing letters
- * moves to the item that starts with them. Enter and Space run an item, Escape closes the menu and gives the focus back
- * to the button, Tab closes it and moves on, and choosing an item closes it. The items stay mounted, so a form keeps its
- * state. The button holds a three-dot icon unless the trigger slot fills it. When the item in focus goes, the first
- * item left takes the focus; when none is left, the menu closes and the button takes it. The menu enters over 180ms with
- * a 4px rise, and without motion under reduced motion.
+ * A button that opens a labelled menu: Enter, Space or Down open it on its first item and Up on its last, the arrows
+ * move and wrap, typing jumps, Escape closes it with the focus back, and choosing an item closes it. Its items stay
+ * mounted, so a form keeps its state. Measures: docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ label: string; align?: 'left' | 'right'; triggerClass?: string; disabled?: boolean }>(), {
     align: 'right',

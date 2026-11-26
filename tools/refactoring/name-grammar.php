@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /**
- * The naming rules, judged from the grammar of each name with the code's own verbs, so no
- * list of names is kept: a thing is a noun for what it is, an action starts with its verb, an event says what happened
- * and a yes-or-no answer reads as a question. docs/naming/forbidden-words.txt adds the words no name may hold and the
- * verbs that have a better word.
+ * The naming rules, judged from the grammar of each name with the code's own verbs, so no list of names is kept: an
+ * object is a noun, an action starts with its verb, an event says what happened, and a yes-or-no answer reads as a
+ * question. docs/naming/forbidden-words.txt adds the words no name may hold.
  */
 
 require_once __DIR__.'/name-word-splitting.php';
@@ -50,7 +49,7 @@ const INTERROGATIVE_WORDS = [
 ];
 
 /**
- * The endings of a past form, which an event's last word has: requested, written, sent, held, begun.
+ * The endings of a past form, which an event's last word has: requested, written, sent, held, started.
  */
 /**
  * The verbs that tell someone of something: their object is a happening, named as an event is.
@@ -330,10 +329,9 @@ function betterVerbFault(DeclaredName $declared, array $betterVerbs): string|nul
 }
 
 /**
- * A thing named for what will be done with it ("step to run") instead of for what it is. An action or a question may
- * hold "to" and a verb, so may a function that starts with its own verb, a participle before "to" names a state
- * (failed to start), an interrogative a noun phrase (how to fix), and a verb no type is named for a verb phrase
- * (reply to message).
+ * A name for what will be done with it ("step to run") instead of for what it is. An action, a question, a function
+ * that starts with its own verb, a participle (failed to start), an interrogative (how to fix) and a verb phrase (reply
+ * to message) may hold "to" and a verb.
  *
  * @param  array<string, true>  $verbs
  * @param  array<string, true>  $nouns
@@ -352,13 +350,13 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): strin
         $before = $words[$at - 1] ?? '';
         $isState = preg_match('/(ed|ing)$/', $before) === 1;
         $isInterrogative = in_array($before, INTERROGATIVE_WORDS, true);
-        // A name that opens with a verb says what it does when no type is named for its verb, or when what follows
-        // "to" is a thing the code names a type for and a word naming the carrier comes after it: ReplyToMessageCall.
-        // One that ends on that thing names what will be done with it (StepToRun).
+        // A name that opens with a verb says what it does when no type is named for its verb, or when what follows "to"
+        // is a noun the code names a type for and a word naming the carrier comes after it: ReplyToMessageCall. One
+        // that ends on that noun names what will be done with it (StepToRun).
         $after = $words[$at + 1] ?? '';
         $hasCarrier = isset($words[$at + 2]);
         $isVerbPhrase = $at === 1 && isset($verbs[$before]) && (! isset($nouns[$before]) || (isset($nouns[$after]) && $hasCarrier));
-        // "from a to b" names a mapping between two things (fromRecordToType), not a purpose.
+        // "from a to b" names a mapping between two values (fromRecordToType), not a purpose.
         $isMapping = in_array('from', array_slice($words, 0, $at), true);
 
         if ($word === 'to' && $at > 0 && ! $isState && ! $isInterrogative && ! $isVerbPhrase && ! $isMapping && isset($words[$at + 1], $verbs[$words[$at + 1]])) {
@@ -470,10 +468,9 @@ function stateFault(DeclaredName $declared): string|null
 }
 
 /**
- * A name that holds a verb and something that happened names the happening as an event is named: the thing first,
- * then its past participle (NotifyReceiptsWithdrawn), never the participle between the verb and the thing
- * (NotifyWithdrawnReceipts). It holds for an acting name whose verb tells someone, or whose thing and participle are
- * an event of the code; a participle that only says which thing (restart changed mounts) stays before it.
+ * A name that holds a verb and a happening names the happening as an event is named: its subject, then its participle
+ * (NotifyReceiptsWithdrawn), never the participle between (NotifyWithdrawnReceipts), when its verb tells someone or the
+ * pair is an event of the code.
  *
  * @param  array<string, true>  $verbs
  * @param  array<string, true>  $nouns
@@ -494,7 +491,7 @@ function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns
     }
 
     // the happening already stands last (NotifyPipedCommandsRefused, BroadcastDockedSourceChange): the participle
-    // before it says which thing; a participle the code names a type for (run), and that no event ends with, is a noun
+    // before it says which one; a participle the code names a type for (run), and that no event ends with, is a noun
     $last = (string) array_last($happenedTo);
     $isHappeningLast = isParticiple($last, $verbs) || preg_match('/(tion|sion|ment|ance|ence|ure|change)$/', $last) === 1;
 
@@ -504,8 +501,8 @@ function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns
         return null;
     }
 
-    // a participle before its thing says which thing (restart changed mounts) unless the name tells of a happening: its
-    // verb tells someone (notify, announce), or the thing with its participle is an event of the code (BookShelved)
+    // a participle before its noun says which one (restart changed mounts) unless the name tells of a happening: its
+    // verb tells someone (notify, announce), or the noun with its participle is an event of the code (BookShelved)
     $isAction = $declared->role === 'action' && preg_match('/(^|::)test/i', $declared->name) !== 1;
     $isHappening = in_array($verb, TELLING_VERBS, true) || isset($happenings[implode(' ', [
         ...$happenedTo,
@@ -581,7 +578,7 @@ function questionFault(DeclaredName $declared, array $verbs): string|null
     $isThirdPerson = stemOfThirdPerson($first, $verbs) !== null || preg_match('/[^s]s$/', $first) === 1;
     // A method that starts with a verb acts and answers whether it did (claim, insertIfMissing): a command, not a question.
     $isCommand = in_array($declared->declarationType, ['method', 'function'], true) && isset($verbs[$first]);
-    // boolean() reads a value as a boolean, as string() and integer() read theirs: a typed accessor.
+    // boolean() reads a value as a boolean, as string() and integer() read their own types: a typed accessor.
     $isTypedAccessor = $declared->declarationType === 'method' && wordsOf($declared->name) === ['boolean'];
 
     if ($declared->role !== 'question' || in_array($first, QUESTION_WORDS, true) || $isThirdPerson || $isCommand || $isTypedAccessor) {

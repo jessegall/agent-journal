@@ -567,10 +567,9 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
-     * The starts the journal claimed but whose host never took up a process of theirs: every process the journal
-     * ordered for them, such as their build probe, is still only ordered, and their running session never beat. A
-     * start on a reachable host is untaken by the cutoff; one on an unreachable host waits until the host wait ended,
-     * as an unclaimed one does.
+     * The starts the journal claimed whose host never took up a process: every process ordered for them is still only
+     * ordered and their session never beat. A start on a reachable host is untaken by the cutoff; one on an unreachable
+     * host waits out the host wait first.
      *
      * @param  Builder<self>  $query
      * @param  Builder<Host>  $unreachableHosts

@@ -19,10 +19,9 @@ use App\Projects\Values\CommandRunStart;
 use Symfony\Component\Process\Process;
 
 /**
- * Runs a connected machine's journal verb on the server the way the local journal command runs it: the same artisan
- * client, signing its calls with the calling start's own token, so the verb goes through the ordinary command
- * entrance and policies as that agent and never as the journal itself. Only journal routes that need nothing beyond
- * the journal run here; a request key runs once.
+ * Runs a connected machine's journal verb on the server as the local journal command runs it: the same artisan client,
+ * signed with the calling start's own token, so it passes the ordinary entrance and policies as that agent. Only
+ * journal routes run here, and a request key runs once.
  */
 final readonly class ProjectCommands
 {

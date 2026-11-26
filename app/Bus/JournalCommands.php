@@ -12,8 +12,8 @@ use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
 use App\Support\CommandRegistry;
 
 /**
- * Gives each trusted entry its own dispatcher; Core's transports and jobs ask it for theirs by name, and no payload
- * or header can choose one.
+ * Gives each trusted entry its own dispatcher; Core's transports and jobs ask for their entry's dispatcher by name, and
+ * no payload or header can choose one.
  */
 final readonly class JournalCommands implements JournalCommandsContract
 {

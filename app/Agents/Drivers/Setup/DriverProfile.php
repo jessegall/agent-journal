@@ -249,7 +249,7 @@ final readonly class DriverProfile
     }
 
     /**
-     * What this driver's sign-in status command said of an account folder.
+     * What this driver's sign-in status command printed about an account folder.
      */
     public function signInReport(string $printed, int|null $exitCode, SignInFolder $folder): SignInReport
     {

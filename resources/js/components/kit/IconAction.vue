@@ -5,11 +5,9 @@ import Icon from './Icon.vue';
 import type { IconName } from './Icon.vue';
 
 /**
- * Version 5's flush icon button with its tooltip: a 24 px square in one quiet grey, a slight fill on hover, and its
- * tip, with a small pointer toward the button, shown on hover or keyboard focus after a short delay, above the button
- * or to its left where above would leave its container. The label says the whole action for a screen reader; the
- * icon may draw smaller inside the same square. A button that opens a panel says whether it is open and which panel
- * it controls. Every other attribute, a click or disabled among them, belongs to the button, not to the box around it.
+ * The flush icon button with its tooltip: a 24 px square in a quiet grey, filled slightly on hover, its tip shown on
+ * hover or focus after a short delay. The label names the whole action for a screen reader, and every other attribute
+ * belongs to the button.
  */
 defineOptions({ inheritAttrs: false });
 

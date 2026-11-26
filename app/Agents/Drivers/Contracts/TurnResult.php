@@ -24,7 +24,7 @@ interface TurnResult
     public function read(string $bytes, CarbonImmutable $now): array;
 
     /**
-     * The conversation the driver said the turn belongs to, which a later turn resumes; none when it named none.
+     * The conversation the driver named for the turn, which a later turn resumes; none when it named none.
      */
     public function conversation(): string|null;
 

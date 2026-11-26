@@ -48,10 +48,9 @@ use App\Values\ReaderReference;
 use Carbon\CarbonImmutable;
 
 /**
- * Approves the readers Core ships for the project's installed tools: for each tool whose installed version is the one
- * a shipped reader was proven on, it walks the owner's own workflow (request, rule with its contract, reader, the
- * stored samples as sample runs, proof, approval), so the check is admitted like any other approved one. A tool at
- * another version, or one the project already approved a reader for, is left alone.
+ * Approves the readers Core ships for the project's installed tools: for each tool at the version a reader was proven
+ * on, it walks the owner's workflow from request to approval with the stored samples. A tool at another version, or one
+ * with an approved reader already, is left alone.
  */
 final readonly class ShippedReaderInstaller
 {

@@ -15,10 +15,9 @@ use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 
 /**
- * The runtime status as summary cards: each agent runtime's driver, activity, hold, how fresh its observation is, who
- * watches it and, for a terminal runtime, a link to its live terminal, all as shared parts; under them, natively, the
- * owner's recovery controls, its settings and its latest requests. A refused recovery shows above the runtimes, and
- * with none running the page says so.
+ * The runtime status as summary cards: each runtime's driver, activity, hold, freshness, watchers and a terminal
+ * runtime's live link, and under them the owner's recovery controls, settings and latest requests. A refused recovery
+ * shows above the runtimes; with none running the page says so.
  */
 final readonly class RuntimeStatusResolver implements PageResolver
 {

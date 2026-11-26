@@ -18,12 +18,9 @@ export type PhasePages = {
 };
 
 /**
- * The task pages of each phase a reader opened, each phase with its own cursor. A page is asked for through a reload
- * of the window's own prop; the answer for the cursor asked appends once and keeps the earlier rows, an answer for a
- * phase that changed revision starts that phase over, a refreshed page already shown replaces its own rows in place,
- * and a failed page keeps the rows and retries the same cursor. After a reconnect every opened phase reads its first
- * window again under the current authorisation, and a phase that had to start over is announced once.
- * The phase's own number goes along when the page is a plan's outline; a phase page names its phase by its route.
+ * The task pages of each phase a reader opened, each with its own cursor, asked for through a reload of the window's
+ * prop. A page appends once, a changed phase starts over, a failed page keeps its rows and retries, and after a
+ * reconnect every opened phase reads its first page again.
  */
 export function usePhasePages(
     incoming: () => PhaseTaskPageData | undefined,

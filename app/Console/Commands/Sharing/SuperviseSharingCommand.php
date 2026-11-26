@@ -12,11 +12,9 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The share service's first process: it starts the share-only listener on loopback as its child, takes the gateways
- * over with a new run and reopens the configurations live shares need, then carries out gateway operations as they
- * come, checks health every 15 seconds, expires shares every minute and prunes the audit daily. SIGTERM or SIGINT
- * stops its programs and the listener; a listener that dies, a run another supervisor took over or a program that
- * cannot be stopped ends it with a failure, so the container restarts it.
+ * The share service's first process: it starts the loopback share listener, takes the gateways over with a new run and
+ * reopens what live shares need, then carries out gateway operations, checks health, expires shares and prunes the
+ * audit. A dead listener or a lost run ends it with a failure, so it restarts.
  */
 final class SuperviseSharingCommand extends Command
 {

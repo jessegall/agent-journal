@@ -17,10 +17,9 @@ import AgentBar from './AgentBar.vue';
 import InformationBar from './InformationBar.vue';
 
 /**
- * Home: the agent bar with the domains' bar sections, the information bar, then the desk, which starts with the chat
- * alone at the reading width; every other window the installed domains offer is added from the bar and floats where it
- * opened, each loaded by its component name and fed by its own prop. A window's links change only its own part of
- * Home's query, window[<key>].
+ * Home: the agent bar, the information bar, then the desk, which starts with the chat alone; every other window is
+ * added from the bar, floats where it opened, and is loaded by its component name and fed by its own prop. A window's
+ * links change only its own window[<key>] query.
  */
 const props = defineProps<{ home: HomeData }>();
 const page = usePage();
@@ -92,10 +91,9 @@ function hostedWindow(
     };
 }
 /**
- * Opens a project file in the editor window: the tab already showing that path, else an editor tab that shows no file
- * yet, else a new copy beside the other files,
- * else in the largest pane that holds neither the chat nor the Project tree, else in a new pane at the right. The
- * copy reads its file by a visit that changes only its own part of the query and its own prop.
+ * Opens a project file in the editor window: the tab showing that path, else an editor tab with no file, else a new
+ * copy in the largest pane without the chat or the Project tree, else a new pane at the right. The copy reads its file
+ * through its own query and prop.
  */
 provideFileOpener((path) => {
     const fileWindow = props.home.windows.find((window) => window.place === 'editor');

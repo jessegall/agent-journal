@@ -71,11 +71,9 @@ use App\Values\ScriptParameter;
 use App\Values\TurnEnd;
 
 /**
- * Drives an agent's terminal from the frames its host streams. It is ready once the composer holds still, pastes each
- * prompt into the empty composer and presses Enter once the echo shows, again at most the limit's times, and never
- * types over a draft; a menu holds the runtime for its reason unless it is answered with recorded keys. Model and
- * effort changes run their key script while the composer is idle; an interrupt presses Escape during a turn, and a
- * stop ends the process.
+ * Drives an agent's terminal from the frames its host streams: once the composer holds still it pastes each prompt and
+ * presses Enter when the echo shows, never typing over a draft; a menu holds the runtime unless recorded keys answer
+ * it. Model and effort changes run key scripts, an interrupt presses Escape and a stop ends the process.
  */
 final class TerminalDriver implements ProcessDriver
 {
@@ -809,10 +807,9 @@ final class TerminalDriver implements ProcessDriver
     }
 
     /**
-     * A replayed library entry ended. Proven, the journal is told and the stalled script goes on from the entry's
-     * next step or is done. Failed after its first step, or without its proof, it no longer fits this build: it is
-     * marked stale with the screen it failed on and navigation is raised again without it. Failed at its first
-     * step, two menus may share a fingerprint, so it is only declined.
+     * A replayed library entry ended: proven, the script goes on from its next step or is done; failed after its first
+     * step or without its proof, it is marked stale and navigation is raised again without it. Failed at its first
+     * step, it is only declined, as two menus may share a fingerprint.
      */
     private function replayEnded(
         LibraryEntryAnswer $entry,

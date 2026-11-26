@@ -14,15 +14,9 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
 
 /**
- * Runs a pipeline definition: every step in turn takes the output of the step before it. A step is a pipe, another
- * pipeline run as one step, or a Step listed inline: steps repeated while a condition holds, or a step chosen for each
- * value. Each pipe and pipeline is built once per request by the container, with the input a pipe takes read by
- * reflection, and kept in BuiltSteps for the rest of that request, so a pipe may take services that hold the request
- * in hand. A pipe handed an input it does not take, or a run that ends on an output the caller does not read, throws
- * StepOutOfOrder.
- *
- * The runner outlives a request, as do the registries that hold it, so it builds from the container of the request,
- * task or tick in hand (the one Octane makes current), never from the one it was made in.
+ * Runs a pipeline definition, each step taking the output of the one before. It outlives a request, so it builds every
+ * pipe once per request from the container in hand, never the one it was made in. A pipe handed an input it does not
+ * take, or an output the caller does not read, throws StepOutOfOrder.
  */
 #[Singleton]
 final class PipelineRunner implements PipelineRunnerContract

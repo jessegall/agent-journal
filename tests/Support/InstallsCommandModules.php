@@ -125,7 +125,7 @@ trait InstallsCommandModules
 
     /**
      * Registers the test modules' policies as the application's boot does, so their commands' declarations can be
-     * granted; the domains the application booted, and an earlier install, registered theirs already.
+     * granted; the booted domains and an earlier install registered their own policies already.
      *
      * @param  list<class-string>  $moduleClasses
      */

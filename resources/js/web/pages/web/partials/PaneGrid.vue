@@ -8,10 +8,9 @@ import PaneNode from './PaneNode.vue';
 import { shownWindows } from '@/components/panes/arrangement';
 
 /**
- * Version 5's pane grid (panes/PaneGrid.vue): the layout's panes side by side and above each other, split by
- * splitters. Narrower than version 5's 700 px, on a phone, one window shows under a switcher that lists every open
- * window and stays in place; every window stays mounted, so choosing another and coming back finds its draft and its
- * scroll as they were. Detached windows float over everything, and a dragged window's ghost follows the pointer.
+ * The pane grid: the layout's panes side by side and above each other, split by splitters. Below 700 px one window
+ * shows under a switcher, every window staying mounted so its draft and scroll stay; detached windows float over
+ * everything, and a dragged window's ghost follows the pointer.
  */
 const NARROW_WIDTH = 700;
 

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 /**
- * A chip that acts or toggles: a reaction, a sequence run, a window chip, a docked card beside the composer, a
- * suggested answer, a graph link. Sizes xs 20, sm 22, md 24 and lg 28; square (radius 5 at 20 and 22, 7 at 24 and
- * 28) or pill. The leading slot holds an icon, a dot or a spinner; count trails in tabular numbers. A toggle takes
- * pressed (aria-pressed); `own` gives your own reaction the brand border; `selected` marks the active window's chip.
+ * A chip that acts or toggles, such as a reaction, a sequence run, a window chip or a suggested answer, in four sizes,
+ * square or pill, with a leading icon, dot or spinner and a trailing count. A toggle is pressed; `own` marks the
+ * viewer's own reaction and `selected` the active window. Measures: docs/designs/kit-components.md.
  */
 withDefaults(
     defineProps<{

@@ -9,10 +9,9 @@ use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Support\Compatibility\DriverCompatibility;
 
 /**
- * Codex on a saved account: the account folder as CODEX_HOME with its sign-in kept in its own file, no other
- * credential, the shared app-server arrangement whose working root is an empty trusted folder, and each thread's
- * private protection settings; the accounts folder is named to the hook relay so it refuses it while the journal is
- * away.
+ * Codex on a saved account: the account folder as CODEX_HOME with its own sign-in file, the shared app-server whose
+ * working root is an empty trusted folder, and each thread's private protection settings. The hook relay is told the
+ * accounts folder, so it refuses it while the journal is away.
  */
 final readonly class CodexAccountSettings implements AccountSettingsFiller
 {

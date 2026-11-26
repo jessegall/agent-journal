@@ -14,10 +14,9 @@ use App\Values\SupervisorTarget;
 use Carbon\CarbonImmutable;
 
 /**
- * Moves a due ask one hop up its holder's supervisor chain in one transaction: the old assignment is released, its
- * hop closes and the same ask is assigned to the next supervisor of the same type. An ask past its lifetime, one at
- * the root of the chain, one with no higher owner and one that would return to an actor it already passed close
- * unanswered and stay visible.
+ * Moves a due ask one hop up its holder's supervisor chain in one transaction: the assignment is released, its hop
+ * closes and the ask goes to the next supervisor. An expired ask, or one with no higher owner or that would return to
+ * an actor it passed, closes unanswered.
  */
 final readonly class AskEscalation
 {

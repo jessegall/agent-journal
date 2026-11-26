@@ -21,10 +21,9 @@ use PhpParser\NodeFinder;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Judges the container bindings the code states: no interface names its implementation with #[Bind], since its
- * area's service provider binds it; a #[Bind] target and a provider's class-string binding implement what they are
- * bound to and belong to the owner that binds them, and no singleton keeps a per-request service alive
- * beyond its request. A binding made by a closure is not judged: what it builds cannot be read from the code.
+ * Judges the container bindings the code states: no interface names its implementation with #[Bind], a #[Bind] target
+ * and a provider's binding implement what they are bound to and belong to its owner, and no singleton keeps a
+ * per-request service alive. A closure binding is not judged.
  */
 final readonly class BindingRules
 {

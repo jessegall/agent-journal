@@ -141,10 +141,8 @@ final class Account extends JournalModel implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * The account signed in by the attempt that holds its folder, now kept in the folder the attempt signed in to:
-     * signed in, checked now, its writer released. Signed
-     * in again, it starts a new sign-in generation, so a report or check from before is out of date, and starts may
-     * use it again.
+     * The account signed in again by the attempt that holds its folder: signed in, checked now, its writer released. It
+     * starts a new sign-in generation, so earlier reports and checks are out of date, and starts may use it again.
      */
     public function signedInAgain(
         SignInAttempt $attempt,

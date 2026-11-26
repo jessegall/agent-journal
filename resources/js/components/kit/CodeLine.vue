@@ -1,11 +1,8 @@
 <script setup lang="ts">
 /**
- * One line of a read-only file: a gutter 50 wide with the right-aligned number (padding-right 14, the theme's gutter
- * colour) and the code in the slot, mono --text-small at line height 20 with padding-right 80. A selected line takes
- * the theme's selection fill. A 6px dot at left 10, top 7 marks a comment (the theme's marker) or a draft (hollow).
- * The theme comes from the --code-gutter, --code-selection and --code-marker variables of the file around it.
- * The gutter is a button: a click picks the line (Shift extends), Up and Down move the line cursor (Shift extends the
- * selection) and C asks to comment. Only the cursor line is in the tab order.
+ * One line of a read-only file: a gutter with its number and the code in the slot, the theme's selection fill when
+ * selected, and a dot for a comment or a hollow one for a draft. The gutter is a button that picks and moves the line
+ * cursor, and C asks to comment. Measures: docs/designs/kit-components.md.
  */
 defineProps<{ line: number; selected?: boolean; cursor?: boolean; marker?: 'comment' | 'draft' }>();
 

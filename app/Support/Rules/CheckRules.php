@@ -15,10 +15,9 @@ use App\Values\CommandRule;
 use App\Values\OptionGrammar;
 
 /**
- * Tests and checks: one purpose, Verification, for test runners, static analysis, the
- * formatter, the commandments judge and type checks, each keeping its whole output. A check that only reads differs
- * from a fixing formatter by its classes, never by its purpose; an option not listed leaves the command unknown, never
- * an ordinary run.
+ * Tests and checks: one purpose, Verification, for test runners, static analysis, the formatter, the commandments judge
+ * and type checks, each keeping its whole output. A read-only check differs from a fixing formatter by its classes; an
+ * unlisted option leaves the command unknown.
  */
 final readonly class CheckRules
 {

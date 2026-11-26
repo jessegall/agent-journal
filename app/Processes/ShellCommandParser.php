@@ -23,9 +23,8 @@ use App\Values\ShellTree;
 use App\Values\Word;
 
 /**
- * Reads a shell line through the syntax tree and the classifier: each executable part becomes a
- * part with its program, its arguments and the effect and type its classification gives. It reads only the line
- * itself, so no flag a program sends can make a command look saved or safe. A word only known when the line runs
+ * Reads a shell line through the syntax tree and the classifier: each executable part gets its program, arguments,
+ * effect and type. It reads only the line, so no flag can make a command look safe, and a word known only at run time
  * leaves the line not fully read.
  */
 final readonly class ShellCommandParser implements ShellCommandParserContract

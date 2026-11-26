@@ -4,10 +4,9 @@ import { onReconnected } from '@kit/retainedPages';
 import { useWindowReload } from '@kit/useWindowQuery';
 
 /**
- * A task's Logs as the reader holds them: the entries oldest first, the cursor of the older page, and how the last
- * read went. Each read asks again for the newest page; what arrived since is added at once, unless older entries are
- * on screen, when it waits behind a New entries count until the reader shows it. A refused read clears the rows. After
- * a reconnect the newest page is read again and what arrived meanwhile is taken once by id.
+ * A task's Logs as the reader holds them: the entries oldest first, the older page's cursor and the last read's
+ * outcome. New entries are added at once unless older ones are on screen, when they wait behind a New entries count; a
+ * refused read clears the rows.
  */
 export function useTaskLogs(incoming: () => TaskLogsData | undefined) {
     const reload = useWindowReload();

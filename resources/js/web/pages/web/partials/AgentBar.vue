@@ -11,10 +11,9 @@ import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import type { LayoutData } from '@/types/generated';
 
 /**
- * The agent bar, 54 px under decision D3: the sections the domains put in Home's bar, such as the conversation trigger,
- * the chosen agent with its live state, its members and Stop (which asks first), then at the right the layouts menu,
- * Add a window and Hide. Every control has a name that shows on hover and focus. Hide takes the bar's sections away and
- * leaves a button that brings them back, so the desk keeps the room.
+ * The agent bar, 54 px under decision D3: the domains' bar sections, such as the conversation trigger, the chosen
+ * agent, its members and Stop, then the layouts menu, Add a window and Hide. Every control is named on hover and focus,
+ * and Hide leaves a button that brings the bar back.
  */
 defineProps<{ layouts: LayoutData[] }>();
 

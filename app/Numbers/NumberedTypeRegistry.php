@@ -13,10 +13,9 @@ use App\Support\Registry;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
- * The numbered models of the application, found among the models that have a link type: a model says it is numbered
- * by implementing Numbered, and how by its numberHolder(), so no owner lists it. Once every link type is registered,
- * the models are checked: one that implements Numbered without the HasNumber trait, or shares a table with another,
- * stops the boot.
+ * The numbered models, found among the models with a link type: a model is numbered by implementing Numbered, and says
+ * how by its numberHolder(). Once every link type is registered, a model without the HasNumber trait or sharing a table
+ * with another stops the boot.
  */
 final class NumberedTypeRegistry
 {

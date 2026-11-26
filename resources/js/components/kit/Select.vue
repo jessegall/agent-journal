@@ -6,11 +6,9 @@ import ListBox from './ListBox.vue';
 import MenuItem from './MenuItem.vue';
 
 /**
- * A choice of one value from a short list, in the shared input look: a button showing the chosen label and a caret
- * that opens a list box under it. The button keeps the focus: Enter, Space or Down open the list, Up and Down move the
- * active option, Enter chooses it, Escape and a click outside close it. Attributes such as id and aria-describedby go
- * to the button, so a Field's label and hint name it; invalid turns its border --danger. A disabled option is shown,
- * dimmed, and the keys and the pointer pass it by.
+ * A choice of one value from a short list: a button with the chosen label that opens a list box, keeping the focus
+ * while Enter, Space and the arrows open, move and choose, and Escape closes. Its attributes go to the button, and a
+ * disabled option is shown dimmed and passed by.
  */
 const props = withDefaults(
     defineProps<{

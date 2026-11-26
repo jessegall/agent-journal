@@ -11,10 +11,9 @@ const PlainSlot = (_props: unknown, { slots }: { slots: { default?: (scope: { de
     slots.default?.({ describedBy: undefined });
 
 /**
- * An icon-only action. The label is required: it is the aria-label and the text of the tooltip (never a title
- * attribute) unless `tooltip` is off for an icon that says it all, such as a dialog's close. md is 26 px, sm 20 px and
- * xs 18 px (a tab's close); `dense` draws the md icon at 13 px as in the topbar and strips. A badge goes in the badge
- * slot; haspopup marks a menu or dialog trigger.
+ * An icon-only action: its required label is the aria-label and the tooltip's text, unless `tooltip` is off for an icon
+ * that says it all, such as a close. md, sm and xs sizes, `dense` for the topbar's smaller icon, a badge slot, and
+ * haspopup for a menu or dialog trigger. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

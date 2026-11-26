@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 /*
- * Rewrites every double-quoted PHP string that holds two or more "\n" line breaks as a nowdoc, or as a heredoc when it
- * interpolates a variable or keeps another escape, so text with line breaks reads as the lines it is. A string whose
- * last line break ends it keeps that line break as an empty last line.
+ * Rewrites every double-quoted PHP string with two or more "\n" line breaks as a nowdoc, or a heredoc when it
+ * interpolates or keeps another escape, so the text reads as its lines; a final line break stays as an empty last line.
  *
- * Usage: php tools/refactoring/multiline-heredocs.php <folder or file>...
+ *   php tools/refactoring/multiline-heredocs.php <folder or file>...
  */
 
 require_once __DIR__.'/php-files.php';

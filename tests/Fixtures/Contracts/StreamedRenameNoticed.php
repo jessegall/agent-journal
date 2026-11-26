@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Contracts;
 use App\Contracts\Events\Event;
 
 /**
- * A legacy send of a handler, which has no row to raise on and goes through the stream.
+ * A handler's send, which has no row to raise on and goes through the stream.
  */
 final readonly class StreamedRenameNoticed implements Event
 {

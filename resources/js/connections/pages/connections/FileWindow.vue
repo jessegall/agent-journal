@@ -11,10 +11,9 @@ import FileLines from './partials/FileLines.vue';
 import { usePendingPoll } from '../../usePendingPoll';
 
 /**
- * One file of the connected project in its own window: its lines with a gutter and a theme menu, or a Markdown file
- * drawn as the document reader draws it. While the host has not answered it waits like the Project window, and a read
- * that failed offers Retry in this window only. A binary file and a file too large to show whole say so plainly. Once
- * a version of the file is kept, its lines take comments and show their threads.
+ * One file of the connected project in its own window: its lines with a gutter and theme menu, or a Markdown file drawn
+ * as the document reader draws it. It waits for the host, offers Retry after a failed read, says so for a binary or too
+ * large file, and takes comments once a version is kept.
  */
 const props = defineProps<{ data: FileWindowData }>();
 

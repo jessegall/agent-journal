@@ -42,10 +42,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * The owner starts a profile's main agent: the default resolves to the profile's model and revision, a preferred driver
- * still lets a start choose another, a helper profile cannot start a main, a later activation leaves an accepted start
- * as it was, an explicit start runs the chosen account and driver type, an automatic codex start on the terminal default
- * and a start the host cannot run are refused before a session, and an explicit resume continues the chosen thread.
+ * The owner starts a profile's main agent: the default resolves to its model and revision, a preferred driver still
+ * allows another, a helper profile cannot start a main, a chosen account and driver type run, starts the host cannot
+ * run are refused, and a resume continues the chosen thread.
  */
 #[TestsCommand(StartProfileMainCommand::class)]
 final class StartProfileMainTest extends TestCase

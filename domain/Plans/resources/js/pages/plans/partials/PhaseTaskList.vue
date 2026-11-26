@@ -7,12 +7,9 @@ import StateBadge from '@kit/StateBadge';
 import type { PhasePages } from '../../../usePhasePages';
 
 /**
- * A phase's tasks in their order, a page at a time, each row's link 'Task 31 · title' opening that task's reader in
- * the inspector by its number, the phase and its cursor staying as they are; closing the reader gives the focus back
- * to that link. A task that waits on others also offers View prerequisites, opening its reader on its waits. Load
- * more appends the next page once and moves the focus to its first row; when the last page brings
- * nothing it says so to its parent, which gives the focus back to the phase's heading. A failed page keeps the rows
- * and offers Retry of the same page.
+ * A phase's tasks in order, a page at a time, each link opening its task's reader in the inspector and getting the
+ * focus back when it closes; a waiting task also offers View prerequisites. Load more appends the next page and focuses
+ * its first row, and a failed page offers Retry.
  */
 const props = defineProps<{ pages: PhasePages; phaseName: string }>();
 const emit = defineEmits<{ loadMore: []; retry: []; ended: [] }>();

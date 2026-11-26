@@ -12,12 +12,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A File window: where the chosen file of the connected project stands, its name and path, whether it is Markdown,
- * its lines as read (a file cut short is marked truncated, and each line cut at its length limit is named by its
- * number), a Markdown file's text as the journal's safe HTML, and the digest and size of the version read; no file
- * is chosen when its path is empty. When files take comments, the file's record, once a version of it is kept, takes
- * comments on its lines, and the threads of the version shown come with it, with the project's main agent a comment
- * can be sent to, the address that saves a comment and the one that tells it; with no comments both are null.
+ * A File window: the chosen file's name, path and lines as read (truncated and long lines marked), a Markdown file's
+ * safe HTML, and the version's digest and size; an empty path chooses none. When files take comments, the threads of
+ * the version shown come with the addresses that save and send a comment.
  */
 #[TypeScript]
 final class FileWindowData extends Data

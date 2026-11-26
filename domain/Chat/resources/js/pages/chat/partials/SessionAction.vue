@@ -4,7 +4,7 @@ import Icon from "@kit/Icon";
 import type { StatusActionData } from "@generated/types/chat";
 
 /**
- * One thing the agent's status offers now, as a bordered button with the server's words, Stop with its mark, as the
+ * One action the agent's status offers now, as a bordered button with the server's words, Stop with its mark, as the
  * design draws the agent bar's actions.
  */
 defineProps<{

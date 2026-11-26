@@ -15,10 +15,9 @@ use Tests\Fixtures\EventProducers\Models\FixtureTask;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A migrated event has one producer, its model: every send of an event in app and the domains is either
- * the raise of its owning model method or a producer its area's list in tests/Architecture/EventOwners
- * names, so a new producer, a send moved into a support service and a duplicate send all fail. A migrated fact also
- * carries a payload a queue can hold.
+ * A migrated event has one producer, its model: every send of an event is the raise of its owning model method or a
+ * producer its area's list in tests/Architecture/EventOwners names, so a new, moved or duplicate send fails. A migrated
+ * fact carries a payload a queue can hold.
  */
 #[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]
 final class EventProducerTest extends TestCase

@@ -3,14 +3,11 @@
 declare(strict_types=1);
 
 /**
- * Prints what the Files funnel does for repeated reads, as counts and never as times: opens and fingerprint stats for
- * 1000 reads of one unchanged file, whether a file past the per-file limit is kept, the bytes kept after reading many
- * files, and the levels a deep list walks. It builds a Files over a temporary folder of its own.
+ * Prints what the Files funnel does for repeated reads, as counts over a temporary folder: opens (Files::readCount) and
+ * fingerprint stats for 1000 reads of one file, whether a file past the limit is kept, the bytes kept, and the levels a
+ * deep list walks.
  *
  *   php tools/refactoring/files-counts.php
- *
- * Opens are counted by Files::readCount. Each read takes exactly one fingerprint, one stat of the file, so the stat
- * count is the number of fingerprints taken; PHP has no counter of its own for the stat calls realpath makes.
  */
 
 use App\Files\ClosedFolders;

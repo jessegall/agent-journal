@@ -14,8 +14,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A recorded run makes the items it showed hold enforced in the host's report; the items it did not name still await
- * theirs.
+ * A recorded run makes the items it showed hold enforced in the host's report; the items it did not name still wait for
+ * a run of their own.
  */
 #[TestsCommand(RecordProtectionEvidenceCommand::class)]
 final class RecordProtectionEvidenceTest extends TestCase

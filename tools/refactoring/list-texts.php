@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Lists every text a user reads on screen as "file:line<TAB>text" for review.
+ * Lists every text a user reads on screen as "file:line<TAB>text" for review: a .vue template's text and label-like
+ * attributes, label-like keys in .vue and .ts scripts, and what a PHP method named for a screen text returns.
  *
  *   php tools/refactoring/list-texts.php resources/js app
  *       prints every text.
@@ -11,10 +12,6 @@ declare(strict_types=1);
  *       prints the texts not on the reviewed list and fails while there is one.
  *   php tools/refactoring/list-texts.php --accept docs/naming/reviewed-texts.txt resources/js app
  *       writes every current text to the reviewed list, after they were read and the odd ones rewritten.
- *
- * A text is read from three places: a .vue template's static text and its label-like attributes, a label-like key
- * given a string in .vue and .ts scripts, and the strings a PHP method named for a screen text returns (label(),
- * description(), title() and the like, and a form request's messages()).
  */
 
 use PhpParser\Node\Scalar\String_;

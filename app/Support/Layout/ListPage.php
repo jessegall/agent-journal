@@ -8,11 +8,9 @@ use App\Navigation\Layout\LayoutMenuData;
 use App\Web\Enums\ReaderWidth;
 
 /**
- * The shared recipe of an index page: its header with the title, the count when the response supplies a total, the
- * views beside them and the search and creation at the other edge, then its filters, optional tabs, the rows or the
- * empty state, and the paging. With a reader the header stands above a split that shows the list or the reader in a
- * narrow container by its address, and a populated index with nothing chosen shows Nothing selected there. A domain
- * hands in neutral rows and parts only.
+ * The shared recipe of an index page: its header with the title, count, views, search and creation, then its filters,
+ * tabs, rows or empty state, and paging. With a reader, a split shows the list or the reader by its address, and
+ * Nothing selected while nothing is chosen.
  */
 final readonly class ListPage
 {

@@ -14,11 +14,9 @@ import DockCard from "./DockCard.vue";
 import { provideDockFolds } from "../../../dock/dockFolds";
 
 /**
- * The sources docked in this conversation, a stack of cards above the composer, newest first, under a header that
- * counts them. With more than one the stack folds to the newest with its edges showing; Show all fans it out and Fold
- * settles it back. The user folds the whole stack or a part of a card, and the fold is kept by the card's placement
- * and the part's path, so a refresh keeps it. An empty dock takes no space. When a grant may have been taken away it empties at once,
- * and only an answer asked for after that fills it again.
+ * The sources docked in this conversation, newest first, as a stack of cards above the composer; with more than one it
+ * folds to the newest, and Show all fans it out. Folds are kept by placement and part, so a refresh keeps them; a dock
+ * whose grant may be gone empties at once.
  */
 const props = defineProps<{
   dock: DockPageData;

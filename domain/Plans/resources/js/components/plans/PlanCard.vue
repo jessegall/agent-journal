@@ -16,9 +16,8 @@ import {
 import PlanCardMenu from './PlanCardMenu.vue';
 
 /**
- * One plan row: the record link with its number and type, the wrapping title and holder, the outlined
- * state and the progress, then a separate actions menu beside it. The server's focus shows as Focused plan; the open
- * record has the quiet selected surface and is the current link, named Selected plan. Neither looks like the
+ * One plan row: its record link with number and type, its title and holder, its state and progress, and an actions
+ * menu. The server's focus shows as Focused plan and the open record as Selected plan, neither looking like the
  * keyboard focus outline.
  */
 const props = defineProps<{

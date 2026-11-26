@@ -10,10 +10,9 @@ use App\Contracts\Events\Event;
 use Throwable;
 
 /**
- * Releases the facts of committed event units once no command of the request still runs: each occurrence in its
- * order, once, through the fact staging and Laravel's dispatcher, so wildcard, queued and broadcast listeners and a
- * test's fake see only committed facts. A listener's failure never rolls back the committed producer and never stops
- * the occurrences after it; once all are handed out, the first failure is thrown, so none is dropped silently.
+ * Releases the facts of committed event units once no command of the request runs, each once and in order, through
+ * Laravel's dispatcher. A listener's failure never rolls back the producer or stops the facts after it; once all are
+ * out, the first failure is thrown.
  */
 final class Publication
 {

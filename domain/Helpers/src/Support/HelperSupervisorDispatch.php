@@ -17,11 +17,9 @@ use Illuminate\Database\DatabaseManager;
 use Throwable;
 
 /**
- * Retains the start of a supervisor profile's helper for an ask and runs it once the routing transaction committed,
- * through the ordinary helper start under the asking actor's own authority and the profile's activated model. Only an
- * installation with an owner may start one this way; a helper that already works is not started again, so two asks
- * never start a second copy. This is the one boundary where a start that fails is reported and skipped: the ask stays
- * pending and escalates as any other.
+ * Starts a supervisor profile's helper for an ask once the routing transaction committed, under the asking actor's
+ * authority, and only on an installation with an owner; a working helper is not started again. A start that fails here
+ * is reported and skipped, and the ask escalates as any other.
  */
 final readonly class HelperSupervisorDispatch implements SupervisorDispatch
 {

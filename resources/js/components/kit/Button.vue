@@ -4,12 +4,9 @@ import { computed } from 'vue';
 import Spinner from './Spinner.vue';
 
 /**
- * A text action: ghost (default), bordered, primary, quiet-to-primary (muted until `filled` says there is content,
- * then primary; the Send button), plus danger and icon for existing callers, and word: a word, with or without an
- * icon, that has no border and no fill, as the hover controls on a message's name line are drawn. Sizes: md is 28 px, sm is 24 px (small
- * and normal are the same two, and large is 36 px). A leading icon goes in the icon slot; pressed shows aria-pressed.
- * A pending button keeps its width, hides its label behind a spinner and cannot be pressed twice. A disabled
- * button takes no pointer, so a reason goes on a Tooltip around it.
+ * A text action: ghost, bordered, primary, quiet-to-primary (the Send button), danger, icon or word, in md or sm size.
+ * A pending button keeps its width and shows a spinner, and a disabled one takes no pointer, so its reason goes on a
+ * Tooltip around it. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

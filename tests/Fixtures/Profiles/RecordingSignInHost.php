@@ -23,7 +23,7 @@ use App\Values\SignInIdentity;
 final class RecordingSignInHost implements SignInHost
 {
     /**
-     * How many polls answer live before the journal is said to have ended the attempt.
+     * How many polls answer live before the journal reports that it ended the attempt.
      */
     public int $livePolls = PHP_INT_MAX;
 

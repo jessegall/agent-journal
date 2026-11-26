@@ -17,10 +17,9 @@ use App\Support\Execution\PlannedRun;
 use App\Support\Execution\StepOutcome;
 
 /**
- * Runs an execution plan step by step: control flow decides which parts run, builtins run in the shell context, every
- * external part is spawned from its argv in its own process group with its own record and its own end, and background
- * parts are waited for before the run ends. A part that does not run because of an earlier result, or whose admission
- * went stale, is recorded as skipped, never left out.
+ * Runs an execution plan: control flow decides which parts run, builtins run in the shell context, every external part
+ * is spawned in its own process group with its own record, and background parts are waited for. A part that does not
+ * run, or whose admission went stale, is recorded as skipped.
  *
  * @implements PipelineDefinition<PlannedRun, StepOutcome>
  */

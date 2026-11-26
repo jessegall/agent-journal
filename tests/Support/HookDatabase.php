@@ -10,11 +10,9 @@ use Illuminate\Testing\ParallelTesting;
 use Tests\Support\Exceptions\HookDatabaseRefused;
 
 /**
- * Checks that a test runs on a dedicated Postgres test database, or on the worker's own copy of it in a parallel run,
- * never the application database. journal_hooks_test is the one phpunit.xml selects; journal_hooks_test_checkpoint is
- * the journal's own checkpoint runs'; and journal_hooks_test_wt_<name> is one worktree's, selected with DB_DATABASE so
- * runs in different worktrees never touch each other's rows. scripts/prepare-hook-test-database.sh creates the first
- * two; a worktree's database is created on its first run.
+ * Checks that a test runs on a dedicated Postgres test database, never the application's: journal_hooks_test,
+ * journal_hooks_test_checkpoint for checkpoint runs, or journal_hooks_test_wt_<name> for one worktree.
+ * scripts/prepare-hook-test-database.sh creates the first two; a worktree's is made on its first run.
  */
 final class HookDatabase
 {

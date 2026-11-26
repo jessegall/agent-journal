@@ -95,7 +95,7 @@ final readonly class ReadAdmission implements ReadAdmissionContract
 
     /**
      * A granted read the policy grant does not cover still runs for a target the profile holds it for, and its
-     * discovery runs while the profile holds it for any target, so a grant for task A needs no dummy id.
+     * discovery runs while the profile holds it for any target, so a grant for task A needs no stand-in id.
      */
     private function scoped(ReadRequest $request, ProfileAuthorization $authorization): AccessDecision
     {

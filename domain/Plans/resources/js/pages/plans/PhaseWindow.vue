@@ -10,10 +10,8 @@ import { currentPhaseRule, progressText } from '../../planLooks';
 import { usePhasePages } from '../../usePhasePages';
 
 /**
- * One phase of a plan on its own page: the same counted progress the card and the plan show, the Current phase
- * marker in words, whether the caller may run checks now and the phase's latest check receipt, then its tasks in
- * their order, a page at a time, the same first page the plan's outline shows. A link leads back to the plan, and an
- * empty phase keeps its title and leads back to its plan.
+ * One phase of a plan on its own page: its counted progress, the Current phase marker, whether checks may run now and
+ * its latest check receipt, then its tasks a page at a time. A link leads back to the plan, also for an empty phase.
  */
 const props = defineProps<{ data: PhaseReaderData }>();
 const checkReceipt = computed(() => props.data.checkReceipt);

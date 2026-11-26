@@ -13,11 +13,9 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One connected folder as the owner sees it, read at one server time: its reference, the project and environment it
- * works in by label and id, the machine it is on, each driver and whether Start is offered for it, when its relay
- * was last in contact and until when its presence holds, when the server took its revocation, where it stands now
- * with the words for that, its terminal sign-ins, and its support record of who did what to it and when. Its
- * canonical path is never shown.
+ * One connected folder as the owner sees it: its reference, project and environment, machine, drivers and whether Start
+ * is offered, its relay's contact and presence, its revocation, where it stands, its terminal sign-ins and its support
+ * record. Its canonical path is never shown.
  */
 #[TypeScript]
 final class ProjectBindingRowData extends Data

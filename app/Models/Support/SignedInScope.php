@@ -12,10 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
 /**
- * Limits assignments to requests where a user or an agent signed in: each of them sees every assignment, as every
- * one sees every task and plan, while a request with nobody acting, or with the system acting, sees none. It asks for
- * the actor on every query, so
- * a worker that serves many requests never keeps an earlier request's actor.
+ * Limits assignments to requests where a user or an agent signed in, who each see every assignment; a request with
+ * nobody or the system acting sees none. It asks for the actor on every query, so a worker never keeps an earlier
+ * request's actor.
  *
  * @implements Scope<Model>
  */

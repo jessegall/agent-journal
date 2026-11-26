@@ -32,10 +32,9 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
- * A member of an inbox sends to it: the message keeps its text and sender under the inbox's next number, a reply names
- * its target by number, a resent request gives back the same message, and an inbox the sender is not attached to, an
- * unknown target or a blank body is refused and leaves nothing; an agent never writes to the inbox of an agent of
- * another project, while an owner's chat with such an agent still delivers.
+ * A member sends to an inbox: the message keeps its text and sender under the inbox's next number, a reply names its
+ * target, and a resend gives back the same message; a foreign inbox, unknown target or blank body is refused. An agent
+ * never writes to another project's agent, but an owner's chat with one delivers.
  */
 #[TestsCommand(SendMessageCommand::class)]
 final class SendMessageTest extends TestCase

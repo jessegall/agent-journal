@@ -7,9 +7,8 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\DomainFiles;
 
 /**
- * Version 6 is the new version, so nothing in it is old: no name holds Legacy, Old or Deprecated, and no comment says a
- * thing is the old one, legacy, deprecated or kept until a cutover. Only another program's own words for its older
- * protocol stay, in the files listed with their reason.
+ * Version 6 is the new version: no name holds the words this test lists, and no comment calls code old or kept until a
+ * cutover. Only another program's own words for its older protocol stay, in the files listed with their reason.
  */
 final class OldCodeWordsTest extends TestCase
 {

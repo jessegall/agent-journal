@@ -3,19 +3,14 @@
 declare(strict_types=1);
 
 /*
- * Checks a move manifest against Git and the working tree, previews it, rehearses it in a throwaway checkout, or
- * applies a batch of its rows.
+ * Checks a move manifest against Git and the working tree, previews, rehearses or applies a batch of its rows: class rows
+ * through batch-move.php, the rest with git mv. Any skipped, missed or occupied row fails, and the state file lets a
+ * resumed batch retry only the rest; it exits 0 for a pass and 1 with the failures.
  *
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --dry-run
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --rows=<old path prefix> [--rows=…]
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --rows=… --rehearse
  *   php tools/refactoring/layout/apply-manifest.php <manifest.json> --root=<tree> --state=<state.json> …
- *
- * Class rows move together through batch-move.php in one pass; every other row moves with git mv, and the files a row lists
- * in literal_references have its old path rewritten to the new one. Every skipped, missed or occupied row is a
- * failure, as is a removed class still named anywhere. The state file keeps the rows moved and the files each move
- * edited (file, prior blob, resulting blob, move), so a resumed batch retries only the rest and an edit nobody
- * recorded fails admission. The exit code is 0 for a pass and 1 with the failures listed.
  */
 
 $options = optionsOf(array_slice($argv, 1));

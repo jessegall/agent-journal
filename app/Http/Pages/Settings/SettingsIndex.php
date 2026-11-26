@@ -33,13 +33,9 @@ use App\Support\Layout\SettingsPage as SettingsLayout;
 use App\Support\Layout\SettingsRow;
 
 /**
- * The settings of every owner on the shared settings recipe: one section for each declared group, in the order
- * Settings is read in (General, Connected projects, then each domain beside its own settings) and then in the order
- * the owners declared them. A group that can be switched off has its switch beside its heading; Connected projects
- * has the remote projects setting there. Text, on or off, whole-number and text-choice settings are saved as they are
- * changed; a changed setting says so, and Reset takes the changed ones of the group back to their defaults against the
- * revision the group was read at, so a group changed meanwhile is refused, never overwritten. Other kinds are shown
- * read-only.
+ * The settings of every owner: one section per declared group, General and Connected projects first, then each
+ * domain's, each with its switch beside its heading. Settings save as they change, and Reset takes a group's changed
+ * ones back to their defaults, refused when the group changed meanwhile.
  */
 final readonly class SettingsIndex extends SettingsPage
 {

@@ -15,10 +15,9 @@ use App\Terminals\Screens\ScreenLayout;
 use App\Terminals\Screens\Slider;
 
 /**
- * How the pinned build draws its terminal, measured from resources/recordings/claude-code: the composer is the
- * ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. Each menu is known by
- * its ❯ option list and two of its keywords and holds the runtime for a user; only the welcome screen's text
- * style is answered, with its recorded Enter. The effort picker is a slider.
+ * How the pinned build draws its terminal, from resources/recordings/claude-code: the composer is the ❯ row between two
+ * rules, empty while the cursor sits after the ❯. Each menu is known by its ❯ options and two keywords and holds the
+ * runtime for a user; the effort picker is a slider.
  */
 final readonly class ClaudeCodeLayout implements DriverLayout
 {

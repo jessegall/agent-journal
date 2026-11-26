@@ -5,10 +5,9 @@ import Card from './Card.vue';
 import Textarea from './Textarea.vue';
 
 /**
- * The bar where a comment on some lines is written: a raised Card with a --border-3 border, radius 12 and padding 8
- * 10. It holds a caption ("Comment on lines a–b · “quote”"), a borderless Textarea (at least 54 high) and a footer
- * with "To", the recipient chooser from the slot (a field MenuTrigger), Cancel and a primary Send. Command or Control
- * with Enter sends; Escape closes it and the page keeps the draft for those lines. The Textarea has the focus at once.
+ * The bar where a comment on some lines is written: a caption naming the lines and quote, a borderless Textarea that
+ * has the focus at once, and a footer with To, the recipient chooser, Cancel and Send. Command or Control with Enter
+ * sends; Escape closes it and the draft is kept. Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{ from: number; to: number; quote: string }>();
 

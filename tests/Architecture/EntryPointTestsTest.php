@@ -30,11 +30,9 @@ use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Every way into the journal is read from the booted code, every entry a test names from the Tests attributes of the
- * test classes, and the two are compared: a test names only entries that exist, one of its kind where a kind has one
- * test each, from the place its kind's tests belong, in a folder the test suites run; every entry has one test class
- * naming it, every recorded page request is loaded by its route's test, every journal route has a name, every native
- * hook event a HookEvent case, and the routes of other controllers are the ones listed here.
+ * Every way into the journal is read from the booted code and compared with the entries the tests name in their Tests
+ * attributes: a test names only existing entries, from its kind's place in a suite's folder, and every entry has one
+ * test class. The routes of other controllers are listed here.
  */
 #[TimeLimit(seconds: 60, reason: 'It reads the attributes of every test class of core and the domains.')]
 final class EntryPointTestsTest extends TestCase

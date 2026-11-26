@@ -17,10 +17,9 @@ use App\Processes\Values\ProvenBranch;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
- * The journal's own proof of a draft reader: every run must be a complete sample
- * the journal captured for this request and read by its actor; the reader is replayed over the stored bytes and must
- * account for every record without a problem, claim what the run's exit branch means, and honour the empty policy;
- * every exit branch of the contract needs a run. A statement or copied text never counts.
+ * The journal's own proof of a draft reader: every run is a complete sample the journal captured for this request,
+ * replayed over its stored bytes, where the reader accounts for every record, claims what the exit branch means and
+ * honours the empty policy. Every exit branch of the contract needs a run.
  */
 final readonly class ReaderProofCheck
 {

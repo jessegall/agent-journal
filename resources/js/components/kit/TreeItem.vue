@@ -5,11 +5,9 @@ import type { IconName } from './Icon.vue';
 import { treeKey } from './tree';
 
 /**
- * One row of a Tree, 24 high, in --text-field --text-2: a chevron 12 (or a spacer for a leaf), an Icon 14 and the
- * label with an ellipsis, indented 8 plus 14 per level. Hover --hover; selected --sel and --text; the ring at offset
- * -2. It is a treeitem with aria-level, aria-selected and, for a folder, aria-expanded; only one item of the Tree is in
- * the tab order. Up and Down walk, Right opens a folder and then enters it, Left closes it and then goes to the parent,
- * Enter opens the item. The chevron turns 90 degrees over 120 ms, and not at all under reduced motion.
+ * One row of a Tree: a chevron or a spacer, an icon and the label, indented per level, as a treeitem of which only one
+ * is a tab stop. Up and Down walk, Right opens and enters a folder, Left closes it and goes to the parent, Enter opens.
+ * Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{
     value: string;

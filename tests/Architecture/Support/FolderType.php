@@ -35,9 +35,8 @@ enum FolderType: string
     case ArtisanCommands = 'ArtisanCommands';
 
     /**
-     * The type a file's place asks for. A command and its handler share a folder named for them under Commands, or
-     * under a subject folder of Commands as core keeps them, so Commands/Messages/SendMessage holds SendMessageCommand
-     * and SendMessageHandler and nothing else at its root; a file loose in Commands itself belongs to no pair. A
+     * The type a file's place asks for: a command and its handler share a folder named for them under Commands or a
+     * subject folder of it, holding nothing else at its root, and a file loose in Commands belongs to no pair. A
      * Commands folder under Console holds Artisan adapters.
      */
     public static function ofFile(string $file): self|null

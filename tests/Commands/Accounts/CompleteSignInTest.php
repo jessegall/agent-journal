@@ -39,10 +39,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A host completes a sign-in with its verified report: the first account is made and chosen once, the same report
- * twice publishes once while an older generation is refused, a new account is named from its identity, an attempt names
- * the account it made, renewed or matched, a login named only by email is a new row, a starter that lost its grant adds
- * no account, and a cancelled attempt ignores a late result.
+ * A host completes a sign-in with its verified report: the first account is made and chosen once, a repeated report
+ * publishes once and an older generation is refused, the account is named from its identity, and a starter that lost
+ * its grant or a cancelled attempt adds no account.
  */
 #[TimeLimit(seconds: 3, reason: 'It commits attempts and accounts through the bus and empties five tables per test.')]
 #[TestsCommand(CompleteSignInCommand::class)]

@@ -7,10 +7,9 @@ namespace Tests\Architecture;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Core is laid out by subject (rule 68, task 3549): a project-own class of one subject sits in app/<Subject>/<Kind>,
- * so no kind folder at app level keeps a subject folder that the subject's own folder also holds, and commands live
- * only in the Commands folder of their subject. Laravel's own folders (Http, Models, Providers, Console, Events,
- * Listeners, Policies, Jobs) keep their place and are not judged here.
+ * Core is laid out by subject (rule 68, task 3549): a project-own class sits in app/<Subject>/<Type>, so no app-level
+ * type folder keeps a subject folder the subject also holds, and commands live only in their subject's Commands folder.
+ * Laravel's own folders are not judged here.
  */
 final class SubjectLayoutTest extends TestCase
 {

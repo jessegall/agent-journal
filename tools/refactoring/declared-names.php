@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * The names the project's PHP code declares, read from its syntax trees: each type, member, parameter and local
- * variable, with whether it names an action, a question or a thing (name-grammar.php).
+ * variable, with whether it names an action, a question or an object (name-grammar.php).
  */
 
 use App\Support\Reflector;
@@ -29,9 +29,9 @@ require_once __DIR__.'/php-parse.php';
 require_once __DIR__.'/name-grammar.php';
 
 /**
- * One name the code declares: what type of declaration it is, the name, where it is declared, and whether it names an
- * action (a method that returns nothing, a step, command, listener or job), a question (a yes or no), an event (a
- * class of an event contract), a name a vendor type gives (an override) or a thing.
+ * One name the code declares: its declaration type, the name, where it is declared, and whether it names an action (a
+ * method returning nothing, a step, command, listener or job), a question, an event, a name a vendor type gives, or an
+ * object.
  */
 final readonly class DeclaredName
 {
@@ -179,7 +179,7 @@ function localNamesOf(array $statements, string $path): array
 }
 
 /**
- * Whether a declared type makes a name a question (bool), an action (void or never) or leaves it a thing.
+ * Whether a declared type makes a name a question (bool), an action (void or never) or leaves it an object.
  */
 function roleOfType(Node|null $type, bool $returns): string
 {

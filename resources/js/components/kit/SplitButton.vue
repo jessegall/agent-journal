@@ -5,12 +5,9 @@ import Menu from './Menu.vue';
 import Tooltip from './Tooltip.vue';
 
 /**
- * A create action whose second way sits behind a chevron: a main Button (an Icon and the label) and a chevron that
- * opens a Menu of the other ways, which are the default slot's MenuGroup and MenuItems. Both halves have a --border-2
- * border on --bg in --text; the main half is round on its left (7px), the chevron on its right with no left border and
- * a padding of 6, and each has its own hover and its own focus ring, raised above its neighbour. The hint, when given,
- * is the main half's Tooltip (the plain way, spelled out). The chevron has aria-haspopup menu and the name "More ways to create a <noun>". A
- * disabled button disables both halves.
+ * A create action whose second way sits behind a chevron: a main button with its icon and label, and a chevron named
+ * More ways to create a <noun> that opens a Menu of the other ways. The hint is the main half's tooltip, and disabled
+ * disables both halves. Measures: docs/designs/kit-components.md.
  */
 defineProps<{ label: string; icon?: IconName; hint: string; noun: string; disabled?: boolean }>();
 

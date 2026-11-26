@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\ClaudeCode;
 
 /**
- * The private per-start Claude Code settings that protect saved accounts natively: file tools may neither read the
- * account's sign-in, settings and diagnostics nor change anything in the accounts folder, the shell runs sandboxed
- * with no unsandboxed escape, and the Keychain and the sign-in commands are refused. Which other sessions' history a
- * file tool reads is the journal's per-session check, since a native rule cannot tell sessions apart.
+ * The private per-start Claude Code settings that protect saved accounts: file tools may not read an account's sign-in
+ * or change the accounts folder, the shell runs sandboxed, and the Keychain and sign-in commands are refused. Other
+ * sessions' history is the journal's own per-session check.
  */
 final class ClaudeAccountProtection
 {

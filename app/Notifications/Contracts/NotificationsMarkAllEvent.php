@@ -7,7 +7,7 @@ namespace App\Notifications\Contracts;
 use App\Contracts\Events\Event;
 
 /**
- * A step of marking every notification read: begun, advanced or finished.
+ * A step of marking every notification read: started, advanced or finished.
  */
 interface NotificationsMarkAllEvent extends Event
 {

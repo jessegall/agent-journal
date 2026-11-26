@@ -13,12 +13,9 @@ import SearchPaletteResults from './SearchPaletteResults.vue';
 import { MINIMUM_CHARACTERS, useSearchPalette } from './useSearchPalette';
 
 /**
- * The search palette, a modal dialog over the common search service: the words field keeps the focus; before two
- * characters it shows the minimum and the inline hints, and the scope picker next to it (Tab to reach it, type or
- * arrow to a source, Enter to choose it, All sources to clear) reads the sources the reader may search without a
- * record query. Words are searched 200 ms after the last keystroke; a newer read supersedes an older one and an
- * answer that comes late, or after the palette closed, is dropped. Closing gives the focus, and the selection of a
- * field it came from, back to where it was.
+ * The search palette, a modal dialog over the common search: the words field keeps the focus beside the scope picker,
+ * words are searched 200 ms after the last keystroke, and a late answer is dropped. Closing gives the focus and the
+ * selection back to where they were.
  */
 const { isSearchOpen } = useShellOverlays();
 const search = useSearchPalette();

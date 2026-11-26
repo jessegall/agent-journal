@@ -10,14 +10,9 @@ import { bindingLooks } from '../../../bindingLooks';
 import TerminalAccess from './TerminalAccess.vue';
 
 /**
- * One connected folder, in reading order: its project and environment, the device and reference that tell two
- * folders of one name apart, its outlined state with the words for it, and when its relay was last in contact, as a
- * relative time with the absolute date and zone for a reader, then each driver with the command that starts it in the
- * folder, or the reason Start is not offered for it. Unless it is revoked already it has a box to choose it
- * for revoking with others and its own Revoke, named for its device, both held back while the list is only last
- * known. Revoke asks first in a dialog named for the device, with Cancel focused, and Cancel gives focus back to
- * Revoke; a revoke whose answer was lost offers Retry while the folder is still connected. What came of a revoke
- * shows under it, and its terminal sign-ins under Terminal access.
+ * One connected folder: its project, environment, device and reference, its state, its relay's last contact, and each
+ * driver's start command or why Start is not offered. Unless revoked it has a box to choose it and its own Revoke,
+ * which asks first; its revoke outcome and terminal sign-ins show under it.
  */
 const props = defineProps<{
     binding: ProjectBindingRowData;

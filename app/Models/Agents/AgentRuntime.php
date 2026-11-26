@@ -393,7 +393,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Whether the runtime's driver draws a screen a viewer can watch, as its pinned capabilities said.
+     * Whether the runtime's driver draws a screen a viewer can watch, by its pinned capabilities.
      */
     public function hasScreen(): bool
     {

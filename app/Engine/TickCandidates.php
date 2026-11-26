@@ -21,10 +21,9 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * Selects the ticking frames of a pass: open stacks that hold one, in stack and frame order from where the last pass
- * stopped, up to a limit, and builds only their ticking states from their saved values. Finished
- * frames and the frames of a switched-off type are skipped and stay stored. The scan progress lives as long as the
- * engine process.
+ * Selects the ticking frames of a pass: open stacks holding one, in stack and frame order from where the last pass
+ * stopped, up to a limit, built from their saved values. Finished frames and switched-off types are skipped; the scan
+ * progress lives as long as the engine process.
  */
 final class TickCandidates
 {

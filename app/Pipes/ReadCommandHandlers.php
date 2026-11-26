@@ -138,8 +138,8 @@ final readonly class ReadCommandHandlers implements Pipe
     }
 
     /**
-     * The handler a command has beside it in its own folder: App\X\Commands\Foo\FooCommand is handled by
-     * App\X\Commands\Foo\FooHandler.
+     * The handler a command has beside it in its own folder: App\X\Commands\Close\CloseCommand is handled by
+     * App\X\Commands\Close\CloseHandler.
      */
     private static function handlerNamedFor(string $command): string
     {

@@ -9,10 +9,9 @@ use App\Support\DomainRegistry;
 use Tests\Architecture\Support\AgentReferences;
 
 /**
- * A domain record names actors, never agents: who holds a record is a Core assignment to an actor, and
- * where an agent works on it is a frame on that agent's stack. So no table a domain owns has a column for an agent or
- * an agent session, and no domain model takes or returns a stack target or an agent context. Only Core's Agents and
- * Hooks tables may name agents and sessions.
+ * A domain record names actors, never agents: a holder is a Core assignment to an actor and an agent's work is a frame
+ * on its stack, so no domain table has an agent or session column and no domain model takes a stack target or agent
+ * context. Only Core's Agents and Hooks tables name them.
  */
 final class DomainActorColumnsTest extends TestCase
 {

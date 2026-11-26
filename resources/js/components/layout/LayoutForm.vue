@@ -9,12 +9,9 @@ import { useHostProp } from '@/framework/hostProp';
 import type { LayoutPartData } from '@/generated/types/core';
 import { inertiaMethods, provideLayoutForm, startingValues, useFormDraft, useFormSent } from './layoutForm';
 
-// A form of a declared layout: it sends its fields and fixed values to its one registered action and asks only for the
-// prop of the window it is drawn in, keeping the window's state, so a refusal or a field error shows in place with the
-// input kept and the focus on its first invalid field. A keyed form sends a new Idempotency-Key each time, and a
-// form with a question asks it first. A form in a dialog tells the dialog once it was accepted, and a form with a
-// confirmation says it in a toast that offers Undo only when the declaration gives an inverse. A live form has no send
-// button: it sends itself a moment after its values change, so a switch or a typed value is saved as it is made.
+// A form of a declared layout: it sends its fields to its one registered action and reloads only its window's prop, so
+// errors show in place with the input kept. A keyed form sends a new Idempotency-Key, a form with a question asks
+// first, and a live form sends itself a moment after a change.
 const props = defineProps<{ part: LayoutPartData }>();
 const hostProp = useHostProp();
 const form = useForm(startingValues(props.part));

@@ -35,12 +35,9 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
- * Turns one window, section or inspector into its result: denied without calling the reader when a check refuses or
- * the reader's record is private (missing and denied alike), ready with the reader's Data serialized inside this
- * boundary (an authorized empty read is ready, never a result of its own), or failed with a neutral message while the
- * error is logged with the key and the reader; in the local and testing environments the failed result also names the
- * error's class and message as its reason. A sign-in, CSRF, validation or redirect response still reaches the browser
- * as it is.
+ * Turns one window, section or inspector into its result: denied without calling the reader when a check refuses or the
+ * record is private, ready with the reader's Data, or failed with a neutral message while the error is logged. A
+ * sign-in, CSRF, validation or redirect response reaches the browser as it is.
  */
 final readonly class WindowResults implements WindowResultsContract
 {

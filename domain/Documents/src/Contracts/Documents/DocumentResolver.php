@@ -33,7 +33,7 @@ interface DocumentResolver
     public function show(int $number): DocumentView;
 
     /**
-     * A bounded read of one revision, the current one unless named; a read that continues one begun on another
+     * A bounded read of one revision, the current one unless named; a read that continues one started on another
      * revision is refused.
      *
      * @throws DocumentMissing|StaleRead|SectionMissing

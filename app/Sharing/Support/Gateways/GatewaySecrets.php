@@ -45,7 +45,7 @@ final readonly class GatewaySecrets
     }
 
     /**
-     * The secret's value; read only after has() said it is there.
+     * The secret's value; read only once has() answered that it is there.
      *
      * @throws GatewaySecretRefused when the reference names no secret
      */

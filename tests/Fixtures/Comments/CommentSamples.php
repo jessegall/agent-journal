@@ -36,4 +36,24 @@ final class CommentSamples
      * The oldest first, as the reader asks, and a name such as "magic" quoted: nothing is refused here.
      */
     public const string KEPT = 'kept';
+
+    /**
+     * One line of prose above a tag that runs over several lines, which are the tag's and no prose.
+     *
+     * @var array{
+     *     first: string,
+     *     second: string,
+     *     third: string,
+     * }
+     */
+    public const array TAG_LINES = ['first' => 'a', 'second' => 'b', 'third' => 'c'];
+
+    /**
+     * Two lines of prose above an indented example,
+     * which is no prose either.
+     *
+     *   composer test:run
+     *   composer test:run -- tests/Architecture
+     */
+    public const string EXAMPLE = 'example';
 }

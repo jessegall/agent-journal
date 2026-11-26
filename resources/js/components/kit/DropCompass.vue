@@ -3,11 +3,9 @@ import { computed, watch } from 'vue';
 import { type CompassTarget, type Point, compassSize, compassTargetAt, compassTargets } from './compassTargets';
 
 /**
- * Five targets (centre, left, right, up, down) in a 3 by 3 grid of 26px cells with a gap of 3, centred on a pane while
- * a window is dragged over it. A cell is --raised with a 1px --text-4 border, radius --radius-control and --shadow-pop;
- * the one the pointer aims at fills with --brand. The pointer aims at a cell when it is within 14px of the cell's point,
- * 29px from the centre for a side (compassTargetAt). The aimed cell is sent through aim. The compass has no keyboard
- * path: every target is also a menu item (compassTargets holds its label) on the window bar and tab menus.
+ * Five drop targets (centre, left, right, up, down) in a 3 by 3 grid centred on a pane while a window is dragged over
+ * it; the one the pointer aims at fills and is sent through aim. It has no keyboard path: each target is also a window
+ * menu item. Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{ center: Point; pointer?: Point; aimed?: CompassTarget | null }>();
 

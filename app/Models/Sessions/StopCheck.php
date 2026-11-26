@@ -111,7 +111,8 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
+     * Records that one submission of the host's results settled the attempt, with the reasons of its refusing
+     * conditions.
      */
     public function settle(StopCheckStatus $status, string $submissionDigest, string $failureSummary): void
     {

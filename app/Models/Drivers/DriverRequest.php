@@ -702,7 +702,8 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     }
 
     /**
-     * The runtimes' requests a driver had begun and not finished, staged or applying, which a new worker takes up first.
+     * The runtimes' requests a driver started and did not finish, staged or applying, which a new worker takes up
+     * first.
      *
      * @param  Builder<self>  $query
      * @param  Collection<int, AgentRuntime>  $runtimes

@@ -5,13 +5,9 @@ import { tabsKey } from './tabs';
 import type { TabItem } from './tabs';
 
 /**
- * A tab list bound to its panels: tablist, tab and tabpanel roles with aria-controls and aria-labelledby. Left and
- * Right move and choose the tab, round the ends, and Home and End go to the first and last (roving tabindex). The
- * caller gives the tabs as data (with a panel slot per tab key) or draws its own Tab parts in the tabs slot. Variants:
- * inline (margin 10 0 6, a --line rule), pagehead (52 px high, no rule), filters (padding 0 12, a --line rule) and
- * toolbar (inside a toolbar that draws the rule: 14 px apart, no rule, no padding, no space above an empty panel). The
- * other variants are a record's or a page's tabs, 16 px apart and each as wide as its label; a toolbar's tabs are a
- * window's tab strip, each at least 56 px wide. The chosen line is the brand colour or quiet.
+ * A tab list bound to its panels with the tablist, tab and tabpanel roles: Left and Right move and choose round the
+ * ends, Home and End jump. The tabs come as data with a panel slot per key, or as Tab parts in the tabs slot, in the
+ * inline, pagehead, filters or toolbar style. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

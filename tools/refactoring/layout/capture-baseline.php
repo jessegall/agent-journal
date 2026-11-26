@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Captures what the layout moves must keep as it is: the boots,
- * operation names, exports, installed domains, command pairs, listener lanes, migrations, Artisan signatures, ordered
- * routes and MCP names, one sorted JSON file each under tools/refactoring/layout/baseline/. Run it in the app
- * container; it fails loudly when a set that is never empty comes back empty.
+ * Captures what the layout moves must keep: boots, operation names, exports, domains, command pairs, listener lanes,
+ * migrations, Artisan signatures, routes and MCP names, one JSON file each under tools/refactoring/layout/baseline/. Run
+ * it in the app container; a set that is never empty failing to fill fails it.
  *
  *   php tools/refactoring/layout/capture-baseline.php
  */

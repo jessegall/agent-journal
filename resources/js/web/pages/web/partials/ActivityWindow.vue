@@ -9,11 +9,9 @@ import PanelToolbar from '@/components/kit/PanelToolbar.vue';
 import Tabs from '@/components/kit/Tabs.vue';
 
 /**
- * What the agents do, as it happens: level tabs over a feed that scrolls inside its window, each time shown on the
- * viewer's own clock. It keeps the reader where they are as events arrive, following the newest only while the reader
- * is at the bottom, and asks for older events when the reader reaches the top while there are more, keeping the
- * reader's place as they are added above. A connected feed with nothing in it says it is waiting; a level that
- * matches nothing offers Show everything; when the connection drops the events stay, with Reconnect.
+ * What the agents do, as it happens: level tabs over a feed shown on the viewer's clock, following the newest only
+ * while the reader is at the bottom and reading older events at the top without losing the reader's place. An empty
+ * feed says it waits; a dropped connection offers Reconnect.
  */
 const props = defineProps<{
     events: ActivityEventData[];

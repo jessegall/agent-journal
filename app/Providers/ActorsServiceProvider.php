@@ -46,10 +46,9 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Binds the actor contracts to this request's actor store, which is scoped, so a long-running worker forgets the
- * actor between requests, and lets the readers that take ActorReference directly read it from that store. The presence
- * window is read once from config/actors.php; the owners of actors register their counters of present ones, and the
- * viewer's heartbeat route is loaded here.
+ * Binds the actor contracts to this request's scoped actor store, so a long-running worker forgets the actor between
+ * requests, and lets readers take ActorReference from it. The owners of actors register their presence counters, and
+ * the heartbeat route is loaded here.
  */
 final class ActorsServiceProvider extends ServiceProvider
 {

@@ -11,10 +11,9 @@ use App\Projects\Values\IssuedInvitation;
 use App\Support\Command;
 
 /**
- * The owner issues a one-time install line for a new project, or to join an environment of a connected one. The command carries the
- * digest of the line's ticket, never the ticket. The line belongs to the owner's install attempt under the issuance
- * key, opened by the first issue; issued again, under the key or by the attempt's reference and the version the owner
- * saw, it replaces the attempt's pending line, so a reply lost on the way never leaves two live lines.
+ * The owner issues a one-time install line for a new project, or to join an environment of a connected one; the command
+ * carries the digest of the ticket, never the ticket. Issued again for the same install attempt, it replaces the
+ * pending line, so there are never two live lines.
  *
  * @extends Command<IssuedInvitation>
  */

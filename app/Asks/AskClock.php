@@ -10,10 +10,9 @@ use App\Models\Asks\AskHop;
 use Carbon\CarbonImmutable;
 
 /**
- * Decides which asks are due to advance. Each holder answers its queue in order: question and stuck asks first, then
- * the oldest. The ask it answers now runs on its response allowance from when the holder became free; an ask queued
- * behind it waits from that answer's deadline, so a holder that keeps answering never lets its queue escalate. An ask
- * past its lifetime is due whatever its clock says.
+ * Decides which asks are due: each holder answers its queue in order, questions and stuck asks first, then the oldest.
+ * The ask in hand runs on its allowance from when the holder became free and the next waits from its deadline; an ask
+ * past its lifetime is always due.
  */
 final readonly class AskClock
 {

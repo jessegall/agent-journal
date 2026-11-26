@@ -12,10 +12,9 @@ import MenuItemLabel from './MenuItemLabel.vue';
 import MenuSeparator from './MenuSeparator.vue';
 
 /**
- * A record's actions menu as the server built it for this actor and this record: its groups in order, set apart by
- * separators, an item that opens a page as a link and one that sends an action as a button. The actions button opens
- * it for keyboard and touch; openFromContext opens the same menu on a right click on its host. A menu with no item
- * draws nothing.
+ * A record's actions menu as the server built it for this actor and record: its groups in order with separators, a page
+ * item as a link and an action as a button. The actions button opens it, and openFromContext opens it on a right click;
+ * a menu with no item draws nothing.
  */
 const props = defineProps<{ menu: LayoutMenuData }>();
 const actions = useTemplateRef<InstanceType<typeof Menu>>('actions');

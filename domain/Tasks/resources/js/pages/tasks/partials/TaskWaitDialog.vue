@@ -13,10 +13,9 @@ import type { TaskWaitChoiceData } from '@generated/types/tasks';
 import { useHostProp } from '@kit/hostProp';
 
 /**
- * One change of a task's waits in a dialog that names the task and the effect: adding a prerequisite chosen by a
- * search, removing a wait, or waiving one with its required reason. It posts once under its request key and reloads
- * only its window's prop; a refusal stays in the dialog, a missing reason focuses the reason, and a lost answer shows
- * Outcome unknown with Check task, never a retry.
+ * One change of a task's waits in a dialog that names the task and the effect: adding a prerequisite found by search,
+ * removing a wait, or waiving one with a reason. It posts once under its request key; a refusal stays in the dialog and
+ * a lost answer shows Outcome unknown.
  */
 const props = defineProps<{
     change: 'add' | 'remove' | 'waive';

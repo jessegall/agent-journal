@@ -14,11 +14,9 @@ use App\Support\Compatibility\DriverCompatibility;
 use App\Values\ProtectionReport;
 
 /**
- * The compatibility of each driver's pinned build, as its account-free capture and native procedure recorded it.
- * Contained, its arrangement is shown only by a contained host's report that every item is enforced in the agent
- * image, for the start profile a signed-in start of the driver uses. A
- * driver on the protected-account trial starts once every item has its mechanism, before the runs that show each
- * hold are recorded, since the trial is where those runs are made.
+ * The compatibility of each driver's pinned build, as its account-free capture recorded it. Contained, its arrangement
+ * shows only once a contained host reports every item enforced in the agent image; a driver on the protected-account
+ * trial starts once every item has its mechanism.
  */
 final readonly class DriverCompatibilities implements DriverCompatibilitiesContract
 {

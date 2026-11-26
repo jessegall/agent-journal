@@ -3,9 +3,9 @@ import Icon from './Icon.vue';
 import type { IconName } from './Icon.vue';
 
 /**
- * A short state shown beside a record, such as Signed in or Needs sign-in: a dot or the state's own icon and a word
- * in the state's tone, outlined in it when asked; a state that has not begun or is absent has a hollow dot. The caller gives the words; the tone only colours them, so the
- * state never rests on colour alone. A busy dot pulses, and stands still for a reader who asks for reduced motion.
+ * A short state beside a record, such as Signed in: a dot or the state's icon and the caller's word in its tone,
+ * outlined when asked; a state that has not started or is absent has a hollow dot. A busy dot pulses, but not under
+ * reduced motion.
  */
 withDefaults(
     defineProps<{

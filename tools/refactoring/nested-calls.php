@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 /**
- * Lists the calls nested where they should be bound first: a row read (a query() chain that
- * ends in a find, first, sole, get or the like) passed straight into another call or new, and a null-safe call on
- * the result of another call, such as ChatMessage::findForSource(Question::query()->findOrFail($id))?->reload().
- * Bind the inner result, leave early when it is missing, then act. A query builder handed on as a subquery, chains
- * on one receiver, closures and plain values stay as they are.
+ * Lists the calls nested where they should be bound first: a row read passed straight into another call or new, and a
+ * null-safe call on another call's result. Bind the inner result, leave early when it is missing, then act; subqueries,
+ * chains on one receiver, closures and plain values stay.
  *
  *   php tools/refactoring/nested-calls.php app domain
  *       prints "file:line<TAB>..." for each such nesting, and fails while there is one.

@@ -8,10 +8,9 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 import type { LayoutFormValues } from './layoutForm';
 
-// A field inside a layout form: it edits its own value of the form, shows the server's error for its name and keeps
-// what was typed when the form comes back refused; its id comes from this mount. A secret field hides what is typed,
-// a choice shows each option's label where it has one, and a switch is drawn only where the declaration says so,
-// holding 1 or 0.
+// A field inside a layout form: it edits its own value, shows the server's error for its name and keeps what was typed
+// after a refusal. A secret field hides what is typed, a choice shows its labels, and a switch, where declared, holds 1
+// or 0.
 const props = defineProps<{
     field: LayoutFieldData;
     form: InertiaForm<LayoutFormValues>;

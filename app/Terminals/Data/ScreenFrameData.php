@@ -13,15 +13,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A runtime's screen as its host last captured it: every row as styled runs, the cursor, the buffer and the size,
- * numbered within the host process's epoch. A marker frame has no rows and says why: too large to send, unreadable,
- * or no terminal on the host; a plain frame dropped its styles to fit. A shielded frame stands for a screen its host
- * would not export, and the privacy revision rises each time the runtime's screen turns from public to shielded. The
- * stream names the sender that sent it, and its proof, rising per stream, proves the host alive until it expires; an
- * older host sends neither, and its frames prove nothing. Who holds the input, whether a take is being settled and
- * the prompt revision a browser writer's input must name come with every frame; a grant's own id never does. A
- * contained runtime's frames name their attachment and verified container, and a lost attachment whose container
- * still runs says so instead of ending.
+ * A runtime's screen as its host last captured it: its rows as styled runs, the cursor, the buffer and the size, with
+ * who holds the input and the stream proof that the host is alive. A marker frame has no rows and says why; the rest is
+ * described in docs/terminals/screen-frames.md.
  */
 #[TypeScript]
 #[MapInputName(SnakeCaseMapper::class)]

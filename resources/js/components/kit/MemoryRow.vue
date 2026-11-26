@@ -1,9 +1,8 @@
 <script setup lang="ts">
 /**
- * One memory: a grid of the weight (18 wide, tabular) and the text, padding 9 14 and a --line rule below. An
- * expandable row is a button with aria-expanded that shows its detail (where it came from, its keywords, how it
- * fades) under the text; hover takes --hover and the ring sits inside at offset -2. A row that is not expandable shows
- * its detail at once. A MemoryList moves between the buttons with Up and Down.
+ * One memory: its weight and its text, with its detail (where it came from, its keywords, how it fades) shown at once
+ * or, in an expandable row, behind a button. A MemoryList moves between the buttons with Up and Down. Measures:
+ * docs/designs/kit-components.md.
  */
 defineProps<{ weight: number; text: string; detail?: string; expandable?: boolean }>();
 

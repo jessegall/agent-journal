@@ -97,14 +97,8 @@ return [
         'guarded' => (bool) env('AGENTS_HOST_CAPACITY_GUARDED', true),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | A host's idle window
-    |--------------------------------------------------------------------------
-    |
-    | How long, in seconds, a host that holds no live process stays online, as each claim answer tells it; a connected
-    | folder's relay leaves once it passed.
-    */
+    // A host's idle window: How long, in seconds, a host that holds no live process stays online, as each claim answer
+    // tells it; a connected folder's relay leaves once it passed.
     'idle_window_seconds' => (int) env('AGENTS_HOST_IDLE_WINDOW_SECONDS', 600),
 
 ];

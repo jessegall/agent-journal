@@ -11,9 +11,8 @@ use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 
 /**
- * Codex 0.165.0 finds a session's skills in the skills folder of its isolated CODEX_HOME, which is the start's
- * settings folder, so the host writes them there and adds no argument; never the legacy .codex/skills.
- * It lists them when a turn's process starts.
+ * Codex 0.165.0 finds a session's skills in the skills folder of its isolated CODEX_HOME, which is the start's settings
+ * folder, so the host writes them there and adds no argument. It lists them when a turn's process starts.
  */
 final readonly class CodexSkills implements DriverSkills
 {

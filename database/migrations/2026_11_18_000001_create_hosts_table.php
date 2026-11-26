@@ -25,7 +25,7 @@ return new class extends Migration
             // The host protocol the host speaks, and the secret every order to it is signed with.
             $table->unsignedSmallInteger('protocol')->default(1);
             $table->text('order_secret')->nullable();
-            // The order types the host's last inventory said it carries out; empty until its first inventory.
+            // The order types the host's last inventory names as carried out; empty until its first inventory.
             $table->jsonb('capabilities')->default('[]');
             $table->jsonb('allowed_images')->default('[]');
             // The release the host's last inventory named, the release an upgrade waits on, its order and why one failed.
@@ -33,8 +33,8 @@ return new class extends Migration
             $table->string('upgrade_release')->nullable();
             $table->ulid('upgrade_order_id')->nullable();
             $table->text('upgrade_failure')->nullable();
-            // The combinations the host reported it can run.
-            // Whether the host's last claim said it carries out browser control of its terminals.
+            // The combinations the host reported it can run, and whether its last claim offers browser control of its
+            // terminals.
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampTz('last_answered_at')->nullable();
             $table->timestampTz('failing_since')->nullable();

@@ -7,10 +7,9 @@ namespace Tests\Unit\Accounts;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The account-free Codex capture: a signed-out exec ends with turn.failed while exiting 0, so outcomes are read from
- * events; the app-server offers the sign-in and execution methods the arrangement relies on; a trusted work folder
- * loads its own project configuration while an empty trusted working root loads none; and the document names the same
- * pinned version and digest.
+ * The account-free Codex capture: a signed-out exec ends with turn.failed while exiting 0, the app-server offers the
+ * methods the arrangement relies on, an empty trusted working root loads no project configuration, and the document
+ * names the same pinned version.
  */
 final class CodexCaptureTest extends TestCase
 {

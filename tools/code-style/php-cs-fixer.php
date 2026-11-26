@@ -9,10 +9,9 @@ use Tools\CodeStyle\AttributeOrderFixer;
 use Tools\CodeStyle\BlankLineAroundMultilineStatementFixer;
 use Tools\CodeStyle\StandaloneAttributeFixer;
 
-// The project's own code-style fixers, run right after Pint (which cannot load them) by composer lint and lint:check.
-// It lives here, not as .php-cs-fixer.dist.php at the root, because Pint's parallel workers would read that file
-// without the project's autoloader and fail on these fixers.
-// The containers run PHP 8.6, newer than the fixer's declared syntax range; its fixers only read this project's 8.x code.
+// The project's own code-style fixers, run after Pint by composer lint and lint:check; at the root, Pint's parallel
+// workers would read it without the project's autoloader. The containers' PHP is newer than the fixer's declared range,
+// but its fixers only read this project's code.
 return new Config()
     ->setUnsupportedPhpVersionAllowed(true)
     ->setParallelConfig(ParallelConfigFactory::detect())

@@ -11,12 +11,9 @@ import { rememberFollowedWait, takeFollowedWait } from '../../openedWaits';
 import { taskStateLook } from '../../taskLooks';
 
 /**
- * A task's waits both ways: Waits for, the tasks it needs finished first, and Holds up, the tasks that need it. Each
- * line says its direction aloud, names the other task with its state and whether the wait is met, and links to it; a
- * removed task stays as unresolved, a task the reader may not see is only a prerequisite they cannot see, and a waived
- * wait says who waived it, when and why. Going back from a task opened here gives its link the focus again. The
- * domain says which changes the caller may make: Add prerequisite, Remove and Waive appear only then, each in a
- * dialog.
+ * A task's waits both ways: Waits for and Holds up, each line naming the other task, its state and whether the wait is
+ * met, with a link. Removed and hidden tasks and waived waits say so; Add prerequisite, Remove and Waive appear only
+ * when the domain allows them, each in a dialog.
  */
 const props = defineProps<{
     waits: TaskWaitsData | undefined;

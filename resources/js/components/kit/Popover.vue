@@ -2,10 +2,9 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 /**
- * An anchored surface that is not modal and has no scrim: --raised, a --border-2 border, radius --radius-menu and
- * --shadow-pop. It sits 4 px below its anchor, aligned to the anchor's left or right edge (or at a point), stays 6 px
- * inside its frame (the nearest positioned parent) and flips above the anchor when it would pass the bottom. It is a
- * dialog with a label; Escape or a press outside closes it and focus returns to the anchor.
+ * An anchored surface that is not modal: a labelled dialog just below its anchor, aligned to one of its edges, kept
+ * inside its frame and flipped above when it would pass the bottom. Escape or a press outside closes it and the focus
+ * returns to the anchor. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

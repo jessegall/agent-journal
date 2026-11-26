@@ -12,7 +12,7 @@ use App\Actors\Contracts\Actor;
 interface VisibilityCheck
 {
     /**
-     * Whether the actor may see the thing this check guards.
+     * Whether the actor may see the record this check guards.
      */
     public function allows(Actor $actor): bool;
 }

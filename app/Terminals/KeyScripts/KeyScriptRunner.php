@@ -45,7 +45,7 @@ final readonly class KeyScriptRunner
     }
 
     /**
-     * The move of a run whose step has begun.
+     * The move of a run whose step has started.
      */
     private function onStep(ScreenLayout $layout, KeyScriptRun $run, HostFrameData $frame): KeyMove
     {

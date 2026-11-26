@@ -30,10 +30,9 @@ final readonly class StartStacks
     ) {}
 
     /**
-     * Opens the stack with the ready bottom state, or leaves the one a racing start opened first. A start that
-     * resumes the agent's conversation carries the durable frames of its last closed stack above that bottom, in
-     * order; session-only frames stay behind with the old stack, which stays history. Only the open whose insert won
-     * enters the carried frames; a racing loser reads the winner's row and settles nothing.
+     * Opens the stack with the ready bottom state, or leaves the one a racing start opened first. A resumed
+     * conversation carries the durable frames of its last closed stack above that bottom, in order; only the open whose
+     * insert won enters them.
      */
     public function open(StackTarget $target): void
     {

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Enums;
 
 /**
- * The limits on what is sent to an agent for classification: a shape longer than
- * ShapeCharacters is never sent, and each batch holds at most BatchShapes shapes and BatchCharacters characters.
- * ShapeCharacters covers every distilled shape measured in the corpus (the longest is 174 characters) with room for
- * unseen ones, under the user's ceiling of 2,000.
+ * The limits on what is sent to an agent for classification: no shape over ShapeCharacters, and at most BatchShapes
+ * shapes and BatchCharacters characters a batch. ShapeCharacters covers the longest measured shape (174 characters)
+ * with room, under the user's ceiling of 2,000.
  */
 enum ReviewLimit: int
 {

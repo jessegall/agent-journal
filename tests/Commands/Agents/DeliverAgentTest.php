@@ -22,10 +22,9 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
- * A message is delivered to an agent's runtime: a repeated key returns the same request while other content conflicts,
- * attachments reach the host as their parts in order and one that cannot be read refuses the whole delivery, requests
- * are numbered in the order they were accepted, an applied request keeps the driver's whole session id, and a message
- * over the limit is refused before it is accepted.
+ * A message is delivered to an agent's runtime: a repeated key returns the same request and other content conflicts,
+ * attachments reach the host in order and an unreadable one refuses the whole delivery, requests are numbered as
+ * accepted, and a message over the limit is refused.
  */
 #[TestsCommand(DeliverAgentCommand::class)]
 final class DeliverAgentTest extends TestCase

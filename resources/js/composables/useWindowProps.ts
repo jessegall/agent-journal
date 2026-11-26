@@ -23,11 +23,9 @@ const sharedReads = new SharedPropReads((propName, ended) => {
 let nextMount = 0;
 
 /**
- * One mount of a window or section prop: its current result, the Data last shown before a failure (cleared when the
- * user may no longer see it or its record is unavailable), and a retry that reloads only this prop. Mounts of the same
- * prop asking at once share one read; each keeps its own draft, focus and scroll, and only the mount that asked
- * announces the outcome, or the next one still waiting when it left. An optional window prop is asked for once shown;
- * after that the live client reads it while it is on the page, and it leaves the page when its last mount closes.
+ * One mount of a window or section prop: its result, the Data last shown before a failure, and a retry that reloads
+ * only this prop. Mounts asking at once share one read and keep their own draft, focus and scroll; an optional prop is
+ * asked for once shown and leaves with its last mount.
  */
 export function useWindowProps(propName: string, askOnStart = true) {
     const page = usePage();

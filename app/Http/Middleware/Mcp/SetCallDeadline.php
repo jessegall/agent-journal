@@ -17,11 +17,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Gives an MCP call its deadline from the signed issue time: at most 15 seconds from entry and never past 19 seconds
- * after the agent issued it, so every lock wait and statement of the call shares what is left. A call already past
- * its deadline is refused before anything runs. The request's deadline replaces the default only for this request.
- * It reads the agent context when it handles the call, never when it is built: the kernel builds every route
- * middleware again after the response, when the context is gone.
+ * Gives an MCP call its deadline: at most 15 seconds from entry and 19 seconds from when the agent signed it, shared by
+ * every lock wait and statement; a call already past it is refused. It reads the agent context when it handles the
+ * call, since the kernel builds route middleware again after the response.
  */
 final readonly class SetCallDeadline
 {

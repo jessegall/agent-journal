@@ -16,10 +16,9 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * The engine's life: it takes the lock, then runs one pass on each one-second boundary of the monotonic clock. A pass
- * that starts late runs once for the current boundary and logs the boundaries it missed; passes never overlap or catch
- * up. Each pass delivers EngineTicked, then ticks the selected frames. Ownership is checked before every pass, and a
- * stop ends the loop after the current pass.
+ * The engine's life: it takes the lock, then runs one pass on each one-second boundary of the monotonic clock, never
+ * overlapping or catching up; a late pass logs the boundaries it missed. Each pass delivers EngineTicked, then ticks
+ * the selected frames; a stop ends the loop after the current pass.
  */
 final class EngineLoop
 {

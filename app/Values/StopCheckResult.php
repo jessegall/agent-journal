@@ -42,7 +42,7 @@ final readonly class StopCheckResult
     }
 
     /**
-     * What the conditions that refused the stop said, one line each, for the helper to act on.
+     * The reasons of the conditions that refused the stop, one line each, for the helper to act on.
      */
     public function failureSummary(): string
     {

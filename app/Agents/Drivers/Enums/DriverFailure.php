@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Enums;
 
 /**
- * Why a driver said a start's request failed, in the checked vocabulary of its failure signal; anything unchecked
+ * Why a driver reported a start's request failed, in the checked vocabulary of its failure signal; anything unchecked
  * is Unknown, never proof that the account signed out.
  */
 enum DriverFailure: string

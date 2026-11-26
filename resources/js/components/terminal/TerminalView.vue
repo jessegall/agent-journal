@@ -6,11 +6,9 @@ import TerminalRow from './TerminalRow.vue';
 import type { TerminalPresentation } from './useTerminalController';
 
 /**
- * An agent's terminal, drawn only: the line saying what the screen is, the notices about it, the actions its window
- * offers for that state, and the screen as the driver draws it, with its colours and cursor, at the driver's own size.
- * Only the screen is monospaced. Read screen opens a plain-text snapshot of the rows that holds still until Refresh,
- * and goes together with the pixels when the screen clears. A change of state is announced once, a failure as an
- * alert; frames are never announced. It reads nothing itself.
+ * An agent's terminal, drawn only: what the screen is, its notices, the actions its window offers, and the screen with
+ * its colours and cursor at the driver's size. Read screen opens a still plain-text snapshot; a change of state is
+ * announced once, and frames never.
  */
 const props = defineProps<{ presentation: TerminalPresentation }>();
 

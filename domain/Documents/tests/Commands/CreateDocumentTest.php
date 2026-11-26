@@ -54,10 +54,9 @@ use Tests\Support\TestProjects;
 use Tests\Support\TestStartAuthority;
 
 /**
- * A user or agent files a document: documents are numbered from one, each at its first revision that never changes,
- * the title and abstract are kept trimmed, and an empty title, a two-line abstract or too many links leave no row and
- * name the field; a document is of a project or Global, only the owner makes a Global one, and a report is of its
- * maker's project.
+ * A user or agent files a document, numbered from one at a first revision that never changes, with a trimmed title and
+ * abstract; an empty title, a two-line abstract or too many links leave no row. Only the owner makes a Global one, and
+ * a report is of its maker's project.
  */
 #[TestsCommand(CreateDocumentCommand::class)]
 final class CreateDocumentTest extends TestCase

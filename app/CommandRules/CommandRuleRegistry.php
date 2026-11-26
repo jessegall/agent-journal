@@ -15,10 +15,9 @@ use App\Values\UnresolvedFact;
 use App\Values\Word;
 
 /**
- * Every declared command rule, keyed by program family. It is checked once when
- * built: one id has one owner unless a project rule replaces that exact revision, and rules covering the same program
- * and subcommands must be disjoint. Rules are kept in id order, so registration order never decides. A module's rules
- * wait for review and match nothing until then.
+ * Every declared command rule, keyed by program family and checked once when built: one id has one owner unless a
+ * project rule replaces that revision, and rules for the same program and subcommands are disjoint. Rules are kept in
+ * id order, and a module's rules match nothing until reviewed.
  */
 final readonly class CommandRuleRegistry
 {

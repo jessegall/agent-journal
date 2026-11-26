@@ -16,9 +16,8 @@ use Closure;
 
 /**
  * Before the transaction, a command runs only through its own entry: a trusted entry's command only when that entry
- * dispatched it, so the public transports answer it as an unknown command whoever acts, and an application command
- * not from a trusted entry's own work, so the journal acting through one never runs it at the top level. A command a
- * handler dispatches follows the one that dispatched it.
+ * dispatched it, and an application command never from a trusted entry at the top level. A command a handler dispatches
+ * follows the one that dispatched it.
  */
 final readonly class CheckEntry implements CommandMiddleware
 {

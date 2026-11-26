@@ -7,10 +7,9 @@ namespace App\Bus\Contracts;
 use App\Pipelines\Support\Step;
 
 /**
- * A pipeline written down: its steps in the order they run. A step is a pipe or another pipeline, named by its class
- * and built by the container, or a Step listed inline: steps repeated while a condition holds, or a step chosen for
- * each value. Each definition says what it takes and hands out: in its docblock as PipelineDefinition<TInput,
- * TOutput>, and in its input and output properties, which the runner checks before the first and after the last step.
+ * A pipeline written down: its steps in order, each a pipe, another pipeline or an inline Step. It declares what it
+ * takes and hands out as PipelineDefinition<TInput, TOutput> and in its input and output properties, which the runner
+ * checks.
  *
  * @template-covariant TInput of object
  * @template-covariant TOutput of object

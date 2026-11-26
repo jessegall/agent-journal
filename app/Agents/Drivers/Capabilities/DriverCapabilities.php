@@ -13,9 +13,7 @@ use App\Values\AgentText;
 
 /**
  * What the journal's contract with one driver covers: the reply schema it was written against, the hooks it maps and
- * how it takes a rewrite.
- * It records the contract, not a claim that a driver version was tested; docs/hooks/driver-capabilities.md holds the
- * evidence.
+ * how it takes a rewrite. The evidence that a driver version was tested is in docs/hooks/driver-capabilities.md.
  */
 final readonly class DriverCapabilities
 {

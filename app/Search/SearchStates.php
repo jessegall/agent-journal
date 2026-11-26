@@ -18,10 +18,9 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 
 /**
- * The private state of running searches behind opaque handles. A handle names a search and one retained position
- * and is signed over its owner's binding, so a foreign or changed handle is refused without a word of the search,
- * while the owner's handle of a gone search answers restart. Each search lives ten minutes and holds at most
- * 64 KiB; a principal keeps eight active searches per environment, the oldest set aside for a ninth.
+ * The private state of running searches behind signed handles: a foreign or changed handle is refused, and the owner's
+ * handle of a gone search answers restart. A search lives ten minutes and holds at most 64 KiB; each principal keeps
+ * eight per environment, the oldest set aside for a ninth.
  */
 final readonly class SearchStates
 {

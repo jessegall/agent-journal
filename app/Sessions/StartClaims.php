@@ -15,11 +15,9 @@ use App\Models\Sessions\SessionRequest;
 use App\Sessions\Exceptions\StartClaimRefused;
 
 /**
- * Takes a pending start of a runtime for the host it is assigned to, with the recipe the driver's adapter checked;
- * another host's start is refused. When
- * the driver's build cannot start here, the start ends stopped with that reason, its session and runtime end, and
- * nothing is taken; when the adapter names no sign-in method for the account, the claim rolls back and the start stays
- * pending. A host claims it this way, and so does the journal for a runtime it opens itself.
+ * Takes a pending start for the host it is assigned to, with the recipe the driver's adapter checked; another host's
+ * start is refused. A build that cannot start here ends the start stopped, and a missing sign-in method rolls the claim
+ * back. Hosts and the journal itself claim this way.
  */
 final readonly class StartClaims
 {

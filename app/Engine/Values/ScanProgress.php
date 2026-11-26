@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Engine\Values;
 
 /**
- * How far one pass over the ticking stacks has examined: the last examined stack, its version then and the position
- * and frame there, and the frames this pass already delivered. A stack whose version changed since is examined again
- * from its start, passing over the frames already delivered, so a stack compacted before the cursor loses no frame and
- * delivers none twice in one pass.
+ * How far one pass over the ticking stacks has examined: the last stack, its version, its position and frame there, and
+ * the frames already delivered. A stack whose version changed is examined again from its start, skipping delivered
+ * frames, so no frame is lost or delivered twice.
  */
 final readonly class ScanProgress
 {

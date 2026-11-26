@@ -28,11 +28,9 @@ import SessionForm from "./SessionForm.vue";
 import StopConfirmation from "./StopConfirmation.vue";
 
 /**
- * What the chosen agent's status offers now, from the server's projection: each action maps to its route or dialog.
- * Start and Resume open the session form, Switch its switch form; Retry and Check and switch follow the
- * switch; Check status reads the agent again; Check capacity reads the host's room without reserving; Sign in opens
- * Accounts; Dismiss hides the start outcome for this viewer; Cancel start cancels the start. Each agent keeps its
- * own controls: its open dialog and a switch under way survive switching chats and a reload in this tab.
+ * What the chosen agent's status offers now, each action mapped to its route or dialog: Start, Resume and Switch open
+ * their forms, Check status and Check capacity read, Sign in opens Accounts, Dismiss hides the outcome and Cancel start
+ * cancels. Each agent's open dialog survives a chat switch and a reload.
  */
 const props = defineProps<{ agent: AgentOptionData }>();
 

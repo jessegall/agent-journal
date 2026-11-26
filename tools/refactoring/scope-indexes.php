@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Suggests the indexes the models' queries want, run by hand from time to time. It reads the
- * columns each #[Scope] of each model filters and orders on, follows every query chain that calls them
- * (Model::query()->ofSession()->unresolved()->newestFirst()) to the columns one query uses together, and compares
- * them with the indexes the create migrations declare. A foreign key is no index: Postgres makes none for it.
+ * Suggests the indexes the models' queries want, run by hand: it follows every query chain through each model's scopes
+ * to the columns one query uses together, and compares them with the indexes the create migrations declare.
  *
  *   php tools/refactoring/scope-indexes.php --migrations=database/migrations,domain app domain
  *       prints, per table, each query no index serves, with the index it suggests (equality columns first, then the

@@ -8,13 +8,9 @@ use Tests\Architecture\Support\ToolCheck;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * An Eloquent model's methods sit in marked sections, Constructors, Mutations, Predicates, Transformers, Calculations,
- * Accessors, Relations, Asserts, Internals, Queries and Scopes, in that order: a yes or no answer in Predicates, an object in Transformers, a scalar no accessor can give in Calculations,
- * and an accessor (returning Attribute) only in Accessors. A constructor is named create, or createFor and what it is
- * made from when the model has several, and a row builder only one constructor uses is inlined into it (user messages
- * 22052 and 22060). A static of Queries starts with find for the model, none or a list of it, resolve for a value, count
- * for a count and is, has or can for a yes or no, and makes no row; a constructor or mutation reads through them and
- * never ends a query itself. tools/refactoring/model-sections.php lists every fault, and sorts with --fix.
+ * An Eloquent model's methods sit in marked sections in a fixed order, each holding one type of method, with
+ * constructors named create and Queries statics named by what they answer. The sections and names are in
+ * docs/naming/model-sections.md; tools/refactoring/model-sections.php lists every fault and sorts with --fix.
  */
 #[TimeLimit(seconds: 60, reason: 'It parses every PHP file of app and domain.')]
 final class ModelSectionsTest extends TestCase

@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 /**
- * A view ends its own read interest; the viewer's other views keep theirs.
+ * A view ends its own read interest; the viewer's other views keep their own.
  */
 final readonly class CloseTerminalController
 {

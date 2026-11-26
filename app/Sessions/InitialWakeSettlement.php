@@ -14,10 +14,9 @@ use App\Models\Sessions\SessionRequest;
 use App\Sessions\Contracts\StartTransaction;
 
 /**
- * Settles a start the host proved it never started: only the start's own initial wake, refused in the attempt it
- * was claimed for, bound to the session, its start and its process generation, with no process made. Anything less,
- * a generic refusal, a stale or duplicate report or an ordinary message's wake, settles nothing: the wake's request
- * keeps its own failure and the session, its credentials, its capacity and any switch stay as they are.
+ * Settles a start the host proved it never started: only the start's own initial wake, refused in its claimed attempt,
+ * with no process made. Anything else, such as a generic refusal or a stale report, settles nothing, and the session
+ * and its credentials stay as they are.
  */
 final readonly class InitialWakeSettlement
 {

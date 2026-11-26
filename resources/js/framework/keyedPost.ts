@@ -15,10 +15,9 @@ export type KeyedPostOutcome = {
 };
 
 /**
- * Posts a change through Inertia once under its request key (sent as Idempotency-Key, so a repeat answers the first
- * time again), without an optimistic update and without holding the page's reads back, so changes other tabs make
- * keep arriving while it is out. A refusal comes back as the redirect's errors; a server failure or a lost answer is
- * uncertain, never sent again.
+ * Posts a change through Inertia once under its request key, sent as Idempotency-Key, without an optimistic update and
+ * without holding the page's reads back. A refusal comes back as the redirect's errors; a server failure or lost answer
+ * is uncertain and never sent again.
  */
 export function keyedPost(
   url: string,

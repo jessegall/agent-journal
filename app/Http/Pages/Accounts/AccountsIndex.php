@@ -28,10 +28,9 @@ use App\Support\Layout\SettingsRow;
 use Carbon\CarbonImmutable;
 
 /**
- * The accounts on the shared list and reader recipes, as the design draws them: each account by its driver mark, name
- * and type with its sign-in state, and the reader of the one chosen with its Name, Make default, Sign-in and its usage
- * as measured readings with their reset times. Add account opens the native sign-in flow in the reader, since its
- * challenge steps are not declared.
+ * The accounts as the design draws them: each by its driver mark, name, type and sign-in state, and the reader of the
+ * chosen one with Name, Make default, Sign-in and its usage readings. Add account opens the native sign-in flow in the
+ * reader, since its steps are not declared.
  */
 final readonly class AccountsIndex extends AccountsPage
 {
@@ -363,7 +362,7 @@ final readonly class AccountsIndex extends AccountsPage
     }
 
     /**
-     * Not signed in and expired are states that have not begun, drawn with a hollow dot; the rest are quiet.
+     * Not signed in and expired are states that have not started, drawn with a hollow dot; the rest are quiet.
      */
     private function stateToneOf(AccountRowData $row): string
     {

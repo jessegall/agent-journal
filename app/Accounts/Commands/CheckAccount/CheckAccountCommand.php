@@ -10,8 +10,8 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * The host reports what the driver's own check of an account said, made outside any transaction in the generation
- * it was asked for. Run for an authenticated host by the journal itself (internal, not exported).
+ * The host reports the result of the driver's own check of an account, made outside any transaction in the generation
+ * it was asked for. Run by the journal for an authenticated host.
  *
  * @extends Command<null>
  */

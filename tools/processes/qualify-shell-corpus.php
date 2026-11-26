@@ -7,13 +7,9 @@ use App\Processes\Enums\ShellDialect;
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 
 /*
- * The full-corpus qualification of version 6's shell syntax. It reads every
- * private corpus source in ../shell-corpus-private (outside the project), deduplicates the lines by source and dialect, splits them into
- * deterministic chunks, and for each chunk compares version 6's reading (tools/processes/analyse-shell-lines.php, run
- * in the app container) with the independent reference (tools/shell-oracle, mvdan.cc/sh). A cursor tied to the input
- * hash lets a killed run resume after its last complete chunk. Private details (sources of differing lines) stay in
- * ../shell-corpus-private/qualification; the public report holds counts, hashes, elapsed time and opaque ids only. Without the corpus
- * or the oracle it reports qualification not run and exits nonzero, never a pass.
+ * Qualifies the journal's shell syntax on the private corpus in ../shell-corpus-private: it compares each chunk's reading
+ * by tools/processes/analyse-shell-lines.php with tools/shell-oracle, resuming after its last complete chunk. Details
+ * stay private; without the corpus or the oracle it exits nonzero, never a pass. See docs/processes/shell-corpus.md.
  *
  *   php tools/processes/qualify-shell-corpus.php
  */

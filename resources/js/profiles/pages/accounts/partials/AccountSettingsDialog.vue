@@ -159,8 +159,8 @@ function escapeName(event: KeyboardEvent): void {
 }
 
 /**
- * Makes the account the default at once on both rows: the old default loses its mark and this one gains it, until
- * the server answers. A choice made meanwhile by someone else refuses this one, and both rows show theirs.
+ * Makes the account the default at once on both rows: the old default loses its mark and this one gains it, until the
+ * server answers. A choice made meanwhile by someone else refuses this one, and both rows show the server's choice.
  */
 function makeDefault(): void {
     const { driver, id } = props.account;

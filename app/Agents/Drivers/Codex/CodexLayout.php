@@ -13,10 +13,9 @@ use App\Terminals\Screens\OptionList;
 use App\Terminals\Screens\ScreenLayout;
 
 /**
- * How the pinned build draws its terminal, measured from resources/recordings/codex/0.165.0: the alternate buffer,
- * a composer that is the lowest › row with at most its status lines below it, empty while the cursor sits right
- * after the ›, and no bracketed paste. Each menu is known by its › option list and two of its keywords and holds
- * the runtime for a user, but the background server's, which its recording answers.
+ * How the pinned build draws its terminal, from resources/recordings/codex/0.165.0: the alternate buffer, a composer
+ * that is the lowest › row, empty while the cursor sits after the ›, and no bracketed paste. Each menu is known by its
+ * › options and two keywords and holds the runtime for a user.
  */
 final readonly class CodexLayout implements DriverLayout
 {

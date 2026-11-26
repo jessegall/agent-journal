@@ -26,10 +26,9 @@ use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The answer to the one loader call a partial reload names in its X-Journal-Loader header, as a shared prop: under the
- * loader's own prop when it answers, under loaderFailure when its input is invalid, by its rules or by the reader's
- * refusal of a field, or it is unavailable to the viewer.
- * Unavailable is said the same way whatever the reason, and the checks before the reader run no query of it.
+ * The answer to the loader call a partial reload names in its X-Journal-Loader header, as a shared prop: under the
+ * loader's own prop, under loaderFailure for invalid input, or unavailable to the viewer, the same whatever the reason.
+ * The checks before the reader run no query of it.
  */
 final readonly class LoaderProps
 {

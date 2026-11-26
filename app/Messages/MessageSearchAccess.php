@@ -10,10 +10,9 @@ use App\Support\ReadToolSearchAccess;
 use Illuminate\Support\Str;
 
 /**
- * Who may search messages: an agent whose grant holds messages_read, limited to the messages it holds it for,
- * and every signed-in user; which messages each sees is the message visibility scope's answer, applied on every
- * read. A hit opens through messages_read by its visible id, with a request key of its own, since reading a
- * message marks it read.
+ * Who may search messages: an agent whose grant holds messages_read, for the messages it holds it for, and every
+ * signed-in user, each limited by the message visibility scope. A hit opens through messages_read with a request key of
+ * its own, since reading a message marks it read.
  */
 final readonly class MessageSearchAccess extends ReadToolSearchAccess
 {

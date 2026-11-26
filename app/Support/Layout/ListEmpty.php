@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Layout;
 
 /**
- * What a list says when it holds no row: an informational empty state, with the action that starts a record or clears
- * the filter when there is one to offer. A list that holds nothing yet fills the whole page under its header with its
- * subject's icon, its title, one sentence on what the thing is for and the action that makes the first one.
+ * What a list shows when it holds no row: an empty state with the action that starts a record or clears the filter. A
+ * list that holds nothing yet fills the page with its subject's icon, title, one sentence on what the subject is for
+ * and the action that makes the first one.
  */
 final readonly class ListEmpty
 {

@@ -3,10 +3,9 @@ import Button from './Button.vue';
 import Icon from './Icon.vue';
 
 /**
- * The list-and-reader frame of the domain pages: a top slot, then a fixed-width list beside a reader that
- * scrolls alone. In a narrow container the list and reader stack, or, when the page says which one it shows, only that
- * one is shown: the reader then has a visible Back to the list. The reader's own column holds at most the named width:
- * 760 px as standard, 720 px for settings, and none (the default) for a reader that fills its column.
+ * The list-and-reader frame of the domain pages: a top slot, then a list beside a reader that scrolls alone. In a
+ * narrow container they stack, or only the one the page names shows, with a Back to the list; the reader's column is
+ * 760 px, 720 px for settings, or full.
  */
 withDefaults(
     defineProps<{

@@ -16,11 +16,9 @@ import type { NavigationItemData, PaletteHitData } from '@/types/generated';
 import { MINIMUM_CHARACTERS, useSearchPalette } from './useSearchPalette';
 
 /**
- * The command palette, a modal dialog: a search field that keeps the focus above a list of the shell's commands and the
- * pages of the navigation the server merged for this user, in groups. Typing filters them, and from two characters on
- * the records the common search finds for the words follow them; Up, Down and Enter move and choose, and do nothing
- * while nothing matches, which says so. The active option is named by aria-activedescendant and
- * kept in view. Enter goes to the chosen page or runs the chosen command; Escape closes it and gives the focus back.
+ * The command palette, a modal dialog: a search field over the shell's commands and the navigation's pages in groups,
+ * with records from the common search after two characters. Up, Down and Enter move and choose, the active option is
+ * kept in view, and Escape closes it.
  */
 type Entry = { id: string; group: 'Commands' | 'Pages' | 'Records'; label: string; icon: IconName; run: () => void };
 

@@ -149,10 +149,9 @@ final readonly class StaticFactoryScan implements FileScan
     }
 
     /**
-     * Whether the function is an instance method of a class the container builds: one whose constructor hides a
-     * service in a private or protected promoted parameter typed by a class or interface, and which is neither an
-     * attribute nor a PHPStan rule. A value object, whose constructor takes public data, scalars, arrays or closures,
-     * is made with new and keeps its static Reflector calls.
+     * Whether the function is an instance method of a class the container builds: one whose constructor hides a service
+     * in a private or protected promoted parameter, and which is no attribute or PHPStan rule. A value object is made
+     * with new and keeps its static Reflector calls.
      */
     private static function isInjectableInstanceMethod(FunctionLike $function): bool
     {

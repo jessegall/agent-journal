@@ -11,10 +11,9 @@ use App\Support\Command;
 use App\Values\SignInIdentity;
 
 /**
- * The host's sign-in runner reports a safe outcome of the attempt it runs, in the generation it ran in: waiting for
- * the user, verified by the driver's own check outside any transaction, or failed, with the provider's reason when
- * it refused the proof. Run for an authenticated host
- * by the journal itself (internal, not exported).
+ * The host's sign-in runner reports the outcome of the attempt it runs, in its generation: waiting for the user,
+ * verified by the driver's own check, or failed with the provider's reason. Run by the journal for an authenticated
+ * host.
  *
  * @extends Command<null>
  */

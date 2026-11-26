@@ -6,11 +6,9 @@ import DialogHeader from './DialogHeader.vue';
 import { dialogTitleIdKey } from './dialogTitleId';
 
 /**
- * The shell of a Dialog: a role dialog with aria-modal, named by its title, in --raised with a --border-2 border,
- * radius --radius-card and --shadow-window. It is 460 wide as sm, 540 as md and 560 as lg, and at most the frame
- * minus 96 high. A DialogHeader (the title and a close button) comes first unless header is off or the header slot
- * replaces it; the default slot is the DialogBody; a DialogFooter follows when the footer slot is given, with its
- * secondary actions in the secondary slot. Without a header the dialog is named by aria-label.
+ * The shell of a Dialog: a modal dialog named by its title, sized sm, md or lg, with a DialogHeader unless header is
+ * off or replaced, the DialogBody in the default slot, and a DialogFooter when the footer slot is given. Without a
+ * header it is named by aria-label. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{ title: string; size?: 'sm' | 'md' | 'lg'; header?: boolean; flush?: boolean; closeLabel?: string }>(),

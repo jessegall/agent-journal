@@ -1,28 +1,9 @@
 /**
  * Compares a component, a section or a whole page of the app with the same part of its design, and says where they
- * differ: padding, borders, distances, texts, line alignment and the pixels.
+ * differ: padding, borders, distances, texts, line alignment and the pixels. The view file's fields are in
+ * tools/design-compare/README.md.
  *
  *   node --experimental-strip-types tools/design-compare/compare.ts tools/design-compare/views/settings-general.json
- *
- * A view file names both sides. Each side has a "url" (a web address, or a file such as the design's index.html),
- * "steps" taken before the capture (click, fill, press, wait, evaluate, goto), "hide" (selectors drawn invisible, such
- * as clocks) and "part", the selector of the component or section to compare; with no part the whole page is compared.
- * "labels" maps an app text to the design's word for it, so wording alone never shows as a difference. "pairing" is
- * "text" (the default: elements pair by what they say) or "order" (they pair by place, for a part that shows other
- * content on each side, such as a list row filled with other tasks). "width",
- * "height" and "theme" (light or dark) set the window both sides open in. A step value may name an environment
- * variable as ${NAME}, such as a password. "accepted" lists differences that stay on purpose, each as its report line
- * without the leading dash ("\"Send\" (button) x"), or an element found on one side only as its line with "only in
- * the design" or "only in the app" after it, and a reason; they are left out of the count. The pictures and the
- * report land in storage/design-compare/<view name>/, and each run writes the view's line in record.json: when it ran,
- * the hash of the design it ran against and the differences left.
- *
- *   {"name": "settings-general", "width": 1440, "height": 900, "theme": "dark",
- *    "labels": {"What this journal is called.": "How this journal names itself."},
- *    "design": {"url": "docs/designs/home-v6/index.html", "steps": [{"click": "role=button[name='Settings']"}],
- *               "part": "section[aria-label='General']"},
- *    "app": {"url": "http://localhost:54700/settings", "steps": [{"login": "owner@journal.local"}],
- *            "part": "section[aria-label='General']"}}
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
@@ -192,10 +173,9 @@ async function take(page: Page, step: Step): Promise<void> {
 }
 
 /**
- * Runs in the page: hides what the view hides, swaps the labels inside the part, and records two kinds of element,
- * each placed relative to the part. A text is the words an element holds itself, measured where the words are drawn,
- * with its font and colour. A box is an element drawn with a border, a fill or as a control, named by the first words
- * inside it, with its padding, border, corners and fill.
+ * Runs in the page: hides what the view hides, swaps the labels inside the part, and records each text, where its words
+ * are drawn with its font and colour, and each box drawn with a border, fill or as a control, with its padding, border,
+ * corners and fill.
  */
 function measure({
     part,

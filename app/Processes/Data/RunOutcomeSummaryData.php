@@ -8,9 +8,8 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What a user a request entitled may see of another actor's run: its display label, its project, a short attempt
- * reference, the terminal result and when it was recorded, and whether the full run is theirs to open. No command,
- * path, log, output or problem.
+ * What a user a request entitled may see of another actor's run: its label, its project, a short attempt reference, the
+ * result and when it was recorded, and whether they may open the full run. No command, path, log, output or problem.
  */
 #[TypeScript]
 final class RunOutcomeSummaryData extends Data

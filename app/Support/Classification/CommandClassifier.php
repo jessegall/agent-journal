@@ -40,10 +40,9 @@ use App\Values\Word;
 use App\Values\WrapperRule;
 
 /**
- * Classifies every node of a shell tree: each simple command by its
- * program's declared rule, a wrapper together with the child it runs, a literal sh -c source as a tree of its own,
- * each redirect and background job by what the syntax does, and everything it cannot place as an unresolved fact.
- * A pipe, negation or condition never exempts a child, and a line that could not be read is unknown as a whole.
+ * Classifies every node of a shell tree: each simple command by its program's rule, a wrapper with the child it runs, a
+ * literal sh -c source as a tree of its own, redirects and background jobs by their syntax, and the rest as unresolved.
+ * A line that could not be read is unknown as a whole.
  */
 final readonly class CommandClassifier implements CommandClassifierContract
 {

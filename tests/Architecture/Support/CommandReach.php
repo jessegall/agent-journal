@@ -15,9 +15,8 @@ use Tests\Support\ScanCache\ScanCache;
 
 /**
  * The code each registered command runs: its handler, the module middleware it passes, and every project class they
- * take in their constructors, followed through each concrete class and through the class the container binds to an
- * interface; an interface the container binds to a closure is not followed, so a check that must see every producer
- * still reads every file.
+ * take in their constructors, followed through concrete classes and container bindings. A closure binding is not
+ * followed, so a check that must see every producer reads every file.
  */
 final readonly class CommandReach
 {

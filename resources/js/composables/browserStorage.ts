@@ -65,7 +65,7 @@ export function keepStored(area: StorageArea, key: string, value: string): void 
 }
 
 /**
- * Removes what is stored under the key; a refused removal is said in the console.
+ * Removes what is stored under the key; a refused removal is logged in the console.
  */
 export function forgetStored(area: StorageArea, key: string): void {
     try {

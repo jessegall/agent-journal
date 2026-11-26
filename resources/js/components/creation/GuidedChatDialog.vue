@@ -11,11 +11,9 @@ import { draftFrom, readQuestions } from './draftRequests';
 import { useGuidedCreation } from './guidedCreation';
 
 /**
- * The guided way to start a record, in the shell's dialog host: the questions of the noun's registered draft producer
- * one at a time with their suggested answers as chips and a free text, Change the last answer, then the drafting,
- * which keeps every answer when it fails and offers Retry, and Open the draft, which hands the drafted fields to the
- * one that asked. Nothing is saved here. The focus starts on the first suggestion, stays in the text box while the
- * user types, and moves to the dialog while the draft is made.
+ * The guided way to start a record: the draft producer's questions one at a time with suggested answers and free text,
+ * then the drafting, which keeps every answer on failure, and Open the draft, which hands the fields back. Nothing is
+ * saved here.
  */
 const { request, end } = useGuidedCreation();
 const stage = ref<'loading' | 'asking' | 'drafting' | 'failed' | 'ready'>('loading');

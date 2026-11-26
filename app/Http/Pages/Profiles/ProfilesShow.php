@@ -19,10 +19,9 @@ use App\Values\ProfileKey;
 use App\Values\SupervisorRoutes;
 
 /**
- * One profile as a read-only reader: its label and description, then its supplied facts in order: Type, Work it does
- * (its tier), Preferred driver, Answers to and How many run, then a group of Rules it works under with its Scripts. A fact
- * no read supplies is left out, and the rules, which nothing reads for a profile yet, say they are not available
- * instead of looking empty.
+ * One profile as a read-only reader: its label and description, then Type, Work it does, Preferred driver, Answers to
+ * and How many run, then its Rules and Scripts. A fact no read supplies is left out, and the rules say they are not
+ * available instead of looking empty.
  */
 final readonly class ProfilesShow extends ProfilesPage
 {

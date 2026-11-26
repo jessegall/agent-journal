@@ -3,10 +3,9 @@ import Icon from './Icon.vue';
 import type { IconName } from './Icon.vue';
 
 /**
- * One clickable line in the chat: an icon, its text and a chevron, in --text-badge --text-3 with no border or padding.
- * Bold parts of the text (b or strong) take --text-2 at 500. Hover takes --text-2 and focus draws the ring at
- * offset 2. A line that opens something says whether it is open: the chevron turns a quarter when it is, and stands
- * still under reduced motion.
+ * One clickable line in the chat: an icon, its text and a chevron, with bold parts stronger. A line that opens
+ * something says whether it is open, turning its chevron a quarter, which stands still under reduced motion. Measures:
+ * docs/designs/kit-components.md.
  */
 withDefaults(
     defineProps<{

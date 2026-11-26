@@ -2,12 +2,9 @@
 import { computed } from 'vue';
 
 /**
- * One block of a document a reader can comment on: a paragraph, a heading, a list item or a code block, with radius
- * 6. Code is mono 12 on --code-bg with a 1px --line border, radius 8 and padding 10 12. A selected block takes a 9%
- * --brand wash; a block with a comment shows a 2px --border-3 bar in the margin to its left, so its text does not move.
- * The line number goes on data-line for the LineCommentable that selects it. A click picks the block (Shift extends),
- * Up and Down move the cursor (Shift extends the selection) and C asks to comment; only the cursor block is in the tab
- * order.
+ * One block of a document a reader comments on: a paragraph, heading, list item or code block, washed when selected and
+ * barred in the margin when commented. Its line number is on data-line; a click picks it, Up and Down move the cursor
+ * and C asks to comment. Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{
     kind: 'paragraph' | 'heading' | 'item' | 'code';

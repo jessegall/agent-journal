@@ -942,8 +942,8 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * A driver worker drives the named process in this test's own process, step by step, until the condition holds
-     * or the seconds pass, and answers the worker for further driving.
+     * A driver worker drives the named process in this test's own process until the condition holds or the seconds
+     * pass, and answers the worker for further driving.
      *
      * @param  Closure(): bool  $until
      */

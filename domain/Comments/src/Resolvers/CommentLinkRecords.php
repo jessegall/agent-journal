@@ -14,10 +14,9 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Str;
 
 /**
- * Comments as linkable records. A comment is readable when its record is: a batch of cards reads the comments' targets
- * in one query, authorizes each target record once through its own provider, and reads text only for the comments
- * whose record the caller may read. A missing comment and a hidden one look the same. Comments never change, and they
- * have no numbers to name them by.
+ * Comments as linkable records, readable when their record is: a batch of cards reads the targets in one query,
+ * authorizes each once through its own provider, and reads text only where the caller may read. A missing comment and a
+ * hidden one look the same.
  */
 #[Scoped]
 final readonly class CommentLinkRecords implements RecordProvider

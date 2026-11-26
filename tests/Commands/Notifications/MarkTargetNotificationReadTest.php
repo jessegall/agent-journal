@@ -12,8 +12,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A user who opens what a notification points at marks that notification read; a target with no notification of
- * theirs is not there.
+ * A user who opens what a notification points at marks that notification read; a target with no notification of the
+ * user's is not there.
  */
 #[TestsCommand(MarkTargetNotificationReadCommand::class)]
 final class MarkTargetNotificationReadTest extends TestCase

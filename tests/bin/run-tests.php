@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 /*
- * Runs the tests of the paths it is given in one parallel run: no path runs every test, one path runs it as artisan
- * test does, and several paths run through one temporary configuration that lists them all.
+ * Runs the tests of the paths it is given in one parallel run: no path runs every test, and several paths run through
+ * one temporary configuration that lists them all.
  *
  *   composer test:run
  *   composer test:run -- tests/Machinery/Hooks

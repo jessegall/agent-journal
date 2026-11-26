@@ -30,10 +30,9 @@ use App\Values\ExecutionContext;
 use App\Values\RunAdmission;
 
 /**
- * Issues evidence permits for known command lines and turns a used permit into an evidence-only run: the exact line
- * is read and classified again, must keep its full output, and becomes a run admitted in evidence mode that never
- * answers the agent. The run's admission id is the permit's, so a second start of the
- * same permit fails on that unique key.
+ * Issues evidence permits for known command lines and turns a used permit into an evidence-only run: the line is
+ * classified again, keeps its full output and never answers the agent. The run's admission id is the permit's, so a
+ * second start of the permit fails on that key.
  */
 final readonly class EvidenceRuns
 {

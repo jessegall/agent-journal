@@ -50,7 +50,7 @@ final class ChatMessage extends JournalModel implements EventSource, ReadableMod
     public const int PAGE_SIZE = 50;
 
     /**
-     * The most seconds after one author's last message that a next message of theirs still joins its group.
+     * The most seconds after one author's last message that their next message still joins its group.
      */
     private const int GROUP_SECONDS_LIMIT = 30;
 

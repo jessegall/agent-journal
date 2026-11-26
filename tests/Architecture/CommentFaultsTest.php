@@ -8,7 +8,8 @@ use Symfony\Component\Process\Process;
 
 /**
  * The comments check (tools/refactoring/comment-faults.php) refuses a comment that tells history, narrates the
- * code's steps, holds a forbidden word or runs past three lines, and keeps one that only looks alike.
+ * code's steps, holds a forbidden word or runs past three lines, keeps one that only looks alike, and passes the
+ * whole project.
  */
 final class CommentFaultsTest extends TestCase
 {
@@ -25,5 +26,13 @@ final class CommentFaultsTest extends TestCase
         }
 
         $this->assertSame([12 => 'history', 17 => 'narration', 22 => 'poetry', 27 => 'long'], $kinds);
+    }
+
+    public function test_every_comment_of_the_project_passes(): void
+    {
+        $check = new Process(['php', 'tools/refactoring/comment-faults.php'], base_path());
+        $check->run();
+
+        $this->assertSame(0, $check->getExitCode(), $check->getOutput());
     }
 }

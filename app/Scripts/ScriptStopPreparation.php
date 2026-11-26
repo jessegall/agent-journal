@@ -28,11 +28,9 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * Prepares a stop by the STOP handler of the profile's script: one run per stop, continued by the next stop while it
- * waits on the host, that admits the stop to the final checks when the script falls through and hands it back to the
- * actor on a YIELD or a failure. Every run walks the script from its entry and replays the steps it recorded, so a
- * step never runs twice. Three returns in a row on an unchanged workspace hold the work, as does a script whose
- * definitions changed since it was activated; the owner is told once, when the work becomes held.
+ * Prepares a stop by the STOP handler of the profile's script, one run per stop, replaying the steps it recorded so
+ * none runs twice: a script that falls through admits the stop to the final checks, and a YIELD or failure hands it
+ * back. Three returns on an unchanged workspace, or changed definitions, hold the work.
  */
 final readonly class ScriptStopPreparation implements StopPreparer
 {

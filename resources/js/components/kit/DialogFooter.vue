@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * The foot of a Dialog: a row under a --line border with padding 10 12 10 16. The secondary slot holds the secondary
- * actions on the left, a spacer follows, and the default slot holds Cancel and the primary action on the right; a
- * default slot that brings its own spacer places its actions on both sides itself.
+ * The bottom row of a Dialog: the secondary slot holds the secondary actions on the left, and the default slot holds
+ * Cancel and the primary action on the right, unless it brings its own spacer. Measures:
+ * docs/designs/kit-components.md.
  */
 </script>
 

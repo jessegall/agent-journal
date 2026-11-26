@@ -11,11 +11,9 @@ import { formSendingHooks } from '@kit/usePageChanges';
 import { useWindowParam } from '@kit/useWindowQuery';
 
 /**
- * The editor of the viewer's own draft, a native part that stays mounted across the document's tabs. A refused save
- * keeps the unsent text here and offers to reload or copy it; it never merges or overwrites. A refresh with the same
- * token keeps unsent text and shows a newer version as a conflict; a new token starts from the new draft. Leaving with
- * unsent text asks first, but only for a visit that would dispose this editor: a tab change of this window or a read
- * of another pane leaves it alone.
+ * The editor of the viewer's own draft, mounted across the document's tabs. A refused save keeps the unsent text and
+ * offers to reload or copy it, never merging; a newer version shows as a conflict, and leaving with unsent text asks
+ * first only when the editor would close.
  */
 const props = defineProps<DraftEditorPartData>();
 

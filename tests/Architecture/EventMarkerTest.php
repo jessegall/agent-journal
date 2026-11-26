@@ -14,10 +14,9 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what
- * happens is recognisable as an event; every class in a Listeners folder implements Listener and every handler beside
- * its command implements CommandHandler, and neither marker is used outside its folder. An attribute's folder under
- * Attributes is no such folder.
+ * Every class in an Events folder implements Core's Event marker, every class in a Listeners folder implements Listener
+ * and every handler beside its command implements CommandHandler, and neither marker is used outside its folder. A
+ * folder under Attributes is no such folder.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class EventMarkerTest extends TestCase

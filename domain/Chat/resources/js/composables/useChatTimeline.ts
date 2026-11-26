@@ -22,7 +22,7 @@ export type ChatTimelineClient = {
 };
 
 /**
- * The chat's rows could not be read for this viewer: the chat is gone or no longer theirs.
+ * The chat's rows could not be read for this viewer: the chat is gone or no longer visible to them.
  */
 export class ChatRowsUnavailable extends Error {}
 

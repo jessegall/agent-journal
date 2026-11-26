@@ -16,10 +16,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\DatabaseManager;
 
 /**
- * Starts and ends the journal sessions of agents; a child session names its parent. A session starts under the
- * agent's shared lifecycle lock, inside the start's transaction, so a retired agent never gets one and a retirement
- * waiting for the lock sees the new session; then under the agent's start reservation, which two starts never hold
- * together.
+ * Starts and ends the journal sessions of agents; a child session names its parent. A session starts under the agent's
+ * shared lifecycle lock in the start's transaction, so a retired agent never gets one, and under its start reservation,
+ * which two starts never hold together.
  */
 final readonly class AgentSessions
 {

@@ -26,12 +26,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * The bounded tiered search every domain's provider shares. A high-water id is fixed on the first call and a
- * complete reference answered first at tier 500; then blocks of at most 32 rows in binary id order, tier by tier
- * from exact title down to contains, each narrowed by its LIKE pattern, emitting only rows whose highest tier is
- * the tier being visited, so every batch's hits are certified; then, for a source with a long text, the texts the
- * pattern matches, read in fixed segments that overlap by the words' length so a phrase across an edge is found.
- * A refresh rereads held records in bulk and answers those that still match.
+ * The bounded tiered search every domain's provider shares: a complete reference first at tier 500, then blocks of at
+ * most 32 rows tier by tier from exact title down to contains, each hit certified at its highest tier, then long texts
+ * read in overlapping segments. The full walk is in docs/search/tiered-search.md.
  */
 final readonly class TieredSearch implements TieredSearchContract
 {

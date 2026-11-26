@@ -3,16 +3,11 @@
 declare(strict_types=1);
 
 /*
- * Builds the portable shell corpus in tests/Fixtures/Processes/ShellCorpus from version 5's checked-in fixtures: every splitter line, every recorded correction, every distilled command shape and chain, the
- * 500-case seed-7 sample, one deterministic case per shape with its optional pieces kept and dropped, wrapper and
- * redirect boundaries, and the synthetic adversarial cases. Cases are deduplicated by source, dialect and context, keeping
- * every origin. The expected block stays empty until the structural expectations are frozen; decisions.jsonl starts
- * empty. Malformed input fails the tool, and running it twice writes the same bytes.
+ * Builds the portable shell corpus in tests/Fixtures/Processes/ShellCorpus from a version-5 checkout's fixtures,
+ * deduplicated by source, dialect and context; what it takes is listed in docs/processes/shell-corpus.md. Malformed input
+ * fails the tool, and twice writes the same bytes.
  *
  *   php tools/processes/import-shell-corpus.php <version-5 checkout>
- *
- * The seed-7 sample comes from tools/processes/generated-sample-seed-7.jsonl, exported once by a test run in a scratch
- * copy of version 5's own hook module, because PHP's random numbers cannot reproduce Go's PCG.
  */
 
 const SCHEMA_VERSION = 1;

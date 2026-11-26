@@ -26,11 +26,9 @@ use App\Values\AgentText;
 use App\Values\Operation;
 
 /**
- * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. It allows a file
- * change or another tool call only when the agent's policy grants it, never by the agent's role, and a call with one
- * refused operation is refused whole; a shell line is left to Core's admission, which judges every part of it. A stop
- * waits on the stop conditions the session was started under, and the state keeps the outcomes of the attempts it
- * opened, so a run of unchanged failures is counted from its own record.
+ * The bottom of every stack, which answers every hook: a file change or tool call passes only when the agent's policy
+ * grants it, a shell line is left to Core's admission, and a stop waits on the session's stop conditions. It keeps the
+ * outcomes of the attempts it opened, so unchanged failures are counted from its own record.
  */
 #[StateType(ReadyStateReference::class, schemaVersion: 1)]
 class ReadyState extends AgentState implements UniqueState

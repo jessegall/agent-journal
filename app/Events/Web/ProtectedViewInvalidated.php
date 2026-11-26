@@ -9,8 +9,8 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 /**
- * Tells each affected user's browser that something it shows may no longer be theirs to see, so it drops what it
- * shows before reading again. It names nothing.
+ * Tells each affected user's browser that something it shows may no longer be visible to them, so it drops it before
+ * reading again. It names nothing.
  */
 final readonly class ProtectedViewInvalidated implements ShouldBroadcast, WebEvent
 {

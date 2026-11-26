@@ -6,10 +6,9 @@ import Menu from '@/components/kit/Menu.vue';
 import MenuItem from '@/components/kit/MenuItem.vue';
 
 /**
- * One file as numbered code lines with a focusable gutter, in a theme chosen from the menu in the window itself (the
- * theme belongs to this window, not to the page). A Markdown file is not drawn here: it offers to open in the
- * document reader. A file that could not be read says so and offers Retry in its own window, leaving the rest alone.
- * A window that lets the reader comment on lines draws them itself in the lines slot, keeping the header and theme.
+ * One file as numbered code lines with a focusable gutter, in a theme chosen in its own window. A Markdown file offers
+ * the document reader instead, a failed read offers Retry, and a window that takes comments draws its lines in the
+ * lines slot.
  */
 const props = defineProps<{
     name: string;
