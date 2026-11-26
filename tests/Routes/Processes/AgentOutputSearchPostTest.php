@@ -4,25 +4,35 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.output.search, as the generator wrote it.
+ * An agent searches a run's output for a text: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.output.search')]
 final class AgentOutputSearchPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.output.search', [
-            '{processRun}',
-            'the payload',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'processRun' => $runId,
+            ])
+            ->payload([
+                'text' => 'ok',
+                'part' => 1,
+                'stream' => 'stdout',
+            ]);
     }
 }

@@ -4,26 +4,52 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Settings;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Enums\Settings\SettingsOutcome;
+use App\Values\GroupReference;
+use App\Values\SettingsChange;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST settings.switch, as the generator wrote it.
+ * The owner switches a settings group on or off: the group is enabled or disabled at the revision the page holds.
  */
-#[Generated]
 #[TestsRoute('POST', 'settings.switch')]
 final class SwitchPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST settings.switch', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request settings-switch',
-        ]);
+        $journal->owner();
+
+        return RouteCall::recorded('settings-switch', [])
+            ->reply(EnableSettingGroupCommand::class, new SettingsChange('Core', 1, SettingsOutcome::Changed))
+            ->expects(EnableSettingGroupCommand::class, [
+                'group' => new GroupReference('Core', 'domain_reminders'),
+                'expectedRevision' => 0,
+            ]);
+    }
+
+    public function test_a_group_switched_off_is_disabled(): void
+    {
+        $call = RouteCall::as(Caller::User)
+            ->payload([
+                'owner' => 'Core',
+                'group' => 'domain_reminders',
+                'revision' => 0,
+                'enabled' => '0',
+            ])
+            ->reply(DisableSettingGroupCommand::class, new SettingsChange('Core', 1, SettingsOutcome::Changed))
+            ->expects(DisableSettingGroupCommand::class, [
+                'group' => new GroupReference('Core', 'domain_reminders'),
+                'expectedRevision' => 0,
+            ]);
+        $this->journal->owner()->sinkCommands()->sinkReplies($call->replies);
+
+        $this->assertLessThan(400, $this->send($call, Caller::User)->status());
+        $this->journal->assertDispatchedExactly($call->expected);
     }
 }

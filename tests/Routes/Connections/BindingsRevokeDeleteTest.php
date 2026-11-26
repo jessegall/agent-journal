@@ -4,26 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
+use App\Values\BindingOutcome;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of DELETE connections.bindings.revoke, as the generator wrote it.
+ * The owner disconnects one connected folder.
  */
-#[Generated]
 #[TestsRoute('DELETE', 'connections.bindings.revoke')]
 final class BindingsRevokeDeleteTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('DELETE connections.bindings.revoke', [
-            '{binding}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $bindingId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'binding' => $bindingId,
+            ])
+            ->reply(
+                RevokeProjectBindingCommand::class,
+                new BindingOutcome($bindingId, 'revoked', '2026-11-26T10:00:00+00:00'),
+            )
+            ->expects(RevokeProjectBindingCommand::class, [
+                'bindingId' => $bindingId,
+            ]);
     }
 }

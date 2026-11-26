@@ -4,25 +4,47 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Links;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Links\LinkRecords\LinkRecordsCommand;
+use App\Support\RecordIdentity;
+use Domain\Documents\DocumentsDomain;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Tests\Fixtures\DocumentFixtures;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST links.agent.add, as the generator wrote it.
+ * An agent links two documents it may read.
  */
-#[Generated]
 #[TestsRoute('POST', 'links.agent.add')]
 final class AgentAddPostTest extends GuardedRouteEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST links.agent.add', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $documents = $journal->fixtures(DocumentFixtures::class)
+            ->publishedDocument('Design', 'Owner', 'The design.')
+            ->publishedDocument('Spec', 'Owner', 'The spec.');
+        $design = $documents->documentCalled('Design');
+        $spec = $documents->documentCalled('Spec');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'source' => 'doc '.$design->number,
+                'target' => 'doc '.$spec->number,
+                'request_key' => 'link-1',
+            ])
+            ->expects(LinkRecordsCommand::class, [
+                'source' => new RecordIdentity(Document::linkType(), $design->id),
+                'target' => new RecordIdentity(Document::linkType(), $spec->id),
+            ]);
     }
 }

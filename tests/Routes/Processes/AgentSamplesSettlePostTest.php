@@ -4,26 +4,41 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
+use App\Enums\CommandRules\RequestStatus;
+use App\Values\SampleOutcome;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.samples.settle, as the generator wrote it.
+ * An agent settles the sample it ran.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.samples.settle')]
 final class AgentSamplesSettlePostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.samples.settle', [
-            '{commandRequest}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $outcome = new SampleOutcome(RequestStatus::ReadyForSample, strtolower((string) Str::ulid()), []);
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'commandRequest' => $this->requestId,
+            ])
+            ->payload([
+                'request_key' => 'settle-1',
+            ])
+            ->reply(SettleSampleCommand::class, $outcome)
+            ->expects(SettleSampleCommand::class, [
+                'commandRequestId' => $this->requestId,
+            ]);
     }
 }

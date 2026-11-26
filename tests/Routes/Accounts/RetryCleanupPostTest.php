@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\RetryAccountCleanup\RetryAccountCleanupCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.retry-cleanup, as the generator wrote it.
+ * The owner retries the cleanup of a removed account.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.retry-cleanup')]
 final class RetryCleanupPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.retry-cleanup', [
-            '{account}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-retry-cleanup',
-        ]);
+        $journal->owner()->user('Member');
+        $accountId = strtolower((string) Str::ulid());
+
+        return RouteCall::recorded('account-retry-cleanup', [
+            '01JPAGEREQUESTACCOUNT00000' => $accountId,
+        ])
+            ->expects(RetryAccountCleanupCommand::class, [
+                'accountId' => $accountId,
+            ])
+            ->hiddenFrom('Member');
     }
 }

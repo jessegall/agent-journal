@@ -4,24 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Assignments;
 
-use Tests\Support\Entries\Attributes\Generated;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST assignments.agent.auto.show, as the generator wrote it.
+ * An agent reads whether an agent takes tasks on its own: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'assignments.agent.auto.show')]
 final class AgentAutoShowPostTest extends GuardedRouteEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST assignments.agent.auto.show', [
-            'the payload',
-        ]);
+        $journal->owner();
+        $start = $journal->signedStart('Planner');
+        $builder = $journal->signedStart('Builder');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'actor_type' => 'agent',
+                'actor_id' => $builder->agent->id,
+                'assignable_type' => 'tasks.task',
+            ]);
     }
 }

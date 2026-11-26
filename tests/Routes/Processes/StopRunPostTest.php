@@ -4,26 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Runs\StopProcessRun\StopProcessRunCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.stop-run, as the generator wrote it.
+ * The owner stops a run from its page.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.stop-run')]
 final class StopRunPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.stop-run', [
-            '{run}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'run' => $runId,
+            ])
+            ->reply(StopProcessRunCommand::class, $runId)
+            ->expects(StopProcessRunCommand::class, [
+                'runId' => $runId,
+                'reason' => 'stopped from the run page',
+            ]);
     }
 }

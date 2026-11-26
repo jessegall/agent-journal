@@ -4,24 +4,34 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Scripts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Models\Profiles\ProfileRun;
+use App\Support\ActorReference;
+use App\Values\WorkReference;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST scripts.runs.show, as the generator wrote it.
+ * A signed-in user reads one of their own profile runs with its step results: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'scripts.runs.show')]
 final class RunsShowPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST scripts.runs.show', [
-            'the payload',
+        $run = ProfileRun::create(
+            ActorReference::of($journal->owner()->ownerUser()),
+            WorkReference::free('ask'),
+            'journal-worker',
+            1,
+            str_repeat('a', 64),
+            'trigger-1',
+        );
+
+        return RouteCall::as(Caller::User)->payload([
+            'id' => $run->id,
         ]);
     }
 }

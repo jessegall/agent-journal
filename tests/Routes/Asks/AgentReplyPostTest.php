@@ -4,25 +4,47 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Asks;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
+use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
+use App\Support\ProfileProposal;
+use App\Values\AskReference;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST asks.agent.reply, as the generator wrote it.
+ * The supervisor answers an ask made of them.
  */
-#[Generated]
 #[TestsRoute('POST', 'asks.agent.reply')]
 final class AgentReplyPostTest extends GuardedRouteEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST asks.agent.reply', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner()
+            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
+            ->idleAgent('Requester', 'journal-worker');
+        $start = $journal->signedStart('Supervisor', 'journal-code-reviewer');
+        $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'first'));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'request_key' => 'reply-1',
+                'id' => $ask->id,
+                'body' => 'Check the input file.',
+            ])
+            ->reply(ReplyToAskCommand::class, $ask)
+            ->expects(ReplyToAskCommand::class, [
+                'ask' => new AskReference($ask->id),
+                'body' => 'Check the input file.',
+            ]);
     }
 }

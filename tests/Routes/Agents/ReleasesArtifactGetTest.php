@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Entries\RouteEntryTestCase;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET agents.releases.artifact, as the generator wrote it.
+ * Anyone downloads a file of a published release for their platform: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('GET', 'agents.releases.artifact')]
 final class ReleasesArtifactGetTest extends RouteEntryTestCase
 {
+    use ConnectsProjects;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET agents.releases.artifact', [
-            '{version}',
-            '{target}',
-            '{name}',
+        $folder = (string) config('files.places.releases');
+        mkdir("{$folder}/1.0.0/darwin-arm64/bin", 0755, true);
+        file_put_contents("{$folder}/1.0.0/darwin-arm64/bin/journal-agent", 'binary');
+
+        return RouteCall::as(Caller::Public)->parameters([
+            'version' => '1.0.0',
+            'target' => 'darwin-arm64',
+            'name' => 'bin/journal-agent',
         ]);
     }
 }

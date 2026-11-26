@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST profiles.sign-in-host.claim, as the generator wrote it.
+ * The host claims the next sign-in it is to run; with none waiting it is told so.
  */
-#[Generated]
 #[TestsRoute('POST', 'profiles.sign-in-host.claim')]
 final class SignInHostClaimPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST profiles.sign-in-host.claim', [
-            'the payload',
-            'the expected commands',
+        $host = $journal->owner()->enrolledHost();
+
+        return RouteCall::as(Caller::SharedHost, $host)->expects(ClaimSignInCommand::class, [
+            'hostId' => $host->hostId,
         ]);
     }
 }

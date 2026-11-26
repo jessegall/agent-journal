@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Enums\Accounts\SignInMethod;
+use App\Values\SignInStarted;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.start-sign-in, as the generator wrote it.
+ * The owner starts signing a new account in, with the driver and method they chose.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.start-sign-in')]
 final class StartSignInPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.start-sign-in', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-sign-in',
-        ]);
+        $journal->owner()->user('Member');
+
+        return RouteCall::recorded('account-sign-in', [])
+            ->reply(BeginSignInCommand::class, new SignInStarted(strtolower((string) Str::ulid()), false))
+            ->expects(BeginSignInCommand::class, [
+                'driver' => 'claude-code',
+                'method' => SignInMethod::OAuth,
+            ])
+            ->hiddenFrom('Member');
     }
 }

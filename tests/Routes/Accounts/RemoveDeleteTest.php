@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of DELETE accounts.remove, as the generator wrote it.
+ * The owner removes an account.
  */
-#[Generated]
 #[TestsRoute('DELETE', 'accounts.remove')]
 final class RemoveDeleteTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('DELETE accounts.remove', [
-            '{account}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-remove',
-        ]);
+        $journal->owner()->user('Member');
+        $accountId = strtolower((string) Str::ulid());
+
+        return RouteCall::recorded('account-remove', [
+            '01JPAGEREQUESTACCOUNT00000' => $accountId,
+        ])
+            ->expects(RemoveAccountCommand::class, [
+                'accountId' => $accountId,
+            ])
+            ->hiddenFrom('Member');
     }
 }

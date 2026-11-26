@@ -4,25 +4,44 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
+use App\Support\ShownMessage;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST communication.agent.read, as the generator wrote it.
+ * An agent reads one message by its id.
  */
-#[Generated]
 #[TestsRoute('POST', 'communication.agent.read')]
 final class AgentReadPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST communication.agent.read', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $inbox = $journal->inboxCalled('Owner');
+        $messageId = (string) Str::ulid();
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'messageId' => $messageId,
+                'request_key' => 'read-1',
+            ])
+            ->reply(ReadMessageCommand::class, new ShownMessage(
+                $messageId,
+                $inbox->id,
+                'user',
+                $journal->ownerUser()->id,
+                'Hello',
+                1,
+                null,
+                '2026-11-26T10:00:00+00:00',
+            ))
+            ->expects(ReadMessageCommand::class, [
+                'messageId' => $messageId,
+            ]);
     }
 }

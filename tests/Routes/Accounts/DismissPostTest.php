@@ -4,26 +4,32 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\DismissAccountNotice\DismissAccountNoticeCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.dismiss, as the generator wrote it.
+ * The owner dismisses a notice about their accounts.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.dismiss')]
 final class DismissPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.dismiss', [
-            '{notice}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner()->user('Member');
+        $noticeId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'notice' => $noticeId,
+            ])
+            ->expects(DismissAccountNoticeCommand::class, [
+                'noticeId' => $noticeId,
+            ])
+            ->hiddenFrom('Member');
     }
 }

@@ -4,26 +4,47 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Layouts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Layouts\DeleteLayout\DeleteLayoutCommand;
+use App\Data\Layouts\LayoutShape;
+use App\Models\Records\Layout;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of DELETE layouts.destroy, as the generator wrote it.
+ * The owner deletes one of their saved layouts.
  */
-#[Generated]
 #[TestsRoute('DELETE', 'layouts.destroy')]
 final class DestroyDeleteTest extends GuardedRouteEntryTestCase
 {
+    /**
+     * The shape the browser sends: one pane holding the chat window, and nothing detached.
+     */
+    private const array SHAPE = [
+        'grid' => [
+            'type' => 'pane',
+            'id' => 'pane-chat',
+            'windows' => [
+                'chat',
+            ],
+            'active' => 'chat',
+            'isWidthLimited' => false,
+        ],
+        'detached' => [],
+    ];
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('DELETE layouts.destroy', [
-            '{layout}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $layout = Layout::create($journal->owner()->ownerUser()->id, 'Writing', LayoutShape::from(self::SHAPE));
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'layout' => $layout->id,
+            ])
+            ->expects(DeleteLayoutCommand::class, [
+                'layoutId' => $layout->id,
+            ]);
     }
 }

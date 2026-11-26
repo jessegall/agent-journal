@@ -4,25 +4,43 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Models\Agents\Agent;
+use App\Models\Runs\ProcessRun;
+use App\Support\ActorReference;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestRunAdmissions;
 
 /**
- * The entry test of POST processes.agent.admission, as the generator wrote it.
+ * The host fetches the admission of a run it is to start: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.admission')]
 final class AgentAdmissionPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.admission', [
-            '{processRun}',
-            'the payload',
+        config([
+            'processes.runner' => true,
         ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $run = ProcessRun::create(
+            ActorReference::ofClass(Agent::class, $this->start->agent->id),
+            TestRunAdmissions::of(),
+        );
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'processRun' => $run->id,
+            ])
+            ->payload([
+                'request_key' => 'admit-1',
+            ]);
     }
 }

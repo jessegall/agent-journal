@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET processes.run-outcome, as the generator wrote it.
+ * The owner opens the outcome of one run.
  */
-#[Generated]
 #[TestsRoute('GET', 'processes.run-outcome')]
 final class RunOutcomeGetTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET processes.run-outcome', [
-            '{run}',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'run' => $runId,
+            ]);
     }
 }

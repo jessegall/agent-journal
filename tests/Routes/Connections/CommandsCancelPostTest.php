@@ -4,26 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST connections.commands.cancel, as the generator wrote it.
+ * A main agent asks the journal to cancel a project command it started.
  */
-#[Generated]
 #[TestsRoute('POST', 'connections.commands.cancel')]
 final class CommandsCancelPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST connections.commands.cancel', [
-            '{requestKey}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Main');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->parameters([
+                'requestKey' => 'run-1',
+            ])
+            ->expects(CancelProjectCommandRunCommand::class, [
+                'requestKey' => 'run-1',
+                'agentId' => $start->agent->id,
+            ]);
     }
 }

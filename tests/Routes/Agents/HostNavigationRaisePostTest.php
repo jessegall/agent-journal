@@ -4,26 +4,48 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
+use App\Support\NavigationRaiseAnswer;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.host.navigation.raise, as the generator wrote it.
+ * The host raises a navigation of a runtime's menu it could not finish alone.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.host.navigation.raise')]
 final class HostNavigationRaisePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.host.navigation.raise', [
-            '{runtime}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $host = $journal->owner()->enrolledHost();
+        $id = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::SharedHost, $host)
+            ->parameters([
+                'runtime' => $id,
+            ])
+            ->payload([
+                'operationKey' => 'operation-1',
+                'requestId' => 'request-1',
+                'attempt' => 1,
+                'step' => 1,
+                'reason' => 'no-entry',
+                'fingerprint' => str_repeat('a', 64),
+                'rows' => [],
+                'highlight' => 0,
+                'generation' => 1,
+            ])
+            ->reply(RaiseNavigationCommand::class, NavigationRaiseAnswer::held())
+            ->expects(RaiseNavigationCommand::class, [
+                'hostId' => $host->hostId,
+                'runtimeId' => $id,
+                'operationKey' => 'operation-1',
+                'requestId' => 'request-1',
+                'attempt' => 1,
+            ]);
     }
 }

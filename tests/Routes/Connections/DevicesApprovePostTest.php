@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST connections.devices.approve, as the generator wrote it.
+ * The owner approves the terminal that shows this code.
  */
-#[Generated]
 #[TestsRoute('POST', 'connections.devices.approve')]
 final class DevicesApprovePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST connections.devices.approve', [
-            '{code}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'code' => 'ABCD-EFGH',
+            ])
+            ->expects(ApproveDeviceGrantCommand::class, [
+                'userCode' => 'ABCD-EFGH',
+            ]);
     }
 }

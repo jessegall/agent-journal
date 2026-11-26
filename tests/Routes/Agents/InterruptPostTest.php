@@ -4,26 +4,49 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\ExpectedTiming;
+use App\Enums\Drivers\RequestProgress;
+use App\Values\DriverReceipt;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.interrupt, as the generator wrote it.
+ * The owner interrupts what an agent's session is doing.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.interrupt')]
 final class InterruptPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.interrupt', [
-            '{agent}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Main');
+        $requestId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'agent' => $start->agent->id,
+            ])
+            ->payload([
+                'requestId' => $requestId,
+                'sessionId' => $start->session->id,
+            ])
+            ->reply(InterruptAgentCommand::class, new DriverReceipt(
+                $requestId,
+                1,
+                DriverOperation::Interrupt,
+                RequestProgress::Accepted,
+                ExpectedTiming::ExpectedNow,
+                null,
+            ))
+            ->expects(InterruptAgentCommand::class, [
+                'agentId' => $start->agent->id,
+                'sessionId' => $start->session->id,
+                'idempotencyKey' => $requestId,
+            ]);
     }
 }

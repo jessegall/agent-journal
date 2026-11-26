@@ -4,25 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\RecordHostDescriptors\RecordHostDescriptorsCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.host.reports.descriptors, as the generator wrote it.
+ * The host reports the drivers it can run.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.host.reports.descriptors')]
 final class HostReportsDescriptorsPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.host.reports.descriptors', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $host = $journal->owner()->enrolledHost();
+
+        return RouteCall::as(Caller::SharedHost, $host)
+            ->payload([
+                'descriptors' => [
+                    [
+                        'key' => 'claude-code',
+                        'build' => '2.1.323',
+                        'arrangement' => 'local',
+                        'placement' => 'protected_host',
+                    ],
+                ],
+            ])
+            ->expects(RecordHostDescriptorsCommand::class, [
+                'hostId' => $host->hostId,
+            ]);
     }
 }

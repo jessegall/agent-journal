@@ -4,27 +4,38 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.check-start, as the generator wrote it.
+ * The owner asks how the start of an agent's session stands.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.check-start')]
 final class CheckStartPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.check-start', [
-            '{agent}',
-            '{session}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Main');
+        $requestId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'agent' => $start->agent->id,
+                'session' => $start->session->id,
+            ])
+            ->payload([
+                'requestId' => $requestId,
+            ])
+            ->reply(CheckStartStatusCommand::class, true)
+            ->expects(CheckStartStatusCommand::class, [
+                'agentId' => $start->agent->id,
+                'sessionId' => $start->session->id,
+                'idempotencyKey' => $requestId,
+            ]);
     }
 }

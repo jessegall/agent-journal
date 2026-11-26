@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.recheck, as the generator wrote it.
+ * The owner asks the host to check an account's sign-in again.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.recheck')]
 final class RecheckPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.recheck', [
-            '{account}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-recheck',
-        ]);
+        $journal->owner()->user('Member');
+        $accountId = strtolower((string) Str::ulid());
+
+        return RouteCall::recorded('account-recheck', [
+            '01JPAGEREQUESTACCOUNT00000' => $accountId,
+        ])
+            ->expects(RecheckAccountCommand::class, [
+                'accountId' => $accountId,
+            ])
+            ->hiddenFrom('Member');
     }
 }

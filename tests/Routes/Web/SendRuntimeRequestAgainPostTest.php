@@ -4,26 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST web.send-runtime-request-again, as the generator wrote it.
+ * The owner sends a driver request again, knowing it may arrive twice.
  */
-#[Generated]
 #[TestsRoute('POST', 'web.send-runtime-request-again')]
 final class SendRuntimeRequestAgainPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST web.send-runtime-request-again', [
-            '{driver_request}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $requestId = strtolower((string) Str::ulid());
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'driver_request' => $requestId,
+            ])
+            ->payload([
+                'reason' => 'The host lost it.',
+                'rowVersion' => 2,
+                'confirmsPossibleDuplicate' => true,
+            ])
+            ->reply(SendDriverRequestAgainCommand::class, strtolower((string) Str::ulid()))
+            ->expects(SendDriverRequestAgainCommand::class, [
+                'requestId' => $requestId,
+                'confirmsPossibleDuplicate' => true,
+                'reason' => 'The host lost it.',
+            ]);
     }
 }

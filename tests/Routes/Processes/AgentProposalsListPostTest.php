@@ -4,24 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.proposals.list, as the generator wrote it.
+ * An agent lists the rule proposals: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.proposals.list')]
 final class AgentProposalsListPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.proposals.list', [
-            'the payload',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->payload([
+                'states' => [],
+            ]);
     }
 }

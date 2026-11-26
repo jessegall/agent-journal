@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Settings;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Settings\ResetSetting\ResetSettingCommand;
+use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Enums\Settings\SettingsOutcome;
+use App\Values\SettingReference;
+use App\Values\SettingsChange;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST settings.reset, as the generator wrote it.
+ * The owner resets the connected projects group: the setting changed from its default is reset.
  */
-#[Generated]
 #[TestsRoute('POST', 'settings.reset')]
 final class ResetPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST settings.reset', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request settings-reset',
-        ]);
+        $journal->owner()->run(new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0));
+
+        return RouteCall::recorded('settings-reset', [])
+            ->reply(ResetSettingCommand::class, new SettingsChange('Core', 2, SettingsOutcome::Changed))
+            ->expects(ResetSettingCommand::class, [
+                'setting' => new SettingReference('Core', 'remote_projects'),
+                'expectedRevision' => 0,
+            ]);
     }
 }

@@ -4,25 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestIds;
 
 /**
- * The entry test of POST processes.agent.evidence, as the generator wrote it.
+ * An agent starts the evidence run the owner permitted: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.evidence')]
 final class AgentEvidencePostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.evidence', [
-            '{evidencePermit}',
-            'the payload',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $permit = $journal->actAsUserId(TestIds::of(7))->runUnkeyed(
+            new ApproveSampleCommand($this->requestId, 1, $this->request()->source_digest),
+        );
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'evidencePermit' => $permit,
+            ])
+            ->payload([
+                'request_key' => 'evidence-1',
+            ]);
     }
 }

@@ -4,25 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST communication.send, as the generator wrote it.
+ * A signed-in user sends a message to their own inbox.
  */
-#[Generated]
 #[TestsRoute('POST', 'communication.send')]
 final class SendPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST communication.send', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $inbox = $journal->owner()->inboxCalled('Owner');
+
+        return RouteCall::as(Caller::User)
+            ->payload([
+                'message' => [
+                    'inboxId' => $inbox->id,
+                    'body' => 'Hello',
+                ],
+                'request_key' => 'send-1',
+            ])
+            ->reply(SendMessageCommand::class, (string) Str::ulid())
+            ->expects(SendMessageCommand::class, [
+                'inboxId' => $inbox->id,
+                'body' => 'Hello',
+            ]);
     }
 }
