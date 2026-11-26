@@ -7,8 +7,8 @@ namespace App\Values;
 use JsonSerializable;
 
 /**
- * What a host's claim answers: the orders it takes now, and how long it may go without calling before it is taken
- * as idle.
+ * What a host's claim answers: the orders it takes now, how long it may go without calling before it is taken as
+ * idle, and the journal's time, by which the host judges each order's expiry whatever its own clock says.
  */
 final readonly class HostOrderClaim implements JsonSerializable
 {
@@ -20,7 +20,7 @@ final readonly class HostOrderClaim implements JsonSerializable
     /**
      * @param  list<ClaimedHostOrder>  $orders
      */
-    public function __construct(public array $orders) {}
+    public function __construct(public array $orders, public string $now) {}
 
     public function isEmpty(): bool
     {
@@ -28,10 +28,10 @@ final readonly class HostOrderClaim implements JsonSerializable
     }
 
     /**
-     * @return array{orders: list<ClaimedHostOrder>, idle_window_s: int}
+     * @return array{orders: list<ClaimedHostOrder>, idle_window_s: int, now: string}
      */
     public function jsonSerialize(): array
     {
-        return ['orders' => $this->orders, 'idle_window_s' => self::IDLE_WINDOW_SECONDS];
+        return ['orders' => $this->orders, 'idle_window_s' => self::IDLE_WINDOW_SECONDS, 'now' => $this->now];
     }
 }

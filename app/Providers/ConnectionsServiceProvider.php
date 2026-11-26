@@ -27,6 +27,7 @@ use App\Policies\ProjectFilesPolicy;
 use App\Resolvers\AgentDirectory;
 use App\Support\CommandRunEvidence;
 use App\Support\Drivers\ProgramDrivers;
+use App\Support\Drivers\WorkerLease;
 use App\Support\HostOperatorAccess;
 use App\Support\Hosts\HostOrders;
 use App\Support\JournalCommands;
@@ -59,6 +60,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
         $this->app->bind(HostChannel::class, HostOrders::class);
         $this->app->singleton(ProgramDrivers::class);
+        $this->app->singleton(WorkerLease::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);
         $this->app->bind(ProjectFilesContract::class, ProjectFiles::class);
         $this->app->bindIf(FileComments::class, NoFileComments::class);

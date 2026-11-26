@@ -35,6 +35,8 @@ type Relay struct {
 	Release    string
 	Heartbeat  time.Duration
 	RetryAfter time.Duration
+	// Clock is the journal's time the dispatcher's verifier judges expiry by; each claim answer sets its offset.
+	Clock *JournalClock
 }
 
 // Claim long-polls until the context ends; a journal that does not take protocol 1 stops it with that refusal.
@@ -48,6 +50,7 @@ func (relay Relay) Claim(ctx context.Context) error {
 			relay.pause(ctx)
 			continue
 		}
+		relay.Clock.Observe(claimed.Now)
 		for _, order := range claimed.Orders {
 			relay.Dispatcher.Submit(ctx, order)
 		}

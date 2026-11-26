@@ -9,6 +9,7 @@ use App\CommandMiddleware\AuthorizeCommand;
 use App\CommandMiddleware\BindDispatcher;
 use App\CommandMiddleware\CheckEntry;
 use App\CommandMiddleware\CheckJobGrant;
+use App\CommandMiddleware\FenceDriverWorker;
 use App\CommandMiddleware\GuardCommandOrigin;
 use App\CommandMiddleware\GuardCommandProject;
 use App\CommandMiddleware\LogCommand;
@@ -55,6 +56,7 @@ final class CommandFrame
      * @var list<class-string<CommandMiddleware>>
      */
     public const array INSIDE = [
+        FenceDriverWorker::class,
         GuardCommandOrigin::class,
         CheckJobGrant::class,
         AuthorizeCommand::class,

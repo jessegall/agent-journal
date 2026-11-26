@@ -4,14 +4,16 @@ import (
 	"context"
 	"net/url"
 	"strconv"
+	"time"
 
 	"journal-agent/client"
 )
 
 // ClaimedOrders is what one long poll hands the host: its orders, and how long it may go without calling.
 type ClaimedOrders struct {
-	Orders            []Order `json:"orders"`
-	IdleWindowSeconds int     `json:"idle_window_s"`
+	Orders            []Order   `json:"orders"`
+	IdleWindowSeconds int       `json:"idle_window_s"`
+	Now               time.Time `json:"now"`
 }
 
 // InventoryProcess is one process the host holds after a start, as the inventory reports it.

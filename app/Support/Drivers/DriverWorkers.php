@@ -49,6 +49,7 @@ final readonly class DriverWorkers
         private ServerClock $clock,
         private DriverRestartSignal $restart,
         private CommandRegistry $registry,
+        private WorkerLease $lease,
     ) {}
 
     /**
@@ -69,10 +70,11 @@ final readonly class DriverWorkers
         $now = $this->clock->now();
         $work = new DriverWork($process->id, $generation, $driver, $now, $cursors, $now);
 
-        $this->perform($this->resumed($work, $process)->then($this->requestsOf($work)));
+        $this->perform($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
 
         if ($process->type === HostProcessType::Terminal) {
-            $this->run(new SnapshotHostProcessCommand($process->id, HostOrderSource::forWorker($generation)));
+            $snapshot = new SnapshotHostProcessCommand($process->id, HostOrderSource::forWorker($generation));
+            $this->perform($work, DriverActions::of($snapshot));
         }
 
         return $work;
@@ -99,11 +101,11 @@ final readonly class DriverWorkers
 
         foreach ($this->feed->read($work->cursors(), $waitMs) as $entry) {
             $work->advance($entry->stream, $entry->cursor);
-            $this->perform($this->handOver($work, $entry));
+            $this->perform($work, $this->handOver($work, $entry));
         }
 
         if (! HostProcess::query()->whereKey($work->processId)->sole()->isLive()) {
-            $this->perform($work->driver->onExit());
+            $this->perform($work, $work->driver->onExit());
 
             return false;
         }
@@ -111,7 +113,7 @@ final readonly class DriverWorkers
         $now = $this->clock->now();
 
         if ($work->isLeaseDue($now)) {
-            $this->run(new RenewHostWorkerCommand($work->processId, $work->generation));
+            $this->perform($work, DriverActions::of(new RenewHostWorkerCommand($work->processId, $work->generation)));
             $work->renew($now);
         }
 
@@ -146,7 +148,7 @@ final readonly class DriverWorkers
     private function requestsOf(DriverWork $work): DriverActions
     {
         $claim = new ClaimRuntimeRequestsCommand($work->processId, $work->generation, self::REQUEST_LIMIT);
-        $claimed = $this->run($claim);
+        $claimed = $this->lease->hold($work->processId, $work->generation, fn () => $this->run($claim));
         $actions = DriverActions::none();
 
         foreach ($claimed->requests as $request) {
@@ -156,11 +158,16 @@ final readonly class DriverWorkers
         return $actions;
     }
 
-    private function perform(DriverActions $actions): void
+    /**
+     * Runs the commands as the worker: each is refused once another worker took the process over.
+     */
+    private function perform(DriverWork $work, DriverActions $actions): void
     {
-        foreach ($actions->commands as $command) {
-            $this->run($command);
-        }
+        $this->lease->hold($work->processId, $work->generation, function () use ($actions): void {
+            foreach ($actions->commands as $command) {
+                $this->run($command);
+            }
+        });
     }
 
     /**

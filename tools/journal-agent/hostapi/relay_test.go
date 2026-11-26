@@ -70,13 +70,14 @@ func relayFor(t *testing.T, journal *fakeJournal) (Relay, []byte) {
 	executors := map[string]Executor{
 		"snapshot": func(context.Context, Order) (map[string]any, error) { return map[string]any{"shown": true}, nil },
 	}
-	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: time.Now}, record, executors, func(answer Answer) {
+	clock := &JournalClock{Host: time.Now}
+	dispatcher := NewDispatcher(Verifier{Secret: secret, Now: clock.Now}, record, executors, func(answer Answer) {
 		_ = journal.AnswerOrder(context.Background(), answer)
 	})
 	outputs := NewOutputs(t.TempDir(), func(string, Output) error { return nil }, time.Now)
 	table := &ProcessTable{outputs: outputs, processes: map[string]*heldProcess{}}
 	relay := Relay{Journal: journal, Dispatcher: dispatcher, Record: record, Table: table, Release: "6.0.0",
-		Heartbeat: 10 * time.Millisecond, RetryAfter: time.Millisecond}
+		Heartbeat: 10 * time.Millisecond, RetryAfter: time.Millisecond, Clock: clock}
 	return relay, secret
 }
 
@@ -124,5 +125,26 @@ func TestARefusedProtocolStopsClaiming(t *testing.T) {
 
 	if !errors.Is(err, client.ErrProtocolRefused) || journal.claimCount != 1 {
 		t.Fatalf("a refused protocol claimed %d times and ended with %v", journal.claimCount, err)
+	}
+}
+
+func TestAnOrdersExpiryHoldsAgainstAHostClockMinutesOffBothWays(t *testing.T) {
+	journalNow := time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
+	secret := []byte("the-order-secret")
+	for name, hostOffset := range map[string]time.Duration{"fast": 5 * time.Minute, "slow": -5 * time.Minute} {
+		clock := &JournalClock{Host: func() time.Time { return journalNow.Add(hostOffset) }}
+		clock.Observe(journalNow)
+		verifier := Verifier{Secret: secret, Now: clock.Now}
+		live := Order{ID: "live", Type: "snapshot", Payload: "{}", ExpiresAt: journalNow.Add(30 * time.Second)}
+		live.Signature = Sign(secret, live)
+		dead := Order{ID: "dead", Type: "snapshot", Payload: "{}", ExpiresAt: journalNow.Add(-time.Second)}
+		dead.Signature = Sign(secret, dead)
+
+		if err := verifier.Verify(live); err != nil {
+			t.Errorf("a host clock %s refuses a live order: %v", name, err)
+		}
+		if err := verifier.Verify(dead); err == nil {
+			t.Errorf("a host clock %s runs an expired order", name)
+		}
 	}
 }

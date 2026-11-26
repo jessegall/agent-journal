@@ -33,14 +33,15 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	table := hostapi.NewProcessTable(containers, reports, outputs)
 	executors := table.Executors()
 	maps.Copy(executors, hostapi.NewProcessInput(table, outputs).Executors())
-	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: time.Now}
+	clock := &hostapi.JournalClock{Host: time.Now}
+	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(answer hostapi.Answer) {
 		if err := calls.AnswerOrder(ctx, answer); err != nil {
 			log.Printf("the answer to order %s was not sent: %v", answer.OrderID, err)
 		}
 	})
 	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release,
-		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second}
+		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock}
 	go reports.Run(ctx.Done())
 	if err := relay.SendInventory(ctx); err != nil {
 		log.Printf("the host's inventory was not sent: %v", err)
