@@ -9,14 +9,14 @@ use App\Exceptions\SkillSessionHidden;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Skills\SkillAuthoringService;
 use App\Skills\Values\GenerationReport;
-use App\Skills\Values\PublicationReport;
+use App\Skills\Values\HandedSkillsReport;
 use App\Values\SessionSkillStatus;
 use App\Values\SkillStatus;
 use Illuminate\Console\Command;
 
 /**
- * Shows the journal's owner where skill delivery stands: the newest generation and each session's newest publication,
- * with the reason and the retry command of a failed one.
+ * Shows the journal's owner what skills each session was handed: the newest generation, each session's generation and
+ * keys, and for one session every skill with its selection and whether it changed since the start.
  */
 final class SkillStatusCommand extends Command
 {
@@ -24,7 +24,7 @@ final class SkillStatusCommand extends Command
         {--session= : Only this session}
         {--json : Print the status as JSON}';
 
-    protected $description = 'Show the skill generation and each session\'s publication';
+    protected $description = 'Show the skill generation and the skills each session was handed';
 
     public function handle(SkillAuthoringService $authoring, SkillStatusResolver $statuses): int
     {
@@ -73,15 +73,14 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Delivered', 'Loaded', 'New session needed'],
+            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Handed', 'Changed since start'],
             array_map(fn (SessionSkillStatus $skill) => [
                 $skill->key,
                 $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,
                 $skill->generatedDigest === null ? 'not generated' : substr($skill->generatedDigest, 0, 12),
                 $skill->isSelected ? 'yes' : "no: {$skill->selectionReason}",
-                $skill->deliveryText(),
-                $skill->isLoaded ? 'read in this context' : 'not read',
-                $skill->needsNewSession ? 'yes' : 'no',
+                $skill->handedText(),
+                $skill->hasChanged ? 'yes' : 'no',
             ], $skills),
         );
     }
@@ -90,24 +89,20 @@ final class SkillStatusCommand extends Command
     {
         $this->printGeneration($status->generation);
 
-        if ($status->publications === []) {
-            $this->line('No session has a publication.');
+        if ($status->sessions === []) {
+            $this->line('No session to show.');
 
             return;
         }
 
         $this->table(
-            ['Session', 'Publication', 'State', 'Generation', 'Selection', 'Target', 'Error'],
-            array_map(fn (PublicationReport $publication) => $this->row($publication), $status->publications),
+            ['Session', 'Generation', 'Handed skills'],
+            array_map(fn (HandedSkillsReport $handed) => [
+                $handed->sessionId,
+                $handed->generationId ?? 'none',
+                $handed->skillKeys === [] ? 'none' : implode(', ', $handed->skillKeys),
+            ], $status->sessions),
         );
-
-        foreach ($status->publications as $publication) {
-            if ($publication->isRetryable()) {
-                $this->line(
-                    "Once its cause is fixed, retry {$publication->publicationId}: {$publication->retryCommand()}",
-                );
-            }
-        }
     }
 
     private function printGeneration(GenerationReport|null $generation): void
@@ -121,21 +116,5 @@ final class SkillStatusCommand extends Command
         $error = $generation->error === null ? '' : ": {$generation->error}";
         $this->line("Generation {$generation->generationId} is {$generation->status->value}{$error}");
         $this->line("Catalogue digest: {$generation->catalogueDigest}");
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function row(PublicationReport $publication): array
-    {
-        return [
-            $publication->sessionId,
-            $publication->publicationId,
-            $publication->status->value,
-            $publication->generationId,
-            substr($publication->selectionDigest, 0, 12),
-            $publication->target,
-            $publication->error ?? '',
-        ];
     }
 }

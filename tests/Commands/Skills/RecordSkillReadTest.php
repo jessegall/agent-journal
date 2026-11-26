@@ -7,30 +7,23 @@ namespace Tests\Commands\Skills;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
 use App\Bus\Contracts\CommandBus;
 use App\Events\Hooks\ContextStarted;
-use App\Events\Hooks\ToolCallFinished;
 use App\Events\Sessions\SessionOpened;
 use App\Hooks\Enums\ContextStartType;
-use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\ReminderContribution;
 use App\Listeners\AdmitStartSkills;
 use App\Listeners\AdvanceSkillContext;
-use App\Listeners\RecordProvenSkillReads;
 use App\Listeners\RemindRequiredSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillReceipt;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Resolvers\Support\SkillStatusResolver;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\SkillPublishingService;
 use App\Support\DomainRegistry;
-use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\ToolResult;
 use App\Values\ProfileBase;
-use App\Values\SessionSkillStatus;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
@@ -157,51 +150,6 @@ final class RecordSkillReadTest extends TestCase
         $this->assertNotReminded($this->boundary($session));
     }
 
-    public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
-    {
-        $session = $this->startedMainAgent();
-
-        $guide = $this->guideOf($session);
-        $this->assertTrue($guide->isSelected);
-        $this->assertSame(1, $guide->storedRevision);
-        $this->assertSame('delivered', $guide->deliveryState);
-        $this->assertFalse($guide->isLoaded);
-        $firstDigest = $guide->generatedDigest;
-
-        $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
-            new StackTarget($session->agent_id, $session->id),
-            new ToolResult(
-                'Skill',
-                ToolOutcome::Succeeded,
-                new DriverToolInput(['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']),
-            ),
-        ));
-        $this->assertTrue($this->guideOf($session)->isLoaded);
-
-        $this->artisan('skill:edit', [
-            'number' => 'user-guide',
-            '--expected-revision' => 1,
-            '--body' => <<<'TEXT'
-            # Guide
-
-            Second text.
-
-            TEXT,
-        ])->assertSuccessful();
-        $this->boundary($session);
-
-        $edited = $this->guideOf($session);
-        $this->assertTrue($edited->isSelected);
-        $this->assertSame(2, $edited->storedRevision);
-        $this->assertNotSame($firstDigest, $edited->generatedDigest);
-        $this->assertFalse($edited->isLoaded);
-        $this->assertTrue($edited->needsNewSession);
-
-        $this->artisan('skill:status', ['--session' => $session->id])
-            ->expectsOutputToContain('user-guide')
-            ->assertSuccessful();
-    }
-
     private function deliveredDigest(AgentSession $session, string $key): string
     {
         $generationId = AgentSession::findById($session->id)->skill_generation_id;
@@ -273,16 +221,5 @@ final class RecordSkillReadTest extends TestCase
     private function assertReminded(array $reminders): void
     {
         $this->assertStringContainsString(self::REMINDER, implode("\n", $reminders));
-    }
-
-    private function guideOf(AgentSession $session): SessionSkillStatus
-    {
-        $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(7));
-        $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
-        $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
-        $this->assertCount(1, $guide);
-
-        return $guide[0];
     }
 }

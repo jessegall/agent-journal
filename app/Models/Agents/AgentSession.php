@@ -416,6 +416,26 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * The newest sessions of every agent, for a user's status.
+     *
+     * @return list<self>
+     */
+    public static function findNewestSessions(int $limit): array
+    {
+        return array_values(self::query()->newestFirst()->readExactly($limit)->get()->all());
+    }
+
+    /**
+     * The agent's own newest sessions, for the agent's status.
+     *
+     * @return list<self>
+     */
+    public static function findNewestSessionsOfAgent(string $agentId, int $limit): array
+    {
+        return array_values(self::query()->ofAgents([$agentId])->newestFirst()->readExactly($limit)->get()->all());
+    }
+
+    /**
      * The running sessions started for an owner's work, oldest first.
      *
      * @return list<self>
