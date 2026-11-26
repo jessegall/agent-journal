@@ -1,0 +1,259 @@
+#!/bin/sh
+# A stand-in for the docker program in tests: it records each call in $STAND_IN/calls.log and answers as a healthy
+# Docker with well-built images would. A call that holds a line of $STAND_IN/failing fails instead.
+set -eu
+here=$(dirname "$0")
+answers=$here/../answers
+. "$here/../../../../scripts/lib/templates.sh"
+. "$here/../../../../scripts/lib/arguments.sh"
+
+main() {
+    record_call "$@"
+    fail_when_asked "$@"
+    fail_once_as_docker "$@"
+    case "$1" in
+        version) echo linux/amd64 ;;
+        info) echo x86_64 ;;
+        buildx) remember_build "$@" ;;
+        run) answer_run "$@" ;;
+        save) save_archive "$@" ;;
+        inspect) answer_inspect "$@" ;;
+        image) answer_image "$@" ;;
+        load) load_archive "$@" ;;
+        container) answer_container "$@" ;;
+        volume) answer_volume "$@" ;;
+        wait) cat "$STAND_IN/step-exit" 2>/dev/null || echo 0 ;;
+        compose) shift; answer_compose "$@" ;;
+    esac
+}
+
+record_call() {
+    printf '%s\n' "$(printf '%s' "$*" | tr '\n' ' ')" >> "$STAND_IN/calls.log"
+}
+
+fail_when_asked() {
+    local part
+    [ -f "$STAND_IN/failing" ] || return 0
+    while IFS= read -r part; do
+        case "$*" in *"$part"*) echo "stand-in docker: told to fail a call that holds: $part" >&2; exit 1 ;; esac
+    done < "$STAND_IN/failing"
+}
+
+# A call that holds a line of $STAND_IN/docker-errors fails once as Docker itself fails, and the line goes.
+fail_once_as_docker() {
+    local part
+    [ -f "$STAND_IN/docker-errors" ] || return 0
+    while IFS= read -r part; do
+        case "$*" in
+            *"$part"*)
+                grep -vxF "$part" "$STAND_IN/docker-errors" > "$STAND_IN/docker-errors.next" || true
+                mv "$STAND_IN/docker-errors.next" "$STAND_IN/docker-errors"
+                echo "stand-in docker: a passing daemon error on a call that holds: $part" >&2
+                exit 125 ;;
+        esac
+    done < "$STAND_IN/docker-errors"
+}
+
+# A build counts, so each one gives an image of its own digest, unless the test said its layers are all cached; it
+# keeps the client versions it was given.
+remember_build() {
+    local argument tag
+    tag=$(read_option --tag "$@")
+    count_build "$tag"
+    for argument in "$@"; do
+        case "$argument" in
+            CLAUDE_CODE_VERSION=*) echo "${argument#*=} (Claude Code)" > "$STAND_IN/claude-version" ;;
+            CODEX_VERSION=*) echo "codex-cli ${argument#*=}" > "$STAND_IN/codex-version" ;;
+        esac
+    done
+}
+
+# A build of the tag counts, unless the test said every layer is cached.
+count_build() {
+    [ -f "$STAND_IN/cached" ] || echo $(($(count_builds "$1") + 1)) > "$(read_builds_file "$1")"
+}
+
+read_builds_file() {
+    echo "$STAND_IN/builds-$(printf '%s' "$1" | tr ':/' '--')"
+}
+
+count_builds() {
+    cat "$(read_builds_file "$1")" 2>/dev/null || echo 0
+}
+
+# The digest of a tag's newest build: image_digest <tag>
+image_digest() {
+    build_digest "$1" "$(count_builds "$1")"
+}
+
+# The digest of one build of a tag: build_digest <tag> <build>
+build_digest() {
+    printf 'image %s %s' "$1" "$2" | sha256sum | cut -d' ' -f1
+}
+
+# A container is healthy and runs on the app image of the build it started from ($STAND_IN/running-app-build).
+answer_inspect() {
+    case "$*" in
+        *'{{.Image}}'*) echo "sha256:$(build_digest journal-app "$(cat "$STAND_IN/running-app-build" 2>/dev/null || echo 0)")" ;;
+        *) echo healthy ;;
+    esac
+}
+
+# The volumes Docker holds are the lines of $STAND_IN/volumes; a listing keeps those whose name holds the filter's
+# part, and removing one takes its line away.
+answer_volume() {
+    local volume
+    touch "$STAND_IN/volumes"
+    case "$2" in
+        ls) grep -F -- "$(read_name_filter "$@")" "$STAND_IN/volumes" || true ;;
+        rm) shift 2; for volume; do sed -i.before "\|^$volume\$|d" "$STAND_IN/volumes"; done; rm -f "$STAND_IN/volumes.before" ;;
+    esac
+}
+
+read_name_filter() {
+    local argument
+    for argument; do
+        case "$argument" in name=*) echo "${argument#name=}"; return ;; esac
+    done
+}
+
+# With $STAND_IN/daemon-images the stand-in is the agent daemon, holding the image ids that file lists.
+answer_image() {
+    local last
+    for last; do :; done
+    if [ -f "$STAND_IN/daemon-images" ]; then
+        answer_daemon_image "$@"
+        return
+    fi
+    case "$2" in
+        inspect) echo "sha256:$(image_digest "$last")" ;;
+    esac
+}
+
+answer_daemon_image() {
+    local image
+    shift
+    case "$1" in
+        ls) cat "$STAND_IN/daemon-images" ;;
+        rm) for image; do sed -i.before "\|^$image\$|d" "$STAND_IN/daemon-images"; done; rm -f "$STAND_IN/daemon-images.before" ;;
+        inspect) inspect_daemon_images "$@" ;;
+    esac
+}
+
+# Fails when one of the images is not held; with --format it prints each held image's id.
+inspect_daemon_images() {
+    local image printing=false
+    shift
+    for image; do
+        case "$image" in
+            --format) printing=true; continue ;;
+            --*|'{{.Id}}') continue ;;
+        esac
+        grep -qx "$image" "$STAND_IN/daemon-images" || exit 1
+        $printing && echo "$image"
+    done
+    return 0
+}
+
+# Loading an archive holds the image its manifest names.
+load_archive() {
+    local image
+    image=$(tar -xOf "$(read_option --input "$@")" manifest.json \
+        | sed -n 's#.*"Config": *"blobs/sha256/\([0-9a-f]*\)".*#sha256:\1#p')
+    echo "$image" >> "$STAND_IN/daemon-images"
+}
+
+# A container runs on each image $STAND_IN/images-in-use lists.
+answer_container() {
+    local ancestor
+    ancestor=$(read_option --filter "$@")
+    grep -qx "${ancestor#ancestor=}" "$STAND_IN/images-in-use" 2>/dev/null && echo container-1
+    return 0
+}
+
+# What a command run in a well-built image prints, or how it ends.
+answer_run() {
+    case "$*" in
+        *"--entrypoint claude "*) cat "$STAND_IN/claude-version" ;;
+        *"--entrypoint codex "*) cat "$STAND_IN/codex-version" ;;
+        *"--entrypoint id "*journal-tools) cat "$answers/tools-user.txt" ;;
+        *"--entrypoint id "*) echo 10001 ;;
+        *"--entrypoint test "*"-e /app/.env") exit 1 ;;
+        *"--entrypoint stat "*managed-settings.json) echo "root:root 444" ;;
+        *"--entrypoint stat "*/workspace) echo "10001:10010 2770" ;;
+        *"--entrypoint stat "*/home/journal/.account/projects) echo "10001:10001 700" ;;
+        *"--entrypoint stat "*) echo "root:root 555" ;;
+        *"--entrypoint /opt/journal/bin/journal-hook "*) cat "$answers/hook-refusal.json" ;;
+        *"--entrypoint /opt/journal/bin/journal-mcp "*) cat "$answers/mcp-unreachable.json" ;;
+        *"--entrypoint sh "*"command -v "* | *"--entrypoint sh "*"-name artisan"*) exit 1 ;;
+    esac
+}
+
+save_archive() {
+    local archive folder digest last
+    archive=$(read_option -o "$@")
+    folder=$(mktemp -d)
+    for last; do :; done
+    digest=$(image_digest "$last")
+    fill_template "$answers/manifest.json" "digest=$digest" "tag=$last" > "$folder/manifest.json"
+    tar -cf "$archive" -C "$folder" manifest.json
+    rm -rf "$folder"
+}
+
+answer_compose() {
+    case "$*" in
+        *"config --format json"*) fill_template "$answers/compose-config.json" "root=$JOURNAL_ROOT" ;;
+        *"config --images"*) echo "journal-$(read_last "$@")" ;;
+        *" build "* | "build "*) count_service_builds "$@" ;;
+        *"ps --all --format json"*) cat "$STAND_IN/containers.json" 2>/dev/null || cat "$answers/containers.json" ;;
+        *"ps --all -q"*) echo "container-$(read_last "$@")" ;;
+        *"ps -q app"*) cat "$STAND_IN/app-containers" 2>/dev/null || true ;;
+        *"--scale app=2"*) start_new_app ;;
+        *"--scale app=1"*) keep_newest_app ;;
+        *"up -d --wait"*) start_first_app ;;
+        *agents:host-enroll*) fill_template "$answers/host-enrolled.txt" host=01standinhost secret=stand-in-secret ;;
+        *"artisan tinker"*) answer_host_known ;;
+    esac
+}
+
+read_last() {
+    local last
+    for last; do :; done
+    echo "$last"
+}
+
+# Each service a compose build names is built as the image journal-<service>.
+count_service_builds() {
+    local argument building=false
+    for argument; do
+        if $building; then
+            case "$argument" in -*) ;; *) count_build "journal-$argument" ;; esac
+        fi
+        [ "$argument" != build ] || building=true
+    done
+}
+
+# The services start with one app container, on the app image built last.
+start_first_app() {
+    [ ! -f "$STAND_IN/app-containers" ] || return 0
+    echo app-1 > "$STAND_IN/app-containers"
+    count_builds journal-app > "$STAND_IN/running-app-build"
+}
+
+# A roll starts a new app container beside the old one, on the app image built last.
+start_new_app() {
+    echo "app-$(($(wc -l < "$STAND_IN/app-containers") + 1))" >> "$STAND_IN/app-containers"
+    count_builds journal-app > "$STAND_IN/running-app-build"
+}
+
+keep_newest_app() {
+    tail -n 1 "$STAND_IN/app-containers" > "$STAND_IN/app-containers.next"
+    mv "$STAND_IN/app-containers.next" "$STAND_IN/app-containers"
+}
+
+# The database knows the enrolled host until the test said it was made again ($STAND_IN/host-gone).
+answer_host_known() {
+    if [ -f "$STAND_IN/host-gone" ]; then echo gone; else echo known; fi
+}
+
+main "$@"

@@ -1,0 +1,1 @@
+{"name": "journal-test", "services": {"web": {"restart": "unless-stopped", "volumes": [{"type": "bind", "source": "{{root}}/.docker/web/Caddyfile"}]}, "agent-images": {"restart": "no"}, "drivers": {"restart": "unless-stopped"}}}

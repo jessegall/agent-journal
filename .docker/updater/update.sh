@@ -131,6 +131,7 @@ install() {
         enroll_host &&
         publish_release &&
         roll_app &&
+        artisan run drivers:restart &&
         start_services &&
         restart_changed_mounts &&
         artisan exec agents:install &&
