@@ -6,6 +6,7 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostProcessPurpose;
@@ -20,6 +21,7 @@ use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
 use App\Values\JournalServer;
+use App\Values\PlanFile;
 use Tests\TestCase;
 
 /**
@@ -70,7 +72,7 @@ final class ClaudeCodeProfileTest extends TestCase
         $settings = $this->settingsOf($this->profile()->startPlan($this->turn()));
 
         $this->journal->assertResult(
-            [$recorded['permissions']['allow'], $recorded['permissions']['deny'], 'bypassPermissions'],
+            [$recorded['permissions']['allow'], [...$recorded['permissions']['deny'], $this->replyKeyRule()], 'bypassPermissions'],
             [
                 $settings['permissions']['allow'],
                 $settings['permissions']['deny'],
@@ -222,7 +224,7 @@ final class ClaudeCodeProfileTest extends TestCase
         $account = new DriverAccount($this->recipe(), 'start-1', new JournalServer('/i/bin/php', '/i/journal-mcp'), folder: '/accounts/a');
 
         $plan = $this->profile()->startPlan($this->turn($account));
-        $profile = $plan->files[array_key_last($plan->files)];
+        $profile = array_values(array_filter($plan->files, fn (PlanFile $file) => $file->name === $plan->seatbelt))[0];
 
         $this->journal->assertResult(
             ['session.sb', 'session.sb', true, true],
@@ -332,5 +334,13 @@ final class ClaudeCodeProfileTest extends TestCase
     private function settingsOf(HostProcessPlan $plan): array
     {
         return json_decode($plan->files[0]->content, true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * The deny rule that keeps the hook's reply key from the file tools, which the recording predates.
+     */
+    private function replyKeyRule(): string
+    {
+        return 'Read({folder:files}/'.HookReplies::KEY_FILE.')';
     }
 }

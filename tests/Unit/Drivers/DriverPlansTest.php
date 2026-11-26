@@ -32,6 +32,7 @@ final class DriverPlansTest extends TestCase
     public function test_every_plan_and_probe_of_both_drivers_is_the_recorded_one(): void
     {
         $plans = [];
+        $this->journal->fixRandomStrings('the-seal-key');
 
         foreach ([
             DefaultDrivers::CLAUDE_CODE,

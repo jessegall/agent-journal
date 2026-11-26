@@ -83,7 +83,7 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "record" {
-		fmt.Fprintln(os.Stderr, "usage: journal-agent record --driver <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | install --manifest <file> --into <dir> | installation --folder <dir>")
+		fmt.Fprintln(os.Stderr, "usage: journal-agent record --driver <name> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | install --manifest <file> --into <dir> | installation --folder <dir>")
 		os.Exit(2)
 	}
 
@@ -99,7 +99,7 @@ func main() {
 // record runs the program once, forwards the user's keys and resizes, and writes the session as a fixture.
 func record(arguments []string) (int, error) {
 	flags := flag.NewFlagSet("record", flag.ContinueOnError)
-	driver := flags.String("driver", "", "the agent driver: claude or codex")
+	driver := flags.String("driver", "", "the name of the program recorded, which labels the recording")
 	mode := flags.String("mode", "", "process or terminal")
 	out := flags.String("out", "", "the recording folder")
 	folder := flags.String("folder", "", "the working folder the program starts in; an empty folder keeps project instructions out of evidence")

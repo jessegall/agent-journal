@@ -30,22 +30,23 @@ func TestNoGoFileOutsideTheBaselineNamesAProgram(t *testing.T) {
 	baseline := readBaseline(t)
 	naming := filesNamingAProgram(t)
 
-	for _, file := range naming {
+	for file, line := range naming {
 		if !slices.Contains(baseline, file) {
-			t.Errorf("%s names a program, which only the journal may know: move that knowledge to PHP", file)
+			t.Errorf("%s:%d names a program, which only the journal may know: move that knowledge to PHP", file, line)
 		}
 	}
 	for _, file := range baseline {
-		if !slices.Contains(naming, file) {
+		if _, names := naming[file]; !names {
 			t.Errorf("%s no longer names a program: remove it from %s", file, baselinePath)
 		}
 	}
 }
 
-func filesNamingAProgram(t *testing.T) []string {
+// filesNamingAProgram is each Go file that names a program, with the first line that does.
+func filesNamingAProgram(t *testing.T) map[string]int {
 	t.Helper()
 	root := ".."
-	naming := []string{}
+	naming := map[string]int{}
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -58,8 +59,11 @@ func filesNamingAProgram(t *testing.T) []string {
 		if entry.IsDir() && isExempt(relative) {
 			return filepath.SkipDir
 		}
-		if !entry.IsDir() && strings.HasSuffix(relative, ".go") && namesAProgram(t, path) {
-			naming = append(naming, relative)
+		if entry.IsDir() || !strings.HasSuffix(relative, ".go") {
+			return nil
+		}
+		if line := lineNamingAProgram(t, path); line > 0 {
+			naming[relative] = line
 		}
 		return nil
 	})
@@ -75,13 +79,19 @@ func isExempt(relative string) bool {
 	})
 }
 
-func namesAProgram(t *testing.T, path string) bool {
+// lineNamingAProgram is the number of the file's first line that names a program, or 0 when none does.
+func lineNamingAProgram(t *testing.T, path string) int {
 	t.Helper()
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return programWords.Match(content)
+	for number, line := range strings.Split(string(content), "\n") {
+		if programWords.MatchString(line) {
+			return number + 1
+		}
+	}
+	return 0
 }
 
 func readBaseline(t *testing.T) []string {

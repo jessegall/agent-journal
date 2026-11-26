@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Contracts\Accounts\AccountSettingsFiller;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Drivers\DriverAdapter;
@@ -34,7 +35,12 @@ use Illuminate\Contracts\Container\Container;
  */
 final readonly class DriverProfile
 {
-    public function __construct(private DriverSetup $setup, private Container $container, private PinnedBuilds $builds) {}
+    public function __construct(
+        private DriverSetup $setup,
+        private Container $container,
+        private PinnedBuilds $builds,
+        private HookReplies $replies,
+    ) {}
 
     public function family(): string
     {
@@ -71,6 +77,7 @@ final readonly class DriverProfile
         $plan = $this->planOf($start);
         $isTerminal = ! $start->isTurn();
         $arguments = $this->container->make($this->setup->arguments);
+        $replies = $this->replies->filesFor($this->setup->hookAdapter);
 
         return new HostProcessPlan(
             purpose: $isTerminal ? HostProcessPurpose::AgentTerminal : HostProcessPurpose::AgentTurn,
@@ -79,7 +86,7 @@ final readonly class DriverProfile
             argv: $this->placed($arguments->build($start), $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
-            files: $plan->files,
+            files: [...$plan->files, ...$replies],
             folders: $environment->folders,
             inherit: $environment->inherited,
             sideSockets: $plan->sideSockets,

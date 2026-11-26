@@ -41,6 +41,7 @@ use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Parts\HostHomeAndPath;
 use App\Agents\Drivers\Parts\StartReference;
 use App\Agents\Drivers\Parts\StatusLineSocket;
@@ -100,6 +101,7 @@ final class DriversServiceProvider extends ServiceProvider
             $app,
             $app->make(DriverCatalogueContract::class),
             $app->make(PinnedBuilds::class),
+            $app->make(HookReplies::class),
             [self::claudeCode(), self::codex()],
         ));
     }

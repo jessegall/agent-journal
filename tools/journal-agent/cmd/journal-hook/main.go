@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "usage: journal-hook <claude-code|codex>")
+	if len(os.Args) != 3 {
+		fmt.Fprintln(os.Stderr, "usage: journal-hook <driver> <reply file>")
 		os.Exit(2)
 	}
 	native, err := io.ReadAll(os.Stdin)
@@ -25,7 +25,9 @@ func main() {
 		os.Exit(2)
 	}
 
-	reply := adapterFor(os.Args[1]).Answer(native)
+	adapter := adapterFor(os.Args[1])
+	adapter.RepliesFile = os.Args[2]
+	reply := adapter.Answer(native)
 	fmt.Fprint(os.Stdout, reply.Stdout)
 	fmt.Fprint(os.Stderr, reply.Stderr)
 	os.Exit(reply.ExitCode)

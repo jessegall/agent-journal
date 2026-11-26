@@ -578,6 +578,16 @@ final class TestJournal
     }
 
     /**
+     * Makes every random string the application asks for the given text, so a plan holding one reads the same each run.
+     */
+    public function fixRandomStrings(string $text): self
+    {
+        Str::createRandomStringsUsing(fn () => $text);
+
+        return $this;
+    }
+
+    /**
      * Moves Carbon's time, what now() gives in the test and the application; the server clock stays where it is.
      */
     public function travelTo(CarbonImmutable $later): self

@@ -46,20 +46,6 @@ func (arrangement Arrangement) IsContained() bool {
 }
 
 // AssertServable refuses a contained host that lacks the agent daemon's socket or its installation name; a local host
-// ErrDriverNotContainable refuses a Codex start on a contained host, whatever its account's sign-in method: Codex's
-// sandbox limits writes only, so its tools could read its sign-in.
-var ErrDriverNotContainable = errors.New("Codex's sandbox does not keep tools from its sign-in; container starts " +
-	"wait for the provider transport")
-
-// AssertContainable refuses, on a contained host, a program whose sandbox does not keep its tools from its sign-in.
-func (arrangement Arrangement) AssertContainable(keepsToolsFromSignIn bool) error {
-	if arrangement.IsContained() && !keepsToolsFromSignIn {
-		return ErrDriverNotContainable
-	}
-
-	return nil
-}
-
 // needs neither.
 func (arrangement Arrangement) AssertServable(dockerSocket string, installationName InstallationName) error {
 	if !arrangement.IsContained() {

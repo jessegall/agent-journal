@@ -91,7 +91,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         private AgentTexts $texts,
     ) {}
 
-    public function hookProtocol(): string
+    public static function hookProtocol(): string
     {
         return DefaultDrivers::CLAUDE_CODE;
     }
@@ -103,7 +103,7 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
 
     public function hookCommand(): string
     {
-        return 'journal-hook '.$this->hookProtocol();
+        return 'journal-hook '.self::hookProtocol();
     }
 
     /**
@@ -119,12 +119,12 @@ final readonly class ClaudeCodeAdapter implements DriverAdapter
         return true;
     }
 
-    public function nativeEvents(): array
+    public static function nativeEvents(): array
     {
         return self::NATIVE_EVENTS;
     }
 
-    public function nativeChildTools(): array
+    public static function nativeChildTools(): array
     {
         return self::NATIVE_CHILD_TOOLS;
     }

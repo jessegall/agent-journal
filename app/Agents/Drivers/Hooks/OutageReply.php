@@ -52,6 +52,24 @@ final readonly class OutageReply
         return $this->refusal($nativeEvent, AgentText::of('core.drivers.outage_protected'));
     }
 
+    /**
+     * The answer to a native event the journal does not answer: refused by name on standard error.
+     */
+    public function unknownEvent(): DriverReply
+    {
+        $refusal = $this->texts->render(AgentText::of('core.drivers.unknown_event'));
+
+        return DriverReply::refusedOnStandardError($refusal);
+    }
+
+    /**
+     * The refusal of a tool that would start the driver's own child, which never runs here (rule 36).
+     */
+    public function ownChildRefusal(string $nativeEvent): DriverReply
+    {
+        return $this->refusal($nativeEvent, AgentText::of('core.drivers.own_subagents'));
+    }
+
     private function neutral(string $nativeEvent): DriverReply
     {
         $hookEvent = HookEvent::tryFrom($nativeEvent);

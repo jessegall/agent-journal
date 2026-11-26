@@ -14,6 +14,7 @@ use App\Agents\Drivers\Codex\CodexSignInEnvironment;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\Codex\CodexSkills;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Drivers\Setup\HeadlessTurns;
@@ -81,6 +82,7 @@ final class DriverSetupTest extends TestCase
             $this->app,
             $this->journal->service(DriverCatalogue::class),
             $this->journal->service(PinnedBuilds::class),
+            $this->journal->service(HookReplies::class),
             $setups,
         );
     }

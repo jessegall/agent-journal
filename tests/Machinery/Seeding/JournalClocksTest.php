@@ -6,6 +6,7 @@ namespace Tests\Machinery\Seeding;
 
 use App\Contracts\Time\ServerClock;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,5 +31,12 @@ final class JournalClocksTest extends TestCase
 
         $this->assertEquals($start->addYear(), CarbonImmutable::now());
         $this->assertEquals($start->addHour(), $this->app->make(ServerClock::class)->now());
+    }
+
+    public function test_fixed_random_strings_are_the_given_text(): void
+    {
+        $this->journal->fixRandomStrings('the-key');
+
+        $this->journal->assertResult(['the-key', 'the-key'], [Str::random(64), Str::random()]);
     }
 }

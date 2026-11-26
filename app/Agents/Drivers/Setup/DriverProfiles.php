@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\PinnedBuilds;
 use App\Exceptions\DriverFamilyUnknown;
@@ -31,6 +32,7 @@ final readonly class DriverProfiles
         Container $container,
         private DriverCatalogue $drivers,
         PinnedBuilds $builds,
+        HookReplies $replies,
         array $setups,
     ) {
         $profiles = [];
@@ -40,7 +42,7 @@ final readonly class DriverProfiles
                 throw DriverSetupInvalid::twice($setup->family);
             }
 
-            $profiles[$setup->family] = new DriverProfile($setup, $container, $builds);
+            $profiles[$setup->family] = new DriverProfile($setup, $container, $builds, $replies);
         }
 
         foreach ($drivers->familyKeys() as $family) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Contracts\Drivers\PlanPart;
@@ -24,6 +25,8 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
     public const string NAME = 'settings.json';
 
     public const string PATH = '{folder:files}/'.self::NAME;
+
+    private const string REPLY_KEY = '{folder:files}/'.HookReplies::KEY_FILE;
 
     /**
      * The hook events the journal answers.
@@ -77,7 +80,12 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
         $settings = [
             'permissions' => [
                 'allow' => ClaudeCodeTools::ALLOWED_WITHOUT_ASKING,
-                'deny' => [...ClaudeCodeTools::DELEGATION, ...ClaudeCodeTools::NESTED_DRIVERS],
+                // The key that seals the hook's reply file is the hook's alone (doc 135, Hook binary).
+                'deny' => [
+                    ...ClaudeCodeTools::DELEGATION,
+                    ...ClaudeCodeTools::NESTED_DRIVERS,
+                    'Read('.self::REPLY_KEY.')',
+                ],
                 'defaultMode' => self::NEVER_ASKS,
             ],
             // The mode's own warning is answered here once, so no session opens on it.

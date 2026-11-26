@@ -8,6 +8,7 @@ use App\Enums\Hooks\AnswerType;
 use App\Exceptions\DriverReplyMalformed;
 use App\Support\Storage\RecordedAnswer;
 use JsonException;
+use JsonSerializable;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
@@ -15,8 +16,12 @@ use TypeError;
 /**
  * What the journal hands back to a driver's hook: its standard output, standard error and exit code.
  */
-final readonly class DriverReply
+final readonly class DriverReply implements JsonSerializable
 {
+    private const string NO_OUTPUT = '';
+
+    private const int BLOCKING_EXIT = 2;
+
     public function __construct(
         public string $stdout,
         public string $stderr,
@@ -43,6 +48,14 @@ final readonly class DriverReply
         }
     }
 
+    /**
+     * A refusal the driver reads on standard error, with the exit code that blocks the call and nothing on output.
+     */
+    public static function refusedOnStandardError(string $refusal): self
+    {
+        return new self(stdout: self::NO_OUTPUT, stderr: $refusal."\n", exitCode: self::BLOCKING_EXIT);
+    }
+
     public static function emptyObject(): self
     {
         return new self('{}', '', 0);
@@ -58,6 +71,14 @@ final readonly class DriverReply
             '',
             0,
         );
+    }
+
+    /**
+     * @return array{stdout: string, stderr: string, exitCode: int}
+     */
+    public function jsonSerialize(): array
+    {
+        return ['stdout' => $this->stdout, 'stderr' => $this->stderr, 'exitCode' => $this->exitCode];
     }
 
     public function recordedAs(AnswerType $type): RecordedAnswer

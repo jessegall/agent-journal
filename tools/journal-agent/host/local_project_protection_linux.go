@@ -13,7 +13,7 @@ import (
 // in order: the project and the relay's state are covered by empty folders, which also hide every socket in the state,
 // and every Git broker socket, and the child's own checkout, runtime folder and broker socket's folder are bound back
 // writable over them. Git's common directory, when it
-// lies outside the project, is bound read-only. Claude Code's own sandbox on Linux also needs socat.
+// lies outside the project, is bound read-only. A program's own bubblewrap sandbox on Linux also needs socat.
 func localProjectConfinement(folders LocalProjectFolders, _ string) (ChildConfinement, error) {
 	for _, tool := range []string{"bwrap", "socat"} {
 		if _, err := exec.LookPath(tool); err != nil {

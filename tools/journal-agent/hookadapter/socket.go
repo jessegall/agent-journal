@@ -79,14 +79,17 @@ func Serve(listener net.Listener, forward func(ctx context.Context, driver strin
 	}
 }
 
+// relayDeadline is the longest the relay holds one call; the hook stops waiting sooner, at its reply file's budget.
+const relayDeadline = 5 * time.Second
+
 func answer(connection net.Conn, forward func(ctx context.Context, driver string, native []byte) (Reply, error)) {
 	defer connection.Close()
-	_ = connection.SetDeadline(time.Now().Add(Budget))
+	_ = connection.SetDeadline(time.Now().Add(relayDeadline))
 	var call hookCall
 	if err := json.NewDecoder(connection).Decode(&call); err != nil {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), Budget)
+	ctx, cancel := context.WithTimeout(context.Background(), relayDeadline)
 	defer cancel()
 	reply, err := forward(ctx, call.Driver, call.Native)
 	if err != nil {

@@ -13,7 +13,7 @@ var ErrNoCommand = errors.New("the shell bridge runs only `bash -c <command>`")
 // ErrPositionalArguments is a call that passes arguments after the command, which the executor cannot hand on.
 var ErrPositionalArguments = errors.New("the shell bridge takes no arguments after the command")
 
-// CommandOf is the command string of a bash-style call, such as Claude Code's `bash -c -l <command>`: the options
+// CommandOf is the command string of a bash-style call, such as `bash -c -l <command>`: the options
 // before it may be grouped (-lc) or apart (-c -l), and the string itself is kept exactly as it came, never parsed.
 func CommandOf(arguments []string) (string, error) {
 	reads := false

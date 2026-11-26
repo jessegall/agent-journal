@@ -211,9 +211,9 @@ const (
 var plainAccountID = regexp.MustCompile(`^[a-z0-9]+$`)
 
 // bindsOnlyAccount is whether the manifest's one account mount is the account's own folder, read-write, at the
-// account home, named by a plain id; with no account named, whether it binds no account at all. A contained Claude
-// Code session binding its own account reverses the standing "no credential in a container" decision, as the user
-// as the owner decided; no other account's folder and nothing else under the root is bound.
+// account home, named by a plain id; with no account named, whether it binds no account at all. A contained session
+// binding its own account reverses the standing "no credential in a container" decision, as the user as the owner
+// decided; no other account's folder and nothing else under the root is bound.
 func (manifest ContainerManifest) bindsOnlyAccount(accountID string) bool {
 	var accountMounts []ContainerMount
 	for _, mount := range manifest.Mounts {
