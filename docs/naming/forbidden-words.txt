@@ -39,3 +39,4 @@ launch	an agent or session is started, never launched: say start, and session st
 prelaunch	say prestart: what runs before a session starts (user 22350)
 relaunch	say restart (user 22350)
 ui	say client: what the browser shows is the client (user 24540)
+hears	a listener listens to an event: say listens or listener (listensTo, not hears)

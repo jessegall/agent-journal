@@ -23,7 +23,7 @@ use Tests\TestCase;
  */
 final class EngineTickedDeliveryTest extends TestCase
 {
-    public function test_every_listener_hears_the_event_in_its_own_scope_even_after_one_fails(): void
+    public function test_every_listener_receives_the_event_in_its_own_scope_even_after_one_fails(): void
     {
         $first = $this->app->make(FailingEngineListener::class);
         $second = $this->app->make(RecordingEngineListener::class);

@@ -20,7 +20,7 @@ final class DomainConsumerTest extends MessagingTestCase
 {
     private const string REVIEW_QUESTION = 'Review this?';
 
-    public function test_a_domain_posts_through_core_alone_and_hears_the_message_sent(): void
+    public function test_a_domain_posts_through_core_alone_and_receives_the_message_sent(): void
     {
         Event::fake([MessageSent::class]);
         $inboxId = $this->ownerInboxId();

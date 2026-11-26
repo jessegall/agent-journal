@@ -208,7 +208,7 @@ final class RunInTransactionTest extends TestCase
         $this->assertCount(1, $this->heardAt);
     }
 
-    public function test_a_listener_hears_the_fact_only_once_another_connection_reads_the_committed_row(): void
+    public function test_a_listener_receives_the_fact_only_once_another_connection_reads_the_committed_row(): void
     {
         $this->preparePublication();
         $row = new RaisingRow();

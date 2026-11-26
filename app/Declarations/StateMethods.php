@@ -60,7 +60,7 @@ final class StateMethods
     }
 
     /**
-     * The state's method that hears the event: the one typed on its class, or else the one typed on a group it
+     * The state's method that listens to the event: the one typed on its class, or else the one typed on a group it
      * belongs to.
      *
      * @param  class-string<AgentState>  $class

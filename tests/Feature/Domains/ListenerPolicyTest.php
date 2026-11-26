@@ -22,7 +22,7 @@ use Tests\Fixtures\Boundary\EventCalls\Tasks\Events\TaskClosed;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain as EventCallsTasksDomain;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent;
-use Tests\Fixtures\Boundary\Events\Plans\Listeners\HearsMessage;
+use Tests\Fixtures\Boundary\Events\Plans\Listeners\MessageListener;
 use Tests\Fixtures\Boundary\Events\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;
@@ -65,13 +65,13 @@ final class ListenerPolicyTest extends TestCase
         $policy = $this->policyFor(DomainRegistry::from([TasksDomain::class, ChatDomain::class, PlansDomain::class]));
 
         $this->expectExceptionObject(
-            InvalidListener::notRequired(HearsMessage::class.'@handle', MessageSent::class, 'Chat'),
+            InvalidListener::notRequired(MessageListener::class.'@handle', MessageSent::class, 'Chat'),
         );
 
-        $policy->discover([MessageSent::class => [HearsMessage::class.'@handle']]);
+        $policy->discover([MessageSent::class => [MessageListener::class.'@handle']]);
     }
 
-    public function test_a_listener_of_the_client_marker_hears_each_exported_client_event_instead(): void
+    public function test_a_listener_of_the_client_marker_receives_each_exported_client_event_instead(): void
     {
         $policy = $this->policyFor($this->app->make(DomainRegistry::class));
         $expanded = $policy->discover([ClientUpdate::class => [BroadcastPageChange::class.'@handle']]);

@@ -23,7 +23,7 @@ final class McpInstructionsTest extends TestCase
 
     private const string ACCOUNT_WORK = 'account work';
 
-    public function test_a_reviewer_hears_only_its_own_flows(): void
+    public function test_a_reviewer_receives_only_its_own_flows(): void
     {
         $instructions = TestText::words(new McpInstructions(new FixedCurrentAuthorizer())->forCaller());
 

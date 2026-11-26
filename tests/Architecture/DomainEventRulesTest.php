@@ -73,7 +73,7 @@ final class DomainEventRulesTest extends TestCase
             '13 names '.self::TASK_CLOSED.$onlyAListener,
         ]];
 
-        yield 'an event of an undeclared domain in a listener' => ['Plans/Listeners/HearsMessage.php', [
+        yield 'an event of an undeclared domain in a listener' => ['Plans/Listeners/MessageListener.php', [
             '7 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
             '11 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
         ]];

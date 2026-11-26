@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Boundary\Events\Plans\Listeners;
 
 use Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent;
 
-final class HearsMessage
+final class MessageListener
 {
     public function handle(MessageSent $event): void {}
 }
