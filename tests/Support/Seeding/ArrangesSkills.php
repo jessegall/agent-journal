@@ -6,9 +6,11 @@ namespace Tests\Support\Seeding;
 
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\Skill;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillRevision;
 use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\Enums\PublicationStatus;
 use App\Skills\SkillPublishingService;
 use App\Skills\Values\SkillDraft;
@@ -46,6 +48,32 @@ trait ArrangesSkills
         $publisher = $this->app->make(SkillPublishingService::class);
         $publisher->refresh();
         $publisher->publishOpen('test publisher');
+
+        return $this;
+    }
+
+    /**
+     * Builds the skills afresh into one generation, as skill:refresh does.
+     */
+    public function refreshSkills(): self
+    {
+        $this->app->forgetScopedInstances();
+        $this->throughEntry(new RefreshSkillsCommand());
+
+        return $this;
+    }
+
+    /**
+     * The session row, read again, holds this generation id and exactly these skill keys.
+     *
+     * @param  list<string>  $keys
+     */
+    public function assertSkillsHanded(AgentSession $session, SkillGeneration $generation, array $keys): self
+    {
+        $stored = AgentSession::findById($session->id);
+
+        Assert::assertSame($generation->id, $stored->skill_generation_id, "{$session->id} holds another generation.");
+        Assert::assertSame($keys, $stored->skill_keys, "{$session->id} was handed other skills.");
 
         return $this;
     }

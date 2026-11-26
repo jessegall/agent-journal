@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Models\Skills\SkillGeneration;
 use App\Processes\Values\PartKey;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
@@ -47,6 +48,19 @@ final class JournalSkillsTest extends TestCase
         $this->journal->publishSkills()->assertSkillPublished('user-review-notes', $this->journal->sessionOf('Writer'));
 
         $this->assertSame(1, $this->journal->skillRevisionOf('user-review-notes')->revision);
+    }
+
+    public function test_a_refresh_builds_one_ready_generation_the_session_row_can_be_checked_against(): void
+    {
+        $this->journal->refreshSkills();
+
+        $generation = SkillGeneration::findLatestReady();
+        $this->assertNotNull($generation);
+
+        $session = $this->journal->sessionOf('Writer');
+        $session->recordSkills($generation, ['journal']);
+
+        $this->journal->assertSkillsHanded($session, $generation, ['journal']);
     }
 
     public function test_a_created_process_run_is_given_back_and_still_found_by_its_name(): void
