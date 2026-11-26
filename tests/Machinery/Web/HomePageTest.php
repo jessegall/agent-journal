@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Machinery\Web;
 
 use App\Models\Agents\Agent;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Support\ActorReference;
 use App\Support\DomainRegistry;
@@ -76,7 +75,7 @@ final class HomePageTest extends TestCase
 
     public function test_a_stale_send_answers_json_with_409_and_its_code_and_flashes_the_code_to_a_form(): void
     {
-        $outdated = [...$this->pair(), 'body' => 'Still there?', ...$this->seenSession(), 'expectedGeneration' => 99];
+        $outdated = [...$this->pair(), 'body' => 'Still there?', ...$this->seenSession(), 'expectedSessionId' => TestIds::of(98)];
 
         $this->actingAs($this->journal->ownerUser())->postJson('/chat/messages', $outdated)
             ->assertStatus(409)
@@ -129,7 +128,6 @@ final class HomePageTest extends TestCase
         return [
             'agent' => $this->session->agent_id,
             'expectedSessionId' => $this->session->id,
-            'expectedGeneration' => AgentRuntime::findForSession($this->session->id)?->process_generation ?? 0,
         ];
     }
 }

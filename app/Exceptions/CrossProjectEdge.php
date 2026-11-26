@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Concerns\RendersRefusal;
+use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Engine\RefusalCode;
 use RuntimeException;
@@ -12,7 +13,7 @@ use RuntimeException;
 /**
  * Two records of different projects were to be joined, such as a link, an assignment or a wait.
  */
-final class CrossProjectEdge extends RuntimeException implements CodedRefusal
+final class CrossProjectEdge extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 

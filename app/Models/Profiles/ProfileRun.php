@@ -19,6 +19,7 @@ use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
+use App\Values\RelationRead;
 use App\Values\StepOutcome;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;
@@ -62,6 +63,11 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
     use HasActorColumns;
     use Linkable;
     use RaisesEvents;
+
+    /**
+     * The most step results one run is read with: a profile script runs far fewer steps.
+     */
+    private const int RESULT_LIMIT = 500;
 
     /**
      * @return array<string, string>
@@ -349,6 +355,6 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
     #[Scope]
     protected function withResults(Builder $query): void
     {
-        $query->with('results');
+        $query->with(['results' => RelationRead::complete(max: self::RESULT_LIMIT)->constraint()]);
     }
 }

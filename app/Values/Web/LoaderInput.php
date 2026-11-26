@@ -67,7 +67,7 @@ final class LoaderInput extends Data
         }
 
         try {
-            return self::validateAndCreate(json_decode($json, true));
+            return LoaderInput::validateAndCreate(json_decode($json, true));
         } catch (ValidationException|CannotCreateData $refused) {
             throw LoaderInputUnreadable::notACall($refused);
         }

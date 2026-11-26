@@ -62,6 +62,8 @@ final class EvidencePermitTest extends TestCase
     private function permit(): EvidencePermit
     {
         $limits = new PermitLimits(1_000_000, 60, 60);
+        // A permit is issued on the agent's own call, so it belongs to the agent's project.
+        $this->journal->actAs('Main agent');
 
         return $this->app->make(EvidenceRuns::class)->issue('ls project', $this->folder, $this->agent(), $limits);
     }

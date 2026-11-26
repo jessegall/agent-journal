@@ -36,6 +36,7 @@ final class StartPostTest extends GuardedRouteEntryTestCase
             ->payload([
                 'requestId' => strtolower((string) Str::ulid()),
                 'model' => 'claude-opus-5-5',
+                'driver' => DefaultDrivers::CLAUDE_CODE,
             ])
             ->reply(StartAgentCommand::class, new StartReceipt(
                 strtolower((string) Str::ulid()),

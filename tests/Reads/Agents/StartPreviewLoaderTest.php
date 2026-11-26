@@ -7,6 +7,7 @@ namespace Tests\Reads\Agents;
 use App\Data\Agents\StartPreviewData;
 use App\Data\Agents\StartPreviewInput;
 use App\Http\Loaders\Agents\StartPreviewLoader;
+use App\Support\DefaultDrivers;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\Entries\Attributes\TestsRead;
@@ -26,7 +27,7 @@ final class StartPreviewLoaderTest extends TestCase
     {
         $this->journal->owner()->installProfiles()->idleAgent('Writer');
 
-        $answer = $this->read(['agent' => $this->journal->agentCalled('Writer')->id]);
+        $answer = $this->read(['agent' => $this->journal->agentCalled('Writer')->id, 'family' => DefaultDrivers::CLAUDE_CODE]);
 
         $this->assertNotSame([], $answer->toArray());
     }

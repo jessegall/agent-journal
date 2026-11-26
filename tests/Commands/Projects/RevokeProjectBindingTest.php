@@ -100,7 +100,7 @@ final class RevokeProjectBindingTest extends TestCase
     public function test_a_relay_is_refused_an_enrolled_hosts_route(): void
     {
         $this->issueLine('the-ticket');
-        $binding = ProjectBinding::query()->findOrFail(
+        $binding = ProjectBinding::query()->with('host')->findOrFail(
             $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId'),
         );
 
@@ -163,7 +163,7 @@ final class RevokeProjectBindingTest extends TestCase
     public function test_a_binding_refuses_a_main_agent_of_another_project(): void
     {
         $this->issueLine('the-ticket');
-        $binding = ProjectBinding::query()->findOrFail(
+        $binding = ProjectBinding::query()->with('host')->findOrFail(
             $this->redeemLine('the-ticket', self::NONCE)->assertCreated()->json('bindingId'),
         );
         $project = Project::query()->sole();

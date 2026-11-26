@@ -56,6 +56,8 @@ final class ProfileDraft extends JournalModel implements ReadableModel
         $draft = new self();
         $draft->profile_key = $profile->key;
         $draft->revision = 0;
+        // A draft never saved has no revision yet, so its source is read as none without a query.
+        $draft->setRelation('currentRevision', null);
 
         return $draft;
     }

@@ -77,7 +77,9 @@ final class ApproveRuleBundleTest extends TestCase
 
     private function isKnown(string $line): bool
     {
+        // A fresh classifier reads the approvals anew, as the owner who reads the local project's rules.
         $this->app->forgetScopedInstances();
+        $this->journal->reselect();
         $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
 
         $classifier = $this->app->make(CommandClassifier::class);

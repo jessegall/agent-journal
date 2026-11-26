@@ -39,6 +39,8 @@ final class OutputCaptureTest extends TestCase
     {
         parent::setUp();
 
+        // The recorder reads its runs as the engine does for the owner's view, across every project.
+        $this->journal->owner();
         ProcessOutputDisk::fake();
     }
 

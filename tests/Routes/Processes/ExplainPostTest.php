@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Routes\Processes;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -30,7 +29,7 @@ final class ExplainPostTest extends GuardedRouteEntryTestCase
             ->payload([
                 'line' => 'acme verify',
             ])
-            ->reply(OpenCommandRequestCommand::class, strtolower((string) Str::ulid()))
+            ->reply(OpenCommandRequestCommand::class, $this->requestId)
             ->expects(OpenCommandRequestCommand::class, [
                 'operation' => 'acme verify',
                 'line' => 'acme verify',
