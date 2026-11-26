@@ -6,6 +6,7 @@ namespace Tests\Machinery\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Admission\StackAdmission;
+use App\Contracts\Projects\AgentProjects;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\EngineAccess;
 use App\Support\OperationDeadline;
@@ -17,6 +18,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
@@ -27,6 +29,13 @@ use Tests\TestCase;
 final class StateEventScopeTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_the_same_object_dispatched_twice_carries_distinct_occurrences_through_outer_commit(): void
     {

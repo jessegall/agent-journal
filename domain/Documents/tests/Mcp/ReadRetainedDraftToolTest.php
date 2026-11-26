@@ -22,6 +22,7 @@ use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * A parent agent reads the draft its helper's session left broken when it closed, which the journal kept.
@@ -50,7 +51,7 @@ final class ReadRetainedDraftToolTest extends McpToolEntryTestCase
         );
 
         $journal->actAsAgentIds($helper->id, $session->id);
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $opened = $journal->run(new OpenDocumentCommand($document->id, 1));
 
         $journal->run(new EditDocumentCommand(

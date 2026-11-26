@@ -17,6 +17,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * An agent comments on a whole record.
@@ -32,7 +33,7 @@ final class AgentPostPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Writer');
-        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $reference = "doc {$document->number}";
         $target = $journal->service(RecordResolver::class)->identify(RecordReference::parse($reference));
         $submissionKey = (string) Str::uuid();

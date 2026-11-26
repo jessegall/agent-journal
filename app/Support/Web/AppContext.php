@@ -155,7 +155,10 @@ final readonly class AppContext
             'name' => $this->settings->string($this->core->displayName),
             'version' => $this->version->label(),
             'faults' => $type === ViewerType::Owner
-                ? [...$this->installationFaults->current(), ...$this->hostLinkAlarms->current()]
+                ? [
+                    ...$this->installationFaults->current(),
+                    ...$this->hostLinkAlarms->current(),
+                ]
                 : [],
         ]);
     }
@@ -167,6 +170,10 @@ final readonly class AppContext
     {
         $code = $request->session()->get(CommandRefusal::CODE_FLASH_KEY);
 
-        return is_string($code) ? $code : new Optional();
+        if (is_string($code)) {
+            return $code;
+        }
+
+        return new Optional();
     }
 }

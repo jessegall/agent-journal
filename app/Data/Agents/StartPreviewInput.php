@@ -29,9 +29,21 @@ final class StartPreviewInput extends Data
     public static function rules(): array
     {
         return [
-            'agent' => ['required', 'string', 'max:64'],
-            'family' => ['nullable', 'string', 'max:32'],
-            'model' => ['nullable', 'string', 'max:100'],
+            'agent' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'family' => [
+                'nullable',
+                'string',
+                'max:32',
+            ],
+            'model' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
         ];
     }
 

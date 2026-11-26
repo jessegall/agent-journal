@@ -8,6 +8,7 @@ use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
 use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Exceptions\RuleProposalRefused;
@@ -15,6 +16,7 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -28,6 +30,13 @@ final class WithdrawRuleProposalTest extends TestCase
     use RefreshHookDatabase;
 
     private const string FOLDER = '/projects/acme';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_only_the_author_withdraws_and_a_withdrawn_proposal_takes_no_revision(): void
     {

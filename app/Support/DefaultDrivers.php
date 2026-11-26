@@ -58,7 +58,10 @@ final readonly class DefaultDrivers
                     'opus',
                     'fable',
                 ],
-                ['claude', 'claude-code-headless'],
+                [
+                    'claude',
+                    'claude-code-headless',
+                ],
                 'images/drivers/claude-code.svg',
                 MarkTone::Own,
                 SignInCodeDirection::PasteBack,

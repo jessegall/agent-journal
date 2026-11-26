@@ -26,6 +26,10 @@ final class SearchInput extends Data
      */
     public static function rules(): array
     {
-        return ['limit' => ['nullable', 'integer', 'min:1']];
+        return ['limit' => [
+            'nullable',
+            'integer',
+            'min:1',
+        ]];
     }
 }

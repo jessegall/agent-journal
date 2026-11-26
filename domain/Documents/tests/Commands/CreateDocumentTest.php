@@ -7,6 +7,7 @@ namespace Domain\Documents\Tests\Commands;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Files\Files;
+use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CommandInputInvalid;
 use App\Exceptions\ContentMissing;
@@ -45,6 +46,7 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Events\Dispatcher;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -108,6 +110,8 @@ final class CreateDocumentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         $this->journal->owner();
     }
@@ -345,7 +349,11 @@ final class CreateDocumentTest extends TestCase
         $this->journal->actAs('Ada');
         $this->assertSame([null], Document::query()->pluck('project_id')->all());
         $this->journal->actAs('Cy');
-        $this->assertEqualsCanonicalizing([$shop, null], Document::query()->pluck('project_id')->all());
+
+        $this->assertEqualsCanonicalizing([
+            $shop,
+            null,
+        ], Document::query()->pluck('project_id')->all());
     }
 
     public function test_an_agent_cannot_make_a_global_document(): void

@@ -21,6 +21,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner shares a record as the saved preview shows it.
@@ -35,7 +36,7 @@ final class CreateSharePostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $root = Document::query()->findOrFail($document->id)->shareIdentity();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $preview = $journal->run(new SaveSharePreviewCommand($root->type, $root->id, [], $configuration->id));

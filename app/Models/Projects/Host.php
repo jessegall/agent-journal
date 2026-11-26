@@ -258,7 +258,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      */
     public function isConnectedFolderRelay(): bool
     {
-        return ProjectBinding::query()->onHost($this->id)->exists();
+        return ProjectBinding::query()->acrossProjects()->onHost($this->id)->exists();
     }
 
     /**

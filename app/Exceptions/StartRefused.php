@@ -9,9 +9,9 @@ use Throwable;
 
 final class StartRefused extends RuntimeException
 {
-    public static function projectNotServed(string $projectLabel): self
+    public static function projectNotServed(string $label): self
     {
-        return new self("No folder of {$projectLabel} is connected right now.");
+        return new self("No folder of {$label} is connected right now.");
     }
 
     public static function withoutRuntime(string $sessionId): self

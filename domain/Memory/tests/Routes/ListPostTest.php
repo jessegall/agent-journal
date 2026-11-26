@@ -31,4 +31,14 @@ final class ListPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::Agent, $start);
     }
+
+    public function test_an_agent_lists_only_its_own_memories(): void
+    {
+        $call = $this->arrangedCall();
+        $other = $this->journal->signedStart('Other reader');
+        $this->journal->heartbeatOf($other);
+
+        $this->send(RouteCall::as(Caller::Agent, $other), Caller::Agent)->assertOk()->assertJsonPath('memories', []);
+        $this->send($call, Caller::Agent)->assertOk()->assertJsonCount(1, 'memories');
+    }
 }

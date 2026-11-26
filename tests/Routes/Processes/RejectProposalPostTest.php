@@ -27,6 +27,8 @@ final class RejectProposalPostTest extends GuardedRouteEntryTestCase
         $this->openAcmeRequest();
         $proposal = RuleProposal::query()->sole();
 
+        $journal->actAs('Owner');
+
         return RouteCall::as(Caller::User)
             ->parameters([
                 'proposal' => $proposal->id,

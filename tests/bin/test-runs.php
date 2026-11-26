@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__.'/worktree-databases.php';
 
 // The workers a run starts when its --processes names none: room is left for the containers beside it.
-const DEFAULT_PROCESSES = 4;
+const DEFAULT_PROCESSES = 8;
 
 /**
  * Runs a command in the given environment: its output answered when kept, otherwise shown as it comes and its exit

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\AgentProjects;
 use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\CommandInputInvalid;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
@@ -19,6 +20,7 @@ use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Domain\Documents\Values\DraftTarget;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
@@ -52,6 +54,8 @@ final class RecoverDocumentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         $this->journal->actAsUserId(TestIds::of(1));
 

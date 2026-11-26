@@ -24,6 +24,8 @@ final class CommandRequestGetTest extends GuardedRouteEntryTestCase
         $journal->owner();
         $this->openAcmeRequest();
 
+        $journal->actAs('Owner');
+
         return RouteCall::as(Caller::User)
             ->parameters([
                 'request' => $this->requestId,

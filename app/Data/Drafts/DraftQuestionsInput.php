@@ -20,6 +20,10 @@ final class DraftQuestionsInput extends Data
      */
     public static function rules(): array
     {
-        return ['noun' => ['required', 'string', 'max:64']];
+        return ['noun' => [
+            'required',
+            'string',
+            'max:64',
+        ]];
     }
 }

@@ -30,10 +30,26 @@ final class CapacityInput extends Data
     public static function rules(): array
     {
         return [
-            'agent' => ['required', 'string', 'max:64'],
-            'cpuCores' => ['nullable', 'integer', 'min:1'],
-            'memoryBytes' => ['nullable', 'integer', 'min:1'],
-            'diskBytes' => ['nullable', 'integer', 'min:1'],
+            'agent' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'cpuCores' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'memoryBytes' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
+            'diskBytes' => [
+                'nullable',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 

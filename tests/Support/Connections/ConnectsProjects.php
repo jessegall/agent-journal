@@ -9,6 +9,7 @@ use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Projects\InstallAttempt;
+use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
 use App\Support\ActorReference;
 use App\Support\SignedCall;
@@ -16,6 +17,7 @@ use App\Values\InstallTicket;
 use App\Values\OwnerAuthority;
 use App\Values\SettingReference;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 
@@ -54,6 +56,18 @@ trait ConnectsProjects
             new SetBooleanSettingCommand(new SettingReference('Core', 'remote_projects'), true, 0),
         );
         $this->app->forgetScopedInstances();
+    }
+
+    /**
+     * The bindings as the owner reads them, in every project: a relay's calls leave no actor behind.
+     *
+     * @return Builder<ProjectBinding>
+     */
+    private function bindings(): Builder
+    {
+        $this->journal->actAsUserId($this->owner->id);
+
+        return ProjectBinding::query();
     }
 
     private function issueLine(string $ticket): ProjectInvitation

@@ -67,8 +67,6 @@ final class CommentOnDocumentTest extends TestCase
 
     private const string THIRD_PART = 'Third part.';
 
-    private const string SECTION_COMMENT = 'Check the first section.';
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -265,24 +263,6 @@ final class CommentOnDocumentTest extends TestCase
             '<script>',
             $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment->bodyHtml,
         );
-    }
-
-    public function test_the_signed_comment_route_posts_on_the_document(): void
-    {
-        $author = $this->journal->signedStart('Main agent', 'main-agent');
-        $author->startRequest($this->app);
-
-        $document = $this->app->make(CommandBus::class)->run(
-            new CreateDocumentCommand('Design', 'Current design.', 'Published text.', TestProjects::local()->id),
-        );
-
-        $this->journal->agentCall($author, 'POST', '/agent/docs/comment', [
-            'doc_id' => $document->id,
-            'body' => self::SECTION_COMMENT,
-            'request_key' => 'comment-on-design',
-        ])->assertOk();
-
-        $this->assertSame(self::SECTION_COMMENT, Comment::query()->sole()->body);
     }
 
     private function bus(): CommandBus

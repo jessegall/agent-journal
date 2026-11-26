@@ -8,7 +8,6 @@ use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Projects\CurrentProject as CurrentProjectContract;
 use App\Support\Access\OwnerAuthorizerProvider;
-use App\Support\SystemActor;
 use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Closure;
@@ -69,7 +68,7 @@ final class CurrentProject implements CurrentProjectContract
             return ProjectSelection::of($this->projectIdOf($actor->id));
         }
 
-        if ($actor->actorType() === SystemActor::storedType()) {
+        if ($actor->isJournal()) {
             return ProjectSelection::all();
         }
 

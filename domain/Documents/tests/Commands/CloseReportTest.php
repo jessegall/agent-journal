@@ -6,20 +6,25 @@ namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Actors\IdentityLinks;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\AgentProjects;
 use App\Exceptions\ActorNotAllowed;
+use App\Support\RecordIdentity;
 use Domain\Comments\Models\Comment;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseReport\CloseReportCommand;
+use Domain\Documents\Commands\CommentOnReport\CommentOnReportCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Enums\UploadType;
+use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Tests\TestCase;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
@@ -62,6 +67,8 @@ final class CloseReportTest extends TestCase
     {
         parent::setUp();
 
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+
         $this->journal->actAsUserId(TestIds::of(1));
 
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
@@ -86,7 +93,7 @@ final class CloseReportTest extends TestCase
         $this->bus()->run(new CloseReportCommand('2', 'Not mine.'));
     }
 
-    public function test_a_reviewer_files_links_comments_and_closes_without_changing_the_findings(): void
+    public function test_a_reviewer_closes_its_linked_and_commented_report_without_changing_the_findings(): void
     {
         $writer = $this->journal->signedStart('Writer', 'writing-helper');
         $writer->startRequest($this->app);
@@ -118,34 +125,22 @@ final class CloseReportTest extends TestCase
 
         $bus->run(new CommitUploadCommand($upload));
 
-        $id = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/make', [
-            'title' => 'Review',
-            'abstract' => 'Evidence and observations.',
-            'upload_id' => $upload,
-            'about' => ['doc '.$source->number],
-            'request_key' => 'file-review',
-        ])->assertOk()->json('id');
+        $filed = $this->journal->runAsStart($reviewer, new CreateReportCommand(
+            'Review',
+            'Evidence and observations.',
+            null,
+            TestProjects::local()->id,
+            [new RecordIdentity(Document::linkType(), $source->id)],
+            $upload,
+        ));
 
-        $comment = [
-            'report_id' => $id,
-            'body' => 'Clarification on the first finding.',
-            'request_key' => 'clarify-first-finding',
-        ];
+        $id = $filed->id;
 
-        $first = $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json();
+        $comment = new CommentOnReportCommand((string) $filed->number, 'Clarification on the first finding.');
+        $this->journal->runAsStart($reviewer, $comment);
+        $this->assertSame($comment->body, Comment::query()->sole()->body);
 
-        $this->assertSame(
-            $first,
-            $this->journal->agentCall($reviewer, 'POST', '/agent/reports/comment', $comment)->assertOk()->json(),
-        );
-
-        $this->assertSame($comment['body'], Comment::query()->sole()->body);
-
-        $this->journal->agentCall($reviewer, 'POST', '/agent/reports/close', [
-            'number' => $id,
-            'reason' => self::SETTLEMENT_REASON,
-            'request_key' => 'close-review',
-        ])->assertOk();
+        $this->journal->runAsStart($reviewer, new CloseReportCommand((string) $filed->number, self::SETTLEMENT_REASON));
 
         $report = Report::query()->findOrFail($id);
         $this->assertSame($findings, $report->body);

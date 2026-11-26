@@ -170,4 +170,12 @@ final readonly class ActorReference implements Actor
     {
         return $this->type === Agent::storedType();
     }
+
+    /**
+     * Whether this names the journal itself, acting for no person or agent.
+     */
+    public function isJournal(): bool
+    {
+        return $this->type === SystemActor::storedType();
+    }
 }

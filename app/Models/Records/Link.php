@@ -190,24 +190,6 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
         return $this->morphTo();
     }
 
-    // ----------[ Queries ]----------
-
-    /**
-     * The link between the two models; none before the first.
-     */
-    public static function findBetween(Model $source, Model $target): self|null
-    {
-        return self::query()->between($source, $target)->first();
-    }
-
-    /**
-     * The link from the model to this keyed record; none before the first.
-     */
-    public static function findTouchingKey(Model $source, string $targetType, string $targetId): self|null
-    {
-        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first();
-    }
-
     // ----------[ Internals ]----------
 
     /**
@@ -240,6 +222,24 @@ final class Link extends MorphPivot implements EventSource, ProjectOwned, Readab
         }
 
         return ProjectOwner::global();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The link between the two models; none before the first.
+     */
+    public static function findBetween(Model $source, Model $target): self|null
+    {
+        return self::query()->between($source, $target)->first();
+    }
+
+    /**
+     * The link from the model to this keyed record; none before the first.
+     */
+    public static function findTouchingKey(Model $source, string $targetType, string $targetId): self|null
+    {
+        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first();
     }
 
     // ----------[ Scopes ]----------

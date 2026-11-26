@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hooks;
 
 use App\Contracts\Actors\CurrentActorSetter;
+use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Work\CurrentState;
 use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\StackMissing;
@@ -30,6 +31,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
@@ -55,6 +57,8 @@ final class StackChangeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(

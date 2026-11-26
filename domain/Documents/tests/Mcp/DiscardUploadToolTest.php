@@ -14,6 +14,7 @@ use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * An agent discards an upload it no longer needs.
@@ -32,7 +33,7 @@ final class DiscardUploadToolTest extends McpToolEntryTestCase
 
         $upload = $journal->runAs(
             'Writer',
-            new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes')),
+            new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes'), TestProjects::local()->id),
         );
 
         return ToolCall::by($start)

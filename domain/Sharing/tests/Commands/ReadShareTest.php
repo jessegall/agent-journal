@@ -91,8 +91,8 @@ final class ReadShareTest extends TestCase
 
         TEXT, TestProjects::local()->id));
 
-        $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
+        $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->plan = Plan::factory()->create([
             'title' => 'Version 6',
@@ -211,8 +211,8 @@ final class ReadShareTest extends TestCase
 
         TEXT, TestProjects::local()->id));
 
-        $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
+        $this->app->make(CurrentActorSetter::class)->clear();
         Link::createForModels($this->plan, $sibling);
         $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
         $share = Share::query()->sole();

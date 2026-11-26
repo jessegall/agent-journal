@@ -14,6 +14,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner denies a rule an agent proposed.
@@ -32,7 +33,7 @@ final class DenyPatchTest extends GuardedRouteEntryTestCase
 
         $ruleId = $journal->runAsStart(
             $start,
-            new ProposeRuleCommand('No phase waits on the user.', 'Agents keep forgetting it.'),
+            new ProposeRuleCommand('No phase waits on the user.', 'Agents keep forgetting it.', TestProjects::local()->id),
         );
 
         $journal->actAs('Owner');

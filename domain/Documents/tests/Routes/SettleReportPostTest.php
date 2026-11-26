@@ -13,6 +13,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner closes a report with a reason.
@@ -28,7 +29,7 @@ final class SettleReportPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
-        $report = $journal->run(new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it."));
+        $report = $journal->run(new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
             ->parameters([

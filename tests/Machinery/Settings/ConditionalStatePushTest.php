@@ -6,6 +6,7 @@ namespace Tests\Machinery\Settings;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\Engine\NoSubject;
 use App\Exceptions\SettingsUnavailable;
 use App\Models\Agents\AgentStackRow;
@@ -37,6 +38,7 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewState;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
@@ -68,6 +70,8 @@ final class ConditionalStatePushTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $registry);

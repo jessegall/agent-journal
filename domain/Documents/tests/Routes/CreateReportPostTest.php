@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use App\Http\Middleware\Web\SelectProject;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Values\CreatedRecord;
@@ -14,6 +15,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner files a new report from the library.
@@ -31,6 +33,7 @@ final class CreateReportPostTest extends GuardedRouteEntryTestCase
         $journal->owner();
 
         return RouteCall::as(Caller::User)
+            ->headers([SelectProject::HEADER => TestProjects::local()->id])
             ->payload([
                 'title' => 'Design',
                 'abstract' => 'The plan.',

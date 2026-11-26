@@ -6,10 +6,12 @@ namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\WithdrawCommandRequest\WithdrawCommandRequestCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RequestTransitionRefused;
 use App\Models\CommandRules\CommandRequest;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -22,6 +24,13 @@ use Tests\TestCase;
 final class WithdrawCommandRequestTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_a_withdrawn_request_stays_readable_and_a_new_attempt_opens_a_new_one(): void
     {

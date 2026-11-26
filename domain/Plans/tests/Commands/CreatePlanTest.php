@@ -135,7 +135,13 @@ final class CreatePlanTest extends TestCase
 
         $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'First');
 
-        $this->assertSame([$shop, $shop], [$plan->project_id, $phase->project_id]);
+        $this->assertSame([
+            $shop,
+            $shop,
+        ], [
+            $plan->project_id,
+            $phase->project_id,
+        ]);
     }
 
     private function localId(): string

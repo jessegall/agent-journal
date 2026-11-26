@@ -44,9 +44,11 @@ final class ProjectOwnedModelsTest extends TestCase
     ];
 
     /**
-     * The files that call acrossProjects(), each with its reason; none reads across projects today.
+     * The files that call acrossProjects(), each with its reason.
      */
-    private const array ACROSS_PROJECTS_CALLERS = [];
+    private const array ACROSS_PROJECTS_CALLERS = [
+        'app/Models/Projects/Host.php' => 'a host is the relay of a connected folder in any project; its calls belong to none',
+    ];
 
     /**
      * The files the scope is lifted in by name.

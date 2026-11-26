@@ -26,7 +26,10 @@ final readonly class LoaderTypes
         $imports = [];
 
         foreach ($this->declarations->loaders() as $loader) {
-            foreach ([$loader->inputClass, $loader->answerClass] as $dataClass) {
+            foreach ([
+                $loader->inputClass,
+                $loader->answerClass,
+            ] as $dataClass) {
                 $imports[$this->owners->ownerOf($dataClass)][] = class_basename($dataClass);
             }
         }

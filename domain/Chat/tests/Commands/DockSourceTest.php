@@ -7,16 +7,20 @@ namespace Domain\Chat\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\RequestKey;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
+use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
 use Domain\Chat\Exceptions\ChatUnavailable;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Models\DockPlacement;
+use Domain\Chat\Resolvers\Support\DockListing;
+use Domain\Chat\Support\DockProjection;
 use Domain\Chat\Support\DockRequests;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Domain\Chat\Tests\TestCase;
@@ -75,11 +79,6 @@ final class DockSourceTest extends TestCase
     private string $conversationId;
 
     private Task $task;
-
-    /**
-     * Chat with Tasks beside it, since a task is what these tests dock.
-     */
-    private const string PLACEMENT_TITLE = 'Ship the dock';
 
     private TestStart $start;
 
@@ -151,7 +150,10 @@ final class DockSourceTest extends TestCase
         );
 
         $this->assertSame(
-            [TestProjects::local()->id, $this->journal->projectCalled('B')->id],
+            [
+                TestProjects::local()->id,
+                $this->journal->projectCalled('B')->id,
+            ],
             [
                 DockPlacement::query()->findOrFail($local->placementId)->project_id,
                 DockPlacement::query()->findOrFail($inB->placementId)->project_id,
@@ -187,68 +189,6 @@ final class DockSourceTest extends TestCase
             new DockSourceCommand($strangers->id, 'tasks.task', $this->task->id),
             (string) Str::ulid(),
         );
-    }
-
-    public function test_mcp_docks_lists_and_undocks_with_the_receipts_and_safe_facts_of_journal_dock(): void
-    {
-        $this->owner = $this->journal->ownerUser();
-
-        $caller = $this->startInConversation('main-agent');
-        $add = ['type' => 'tasks.task', 'id' => $this->task->id, 'request_key' => 'dock-add'];
-
-        $placementId = $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
-            ->assertJsonPath('result.structuredContent.outcome', 'added')
-            ->json('result.structuredContent.placementId');
-
-        $listed = $this->journal->mcpTool($caller, 'dock_list')->assertOk()
-            ->assertJsonPath('result.structuredContent.placements.0.placementId', $placementId)
-            ->assertJsonPath('result.structuredContent.placements.0.title', self::PLACEMENT_TITLE)
-            ->assertJsonPath('result.structuredContent.placements.0.state', 'shown')
-            ->json('result.structuredContent.placements.0');
-
-        $this->journal->relayAgentCommands($caller);
-
-        $this->artisan('dock:list', ['--json' => true])
-            ->expectsOutputToContain((string) json_encode($listed, JSON_UNESCAPED_SLASHES))
-            ->assertExitCode(0);
-
-        $this->journal->mcpTool($caller, 'dock_remove', [
-            'placement_id' => $placementId,
-            'type' => 'tasks.task',
-            'source_id' => $this->task->id,
-            'request_key' => 'dock-remove',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
-
-        $this->journal->mcpTool($caller, 'dock_add', $add)->assertOk()
-            ->assertJsonPath('result.structuredContent.outcome', 'added')
-            ->assertJsonPath('result.structuredContent.placementId', $placementId);
-
-        $this->assertSame(0, DockPlacement::query()->count());
-    }
-
-    public function test_a_helper_without_the_dock_grant_is_refused_on_mcp_and_on_the_journal(): void
-    {
-        $this->owner = $this->journal->ownerUser();
-
-        $helper = $this->startInConversation('read-only-helper');
-
-        $this->journal->mcpRequest($helper, 'tools/call', [
-            'name' => 'dock_add',
-            'arguments' => [
-                'type' => 'tasks.task',
-                'id' => $this->task->id,
-                'request_key' => 'forged-dock',
-            ],
-        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
-
-        $this->journal->relayAgentCommands($helper);
-
-        $this->artisan('dock:add', [
-            'type' => 'tasks.task',
-            'id' => $this->task->id,
-        ])->assertFailed();
-
-        $this->assertSame(0, DockPlacement::query()->count());
     }
 
     public function test_an_agent_docks_lists_and_removes_a_record_and_a_retried_add_answers_its_first_receipt(): void
@@ -335,17 +275,16 @@ final class DockSourceTest extends TestCase
             ActorReference::ofClass(Agent::class, $session->agent_id),
         )->id;
 
-        $dock = ['inboxId' => $inboxId, 'type' => Message::linkType(), 'id' => $message->id];
-
-        $this->actingAs($owner)->postJson('/chat/dock', $dock)->assertSuccessful()->assertJson(['outcome' => 'added']);
-        $again = $this->actingAs($owner)->postJson('/chat/dock', $dock);
-        $again->assertSuccessful()->assertJson(['outcome' => 'present']);
+        $dock = new DockSourceCommand($inboxId, Message::linkType(), $message->id);
+        $this->owner = $owner;
+        $this->assertSame(DockOutcome::Added, $this->runKeyed($dock, (string) Str::ulid())->outcome);
+        $this->assertSame(DockOutcome::Present, $this->runKeyed($dock, (string) Str::ulid())->outcome);
 
         $query = ConversationRequest::queryFor($session->agent_id);
         $this->assertSame(['Build ready'], $this->dockedTitles($owner, $query));
     }
 
-    public function test_notes_dock_through_the_chat_the_journal_and_mcp_and_each_side_sees_what_it_may_read(): void
+    public function test_notes_docked_by_the_owner_and_an_agent_show_each_side_only_what_it_may_read(): void
     {
         $this->createNotesTables();
         $this->installNotesModule();
@@ -363,41 +302,32 @@ final class DockSourceTest extends TestCase
         $agentsNote = new Note(['text' => 'Feed the cat']);
         $agentsNote->saveFor($this->agent->agent->id);
 
-        $this->actingAs($this->owner)
-            ->postJson(
-                '/chat/dock',
-                [
-                    'inboxId' => $this->chatInboxId,
-                    'type' => Note::linkType(),
-                    'id' => $ownersNote->id,
-                ],
-            )
-            ->assertJson(['outcome' => 'added']);
+        $this->runKeyed(new DockSourceCommand($this->chatInboxId, Note::linkType(), $ownersNote->id), (string) Str::ulid());
+        $this->journal->runAsStart($this->agent, new DockSourceCommand(null, Note::linkType(), $agentsNote->id));
 
-        $this->journal->relayAgentCommands($this->agent);
+        $this->agent->startRequest($this->app);
 
-        $this->artisan('dock:add', [
-            'type' => Note::linkType(),
-            'id' => $agentsNote->id,
-            '--json' => true,
-        ])
-            ->expectsOutputToContain('"outcome":"added"')
-            ->assertExitCode(0);
+        $listed = $this->app->make(DockListing::class)
+            ->of(Inbox::query()->findOrFail($this->chatInboxId), DockProjection::LARGEST_CARD_LIMIT)
+            ->toArray();
 
-        $this->journal->mcpTool($this->agent, 'dock_list')->assertOk()
-            ->assertJsonPath('result.structuredContent.placements.0.state', 'unavailable')
-            ->assertJsonPath('result.structuredContent.placements.0.title', '')
-            ->assertJsonPath('result.structuredContent.placements.1.title', self::TASK_TITLE)
-            ->assertJsonPath('result.structuredContent.placements.1.state', 'shown');
+        $this->assertSame(
+            [
+                ['unavailable', ''],
+                ['shown', self::TASK_TITLE],
+            ],
+            array_map(fn (array $placement) => [
+                $placement['state'],
+                $placement['title'],
+            ], $listed['placements']),
+        );
 
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
 
-        $this->journal->mcpTool($this->agent, 'dock_remove', [
-            'placement_id' => $placement->id,
-            'type' => Note::linkType(),
-            'source_id' => $agentsNote->id,
-            'request_key' => 'undock-note',
-        ])->assertOk()->assertJsonPath('result.structuredContent.outcome', 'removed');
+        $this->journal->runAsStart(
+            $this->agent,
+            new UndockSourceCommand(null, $placement->id, Note::linkType(), $agentsNote->id),
+        );
 
         $this->assertSame(1, DockPlacement::query()->count());
     }

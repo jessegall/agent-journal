@@ -30,6 +30,8 @@ final class ApproveProposalPostTest extends GuardedRouteEntryTestCase
         $this->approvePair();
         $proposal = RuleProposal::query()->sole();
 
+        $journal->actAs('Owner');
+
         return RouteCall::as(Caller::User)
             ->parameters([
                 'proposal' => $proposal->id,

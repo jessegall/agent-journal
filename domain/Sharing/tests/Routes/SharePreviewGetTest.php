@@ -13,6 +13,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner opens the preview of what sharing a record would show.
@@ -27,7 +28,7 @@ final class SharePreviewGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
             ->parameters([

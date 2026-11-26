@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Routes;
 
+use App\Http\Middleware\Web\SelectProject;
 use Domain\Sequences\Commands\DefineSequence\DefineSequenceCommand;
 use Domain\Sequences\SequencesDomain;
 use Domain\Sequences\Values\SequenceStep;
@@ -14,6 +15,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner defines a new sequence of steps.
@@ -31,6 +33,7 @@ final class DefineSequencePostTest extends GuardedRouteEntryTestCase
         $journal->owner();
 
         return RouteCall::as(Caller::User)
+            ->headers([SelectProject::HEADER => TestProjects::local()->id])
             ->payload([
                 'name' => 'Release',
                 'steps' => [

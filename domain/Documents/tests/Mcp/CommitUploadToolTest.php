@@ -16,6 +16,7 @@ use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * An agent commits its upload and is given the attachment.
@@ -34,7 +35,7 @@ final class CommitUploadToolTest extends McpToolEntryTestCase
 
         $upload = $journal->runAs(
             'Writer',
-            new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes')),
+            new BeginUploadCommand(UploadType::DocumentBody, 5, hash('sha256', 'notes'), TestProjects::local()->id),
         );
 
         $journal->runAs('Writer', new AppendUploadCommand($upload, 0, 'notes', hash('sha256', 'notes')));

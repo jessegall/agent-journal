@@ -37,7 +37,10 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
     public function test_feedback_on_lines_names_the_lines_in_the_message(): void
     {
         $this->assertReachedAndDispatchesItsCommands(
-            $this->askFeedback($this->journal, ['first_line' => 2, 'last_line' => 3], 'lines 2-3 of doc 1'),
+            $this->askFeedback($this->journal, [
+                'first_line' => 2,
+                'last_line' => 3,
+            ], 'lines 2-3 of doc 1'),
         );
     }
 

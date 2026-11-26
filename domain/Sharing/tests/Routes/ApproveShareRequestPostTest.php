@@ -22,6 +22,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner approves an agent's request to share a record.
@@ -36,7 +37,7 @@ final class ApproveShareRequestPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $root = Document::query()->findOrFail($document->id)->shareIdentity();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $start = $journal->signedStart('Writer');

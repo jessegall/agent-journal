@@ -25,6 +25,8 @@ final class RunOutcomeGetTest extends GuardedRouteEntryTestCase
         $this->openAcmeRequest();
         $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
 
+        $journal->actAs('Owner');
+
         return RouteCall::as(Caller::User)
             ->parameters([
                 'run' => $runId,

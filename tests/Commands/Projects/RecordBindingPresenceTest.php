@@ -62,7 +62,7 @@ final class RecordBindingPresenceTest extends TestCase
 
         $reply = $this->notify(self::NONCE, $binding, 'boot-1', 1)->assertOk();
 
-        $fresh = ProjectBinding::query()->findOrFail($binding);
+        $fresh = $this->bindings()->findOrFail($binding);
         $this->assertSame(BindingReadiness::Ready, $fresh->readinessAt(CarbonImmutable::now()));
         $this->assertSame(1, $reply->json('generation'));
         $this->assertSame(0, AgentRuntime::query()->count());
@@ -72,12 +72,12 @@ final class RecordBindingPresenceTest extends TestCase
     {
         $binding = $this->connected(self::NONCE);
         $this->notify(self::NONCE, $binding, 'boot-1', 1, setupGeneration: 2)->assertOk();
-        $before = ProjectBinding::query()->findOrFail($binding);
+        $before = $this->bindings()->findOrFail($binding);
 
         $this->travel(10)->seconds();
         $stale = $this->notify(self::NONCE, $binding, 'boot-1', 2, setupGeneration: 1)->assertOk();
 
-        $after = ProjectBinding::query()->findOrFail($binding);
+        $after = $this->bindings()->findOrFail($binding);
         $this->assertSame(2, $stale->json('setupGeneration'));
         $this->assertSame($binding, $stale->json('bindingId'));
         $this->assertSame(1, $after->report_sequence);
@@ -88,12 +88,12 @@ final class RecordBindingPresenceTest extends TestCase
     {
         $binding = $this->connected(self::NONCE);
         $this->notify(self::NONCE, $binding, 'boot-1', 5)->assertOk();
-        $before = ProjectBinding::query()->findOrFail($binding);
+        $before = $this->bindings()->findOrFail($binding);
 
         $this->travel(10)->seconds();
         $this->notify(self::NONCE, $binding, 'boot-1', 3)->assertOk();
 
-        $after = ProjectBinding::query()->findOrFail($binding);
+        $after = $this->bindings()->findOrFail($binding);
         $this->assertSame(5, $after->report_sequence);
         $this->assertEquals($before->presence_expires_at, $after->presence_expires_at);
     }
@@ -116,7 +116,7 @@ final class RecordBindingPresenceTest extends TestCase
 
         $this->notify('nonce-bbbbbbbbbbbbbbbb', $binding, 'boot-1', 1)->assertForbidden();
 
-        $this->assertSame(BindingReadiness::Pending, ProjectBinding::query()->findOrFail($binding)->readiness);
+        $this->assertSame(BindingReadiness::Pending, $this->bindings()->findOrFail($binding)->readiness);
     }
 
     public function test_the_binding_reads_offline_once_its_presence_expires_with_no_report(): void
@@ -126,7 +126,7 @@ final class RecordBindingPresenceTest extends TestCase
 
         $this->travel(ProjectBinding::PRESENCE_SECONDS + 1)->seconds();
 
-        $offline = ProjectBinding::query()->findOrFail($binding)->readinessAt(CarbonImmutable::now());
+        $offline = $this->bindings()->findOrFail($binding)->readinessAt(CarbonImmutable::now());
         $this->assertSame(BindingReadiness::Offline, $offline);
     }
 
@@ -208,7 +208,7 @@ final class RecordBindingPresenceTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return ProjectBinding::query()->findOrFail(
+        return $this->bindings()->findOrFail(
             $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'),
         );
     }

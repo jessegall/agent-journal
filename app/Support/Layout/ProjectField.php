@@ -54,10 +54,10 @@ final readonly class ProjectField
      * The field offering every project and then the extra options, under All projects only.
      *
      * @param  list<string>  $extraOptions
-     * @param  list<string>  $extraLabels
+     * @param  list<string>  $labels
      * @return list<LayoutPartData>
      */
-    private function fieldsWith(array $extraOptions, array $extraLabels): array
+    private function fieldsWith(array $extraOptions, array $labels): array
     {
         if ($this->projects->selection()->type !== ProjectSelectionType::All) {
             return [];
@@ -69,7 +69,10 @@ final readonly class ProjectField
         return [LayoutPartData::field(
             self::NAME,
             self::LABEL,
-            new LayoutFieldData(self::NAME, '', [], $options, [...$this->labelsOf($listed), ...$extraLabels]),
+            new LayoutFieldData(self::NAME, '', [], $options, [
+                ...$this->labelsOf($listed),
+                ...$labels,
+            ]),
             'choice',
         )];
     }

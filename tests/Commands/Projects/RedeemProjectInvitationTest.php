@@ -58,7 +58,7 @@ final class RedeemProjectInvitationTest extends TestCase
 
         $reply = $this->redeemLine(self::TICKET, 'nonce-aaaaaaaaaaaaaaaa')->assertCreated();
 
-        $binding = ProjectBinding::query()->sole();
+        $binding = $this->bindings()->sole();
         $this->assertSame($hosts + 1, Host::query()->count());
         $this->assertSame($agents + 1, Agent::query()->count());
         $this->assertSame($binding->id, $reply->json('bindingId'));
@@ -90,7 +90,7 @@ final class RedeemProjectInvitationTest extends TestCase
         $this->travel(ProjectInvitation::LIFETIME_MINUTES + 1)->minutes();
         $this->assertGeneric($this->redeemLine('expired-ticket', 'nonce-eeeeeeeeeeeeeeee'));
 
-        $this->assertSame(1, ProjectBinding::query()->count());
+        $this->assertSame(1, $this->bindings()->count());
     }
 
     public function test_a_failure_inside_the_transaction_leaves_no_host_and_the_line_still_usable(): void
@@ -103,7 +103,7 @@ final class RedeemProjectInvitationTest extends TestCase
         $this->redeemLine(self::TICKET, 'nonce-aaaaaaaaaaaaaaaa')->assertServerError();
 
         $this->assertSame($hosts, Host::query()->count());
-        $this->assertSame(1, ProjectBinding::query()->count());
+        $this->assertSame(1, $this->bindings()->count());
         $this->redeemLine(self::TICKET, 'nonce-ffffffffffffffff')->assertCreated();
     }
 
@@ -115,7 +115,7 @@ final class RedeemProjectInvitationTest extends TestCase
         $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated();
         $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
 
-        $this->assertSame(2, ProjectBinding::query()->count());
+        $this->assertSame(2, $this->bindings()->count());
         $this->assertSame(2, Project::query()->distinct()->count('key'));
     }
 
@@ -129,7 +129,7 @@ final class RedeemProjectInvitationTest extends TestCase
         )
             ->assertForbidden();
 
-        $this->assertSame(0, ProjectBinding::query()->count());
+        $this->assertSame(0, $this->bindings()->count());
     }
 
     public function test_a_new_line_makes_one_project_with_one_main_environment_and_the_binding_in_it(): void
@@ -150,7 +150,7 @@ final class RedeemProjectInvitationTest extends TestCase
 
         $joined = $this->redeemLine($ticket, 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
 
-        $binding = ProjectBinding::query()->findOrFail($joined->json('bindingId'));
+        $binding = $this->bindings()->findOrFail($joined->json('bindingId'));
         $this->assertSame($research->id, $binding->environment_id);
     }
 
@@ -164,7 +164,7 @@ final class RedeemProjectInvitationTest extends TestCase
         $this->redeemLine($ticket, 'nonce-bbbbbbbbbbbbbbbb')->assertNotFound();
 
         $this->assertSame(1, ProjectInvitation::query()->pending()->count());
-        $this->assertSame(1, ProjectBinding::query()->count());
+        $this->assertSame(1, $this->bindings()->count());
     }
 
     public function test_replacing_one_tabs_attempt_leaves_the_other_tabs_line_usable(): void
@@ -240,7 +240,7 @@ final class RedeemProjectInvitationTest extends TestCase
         $redeemed = $this->redeemLine($ticket, $nonce)->assertCreated();
         $this->notifyClaudeCode($nonce, (string) $redeemed->json('bindingId'));
 
-        return ProjectBinding::query()->findOrFail($redeemed->json('bindingId'));
+        return $this->bindings()->findOrFail($redeemed->json('bindingId'));
     }
 
     private function joinTicket(string $projectId, string $environmentId): string

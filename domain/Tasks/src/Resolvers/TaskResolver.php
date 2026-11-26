@@ -41,10 +41,10 @@ final readonly class TaskResolver implements TaskResolverContract
         $this->assertAllFound($requestedTaskIds, $visibleTaskIds);
     }
 
-    public function requireAllVisibleBeside(array $taskIds, ProjectOwned $joined): void
+    public function requireAllVisibleBeside(array $ids, ProjectOwned $joined): void
     {
         $this->actors->actor();
-        $requestedTaskIds = array_values(array_unique($taskIds));
+        $requestedTaskIds = array_values(array_unique($ids));
         $tasks = Task::query()->whereKey($requestedTaskIds)->readExactly(count($requestedTaskIds))->get();
         $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->modelKeys())));
 

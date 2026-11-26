@@ -31,7 +31,10 @@ final class ReactPostTest extends GuardedRouteEntryTestCase
         $start = $journal->owner()->signedStart('Ada');
         $chats = $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Ada');
         $inbox = $chats->pairChatOf('Owner', 'Ada');
-        $messageId = $journal->runAsStart($start, new SendMessageCommand($inbox->id, 'Which port?'));
+
+        $messageId = $journal->actAsAgentIds($start->agent->id, $start->session->id)
+            ->run(new SendMessageCommand($inbox->id, 'Which port?'), (string) Str::uuid());
+
         $journal->actAs('Owner');
 
         return RouteCall::recorded('chat-react', [

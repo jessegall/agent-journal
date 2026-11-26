@@ -30,9 +30,22 @@ final class SignInReceiptInput extends Data
     public static function rules(): array
     {
         return [
-            'key' => ['required', 'string', 'max:128'],
-            'driver' => ['required_without:account', 'prohibits:account', 'string', 'max:64'],
-            'account' => ['required_without:driver', 'string', 'max:64'],
+            'key' => [
+                'required',
+                'string',
+                'max:128',
+            ],
+            'driver' => [
+                'required_without:account',
+                'prohibits:account',
+                'string',
+                'max:64',
+            ],
+            'account' => [
+                'required_without:driver',
+                'string',
+                'max:64',
+            ],
         ];
     }
 
@@ -46,7 +59,11 @@ final class SignInReceiptInput extends Data
      */
     public function command(): string
     {
-        return $this->isRenewal() ? BeginSignInAgainCommand::class : BeginSignInCommand::class;
+        if ($this->isRenewal()) {
+            return BeginSignInAgainCommand::class;
+        }
+
+        return BeginSignInCommand::class;
     }
 
     public function target(): string

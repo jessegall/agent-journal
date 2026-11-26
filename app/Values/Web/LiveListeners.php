@@ -28,7 +28,11 @@ final readonly class LiveListeners
     public static function pageChanges(string $userId): self
     {
         return new self(
-            [PageChanged::NAME, InboxAccessEnded::NAME, ProtectedViewInvalidated::NAME],
+            [
+                PageChanged::NAME,
+                InboxAccessEnded::NAME,
+                ProtectedViewInvalidated::NAME,
+            ],
             new PrivateChannel(UserChannel::nameFor($userId)),
         );
     }

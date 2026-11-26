@@ -7,6 +7,7 @@ namespace Tests\Commands\CommandRules;
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\CommandRules\RequestHoldReason;
 use App\Enums\CommandRules\RequestStatus;
 use App\Exceptions\RuleProposalRefused;
@@ -15,6 +16,7 @@ use App\Models\CommandRules\RuleProposal;
 use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -28,6 +30,13 @@ final class ReviseRuleProposalTest extends TestCase
     use RefreshHookDatabase;
 
     private const string FOLDER = '/projects/acme';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_the_author_revises_to_revision_two_and_another_agent_cannot(): void
     {

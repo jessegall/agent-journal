@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\Engine\NoSubject;
 use App\Events\Hooks\StateTypesRequested;
 use App\Exceptions\InvalidBottomState;
@@ -47,6 +48,7 @@ use Tests\Fixtures\Hooks\DomainWrite;
 use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsMachinery;
@@ -78,6 +80,8 @@ final class AgentStacksTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));

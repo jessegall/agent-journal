@@ -6,6 +6,7 @@ namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
 use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\CommandRules\ProposalStatus;
@@ -26,6 +27,7 @@ use App\Values\ProposalReceipt;
 use App\Values\ProposedRule;
 use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -41,6 +43,13 @@ final class ProposeCommandRuleTest extends TestCase
     use RefreshHookDatabase;
 
     private const string FOLDER = '/projects/acme';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_a_complete_proposal_waits_for_review_and_moves_the_request_on_without_activating(): void
     {

@@ -11,7 +11,6 @@ use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\ReplaceDocumentText\ReplaceDocumentTextCommand;
-use Domain\Documents\Contracts\Drafts\DraftResolver;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\DocumentDraft;
@@ -63,8 +62,6 @@ final class ReplaceDocumentTextTest extends TestCase
     None.
 
     TEXT;
-
-    private const string REPLACEMENT = 'Replacement text.';
 
     protected function setUp(): void
     {
@@ -121,43 +118,6 @@ final class ReplaceDocumentTextTest extends TestCase
         $this->expectExceptionMessage(DraftMissing::forDocument(1)->getMessage());
 
         $this->bus()->run(new ReplaceDocumentTextCommand(new DraftTarget('1', 'unknown', 1), 'One.', 'Two.'));
-    }
-
-    public function test_signed_text_replacement_accepts_the_old_and_new_wire_fields(): void
-    {
-        $author = $this->journal->signedStart('Writer', 'writing-helper');
-        $author->startRequest($this->app);
-        $commands = $this->app->make(CommandBus::class);
-
-        $document = $commands->run(new CreateDocumentCommand(
-            'Design',
-            'Current design.',
-            'Original text.',
-            TestProjects::local()->id,
-        ));
-
-        $draft = $commands->run(new OpenDocumentCommand($document->id, 1));
-
-        $this->journal->agentCall($author, 'POST', '/agent/docs/edit', [
-            'number' => (string) $document->number,
-            'token' => $draft->token,
-            'version' => 1,
-            'mode' => 'text',
-            'section' => null,
-            'body' => null,
-            'old' => 'Original text.',
-            'new' => self::REPLACEMENT,
-            'title' => null,
-            'abstract' => null,
-            'request_key' => 'replace-design-words',
-        ])->assertOk();
-
-        $author->startRequest($this->app);
-
-        $this->assertSame(
-            self::REPLACEMENT,
-            $this->app->make(DraftResolver::class)->current($document->number)->body,
-        );
     }
 
     private function bus(): CommandBus

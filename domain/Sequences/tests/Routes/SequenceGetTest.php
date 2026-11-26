@@ -13,6 +13,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner opens a sequence's page.
@@ -31,7 +32,7 @@ final class SequenceGetTest extends GuardedRouteEntryTestCase
 
         $sequenceId = $journal->run(new DefineSequenceCommand('Release', [
             new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
-        ]));
+        ], TestProjects::localOwner()->key()));
 
         return RouteCall::as(Caller::User)
             ->parameters([

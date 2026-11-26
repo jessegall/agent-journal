@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\CommandRules;
 
 use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\Contracts\Projects\AgentProjects;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\ProposalStatus;
 use App\Exceptions\DeclarationInvalid;
@@ -14,6 +15,7 @@ use App\Models\CommandRules\RuleRevision;
 use App\Values\CommandClassSet;
 use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -25,6 +27,13 @@ use Tests\TestCase;
 final class ImportRuleProposalsTest extends TestCase
 {
     use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
+    }
 
     public function test_importing_a_declaration_file_creates_only_proposals(): void
     {

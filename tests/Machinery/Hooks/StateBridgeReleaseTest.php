@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Contracts\Projects\AgentProjects;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\EventUnitLifecycle;
 use App\Support\ListenerRegistry;
@@ -16,6 +17,7 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
@@ -40,6 +42,8 @@ final class StateBridgeReleaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         Schema::dropIfExists('raising_rows');
         Schema::create('raising_rows', function (Blueprint $table): void {

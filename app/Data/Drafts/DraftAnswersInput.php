@@ -34,9 +34,22 @@ final class DraftAnswersInput extends Data
     public static function rules(): array
     {
         return [
-            'noun' => ['required', 'string', 'max:64'],
-            'answers' => ['required', 'array', 'list', 'size:'.self::ANSWER_COUNT],
-            'answers.*' => ['required', 'string', 'max:'.self::MOST_ANSWER_CHARACTERS],
+            'noun' => [
+                'required',
+                'string',
+                'max:64',
+            ],
+            'answers' => [
+                'required',
+                'array',
+                'list',
+                'size:'.self::ANSWER_COUNT,
+            ],
+            'answers.*' => [
+                'required',
+                'string',
+                'max:'.self::MOST_ANSWER_CHARACTERS,
+            ],
         ];
     }
 }

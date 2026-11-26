@@ -101,8 +101,8 @@ final class ApproveShareRequestTest extends TestCase
 
         TEXT, TestProjects::local()->id));
 
-        $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
+        $this->app->make(CurrentActorSetter::class)->clear();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->start = $this->journal->signedStart('Test agent');
     }

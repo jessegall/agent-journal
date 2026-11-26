@@ -20,6 +20,10 @@ final class StartReceiptInput extends Data
      */
     public static function rules(): array
     {
-        return ['request' => ['required', 'string', 'max:64']];
+        return ['request' => [
+            'required',
+            'string',
+            'max:64',
+        ]];
     }
 }

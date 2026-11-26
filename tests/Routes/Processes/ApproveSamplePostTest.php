@@ -27,6 +27,8 @@ final class ApproveSamplePostTest extends GuardedRouteEntryTestCase
         $this->openAcmeRequest();
         $digest = $this->request()->source_digest;
 
+        $journal->actAs('Owner');
+
         return RouteCall::as(Caller::User)
             ->parameters([
                 'request' => $this->requestId,

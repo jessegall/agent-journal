@@ -7,7 +7,6 @@ namespace Tests\Commands\Projects;
 use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use App\Enums\Connections\BindingReadiness;
 use App\Models\Projects\DeviceGrant;
-use App\Models\Projects\ProjectBinding;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\TasksDomain;
@@ -65,7 +64,7 @@ final class RevokeDeviceGrantTest extends TestCase
         ], ['Authorization' => "Bearer {$grant}"])->assertUnauthorized();
         $this->assertNotSame(
             BindingReadiness::Revoked,
-            ProjectBinding::query()->findOrFail($binding)->readinessAt(CarbonImmutable::now()),
+            $this->bindings()->findOrFail($binding)->readinessAt(CarbonImmutable::now()),
         );
     }
 

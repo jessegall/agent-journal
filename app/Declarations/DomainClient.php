@@ -281,17 +281,17 @@ final readonly class DomainClient
     /**
      * @return class-string<Data>
      */
-    private function ownedDataClass(string $declaration, string $reader, string $dataClass): string
+    private function ownedDataClass(string $declaration, string $reader, string $class): string
     {
-        if ($dataClass === '' || ! Reflector::factory()->isSubclassOf($dataClass, Data::class)) {
+        if ($class === '' || ! Reflector::factory()->isSubclassOf($class, Data::class)) {
             throw ClientResolverInvalid::loaderShape($declaration, $reader);
         }
 
-        if (! $this->ownsType($dataClass)) {
-            throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $dataClass, $this->name);
+        if (! $this->ownsType($class)) {
+            throw ClientResolverInvalid::loaderTypeNotOwned($declaration, $class, $this->name);
         }
 
-        return $dataClass;
+        return $class;
     }
 
     /**

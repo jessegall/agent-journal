@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Commands;
 
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Projects\AgentProjects;
 use App\Events\Sessions\SessionClosed;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
@@ -27,6 +28,7 @@ use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Exceptions\SimulatedFailure;
@@ -88,6 +90,8 @@ final class CloseDocumentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->app->instance(AgentProjects::class, new LocalAgentProjects());
 
         $this->journal->actAsUserId(TestIds::of(1));
         $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', self::BODY, TestProjects::local()->id));

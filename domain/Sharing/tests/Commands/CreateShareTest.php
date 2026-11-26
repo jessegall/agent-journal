@@ -334,7 +334,10 @@ final class CreateShareTest extends TestCase
         $local = Document::query()->where('title', 'Local design')->sole();
         $global = Document::query()->where('title', 'Shared design')->sole();
 
-        foreach ([$local, $global] as $document) {
+        foreach ([
+            $local,
+            $global,
+        ] as $document) {
             Link::create(
                 $this->root->type,
                 $this->root->id,
@@ -368,8 +371,8 @@ final class CreateShareTest extends TestCase
         Ship it.
         TEXT, TestProjects::local()->id));
 
-        $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
+        $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorReference::forUser($this->owner->id),
@@ -385,8 +388,8 @@ final class CreateShareTest extends TestCase
             ),
         );
 
-        $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();
+        $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->artisan(
             'share:create',

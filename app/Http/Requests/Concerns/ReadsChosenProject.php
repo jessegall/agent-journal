@@ -19,7 +19,11 @@ trait ReadsChosenProject
      */
     protected function projectRules(): array
     {
-        return [ProjectField::NAME => ['sometimes', 'string', 'max:64']];
+        return [ProjectField::NAME => [
+            'sometimes',
+            'string',
+            'max:64',
+        ]];
     }
 
     /**

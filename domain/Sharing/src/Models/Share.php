@@ -475,12 +475,12 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
 
     private static function forRoot(
         RecordIdentity $root,
-        ProjectOwner $rootOwner,
+        ProjectOwner $owner,
         ShareStatus $state,
         CarbonImmutable $expiresAt,
     ): self {
         $share = new self();
-        $share->assignOwner($rootOwner);
+        $share->assignOwner($owner);
         $share->status = $state;
         $share->root_type = $root->type;
         $share->root_id = $root->id;

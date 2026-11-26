@@ -103,7 +103,7 @@ final class OpenBindingMainRuntimeTest extends TestCase
     {
         $this->issueLine($ticket);
 
-        return ProjectBinding::query()->findOrFail(
+        return $this->bindings()->findOrFail(
             $this->redeemLine($ticket, $nonce)->assertCreated()->json('bindingId'),
         );
     }

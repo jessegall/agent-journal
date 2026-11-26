@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
+use App\Http\Middleware\Web\SelectProject;
 use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\PlansDomain;
@@ -14,6 +15,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner files a new plan and is sent to its page.
@@ -32,6 +34,7 @@ final class CreatePlanPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
+            ->headers([SelectProject::HEADER => TestProjects::local()->id])
             ->payload([
                 'title' => 'Release',
                 'brief' => 'Ship version 6.',
