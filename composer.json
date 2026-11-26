@@ -144,7 +144,12 @@
         ],
         "test": [
             "Composer\\Config::disableProcessTimeout",
+            "@test:go",
             "@php tests/bin/in-docker.php test:inside"
+        ],
+        "test:go": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh scripts/go-tests.sh"
         ],
         "test:inside": [
             "Composer\\Config::disableProcessTimeout",
