@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Terminals\ReleaseTerminalControl\ReleaseTerminalControlCommand;
+use App\Models\Drivers\TerminalGrant;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\Terminals\TakesTerminalControl;
 
 /**
- * The entry test of POST web.release-terminal-control, as the generator wrote it.
+ * The holder of a terminal's control gives it back.
  */
-#[Generated]
 #[TestsRoute('POST', 'web.release-terminal-control')]
 final class ReleaseTerminalControlPostTest extends GuardedRouteEntryTestCase
 {
+    use OpensTerminalRuntimes;
+    use TakesTerminalControl;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST web.release-terminal-control', [
-            '{agent}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request terminal-control-release',
-        ]);
+        $journal->owner();
+        $agentId = $this->grantedRuntime()->session->agent_id;
+        $grant = TerminalGrant::query()->acrossActors()->sole();
+
+        return RouteCall::recorded('terminal-control-release', [
+            '01JPAGEREQUESTAGENT0000000' => $agentId,
+        ])
+            ->reply(ReleaseTerminalControlCommand::class, $grant->id)
+            ->expects(ReleaseTerminalControlCommand::class, [
+                'agentId' => $agentId,
+                'grantId' => self::GRANT,
+            ]);
     }
 }

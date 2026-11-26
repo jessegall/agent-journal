@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.host.reports.protection, as the generator wrote it.
+ * The host reports how it protects a driver's files.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.host.reports.protection')]
 final class HostReportsProtectionPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.host.reports.protection', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $host = $journal->owner()->enrolledHost();
+
+        return RouteCall::as(Caller::SharedHost, $host)
+            ->payload([
+                'driver' => 'claude-code',
+                'build' => '2.1.323',
+                'platform' => 'linux-container',
+                'items' => [
+                    [
+                        'item' => 'settings',
+                        'isEnforced' => true,
+                        'evidence' => 'run-1',
+                        'reason' => '',
+                    ],
+                ],
+            ])
+            ->expects(RecordHostProtectionCommand::class, [
+                'hostId' => $host->hostId,
+            ]);
     }
 }

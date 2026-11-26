@@ -4,26 +4,42 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
+use App\Values\CleanupProgress;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST profiles.account-host.cleanup, as the generator wrote it.
+ * The host reports what it removed while cleaning up an account.
  */
-#[Generated]
 #[TestsRoute('POST', 'profiles.account-host.cleanup')]
 final class AccountHostCleanupPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST profiles.account-host.cleanup', [
-            '{account}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $host = $journal->owner()->enrolledHost();
+        $accountId = (string) Str::ulid();
+
+        return RouteCall::as(Caller::SharedHost, $host)
+            ->parameters([
+                'account' => $accountId,
+            ])
+            ->payload([
+                'generation' => 1,
+                'removed' => [],
+                'store_removed' => true,
+                'directory_removed' => true,
+            ])
+            ->reply(CleanAccountCommand::class, true)
+            ->expects(CleanAccountCommand::class, [
+                'hostId' => $host->hostId,
+                'accountId' => $accountId,
+                'generation' => 1,
+                'progress' => new CleanupProgress(true, true),
+            ]);
     }
 }

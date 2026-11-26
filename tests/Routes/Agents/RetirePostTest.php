@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Support\AssignmentResult;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.retire, as the generator wrote it.
+ * The owner retires an agent, which gives back what it held.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.retire')]
 final class RetirePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.retire', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Main');
+
+        return RouteCall::as(Caller::User)
+            ->payload([
+                'agentId' => $start->agent->id,
+            ])
+            ->reply(RetireAgentCommand::class, new AssignmentResult([], []))
+            ->expects(RetireAgentCommand::class, [
+                'agentId' => $start->agent->id,
+            ]);
     }
 }

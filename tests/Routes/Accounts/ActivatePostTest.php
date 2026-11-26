@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.activate, as the generator wrote it.
+ * The owner makes one of their accounts the one agents sign in with.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.activate')]
 final class ActivatePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.activate', [
-            '{account}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-activate',
-        ]);
+        $journal->owner()->user('Member');
+        $accountId = strtolower((string) Str::ulid());
+
+        return RouteCall::recorded('account-activate', [
+            '01JPAGEREQUESTACCOUNT00000' => $accountId,
+        ])
+            ->expects(SwitchAccountCommand::class, [
+                'accountId' => $accountId,
+                'expectedChangeNumber' => 0,
+            ])
+            ->hiddenFrom('Member');
     }
 }

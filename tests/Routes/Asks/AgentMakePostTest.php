@@ -4,25 +4,45 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Asks;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
+use App\Support\ProfileProposal;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST asks.agent.make, as the generator wrote it.
+ * An agent asks its supervisor a question, under the request key it sends.
  */
-#[Generated]
 #[TestsRoute('POST', 'asks.agent.make')]
 final class AgentMakePostTest extends GuardedRouteEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST asks.agent.make', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()
+            ->activatedProfile(ProfileProposal::fromConfiguration((array) config('profiles')))
+            ->signedStart('Requester', 'journal-worker');
+        $journal->idleAgent('Supervisor', 'journal-code-reviewer');
+        $ask = $journal->runAs('Requester', new AskSupervisorCommand('Which input?', 'asked-before'));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'request_key' => 'ask-1',
+                'body' => 'Which input?',
+            ])
+            ->reply(AskSupervisorCommand::class, $ask)
+            ->expects(AskSupervisorCommand::class, [
+                'body' => 'Which input?',
+                'submissionKey' => 'ask-1',
+                'type' => null,
+            ]);
     }
 }

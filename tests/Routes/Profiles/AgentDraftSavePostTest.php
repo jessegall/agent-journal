@@ -4,25 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Values\ProfileKey;
+use App\Values\ScriptSource;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST profiles.agent.draft.save, as the generator wrote it.
+ * An agent saves a profile's script draft at the revision it read.
  */
-#[Generated]
 #[TestsRoute('POST', 'profiles.agent.draft.save')]
 final class AgentDraftSavePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST profiles.agent.draft.save', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'request_key' => 'save-draft-1',
+                'profile' => 'draft-test',
+                'expectedRevision' => 0,
+                'source' => 'start',
+            ])
+            ->reply(SaveProfileDraftCommand::class, 1)
+            ->expects(SaveProfileDraftCommand::class, [
+                'profile' => ProfileKey::from('draft-test'),
+                'expectedRevision' => 0,
+                'source' => new ScriptSource('start'),
+            ]);
     }
 }

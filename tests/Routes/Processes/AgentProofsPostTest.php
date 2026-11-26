@@ -4,26 +4,48 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.proofs, as the generator wrote it.
+ * An agent asks to prove its draft reader against the samples it read.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.proofs')]
 final class AgentProofsPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.proofs', [
-            '{commandRequest}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $passed = $this->sample(0, self::PASSED_OUTPUT, isRead: true);
+        $reader = $this->reader();
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'commandRequest' => $this->requestId,
+            ])
+            ->payload([
+                'reader_revision' => $reader,
+                'runs' => [
+                    $passed,
+                ],
+                'request_key' => 'prove-1',
+            ])
+            ->reply(ProveReaderCommand::class, strtolower((string) Str::ulid()))
+            ->expects(ProveReaderCommand::class, [
+                'commandRequestId' => $this->requestId,
+                'readerRevisionId' => $reader,
+                'runIds' => [
+                    $passed,
+                ],
+            ]);
     }
 }

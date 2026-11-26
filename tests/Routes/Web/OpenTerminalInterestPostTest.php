@@ -4,27 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
+use App\Models\Drivers\TerminalView;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\Terminals\TakesTerminalControl;
 
 /**
- * The entry test of POST web.open-terminal-interest, as the generator wrote it.
+ * The owner starts watching an agent's terminal.
  */
-#[Generated]
 #[TestsRoute('POST', 'web.open-terminal-interest')]
 final class OpenTerminalInterestPostTest extends GuardedRouteEntryTestCase
 {
+    use OpensTerminalRuntimes;
+    use TakesTerminalControl;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST web.open-terminal-interest', [
-            '{agent}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request terminal-open',
-        ]);
+        $journal->owner();
+        $runtime = $this->controllableRuntime();
+        $agentId = $runtime->session->agent_id;
+        $interest = $this->openInterest($runtime);
+
+        return RouteCall::recorded('terminal-open', [
+            '01JPAGEREQUESTAGENT0000000' => $agentId,
+            'interest-1' => $interest,
+        ])
+            ->reply(OpenTerminalViewCommand::class, TerminalView::query()->acrossActors()->sole()->id)
+            ->expects(OpenTerminalViewCommand::class, [
+                'agentId' => $agentId,
+                'openRequestId' => 'request-1',
+            ]);
     }
 }

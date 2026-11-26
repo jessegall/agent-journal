@@ -40,7 +40,15 @@ abstract class RouteEntryTestCase extends TestCase
 
     public function test_the_request_is_reached_and_dispatches_what_it_declares(): void
     {
-        $call = $this->arrangedCall();
+        $this->assertReachedAndDispatchesItsCommands($this->arrangedCall());
+    }
+
+    /**
+     * Sends the call as its caller: the answer is no error, the commands it sends are the declared ones and exactly
+     * those it expects, and a page renders its declared component; a test of a second case of the route sends its own.
+     */
+    protected function assertReachedAndDispatchesItsCommands(RouteCall $call): void
+    {
         $this->journal->sinkCommands()->sinkReplies($call->replies);
 
         $response = $this->send($call, $call->caller);
@@ -109,7 +117,8 @@ abstract class RouteEntryTestCase extends TestCase
                 $call->payload,
                 [...$call->headers, 'Authorization' => "Bearer {$call->signer}"],
             ),
-            Caller::Guest, Caller::Public, Caller::User => $this->journal->jsonRoute(
+            Caller::Public => $this->sendPublic($call, $parameters, $query),
+            Caller::Guest, Caller::User => $this->journal->jsonRoute(
                 $method,
                 $name,
                 $parameters,
@@ -118,6 +127,35 @@ abstract class RouteEntryTestCase extends TestCase
                 $call->headers,
             ),
         };
+    }
+
+    /**
+     * A public call: signed by the host it names when its controller verifies the host itself, else sent as it is.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @param  array<string, mixed>  $query
+     * @return TestResponse<Response>
+     */
+    private function sendPublic(RouteCall $call, array $parameters, array $query): TestResponse
+    {
+        if ($call->signer instanceof EnrolledHost) {
+            return $this->journal->hostCall(
+                $call->signer,
+                $this->entry()->method,
+                $this->targetOf($call),
+                $call->payload,
+                headers: $call->headers,
+            );
+        }
+
+        return $this->journal->jsonRoute(
+            $this->entry()->method,
+            $this->entry()->name,
+            $parameters,
+            $query,
+            $call->payload,
+            $call->headers,
+        );
     }
 
     /**

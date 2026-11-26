@@ -4,27 +4,72 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
+use App\Enums\Agents\ConversationModeType;
+use App\Enums\Drivers\DriverSourceType;
+use App\Support\DefaultDrivers;
+use App\Support\StartReceipt;
+use App\Values\ChosenAccount;
+use App\Values\ModelSelection;
+use App\Values\ProfileKey;
+use App\Values\SelectedDriver;
+use App\Values\SelectionSource;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST profiles.start-main, as the generator wrote it.
+ * The owner starts a main agent on the profile with the model, driver and account they chose.
  */
-#[Generated]
 #[TestsRoute('POST', 'profiles.start-main')]
 final class StartMainPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST profiles.start-main', [
-            '{profile}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request session-start',
-        ]);
+        $agent = $journal->owner()->idleAgent('Main', 'main-agent')->agentCalled('Main');
+        $requestId = strtolower((string) Str::ulid());
+        $accountId = strtolower((string) Str::ulid());
+        $receipt = new StartReceipt(
+            $requestId,
+            strtolower((string) Str::ulid()),
+            $agent->id,
+            new SelectedDriver(
+                DefaultDrivers::CLAUDE_CODE,
+                'claude-opus-5-5',
+                ModelSelection::named('claude-opus-5-5'),
+                new SelectionSource(DriverSourceType::Profile, 'journal-main', 4),
+            ),
+            true,
+            ConversationModeType::New,
+            'claude-opus-5-5',
+            [],
+        );
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'profile' => 'journal-main',
+            ])
+            ->payload([
+                'requestId' => $requestId,
+                'agentId' => $agent->id,
+                'model' => 'claude-opus-5-5',
+                'driver' => DefaultDrivers::CLAUDE_CODE,
+                'accountId' => $accountId,
+                'accountRevision' => 4,
+                'previewRevision' => 4,
+            ])
+            ->reply(StartProfileMainCommand::class, $receipt)
+            ->expects(StartProfileMainCommand::class, [
+                'requestId' => $requestId,
+                'agentId' => $agent->id,
+                'profile' => ProfileKey::from('journal-main'),
+                'requested' => ModelSelection::named('claude-opus-5-5'),
+                'driverKey' => DefaultDrivers::CLAUDE_CODE,
+                'chosenAccount' => new ChosenAccount($accountId, 4),
+                'previewRevision' => 4,
+            ]);
     }
 }

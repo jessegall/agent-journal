@@ -4,27 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST accounts.cancel-sign-in, as the generator wrote it.
+ * The owner cancels a sign-in that is under way.
  */
-#[Generated]
 #[TestsRoute('POST', 'accounts.cancel-sign-in')]
 final class CancelSignInPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST accounts.cancel-sign-in', [
-            '{attempt}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request account-sign-in-cancel',
-        ]);
+        $journal->owner()->user('Member');
+        $attemptId = strtolower((string) Str::ulid());
+
+        return RouteCall::recorded('account-sign-in-cancel', [
+            '01JPAGEREQUESTATTEMPT00000' => $attemptId,
+        ])
+            ->expects(CancelSignInCommand::class, [
+                'attemptId' => $attemptId,
+            ])
+            ->hiddenFrom('Member');
     }
 }

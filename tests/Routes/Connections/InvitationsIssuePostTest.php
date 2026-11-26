@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Values\IssuedInvitation;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST connections.invitations.issue, as the generator wrote it.
+ * The owner issues an install line for a new project.
  */
-#[Generated]
 #[TestsRoute('POST', 'connections.invitations.issue')]
 final class InvitationsIssuePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST connections.invitations.issue', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+
+        return RouteCall::as(Caller::User)
+            ->payload([
+                'issuanceKey' => 'issue-1',
+            ])
+            ->reply(IssueProjectInvitationCommand::class, new IssuedInvitation(
+                strtolower((string) Str::ulid()),
+                '2026-11-26T11:00:00+00:00',
+                'IA-1',
+                1,
+            ))
+            ->expects(IssueProjectInvitationCommand::class, [
+                'issuanceKey' => 'issue-1',
+                'projectId' => null,
+                'environmentId' => null,
+            ]);
     }
 }

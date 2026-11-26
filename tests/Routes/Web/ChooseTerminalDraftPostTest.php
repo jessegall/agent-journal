@@ -4,27 +4,40 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Enums\Terminals\TerminalDraftChoice;
+use App\Models\Drivers\TerminalGrant;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\Terminals\TakesTerminalControl;
 
 /**
- * The entry test of POST web.choose-terminal-draft, as the generator wrote it.
+ * The holder of a terminal's control chooses what becomes of the draft on the screen.
  */
-#[Generated]
 #[TestsRoute('POST', 'web.choose-terminal-draft')]
 final class ChooseTerminalDraftPostTest extends GuardedRouteEntryTestCase
 {
+    use OpensTerminalRuntimes;
+    use TakesTerminalControl;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST web.choose-terminal-draft', [
-            '{agent}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request terminal-control-choose-draft',
-        ]);
+        $journal->owner();
+        $agentId = $this->grantedRuntime()->session->agent_id;
+        $grant = TerminalGrant::query()->acrossActors()->sole();
+
+        return RouteCall::recorded('terminal-control-choose-draft', [
+            '01JPAGEREQUESTAGENT0000000' => $agentId,
+        ])
+            ->reply(ChooseTerminalDraftCommand::class, $grant->id)
+            ->expects(ChooseTerminalDraftCommand::class, [
+                'agentId' => $agentId,
+                'grantId' => self::GRANT,
+                'choice' => TerminalDraftChoice::Send,
+                'sequence' => 4,
+            ]);
     }
 }

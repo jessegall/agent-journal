@@ -4,26 +4,50 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Agents\RecheckDriverSwitch\RecheckDriverSwitchCommand;
+use App\Contracts\Drivers\DriverCatalogue;
+use App\Enums\Drivers\DriverType;
+use App\Models\Drivers\DriverSwitch;
+use App\Support\DefaultDrivers;
+use App\Values\ChosenAccount;
+use App\Values\DriverSwitchTarget;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST agents.switch.recheck, as the generator wrote it.
+ * The owner asks the journal to check a driver switch again.
  */
-#[Generated]
 #[TestsRoute('POST', 'agents.switch.recheck')]
 final class SwitchRecheckPostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST agents.switch.recheck', [
-            '{switch}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Main');
+        $switch = DriverSwitch::create(
+            strtolower((string) Str::ulid()),
+            $start->session,
+            0,
+            new DriverSwitchTarget(
+                DefaultDrivers::CODEX,
+                DriverType::Headless,
+                new ChosenAccount(strtolower((string) Str::ulid()), 0),
+                null,
+                false,
+            ),
+            $this->app->make(DriverCatalogue::class)->pinned(DefaultDrivers::CODEX, DriverType::Headless),
+            'owner',
+        );
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'switch' => $switch->id,
+            ])
+            ->expects(RecheckDriverSwitchCommand::class, [
+                'switchId' => $switch->id,
+            ]);
     }
 }

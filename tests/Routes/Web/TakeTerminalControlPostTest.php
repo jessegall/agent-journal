@@ -4,27 +4,43 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Models\Drivers\TerminalGrant;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\Terminals\TakesTerminalControl;
 
 /**
- * The entry test of POST web.take-terminal-control, as the generator wrote it.
+ * The owner watching a terminal asks to take its control.
  */
-#[Generated]
 #[TestsRoute('POST', 'web.take-terminal-control')]
 final class TakeTerminalControlPostTest extends GuardedRouteEntryTestCase
 {
+    use OpensTerminalRuntimes;
+    use TakesTerminalControl;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST web.take-terminal-control', [
-            '{agent}',
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request terminal-control-take',
-        ]);
+        $journal->owner();
+        $runtime = $this->controllableRuntime();
+        $agentId = $runtime->session->agent_id;
+        $interest = $this->openInterest($runtime);
+        $this->asOwner(new TakeTerminalControlCommand($agentId, $interest, (string) Str::ulid()));
+        $grant = TerminalGrant::query()->acrossActors()->sole();
+
+        return RouteCall::recorded('terminal-control-take', [
+            '01JPAGEREQUESTAGENT0000000' => $agentId,
+            'interest-1' => $interest,
+        ])
+            ->reply(TakeTerminalControlCommand::class, $grant->id)
+            ->expects(TakeTerminalControlCommand::class, [
+                'agentId' => $agentId,
+                'readInterestId' => $interest,
+                'takeId' => 'take-1',
+            ]);
     }
 }

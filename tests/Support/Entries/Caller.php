@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
+use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Http\Middleware\AuthenticateDeviceGrant;
 
 /**
@@ -21,8 +22,8 @@ enum Caller: string
     case Public = 'public';
 
     /**
-     * The caller the gathered middleware lets in: an agent, a relay or other host, a device grant, a guest, a user, and
-     * otherwise anyone.
+     * The caller the gathered middleware lets in: an agent (by its group or its middleware alone), a relay or other
+     * host, a device grant, a guest, a user, and otherwise anyone.
      *
      * @param  list<string>  $middleware
      */
@@ -35,7 +36,7 @@ enum Caller: string
         );
 
         return match (true) {
-            $named('journal.agent') => self::Agent,
+            $named('journal.agent'), $named(AuthenticateAgent::class) => self::Agent,
             $named('journal.host:relay') => self::RelayHost,
             $prefixed('journal.host') !== [] => self::SharedHost,
             $named(AuthenticateDeviceGrant::class) => self::DeviceGrant,

@@ -4,26 +4,41 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Values\CleanPreview;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.clean-run, as the generator wrote it.
+ * The owner cleans the output of one run.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.clean-run')]
 final class CleanRunPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.clean-run', [
-            '{run}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'run' => $runId,
+            ])
+            ->reply(CleanProcessOutputCommand::class, new CleanPreview([
+                $runId,
+            ], [], 0, true))
+            ->expects(CleanProcessOutputCommand::class, [
+                'runIds' => [
+                    $runId,
+                ],
+                'isPreview' => false,
+            ]);
     }
 }

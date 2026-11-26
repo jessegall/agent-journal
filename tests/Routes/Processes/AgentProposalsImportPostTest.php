@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\Values\ImportedProposals;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\HoldsCommandRequests;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.proposals.import, as the generator wrote it.
+ * An agent imports a file of rule declarations as proposals.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.proposals.import')]
 final class AgentProposalsImportPostTest extends GuardedRouteEntryTestCase
 {
+    use HoldsCommandRequests;
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.proposals.import', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $declarations = $this->declarationFile('import-1');
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->payload([
+                'declarations' => $declarations,
+                'request_key' => 'import-1',
+            ])
+            ->reply(ImportRuleProposalsCommand::class, new ImportedProposals([]))
+            ->expects(ImportRuleProposalsCommand::class, [
+                'declarations' => $declarations,
+            ]);
     }
 }

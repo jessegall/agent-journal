@@ -4,26 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.output.bytes, as the generator wrote it.
+ * An agent reads the raw bytes of a run's output, and the read is kept as evidence.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.output.bytes')]
 final class AgentOutputBytesPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.output.bytes', [
-            '{processRun}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $runId = $this->normalRun(0, self::PASSED_OUTPUT)->process_run_id;
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'processRun' => $runId,
+            ])
+            ->payload([
+                'part' => 1,
+                'stream' => 'stdout',
+            ])
+            ->reply(RecordEvidenceReadsCommand::class, 1)
+            ->expects(RecordEvidenceReadsCommand::class, [
+                'processRunId' => $runId,
+            ]);
     }
 }

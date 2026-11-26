@@ -4,26 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\CommandRules\WithdrawRuleProposal\WithdrawRuleProposalCommand;
+use App\Models\CommandRules\RuleProposal;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.proposals.withdraw, as the generator wrote it.
+ * An agent withdraws its rule proposal.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.proposals.withdraw')]
 final class AgentProposalsWithdrawPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.proposals.withdraw', [
-            '{proposal}',
-            'the payload',
-            'the expected commands',
-        ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $proposal = RuleProposal::query()->sole();
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->parameters([
+                'proposal' => $proposal->id,
+            ])
+            ->payload([
+                'request_key' => 'withdraw-1',
+            ])
+            ->reply(WithdrawRuleProposalCommand::class, $proposal->id)
+            ->expects(WithdrawRuleProposalCommand::class, [
+                'proposalId' => $proposal->id,
+            ]);
     }
 }

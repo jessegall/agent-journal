@@ -4,24 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Text;
 
-use Tests\Support\Entries\Attributes\Generated;
+use Domain\Documents\DocumentsDomain;
+use Domain\Documents\Tests\Fixtures\DocumentFixtures;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST text.agent.version, as the generator wrote it.
+ * An agent reads which revision of a document is current: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'text.agent.version')]
 final class AgentVersionPostTest extends GuardedRouteEntryTestCase
 {
+    private const string BODY = "# Plan\n\nFirst line.\nSecond line.\n";
+
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(DocumentsDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST text.agent.version', [
-            'the payload',
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->fixtures(DocumentFixtures::class)
+            ->publishedDocument('Design', 'Owner', self::BODY)
+            ->documentCalled('Design');
+
+        return RouteCall::as(Caller::Agent, $start)->payload([
+            'target' => 'doc '.$document->number,
         ]);
     }
 }

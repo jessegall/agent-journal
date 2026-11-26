@@ -68,6 +68,14 @@ enum EntryType: string
     }
 
     /**
+     * Whether one test class alone may name an entry of this type: every type but a read, which several tests may read.
+     */
+    public function hasOneTestClass(): bool
+    {
+        return $this !== self::Read;
+    }
+
+    /**
      * Whether each entry of this type has one test file at a set path: a command, state or middleware does, while a
      * route, tool, hook moment or read's test may sit anywhere in its folder.
      */

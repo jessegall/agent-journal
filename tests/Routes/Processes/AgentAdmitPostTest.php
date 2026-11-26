@@ -4,24 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
+use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST processes.agent.admit, as the generator wrote it.
+ * An agent has a shell line of an approved command admitted as a run: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'processes.agent.admit')]
 final class AgentAdmitPostTest extends GuardedRouteEntryTestCase
 {
+    use RunsAcmeRequests;
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST processes.agent.admit', [
-            'the payload',
+        config([
+            'processes.runner' => true,
         ]);
+        $journal->owner();
+        $this->openAcmeRequest();
+        $this->approvePair();
+
+        return RouteCall::as(Caller::Agent, $this->start)
+            ->payload([
+                'line' => 'acme verify',
+                'dialect' => 'bash',
+                'working_folder' => sys_get_temp_dir(),
+                'request_key' => 'admit-1',
+            ]);
     }
 }

@@ -57,8 +57,9 @@ final class RouteCall
     public private(set) string|null $recordedAddress = null;
 
     /**
-     * @param  TestStart|EnrolledHost|string|null  $signer  the start that signs an agent call, the host of a host call,
-     *                                                      or the bearer token of a device grant's call
+     * @param  TestStart|EnrolledHost|string|null  $signer  the start that signs an agent call, the host of a host call
+     *                                                      or of a public call its controller verifies, or the bearer
+     *                                                      token of a device grant's call
      */
     private function __construct(
         public readonly Caller $caller,

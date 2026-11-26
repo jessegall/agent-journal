@@ -4,25 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use Tests\Support\Entries\Attributes\Generated;
+use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
+use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST profiles.sign-in-host.reconcile, as the generator wrote it.
+ * The host names the sign-ins it still runs, so the journal ends the others.
  */
-#[Generated]
 #[TestsRoute('POST', 'profiles.sign-in-host.reconcile')]
 final class SignInHostReconcilePostTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST profiles.sign-in-host.reconcile', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $host = $journal->owner()->enrolledHost();
+        $attemptId = (string) Str::ulid();
+
+        return RouteCall::as(Caller::SharedHost, $host)
+            ->payload([
+                'running' => [
+                    $attemptId,
+                ],
+            ])
+            ->reply(ReconcileSignInsCommand::class, 0)
+            ->expects(ReconcileSignInsCommand::class, [
+                'hostId' => $host->hostId,
+                'runningAttemptIds' => [
+                    $attemptId,
+                ],
+            ]);
     }
 }

@@ -22,6 +22,7 @@ use Tests\Architecture\Support\EntryPoints\LoaderEntries;
 use Tests\Architecture\Support\EntryPoints\McpToolEntries;
 use Tests\Architecture\Support\EntryPoints\MiddlewareEntries;
 use Tests\Architecture\Support\EntryPoints\NamedEntry;
+use Tests\Architecture\Support\EntryPoints\PageRecordings;
 use Tests\Architecture\Support\EntryPoints\RouteEntries;
 use Tests\Architecture\Support\EntryPoints\StateEntries;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -30,8 +31,9 @@ use Tests\Support\TimeLimits\TimeLimit;
 /**
  * Every way into the journal is read from the booted code, every entry a test names from the Tests attributes of the
  * test classes, and the two are compared: a test names only entries that exist, one of its kind where a kind has one
- * test each, from the place its kind's tests belong, in a folder the test suites run; every read has its test, every
- * journal route has a name, every native hook event a HookEvent case, and the routes of other controllers are the ones listed here.
+ * test each, from the place its kind's tests belong, in a folder the test suites run; every entry has one test class
+ * naming it, every recorded page request is loaded by its route's test, every journal route has a name, every native
+ * hook event a HookEvent case, and the routes of other controllers are the ones listed here.
  */
 #[TimeLimit(seconds: 60, reason: 'It reads the attributes of every test class of core and the domains.')]
 final class EntryPointTestsTest extends TestCase
@@ -89,14 +91,19 @@ final class EntryPointTestsTest extends TestCase
         $this->assertSame([], array_keys(array_filter($counts, fn (int $count) => $count > 1)));
     }
 
+    public function test_no_two_test_classes_name_one_entry(): void
+    {
+        $this->assertSame([], $this->findings()->doubles());
+    }
+
     public function test_each_test_sits_where_its_kinds_tests_belong(): void
     {
         $this->assertSame([], $this->findings()->misplaced());
     }
 
-    public function test_every_read_has_its_test(): void
+    public function test_every_entry_has_a_test_naming_it(): void
     {
-        $this->assertSame([], $this->findings()->untestedReads());
+        $this->assertSame([], $this->findings()->untested());
     }
 
     public function test_every_folder_of_entry_tests_is_in_a_test_suite(): void
@@ -119,6 +126,13 @@ final class EntryPointTestsTest extends TestCase
         }
 
         $this->assertSame([], $unlisted);
+    }
+
+    public function test_every_recorded_page_request_is_loaded_by_its_route_test(): void
+    {
+        $recordings = new PageRecordings(base_path(), $this->app->make(Router::class));
+
+        $this->assertSame([], $recordings->unloaded($this->named()));
     }
 
     public function test_every_journal_route_is_named(): void
@@ -160,7 +174,7 @@ final class EntryPointTestsTest extends TestCase
 
     private function findings(): EntryTestFindings
     {
-        return new EntryTestFindings($this->entries(), $this->named());
+        return new EntryTestFindings($this->entries(), $this->named(), $this->attributes()->files());
     }
 
     /**

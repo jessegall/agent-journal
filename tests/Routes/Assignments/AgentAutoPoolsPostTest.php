@@ -4,24 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Assignments;
 
-use Tests\Support\Entries\Attributes\Generated;
+use Domain\Tasks\TasksDomain;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST assignments.agent.auto.pools, as the generator wrote it.
+ * An agent lists the pools tasks can be taken from: nothing is sent on.
  */
-#[Generated]
 #[TestsRoute('POST', 'assignments.agent.auto.pools')]
 final class AgentAutoPoolsPostTest extends GuardedRouteEntryTestCase
 {
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST assignments.agent.auto.pools', [
-            'the payload',
-        ]);
+        $journal->owner();
+        $start = $journal->signedStart('Planner');
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'assignable_type' => 'tasks.task',
+            ]);
     }
 }
