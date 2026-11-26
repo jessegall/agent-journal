@@ -96,7 +96,7 @@ final class WorkOnTaskState extends AgentState implements DurableState, UniqueSu
         ]));
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
     }

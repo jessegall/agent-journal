@@ -68,7 +68,7 @@ final class WorkOnPlanState extends AgentState implements DurableState, UniqueSu
         ]));
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof PlanEvent || $event->planId === $this->planId;
     }

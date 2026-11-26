@@ -42,7 +42,7 @@ final class AwaitSkillsState extends AgentState implements UniqueState
         return new Some($this->reason());
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof SkillPublicationEvent || $event->publicationId === $this->publicationId;
     }

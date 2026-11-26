@@ -56,7 +56,7 @@ final class LogDueState extends AgentState implements UniqueSubjectState
         return new Some($this->reason());
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof TaskEvent || $event->taskId === $this->taskId;
     }

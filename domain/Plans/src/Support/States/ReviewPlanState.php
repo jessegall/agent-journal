@@ -61,7 +61,7 @@ final class ReviewPlanState extends AgentState implements DurableState, UniqueSu
         return new Some($this->reviewText());
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof PlanEvent || $event->planId === $this->planId;
     }

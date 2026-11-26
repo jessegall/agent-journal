@@ -51,7 +51,7 @@ final class FollowSequenceState extends AgentState implements DurableState
         return new Some($this->stepText());
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof SequenceRunEvent || $event->runId === $this->runId;
     }

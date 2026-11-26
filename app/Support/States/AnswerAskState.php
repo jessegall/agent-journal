@@ -49,7 +49,7 @@ final class AnswerAskState extends AgentState implements DurableState, UniqueSub
         return new Some(AgentText::of('core.asks.waiting'));
     }
 
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return ! $event instanceof AskEvent || $event->askId === $this->askId;
     }

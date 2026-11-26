@@ -61,10 +61,10 @@ abstract class AgentState implements HookAnswerer
     }
 
     /**
-     * Whether the state hears the event, asked before its listener for it is called; a state that follows one subject
+     * Whether the state listens to the event, asked before its listener for it is called; a state that follows one subject
      * answers no for the events of any other, so its listeners need no check of their own.
      */
-    public function hears(Event $event): bool
+    public function listensTo(Event $event): bool
     {
         return true;
     }

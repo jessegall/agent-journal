@@ -29,7 +29,7 @@ final class StateMethods
     /**
      * The method every state asks before its listeners, which takes an Event but is no listener itself.
      */
-    private const string HEARS = 'hears';
+    private const string LISTENS_TO = 'listensTo';
 
     /**
      * The types a hook method returns, and so the only ones an event method may return besides void.
@@ -105,7 +105,7 @@ final class StateMethods
 
         if (Reflector::of(AgentState::class)->hasMethod($name)
             || Reflector::of(TickableState::class)->hasMethod($name)) {
-            if ($takesEvent && $name !== self::HEARS) {
+            if ($takesEvent && $name !== self::LISTENS_TO) {
                 throw InvalidStateMethod::for($method, 'uses a reserved state method name for an event listener.');
             }
 

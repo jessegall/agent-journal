@@ -38,7 +38,7 @@ final readonly class StateMethodSelector
         return $this->select(
             $stack,
             fn (AgentState $state) => $this->methods->methodFor($state::class, $event)
-                ->filter(fn () => $state->hears($event)),
+                ->filter(fn () => $state->listensTo($event)),
         );
     }
 
