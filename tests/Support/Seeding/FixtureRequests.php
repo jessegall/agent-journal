@@ -12,6 +12,7 @@ use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Api\SignedCall;
+use App\Bus\OutsideCommandAllowance;
 use App\Models\Access\User;
 use App\Stacks\HookAnswer;
 use App\Support\ActorReference;
@@ -49,9 +50,9 @@ final class FixtureRequests
     }
 
     /**
-     * Sends the hook through the target agent's state machine under a signed call id of its own, so it is answered
-     * rather than replayed, and returns the answer the stack gave it; the test driver replies to a stop with its stop
-     * reply and to every other hook with an allow, and the selection in place comes back on every exit.
+     * Sends the hook through the target agent's state machine under a signed call id of its own, refusing writes
+     * outside a command as the hook route does, and returns the stack's answer; the test driver replies to a stop
+     * with its stop reply and to every other hook with an allow, and the selection in place comes back on every exit.
      */
     public function answerHook(StackTarget $target, HookInput $input, DriverCapabilities $capabilities): HookAnswer
     {
@@ -67,11 +68,13 @@ final class FixtureRequests
 
         $this->during(
             fn () => $this->bindAgent($target, $callId),
-            fn () => $this->app->make(AgentStateMachine::class)->answer(
-                $input,
-                $capabilities,
-                new OperationDeadline(self::HOOK_DEADLINE_MILLISECONDS),
-                $render,
+            fn () => $this->app->make(OutsideCommandAllowance::class)->forbidDuring(
+                fn () => $this->app->make(AgentStateMachine::class)->answer(
+                    $input,
+                    $capabilities,
+                    new OperationDeadline(self::HOOK_DEADLINE_MILLISECONDS),
+                    $render,
+                ),
             ),
         );
 

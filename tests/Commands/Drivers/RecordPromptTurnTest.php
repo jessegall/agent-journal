@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Commands\Drivers;
 
 use App\Agents\Drivers\Commands\RecordPromptTurn\RecordPromptTurnCommand;
-use App\Bus\OutsideCommandAllowance;
 use App\Models\Drivers\DriverTurn;
 use Illuminate\Support\Str;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -41,7 +40,6 @@ final class RecordPromptTurnTest extends TestCase
     public function test_a_prompt_records_its_turn_once_with_writes_outside_a_command_refused(): void
     {
         [, $opened] = $this->openRuntime();
-        $this->app->make(OutsideCommandAllowance::class)->forbid();
 
         $this->journal->asSystem(new RecordPromptTurnCommand($opened->sessionId, 3, 'prompt-1'));
         $this->journal->asSystem(new RecordPromptTurnCommand($opened->sessionId, 3, 'prompt-1'));

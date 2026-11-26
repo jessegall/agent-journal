@@ -10,7 +10,6 @@ use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityComma
 use App\Agents\Drivers\Enums\DriverOperation;
 use App\Agents\Drivers\Enums\HoldReason;
 use App\Agents\Drivers\Enums\RequestProgress;
-use App\Bus\OutsideCommandAllowance;
 use App\Models\Drivers\DriverRequest;
 use App\Processes\Enums\RuntimeActivity;
 use Carbon\CarbonImmutable;
@@ -60,7 +59,6 @@ final class AcknowledgeWakeTest extends TestCase
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
         $this->journal->claimRequestsOnHost($host->hostId, 10);
         $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
-        $this->app->make(OutsideCommandAllowance::class)->forbid();
 
         $this->journal->asSystem(new AcknowledgeWakeCommand($opened->sessionId));
 

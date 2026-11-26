@@ -27,12 +27,14 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\PendingCommand;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Translation\Translator;
 use Laravel\Fortify\Features;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\Bus\RefusingCommandBus;
+use Tests\Support\Console\PendingAppCommand;
 use Tests\Support\DomainLoadGuard;
 use Tests\Support\Exceptions\BusUsedInUnitTest;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
@@ -93,15 +95,24 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Lets seeding saves run outside a command before any trait's own setUp writes rows.
+     * Lets the test seed before any trait's own setUp writes rows.
      *
      * @return array<class-string, class-string>
      */
     protected function setUpTraits(): array
     {
-        $this->app->make(OutsideCommandAllowance::class)->allow();
+        $this->allowSeedingOutsideCommands();
 
         return parent::setUpTraits();
+    }
+
+    /**
+     * Lets the test's own code seed rows outside a command; every way into the app (a request, an artisan command,
+     * a command or a hook the journal sends) still refuses such a write, as the running app does.
+     */
+    protected function allowSeedingOutsideCommands(): void
+    {
+        $this->app->make(OutsideCommandAllowance::class)->allow();
     }
 
     /**
@@ -225,10 +236,36 @@ abstract class TestCase extends BaseTestCase
         }
 
         try {
-            return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
+            return $this->app->make(OutsideCommandAllowance::class)->forbidDuring(
+                fn () => parent::call($method, $uri, $parameters, $cookies, $files, $server, $content),
+            );
         } finally {
             $this->journal->reselect();
         }
+    }
+
+    /**
+     * The artisan command a test runs, refusing writes outside a command when it runs, as the running app does.
+     *
+     * @param  string  $command
+     * @param  array<string, mixed>  $parameters
+     */
+    public function mockArtisan($command, $parameters = []): PendingCommand
+    {
+        return new PendingAppCommand($this, $this->app, $command, $parameters);
+    }
+
+    /**
+     * Runs the artisan command with writes outside a command refused, as the running app does.
+     *
+     * @param  string  $command
+     * @param  array<string, mixed>  $parameters
+     */
+    public function realArtisan($command, $parameters = []): int
+    {
+        return $this->app->make(OutsideCommandAllowance::class)->forbidDuring(
+            fn () => parent::realArtisan($command, $parameters),
+        );
     }
 
     /**
