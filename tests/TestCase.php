@@ -41,6 +41,7 @@ use Tests\Support\Seeding\TestJournal;
 use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
+use Tests\Support\UnitTestClass;
 use Throwable;
 
 /**
@@ -192,7 +193,7 @@ abstract class TestCase extends BaseTestCase
             $this->refuseQueries($this->app->make(DatabaseManager::class));
         }
 
-        if (self::isUnitTest()) {
+        if (UnitTestClass::is(static::class)) {
             $this->refuseBus();
         }
 
@@ -213,7 +214,7 @@ abstract class TestCase extends BaseTestCase
      */
     public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
     {
-        if (self::isUnitTest()) {
+        if (UnitTestClass::is(static::class)) {
             throw HttpUsedInUnitTest::by(static::class);
         }
 
@@ -233,14 +234,6 @@ abstract class TestCase extends BaseTestCase
         if (! Features::enabled($feature)) {
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
-    }
-
-    /**
-     * Whether the class is a unit test, of tests/Unit or a domain's tests/Unit.
-     */
-    private static function isUnitTest(): bool
-    {
-        return preg_match('/^(Tests|Domain\\\\\w+\\\\Tests)\\\\Unit\\\\/', static::class) === 1;
     }
 
     /**

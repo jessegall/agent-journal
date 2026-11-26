@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace Tests\Unit\Support;
 
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\EntryPointTests\Kinds\tests\Loose\LooseTest;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Every test has a time limit: two seconds by default, longer by #[TimeLimit]. A test that spends its limit in its own
+ * Every test has a time limit: two seconds by default, one for a unit test, longer by #[TimeLimit]. A test that spends its limit in its own
  * processor time, or WALL_CLOCK_FACTOR times it on the clock, is stopped by name.
  */
 final class TimeLimitTest extends TestCase
 {
-    public function test_a_test_gets_two_seconds_unless_it_says_otherwise(): void
+    public function test_a_test_gets_two_seconds_and_a_unit_test_one_unless_it_says_otherwise(): void
     {
+        $this->assertSame(2, TestAlarm::secondsFor(LooseTest::class, 'test_nothing_it_proves_has_a_kind'));
         $this->assertSame(
-            2,
-            TestAlarm::secondsFor(self::class, 'test_a_test_gets_two_seconds_unless_it_says_otherwise'),
+            1,
+            TestAlarm::secondsFor(self::class, 'test_a_test_gets_two_seconds_and_a_unit_test_one_unless_it_says_otherwise'),
         );
         $this->assertSame(3, TestAlarm::secondsFor(self::class, 'test_a_test_past_its_limit_is_stopped_by_name'));
     }

@@ -7,10 +7,12 @@ namespace Tests\Support\TimeLimits;
 use App\Support\Reflector;
 use Tests\Support\TimeLimits\Exceptions\ProcessorTimeUnreadable;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
+use Tests\Support\UnitTestClass;
 
 /**
  * The alarm that stops a test past its limit: SIGALRM raises TestTimedOut inside the running test. A test gets
- * DEFAULT_SECONDS unless its method or class carries #[TimeLimit]; its preparation, the first migration included, gets
+ * DEFAULT_SECONDS, a unit test UNIT_SECONDS, unless its method or class carries #[TimeLimit]; its preparation, the first
+ * migration included, gets
  * PREPARATION_SECONDS. The limit counts the test's own processor time, so a test kept waiting by a busy machine is
  * not failed for it, and WALL_CLOCK_FACTOR times the limit on the clock still stops one that hangs. The
  * alarm remembers that it rang, so a timeout the test caught (an assertThrows around the code) is still reported.
@@ -18,6 +20,11 @@ use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 final class TestAlarm
 {
     public const int DEFAULT_SECONDS = 2;
+
+    /**
+     * A unit test's limit: the shortest the alarm holds, as it counts whole seconds.
+     */
+    public const int UNIT_SECONDS = 1;
 
     public const int PREPARATION_SECONDS = 60;
 
@@ -81,7 +88,7 @@ final class TestAlarm
             }
         }
 
-        return self::DEFAULT_SECONDS;
+        return UnitTestClass::is($className) ? self::UNIT_SECONDS : self::DEFAULT_SECONDS;
     }
 
     /**
