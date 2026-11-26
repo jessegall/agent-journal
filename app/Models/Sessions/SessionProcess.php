@@ -567,19 +567,27 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
-     * The starts the journal claimed but whose reachable host never took up a process of theirs by the cutoff: every
-     * process the journal ordered for them, such as their build probe, is still only ordered, and their running session
-     * never beat. A start on an unreachable host waits for it as an unclaimed one does.
+     * The starts the journal claimed but whose host never took up a process of theirs: every process the journal
+     * ordered for them, such as their build probe, is still only ordered, and their running session never beat. A
+     * start on a reachable host is untaken by the cutoff; one on an unreachable host waits until the host wait ended,
+     * as an unclaimed one does.
      *
      * @param  Builder<self>  $query
      * @param  Builder<Host>  $unreachableHosts
      */
     #[Scope]
-    protected function untakenSince(Builder $query, CarbonImmutable $cutoff, Builder $unreachableHosts): void
-    {
+    protected function untakenSince(
+        Builder $query,
+        CarbonImmutable $hostWaitEnd,
+        CarbonImmutable $cutoff,
+        Builder $unreachableHosts,
+    ): void {
         $query->where('status', SessionProcessStatus::Starting->value)
-            ->where('created_at', '<=', $cutoff)
-            ->whereNotIn('host_id', $unreachableHosts)
+            ->where(fn ($starts) => $starts
+                ->where('created_at', '<=', $hostWaitEnd)
+                ->orWhere(fn ($reachable) => $reachable
+                    ->where('created_at', '<=', $cutoff)
+                    ->whereNotIn('host_id', $unreachableHosts)))
             ->whereNotIn('id', HostProcess::query()->takenUp()->startIds())
             ->whereIn('session_id', AgentSession::query()
                 ->withAnyStatus(SessionStatus::running())

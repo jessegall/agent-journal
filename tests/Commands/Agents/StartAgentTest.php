@@ -19,6 +19,7 @@ use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Bus\Contracts\CommandBus;
 use App\Events\Sessions\StartAccepted;
 use App\Exceptions\AgentBusy;
+use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\HostUnavailable;
 use App\Exceptions\StartRefused;
 use App\Hosts\Contracts\DockerImageVerifier;
@@ -338,7 +339,10 @@ final class StartAgentTest extends TestCase
         }
 
         $this->assertSame(
-            array_fill_keys(DefaultDrivers::familyKeys(), AccountContainerUnsupported::class),
+            [
+                DefaultDrivers::CLAUDE_CODE => AccountContainerUnsupported::class,
+                DefaultDrivers::CODEX => DriverCapabilityUnsupported::class,
+            ],
             array_map(fn (string $refusal) => strstr($refusal.':', ':', true), $refusals),
             json_encode($refusals, JSON_THROW_ON_ERROR),
         );

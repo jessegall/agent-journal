@@ -569,7 +569,8 @@ trait ArrangesHostProcesses
 
     /**
      * The named host runs for real: the host binary built from the checkout, against the Docker stand-in it carries
-     * and the test application on a port of its own. The test commits its rows, so the served application sees them.
+     * and the test application on a port of its own, with the test journal's owner, made here when the test named none.
+     * The test commits its rows, so the served application sees them.
      */
     public function runRealHost(string $host): self
     {
@@ -578,7 +579,7 @@ trait ArrangesHostProcesses
             $this->app->make(Factory::class),
             $this->hostCalled($host),
             $database,
-            $this->ownerUser()->email,
+            ($this->owner ?? $this->owner()->ownerUser())->email,
         );
 
         return $this;

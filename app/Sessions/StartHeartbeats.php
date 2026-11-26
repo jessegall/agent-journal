@@ -154,7 +154,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));
 
         SessionProcess::query()->supervised()
-            ->untakenSince($cutoff, $unreachableHosts)
+            ->untakenSince($now->subMinutes(self::UNREACHABLE_HOST_WAIT_MINUTES), $cutoff, $unreachableHosts)
             ->limit(self::UNCLAIMED_ENDED_LIMIT)
             ->get()
             ->each(fn (SessionProcess $start) => $this->endUnclaimed($start->session_id, $now));
