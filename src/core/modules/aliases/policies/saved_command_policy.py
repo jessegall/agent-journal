@@ -49,9 +49,7 @@ class SavedCommandPolicy(EventPolicy):
             return None
         refusals = (self.part_refusal(part, role) for part in shell.parts)
         refusal = next((agent_message for agent_message in refusals if agent_message and not (shell.is_skip_line and agent_message.key in SKIPPED_KEYS)), None)
-        if refusal:
-            return refusal
-        return SavedCommandMixedMessage.declared().agent_message() if self.is_mixed(shell) else None
+        return refusal
 
     @staticmethod
     def is_mixed(shell: ShellLine) -> bool:

@@ -28,8 +28,7 @@ class RepeatReads:
         self.queries, self.folder, self.resets, self.held_runs = queries, folder, resets, blocked_runs
 
     def check(self, command: ReadOutput, context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT:
-            return
+        return
         if not self.has_ended(command.process_id):
             if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_blocked(command.process_id, context):
                 raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", self.poll_hint(context.actor).format(process=command.process_id))
