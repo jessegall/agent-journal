@@ -15,6 +15,11 @@ use Spatie\LaravelData\Data;
 abstract class PaneNodeData extends Data implements PropertyMorphableData
 {
     /**
+     * The property the data is morphed by, as the library hands it to morph() before any data exists.
+     */
+    private const string MORPHED_BY = 'type';
+
+    /**
      * A node of this type; the type picks the class the node is read back as.
      */
     public function __construct(
@@ -27,6 +32,6 @@ abstract class PaneNodeData extends Data implements PropertyMorphableData
      */
     public static function morph(array $properties): string
     {
-        return $properties['type']->dataClass();
+        return $properties[self::MORPHED_BY]->dataClass();
     }
 }

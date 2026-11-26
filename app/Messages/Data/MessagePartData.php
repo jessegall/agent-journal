@@ -15,6 +15,11 @@ use Spatie\LaravelData\Data;
  */
 abstract class MessagePartData extends Data implements MessagePart, PropertyMorphableData
 {
+    /**
+     * The property the data is morphed by, as the library hands it to morph() before any data exists.
+     */
+    private const string MORPHED_BY = 'type';
+
     #[PropertyForMorph]
     public MessagePartType $type;
 
@@ -23,6 +28,6 @@ abstract class MessagePartData extends Data implements MessagePart, PropertyMorp
      */
     public static function morph(array $properties): string
     {
-        return $properties['type']->dataClass();
+        return $properties[self::MORPHED_BY]->dataClass();
     }
 }

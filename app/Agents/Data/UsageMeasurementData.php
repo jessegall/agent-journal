@@ -17,6 +17,11 @@ use Spatie\LaravelData\Data;
  */
 abstract class UsageMeasurementData extends Data implements PropertyMorphableData
 {
+    /**
+     * The property the data is morphed by, as the library hands it to morph() before any data exists.
+     */
+    private const string MORPHED_BY = 'type';
+
     #[PropertyForMorph]
     public UsageMeasurementType $type;
 
@@ -25,7 +30,7 @@ abstract class UsageMeasurementData extends Data implements PropertyMorphableDat
      */
     public static function morph(array $properties): string
     {
-        return match ($properties['type']) {
+        return match ($properties[self::MORPHED_BY]) {
             UsageMeasurementType::Window => UsageWindowData::class,
             UsageMeasurementType::ResultCost => UsageCostData::class,
             UsageMeasurementType::ThreadTokens => ThreadTokensData::class,
