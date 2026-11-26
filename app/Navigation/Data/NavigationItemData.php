@@ -11,9 +11,8 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One visible navigation item with its visible children: where it links (its page, or for an item without a page its
- * first visible descendant), its group, whether it sits at the foot or only in the command palette, and whether a
- * count may follow for it.
+ * One visible navigation item with its visible children: where it links (its page, or its first visible descendant),
+ * its group, whether it sits at the bottom or only in the command palette, and whether a count may follow it.
  */
 #[TypeScript]
 final class NavigationItemData extends Data

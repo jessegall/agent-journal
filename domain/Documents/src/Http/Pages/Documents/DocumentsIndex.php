@@ -30,10 +30,9 @@ use Domain\Documents\Enums\LibraryTypeFilter;
 use Spatie\LaravelData\Optional;
 
 /**
- * The library on the shared list recipe: who sees its records, the search over titles, abstracts and text, the type and
- * attention choices, then its records by number, each opening its own page, a way to the next page and a dialog to file
- * a document or a report. A library with nothing to show says whether the search or a fresh journal is why, and offers
- * to clear the search or to file the first document.
+ * The library on the shared list recipe: who sees its records, the search, the type and attention choices, its records
+ * by number, paging and a dialog to file a document or a report. An empty library says whether the search or a fresh
+ * journal is why.
  */
 final readonly class DocumentsIndex extends DocumentsPage
 {

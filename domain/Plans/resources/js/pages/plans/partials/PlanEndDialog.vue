@@ -12,10 +12,9 @@ import type { PlanStatus } from '@generated/types/plans';
 import { useHostProp } from '@kit/hostProp';
 
 /**
- * Cancels or finishes a plan in a dialog that names it: cancelling asks a reason and says its tasks and assignments
- * keep their state; finishing asks a note. The post carries the revision and state read on screen; a refusal, such as
- * a plan that moved on, closes the dialog with the domain's words and reads the plan again; a lost answer shows
- * Outcome unknown and Check plan, and the same request goes again only when chosen.
+ * Cancels a plan with a reason or finishes it with a note, in a dialog that names it, posting the revision and state
+ * read on screen. A refusal closes the dialog with the domain's words and reads the plan again; a lost answer shows
+ * Outcome unknown and Check plan.
  */
 const props = defineProps<{
     change: 'cancel' | 'finish';

@@ -6,13 +6,9 @@ import { listBoxActiveKey } from './listBoxActive';
 import Spinner from './Spinner.vue';
 
 /**
- * One row of a Menu: a leading slot (an Icon at 14, an Avatar sm, or nothing), the label and subline in the default
- * slot, and a trailing slot (a bare Kbd). It is a link when it has an href, otherwise a button that a form around it
- * may submit, and the caller listens to its click. A ticked item (checked is true or false) is a menuitemcheckbox, or
- * a menuitemradio when it is one of a choice, and draws a tick while it is checked. A pending item shows a spinner and
- * cannot be chosen twice. The Menu above it moves focus between items and skips a disabled one. In a ListBox it is an
- * option (option is set, with an id): it has role option, aria-selected while it is the ListBox's active id, and the
- * active look.
+ * One row of a Menu: a leading slot, the label and subline, and a trailing slot. It is a link with an href, else a
+ * button; a ticked item is a menuitemcheckbox or menuitemradio, a pending item shows a spinner, and in a ListBox it is
+ * an option with the active look. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

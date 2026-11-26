@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Checks that every agent state lays out its methods as the state machine reads them: first the constructor, its static reference makers and the state's own answers (isFinished, instruction,
- * workPermission, workRecordType) under no marker; then the marked sections Lifecycle (onEnter, onExit, onResume),
- * Hooks (the hook methods in the order the contract declares them, and a tick), Events (the methods that hear a fact)
- * and Internals (private and protected helpers), in that order.
+ * Checks that every agent state lays out its methods as the state machine reads them: the constructor, reference makers
+ * and own answers under no marker, then the sections Lifecycle, Hooks, Events and Internals, in that order (rule 94).
  *
  *   php tools/refactoring/state-sections.php app domain
  *       prints "file:line<TAB>what is wrong" and fails while there is one.

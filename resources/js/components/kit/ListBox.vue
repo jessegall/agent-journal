@@ -3,12 +3,9 @@ import { nextTick, onMounted, onUpdated, provide, useTemplateRef, watch } from '
 import { listBoxActiveKey } from './listBoxActive';
 
 /**
- * A list with one active option, driven from a field that keeps the focus: the default slot holds MenuItems in option
- * mode (each with an id) and MenuGroups. The field passes its keydown to controlKeys: Down, Up, Home and End move the
- * active option and wrap, Enter chooses it, and with no option they do nothing. The field names the list in
- * aria-controls and the active option in aria-activedescendant, which is the activeId model. The first option is active
- * until another is chosen, and the active row scrolls into view. It is 340px high at most as a popover and 420px as a
- * palette, with padding 6.
+ * A list with one active option, driven from a field that keeps the focus: the field passes its keydown to controlKeys,
+ * where Down, Up, Home and End move and wrap and Enter chooses, and names the list and the active option (the activeId
+ * model) in its aria attributes. Measures: docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ label: string; size?: 'popover' | 'palette' }>(), { size: 'popover' });
 

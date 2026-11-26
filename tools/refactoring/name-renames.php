@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 /**
- * Renames every name that holds one word to hold another, narrowed to a kind of name, a namespace or a folder, through
- * the syntax tree renamers, each loading its language once for the whole list: move.php for PHP types (each reference
- * and its file), rename-member.php for PHP members, parameters and variables, rename-go.php (gopls) for Go, and
- * rename-frontend.cjs (the TypeScript service with Vue's plugin) for .ts and .vue. Shell names are renamed by hand.
- * Without --apply it only prints the renames, so they can be read first.
+ * Renames every name holding one word to hold another, narrowed to a type of name, a namespace or a folder, through the
+ * syntax tree renamers: move.php, rename-member.php, rename-go.php and rename-frontend.cjs; shell names are renamed by
+ * hand. Without --apply it only prints the renames.
  */
 
 require_once __DIR__.'/project-names.php';

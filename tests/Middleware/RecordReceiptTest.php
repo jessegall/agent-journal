@@ -36,10 +36,9 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A keyed write runs once and is receipted in its actor's key space: a repeat answers from the receipt without the
- * handler, a changed payload conflicts, another actor's same key is its own, a repeatable read is receipted and
- * replayed, a command that needs a key is refused without one, and a key past its retention is refused, then forgotten
- * after its tombstone.
+ * A keyed write runs once and is receipted in its actor's key space: a repeat answers from the receipt, a changed
+ * payload conflicts, another actor's key is its own, and a command needing a key is refused without one. An expired key
+ * is refused, then forgotten.
  */
 #[TestsMiddleware(RecordReceipt::class)]
 final class RecordReceiptTest extends TestCase

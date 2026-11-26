@@ -5,13 +5,9 @@ import DialogContent from './DialogContent.vue';
 import Scrim from './Scrim.vue';
 
 /**
- * A modal task over a Scrim, above everything else: the title, the body in the default slot and the footer in its
- * slots sit in a DialogContent (size sm, md or lg). It is placed in the middle or 64 or 72 from the top, or as pane in
- * the middle of the positioned part it stands in, such as one pane, covering only that part. It opens with
- * the focus on initialFocus (a selector inside it), else on its first field, else on the dialog itself; Tab and
- * Shift+Tab loop inside it; Escape and a click on the Scrim ask the owner to close it through close; and when it
- * closes the focus returns to returnFocus, else to what had it before it opened. It enters over 180ms with a 4px
- * rise and its opacity, and without motion under reduced motion.
+ * A modal task over a Scrim: its title, body and footer in a DialogContent, in the middle, near the top, or over one
+ * pane. It opens on initialFocus or its first field, keeps Tab inside, asks its owner to close on Escape or a Scrim
+ * click, and returns the focus. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

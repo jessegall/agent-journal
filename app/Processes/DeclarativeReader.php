@@ -213,8 +213,8 @@ final readonly class DeclarativeReader
     }
 
     /**
-     * A JSON-lines record is matched as its top-level fields written key=value in their order; other framings read
-     * the line as it is. The line is the tool's own JSON, whose keys are not ours to name.
+     * A JSON-lines record is matched as its top-level fields written key=value in their order; other framings read the
+     * line as it is. The keys are the tool's own JSON, which the journal does not name.
      */
     #[DecodesAnyJson]
     private function lineOf(string $line): string

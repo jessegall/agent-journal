@@ -24,10 +24,9 @@ export const STALLED_ANSWERS = 3;
 const ADVANCING = ['pending'];
 
 /**
- * The palette's reads of the common search service: the scope picker's sources for a prefix, and a search for words
- * within an optional scope, both through the shell's loaders, so the words travel in a header and never in the
- * address. Each read carries a number; an answer that arrives after a newer read started, or after the palette closed,
- * is dropped, so a late answer never moves the focus, the selection or reopens the dialog.
+ * The palette's reads of the common search: the scope picker's sources for a prefix, and a search for words within a
+ * scope, through the shell's loaders so the words travel in a header. An answer that arrives after a newer read or
+ * after the palette closed is dropped.
  */
 export function useSearchPalette() {
     const words = ref('');

@@ -213,7 +213,7 @@ watch(
 );
 
 /**
- * Each new message or question by someone else, said once in the polite region; a chat opened afresh starts quiet.
+ * Each new message or question by someone else, announced once in the polite region; a chat opened afresh starts quiet.
  */
 const arrival = ref<string | null>(null);
 function freshAnnouncer(): ReturnType<typeof arrivalAnnouncement> {

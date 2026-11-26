@@ -44,10 +44,9 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A started helper's work is complete only on stop evidence: a passed stop certifies it once, a reader
- * with no conditions finishes on its stack checks alone, a failed stop refuses and the third unchanged failure ends
- * the turn with one held notice, reviewed work keeps its actor and checkout from the certificate on, a passed stop that never comes back is certified once by the engine, and a cancel
- * stops the runtime and tells the owner while the workspace stays.
+ * A started helper's work is complete only on stop evidence: a passed stop certifies it once, a failed stop refuses and
+ * the third unchanged failure holds the work with one notice, a passed stop that never returns is certified by the
+ * engine, and a cancel stops the runtime and tells the owner.
  */
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
 #[TestsMachinery(AgentStateMachine::class)]

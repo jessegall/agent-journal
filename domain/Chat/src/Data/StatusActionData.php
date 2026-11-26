@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One thing an agent's status offers now: its type, which the page maps to a route or dialog, and its button's words.
+ * One action an agent's status offers now: its type, which the page maps to a route or dialog, and its button's words.
  *
  * @method static static from(array<string, mixed> $action)
  */

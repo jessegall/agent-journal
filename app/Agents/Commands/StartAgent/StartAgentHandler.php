@@ -40,10 +40,9 @@ use App\Values\StackTarget;
 use App\Values\StartRequest;
 
 /**
- * Starts inside the command's transaction: the request's record first, locked, which KeepStartReceipt committed as
- * the intent, so a repeat finds its start or its refusal; then the session under the agent's shared lifecycle lock,
- * which a retirement waits for; the host is told after the commit and receives its token and settings through its
- * own read, never through the receipt.
+ * Starts inside the command's transaction: the request's record first, locked, so a repeat finds its start or refusal;
+ * then the session under the agent's shared lifecycle lock, which a retirement waits for. The host is told after the
+ * commit and reads its token and settings itself.
  */
 final readonly class StartAgentHandler implements CommandHandler
 {

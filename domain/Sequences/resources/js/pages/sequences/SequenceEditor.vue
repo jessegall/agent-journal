@@ -12,12 +12,9 @@ import { canMove, emptyStep, errorsByStep, moveStep, moveTo, oppositeOf, removeS
 import type { Direction, FocusAfter } from '../../sequenceDraft';
 
 /**
- * The steps of a sequence definition as an editable list: each row holds Step title, Runs when and Done when, which
- * stack on a phone, a drag handle, Move up, Move down and Remove. Dragging the handle or the move buttons reorder, the
- * ends' moves are off, and the focus stays on the moved row's arrow that is still available. Removing focuses the row
- * now in its place or Add a step; with no step Add a step is all there is, and adding focuses the new title. Saving sends
- * the draft to the registered create or update address; the server's errors show beside their step and field and a
- * failed save keeps the order and every text. A saved edit focuses Edit steps, which the page after it holds.
+ * The steps of a sequence definition as an editable list: each row holds Step title, Runs when and Done when, a drag
+ * handle, Move up, Move down and Remove, keeping the focus on the moved or nearest row. Saving sends the draft; errors
+ * show beside their field and a failed save keeps every text.
  */
 const props = defineProps<SequenceEditorPartData>();
 

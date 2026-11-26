@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 /*
- * The bounded analysis worker of the full-corpus qualification: reads one JSON object
- * per line on standard input, {"id", "source", "dialect"}, parses each source with version 6's shell syntax, and
- * writes one JSON object per line: the opaque id, the outcome, the byte span of every command and, for a complete
- * line, its classification summary with no saved aliases. It reads no database and
- * executes nothing.
+ * The analysis worker of the corpus qualification: it reads one JSON object {"id", "source", "dialect"} per line,
+ * parses each source with the journal's shell syntax, and writes the id, the outcome, each command's byte span and a
+ * complete line's classification. It reads no database and runs nothing.
  *
  *   php tools/processes/analyse-shell-lines.php < input.jsonl > results.jsonl
  */

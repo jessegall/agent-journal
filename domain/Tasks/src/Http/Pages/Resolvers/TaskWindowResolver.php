@@ -44,10 +44,9 @@ use Spatie\LaravelData\Optional;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * One task's record page, on its own route or open in the inspector: the tasks list with the task by its number
- * open in its reader, with its texts, its holder and its run; its Waits, Logs and Proofs only when the reader opened
- * their tab, a bounded page each. A task the caller may not read answers as not found, so no earlier field stays on
- * screen.
+ * One task's record page, on its route or in the inspector: the tasks list with the task open in its reader, its texts,
+ * holder and run, and its Waits, Logs and Proofs only when their tab is open. A task the caller may not read answers as
+ * not found.
  */
 final readonly class TaskWindowResolver implements PageResolver
 {

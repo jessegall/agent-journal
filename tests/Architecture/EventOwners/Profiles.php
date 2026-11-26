@@ -45,10 +45,9 @@ use App\Profiles\Enums\ProfileRunStatus;
 use Tests\Architecture\Support\EventRole;
 
 /**
- * The events of Profiles with their role, owning transition or the files that send them.
- * Each row fact names its owning transition and a sample; every other event names the files that send it.
- * EventProducerTest fails on any producer not listed here. AccountsChanged is the projection of the row facts the Accounts page shows, and of
- * the challenge a host publishes, which writes a cache entry and no row.
+ * The events of Profiles with their role, owning transition or sending files; EventProducerTest fails on a producer not
+ * listed. AccountsChanged projects the row facts the Accounts page shows and the challenge a host publishes, which
+ * writes a cache entry and no row.
  */
 return [
     AccountsChanged::class => [

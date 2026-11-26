@@ -8,11 +8,9 @@ import { taskStateLook } from '../../taskLooks';
 import { useTaskLogs } from '../../useTaskLogs';
 
 /**
- * A task's Logs tab: its changes and its run's log lines in order, each with its time, who made it and its run or
- * Run unknown, the text shown as written. Show older reads the page before; while older entries are on screen, new
- * ones wait behind New entries with one announcement. It tells loading, an empty read, a failed read with the rows
- * it had, a refused read and the start of the history apart. A line a search opened the tab at stands first, or a
- * notice says it is gone.
+ * A task's Logs tab: its changes and its run's log lines in order, each with its time, author and run, the text as
+ * written. Show older reads the page before, new entries wait behind New entries while older ones show, and a line a
+ * search opened stands first or is noticed as gone.
  */
 const props = defineProps<{ logs: TaskLogsData | undefined }>();
 const found = computed(() => props.logs?.selected);

@@ -13,13 +13,9 @@ import type { DocumentCommentsPartData } from '@generated/types/documents';
 import { draftFor, sendLineComment } from '@kit/lineComments';
 
 /**
- * A document's text drawn as its Markdown blocks (headings, paragraphs, list items and code) that a reader comments on:
- * select text across blocks, or press Comment (C) on one, and the bar opens under the last selected block (below the
- * range on a phone). A comment and a feedback request name the lines of the revision the chosen blocks were read from.
- * The draft is kept for the revision and those lines, so leaving and coming back finds it; a send that fails keeps its
- * text and offers Retry, which sends the same comment again. The thread under a commented block shows Read by only
- * when a delivery receipt says so, and Reply and the chat button are left out, since this part supplies neither.
- * Choosing a recipient sends the feedback request and puts the focus back on the feedback control once it was taken.
+ * A document's text drawn as its Markdown blocks for a reader to comment on: select text or press Comment (C) on a
+ * block, and the bar opens under it. A comment names the lines of the revision read, its draft is kept for those lines,
+ * and a failed send offers Retry.
  */
 const props = defineProps<DocumentCommentsPartData>();
 const hostProp = useHostProp();

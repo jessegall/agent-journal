@@ -27,10 +27,9 @@ use App\Support\RecordIdentity;
 use Closure;
 
 /**
- * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the
- * recipient may receive it, taking their shared lifecycle locks in type and id order, takes the record from its
- * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
- * the actor of this request.
+ * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the recipient
+ * may receive it, locks both in type and id order, takes the record from its owner, then changes the one holding and
+ * raises its fact. The caller is this request's actor.
  */
 final readonly class WriteAssignments implements
     AssignmentWriter,

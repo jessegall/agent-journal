@@ -6,11 +6,9 @@ import IconButton from './IconButton.vue';
 import { tabsKey } from './tabs';
 
 /**
- * One tab of a Tabs list: --text-badge with .03em spacing, --text-3, padding 7 0, and in a window's tab strip a least
- * width of 56 px; a long
- * label shrinks and ends in an ellipsis. The chosen tab is --text with an inset 1px bottom line (--brand for a page or
- * an active pane, --border-3 otherwise). Only the chosen tab is a tab stop. A closable tab shows a close button on
- * hover, selection or focus, and closes on Delete, Backspace or a middle click.
+ * One tab of a Tabs list; a long label shrinks to an ellipsis, and the chosen tab is marked by a bottom line and is the
+ * only tab stop. A closable tab shows a close button on hover, selection or focus, and closes on Delete, Backspace or a
+ * middle click. Measures: docs/designs/kit-components.md.
  */
 const props = defineProps<{ value: string; label: string; icon?: IconName; count?: number; closable?: boolean }>();
 const group = inject(tabsKey);

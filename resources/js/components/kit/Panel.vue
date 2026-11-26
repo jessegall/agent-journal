@@ -5,13 +5,9 @@ import PanelHeader from './PanelHeader.vue';
 import { panelTitleIdKey } from './panelTitleId';
 
 /**
- * Something that belongs to the page beside it, open over it and not modal: a PanelHeader (the leading slot, title,
- * count and a close button) over a scrolling PanelBody (the default slot), in a --raised box with a --border-2 border,
- * radius --radius-card and --shadow-pop. The chat placement sits at top 8, right 4 and bottom 8 and is 380 wide at
- * most; the side placement fills the height of its container at its right edge. It is a role dialog named by its
- * title. It opens with the focus on its close button, Escape closes it from anywhere inside, fields included, and the
- * focus returns to what had it before it opened. It slides in from 24px over 240ms with its opacity and leaves over
- * 180ms, and without motion under reduced motion.
+ * A panel that belongs to the page beside it, open over it and not modal: a PanelHeader over a scrolling PanelBody,
+ * placed in the chat or at the side. It is a dialog named by its title that opens on its close button, closes on
+ * Escape, and returns the focus where it was. Measures: docs/designs/kit-components.md.
  */
 withDefaults(
     defineProps<{ title: string; count?: number; closeLabel?: string; placement?: 'chat' | 'side' }>(),

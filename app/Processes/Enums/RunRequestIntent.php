@@ -14,7 +14,7 @@ enum RunRequestIntent: string
     case Retry = 'retry';
 
     /**
-     * Whether someone asked for the run, so its outcome is theirs to hear about.
+     * Whether someone asked for the run, so its outcome is sent to them.
      */
     public function isRequested(): bool
     {

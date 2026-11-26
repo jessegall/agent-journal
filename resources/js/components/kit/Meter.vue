@@ -2,10 +2,9 @@
 import { computed } from 'vue';
 
 /**
- * A thin share bar from 0 to its maximum (100 unless given): role meter with its value, maximum and a label such as
- * "72% used", and a spoken value that keeps its unit when one is given. Its width is fixed in pixels, or fluid: it
- * fills its container up to 220 px and shrinks with a narrow one, such as a phone's. Its track turns --border-3 inside
- * a selected row, whether the row is an option or the current row of a list.
+ * A thin share bar from 0 to its maximum (100 unless given): a meter with its value, maximum and a label such as 72%
+ * used, read aloud with its unit. Its width is fixed or fluid up to 220 px, and its track changes inside a selected
+ * row. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

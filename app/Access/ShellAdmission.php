@@ -46,11 +46,9 @@ use App\Values\ShellTree;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The one admission of a shell line: syntax, classification with the
- * project's active rules, output visibility, the actor's permissions, phase timing and the approved proven reader of
- * every test, check or build, then the runner. The whole line is admitted or refused at once; a refusal starts
- * nothing, and unknown work or a missing reader is held in a command request that names the next step. The classifier
- * is resolved per line, so a rule store that cannot be read refuses the line instead of failing the request.
+ * The one admission of a shell line: syntax, classification by the project's rules, output visibility, the actor's
+ * permissions, phase timing and the reader of every test, check or build, then the runner. The whole line is admitted
+ * or refused at once, and a refusal starts nothing.
  */
 final readonly class ShellAdmission implements ShellAdmissionContract
 {

@@ -15,10 +15,9 @@ use App\Values\ExecutionBudgets;
 use JsonSerializable;
 
 /**
- * What the protected host starts a helper container with: the image by
- * digest, an unprivileged user, a read-only root without capabilities, the mounts its arrangement allows, its
- * security profiles, rotated logs and the start's budgets, which size its tmpfs folders, and where a contained
- * workspace comes from. It is validated when built; anything else is refused by name.
+ * What the protected host starts a helper container with: the image by digest, an unprivileged user, a read-only root
+ * without capabilities, the allowed mounts, security profiles, rotated logs, the start's budgets and the source of a
+ * contained workspace. Anything else is refused by name.
  */
 final readonly class ContainerManifest implements JsonSerializable
 {

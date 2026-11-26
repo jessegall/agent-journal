@@ -8,11 +8,9 @@ import type { WindowResult } from "@/generated/types/page-props";
 import { provideIsStale } from "../../framework/windowFreshness";
 
 /**
- * Shows one result under its safe subject: its content with the reader's Data when ready, the Data shown before while
- * it is asked for again or after a refresh failed, so its content stays mounted read-only and keeps what the user was
- * doing, and a reload of its own when the first read failed. A refusal depends on where the result is placed: a page
- * of its own says the item is unavailable and offers a way back, a pane says so with Close, and a section shows
- * nothing at all. Each instance speaks only of its own read.
+ * Shows one result under its safe subject: its content when ready, the Data shown before while it is asked again or a
+ * refresh failed, and a reload of its own when the first read failed. A refusal on a page offers a way back, in a pane
+ * offers Close, and in a section shows nothing.
  */
 const props = withDefaults(
   defineProps<{

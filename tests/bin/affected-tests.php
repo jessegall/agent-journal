@@ -6,8 +6,7 @@ use Tests\Support\AffectedTests;
 
 /*
  * Runs the tests nearest to the changed files, found through the code's syntax trees, up to the most test methods an
- * affected run takes. Without arguments it reads the changes git sees (staged,
- * unstaged and untracked); --since=<commit> reads what changed since that commit; file paths name the changes.
+ * affected run takes. It reads the changes git sees, or those since --since=<commit>, or the paths given.
  *
  *   composer test:affected
  *   composer test:affected -- --since=main

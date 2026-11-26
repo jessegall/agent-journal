@@ -88,7 +88,7 @@ final readonly class DeclaredType
     }
 
     /**
-     * The one name of a named type, without its question mark, such as int or App\Thing.
+     * The one name of a named type, without its question mark, such as int or App\Models\Task.
      *
      * @throws TypeNotNamed
      */

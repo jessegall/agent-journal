@@ -17,14 +17,9 @@ use Tests\Architecture\Support\Violation;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Every domain uses only its own code, App\Domain, App\Core, code outside the project, and the domains it declares.
- * The core uses no domain.
- * It does not see class names built at run time, class names read from config, relation chains
- * on untyped models, morph alias lookups, raw SQL text, where on tasks.id and select on tasks.*, Blade views,
- * the folders routes, config, bootstrap and database beyond the composition files and the root migrations rule, edits
- * inside the listed
- * starter-kit files beyond their domain names, a received event re-raised through a copied variable or another
- * method, a query built in another file and passed in, and a string passed to ->dispatch() on an injected dispatcher.
+ * Every domain uses only its own code, App\Domain, App\Core, outside code and the domains it declares, and the core
+ * uses no domain. What its class scan cannot see, such as class names built at run time or raw SQL, is listed in
+ * docs/domains/boundary-scan.md.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainBoundaryTest extends TestCase

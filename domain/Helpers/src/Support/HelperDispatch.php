@@ -55,10 +55,9 @@ use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\SessionStartDetails;
 
 /**
- * Dispatches a parent's work to a helper inside the command's transaction, in one order: the parent may delegate,
- * the profile is an activated helper profile within what the parent holds, the purpose, the helper, its start
- * reservation and a recheck of its work under it, then the job, its responsibility and Core's start. A refusal
- * anywhere rolls back everything written before it; a repeat of the request answers the job it made.
+ * Dispatches a parent's work to a helper inside the command's transaction: it checks the parent may delegate and the
+ * profile, then takes the purpose, the helper and its start reservation, then makes the job and Core's start. A refusal
+ * rolls back everything; a repeat answers the job it made.
  */
 final readonly class HelperDispatch
 {

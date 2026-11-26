@@ -21,10 +21,9 @@ use App\Sharing\Exceptions\GatewayLeaseRefused;
 use App\Support\ActorReference;
 
 /**
- * Locks the installation, configuration, endpoint, the affected shares by id and the operation, in that order, and
- * checks the run still holds the gateways and the operation under this endpoint version and lease. An opened endpoint
- * serves the configuration's waiting shares, which become active once each; a failed open fails the pending ones; a
- * close ends the endpoint. A replay of a recorded outcome under the same lease writes nothing. No I/O happens here.
+ * Records a gateway outcome under the locks of the installation, configuration, endpoint, shares and operation, once
+ * the run still holds them: an opened endpoint activates its waiting shares, a failed open fails them and a close ends
+ * the endpoint. A replay writes nothing.
  */
 final readonly class RecordGatewayOutcomeHandler extends SharingCommandHandler
 {

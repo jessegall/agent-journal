@@ -6,10 +6,9 @@ import UsageMeter from '@/components/kit/UsageMeter.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
-// A measured reading of a declared layout: a counted progress when it counts pieces, otherwise a fluid meter that
-// reads its value, maximum and label aloud, with the number and its unit kept beside the bar. A share of pieces finished is a short meter with its percent beside it. An allowance in use is
-// the kit's UsageMeter: in a list row the meter alone with the readings of every window as its tip, in a reader the
-// meter with its percent used beside it.
+// A measured reading of a declared layout: a counted progress for pieces, otherwise a meter that reads its value aloud
+// with the number beside the bar. An allowance in use is the kit's UsageMeter, alone with its readings as a tip in a
+// list row, or with its percent in a reader.
 const props = defineProps<{ part: LayoutPartData }>();
 const progress = computed(() => props.part.progress);
 const share = computed(() =>

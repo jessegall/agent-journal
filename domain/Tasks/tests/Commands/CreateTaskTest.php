@@ -26,10 +26,9 @@ use Tests\Support\TestIds;
 use Tests\Support\TestProjects;
 
 /**
- * A user or agent makes a task of a project: it is open at its first revision with its brief and creator; a title at
- * its limit is kept, and an empty title or a title or brief past its limit is refused naming the field and makes
- * nothing; an agent's task is of its own project and missing under another, and another project, or an environment
- * of another project, is refused.
+ * A user or agent makes a task of a project, open at its first revision with its brief and creator; a title at its
+ * limit is kept, an empty or too long title or brief is refused by field, and another project or its environment is
+ * refused.
  */
 #[TestsCommand(CreateTaskCommand::class)]
 final class CreateTaskTest extends TestCase

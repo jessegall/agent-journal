@@ -4,8 +4,8 @@ import type { ReactionCount } from "../../../chatEntries";
 import { sendReaction } from "../../../reactions";
 
 /**
- * The reactions a message has, as the design draws them: a chip per emoji with its count, your own marked, pressed to
- * add yours. A reaction is a reply, so one given stays; a message without reactions draws nothing here.
+ * The reactions a message has: a chip per emoji with its count, the viewer's own marked, pressed to add the viewer's
+ * own. A reaction is a reply, so one given stays; a message without reactions draws nothing.
  */
 const props = defineProps<{
   reactions: ReactionCount[];

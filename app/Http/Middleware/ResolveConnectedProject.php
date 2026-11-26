@@ -14,10 +14,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Makes an authenticated agent call of a connected project serve that project: the agent's binding names the
- * project, and its folder is the only one the call's work may run in. A call of an agent this installation runs for
- * its own project keeps the configured project; an agent of a revoked binding is refused, whatever token it holds.
- * The project comes from the agent AuthenticateAgent made the request's actor, never from the call.
+ * Makes an authenticated agent call of a connected project serve that project: the agent's binding names it, and its
+ * folder is the only one the call may run in. An agent of this installation's own project keeps the configured project;
+ * an agent of a revoked binding is refused.
  */
 final readonly class ResolveConnectedProject
 {

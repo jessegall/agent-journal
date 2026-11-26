@@ -152,10 +152,9 @@ function paneOf(windowKey: string | undefined): LayoutNode | null {
 }
 
 /**
- * The design's layouts, built from Home's windows in the order the domains declare them, the chat first: Just the
- * chat; A first window, the next one floating; Docked, two windows docked right while the chat keeps its reading width;
- * Windows only, the other windows in a grid; and IDE, when Home has a tree, an editor and a feed. A layout that would
- * repeat an earlier one is left out.
+ * The design's layouts from Home's windows, chat first: Just the chat; A first window with the next floating; Docked,
+ * two windows docked right; Windows only, in a grid; and IDE when Home has a tree, an editor and a feed. A layout
+ * repeating an earlier one is left out.
  */
 export function designPresets(windows: PresetWindow[], screen: Screen): Preset[] {
     const [chat, second, third, fourth] = windows.map((each) => each.key);

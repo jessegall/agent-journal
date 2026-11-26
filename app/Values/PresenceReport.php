@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Values;
 
 /**
- * One presence report of a binding's relay: the boot that sends it, its monotonic sequence within that boot, the
- * release it runs, whether it set the folder up, whether it asks to take over from a live boot, the
- * folder's setup generation, the combinations it can run with isolated hooks, start grants and a lease, and whether
- * this boot already reported what became of its earlier sessions.
+ * One presence report of a binding's relay: its boot and sequence, its release, whether it set the folder up or asks to
+ * take over a live boot, the folder's setup generation, what it can run, and whether it reported what became of its
+ * earlier sessions.
  */
 final readonly class PresenceReport
 {

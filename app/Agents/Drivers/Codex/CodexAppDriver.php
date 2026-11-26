@@ -37,10 +37,9 @@ use App\Values\TurnEnd;
 use App\Values\UsageWindowReading;
 
 /**
- * Drives one `codex app-server` that runs every headless turn of an account on its host: the handshake and the
- * account's sign-in check, a thread per runtime whose id is the runtime's conversation, a turn per delivery or wake,
- * interrupts, and the turn ends, token counts and rate-limit windows the server sends. Each message id names the
- * request, attempt and step it answers, so a worker that reads the feed again rebuilds where each thread stands.
+ * Drives one `codex app-server` that runs every headless turn of an account on its host: the handshake and sign-in
+ * check, a thread per runtime, a turn per delivery or wake, interrupts, and the turn ends, token counts and rate limits
+ * it sends. Each message id names its request, attempt and step.
  */
 final class CodexAppDriver implements ProcessDriver
 {

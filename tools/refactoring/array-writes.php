@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Lists the writes of a row through an array: create([...]), update([...]), fill([...]), forceFill([...]),
- * new self([...]), and firstOrCreate, firstOrNew, createOrFirst or updateOrCreate. A model writes a row one way, by assigning each column as a property and saving, so the property
- * types check every column and no fillable list is needed. A mass update of the rows
- * a query's scopes chose stays.
+ * Lists the writes of a row through an array, such as create([...]), update([...]) or updateOrCreate: a model assigns
+ * each column as a property and saves, so the property types check every column. A mass update of scoped rows stays.
  *
  *   php tools/refactoring/array-writes.php app domain
  *       prints "file:line<TAB>..." for each such write, and fails while there is one.

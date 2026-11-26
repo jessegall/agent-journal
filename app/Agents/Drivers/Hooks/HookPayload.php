@@ -50,7 +50,7 @@ final class HookPayload extends Data
     ) {}
 
     /**
-     * What the agent said last in the turn that stops, as its driver sends it with the stop; empty when it said
+     * The agent's last words in the turn that stops, as its driver sends them with the stop; empty when it wrote
      * nothing.
      */
     public function closingWords(): string

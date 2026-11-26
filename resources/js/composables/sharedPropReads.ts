@@ -17,11 +17,9 @@ type InFlightRead = {
 };
 
 /**
- * The reads of one tab's props, shared by every mount that asks for the same key at once: the signed-in user, the
- * prop (its registration and record), the query and the authorization generation. Two keys never share a read. The
- * mount that started a read announces its outcome once; when it leaves, the next mount still waiting takes that over;
- * when none is left the read is cancelled. A denial raises the authorization generation and cancels every older read,
- * so a late answer after it paints nothing anywhere.
+ * The reads of one tab's props, shared by every mount that asks for the same key at once; two keys never share a read.
+ * The starting mount announces the outcome, passing that on when it leaves, and a denial cancels every older read, so a
+ * late answer paints nothing.
  */
 export class SharedPropReads {
     private readonly inFlight = new Map<string, InFlightRead>();

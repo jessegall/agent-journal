@@ -9,10 +9,9 @@ use App\Processes\Enums\OutputStream;
 use App\Processes\Execution\SpawnedProcess;
 
 /**
- * Moves bytes between the concurrent commands of a pipeline: each stage's output is
- * handed to the callback, which records it, before it is forwarded to the next command; at most 1 MiB waits per stage,
- * then the producer is no longer read. When a consumer ends, its producer's pipe is closed, so the producer gets
- * SIGPIPE on its next write as it would in a shell.
+ * Moves bytes between the concurrent commands of a pipeline: each stage's output goes to the recording callback, then
+ * to the next command, with at most 1 MiB waiting per stage. When a consumer ends, its producer's pipe closes, so the
+ * producer gets SIGPIPE as in a shell.
  */
 final class PipelinePump
 {

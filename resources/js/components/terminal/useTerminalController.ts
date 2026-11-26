@@ -106,10 +106,9 @@ function noticesOf(screen: TerminalScreen): string[] {
 }
 
 /**
- * The one controller of a view of an agent's terminal: it owns the subscription, opens one read interest when the
- * view mounts or shows again, renews it every 10 seconds, reads every half second, and closes it when the view is
- * hidden, by its placement or by the browser, or unmounts or the agent changes. The presentation it hands out is all a
- * terminal view draws.
+ * The one controller of a view of an agent's terminal: it opens one read interest when the view shows, renews it every
+ * 10 seconds, reads every half second, and closes it when the view hides, unmounts or the agent changes. Its
+ * presentation is all a terminal view draws.
  */
 export function useTerminalController(agentId: Ref<string>, isShown: Ref<boolean>) {
     const screen = shallowRef<TerminalScreen>(blank('opening', Date.now()));

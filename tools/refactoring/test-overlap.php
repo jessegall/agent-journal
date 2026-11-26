@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Lists tests that overlap, so removing one is a calculated choice. For each test
- * method it reads the commands it runs, the classes it touches and the assertions it makes; then it prints the pairs
- * whose sets are near-identical (Jaccard at or above the threshold) and the tests whose whole set lies inside a
- * command test's, each with its score.
+ * Lists tests that overlap, by the commands each test method runs, the classes it touches and its assertions: the pairs
+ * whose sets are near-identical (Jaccard at or above the threshold) and the tests a command test's set holds whole.
  *
  *   php tools/refactoring/test-overlap.php [--threshold=0.8] [<path> ...]
  *       prints "overlap<TAB>score<TAB>test<TAB>test" and "covered<TAB>score<TAB>test<TAB>command test" lines.

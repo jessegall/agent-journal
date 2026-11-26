@@ -7,10 +7,8 @@ import SwitchCase from '@/components/kit/SwitchCase.vue';
 import { useHostProp } from '@/framework/hostProp';
 import type { LayoutPartData } from '@/generated/types/core';
 
-// A notice of a declared layout: an empty state, placeholder rows under one busy line while a read is pending, the
-// earlier rows' stale notice whose Retry reads only this window's prop again, an error that names what could not be
-// read (its action, Try again or a create action, is the part beside it), or a titled message that alerts on a
-// refusal.
+// A notice of a declared layout: an empty state, placeholder rows while a read is pending, a stale notice whose Retry
+// reads only this window's prop, an error naming what could not be read, or a titled message that alerts on a refusal.
 defineProps<{ part: LayoutPartData }>();
 const hostProp = useHostProp();
 

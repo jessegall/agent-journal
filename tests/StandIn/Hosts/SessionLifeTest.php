@@ -32,10 +32,9 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A session's whole life through host protocol 1, on the test host against the Docker stand-in: it starts, takes a
- * message and answers it, survives its host's restart without a second paste, is healed after a crash and stops with
- * one exit report; a headless turn runs from the journal on the installation's stand-in, and one held across
- * its host's restart finishes with its whole output once.
+ * A session's whole life through host protocol 1 against the Docker stand-in: it starts, answers a message, survives a
+ * host restart without a second paste, is healed after a crash and stops with one exit report; a headless turn held
+ * across a host restart finishes with its whole output once.
  */
 #[TestsAgainstStandIn]
 #[TimeLimit(seconds: 60, reason: 'It runs the test host, the Docker stand-in and a served journal.')]

@@ -24,7 +24,7 @@ final class AgentTextToolNamesTest extends TestCase
         .'command-type|command-request|output|doc|report|sequence|reminder|rule|check|worker|proof|agent|alias) [a-z]/';
 
     /**
-     * The files that write for the user at a terminal, where a command line is the right thing to show.
+     * The files that write for the user at a terminal, where a command line is the right text to show.
      */
     private const array FOR_THE_USER = [
         'app/Connections/Values/DeviceOverview.php',

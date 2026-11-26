@@ -104,10 +104,9 @@ final readonly class TerminalViewCloser implements TerminalViewCloserContract
     }
 
     /**
-     * What the read interest should see next: unchanged while nothing newer than the stream and sequence it holds is
-     * kept, the live frame with its proof's remaining lifetime, an older host's frame as last reported, no preview of a
-     * shielded screen, the last frame once the terminal or the interest ended, and restarted, which ends the interest
-     * and asks for a fresh open, once the same session runs in a new generation.
+     * What the read interest sees next: unchanged while nothing newer is kept, the live frame, a frame as last
+     * reported, no preview of a shielded screen, the last frame once the terminal or the interest ended, or restarted
+     * once the session runs in a new generation.
      *
      * @throws TerminalViewRefused
      */

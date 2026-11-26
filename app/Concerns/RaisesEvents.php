@@ -12,11 +12,9 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Keeps the facts a model's own transitions establish, for EventSource. A transition raises only after its own save
- * returned true: saveAndAssert first, so a refused write raises nothing. A recording model writes only through what
- * the capture sees: a counter changes as an attribute and its own save, never increment; rows go one delete at a
- * time, the ids a fact carries read first, never a bulk delete; and an insert that may meet the row inserts through
- * insertIfAbsent.
+ * Keeps the facts a model's own transitions establish, for EventSource; a transition raises only after its save
+ * returned true. A recording model writes only what the capture sees: a counter as an attribute and its save, one
+ * delete at a time, and an insert that may meet its row through insertIfAbsent.
  */
 trait RaisesEvents
 {

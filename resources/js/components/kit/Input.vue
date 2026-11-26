@@ -2,10 +2,9 @@
 import { useTemplateRef } from 'vue';
 
 /**
- * A one-line text input in the shared input look: md is 30 px high, sm is 28 px; a --border-2 border, radius
- * --radius-field, --bg fill, --text-field; the focus ring at offset 1; invalid (aria-invalid) turns the border
- * --danger. `bare` drops the box for an input that sits inside another control, such as the search field. A parent that
- * holds it by ref can focus() it.
+ * A one-line text input in the shared input look, md or sm, whose border turns to danger when invalid; `bare` drops the
+ * box for an input inside another control. A parent holding it by ref can focus() it. Measures:
+ * docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ size?: 'md' | 'sm'; invalid?: boolean; bare?: boolean }>(), {
     size: 'md',

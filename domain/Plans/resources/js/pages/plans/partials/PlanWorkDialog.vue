@@ -12,10 +12,9 @@ import type { PlanWorkPreviewData } from '@generated/types/plans';
 import { useHostProp } from '@kit/hostProp';
 
 /**
- * Assigns or reassigns a plan's work in a dialog: the dispatcher chooses one of the eligible workers, then the preview
- * names the scope, the current holder and the recipient, and what moves. Over the one limit the confirm is disabled.
- * A refusal, such as 'Worker already assigned' or a newer holder, keeps the dialog open with the domain's words and
- * fresh choices, so the dispatcher chooses again; no control here starts a worker.
+ * Assigns or reassigns a plan's work in a dialog: the dispatcher chooses an eligible worker, and the preview names the
+ * scope, the holders and what moves; over the limit the confirm is off. A refusal keeps the dialog open with the
+ * domain's words and fresh choices; nothing here starts a worker.
  */
 const props = defineProps<{
     number: string;

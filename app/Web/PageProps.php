@@ -20,11 +20,9 @@ use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The props of a declared page: its own result as page, each section of its slots as its own deferred prop, the
- * record open in the inspector as an optional prop, and on Home one optional prop per window, each live on the
- * viewer's page changes. Every prop runs its
- * visibility checks before any reader, on full and partial
- * requests alike, so a forged partial request for a hidden prop gets a denied result.
+ * The props of a declared page: its own result, each section of its slots as a deferred prop, the record open in the
+ * inspector, and on Home one optional prop per window. Every prop runs its visibility checks before any reader, so a
+ * forged partial request for a hidden prop is denied.
  */
 final readonly class PageProps
 {

@@ -9,10 +9,9 @@ use App\Attributes\Commands\Entry;
 use App\Support\Command;
 
 /**
- * Opens the next turn of a headless Claude Code runtime the journal drives itself: its oldest waiting delivery or wake
- * runs as one process with the prompt in its argv, once the runtime's build is proven and while no turn of it is
- * live. Answers the turn's process id; none when nothing opens. Run when work is accepted, when the build is proven
- * and when a turn ends (internal, not exported).
+ * Opens the next turn of a headless Claude Code runtime: its oldest waiting delivery or wake runs as one process with
+ * the prompt in its argv, once the build is proven and no turn is live; it answers the process id, or none. Run when
+ * work is accepted, the build is proven or a turn ends.
  *
  * @extends Command<string|null>
  */

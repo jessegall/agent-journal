@@ -4,12 +4,9 @@ import { useCloseOutside } from '@/composables/useCloseOutside';
 import { useMenuKeys } from '@/composables/useMenuKeys';
 
 /**
- * A menu at the pointer for whatever sits under it: the default slot is the host, the menu slot holds the MenuItems the
- * target has. A right click, the Menu key or Shift+F10 on the host opens it (the keys at the focused element) on its
- * first enabled item. It does not open over selected text, so Copy works there, nor over a field. It sits 6px inside
- * the window and flips above the point when it would pass the bottom. Escape closes it and gives the focus back to what
- * had it, Tab closes it and moves on, choosing an item closes it. It enters over 180ms with a 4px rise, and without
- * motion under reduced motion.
+ * A menu at the pointer for the host in the default slot, holding the menu slot's items: a right click, the Menu key or
+ * Shift+F10 opens it, but not over selected text or a field. Escape closes it and gives the focus back, Tab closes it
+ * and moves on. Measures: docs/designs/kit-components.md.
  */
 defineProps<{ label: string }>();
 

@@ -12,10 +12,9 @@ use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Decoded JSON is read into a Data class, so its shape is written down and read through typed properties: every
- * json_decode in app/ and the domains is handed straight to a Data class's from(), collect() or validateAndCreate()
- *. The Files area decodes for readJson and is left out, and only the methods listed
- * in ANY_JSON_METHODS may decode JSON of no fixed shape under #[DecodesAnyJson].
+ * Decoded JSON is read into a Data class, so its shape is written down: every json_decode in app/ and the domains goes
+ * straight to a Data class's from(), collect() or validateAndCreate(). The Files area is left out, and only
+ * ANY_JSON_METHODS may decode JSON of no fixed shape.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class JsonIntoDataTest extends TestCase
@@ -30,12 +29,9 @@ final class JsonIntoDataTest extends TestCase
     ];
 
     /**
-     * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape of ours to name: a value of any
-     * type kept as stored, a tool's own JSON line, a user's option or file sent on for the journal to check, a tree
-     * checked node by node against its limits, a bare list of texts, a map keyed by the operator's own environment
-     * names whose entries each go into their own Data class, a driver's own state file, kept whole with the fields
-     * the journal does not know, a page's layout, kept as the page wrote it, a line of a driver's JSON event output,
-     * of any of its event types, or an account's protection settings, a settings document of the driver's own.
+     * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape the journal names, such as a
+     * stored value of any type, a tool's own JSON line, a driver's own state file or settings, or a page's layout as
+     * the page wrote it.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Settings\\Storage\\EncodedValue::jsonSerialize',

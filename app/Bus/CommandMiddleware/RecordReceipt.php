@@ -16,10 +16,9 @@ use App\Support\CommandRegistry;
 use Closure;
 
 /**
- * Inside the outermost command's transaction: a request key the caller already used for the same write answers with
- * its stored result or refusal without running the command again; used for another write it is a conflict; past its
- * retention it is refused; unused, it is taken, the command runs and its result is stored in the same transaction, so
- * a rollback leaves the key free to retry. A command that requires a key is refused without one.
+ * Inside the outermost transaction: a request key already used for the same write answers with its stored result, one
+ * used for another write is a conflict, and an expired one is refused; an unused key is taken and its result stored in
+ * the same transaction. A command that requires a key is refused without one.
  */
 final readonly class RecordReceipt implements CommandMiddleware
 {

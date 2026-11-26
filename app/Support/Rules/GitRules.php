@@ -13,10 +13,9 @@ use App\Values\CommandRule;
 use App\Values\OptionGrammar;
 
 /**
- * Git's subcommands, each with version_control: inspection forms read,
- * only the declared list and show forms of branch, tag, remote, config, stash and worktree count as inspection, and
- * every form that changes refs, the index, the work tree or a remote carries those classes. Global options before the
- * subcommand are read by the classifier.
+ * Git's subcommands, each with version_control: only the declared list and show forms of branch, tag, remote, config,
+ * stash and worktree count as inspection, and every form that changes refs, the index, the work tree or a remote
+ * carries those classes.
  */
 final readonly class GitRules
 {
@@ -465,7 +464,7 @@ final readonly class GitRules
     }
 
     /**
-     * A rule whose id names what the git command does, for subcommands that do several things by option.
+     * A rule whose id names what the git command does, for subcommands that do several jobs by option.
      *
      * @param  list<string>  $subcommands
      */

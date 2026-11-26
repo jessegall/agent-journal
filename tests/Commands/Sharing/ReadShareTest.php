@@ -38,10 +38,9 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Throwable;
 
 /**
- * One public read: an active share reads its record, its approved linked records and a page of comments, and audits
- * the read; an expired share, a lapsed grant or an unapproved step is denied and audited without content; a read
- * nested in another transaction is refused before anything is read; a linked record whose disclosure is withdrawn is
- * denied while its sibling reads; a read waits for a revoke holding the share and is denied once it committed.
+ * One public read: an active share reads its record, approved links and a page of comments, and audits it; an expired
+ * share, lapsed grant or unapproved step is denied and audited, a nested read is refused, a withdrawn link is denied
+ * while its sibling reads, and a read waits for a revoke.
  */
 #[TestsCommand(ReadShareCommand::class)]
 #[TimeLimit(seconds: 10, reason: 'It commits real bus reads and empties fourteen tables around each test.')]

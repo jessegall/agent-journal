@@ -275,18 +275,22 @@ function markedComments(string $source, string $marker, bool $hasBlocks): array
 }
 
 /**
+ * The lines of a block comment without their markers and the one space after them, so an indented example stays
+ * indented; a line with no marker loses its leading spaces.
+ *
  * @return list<string>
  */
 function blockLines(string $block): array
 {
     return array_map(
-        fn (string $line) => trim((string) preg_replace('#^\s*(/\*\*?|\*/|\*(?!/))#', '', str_replace('*/', '', $line))),
+        fn (string $line) => rtrim((string) preg_replace('#^\s*(?:(?:/\*\*?|\*(?!/)) ?)?#', '', str_replace('*/', '', $line))),
         explode("\n", $block),
     );
 }
 
 /**
- * The prose lines of a comment: blank lines, tag lines, directives and code examples left out.
+ * The prose lines of a comment: blank lines, tag lines with the lines that go on from them up to the next blank line,
+ * directives and code examples left out.
  *
  * @param  list<string>  $lines
  * @return list<string>
@@ -295,6 +299,7 @@ function prose(array $lines): array
 {
     $prose = [];
     $isExample = false;
+    $isInTag = false;
 
     foreach ($lines as $line) {
         if (str_starts_with($line, '```')) {
@@ -304,8 +309,9 @@ function prose(array $lines): array
         }
 
         $isTag = preg_match('#^(@|go:|nolint|phpcs|phpstan-|psalm-|eslint|ts-|prettier|shellcheck|<|\$ |php |sh |journal )#', $line) === 1;
+        $isInTag = $line !== '' && ($isTag || $isInTag);
 
-        if (! $isExample && ! $isTag && $line !== '' && preg_match('#^\s{2,}#', $line) !== 1) {
+        if (! $isExample && ! $isInTag && $line !== '' && preg_match('#^\s{2,}#', $line) !== 1) {
             $prose[] = $line;
         }
     }

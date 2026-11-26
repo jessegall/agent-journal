@@ -52,8 +52,8 @@ export function useAccountNaming(
     }
 
     /**
-     * Starts from the saved name with all of it selected, so typing replaces it: the wizard's naming step, where
-     * naming is the one thing to do.
+     * Starts from the saved name with all of it selected, so typing replaces it: the wizard's naming step, where naming
+     * is the only task.
      */
     function startFrom(field: HTMLInputElement | null): void {
         revert();

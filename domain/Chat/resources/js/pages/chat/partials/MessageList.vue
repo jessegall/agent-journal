@@ -24,11 +24,9 @@ import QuestionCard from "./QuestionCard.vue";
 import RefusedSend from "./RefusedSend.vue";
 
 /**
- * The entries of one chat in order: the viewer's own messages on the right, everyone else's on the left with the name
- * of whoever wrote it and, for an agent, the driver it runs through; reactions on the message they answer, questions
- * as cards, and events as a line that opens their record. Each message is reached by keyboard in order and named by
- * its author; a reply's line names its original and moves the focus there. After them come the user's own sends still
- * settling, and the refused ones to restore or discard. Bodies are shown as text, never as HTML.
+ * The entries of one chat in order: the viewer's own messages on the right, others on the left with their author and
+ * driver, reactions on their message, questions as cards and events as lines. After them come the user's sends still
+ * settling and the refused ones. Bodies show as text, never HTML.
  */
 const props = defineProps<{
   entries: ChatEntryData[];

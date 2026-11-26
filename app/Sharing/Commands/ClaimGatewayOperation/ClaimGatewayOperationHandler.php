@@ -15,11 +15,9 @@ use App\Sharing\Support\ClaimedGatewayOperation;
 use App\Sharing\Support\GatewayRuns;
 
 /**
- * Locks the installation and holds it for the run (a newer run takes over and every endpoint of older runs counts as
- * stopped and their unfinished operations are released), then the operation's configuration, the run's running endpoint
- * and the operation, in that order. An open
- * reuses the run's running endpoint or starts the next version, never a closing one; a close moves the run's endpoint
- * to closing, and with none running it is done at once. No I/O happens here.
+ * Claims a gateway operation for the run, which takes the installation over from older runs. An open reuses the run's
+ * running endpoint or starts the next version; a close moves the endpoint to closing, or is done at once with none
+ * running.
  */
 final readonly class ClaimGatewayOperationHandler extends SharingCommandHandler
 {

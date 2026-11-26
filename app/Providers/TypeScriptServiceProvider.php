@@ -17,11 +17,9 @@ use Spatie\TypeScriptTransformer\Transformers\EnumTransformer;
 use Spatie\TypeScriptTransformer\TypeScriptTransformerConfigFactory;
 
 /**
- * The TypeScript transformer's configuration (version 3 configures in this provider; it has no config file): the
- * official Laravel Data extension, with its Data transformer swapped for our hidden-aware one, enums, read from app
- * and every installed domain's folder, and the types each domain's own provider writes (tagged PROVIDER_TAG). On
- * `php artisan typescript:transform` it writes each owner's types to resources/js/generated/types/<owner>/index.ts and
- * keeps resources/js/types/generated/index.ts re-exporting them.
+ * The TypeScript transformer's configuration, which version 3 keeps in this provider: Laravel Data with the
+ * hidden-aware transformer, the enums of app and each domain, and the types each domain's provider writes. It writes
+ * each owner's types to resources/js/generated/types/<owner>/index.ts.
  */
 final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationServiceProvider
 {

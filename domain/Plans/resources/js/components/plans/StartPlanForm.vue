@@ -9,12 +9,9 @@ import { start as startRoute } from '@generated/routes/plans';
 import type { StartPlanData } from '@generated/types/plans';
 
 /**
- * Starts a plan the server offers to start; this form only asks and shows what came back. It sends one start at a
- * time and reloads only the prop of the window or section it is drawn in. When no answer comes the outcome is
- * unknown: it never sends again by itself and offers Check plan, which reads the plan anew; a repeat of a start that
- * landed changes nothing.
- * Its parent keys it by plan, so switching plans never shows another plan's error. A parent may give its own
- * controls, such as menu items, through the default and unknown slots.
+ * Starts a plan the server offers to start, one start at a time, reloading only its window's prop. When no answer comes
+ * it never sends again by itself and offers Check plan; its parent keys it by plan and may add controls through the
+ * default and unknown slots.
  */
 const props = defineProps<{ start: StartPlanData }>();
 

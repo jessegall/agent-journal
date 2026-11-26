@@ -6,10 +6,9 @@ import type { IconName } from './Icon.vue';
 import QuietLine from './QuietLine.vue';
 
 /**
- * One thing an agent did. Row (the activity panel): the time (38 wide), a level glyph 10 (● reaches the chat, ○ the
- * panel, · only detail), the kind's Icon 14, and who and what, padding 5 12 in --text-small --text-2; level 3 reads in
- * --text and level 1 in --text-3. Line (the chat): a QuietLine. An item with found lines is a button with aria-expanded
- * that shows its FoundList; hover takes --hover and the ring sits inside at offset -2.
+ * One action an agent took: as a row of the activity panel its time, level glyph, icon and who did what, or as a
+ * QuietLine in the chat. An item with found lines is a button that shows its FoundList. Measures:
+ * docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

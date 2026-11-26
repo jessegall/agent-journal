@@ -9,10 +9,9 @@ use App\Support\ActorReference;
 use App\Values\ExecutionPlan;
 
 /**
- * A command line admitted to run: its single-use admission id, normal or evidence
- * mode, its exact line, folder and plan, the digests and revisions it was admitted under, the bindings it relied on,
- * and the actor it runs for. Only the named factories make one; a serialized copy is no authority, since the runner
- * checks it again at start.
+ * A command line admitted to run: its single-use admission id, mode, line, folder and plan, the digests, revisions and
+ * bindings it was admitted under, and its actor. Only the named factories make one, and the runner checks it again at
+ * start.
  */
 final readonly class AdmittedRun
 {

@@ -7,7 +7,7 @@ namespace App\Accounts\Exceptions;
 use RuntimeException;
 
 /**
- * The agent host did not make or remove an account folder: it could not be reached, or it said why not.
+ * The agent host did not make or remove an account folder: it could not be reached, or it answered why not.
  */
 final class AccountFolderRefused extends RuntimeException
 {

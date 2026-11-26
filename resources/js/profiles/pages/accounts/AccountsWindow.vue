@@ -32,12 +32,9 @@ import type { WizardRequest } from '../../signIn';
 import { useUsageClock } from '../../usageClock';
 
 /**
- * The owner's saved driver accounts in one list, a native part of the Accounts layout: which one new starts of each
- * driver use, choosing or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
- * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
- * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
- * or the window gets focus. A live update keeps the list where it was scrolled, and while the list is the last read
- * kept after a failed refresh, nothing can be added.
+ * The owner's saved driver accounts in one list: which one each driver's new starts use, choosing, renaming and adding
+ * one through the wizard. A reload answering an older choice never takes back a newer one, and while the list is only
+ * kept after a failed refresh nothing can be added.
  */
 const data = defineProps<AccountListData>();
 

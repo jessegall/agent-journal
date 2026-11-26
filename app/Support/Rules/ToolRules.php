@@ -15,10 +15,9 @@ use App\Values\CommandRule;
 use App\Values\OptionGrammar;
 
 /**
- * The reviewed rules of the developer tools the shell corpus still left unknown: the GitHub CLI, Docker,
- * Go's other verbs, SQLite, SSH without a remote command, PHP's own options, the read verbs of npm and Composer, and
- * Vitest. Every option is listed; an unlisted one stays unknown. make, interpreters, docker exec and remote commands
- * stay unknown by decision.
+ * The reviewed rules of developer tools: the GitHub CLI, Docker, Go, SQLite, SSH without a remote command, PHP's
+ * options, the read verbs of npm and Composer, and Vitest. An unlisted option stays unknown, as do make, interpreters,
+ * docker exec and remote commands.
  */
 final readonly class ToolRules
 {

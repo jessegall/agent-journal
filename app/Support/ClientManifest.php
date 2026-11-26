@@ -14,10 +14,9 @@ use Illuminate\Contracts\View\Factory;
 use Throwable;
 
 /**
- * Writes the browser build's view of the installed domains from the checked declarations: the component map, the
- * TypeScript include list and paths, the Vite aliases, the Tailwind sources, the loader descriptors and the server's
- * component map. All of them are rendered and checked first and then replaced together under one content hash, so a
- * failure leaves the previous build whole. It reads no actor and no request.
+ * Writes the browser build's view of the installed domains: the component map, the TypeScript paths, the Vite aliases,
+ * the Tailwind sources and the loader descriptors. All are rendered and checked first, then replaced together under one
+ * content hash, so a failure leaves the previous build whole.
  */
 final readonly class ClientManifest
 {

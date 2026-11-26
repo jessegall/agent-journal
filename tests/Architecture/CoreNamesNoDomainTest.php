@@ -7,10 +7,9 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\ToolCheck;
 
 /**
- * Core never names a domain, read as text, in code, strings, comments, config, routes, migrations, bootstrap, the
- * core frontend or the core test support with its test journal; only the composition files that install the domains
- * may. It closes what
- * DomainBoundaryTest's class scan cannot see. tools/refactoring/core-domain-text.php lists every mention.
+ * Core never names a domain, read as text, anywhere in its code, config, routes, migrations, frontend or test support;
+ * only the composition files that install the domains may. It covers what DomainBoundaryTest's class scan cannot see;
+ * tools/refactoring/core-domain-text.php lists every mention.
  */
 final class CoreNamesNoDomainTest extends TestCase
 {

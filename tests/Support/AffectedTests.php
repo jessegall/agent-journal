@@ -9,11 +9,8 @@ use Tests\Support\ScanCache\ScanCache;
 
 /**
  * Picks the tests a change can break from the code's syntax trees: the classes the changed files declare, then the
- * files that name them, step by step outwards, and the test files among those. A class also reaches the users of what
- * it serves (its interfaces, the command or event it handles) and of the classes a call names with it (the interface
- * a container binds it to, the event it listens to). The reached tests are ranked by how directly they connect to the
- * change, nearest step first and, within a step, the file naming more of that step's classes first, and the most test
- * methods an affected run takes are taken in that order.
+ * files that name them, outwards one ring at a time, also through interfaces, commands, events and bindings. Tests are
+ * ranked nearest ring first, and the most an affected run takes are taken.
  *
  * @phpstan-type TestFile array{class: string, methods: list<string>, names: list<string>}
  * @phpstan-type CodeIndex array{

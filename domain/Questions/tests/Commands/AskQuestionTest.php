@@ -16,10 +16,9 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestProjects;
 
 /**
- * A member of a chat asks another member an open question or a choice between options: it keeps its text, asker,
- * target and trimmed options; a blank text, an open question with options, a choice without two distinct options, a
- * chat the asker is not in and a target outside the chat are refused and ask nothing; a question is of the asker's
- * project and missing under another.
+ * A chat member asks another an open question or a choice between options, kept with its asker, target and trimmed
+ * options; a blank text, a malformed choice, a chat the asker is not in or a target outside it are refused. A question
+ * is of the asker's project.
  */
 #[TestsCommand(AskQuestionCommand::class)]
 final class AskQuestionTest extends TestCase

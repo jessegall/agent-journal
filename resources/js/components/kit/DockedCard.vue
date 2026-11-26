@@ -4,10 +4,9 @@ import type { IconName } from './Icon.vue';
 import IconButton from './IconButton.vue';
 
 /**
- * A card pinned to a chat: a --border-3 border, radius --radius-card on --raised, padding 8 8 8 12, focusable and
- * labelled "<title>, docked"; Enter on the card opens the item. It shows its icon, title and subline, or what the
- * default slot draws in their place; the trail slot holds what the kind shows (a state, or Answer), and Open, when the
- * item opens, and Undock sit at the end. It enters from 8px below over 240 ms, and without motion under reduced motion.
+ * A card pinned to a chat, focusable and labelled with its title, docked: Enter opens the item. It shows its icon,
+ * title and subline or the default slot, the trail slot's state, and Open and Undock at the end; it enters with a short
+ * rise, none under reduced motion. Measures: docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ title: string; icon?: IconName; subline?: string; canOpen?: boolean }>(), {
     icon: undefined,

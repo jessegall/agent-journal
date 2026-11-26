@@ -15,10 +15,9 @@ use Closure;
 use Throwable;
 
 /**
- * One module middleware held to the bus's contract: it calls the next step once, may replace
- * the command only with a copy of the same class and only when it may (its own command, or an exported one), never
- * returns without running the command, never swallows a failure below it, and returns the result unchanged. A
- * middleware that throws, refusing the command, is let through.
+ * One module middleware held to the bus's contract: it calls the next step once, replaces the command only with a copy
+ * of the same class it may replace, always runs the command, never swallows a failure and returns the result unchanged.
+ * A middleware that refuses by throwing is let through.
  */
 final readonly class MiddlewareStep
 {

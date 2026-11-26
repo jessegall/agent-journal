@@ -11,10 +11,9 @@ use App\Support\ActiveEventUnits;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Opens a slot in the unit active for a saved or deleted event source's connection; with no unit it refuses, unless
- * writes outside commands are allowed (the seeder and the tests), where the facts stay on the instance. It
- * never dispatches and never drains, so a lifecycle observer that reenters a business mutation between a save and
- * its raise would break the save order, and none may.
+ * Opens a slot in the active unit of a saved or deleted event source's connection; with no unit it refuses, unless the
+ * seeder or a test's own seeding allows writes outside commands. It never dispatches and never drains, so no lifecycle
+ * observer may run a business mutation between a save and its raise.
  */
 final readonly class RowCapture implements RowCaptureContract
 {

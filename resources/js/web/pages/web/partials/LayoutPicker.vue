@@ -15,10 +15,9 @@ import type { Arrangement, Preset } from '@/components/panes/arrangement';
 import LayoutThumb from './LayoutThumb.vue';
 
 /**
- * The layouts under the bar's Layouts button: the presets, then the user's saved layouts, each a row with its
- * thumbnail that applies it; a saved row shows its tools on hover and focus: save the current layout to it, download
- * it, rename and delete. Save layout names a new one inline, Import reads a layout file, and the notice line says why
- * a save, a name or a file was refused. Escape or a press outside closes it with the focus back on its button.
+ * The layouts under the bar's Layouts button: the presets, then the saved layouts with their thumbnails and their tools
+ * on hover and focus. Save layout names a new one inline, Import reads a file, the notice line says why something was
+ * refused, and Escape closes it.
  */
 const props = defineProps<{ layouts: LayoutData[]; anchor: HTMLElement | null }>();
 

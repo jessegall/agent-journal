@@ -132,10 +132,9 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
-     * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, pending
-     * or claimed by the journal with no process of it taken up, so the agent can start again and its reserved capacity
-     * is freed. A pending start whose host cannot be reached, its calls failing or stopped, waits for it to come back
-     * instead, up to half an hour; so does a start no host was chosen for yet while no enrolled host can be reached.
+     * Ends each session that never beat and whose start still waits for a host since the cutoff, so the agent can start
+     * again and its capacity is freed. A start whose host cannot be reached, or with no host while none can be reached,
+     * waits up to half an hour instead.
      */
     private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {

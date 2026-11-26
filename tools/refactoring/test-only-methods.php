@@ -3,17 +3,13 @@
 declare(strict_types=1);
 
 /**
- * Finds a public method of an Eloquent model that only tests call: no file of the application names it, while a test
- * does. Such a method is how a second copy of a model's behaviour survives beside the one the application uses.
+ * Finds a public method of an Eloquent model only tests call, by name, string, relation or scope, which keeps a second
+ * copy of a model's behaviour alive; Laravel's own Model methods are left out.
  *
  *   php tools/refactoring/test-only-methods.php
  *       prints "file:line<TAB>Model::method" for each such method and fails while there is one that
  *       docs/naming/test-only-model-methods.txt does not list yet; that list holds the methods already known, each
  *       waiting for its own decision, so only a new one fails.
- *
- * A method counts as used when the application calls it (->name, ::name or ?->name), names it as a string (a
- * relation in with() or whereHas(), a callable), reads it as a relation property, or calls it as a scope; methods
- * Laravel's Model already declares are left out, as the framework calls them.
  */
 
 use App\Support\Reflector;

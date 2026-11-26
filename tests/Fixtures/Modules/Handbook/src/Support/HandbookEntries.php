@@ -47,7 +47,7 @@ final class HandbookEntries
     }
 
     /**
-     * The owner's entry with that number; another owner's entry of the same number is not theirs.
+     * The owner's entry with that number; another owner's entry of the same number is not visible to them.
      */
     public function visibleTo(string $ownerId, int $number): HandbookEntry
     {

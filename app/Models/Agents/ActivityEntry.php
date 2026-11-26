@@ -62,12 +62,12 @@ final class ActivityEntry extends JournalModel implements ProjectOwned, Readable
     public const int SUBJECT_CHARACTER_LIMIT = 200;
 
     /**
-     * The most things found one entry keeps.
+     * The most found items one entry keeps.
      */
     public const int FOUND_COUNT_LIMIT = 5;
 
     /**
-     * The longest one thing found may be.
+     * The longest one found item may be.
      */
     public const int FOUND_CHARACTER_LIMIT = 120;
 

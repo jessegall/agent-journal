@@ -94,7 +94,7 @@ final class RelayFrames
     }
 
     /**
-     * The MCP headers of the frame's call, with the version a legacy initialize negotiated.
+     * The MCP headers of the frame's call, with the version its session's initialize negotiated.
      *
      * @return array<string, string>
      */
@@ -303,7 +303,7 @@ final class RelayFrames
     }
 
     /**
-     * Keeps the protocol version a legacy initialize negotiated, for the frames that follow it.
+     * Keeps the protocol version a session's initialize negotiated, for the frames that follow it.
      */
     private function rememberNegotiatedVersion(Frame $frame, JsonRpcReplyData $answer): void
     {

@@ -20,11 +20,9 @@ use Tests\Support\CodeReferenceScan;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * The classes whose work runs inside an event unit outside a handler: the bus steps inside the command's
- * transaction, each transaction listener, each state and
- * hook input, each class that runs work through a transaction owner (the stack transaction, a start transaction, the
- * unit of work), the pipes of every pipeline such a class names, and the listeners of a request event sent only from
- * inside a unit. The command reach follows each of them like a handler.
+ * The classes whose work runs inside an event unit outside a handler: the bus steps in the command's transaction,
+ * transaction listeners, states and hook inputs, classes that run work through a transaction owner, the pipes of their
+ * pipelines, and the listeners of events sent only inside a unit.
  */
 final readonly class UnitRoots
 {

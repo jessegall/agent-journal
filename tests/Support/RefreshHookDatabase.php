@@ -9,11 +9,9 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
- * Runs a test on the dedicated Postgres hook database through Laravel's DatabaseTransactions: checks the selected
- * database with HookDatabase, migrates it in a serial run, and wraps the test in a transaction that is rolled back,
- * unless the test commits real rows and names no connection to wrap. In a parallel run Tests\CreatesApplication first
- * checks the base database, then Laravel creates, switches to and migrates the worker's own database before this
- * check runs. Work done after a commit runs when the test's inner transaction commits.
+ * Runs a test on the dedicated Postgres hook database through Laravel's DatabaseTransactions: it checks the database,
+ * migrates it in a serial run and wraps the test in a rolled-back transaction, unless the test commits real rows. A
+ * parallel worker's own database is made and migrated by Laravel first.
  */
 trait RefreshHookDatabase
 {
@@ -57,10 +55,9 @@ trait RefreshHookDatabase
     }
 
     /**
-     * A create migration is edited in place, so a database kept from an earlier run can hold old tables that
-     * migrate never touches. The database keeps a fingerprint of the migration files it was built from; once per
-     * process a differing fingerprint rebuilds it with migrate:fresh. A parallel worker's database is made new for
-     * every run and Laravel has just migrated it, so one with no fingerprint yet is only stamped, not built again.
+     * Rebuilds a kept database with migrate:fresh once per process when the fingerprint of the migration files it was
+     * built from differs, since a create migration is edited in place. A parallel worker's database, just migrated, is
+     * only stamped.
      */
     private function rebuildWhenMigrationsChanged(): void
     {

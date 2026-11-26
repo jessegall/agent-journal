@@ -1,9 +1,7 @@
 <script setup lang="ts">
 /**
- * The header of a pane or a floating window, 34 high on --side with a --border line below, padding 0 5 0 12 and no text
- * selection. The strip variant holds Tabs in the default slot. The bar variant holds the leading slot (an Icon), the
- * title in --text-badge with .03em spacing and an ellipsis (--text-3, or --text when active), and the actions slot
- * (IconButtons); it shows a grab cursor and takes focus with a ring at offset -1.
+ * The header of a pane or a floating window: the strip form holds Tabs in the default slot, and the bar form holds a
+ * leading icon, the title and the actions slot, with a grab cursor. Measures: docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ variant?: 'strip' | 'bar'; title?: string; active?: boolean }>(), {
     variant: 'strip',

@@ -87,10 +87,9 @@ export class ButtonHold {
 }
 
 /**
- * The one place a button shows that its request is in flight, as version 5 did: a click on any button is noted, and a
- * request sent while that click is handled puts a spinner on the button and disables it until the request ends. A read
- * shows the spinner after SPINNER_AFTER_MS; a write shows it at once. No button opts in, and a click that sends no
- * request changes nothing.
+ * The one place a button shows that its request is in flight: a request sent while a click is handled puts a spinner on
+ * that button and disables it until the request ends, a read after SPINNER_AFTER_MS and a write at once. No button opts
+ * in.
  */
 export class PressedButtons {
   /**

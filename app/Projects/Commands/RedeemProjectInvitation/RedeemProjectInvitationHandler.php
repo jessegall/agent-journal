@@ -25,10 +25,9 @@ use App\Support\ActorReference;
 use Illuminate\Support\Str;
 
 /**
- * In the bus's one transaction: locks the line by its ticket's digest, refuses it alike when it is not live by server
- * time, its issuer is no longer the owner or connecting is switched off, then makes the host with the relay's
- * credential, the project and its Main environment (or locks the environment of the project it joins), the binding
- * in that environment and its main agent, and spends the line.
+ * Redeems an install line in one transaction: it locks the line by its ticket's digest and refuses it when it is not
+ * live, its issuer is not the owner or connecting is off; then it makes the host, the project and its environment, the
+ * binding and its main agent, and spends the line.
  */
 final readonly class RedeemProjectInvitationHandler implements CommandHandler
 {

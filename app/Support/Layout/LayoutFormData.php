@@ -10,12 +10,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Where a layout form sends: one registered action of the reader's own domain, by its method and the address the
- * reader resolved for its record, with the values the form sends unchanged, such as the revision it read; whether
- * each submission carries a new Idempotency-Key, and the question it asks before sending, when it asks one; once it is
- * accepted, the sentence a toast says and, only when the domain has an authorized inverse checked against the revision
- * after the change, the form that toast offers as Undo. The owning command checks the record, the actor and its state
- * again when it runs.
+ * Where a layout form sends: one registered action of the reader's own domain with its method, address and unchanged
+ * values, whether each submission carries a new Idempotency-Key, the question it asks first, and once accepted the
+ * toast's sentence and, when the domain has one, its Undo form.
  */
 #[TypeScript]
 final class LayoutFormData extends Data

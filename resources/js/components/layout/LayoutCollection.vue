@@ -12,14 +12,9 @@ import LayoutPart from './LayoutPart.vue';
 import { useLayoutAppend } from './layoutAppend';
 import { rememberRow, restoreRow } from './listReturn';
 
-// The keyed rows of a declared layout: facts as term and value pairs, choices that each set the window's query or open
-// their own page, the chosen one marked current, or a list whose rows open their own page or their own window query. A row with an actions
-// menu shows its actions button beside it, and a right click on the row, or the Menu key or Shift+F10 on it when it is
-// focused, opens the same menu, bound to that row's record. A list keeps the rows it shows when a Show more is waiting
-// for its answer, and adds the rows that answer brings; any other read replaces them. Every list row is drawn in a
-// ListRow as the design draws its rows, its declared leading and trailing parts in its slots and its title linking;
-// a click anywhere else on the row follows that link, while its own parts and its menu stay controls of their own; a fact's value draws each piece as its own link
-// when it has an address.
+// The keyed rows of a declared layout: facts as term and value pairs, choices that set the window's query or open a
+// page, or a list of rows drawn in ListRow with their parts and a linking title. A row's actions menu opens from its
+// button or a right click, and Show more adds rows.
 const props = defineProps<{ part: LayoutPartData }>();
 const windowQuery = useWindowQueryChange();
 const isAppending = useLayoutAppend();

@@ -24,11 +24,9 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * Codex's own sign-in on the host, into one private account folder: the folder as CODEX_HOME with its sign-in kept
- * in its own auth.json, then `codex app-server` asked for a device-code sign-in (`account/login/start`, type
- * `chatgptDeviceCode`) until it announces `account/login/completed` for that login, proved by `account/read` on the
- * same app-server. The address and code go only to the user; the driver exchanges every token itself. `codex login
- * status` is the plain check.
+ * Codex's own sign-in into one private account folder as CODEX_HOME: `codex app-server` is asked for a device-code
+ * sign-in until it announces `account/login/completed`, proved by `account/read`. The address and code go only to the
+ * user, and `codex login status` is the check.
  */
 final readonly class CodexSignIn implements SignInProtocol
 {

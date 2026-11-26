@@ -7,10 +7,9 @@ namespace App\Accounts\Data\Support;
 use Spatie\LaravelData\Optional;
 
 /**
- * The null→Optional map, in ONE named home — the omit-from-wire counterpart to Spatie's `optional()`
- * (which maps null→null). `use` it on a `Data` class and build with `Foo::optionalOrMissing($payload)`:
- * a null payload becomes an absent `Optional` (omitted from the wire), anything else hydrates through `::from`.
- * So a producer never re-derives `$x === null ? Optional::create() : Foo::from($x)` at every call site.
+ * Maps a null payload to an absent `Optional`, omitted from the wire, and anything else through `::from`: the
+ * counterpart of Spatie's `optional()`, which keeps null. Use it on a `Data` class and build with
+ * `optionalOrMissing($payload)`.
  */
 trait OptionalOrMissing
 {

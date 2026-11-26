@@ -11,9 +11,8 @@ use App\Sessions\Enums\OfflineReplyMode;
 use App\Sessions\Values\SessionContainer;
 
 /**
- * One start of a driver as its profile plans it: the exact conversation it begins or resumes, whether it runs as a
- * terminal or as one headless turn with its prompt, the folder it works in, the model and effort asked for, the
- * command its native hooks run, the saved account it signs in with, none for a start with no account, and where its
+ * One start of a driver as its profile plans it: the conversation it begins or resumes, terminal or one headless turn
+ * with its prompt, its folder, model and effort, the command its hooks run, its saved account if any, and where its
  * driver is run from.
  */
 final readonly class DriverStart

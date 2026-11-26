@@ -13,11 +13,9 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One sign-in as its owner sees it: its driver, the name a new account gets or the account it signs in again, its
- * state and deadline, the account it made, renewed or matched when the reader may read it, whether that account
- * lacks the provider's own identity so a later sign-in to it cannot be recognised, whether a renewal still waits for
- * the agents running on the account to finish, and the provider's reason
- * when it refused the proof. Never its folder, its process or its challenge, which only the no-store read gives.
+ * One sign-in as its owner sees it: its driver, the account it names, its state and deadline, the account it made or
+ * renewed, whether that account lacks the provider's identity, whether a renewal waits for running agents, and the
+ * provider's reason for a refusal. Never its folder, process or challenge.
  */
 #[TypeScript]
 final class SignInAttemptData extends Data

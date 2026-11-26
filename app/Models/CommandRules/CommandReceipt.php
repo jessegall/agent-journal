@@ -301,7 +301,7 @@ final class CommandReceipt extends JournalModel implements EventSource, Readable
     #[Scope]
     protected function pastRefusalWindow(Builder $query, CarbonImmutable $now): void
     {
-        // An empty refuses_until keeps the key refused for good, so its tombstone is never pruned.
+        // An empty refuses_until keeps the key refused for good, so its refused receipt is never pruned.
         $query->withoutGlobalScope('caller')->whereNotNull('refuses_until')->where('refuses_until', '<', $now);
     }
 

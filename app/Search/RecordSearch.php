@@ -37,10 +37,9 @@ use App\Support\RecordIdentity;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Runs one search across the sources a reader may search: a complete reference is answered first through the one
- * source that recognizes it; otherwise each source is asked for certified hits within its deadline, and the heads
- * are merged into one order by tier and identity, never past or repeating a hit already shown. Hits held from an
- * earlier call are reread and rechecked before they are shown. It reads no model and trusts no saved text.
+ * Runs one search across the sources a reader may search: a complete reference is answered by the one source that
+ * recognizes it; otherwise each source gives certified hits within its deadline, merged into one order by tier and
+ * identity. Held hits are rechecked before they are shown.
  */
 final readonly class RecordSearch implements RecordSearchContract
 {

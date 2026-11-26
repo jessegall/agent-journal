@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Lists the JSON a model or an Eloquent cast writes or reads by hand: a json_encode or json_decode in a class that
- * extends a model or implements CastsAttributes. A column that holds an object or a list of them is cast to its
- * Laravel Data class, or a collection of one, and Laravel Data reads and writes it.
- * A method marked #[DecodesAnyJson] keeps JSON of no fixed shape and is left to JsonIntoDataTest's list, and JSON
- * handed straight to hash() is a digest, not a column.
+ * Lists the JSON a model or an Eloquent cast writes or reads by hand, which belongs to a Laravel Data cast instead. A
+ * method marked #[DecodesAnyJson] is left to JsonIntoDataTest's list, and JSON handed straight to hash() is a digest.
  *
  *   php tools/refactoring/column-json.php app domain
  *       prints "file:line<TAB>..." for each such call, and fails while there is one.

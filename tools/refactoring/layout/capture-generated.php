@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Captures the generators' outputs as the set the layout moves must reproduce: every generated file with its hash, the symbols each TypeScript module exports, the
- * generated client's call groups and methods, and the type-owner rows the type writer generates. Run the generators
- * first (php artisan journal:api, journal:ui-manifest, wayfinder:generate --with-form, typescript:transform); it
- * fails on a class listed twice or two exports of one name in one module.
+ * Captures the generators' outputs the layout moves must reproduce: each generated file's hash, each TypeScript module's
+ * exports, the client's call groups and the type-owner rows. Run the generators first; it fails on a class listed twice
+ * or two exports of one name.
  *
  *   php tools/refactoring/layout/capture-generated.php
  */

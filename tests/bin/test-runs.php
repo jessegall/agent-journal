@@ -84,10 +84,9 @@ function configurationFor(string $root, array $paths): string
 }
 
 /**
- * Makes each parallel worker's database a copy of one migrated template, so a run migrates nothing while no migration
- * changed: the template is rebuilt once when the migration fingerprint differs, and every worker database is dropped
- * and copied from it, stamped with the fingerprint the tests compare. The answered connection holds the run's
- * databases until the run ends, and the databases of removed worktrees are dropped first.
+ * Makes each parallel worker's database a copy of one migrated template, rebuilt only when the migration fingerprint
+ * differs. The answered connection holds the run's databases until it ends, and the databases of removed worktrees are
+ * dropped first.
  *
  * @param  array<string, string>  $environment
  */

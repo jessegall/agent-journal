@@ -18,10 +18,9 @@ use App\Values\SignInIdentity;
 use App\Values\SignInVerification;
 
 /**
- * Claude Code's own sign-in on the host, into one private account folder: `claude auth login --claudeai` with the
- * folder as CLAUDE_CONFIG_DIR and nothing else of the host's configuration, the sign-in address read from its private
- * output, the user's code typed on its standard input, and `claude auth status --json` as the check. The driver
- * exchanges every token itself; nothing here sees one.
+ * Claude Code's own sign-in into one private account folder: `claude auth login --claudeai` with the folder as
+ * CLAUDE_CONFIG_DIR, the address read from its output, the user's code typed on its input, and `claude auth status
+ * --json` as the check. The driver exchanges every token itself.
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {

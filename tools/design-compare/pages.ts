@@ -1,13 +1,10 @@
 /**
- * The pages of the app and their comparison views, from pages.json.
+ * The pages of the app and their comparison views, from pages.json. A run seeds the local journal with the sample
+ * records first; a page is named again when a view never ran, ran against an older design or left differences. The list
+ * only informs and never fails a build.
  *
  *   node --experimental-strip-types tools/design-compare/pages.ts run [page]   runs every view, or one page's views
  *   node --experimental-strip-types tools/design-compare/pages.ts again        names the pages to look at again
- *
- * A run first seeds the local journal with the sample tasks, plans, document and sequence the row and reader views
- * open; the seeders skip what is already there. A page is looked at again when one of its views never ran, ran
- * against an older design or left differences. The list is information for whoever closes a page's work or changes
- * the design; it never fails a build.
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';

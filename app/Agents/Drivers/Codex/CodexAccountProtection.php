@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Codex;
 
 /**
- * The private settings each Codex thread on a saved account starts with: one sandbox, writable only where the thread
- * works, and a shell environment that never names the account folder. Codex 0.165.0 has no native rule that hides the
- * account's auth.json from a reading command, so CODEX_HOME is no isolation by itself: the journal refuses commands and
- * patches that reach the accounts folder, also while it is away, and the arrangement stays refused until the
- * protected host shows those denials hold.
+ * The private settings each Codex thread on a saved account starts with: one sandbox writable only where the thread
+ * works, and a shell environment that never names the account folder. Codex has no native rule hiding auth.json, so the
+ * journal refuses commands and patches that reach the accounts folder.
  */
 final class CodexAccountProtection
 {

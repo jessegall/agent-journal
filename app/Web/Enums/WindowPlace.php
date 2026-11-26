@@ -15,7 +15,7 @@ enum WindowPlace: string
     // A tree of what the work is made of, at the side.
     case Tree = 'tree';
 
-    // The one thing being worked on, in the middle.
+    // The one record being worked on, in the middle.
     case Editor = 'editor';
 
     // What is happening, as it happens, beside or below the editor.

@@ -10,10 +10,9 @@ use App\Records\Exceptions\ShareBudgetExceeded;
 use Carbon\CarbonImmutable;
 
 /**
- * The work one preview or public read may still do: queries counted through the read meter, time from its start,
- * loaded text and safe metadata counted apart within one loaded-bytes limit, rendered output, records, links and
- * relation hops. Every provider call of that preview or read is charged to the same budget, which lives for that one
- * preview or read only. Core builds it; providers see only the ShareBudget contract.
+ * The work one preview or public read may still do: queries, time, loaded bytes, rendered output, records, links and
+ * relation hops. Every provider call of that preview or read is charged to it; providers see only the ShareBudget
+ * contract.
  */
 final class ShareBudget implements ShareBudgetContract
 {

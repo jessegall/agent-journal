@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Search\Enums;
 
 /**
- * How one search call ends. Complete has nothing left; more and pending continue; retryable keeps a safe boundary
- * after a source timed out once; incomplete ends this attempt; no_sources ran nothing; restart needs fresh words;
- * the scope answers name a scope the caller cannot search as typed; result_too_large means not one hit with its open
- * action fits an answer.
+ * How one search call ends: complete, more or pending to continue, retryable after a source timed out, incomplete,
+ * no_sources, restart for fresh words, a scope the caller cannot search as typed, or result_too_large when not one hit
+ * fits an answer.
  */
 enum SearchStatus: string
 {

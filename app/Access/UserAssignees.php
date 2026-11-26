@@ -17,8 +17,8 @@ use App\Support\AssigneeName;
 use App\Support\IdListPage;
 
 /**
- * Users as holders of work: only a user the journal admits now may receive work, and names are display names, never
- * an email, so a former owner keeps their name on the records they held.
+ * Users as holders of work: only a user the journal admits now may receive work, and names are display names, never an
+ * email, so a previous owner keeps their name on the records they held.
  */
 final readonly class UserAssignees implements AssigneeProvider
 {

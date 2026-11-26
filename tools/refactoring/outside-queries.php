@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Lists the queries written outside their model that do more than chain the model's scopes and read: every way a model
- * is filtered or ordered is a named scope on the model, so a change of a column touches one place (user message
- * 22197). A chain that starts at Model::query() or at a relation of a model, outside that model and its traits, may
- * call the model's scopes and then the reads of ALLOWED_READS; any other builder call is refused.
+ * Lists the queries written outside their model that do more than chain its scopes and read, since every filter or
+ * order is a named scope (user message 22197): outside the model, a chain may call its scopes and then ALLOWED_READS.
  *
  *   php tools/refactoring/outside-queries.php app domain
  *       prints "file:line<TAB>query of <Model> calls <method> ..." for each, and fails while there is one.

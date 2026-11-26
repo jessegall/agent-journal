@@ -10,11 +10,9 @@ import PlanWorkDialog from './PlanWorkDialog.vue';
 import { useHostProp } from '@kit/hostProp';
 
 /**
- * A plan's review in its reader: Request review or Withdraw review when offered; while it is reviewed, which review
- * is open and, for a decider, Approve or Request changes with a required reason; the latest approval as a receipt, or
- * as historical once the plan changed; and a request for changes with its note. The plan itself is read live, as it
- * cannot change under review. One post at a time under its request key, reloading only the window's prop; a lost
- * answer shows Outcome unknown and Check plan, which sends the same request under the same key again only when chosen.
+ * A plan's review in its reader: Request or Withdraw review, which review is open, Approve or Request changes with a
+ * reason for a decider, the latest approval as a receipt and a request's note. One post at a time under its request
+ * key; a lost answer shows Outcome unknown and Check plan.
  */
 const props = defineProps<{
     review: PlanReviewData;

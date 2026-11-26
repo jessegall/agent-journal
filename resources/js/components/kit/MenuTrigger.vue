@@ -5,13 +5,9 @@ import Menu from './Menu.vue';
 import Spinner from './Spinner.vue';
 
 /**
- * A button that shows what is chosen and opens a Menu, in three variants. The pill is 26px high and round, with a
- * --border-2 border on --raised, for an Icon or AvatarStack, a name and a Spinner while its agent works. The field is
- * 24px high with a --line border and medium weight, for an sm Avatar and a name. The who is bare, for a large Avatar or
- * AvatarStack, a name and a subline of --text-badge --text-3 that ends in an ellipsis; it takes --hover on hover. Each
- * ends in a caret. A drop target takes --hover with a 2px --focus outline at offset 1. The leading slot holds the
- * Icon or Avatar, the default slot the Menu's items. It opens with Enter, Space and Down (aria-haspopup menu and
- * aria-expanded, from the Menu).
+ * A button that shows what is chosen and opens a Menu, in the pill, field or who form, ending in a caret: the leading
+ * slot holds its icon or avatar and the default slot the Menu's items. It opens with Enter, Space and Down, and can be
+ * a drop target. Measures: docs/designs/kit-components.md.
  */
 const props = withDefaults(
     defineProps<{

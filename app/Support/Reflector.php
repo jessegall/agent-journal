@@ -169,10 +169,9 @@ final class Reflector implements ReflectorContract
     }
 
     /**
-     * Whether two objects, of one class or of two, hold the same values in the public properties both declare. A
-     * nested object is compared whole with ==, or property by property when a left-out path reaches inside it; every
-     * other value is compared with ===. A left-out path names a property to skip, dotted for a nested one, such as
-     * start.provenance.
+     * Whether two objects hold the same values in the public properties both declare: a nested object is compared whole
+     * with ==, or by property when a left-out path reaches inside it, and every other value with ===. A left-out path
+     * is dotted for a nested property, such as start.provenance.
      *
      * @param  list<string>  $leftOut
      */

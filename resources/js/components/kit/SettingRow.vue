@@ -2,10 +2,9 @@
 import { useId } from 'vue';
 
 /**
- * One setting in a SettingGroup: a title with its hint on one side and its control (a Field, Toggle, SegmentedControl,
- * Button, Status or text) from the slot on the other. Padding 12 14, gap 16, a --line rule below it that the last row
- * drops. A block row stacks the control below the title. The slot receives titleId and hintId, so a control can name
- * itself with aria-labelledby and aria-describedby.
+ * One setting in a SettingGroup: a title with its hint on one side and its control from the slot on the other, or below
+ * it in a block row. The slot receives titleId and hintId, so a control can name itself with them. Measures:
+ * docs/designs/kit-components.md.
  */
 withDefaults(defineProps<{ title: string; hint?: string; block?: boolean }>(), { hint: undefined, block: false });
 

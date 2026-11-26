@@ -14,12 +14,9 @@ import { renderedLineRange } from '@kit/useRenderedSelection';
 import { clearCommentThread, type CommentThread } from './commentThreads';
 
 /**
- * Writes one comment on a record. It is about the whole record unless the reader chooses a place in the text: a
- * section, the lines of selected paragraphs, or an exact quote confirmed in the source. A record without text (no
- * version) offers no such choice. A retry of the same draft keeps its submission key; a failed post keeps the text and
- * the chosen place. Given a pane's thread, the draft and its key live there, so they last across tabs; a post whose
- * answer is lost is frozen as it was sent and can only be checked by replaying it under its key, after which Send as
- * new comment takes a fresh key; a refusal (403) clears the draft, the attempt and the key.
+ * Writes one comment on a record, about the whole record or a chosen place in its text: a section, the lines of
+ * paragraphs, or a confirmed quote. A retry keeps its submission key and a failed post keeps the text; a pane's thread
+ * keeps the draft across tabs, and a refusal clears it.
  */
 const props = defineProps<{ target: string; version?: string; reads?: RecordReadsData; thread?: CommentThread }>();
 

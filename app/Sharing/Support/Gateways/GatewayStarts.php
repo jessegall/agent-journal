@@ -10,10 +10,9 @@ use Closure;
 use Illuminate\Contracts\Process\InvokedProcess;
 
 /**
- * Opens a gateway endpoint from a program a gateway started: it looks for the program's address until the gateway
- * confirms it, the program exits or a minute passes, with one last look at what it printed; then keeps the program for
- * the run and answers the endpoint, or
- * stops it and refuses. A gateway brings only how to start its program and how to read its address.
+ * Opens a gateway endpoint from the program a gateway started: it looks for the program's address until the gateway
+ * confirms it, the program exits or a minute passes, then keeps the program and answers the endpoint, or stops it and
+ * refuses.
  */
 final readonly class GatewayStarts
 {

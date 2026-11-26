@@ -27,10 +27,9 @@ use App\Values\ProfileStartPolicy;
 use App\Values\StopCondition;
 
 /**
- * Resolves one proposed profile into the definition an activation stores: the type's global defaults, then the
- * project's override of the type, then the profile's own. A list left out inherits and an empty one adds nothing; a
- * removal clears an inherited grant; a denial, from either override, always wins, and the project's denials cannot be
- * removed. The result never passes the type's ceiling or a protected area.
+ * Resolves one proposed profile into the definition an activation stores: the type's defaults, the project's override,
+ * then the profile's own. A list left out inherits, a removal clears an inherited grant, a denial always wins, and the
+ * result never passes the type's ceiling or a protected area.
  */
 final readonly class PolicyResolver
 {

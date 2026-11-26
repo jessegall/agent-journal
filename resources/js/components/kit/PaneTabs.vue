@@ -9,12 +9,9 @@ import type { MenuEntry } from '@/components/panes/paneLayout';
 import type { SplitSide } from '@/components/panes/paneLayout';
 
 /**
- * Version 5's tab strip (kit/EditorTabs.vue): 34 px on the sidebar colour, each tab with its icon, label, count and a
- * close cross whose slot is always kept so no tab changes width. A middle click or Delete closes a tab, a right click
- * opens its menu, and a strip too tight for every label shows only the icon of its inactive tabs. Only the chosen tab
- * is in the Tab order: Left and Right choose its neighbours and Home and End the ends. The pane's own buttons come in
- * the slot at the right. The tab's menu offers Dock left, right, above and below as well as Detach and the closes, and
- * opens by the Menu key or Shift and F10 as well as a right click.
+ * A pane's tab strip: each tab with its icon, label, count and a close cross that keeps its slot so no tab changes
+ * width; a tight strip shows only the icons of inactive tabs. Only the chosen tab is a tab stop, and a tab's menu
+ * offers docking, Detach and the closes. Measures: docs/designs/kit-components.md.
  */
 export type PaneTab = {
     key: string;

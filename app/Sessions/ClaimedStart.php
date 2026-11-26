@@ -7,10 +7,9 @@ namespace App\Sessions;
 use App\Accounts\AccountStartRecipe;
 
 /**
- * What a host needs to make a claimed start's process: its key for every later report, the session, the account
- * folder on the host with the sign-in generation it runs in and the method its account signed in by, the driver's
- * checked recipe for running on it, and the native conversation a resume continues, if the agent has one under the
- * start's context; for a connected project's child also the checkout its own worktree is prepared for.
+ * What a host needs to make a claimed start's process: its report key, the session, the account folder with its sign-in
+ * generation and method, the driver's checked recipe, and the native conversation a resume continues; for a connected
+ * project's child, also its worktree's checkout.
  */
 final readonly class ClaimedStart
 {

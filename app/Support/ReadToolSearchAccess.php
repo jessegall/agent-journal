@@ -14,10 +14,9 @@ use App\Values\AllowedNames;
 use App\Values\ReadRequest;
 
 /**
- * The access of a searchable whose records an agent reads through one read tool by an id argument, such as
- * plans_read with plan_id: an agent whose grant holds the read for at least one record may search, limited to the
- * records it holds it for, and every signed-in user of the environment may search them all. The open action is
- * that read tool, asked the same targeted read before it is shown and again when it is opened.
+ * The access of a searchable read through one read tool by id, such as plans_read with plan_id: an agent holding the
+ * read for a record may search those records, and every signed-in user may search them all. The open action is that
+ * read tool, checked again before it is shown and when it opens.
  */
 abstract readonly class ReadToolSearchAccess implements SearchAccess
 {

@@ -15,10 +15,9 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * One Codex app-server runs every headless turn of an account: it is opened once for the account's runtimes, shakes
- * hands and checks the account's sign-in, starts a thread per runtime and a turn per message, binds each thread as its
- * runtime's conversation, settles each turn from turn/completed, and refuses the account's starts when the server is
- * signed in another way than the account.
+ * One Codex app-server runs every headless turn of an account: opened once, it shakes hands, checks the sign-in, starts
+ * a thread per runtime and a turn per message, settles each turn from turn/completed, and refuses the account's starts
+ * when it is signed in another way.
  */
 #[TestsMachinery(CodexAppDriver::class)]
 final class CodexAppDriverTest extends TestCase

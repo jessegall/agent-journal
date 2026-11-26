@@ -60,10 +60,9 @@ use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * A parent starts a helper: the start names the resolved model, revision and type and runs in its profile's mode or
- * is refused, never swapped; a main or missing profile and a policy that does not delegate refuse before anything is
- * written; a repeat finds the same job, a nested refusal rolls everything back, and two starts never both hold one
- * helper's reservation.
+ * A parent starts a helper that names its resolved model, revision and type and runs in its profile's mode or is
+ * refused; a main or missing profile and a policy that does not delegate refuse before any write. A repeat finds the
+ * same job and two starts never share one reservation.
  */
 #[TestsCommand(StartHelperCommand::class)]
 #[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]

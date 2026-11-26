@@ -11,9 +11,8 @@ use Tests\Support\ScanCache\ScanCache;
 
 /**
  * The callers of the model transitions that raise facts: a call stands inside a unit when its file is reached from a
- * registered command's handler, is a listener marked to run in the command's transaction, or is a model; any other
- * caller (a public listener, a job, a console command, a controller, an engine tick listener, or code no command
- * reaches) raises a fact nobody collects.
+ * command's handler, is a listener run in the command's transaction, or is a model. Any other caller raises a fact
+ * nobody collects.
  *
  * @phpstan-import-type TransitionCall from TransitionCallScan
  */

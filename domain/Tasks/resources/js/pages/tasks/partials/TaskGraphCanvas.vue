@@ -5,10 +5,9 @@ import type { TaskGraphEdge, TaskGraphNode } from '@generated/types/tasks';
 import { layoutOf, NODE_HEIGHT, NODE_WIDTH } from '../../../taskGraph';
 
 /**
- * One canvas of a task graph: each task a node in the column of its wait depth, an arrow from every task that must
- * finish to the task that waits for it. A wait marked added is drawn heavy and labelled +, one marked removed is dashed
- * and labelled −, so a change never rests on colour alone. The lit chain, the selected node and the bottlenecks are
- * the caller's; choosing a node is the caller's too.
+ * One canvas of a task graph: each task a node in the column of its wait depth, with an arrow from each task that must
+ * finish to the task that waits for it. An added wait is heavy and labelled +, a removed one dashed and labelled −; the
+ * lit chain and selection are the caller's.
  */
 const props = withDefaults(
     defineProps<{

@@ -20,8 +20,9 @@ use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
- * Legacy sends and migrated facts share one stream in the order they were made: L1, M, L2 and M1, L, M2 release in
- * those orders after the commit, an occurrence a transaction listener stages takes its place, and a rollback sends none.
+ * A handler's sends and the models' facts share one stream in the order they were made: L1, M, L2 and M1, L, M2 release
+ * in those orders after the commit, an occurrence a transaction listener stages takes its place, and a rollback sends
+ * none.
  */
 #[TestsMachinery(EventUnitLifecycle::class)]
 final class OrderedStreamTest extends TestCase

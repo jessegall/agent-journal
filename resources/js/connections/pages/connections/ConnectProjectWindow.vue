@@ -20,13 +20,9 @@ import InstallLinePanel from './partials/InstallLinePanel.vue';
 import ReleasePlatforms from './partials/ReleasePlatforms.vue';
 
 /**
- * The owner connects a project on another machine: the install line panel issues, replaces and cancels one line for
- * a new project or an environment to join, and keeps it to itself. Below are the connected folders, each with Revoke;
- * several are revoked at once by choosing them, or every one on a machine. When a reread fails the window keeps the
- * last verified list, says the journal is unreachable with when that list was read, and holds back every action that
- * needs the journal's word until a retry answers; a folder's state is never changed by a failed read. Embedded in
- * Settings' Connected projects section it has no page header or Back, and the install line stands in the section
- * instead of a dialog, as the design draws it.
+ * The owner connects a project on another machine: the install line panel issues, replaces and cancels one line, and
+ * below are the connected folders with Revoke, one or several at once. When a reread fails it keeps the last verified
+ * list and holds every action back; embedded in Settings it has no header.
  */
 const props = withDefaults(defineProps<{ data: ConnectProjectWindowData; embedded?: boolean }>(), { embedded: false });
 const bindings = computed(() => props.data.bindings);
@@ -41,7 +37,7 @@ const fresh = ref(true);
 let refreshing: ReturnType<typeof setInterval> | undefined;
 // The one reread due when a shown folder's presence expires, so a row turns Offline at its deadline.
 let deadline: ReturnType<typeof setTimeout> | undefined;
-// Said once when a retry reached the journal again, for a screen reader.
+// Announced once to a screen reader when a retry reached the journal again.
 const recovery = ref('');
 // The row whose Revoke had focus when the journal became unreachable, to return to once it answers again.
 let revokeRowBeforeOutage: string | null = null;

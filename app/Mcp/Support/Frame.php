@@ -85,8 +85,8 @@ final readonly class Frame
     }
 
     /**
-     * The MCP headers of the frame's call: a modern frame mirrors its method, name and protocol version; a legacy
-     * frame carries the version its initialize negotiated, once there is one.
+     * The MCP headers of the frame's call: a frame that names its own version mirrors its method, name and version; any
+     * other carries the version its session's initialize negotiated, once there is one.
      *
      * @return array<string, string>
      */
@@ -126,7 +126,7 @@ final readonly class Frame
     }
 
     /**
-     * The per-request protocol version a modern frame names in its _meta, or null for a legacy frame.
+     * The per-request protocol version a frame names in its _meta, or null when it names none.
      */
     private function protocolVersion(): string|null
     {

@@ -16,10 +16,9 @@ use Closure;
 use Illuminate\Database\DatabaseManager;
 
 /**
- * Admission to a session's stack as a PostgreSQL session advisory lock in the journal's own namespace, taken in
- * autocommit before the operation's transaction and waited for at most the deadline's lock wait. Inside a transaction
- * that is already open it takes no lock, so no repeatable-read snapshot ever waits for one. A connection that cannot
- * give the lock back is disconnected, never reused.
+ * Admission to a session's stack as a PostgreSQL session advisory lock, taken in autocommit before the operation's
+ * transaction and waited for at most the deadline's lock wait; inside an open transaction it takes none. A connection
+ * that cannot give the lock back is disconnected.
  */
 final class StackAdmission implements StackAdmissionContract
 {

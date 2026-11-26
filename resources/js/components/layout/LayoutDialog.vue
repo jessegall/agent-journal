@@ -16,15 +16,9 @@ import LayoutConfirmation from './LayoutConfirmation.vue';
 import LayoutPart from './LayoutPart.vue';
 import { provideFormDraft, provideFormSent } from './layoutForm';
 
-// A dialog of a declared layout: its opener is drawn in place and opens it; its form sends through the form's own
-// registered submission and keeps its draft with the focus on the first invalid field. Cancel and Escape give the
-// focus back to the opener, a page change closes it, and once the form is accepted it closes and a toast says so,
-// offering Undo only when the declaration supplies an inverse action. When the declaration names a noun with a draft
-// producer, the dialog offers the guided entry; the fields it drafts fill this form under a banner naming the agent,
-// and nothing is saved until the form is sent. A dialog that names its other ways calls its footer's guided button by
-// the way's name, and, in a page header, draws its opener as the kit's split button: the opener's label as the main
-// part, and a menu of the plain way and the way with an agent; an opener that leads to a page stays a link, and the
-// guided way drafts the fields the form then shows.
+// A dialog of a declared layout: its opener opens it, its form sends through its own submission and keeps its draft,
+// and an accepted form closes it with a toast that may offer Undo. A noun with a draft producer adds the guided entry,
+// shown in a page header as a split button.
 const props = defineProps<{ part: LayoutPartData }>();
 const page = usePage();
 const isOpen = ref(false);

@@ -18,10 +18,9 @@ use App\Values\ResourceRequest;
 use App\Values\Word;
 
 /**
- * Turns the parser's classification of one shell line into the operations an access policy decides: one per
- * executable part, named by the rule that classified it, needing Execute and its classes' access on its literal
- * operands, and one per file redirect on its target. A part the classifier could not place needs no grantable access,
- * so no grant matches it.
+ * Turns the classification of one shell line into the operations an access policy decides: one per executable part,
+ * needing Execute and its classes' access on its operands, and one per file redirect. A part the classifier could not
+ * place matches no grant.
  */
 final readonly class ShellOperations
 {

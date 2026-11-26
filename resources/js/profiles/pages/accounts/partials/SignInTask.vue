@@ -14,10 +14,9 @@ import { codeDirection } from '../../../signIn';
 import type { SignInActions } from '../../../signInActions';
 
 /**
- * The wizard's second step, the chosen method's own task: the provider's sign-in page and the code it gives back, a
- * code to enter on the provider's page, or the token or key a secret method takes, with where to get it, as the
- * driver's family declares the way its code travels. Until the
- * host has the sign-in page ready, it shows that the sign-in is starting. The form is sent by the footer's button.
+ * The wizard's second step, the chosen method's own task: the provider's sign-in page and its code, a code to enter
+ * there, or the token or key a secret method takes. Until the host has the page ready it shows that the sign-in is
+ * starting; the footer's button sends it.
  */
 const props = defineProps<{
     driver: string;

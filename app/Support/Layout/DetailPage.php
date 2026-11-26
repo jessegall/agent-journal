@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Support\Layout;
 
 /**
- * The shared recipe of a record's reader: a metadata line above its title, the title, an abstract, its actions, its
- * facts with the links their values carry, parts that stay on every tab such as native ones, and its tabs, of which
- * only the chosen one is read. A record that was removed is a notice with Back to its list. A domain hands in neutral
- * values and readers only.
+ * The shared recipe of a record's reader: a metadata line, the title, an abstract, its actions, its facts with their
+ * links, parts on every tab, and its tabs, of which only the chosen one is read. A removed record is a notice with Back
+ * to its list.
  */
 final readonly class DetailPage
 {

@@ -6,10 +6,8 @@ import PageHeader from '@kit/PageHeader';
 import { onMounted } from 'vue';
 
 /**
- * A run's outcome as a notification shows it: its label, a short attempt reference, its result and when it was
- * recorded, never a command, path, log or output. Open full run shows only when the reader may read the whole run.
- * Once shown, the reader's own receipt of it becomes read; a run the reader may no longer hear of is unavailable and
- * marks nothing.
+ * A run's outcome as a notification shows it: its label, attempt reference, result and time, never a command, path, log
+ * or output; Open full run shows only when the reader may read it. Once shown, the reader's receipt becomes read.
  */
 const props = defineProps<{ data: RunOutcomePageData }>();
 

@@ -23,10 +23,9 @@ use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 
 /**
- * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
- * fresh preview. Each locks the installation, the preview's configuration and the preview in that order and consumes
- * the preview; a new grant counts the live shares under the lock and writes a new token and an open request for its
- * gateway; every one writes its approved members and its audit in the command's transaction.
+ * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a fresh
+ * preview it consumes under the locks of the installation, configuration and preview, in that order. A new grant also
+ * writes a token and an open request for its gateway.
  */
 final readonly class ShareGrants
 {

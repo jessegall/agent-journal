@@ -7,11 +7,9 @@ import Input from './Input.vue';
 import Textarea from './Textarea.vue';
 
 /**
- * Typed input: its label above, an Input or a Textarea (or the control the default slot draws), the hint and the
- * error below. The control points aria-describedby at the hint and the error and shows aria-invalid; the typed value
- * is kept. A code field shows what a user types from another screen in a fixed-width face and is never filled in by
- * the browser; a secret field hides what is typed. Enter in a one-line field outside a form, and Command or Control
- * with Enter in a textarea, emit submit. The end slot sits inside a one-line field at its right end.
+ * Typed input: its label above, an Input, a Textarea or the slot's control, and the hint and error below, named by
+ * aria-describedby. A code field is never filled in by the browser and a secret field hides what is typed; Enter, or
+ * Command or Control with Enter in a textarea, emits submit.
  */
 const props = withDefaults(
     defineProps<{

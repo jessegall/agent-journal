@@ -8,11 +8,9 @@ import SearchField from '@/components/kit/SearchField.vue';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 
 /**
- * The offer of every window, in a Popover under the add button: a search field that keeps the focus above a list of
- * them, named by aria-controls and aria-activedescendant, the active one kept in view. Typing filters by title; Up,
- * Down and Enter do nothing while no window matches, which says so. A window already open is marked open, and choosing
- * it brings it forward. Enter or a click adds a closed window, a press on one can instead start dragging it to a place,
- * and Escape closes it with the focus back on the button. The hint under the list says what adding does here.
+ * Every window on offer, in a Popover under the add button: a search field over the list that filters by title, with
+ * the active entry kept in view. Choosing an open window brings it forward, Enter or a click adds a closed one,
+ * dragging places it, and Escape closes the popover.
  */
 const props = defineProps<{ windows: PaneWindow[]; shownKeys: string[]; anchor: HTMLElement | null; hint: string }>();
 const open = defineModel<boolean>('open', { default: false });

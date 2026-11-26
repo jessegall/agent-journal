@@ -176,7 +176,7 @@ build_and_pin() {
         set_setting "$2" "$built"
 }
 
-# Migrations run on the new image before the switch, so they must leave the old code working.
+# Migrations run on the new image before the switch, so the running image must still work with them.
 run_migrations() {
     if schema_changed; then
         artisan run migrate:fresh --force

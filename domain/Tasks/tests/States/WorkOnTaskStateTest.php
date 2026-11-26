@@ -49,10 +49,9 @@ use Tests\Support\Seeding\StateObservation;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * The work-on-task state on the real engine, pushed by starting its task: its task finishing, blocking or being
- * cancelled ends the run while another task's end does not; the stop is held while its claim holds; a log falls due
- * after the tool use limit; entering or resuming focuses its task and exiting takes the focus away; and each run of a
- * task keeps one frame of its own in its stored place.
+ * The work-on-task state on the real engine: its own task's end ends the run while another's does not, the stop is held
+ * while its claim holds, a log falls due after the tool use limit, its task is focused while it is live, and each run
+ * keeps one frame of its own.
  */
 #[TestsState(WorkOnTaskState::class)]
 final class WorkOnTaskStateTest extends TestCase

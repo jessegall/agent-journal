@@ -91,10 +91,9 @@ export function useWindowQueryChange(): (
 }
 
 /**
- * Asks the server again for this window's prop alone, with extra query values for this window only, such as the
- * cursor of a list's next page: on Home inside its own window[<key>] part, keeping every other window's part of the
- * address as it stands in the browser, and on its own page plainly. The answer replaces the prop; the window keeps
- * what it already shows.
+ * Asks the server again for this window's prop alone, with extra query values for this window only, such as a list's
+ * next cursor: on Home inside its own window[<key>] part, elsewhere plainly. The answer replaces the prop while the
+ * window keeps what it shows.
  */
 export function useWindowReload(): (
   values: Record<string, string | string[]>,

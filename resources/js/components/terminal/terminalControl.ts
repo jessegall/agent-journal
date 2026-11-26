@@ -375,7 +375,7 @@ export class TerminalControl {
     }
 
     /**
-     * Asks about the input until the host said how it ended, and shows an uncertain or paused one.
+     * Asks about the input until the host reported how it ended, and shows an uncertain or paused one.
      */
     private async followReceipt(sequence: number): Promise<string> {
         for (;;) {

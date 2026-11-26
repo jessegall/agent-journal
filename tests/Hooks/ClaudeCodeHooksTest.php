@@ -77,10 +77,9 @@ use Tests\Support\TestText;
 use Tests\TestCase;
 
 /**
- * Every moment Claude Code's hooks reach the journal, sent as the program sends it to POST hooks.answer, signed as a
- * started agent whose stack holds only its ready state: each is answered with a reply Claude Code reads and recorded
- * for the session. Beside them, the endpoint's own answers: an unknown protocol, a replayed call with other input, a
- * stale process, a stack held past the deadline, an unsigned call, an unreadable payload and a native subagent.
+ * Every moment Claude Code's hooks reach the journal, sent as the program sends it, signed as a started agent with only
+ * its ready state: each is answered and recorded. Beside them the endpoint's own refusals: an unknown protocol, a
+ * replay with other input, a stale process, a held stack, an unsigned or unreadable call and a native subagent.
  */
 #[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::SessionStart)]
 #[TestsHook(DefaultDrivers::CLAUDE_CODE, HookEvent::UserPromptSubmit)]

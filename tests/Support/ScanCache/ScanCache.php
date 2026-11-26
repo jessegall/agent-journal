@@ -8,10 +8,9 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 
 /**
- * Keeps each file's findings for each scan on disk, keyed by its path with the hash of the content they were read
- * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry. A
- * file whose modified time and size are unchanged is not even hashed, and a scan that found nothing new writes
- * nothing. Parallel workers each write a whole new cache file and rename it into place.
+ * Keeps each file's findings per scan on disk, keyed by path and content hash, so a run parses only changed files; a
+ * file with unchanged time and size is not even hashed. Parallel workers each write a whole new cache file and rename
+ * it into place.
  */
 final class ScanCache
 {

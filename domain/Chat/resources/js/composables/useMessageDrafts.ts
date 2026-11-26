@@ -6,13 +6,9 @@ import {
 } from "@kit/browserStorage";
 
 /**
- * Unsent message text per user and chat inbox, so browsing other chats, a switch to another driver or reloading the
- * page keeps what was typed. Each chat has its own draft. The drafts live in this tab's session storage; when the
- * browser refuses storage they still last for as long as the page stays open.
- *
- * A send or reply the server refused, or whose answer never came, is kept as a recovery entry beside the drafts: its
- * text and reply target under its request key, for one day. It goes back into the composer only while the draft is
- * exactly as the send left it; otherwise it is offered on its own, so newer typing is never overwritten.
+ * Unsent message text per user and chat inbox, kept in this tab's session storage, so browsing, a driver switch or a
+ * reload keeps it. A refused or unanswered send is kept a day as a recovery entry, put back only while the draft is as
+ * the send left it.
  */
 const storageKey = "journal.message-drafts";
 const recoveryKey = "journal.message-recovery";

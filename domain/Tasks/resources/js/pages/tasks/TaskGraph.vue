@@ -17,19 +17,9 @@ import { bottlenecksOf, chainOf, diffOf, longestChainOf, maxConcurrencyOf } from
 import { taskStateLook } from '../../taskLooks';
 
 /**
- * A plan's tasks as a graph: each task a node in the column of its wait depth, an arrow from every task that must
- * finish to the task that waits for it. Enter or Space on a node selects it, lights its whole chain both ways and fills
- * the inspector; Escape clears it and gives the focus back to the node; Show bottlenecks marks the tasks the most
- * others wait for. The inspector holds the task's facts, Open task, which returns here with the node selected, and
- * Close; a task whose waits the caller may not change keeps its facts readable and its change action disabled with the
- * reason. On a wide screen the canvas scrolls apart from the inspector; on a phone the inspector sits below.
- *
- * A suggestion is asked for only where the props give an address for it, and Suggest says why it is off otherwise. While
- * it is asked for, Now stays in view; if the ask fails Retry asks again. A suggestion draws Now and Suggested side by
- * side (stacked on a phone) with the waits it adds and removes marked by shape and label, and the longest chain and the
- * most tasks at once of each. Apply is there only with an address to apply to and the version the suggestion was made
- * from; when the waits changed meanwhile the comparison stays, says so and offers Reload and recompute. Undo is offered
- * in a toast only with an address for it, and Discard goes back to the plain graph.
+ * A plan's tasks as a graph with an inspector: selecting a node lights its whole chain, Show bottlenecks marks the most
+ * waited-for tasks, and a suggestion draws Now beside Suggested with its changed waits. The full behaviour is in
+ * docs/designs/task-graph.md.
  */
 const props = defineProps<TaskGraph>();
 

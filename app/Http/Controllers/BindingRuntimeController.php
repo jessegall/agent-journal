@@ -19,10 +19,9 @@ use App\Sessions\Commands\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Opens a binding's main runtime on its own host at its driver's pinned build: the start is checked against the binding
- * first, then the existing main-runtime opening runs for the binding's main agent in the binding's root. A start under
- * an id its device chose is recorded with its runtime, so asking again under that id answers the same runtime. The
- * answer carries the plan the device runs on its owner's terminal.
+ * Opens a binding's main runtime on its own host at its driver's pinned build, after checking the start against the
+ * binding. A start under an id its device chose is recorded with its runtime, so asking again answers the same runtime;
+ * the answer carries the plan the device runs.
  */
 final readonly class BindingRuntimeController
 {

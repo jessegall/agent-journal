@@ -1,7 +1,6 @@
-// Command shell-oracle reads shell lines with mvdan.cc/sh, an independent parser, and writes what version 6's shell
-// grammar is expected to find: the outcome and the byte span of every command
-// the shell would run. It reads one JSON object per line on standard input, {"id", "source", "dialect"}, and writes
-// one JSON object per line. It never runs anything.
+// Command shell-oracle reads shell lines with mvdan.cc/sh, an independent parser, and writes what the journal's shell
+// grammar should find: the outcome and the byte span of every command. It reads and writes one JSON object per line,
+// and never runs anything.
 package main
 
 import (

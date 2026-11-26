@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 return [
 
-    /*
-    | A proposal of the project's profiles, in the shape doc 14 section 63 describes. It is not live authority: an
-    | owner activates it with php artisan profile:activate, which validates it whole and appends one revision per
-    | profile. A profile's tier (1 simplest, 2 general, 3 complex, 4 exceptional) names its default model in each
-    | driver family, and preferred_driver the driver a start preselects; every driver and model can still be chosen.
-    */
+    // A proposal of the project's profiles, in the shape doc 14 section 63 describes. It is not live authority: an:
+    // owner activates it with php artisan profile:activate, which validates it whole and appends one revision per
+    // profile.
     'revision' => 1,
 
     'base_overrides' => [],

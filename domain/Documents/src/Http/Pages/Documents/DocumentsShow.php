@@ -40,10 +40,9 @@ use Domain\Documents\Enums\EditingStatus;
 use Spatie\LaravelData\Optional;
 
 /**
- * A document in the library's reader, as a publication: its title, label, revision, actions menu and abstract; under them the editing
- * part, which stays mounted whichever tab is shown, so a held draft survives a tab change; then the tab the window
- * chose. Text is the numbered lines to comment on, the public-comment notice and the record's comments; History its revisions, each
- * linking to its own page; Links its linked records; Details its editing and attention, settlements, Settle and Share.
+ * A document in the library's reader: its title, label, revision, actions and abstract, the editing part that stays
+ * mounted across tabs, then the chosen tab: Text to comment on, History of revisions, Links, or Details with its
+ * settlements, Settle and Share.
  */
 final readonly class DocumentsShow extends DocumentsPage
 {

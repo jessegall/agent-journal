@@ -28,11 +28,9 @@ use App\Values\StackTarget;
 use App\Values\WorkReference;
 
 /**
- * Opens the stop attempt of a session started under a frozen policy, once per stop callback, and answers by the
- * host's results: still running ends the turn with the job left open, passed allows the stop and certifies the work
- * complete, failed or unresolved refuses it with what the conditions said, and the third unchanged failure in a row
- * ends the turn with the work held for repair. A session without conditions finishes on its stack checks alone. A
- * profile's stop is prepared first, by its STOP script: until it is ready for the final checks no attempt opens.
+ * Opens the stop attempt of a session under a frozen policy, once per stop callback, and answers by the host's results:
+ * still running ends the turn, passed allows the stop, failed refuses it with the reasons, and a third unchanged
+ * failure holds the work for repair. A profile's STOP script prepares the stop first.
  */
 final readonly class StopConditionGate implements StopConditionGateContract
 {
@@ -143,8 +141,8 @@ final readonly class StopConditionGate implements StopConditionGateContract
     }
 
     /**
-     * A stop with no conditions passes with nothing said: a line here would be kept for the agent and wake it only to
-     * read that it may stop, and its next stop would do so again without end.
+     * A stop with no conditions passes with no line for the agent: a line here would wake it only to read that it may
+     * stop, and its next stop would do so again without end.
      */
     private function passWithoutConditions(StopCheck $attempt): Decision
     {

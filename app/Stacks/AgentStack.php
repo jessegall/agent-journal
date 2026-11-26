@@ -171,9 +171,8 @@ final readonly class AgentStack
 
     /**
      * The stack with a state put on top, or this stack when a unique state already holds unfinished work for the same
-     * reference or the state's type is switched off. A finished frame of a unique state gives way to the new one, so
-     * work that comes again starts with values of its own; any other state gets a new frame on every push. Every push
-     * passes through here, so a declined push stores nothing.
+     * reference or the state's type is switched off. A finished frame of a unique state gives way to the new one; every
+     * push passes here, so a declined push stores nothing.
      */
     public function withStateOnTop(StateReference $reference): self
     {

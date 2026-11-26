@@ -8,8 +8,8 @@ use App\Exceptions\CrossProjectEdge;
 use App\Projects\Contracts\ProjectOwned;
 
 /**
- * The check before two things are joined, such as an agent and the record it is given: when both belong to a project
- * or to Global, they must be of one project or the other Global; a thing no project owns joins anything.
+ * The check before two records are joined, such as an agent and the record it is given: when both belong to a project
+ * or to Global, they must be of one project or the other Global; a record no project owns joins any.
  */
 final readonly class ProjectEdges
 {

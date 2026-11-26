@@ -3,12 +3,9 @@
 declare(strict_types=1);
 
 /**
- * Lists the parameters whose leading word adds nothing: $profileKey and $profileRevision in a method where
- * no other name is $key or $revision become $key and $revision. A name is flagged when dropping its leading word
- * gives a name no other parameter or variable of the method has, no other name of the method shortens to, and the
- * context already says the word: the class or method names it, or every parameter shares it. A prefix that tells two
- * values apart ($agentId beside $sessionId) stays. Controllers, whose parameters a route binds
- * by name, and generated classes are left alone.
+ * Lists the parameters whose leading word adds nothing, such as $profileKey beside $profileRevision, when the shorter
+ * name is free in the method and the context already says the word. A prefix that tells two values apart stays, and
+ * controllers and generated classes are left alone.
  *
  *   php tools/refactoring/shared-prefix-names.php app domain
  *       prints "file:line<TAB>Class::method<TAB>$old<TAB>$new" for every finding and fails while there is one.

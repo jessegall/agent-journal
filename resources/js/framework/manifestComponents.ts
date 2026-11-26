@@ -5,8 +5,8 @@ import { components } from "@/generated/ui-manifest";
 const loaded = new Map<string, Component>();
 
 /**
- * The component the UI manifest lists under this name, loaded when first shown and made once, so every visit renders
- * the same component.
+ * The component the client manifest lists under this name, loaded when first shown and made once, so every visit
+ * renders the same component.
  */
 export function componentNamed(name: string): Component {
   const known = loaded.get(name);

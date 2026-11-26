@@ -19,10 +19,9 @@ use Closure;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The one pipe on the bus's dispatcher: it builds the command's call, walks the frame (Core's steps and the module
- * middleware in their stages), marking each middleware on the call's trail, and hands the latest command to the
- * command's end. The steps inside the transaction are built afresh for each attempt, so a retried command starts them
- * clean.
+ * The one pipe on the bus's dispatcher: it builds the command's call, walks Core's steps and the module middleware in
+ * their stages, marks each on the call's trail, and hands the command to its end. The steps inside the transaction are
+ * built afresh for each attempt.
  */
 final readonly class MiddlewareRunner
 {

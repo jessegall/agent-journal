@@ -7,7 +7,7 @@ namespace App\Support;
 use App\Agents\Enums\StatusActionType;
 
 /**
- * One thing an agent's status offers now: its type and its button's words.
+ * One action an agent's status offers now: its type and its button's words.
  */
 final readonly class StatusAction
 {

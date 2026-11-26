@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Accounts\Enums;
 
 /**
- * What the driver's own check of an account folder said on the host: signed in, definitely signed out, or nothing
+ * What the driver's own check of an account folder found on the host: signed in, definitely signed out, or nothing
  * certain, such as a network error. Only a definite sign-out changes the account.
  */
 enum AccountCheckResult: string

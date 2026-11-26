@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Moves, renames or merges classes with every reference to them, from the abstract syntax tree: each request is turned
- * into move rows for tools/refactoring/layout/batch-move.php, which parses the project once and rewrites each file once.
+ * Moves, renames or merges classes with every reference, from the syntax tree, through layout/batch-move.php; then
+ * layout/moved-strings.php rewrites moved paths and class names written as text. Files are found and placed through
+ * composer.json's PSR-4 map, and a new name given alone renames the class in its own namespace.
  *
  *   php tools/refactoring/move.php App\\Contracts\\Stacks AgentStacks          rename in place
  *   php tools/refactoring/move.php App\\Contracts\\Stacks App\\Contracts\\Agents\\Stacks
@@ -13,10 +14,6 @@ declare(strict_types=1);
  *   php tools/refactoring/move.php --replace App\\Values\\Old App\\Values\\Kept   merge: repoint every reference, delete Old
  *   php tools/refactoring/move.php --dry-run ...                              print the rows, write nothing
  *   php tools/refactoring/move.php --root=<tree> ...
- *
- * After the move, layout/moved-strings.php rewrites each moved file path and class name written as text (tests, config,
- * docs, tools), so nothing is left to change by hand. A new name given alone renames the class in its own namespace. Each class's file is found, and its new file placed,
- * through composer.json's PSR-4 map, the longest prefix first.
  */
 
 $root = dirname(__DIR__, 2);

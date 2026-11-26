@@ -29,10 +29,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * Native PHP reflection is used only inside the wrapper's own implementation files (WRAPPER_FILES): everywhere else
- * a native reflector constructed, called statically, tested with instanceof, named in a type, or called through a
- * receiver whose type is or may be one is reported with the wrapper method to use instead. Inside those files a
- * public signature naming a native reflector is reported, so native handles never leave the wrapper.
+ * Native PHP reflection is used only inside the wrapper's own files (WRAPPER_FILES): anywhere else a native reflector
+ * is reported with the wrapper method to use. Inside those files a public signature naming a native reflector is
+ * reported, so native handles never leave the wrapper.
  *
  * @implements Rule<Node>
  */

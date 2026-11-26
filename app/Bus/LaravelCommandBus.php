@@ -15,10 +15,9 @@ use Illuminate\Bus\Dispatcher;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The command bus of one request: a Laravel dispatcher of its own, built with this request's container, mapped to
- * the registered handlers and piped only through MiddlewareRunner. A handler is built only when its command reaches it.
- * The shared dispatcher keeps the container it was
- * booted with under Octane, so commands never go through it.
+ * The command bus of one request: a Laravel dispatcher of its own on this request's container, mapped to the registered
+ * handlers and piped only through MiddlewareRunner. The shared dispatcher keeps its boot container under Octane, so
+ * commands never go through it.
  */
 final readonly class LaravelCommandBus implements CommandBus, GuardedCommandBus
 {

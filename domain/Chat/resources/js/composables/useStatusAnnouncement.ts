@@ -2,9 +2,9 @@ import { ref, watch } from "vue";
 import type { AgentStatusData } from "@generated/types/chat";
 
 /**
- * The bar's words for screen readers: each change of the agent's status is said once per operation and version, as
- * a polite announcement, and a failure that asks for an action once as an alert; while the session dialog is open
- * the dialog speaks instead, so the bar says nothing.
+ * The bar's words for screen readers: each change of the agent's status is announced once per operation and version,
+ * politely, and a failure that asks for an action once as an alert; while the session dialog is open the dialog
+ * announces instead.
  */
 export function useStatusAnnouncement(
   status: () => AgentStatusData | undefined,

@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
- * Expires command receipts past their retention and deletes those past their tombstone: the owner runs it from the
+ * Expires command receipts past their retention and deletes those past their refusal period, for the owner from the
  * command line. An expired receipt keeps only its key, so the key stays refused until it is deleted.
  */
 #[AsCommand(

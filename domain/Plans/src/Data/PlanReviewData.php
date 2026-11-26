@@ -9,10 +9,9 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A plan's review and ending as its reader shows them: which review actions the caller may take, whether they may
- * cancel the plan or finish it (a started plan with no unfinished task), the revision they read, what assigning its
- * work would move, the number of the review asked for, the latest approval as a receipt (historical once the plan
- * changed) and the note of a request for changes.
+ * A plan's review and ending as its reader shows them: the review actions the caller may take, whether they may cancel
+ * or finish the plan, the revision read, what assigning its work would move, the review asked for, the latest approval
+ * and the note of a request for changes.
  */
 #[TypeScript]
 final class PlanReviewData extends Data

@@ -13,7 +13,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A user saves the screen's layout under a name, kept as theirs with its shape.
+ * A user saves the screen's layout under a name, kept as their own with its shape.
  */
 #[TestsCommand(SaveLayoutCommand::class)]
 final class SaveLayoutTest extends TestCase

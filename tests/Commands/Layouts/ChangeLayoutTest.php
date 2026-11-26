@@ -14,7 +14,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A user renames and reshapes a layout of theirs; another user's layout is not there for them and stays as it was.
+ * A user renames and reshapes one of their own layouts; another user's layout is not there for them and stays as it
+ * was.
  */
 #[TestsCommand(ChangeLayoutCommand::class)]
 final class ChangeLayoutTest extends TestCase

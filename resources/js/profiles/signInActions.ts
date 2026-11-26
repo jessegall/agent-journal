@@ -27,9 +27,8 @@ const KEEP_THE_WIZARD = {
 };
 
 /**
- * What the add-account wizard does with a sign-in: start one for a new account or an account again, send the code
- * or the secret the attempt waits for, and cancel it. While the followed attempt runs, its challenge is read over its
- * own no-store request every 2 s until it is there. A typed code or secret lives only here and is cleared once sent,
+ * What the add-account wizard does with a sign-in: start one, send the code or secret it waits for, and cancel it;
+ * while it runs its challenge is read every 2 s. A typed code or secret lives only here and is cleared once sent,
  * cancelled or left.
  */
 export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
@@ -202,11 +201,11 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     });
 
     /**
-     * Starts a new account's sign-in. A start the receipt said never happened goes again under its own key; any other
+     * Starts a new account's sign-in. A start the receipt shows never happened goes again under its own key; any other
      * start gets a new one. A reply that never comes reconnects through the receipt.
      */
     /**
-     * The request key a start goes under: the key of the same start the receipt said never happened, else a new one.
+     * The request key a start goes under: the key of the same start the receipt shows never happened, else a new one.
      */
     function keyFor(
         target: ReceiptTarget,

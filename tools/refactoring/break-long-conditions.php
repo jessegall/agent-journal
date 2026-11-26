@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 /*
- * Breaks a PHP line wider than 120 characters before each of its outermost logical or ternary operators (&&, ||, and,
- * or, ?, :, ??), each continuation on its own line one indent deeper, the operator first; a line with none breaks its
- * method chain one call per line.
+ * Breaks a PHP line wider than 120 characters before each of its outermost logical or ternary operators, each
+ * continuation one indent deeper with the operator first; a line with none breaks its method chain one call per line.
  *
- * Usage: php tools/refactoring/break-long-conditions.php <folder or file>...
+ *   php tools/refactoring/break-long-conditions.php <folder or file>...
  */
 
 const LIMIT = 120;

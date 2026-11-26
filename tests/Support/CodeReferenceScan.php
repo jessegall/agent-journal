@@ -18,10 +18,8 @@ use Tests\Architecture\Support\ParsedFile;
 use Tests\Support\ScanCache\FileScan;
 
 /**
- * What one file's syntax tree says about its classes: each class it declares, each class it names, what each class
- * serves (the interfaces it implements and the commands or events its handle method takes), the classes one call names
- * together (a container binding, a listener registration), the classes it creates with new, and each test method it
- * holds.
+ * What one file's syntax tree says about its classes: each class it declares and names, what each serves, the classes
+ * one call names together, the classes it creates with new, and each test method it holds.
  *
  * @implements FileScan<string>
  */

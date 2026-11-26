@@ -15,12 +15,9 @@ use App\Hosts\Values\ContainerLabels;
 use App\Terminals\Screens\ShieldRule;
 
 /**
- * How a host is to open one process: what it is for, terminal or pipes, whether it is healed, its argv and
- * environment, each variable as NAME=value, its folder, the container it runs in when it is contained, and the files
- * the host writes into the process's own files folder first, which argv, environment and mounts name as {folder:files};
- * each of its folders is an empty folder of the process's own, named {folder:<name>}, and each name it inherits is a
- * variable of the host's own environment, passed on when the host has it. Each side socket is a socket the host listens
- * on beside the process, in {folder:sockets}, whose bytes arrive as output of a stream of its name.
+ * How a host opens one process: its purpose, terminal or pipes, whether it is healed, argv and environment, folder,
+ * container and the files the host writes first into {folder:files}. Its folders are empty folders of its own,
+ * {folder:<name>}, and each side socket in {folder:sockets} streams its bytes as output under its name.
  */
 final readonly class HostProcessPlan
 {

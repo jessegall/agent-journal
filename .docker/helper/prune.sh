@@ -55,7 +55,7 @@ remove_old_build_cache() {
     docker builder prune --force --filter "until=$((days * 24))h" >/dev/null
 }
 
-# The option that caps the cache was renamed between Docker versions.
+# Docker versions name the option that caps the build cache differently.
 cap_build_cache() {
     if docker builder prune --help 2>/dev/null | grep -q -- '--max-used-space'; then
         docker builder prune --force --max-used-space "$size" >/dev/null

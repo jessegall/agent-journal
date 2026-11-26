@@ -31,10 +31,9 @@ use Spatie\LaravelData\DataCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Admits a signed host call (SignedHostCalls) from the hosts the route's role names: enrolled hosts by default,
- * journal.host:relay for a connected folder's own routes, journal.host:shared for the work routes both use, where a
- * relay must have a live binding and is scoped to it. The host is bound for this request only (Octane), never kept on
- * a singleton. Each answered call is kept on the host for its link alarm: a server error, or an answer after failures.
+ * Admits a signed host call from the hosts the route's role names: enrolled hosts, journal.host:relay for a connected
+ * folder's own routes, or journal.host:shared for both, where a relay needs a live binding. The host is bound for this
+ * request only, and each answered call is kept for its link alarm.
  */
 #[Dispatches(RecordHostCallFailureCommand::class)]
 #[Dispatches(RecordHostCallAnsweredCommand::class)]

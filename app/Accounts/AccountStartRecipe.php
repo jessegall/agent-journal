@@ -8,9 +8,8 @@ use App\Sessions\Enums\TransportProfileType;
 
 /**
  * What the host does to run a claimed start on its account, as the driver's adapter checked it for the pinned build:
- * the environment it sets, the variables it points at a new empty folder, the variables it removes so no other
- * credential is used, the flags it passes, the entries it keeps in the account's own configuration, the build and
- * arrangement the recipe holds for, and the private protection settings the host writes for the start alone.
+ * the environment it sets, points at empty folders and removes, the flags, the entries kept in the account's
+ * configuration, and the start's private protection settings.
  */
 final readonly class AccountStartRecipe
 {

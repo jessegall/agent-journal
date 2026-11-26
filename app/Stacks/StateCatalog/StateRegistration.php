@@ -12,7 +12,8 @@ use App\Support\Registry;
 use App\Support\StateCatalog\Registration\Contracts\StateRegistration as StateRegistrationContract;
 
 /**
- * Every state type under its type key. Domains register theirs while it is being built; then it is frozen.
+ * Every state type under its type key. Each domain registers its own state types while it is being built; then it is
+ * frozen.
  */
 final class StateRegistration implements StateRegistrationContract
 {

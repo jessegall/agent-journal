@@ -10,6 +10,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
 use App\Bus\JournalCommands;
+use App\Bus\OutsideCommandAllowance;
 use App\Bus\RequestKey;
 use App\Support\CommandRegistry;
 use Closure;
@@ -37,7 +38,7 @@ trait RunsCommands
         $key->set($requestKey ?? (string) Str::ulid());
 
         try {
-            return $this->app->make(CommandBus::class)->run($command);
+            return $this->refusingOutsideWrites(fn (): mixed => $this->app->make(CommandBus::class)->run($command));
         } finally {
             $key->forget();
         }
@@ -74,7 +75,7 @@ trait RunsCommands
      */
     public function runUnkeyed(Command $command): mixed
     {
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->refusingOutsideWrites(fn (): mixed => $this->app->make(CommandBus::class)->run($command));
     }
 
     /**
@@ -104,7 +105,13 @@ trait RunsCommands
     public function runAsJournal(CommandEntry $entry, string $trustedEntry, Command $command): mixed
     {
         try {
-            return $this->app->make(JournalCommandsContract::class)->runAsJournal($entry, $trustedEntry, $command);
+            return $this->refusingOutsideWrites(
+                fn (): mixed => $this->app->make(JournalCommandsContract::class)->runAsJournal(
+                    $entry,
+                    $trustedEntry,
+                    $command,
+                ),
+            );
         } finally {
             $this->requests->reselect();
         }
@@ -122,8 +129,11 @@ trait RunsCommands
     {
         $entry = $this->app->make(CommandRegistry::class)->entryOf($command::class);
         $dispatcher = $this->app->make(JournalCommands::class)->for($entry);
+        $actors = $this->app->make(ActorStore::class);
 
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn (): mixed => $dispatcher->run($command));
+        return $this->refusingOutsideWrites(
+            fn (): mixed => $actors->actAsSystem('test', fn (): mixed => $dispatcher->run($command)),
+        );
     }
 
     /**
@@ -161,5 +171,18 @@ trait RunsCommands
         $owner = $this->ownerUser();
 
         return $this->requests->during(fn () => $this->requests->asUser($owner), fn () => $this->run($command));
+    }
+
+    /**
+     * Runs the work as the running app does, where a write outside a command is refused.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    private function refusingOutsideWrites(Closure $work): mixed
+    {
+        return $this->app->make(OutsideCommandAllowance::class)->forbidDuring($work);
     }
 }

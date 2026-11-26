@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 /**
- * Checks that every Eloquent model makes its new rows through one static create: it prints
- * "file:line<TAB>Model::method" for a public static method that saves one new row under a name not starting with create
- * (create, or createFor and what it is made from, as model-sections.php names them), and fails
- * while there is one. A method that may hand back a row that exists (a find-or-create), writes several rows or only
- * some (insert, insertOrIgnore, a loop), or changes a row it locked is no constructor and keeps its name.
+ * Checks that every Eloquent model makes its new rows through one static create (or createFor...): it prints
+ * "file:line<TAB>Model::method" for a public static that saves one new row under another name. A find-or-create, a
+ * method writing several rows or changing a locked one is no constructor and keeps its name.
  *
  *   php tools/refactoring/model-constructors.php app domain
  */

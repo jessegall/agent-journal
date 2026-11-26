@@ -11,11 +11,9 @@ import { clearCommentThread, type CommentThread } from './commentThreads';
 import { onReconnected } from '@kit/retainedPages';
 
 /**
- * A record's comments, oldest first, read on a page at a time, and the form that writes one. The record's version is
- * given only for a record with text; without it the form offers no text choices. More comments come as the page read
- * again with the comment to go on after. A refresh puts the first page's comments back in place by id and keeps the
- * pages read after it; a failed continuation keeps the rows and the cursor. Given a pane's thread, its draft and lost
- * attempt last across tabs, and a refusal clears the thread and the rows.
+ * A record's comments, oldest first, a page at a time, and the form that writes one; without the record's version the
+ * form offers no text choices. A refresh puts the first page back by id and keeps later pages, a failed continuation
+ * keeps the rows, and a refusal clears them.
  */
 const props = defineProps<{
     target: string;

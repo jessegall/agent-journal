@@ -10,9 +10,9 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 
 /**
- * What a host's report on a browser writer's operation settles: a carried out take issues the grant under the id the
- * host gave it, a refused one refuses it, a carried out release or cancel marks the grant fenced, and the operation's
- * payload, a writer's typed text included, is dropped once the host said how it ended.
+ * What a host's report on a browser writer's operation settles: a carried out take issues the grant, a refused one
+ * refuses it, a carried out release or cancel fences it, and the operation's payload is dropped once the host reported
+ * how it ended.
  */
 final readonly class TerminalGrantReports
 {

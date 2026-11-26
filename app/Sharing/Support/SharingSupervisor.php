@@ -28,10 +28,9 @@ use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
 
 /**
- * One run of the sharing supervisor, in three committed steps per gateway operation: it claims the operation through
- * the bus, opens or closes the gateway outside the bus and outside every transaction, and records the outcome through
- * the bus. A new run takes the gateways over and opens again every configuration that still serves a live share; a
- * run that lost them stops only the program it started. Every bus call runs as the System.
+ * One run of the sharing supervisor, in three committed steps per gateway operation: it claims the operation on the
+ * bus, opens or closes the gateway outside every transaction, and records the outcome on the bus. A new run takes the
+ * gateways over and reopens each configuration that serves a live share.
  */
 final class SharingSupervisor
 {

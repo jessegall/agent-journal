@@ -12,10 +12,9 @@ use App\Projects\Values\ProjectFileText;
 use App\Support\Command;
 
 /**
- * A host answers a read of its project once: a folder's entries, a file's text with the digest and size of the whole
- * file, or why it could not read it. A late answer for a read that expired changes nothing; a file read whole is
- * kept as a version of that file, once per digest, for comments on its lines.
- * Run for an authenticated host by the journal itself (internal, not exported).
+ * A host answers a read of its project once: a folder's entries, a file's text with its digest and size, or why it
+ * could not read it. A late answer changes nothing; a file read whole is kept once per digest for comments on its
+ * lines. Run by the journal for an authenticated host.
  *
  * @extends Command<null>
  */

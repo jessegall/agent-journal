@@ -13,10 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Every place the code sends an event, found by EventCallScan with the event's class resolved, against the expected
- * producers of each event: a migrated row fact is raised only by its owning model method, and every other event is
- * sent only from the files its area's list names, so a new producer, a moved one or a duplicate fails. A fact two
- * transitions of one model establish names both as its owners.
+ * Every place the code sends an event, with the event's class resolved, against each event's expected producers: a
+ * migrated row fact is raised only by its owning model method and every other event from the files its area lists. A
+ * fact two transitions establish names both.
  *
  * @phpstan-type Expectation array{
  *     role: EventRole, producers: list<string>, owner?: string|list<string>, migrated?: bool, returnedBy?: list<string>,

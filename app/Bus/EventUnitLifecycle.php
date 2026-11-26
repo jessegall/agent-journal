@@ -15,10 +15,9 @@ use Illuminate\Database\ConnectionInterface;
 use Throwable;
 
 /**
- * What a transaction owner does with its event unit: open a fresh one with the transaction, drain the required work
- * and refuse a failed unit before commit, mark the batch ready once after the known commit, erase everything on
- * rollback, and detach the unit on every exit; a committed unit goes to the publication. A command joining the
- * transaction drains its required work before it returns and marks the unit failed when a failure crosses it.
+ * What a transaction owner does with its event unit: open one with the transaction, drain its required work and refuse
+ * a failed unit before commit, mark the batch ready after commit, erase it on rollback and detach it on every exit. A
+ * joining command drains its own work before it returns.
  */
 final readonly class EventUnitLifecycle implements CommandFacts, UnitOfWork
 {
@@ -117,10 +116,9 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOfWork
     }
 
     /**
-     * Sends a fact through the unit's owner-ordered stream, in its place among the facts the models raise, released
-     * after the commit; outside a unit its transaction listeners run and it goes out at once. It takes a command-level
-     * fact whose transaction listeners must run in the transaction, and an occurrence a transaction listener stages; a
-     * plain dispatch is heard after the commit too, through the app's dispatcher, but runs no transaction listener.
+     * Sends a fact through the unit's ordered stream among the facts the models raise, released after the commit;
+     * outside a unit its transaction listeners run and it goes out at once. A plain dispatch is heard after the commit
+     * too, but runs no transaction listener.
      */
     public function publishAfterCommit(Event $event): void
     {

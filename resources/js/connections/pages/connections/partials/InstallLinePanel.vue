@@ -75,8 +75,8 @@ watch(issued, (line) => {
 
 onBeforeUnmount(() => clearTimeout(expiry));
 
-// The journal's own word on this window's attempt: once it moved on (replaced elsewhere, spent, cancelled or
-// expired), the line shown here is obsolete and goes at once.
+// The journal's own word on this window's attempt: once it moved on (replaced elsewhere, spent, cancelled or expired),
+// the line shown here is no longer valid and goes at once.
 watch(
     () => props.attempts,
     (rows) => {

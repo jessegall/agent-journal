@@ -5,11 +5,9 @@ import Card from './Card.vue';
 import Status from './Status.vue';
 
 /**
- * A comment on some lines with its answers: a plain Card (--bg) with a 1px --line border and radius 12. The head says
- * "<author> → <name> · <lines>" and, as a live Status, "Sending" or "Read by <name>"; then the text, the replies, and
- * two small buttons, Reply and "<name>'s chat". Both are emitted; the page decides what they open. A page whose server
- * supplies no receipt, no reply or no chat leaves that part out: the status, Reply and the chat button each go with
- * their own flag.
+ * A comment on some lines with its answers, as a bordered card: its head names the author, the recipient, the lines and
+ * a live status, then the text, the replies, and Reply and the chat button, which the page handles. A part the server
+ * does not supply is left out by its flag.
  */
 const props = withDefaults(
     defineProps<{

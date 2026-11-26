@@ -4,9 +4,8 @@ import { useAppContext } from '@/framework/appContext';
 import SidebarRow from './SidebarRow.vue';
 
 /**
- * The navigation the server merged for this user, in its order and without group heads, as the design draws it: the
- * pages, then the foot items in their own region, with the current page marked. The sidebar draws it, and the phone's
- * sheet draws it again.
+ * The navigation the server merged for this user, in its order and without group heads: the pages, then the bottom
+ * items in their own region, with the current page marked. The sidebar draws it, and the phone's sheet draws it again.
  */
 defineProps<{ isMini: boolean }>();
 
@@ -16,7 +15,7 @@ const { navigation, navigationCounts } = useAppContext();
 
 const counts = computed(() => navigationCounts.value?.counts ?? {});
 const currentKey = computed(() => navigation.value?.current.at(-1) ?? null);
-// The items above the foot in the server's order, one plain list as the design draws it.
+// The items above the bottom region in the server's order, one plain list as the design draws it.
 const sidebarItems = computed(() => (navigation.value?.items ?? []).filter((root) => root.isInSidebar));
 const mainItems = computed(() => sidebarItems.value.filter((root) => !root.isAtBottom));
 

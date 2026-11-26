@@ -15,10 +15,9 @@ use App\Sessions\Contracts\ConversationVisits as ConversationVisitsContract;
 use Carbon\CarbonImmutable;
 
 /**
- * Records which native conversation a journal session is in, as a step inside the hook's stack transaction: under a
- * lock on the session row it finds or binds the conversation in the settings store of the session's running start,
- * appends the session's next visit once per event, makes it the session's current one and maps the session's saved
- * outputs anew for that start.
+ * Records which native conversation a journal session is in, inside the hook's stack transaction: under the session's
+ * lock it finds or binds the conversation of its running start, appends the next visit once per event, makes it current
+ * and maps the session's outputs anew.
  */
 final readonly class ConversationVisits implements ConversationVisitsContract
 {

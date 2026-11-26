@@ -32,11 +32,9 @@ final class BindingRulesTest extends TestCase
     use RefreshHookDatabase;
 
     /**
-     * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
-     * the two middleware that authenticate a request, the host middleware and the host enrollment command, the engine
-     * pass that signs the engine in, the provider that reads the actor, the public share bridge, which acts as the
-     * system around its one read, and the skill console owner, publisher and refresh listener, which act as the owner
-     * or the system the same way the sharing console owner and supervisor do.
+     * The files that may name the actor store or set the actor: the store and its contracts, the middleware that
+     * authenticate a request or a host, the host enrollment command, the engine pass, the actor provider, the public
+     * share bridge, and the consoles and listeners that act as the owner or the system.
      */
     private const array ACTOR_SITES = [
         'app/Actors/ActorStore.php',

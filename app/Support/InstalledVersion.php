@@ -11,10 +11,9 @@ use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Process\Factory as ProcessFactory;
 
 /**
- * Which version of the journal runs here, as the sidebar shows it: the release tag of a commit on main, else the short
- * commit hash. An installation the updater keeps reads storage/installation/installed-version, which it writes at
- * each install (commit, branch and tag, one per line); a checkout asks git for its HEAD. The answer is cached until the
- * updater clears it after an install, so no request waits on a file or on git.
+ * Which version of the journal runs here: the release tag of a commit on main, else the short commit hash, read from
+ * storage/installation/installed-version where the updater keeps it, or from git in a checkout. It is cached until the
+ * updater clears it after an install.
  */
 final readonly class InstalledVersion implements InstalledVersionContract
 {

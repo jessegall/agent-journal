@@ -19,12 +19,9 @@ use App\Support\ShareTargetRead;
 use App\Values\ProjectSelection;
 
 /**
- * Finds what a share of a root could include, for the owner's preview: the root's card from its own provider, then
- * the records linked to it through each linked relation, read by their own providers in batches of at most 100 per
- * provider, and so on from those records up to the budget's hops. A target whose type advertises none of the needed
- * capabilities, or whose provider calls it ineligible, is dropped without its title. The walk reads only what the
- * root's project reaches, so a Global record never leads into another project. The batches repeat their reads on
- * purpose and are bounded by the budget. Owned children are not candidates: their parent's provider reads them live.
+ * Finds what a share of a root could include for the owner's preview: the root's card, then the records linked to it,
+ * read by their own providers in batches of at most 100, up to the budget's hops. A target that lacks the needed
+ * capabilities or that its provider calls ineligible is dropped, and the walk never leaves the root's project.
  */
 final readonly class ShareScope
 {

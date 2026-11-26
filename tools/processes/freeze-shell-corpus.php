@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Freezes the expected structure of every case in tests/Fixtures/Processes/ShellCorpus
- * from independent evidence: the shell-oracle tool, which reads each line with mvdan.cc/sh, never version 6's own
- * parser. Each expected block holds the outcome, the unsupported family when there is one, and the byte span of every
- * command the shell would run. decisions.jsonl entries override the oracle where version 6 intends otherwise. The
- * manifest's fixture hashes and unsupported-family counts are written again. Running it twice gives the same bytes.
+ * Freezes the expected structure of every case in tests/Fixtures/Processes/ShellCorpus from the shell-oracle tool,
+ * which reads each line with mvdan.cc/sh, never the journal's own parser; decisions.jsonl entries override it where the
+ * journal means otherwise. It writes the manifest's hashes and counts again, and twice gives the same bytes.
  *
  *   go -C tools/shell-oracle build -o bin/shell-oracle . && php tools/processes/freeze-shell-corpus.php
  */

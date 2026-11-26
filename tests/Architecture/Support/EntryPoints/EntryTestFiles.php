@@ -17,10 +17,9 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\DeclaredCommands;
 
 /**
- * The entry test file of every route method and MCP tool, as the generator writes it from the template: the attribute
- * naming its entry, the base its caller needs and an arrangement. The arrangement is complete only for a route with no
- * parameters whose action sends nothing, or a read tool with no required argument; any other throws, naming what is
- * still to fill in, and a route a page request was recorded for names that recording.
+ * The entry test file of every route method and MCP tool, as the generator writes it: the attribute naming its entry,
+ * its base and an arrangement, complete only for a parameterless route that sends nothing or a read tool with no
+ * required argument. Any other throws, naming what to fill in.
  */
 final readonly class EntryTestFiles
 {

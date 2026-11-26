@@ -7,11 +7,9 @@ namespace Tests\Support\Agents;
 use PHPUnit\Framework\Assert;
 
 /**
- * One message the journal and the agent host exchange, kept as a file both test suites read: a PHP test checks that
- * the journal's real answer still is the file, and the host's Go scenarios (programs/agent/scenarios) start from
- * the same file, so neither side can change the message without the other's tests seeing it. Values that differ on
- * every run, such as ids and tokens, are replaced by fixed ones. A file that is missing is written; after a change
- * that is meant, remove the file (or run with UPDATE_CONTRACTS=1) and run the test again.
+ * One message the journal and the agent host exchange, kept as a file both test suites read, so neither side changes it
+ * without the other's tests seeing it; run-dependent values are fixed. A missing file is written; after a meant change,
+ * remove it or run with UPDATE_CONTRACTS=1.
  */
 final readonly class HostContract
 {

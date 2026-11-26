@@ -8,10 +8,9 @@ use App\Search\Enums\ScopeAnswer;
 use App\Search\Enums\SearchStatus;
 
 /**
- * What one search call answers: its status, the hits in the one global order, a direct open for a complete
- * reference, the sources to choose from when several recognize it, the continuation to call next, the narrower
- * scopes that avoid a stalled source with the words to search them for, and the scope alternatives when the scope
- * could not be used.
+ * What one search call answers: its status, the hits in one order, a direct open for a complete reference, the sources
+ * when several recognize it, the next continuation, the narrower scopes that avoid a stalled source, and the scope
+ * alternatives when the scope could not be used.
  */
 final readonly class SearchAnswer
 {

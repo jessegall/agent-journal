@@ -25,10 +25,9 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * Ticks the selected frames of one pass while its budget lasts. Each frame is told the time since its own last settled
- * tick, runs its commands one by one as top-level bus calls with no stack lock held, and stops at the first failure.
- * The frames that settled get their timing checkpoints in one command at the end; only after it commits do their
- * in-memory baselines move. A frame that fails keeps its old baseline, so its next tick is told the whole interval.
+ * Ticks the selected frames of one pass while its budget lasts: each frame is told the time since its last settled tick
+ * and runs its commands as top-level bus calls, stopping at the first failure. The settled frames' checkpoints commit
+ * in one command, and a failed frame keeps its old baseline.
  */
 final readonly class TickDelivery
 {

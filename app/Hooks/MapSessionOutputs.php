@@ -13,10 +13,9 @@ use App\Models\Sessions\SessionRequest;
 use App\Values\SessionOutputPaths;
 
 /**
- * A step of recording a conversation visit, in the hook's transaction under the session's lock: the session's current
- * start begins a new mapping generation and its grants are replaced by the session's own earlier ones, those of the
- * session a Continue made it from when the same agent ran it, and the conversation the host just named when its
- * transcript lies in the start's account folder. A sibling's or a fork's parent history is never granted.
+ * Maps a session's outputs for its current start in a new generation, under the session's lock: its grants become the
+ * session's own earlier ones, those of the session a Continue made it from, and the conversation the host just named in
+ * the start's account folder. A sibling's or fork's history is never granted.
  */
 final readonly class MapSessionOutputs
 {

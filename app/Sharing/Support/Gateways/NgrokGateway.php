@@ -19,10 +19,9 @@ use Illuminate\Process\Factory as Processes;
 use Illuminate\Support\Arr;
 
 /**
- * The ngrok gateway on a fixed HTTPS origin only: the pinned ngrok program with its own configuration file (the
- * authtoken from its secret, the control API on loopback, no inspection or request log), started for the share
- * listener, and accepted only when its loopback control API reports the configured origin forwarding to that
- * listener. A random address is never used; endpoints of other upstreams are ignored.
+ * The ngrok gateway on a fixed HTTPS origin: the pinned ngrok program with its own configuration file, started for the
+ * share listener and accepted only when its loopback control API reports the configured origin forwarding to that
+ * listener. A random address is never used.
  */
 final readonly class NgrokGateway implements ShareGateway
 {
@@ -128,10 +127,9 @@ final readonly class NgrokGateway implements ShareGateway
     }
 
     /**
-     * Whether the control API shows this start's endpoint: confirmed when a tunnel forwards to the listener on the
-     * configured origin, unexpected when one forwards to the listener on another address or claims the origin for
-     * another upstream, and waiting while neither is there yet. Tunnels of other upstreams on other addresses are
-     * ignored.
+     * Whether the control API shows this start's endpoint: confirmed when a tunnel forwards the configured origin to
+     * the listener, unexpected when the listener or the origin is forwarded otherwise, and waiting while neither is
+     * there yet.
      */
     private function endpointFor(string $upstream, string $publicOrigin): GatewayAddressCheck
     {

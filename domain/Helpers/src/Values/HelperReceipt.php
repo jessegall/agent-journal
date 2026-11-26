@@ -8,10 +8,9 @@ use App\Sessions\OwnerStartReceipt;
 use Domain\Helpers\Enums\JobStatus;
 
 /**
- * What a dispatch tells its parent: the identity, the job and whether this request made it, the profile type, the
- * job's state, how the job was started (identity new, independent, the conversation asked for and why) and Core's
- * start for it (the start, its session, selection, where it runs and the actual model as the adapter reports it).
- * The conversation is the one asked for; only the driver's own callback confirms a resume.
+ * What a dispatch tells its parent: the identity, the job and whether this request made it, the profile type, the job's
+ * state, how the job was started, and Core's start for it with the model the adapter reports. Only the driver's own
+ * callback confirms a resume.
  */
 final readonly class HelperReceipt
 {

@@ -212,7 +212,7 @@ function topLevelCommas(array $tokens, int $open, int $close): array
 }
 
 /**
- * Whether the last thing before the closing bracket is already a comma.
+ * Whether the last token before the closing bracket is already a comma.
  *
  * @param  list<PhpToken>  $tokens
  */

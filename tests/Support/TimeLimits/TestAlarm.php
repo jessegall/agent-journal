@@ -10,12 +10,9 @@ use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\UnitTestClass;
 
 /**
- * The alarm that stops a test past its limit: SIGALRM raises TestTimedOut inside the running test. A test gets
- * DEFAULT_SECONDS, a unit test UNIT_SECONDS, unless its method or class carries #[TimeLimit]; its preparation, the first
- * migration included, gets
- * PREPARATION_SECONDS. The limit counts the test's own processor time, so a test kept waiting by a busy machine is
- * not failed for it, and WALL_CLOCK_FACTOR times the limit on the clock still stops one that hangs. The
- * alarm remembers that it rang, so a timeout the test caught (an assertThrows around the code) is still reported.
+ * The alarm that stops a test past its limit by raising TestTimedOut on SIGALRM: DEFAULT_SECONDS, UNIT_SECONDS for a
+ * unit test or its #[TimeLimit], and PREPARATION_SECONDS for its preparation. It counts processor time, with
+ * WALL_CLOCK_FACTOR times the limit on the clock, and remembers that it rang.
  */
 final class TestAlarm
 {
