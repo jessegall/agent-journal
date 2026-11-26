@@ -33,14 +33,14 @@ final class DefineSequencePostTest extends GuardedRouteEntryTestCase
         return RouteCall::as(Caller::User)
             ->payload([
                 'name' => 'Release',
-            'steps' => [
-                [
-                    'id' => 'build',
-                    'title' => 'Build',
-                    'runs_when' => 'held',
-                    'done_when' => 'green',
+                'steps' => [
+                    [
+                        'id' => 'build',
+                        'title' => 'Build',
+                        'runs_when' => 'held',
+                        'done_when' => 'green',
+                    ],
                 ],
-            ],
             ])
             ->reply(DefineSequenceCommand::class, Str::ulid())
             ->expects(DefineSequenceCommand::class, [

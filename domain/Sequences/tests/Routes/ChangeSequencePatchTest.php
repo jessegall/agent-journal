@@ -29,6 +29,7 @@ final class ChangeSequencePatchTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
+
         $sequenceId = $journal->run(new DefineSequenceCommand('Release', [
             new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
         ]));
@@ -40,14 +41,14 @@ final class ChangeSequencePatchTest extends GuardedRouteEntryTestCase
             ->payload([
                 'name' => 'Release',
                 'version' => 1,
-            'steps' => [
-                [
-                    'id' => 'build',
-                    'title' => 'Build',
-                    'runs_when' => 'held',
-                    'done_when' => 'green',
+                'steps' => [
+                    [
+                        'id' => 'build',
+                        'title' => 'Build',
+                        'runs_when' => 'held',
+                        'done_when' => 'green',
+                    ],
                 ],
-            ],
             ])
             ->expects(ChangeSequenceCommand::class, [
                 'sequenceId' => $sequenceId,
