@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\ShowAutoAssignmentPayload;
+use App\Api\Assignments\ShowAutoAssignmentPayload;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Data\AutoAssignmentStatusData;
 

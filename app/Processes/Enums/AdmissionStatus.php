@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Enums;
 
-use App\Processes\Api\AdmissionAlreadyStarted;
-use App\Processes\Api\AdmissionFetched;
-use App\Processes\Api\StartableAdmission;
+use App\Api\Processes\AdmissionAlreadyStarted;
+use App\Api\Processes\AdmissionFetched;
+use App\Api\Processes\StartableAdmission;
 
 /**
  * What a fetch of an admitted run found: a run to start now, or one that started before and runs nothing again.

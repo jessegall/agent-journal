@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Records\AddLinkPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Records\Api\AddLinkPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Api\Scripts\CheckProfileScriptPayload;
 use App\Models\Profiles\ProfileDraft;
 use App\Processes\Readers\ProfileDraftReader;
 use App\Profiles\Data\ProfileDraftData;
-use App\Scripts\Api\CheckProfileScriptPayload;
 use App\Values\ProfileKey;
 
 /**

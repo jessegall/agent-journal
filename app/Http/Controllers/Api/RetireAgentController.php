@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Agents\Api\RetireAgentPayload;
 use App\Agents\Commands\RetireAgent\RetireAgentCommand;
+use App\Api\Agents\RetireAgentPayload;
 use App\Assignments\Data\AssignmentResultData;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;

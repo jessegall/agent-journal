@@ -91,7 +91,7 @@ final class SettleSampleTest extends TestCase
         $this->endRun($runId, 0);
         $outcome = $this->settle();
 
-        $this->assertSame(RequestStatus::AwaitingProof, $outcome->state);
+        $this->assertSame(RequestStatus::AwaitingProof, $outcome->status);
         $this->assertSame($runId, $outcome->runId);
         $this->assertSame([1], $outcome->unsampledStatuses);
         $this->assertSame($runId, EvidencePermit::query()->findOrFail($permitId)->process_run_id);
@@ -110,7 +110,7 @@ final class SettleSampleTest extends TestCase
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();
 
-        $this->assertSame(RequestStatus::AwaitingSampleApproval, $this->settle()->state);
+        $this->assertSame(RequestStatus::AwaitingSampleApproval, $this->settle()->status);
     }
 
     private function approval(): ApproveSampleCommand

@@ -6,9 +6,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Access\Contracts\ShellAdmission;
 use App\Actors\Contracts\AgentTexts;
+use App\Api\Processes\AdmitLinePayload;
+use App\Api\Processes\LineAdmitted;
 use App\Exceptions\LineRefused;
-use App\Processes\Api\AdmitLinePayload;
-use App\Processes\Api\LineAdmitted;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 

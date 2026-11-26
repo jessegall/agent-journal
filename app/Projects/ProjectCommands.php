@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Projects;
 
 use App\Accounts\Enums\CommandEntry;
+use App\Api\Connections\ProjectCommandFrame;
+use App\Api\Connections\RunProjectCommandPayload;
 use App\Bus\JournalCommands;
 use App\Bus\JournalRoutes;
-use App\Connections\Api\ProjectCommandFrame;
-use App\Connections\Api\RunProjectCommandPayload;
 use App\Connections\Enums\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;

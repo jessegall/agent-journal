@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Api\Scripts\ReadProfileLanguagePayload;
 use App\Profiles\Data\ProfileLanguageData;
-use App\Scripts\Api\ReadProfileLanguagePayload;
 use App\Sessions\Contracts\ProfileLanguage;
 
 /**

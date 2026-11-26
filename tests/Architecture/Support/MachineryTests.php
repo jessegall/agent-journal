@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Bus\Contracts\CommandHandler;
-use App\CommandRules\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\JournalTool;
 use App\Stacks\AgentState;
 use App\Support\Command;
 use App\Support\Reflector;

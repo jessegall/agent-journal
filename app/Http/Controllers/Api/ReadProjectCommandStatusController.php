@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Connections\Api\ProjectCommandStatus;
-use App\Connections\Api\ReadProjectCommandStatusPayload;
+use App\Api\Connections\ProjectCommandStatus;
+use App\Api\Connections\ReadProjectCommandStatusPayload;
 use App\Connections\Enums\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;

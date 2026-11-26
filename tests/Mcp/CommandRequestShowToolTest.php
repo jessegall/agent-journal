@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\CommandRules\Mcp\Tools\CommandRequestShowTool;
+use App\Mcp\Tools\CommandRequestShowTool;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;

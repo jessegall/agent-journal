@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Contracts;
 
-use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Tools\JournalTool;
 
 /**
  * A domain that offers agents MCP tools, resources and overview sections: their class names, which the journal's MCP

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\ProveReaderPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Processes\Api\ProveReaderPayload;
 use Illuminate\Console\Command;
 
 /**

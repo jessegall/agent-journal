@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Bus\RequestKey;
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\OperationsResolver;
 use App\Mcp\Support\ToolArguments;

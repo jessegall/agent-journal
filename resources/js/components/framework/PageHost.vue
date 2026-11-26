@@ -35,7 +35,7 @@ withDefaults(
       <TextLink @click="retryPageRead()"> Refresh visible windows </TextLink>
     </p>
   </template>
-  <template v-if="page.state === 'ready' && page.dockOffer !== undefined">
+  <template v-if="page.status === 'ready' && page.dockOffer !== undefined">
     <DockOfferPicker :offer="page.dockOffer" />
   </template>
   <ResultView

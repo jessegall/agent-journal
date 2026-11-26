@@ -6,7 +6,7 @@ namespace Tests\Support\Entries;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\Command;
-use App\CommandRules\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\JournalTool;
 use App\Reflection\Attributes;
 use App\Support\Reflector;
 use Illuminate\Container\Container;

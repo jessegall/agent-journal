@@ -190,7 +190,7 @@ final class RecordGatewayOutcomeTest extends TestCase
             [
                 $this->received[0]->share->shareId,
                 $this->received[0]->share->configurationId,
-                $this->received[0]->share->state,
+                $this->received[0]->share->status,
                 $this->received[0]->share->scopeVersion,
             ],
         );

@@ -87,7 +87,7 @@ final class RetryShareTest extends TestCase
 
         $summary = $this->runOwner(fn (string $key) => new RetryShareCommand($share->id, $key));
 
-        $this->assertSame(ShareStatus::Pending, $summary->state);
+        $this->assertSame(ShareStatus::Pending, $summary->status);
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
         $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
 

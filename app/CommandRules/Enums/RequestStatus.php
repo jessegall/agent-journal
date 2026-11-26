@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\CommandRules\Enums;
 
-use App\CommandRules\Mcp\Tools\CommandRequestProveTool;
-use App\CommandRules\Mcp\Tools\CommandRequestSampleTool;
-use App\CommandRules\Mcp\Tools\CommandRequestShowTool;
-use App\CommandRules\Mcp\Tools\CommandTypeProposeTool;
 use App\CommandRules\Values\NextStep;
+use App\Mcp\Tools\CommandRequestProveTool;
+use App\Mcp\Tools\CommandRequestSampleTool;
+use App\Mcp\Tools\CommandRequestShowTool;
+use App\Mcp\Tools\CommandTypeProposeTool;
 
 /**
  * Where a command request stands. Each state names what is still owed and the one

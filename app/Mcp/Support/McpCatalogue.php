@@ -6,7 +6,6 @@ namespace App\Mcp\Support;
 
 use App\Agents\Contracts\Domains\JournalToolNames;
 use App\Bus\Attributes\Dispatches;
-use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -16,6 +15,7 @@ use App\Mcp\Exceptions\McpResourceUriTaken;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\CommandRegistry;

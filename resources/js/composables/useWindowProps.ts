@@ -13,7 +13,7 @@ const sharedReads = new SharedPropReads((propName, ended) => {
         onCancelToken: (token) => (cancelRead = () => token.cancel()),
         onSuccess: (page) => {
             const shown = page.props[propName] as WindowResult<unknown> | undefined;
-            outcome = shown?.state === 'denied' ? 'denied' : 'applied';
+            outcome = shown?.status === 'denied' ? 'denied' : 'applied';
         },
         onFinish: () => ended(outcome),
     });
@@ -42,11 +42,11 @@ export function useWindowProps(propName: string, askOnStart = true) {
     watch(
         result,
         (current) => {
-            if (current?.state === 'ready') {
+            if (current?.status === 'ready') {
                 keptData.value = current.data;
             }
 
-            if (current?.state === 'denied' || current?.state === 'unavailable') {
+            if (current?.status === 'denied' || current?.status === 'unavailable') {
                 keptData.value = undefined;
             }
         },

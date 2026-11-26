@@ -283,7 +283,7 @@ const chatProp = ownPage ? "page" : "window_chat_conversation";
 const driverChoices = computed<DriverChoiceData[]>(() => {
   const shown = page.props[chatProp] as WindowResult<ChatData> | undefined;
 
-  return shown?.state === "ready" ? shown.data.drivers : [];
+  return shown?.status === "ready" ? shown.data.drivers : [];
 });
 // Each driver family once, in the catalogue's order.
 const families = computed(() => [
@@ -515,7 +515,7 @@ watch(
   () => page.props[chatProp] as WindowResult<ChatData> | undefined,
   (shown) =>
     showAccounts(
-      shown?.state === "ready" ? shown.data.eligibleAccounts : undefined,
+      shown?.status === "ready" ? shown.data.eligibleAccounts : undefined,
     ),
 );
 watch(driver, readAccounts, { immediate: true });

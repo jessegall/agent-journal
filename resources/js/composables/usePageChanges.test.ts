@@ -19,7 +19,7 @@ const reloads: ReloadOptions[] = [];
 const ownBeforeAnswers: Array<boolean | void> = [];
 const listeners: { before: BeforeListener[]; navigate: Array<() => void> } = { before: [], navigate: [] };
 const page = reactive({
-    props: { page: { state: 'ready' }, navigation: [] } as Record<string, unknown>,
+    props: { page: { status: 'ready' }, navigation: [] } as Record<string, unknown>,
     liveProps: { page: {}, navigation: {}, navigationCounts: {} } as Record<string, unknown>,
 });
 

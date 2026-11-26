@@ -145,7 +145,10 @@ final readonly class PlanApi
         int $plan,
         int $phase,
     ): PhaseChecks {
-        return $this->sender->send(ListPhaseChecksPayload::from(['plan' => $plan, 'phase' => $phase]));
+        return $this->sender->send(ListPhaseChecksPayload::from([
+            'plan' => $plan,
+            'phase' => $phase,
+        ]));
     }
 
     public function reassignPlanWork(

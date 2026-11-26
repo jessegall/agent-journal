@@ -7,8 +7,11 @@ namespace Tests\Machinery\Seeding;
 use App\Agents\Drivers\Codex\CodexSignInReader;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Enums\MarkTone;
+use App\Agents\Drivers\Enums\SignInCodeDirection;
 use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Agents\Enums\SessionProcessStatus;
+use App\Agents\Values\ProviderKey;
 use App\Connections\PublishedReleases;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
@@ -24,6 +27,7 @@ use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
+use App\Values\DriverFamily;
 use App\Values\HostOrderSource;
 use Tests\Support\Drivers\AcceptingSignInReader;
 use Tests\Support\Drivers\StandInProcessDriver;
@@ -38,6 +42,32 @@ final class JournalHostProcessesTest extends TestCase
 {
     use RefreshHookDatabase;
     use WithActiveAccount;
+
+    public function test_a_driver_family_a_module_adds_is_started_as_the_family_it_runs_like(): void
+    {
+        $family = new DriverFamily(
+            'example',
+            'Example',
+            ProviderKey::from('example'),
+            'echo',
+            false,
+            [],
+            [],
+            'images/drivers/example.svg',
+            MarkTone::CurrentColor,
+            SignInCodeDirection::Outgoing,
+        );
+
+        $this->journal->setUpDriverFamily($family, DefaultDrivers::CLAUDE_CODE);
+
+        $added = $this->journal->driverProfile('example');
+        $claude = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
+
+        $this->journal->assertResult(
+            ['example', $claude->hookAdapter()::class, $claude->signInMethods()],
+            [$added->family(), $added->hookAdapter()::class, $added->signInMethods()],
+        );
+    }
 
     public function test_a_contained_host_is_enrolled_contained(): void
     {

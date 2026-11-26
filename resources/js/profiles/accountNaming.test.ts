@@ -40,7 +40,7 @@ vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({}) }));
 const { useAccountNaming } = await import('./accountNaming');
 
 const page = {
-    state: 'ready',
+    status: 'ready',
     data: {
         rows: [
             { id: 'account-1', label: 'Work' },
@@ -63,7 +63,7 @@ describe('useAccountNaming', () => {
         expect(submitted[0].body).toEqual({ label: 'Office', seenRevision: 3 });
         expect(submitted[0].projection({ page })).toEqual({
             page: {
-                state: 'ready',
+                status: 'ready',
                 data: {
                     rows: [
                         { id: 'account-1', label: 'Office' },
@@ -86,13 +86,13 @@ describe('useAccountNaming', () => {
 
         expect(
             submitted.at(-1)?.projection({
-                page: { state: 'ready', data: { step: 'name' } },
+                page: { status: 'ready', data: { step: 'name' } },
             }),
         ).toEqual({});
         expect(
             submitted
                 .at(-1)
-                ?.projection({ page: { state: 'failed', message: 'No.' } }),
+                ?.projection({ page: { status: 'failed', message: 'No.' } }),
         ).toEqual({});
     });
 });

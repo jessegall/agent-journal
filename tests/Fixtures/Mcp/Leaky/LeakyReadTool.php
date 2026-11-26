@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Mcp\Leaky;
 
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Models\RetainedPage;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalReadTool;
 use Laravel\Mcp\Server\Attributes\Name;
 
 /**

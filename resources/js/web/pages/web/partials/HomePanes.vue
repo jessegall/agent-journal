@@ -48,7 +48,7 @@ const layout = providePaneLayout('home-layout', () =>
             icon: window.icon,
             place: window.place,
             count:
-                result?.state === 'ready'
+                result?.status === 'ready'
                     ? result.data.pagination?.total
                     : undefined,
         };
@@ -57,7 +57,7 @@ const layout = providePaneLayout('home-layout', () =>
         const hosted = hostedWindow(key);
         const result = hosted === undefined ? undefined : resultOf(hosted.propName);
 
-        return result?.state === 'ready' && result.data.name ? result.data.name : undefined;
+        return result?.status === 'ready' && result.data.name ? result.data.name : undefined;
     },
 );
 

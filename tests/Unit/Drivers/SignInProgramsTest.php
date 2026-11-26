@@ -73,7 +73,7 @@ final class SignInProgramsTest extends TestCase
      */
     private function claudeRuns(): array
     {
-        $claude = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->signInProgram();
+        $claude = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->signInDriver();
         $claude->start(['--version'], $this->folder, SecretHandover::none())->finish();
         $start = $this->calls();
         $status = $claude->status($this->folder, SecretHandover::none());
@@ -98,7 +98,7 @@ final class SignInProgramsTest extends TestCase
      */
     private function codexRuns(): array
     {
-        $codex = $this->journal->driverProfile(DefaultDrivers::CODEX)->signInProgram();
+        $codex = $this->journal->driverProfile(DefaultDrivers::CODEX)->signInDriver();
         $codex->start(['--version'], $this->folder, SecretHandover::none())->finish();
         $start = ['calls' => $this->calls(), 'config.toml' => (string) file_get_contents($this->folder.'/config.toml')];
         $status = $codex->status($this->folder, SecretHandover::none());

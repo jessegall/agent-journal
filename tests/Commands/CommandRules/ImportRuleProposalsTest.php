@@ -45,7 +45,7 @@ final class ImportRuleProposalsTest extends TestCase
         $receipts = $this->journal->runAsAgentId('agent-1', new ImportRuleProposalsCommand($file))->receipts;
 
         $this->assertCount(1, $receipts);
-        $this->assertSame(ProposalStatus::Pending, $receipts[0]->state);
+        $this->assertSame(ProposalStatus::Pending, $receipts[0]->status);
         $proposal = RuleProposal::query()->findOrFail($receipts[0]->proposalId);
         $this->assertEquals(AcmeDeclarations::verify(), $proposal->revisions()->firstOrFail()->payload);
         $this->assertSame(0, ClassificationRule::query()->count());

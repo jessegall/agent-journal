@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Bus\Contracts\Refusals\RefusalMapper;
-use App\CommandRules\Mcp\Contracts\McpCall as McpCallContract;
+use App\Mcp\Contracts\McpCall as McpCallContract;
 use App\Mcp\Data\ToolResult;
 use App\Support\AgentContext;
 use Closure;

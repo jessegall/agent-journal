@@ -54,7 +54,7 @@ describe("a result", () => {
 
   it("names its subject when the first read failed and reloads only itself", async () => {
     const view = mountResult({
-      state: "failed",
+      status: "failed",
       message: "This window could not be loaded.",
     });
 
@@ -68,7 +68,7 @@ describe("a result", () => {
 
   it("shows a safe reason when the failure carries one", () => {
     const view = mountResult({
-      state: "failed",
+      status: "failed",
       message: "This window could not be loaded.",
       reason: "The source is not reachable.",
     });
@@ -79,7 +79,7 @@ describe("a result", () => {
 
   it("keeps the last read read-only when a refresh failed", async () => {
     const view = mountResult(
-      { state: "failed", message: "This window could not be loaded." },
+      { status: "failed", message: "This window could not be loaded." },
       { rows: [] },
     );
 
@@ -96,7 +96,7 @@ describe("a result", () => {
   it("keeps a result of a failed page batch readable and read-only without a notice of its own", () => {
     const view = mount(ResultView, {
       props: {
-        result: { state: "ready", data: { rows: [] } },
+        result: { status: "ready", data: { rows: [] } },
         isWindow: true,
         subject: "Plans",
         isBatchStale: true,
@@ -111,7 +111,7 @@ describe("a result", () => {
 
   it("shows fresh content once a read succeeds", () => {
     const view = mountResult(
-      { state: "ready", data: { rows: [] } },
+      { status: "ready", data: { rows: [] } },
       { rows: [] },
     );
 
@@ -121,7 +121,7 @@ describe("a result", () => {
   });
 
   it("refuses a page of its own with a way back and the focus on its heading", async () => {
-    const view = mountResult({ state: "denied" }, { rows: [] }, "page");
+    const view = mountResult({ status: "denied" }, { rows: [] }, "page");
     await nextTick();
 
     expect(view.get("h1").text()).toBe("This item is unavailable");
@@ -132,7 +132,7 @@ describe("a result", () => {
   });
 
   it("refuses a pane in place with Close, replacing what it showed", async () => {
-    const view = mountResult({ state: "unavailable" }, { rows: [] }, "pane");
+    const view = mountResult({ status: "unavailable" }, { rows: [] }, "pane");
 
     await view.get("button").trigger("click");
 
@@ -144,7 +144,7 @@ describe("a result", () => {
 
   it("shows nothing for a section that is loading or refused", () => {
     expect(mountResult(undefined, undefined, "section").text()).toBe("");
-    expect(mountResult({ state: "denied" }, undefined, "section").text()).toBe(
+    expect(mountResult({ status: "denied" }, undefined, "section").text()).toBe(
       "",
     );
   });

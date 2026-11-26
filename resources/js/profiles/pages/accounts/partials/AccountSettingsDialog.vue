@@ -169,7 +169,7 @@ function makeDefault(): void {
     choosing
         .transform(() => ({ expectedChangeNumber: changeNumber }))
         .optimistic<{ page: WindowResult<AccountListData> }>((shown) => {
-            if (shown.page.state !== 'ready') {
+            if (shown.page.status !== 'ready') {
                 return {};
             }
 
@@ -208,7 +208,7 @@ function confirmRemove(): void {
 
     removing
         .optimistic<{ page: WindowResult<AccountListData> }>((shown) => {
-            if (shown.page.state !== 'ready') {
+            if (shown.page.status !== 'ready') {
                 return {};
             }
 

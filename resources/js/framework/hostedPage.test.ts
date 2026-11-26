@@ -18,8 +18,8 @@ describe("a declared page", () => {
       setup: () => onMounted(() => mounts++),
       render: () => h("p", "content"),
     });
-    const result = ref<{ state: "ready"; data: unknown } | undefined>({
-      state: "ready",
+    const result = ref<{ status: "ready"; data: unknown } | undefined>({
+      status: "ready",
       data: { id: 1 },
     });
     const view = mount(
@@ -35,7 +35,7 @@ describe("a declared page", () => {
 
     result.value = undefined;
     await nextTick();
-    result.value = { state: "ready", data: { id: 2 } };
+    result.value = { status: "ready", data: { id: 2 } };
     await nextTick();
 
     expect([mounts, view.text()]).toEqual([1, "content"]);

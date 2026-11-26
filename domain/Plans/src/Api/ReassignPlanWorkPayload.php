@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Api;
 
-use App\Assignments\Api\Concerns\NamesExpectedAssignment;
-use App\Assignments\Api\Concerns\NamesRecipient;
+use App\Api\Assignments\Concerns\NamesExpectedAssignment;
+use App\Api\Assignments\Concerns\NamesRecipient;
 use App\Attributes\Api\Endpoint;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;

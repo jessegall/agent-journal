@@ -34,7 +34,7 @@ describe('codeDirection', () => {
 describe('rejoinableAttempt', () => {
     it('rejoins the running sign-in of the same driver and account only', () => {
         const attempts = [
-            attempt({ id: 'ended', state: 'failed' }),
+            attempt({ id: 'ended', status: 'failed' }),
             attempt({ id: 'other-account', accountId: 'acc-1' }),
             attempt({ id: 'running' }),
         ];

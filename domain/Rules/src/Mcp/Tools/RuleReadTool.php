@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Mcp\Tools;
 
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\TextFields;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalReadTool;
 use App\Values\ReadRequest;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

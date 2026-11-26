@@ -7,10 +7,10 @@ namespace App\Mcp\Support;
 use App\Access\Contracts\ReadGrant;
 use App\Actors\Contracts\CurrentActor;
 use App\Bus\Attributes\Dispatches;
-use App\CommandRules\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
-use App\CommandRules\Mcp\Tools\JournalReadTool;
-use App\CommandRules\Mcp\Tools\JournalTool;
+use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;
+use App\Mcp\Tools\JournalReadTool;
+use App\Mcp\Tools\JournalTool;
 use App\Support\CommandRegistry;
 use App\Values\StartProfileAuthority;
 

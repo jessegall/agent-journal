@@ -7,7 +7,7 @@ namespace Tests\Machinery\Hooks;
 use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
-use App\Hooks\Api\AgentStateMachine;
+use App\Api\Hooks\AgentStateMachine;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Models\Agents\AgentStackRow;

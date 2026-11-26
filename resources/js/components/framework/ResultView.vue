@@ -42,13 +42,13 @@ defineSlots<{ content(slotProps: { data: unknown }): unknown }>();
 const shownPlacement = computed(
   () => props.placement ?? (props.isWindow ? "pane" : "section"),
 );
-const hasFailed = computed(() => props.result?.state === "failed");
+const hasFailed = computed(() => props.result?.status === "failed");
 const isRefused = computed(
   () =>
-    props.result?.state === "denied" || props.result?.state === "unavailable",
+    props.result?.status === "denied" || props.result?.status === "unavailable",
 );
 const shownData = computed(() => {
-  if (props.result?.state === "ready") {
+  if (props.result?.status === "ready") {
     return props.result.data;
   }
 
@@ -56,10 +56,10 @@ const shownData = computed(() => {
   return isRefused.value ? undefined : (props.keptData ?? undefined);
 });
 const reason = computed(() =>
-  props.result?.state === "failed" ? (props.result.reason ?? null) : null,
+  props.result?.status === "failed" ? (props.result.reason ?? null) : null,
 );
 const isEnvelopeStale = computed(
-  () => props.result?.state === "failed" && shownData.value !== undefined,
+  () => props.result?.status === "failed" && shownData.value !== undefined,
 );
 // Retained content stays readable with its commands disabled while either its own read or the page's batch failed.
 const isStale = computed(
@@ -123,7 +123,7 @@ watch(
   <template v-if="shownData !== undefined">
     <slot name="content" :data="shownData" />
   </template>
-  <template v-else-if="result?.state === 'failed'">
+  <template v-else-if="result?.status === 'failed'">
     <div
       role="alert"
       class="flex flex-col items-center gap-3 px-4 py-10 text-center"

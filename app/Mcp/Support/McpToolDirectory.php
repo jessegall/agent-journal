@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\CommandRules\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\JournalTool;
 use App\Support\FolderClasses;
 
 /**

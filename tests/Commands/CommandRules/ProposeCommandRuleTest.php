@@ -55,7 +55,7 @@ final class ProposeCommandRuleTest extends TestCase
 
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
-        $this->assertSame(ProposalStatus::Pending, $receipt->state);
+        $this->assertSame(ProposalStatus::Pending, $receipt->status);
         $this->assertSame([], $receipt->missingFields);
         $this->assertSame(RequestStatus::AwaitingSampleApproval, CommandRequest::query()->findOrFail($request)->status);
         $this->assertSame(0, ClassificationRule::query()->count());
@@ -77,7 +77,7 @@ final class ProposeCommandRuleTest extends TestCase
 
         $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposed($unproven));
 
-        $this->assertSame(ProposalStatus::Draft, $receipt->state);
+        $this->assertSame(ProposalStatus::Draft, $receipt->status);
         $this->assertSame(['contracts.0.exits'], $receipt->missingFields);
         $this->assertSame(RequestStatus::CollectingDeclaration, CommandRequest::query()->findOrFail($request)->status);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\ShowAssignmentPayload;
+use App\Api\Assignments\ShowAssignmentPayload;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Data\RecordHolderData;
 

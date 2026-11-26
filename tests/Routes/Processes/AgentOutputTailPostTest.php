@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Processes\Api\OutputTail;
+use App\Api\Processes\OutputTail;
 use App\Processes\Commands\ReadOutputTail\ReadOutputTailCommand;
 use App\Processes\Enums\OutputStream;
 use Tests\Support\Entries\Attributes\TestsRoute;

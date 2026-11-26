@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Processes;
 
+use App\Api\Processes\OutputSummary;
+use App\Api\Processes\PartSummary;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\ResultReceipts;
 use App\CommandRules\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\OutputSummary;
-use App\Processes\Api\PartSummary;
 use App\Processes\Run\PartResult;
 use App\Processes\Values\OutputProblem;
 use App\Values\EvidenceRange;

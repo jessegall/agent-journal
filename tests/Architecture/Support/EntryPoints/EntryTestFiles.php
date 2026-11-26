@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Mcp\Support\McpCatalogue;
+use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Support\Reflector;
 use App\Values\FilePath;

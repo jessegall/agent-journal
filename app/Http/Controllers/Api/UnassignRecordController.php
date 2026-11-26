@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\UnassignRecordPayload;
+use App\Api\Assignments\UnassignRecordPayload;
 use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Data\AssignmentResultData;

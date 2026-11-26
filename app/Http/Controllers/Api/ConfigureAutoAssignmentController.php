@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\ConfigureAutoAssignmentPayload;
+use App\Api\Assignments\ConfigureAutoAssignmentPayload;
 use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
 use App\Assignments\Data\AutoAssignmentChangeData;
 use App\Bus\Attributes\Dispatches;

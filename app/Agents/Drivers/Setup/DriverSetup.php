@@ -99,6 +99,32 @@ final readonly class DriverSetup
     }
 
     /**
+     * The same setup for another driver family, such as a family a module adds that runs this driver's program.
+     */
+    public function forFamily(string $family): self
+    {
+        return new self(
+            $family,
+            $this->driver,
+            $this->arguments,
+            $this->versionProbe,
+            $this->signInProbe,
+            $this->signInReader,
+            $this->layout,
+            $this->keyScripts,
+            $this->headlessTurns,
+            $this->signIn,
+            $this->accountSettings,
+            $this->skills,
+            $this->hookAdapter,
+            $this->refusals,
+            $this->signInRefusals,
+            $this->environment,
+            $this->plan,
+        );
+    }
+
+    /**
      * A start the driver never runs while the condition holds.
      *
      * @param  Condition<DriverStart>  $condition

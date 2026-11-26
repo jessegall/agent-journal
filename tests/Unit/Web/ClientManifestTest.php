@@ -53,7 +53,7 @@ final class ClientManifestTest extends TestCase
         return DomainRegistry::installedClasses(dirname(__DIR__, 3));
     }
 
-    private const string READY_STATE = "| { state: 'ready'; data: T; dockOffer?: DockOfferData }";
+    private const string READY_STATE = "| { status: 'ready'; data: T; dockOffer?: DockOfferData }";
 
     private const string SHARED_IMPORT = "import type { RecentNotesData } from './shared';";
 

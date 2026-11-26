@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Contracts\Events\EngineListenerProvider;
 use App\Mcp\Support\McpToolDirectory;
+use App\Mcp\Tools\JournalTool;
 use App\Navigation\Contracts\DraftProducerProvider;
 use App\Scripts\Contracts\ScriptKeywordProvider;
 use App\Scripts\Contracts\ScriptObjectProvider;

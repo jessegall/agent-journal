@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Api\Processes\EvidenceRunStarted;
+use App\Api\Processes\StartEvidenceRunPayload;
 use App\Models\CommandRules\EvidencePermit;
-use App\Processes\Api\EvidenceRunStarted;
-use App\Processes\Api\StartEvidenceRunPayload;
 use App\Processes\EvidenceRuns;
 
 /**

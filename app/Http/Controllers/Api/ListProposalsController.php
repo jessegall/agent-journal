@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ListProposalsPayload;
+use App\Api\Processes\ProposalList;
 use App\CommandRules\Enums\ProposalStatus;
 use App\Models\CommandRules\RuleProposal;
-use App\Processes\Api\ListProposalsPayload;
-use App\Processes\Api\ProposalList;
 
 /**
  * Lists the project's proposals in the asked state.

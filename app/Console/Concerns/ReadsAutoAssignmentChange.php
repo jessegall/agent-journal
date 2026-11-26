@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Assignments\Api\ConfigureAutoAssignmentPayload;
-use App\Assignments\Api\EnableAutoAssignmentPayload;
+use App\Api\Assignments\ConfigureAutoAssignmentPayload;
+use App\Api\Assignments\EnableAutoAssignmentPayload;
 use App\Exceptions\InvalidActorText;
 use Closure;
 

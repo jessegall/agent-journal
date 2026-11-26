@@ -6,10 +6,10 @@ namespace Tests\Architecture;
 
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\Command;
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Contracts\Work\StackEditor;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Stacks\Contracts\Work\AgentStacks;
 use App\Support\Reflector;

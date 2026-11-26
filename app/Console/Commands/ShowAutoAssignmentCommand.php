@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Assignments\Api\ShowAutoAssignmentPayload;
+use App\Api\Assignments\ShowAutoAssignmentPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\ReadsAutoAssignmentKey;

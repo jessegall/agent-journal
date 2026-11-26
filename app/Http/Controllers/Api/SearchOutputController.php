@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\OutputMatches;
+use App\Api\Processes\SearchOutputPayload;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\OutputMatches;
-use App\Processes\Api\SearchOutputPayload;
 use App\Processes\StoredOutput;
 
 /**

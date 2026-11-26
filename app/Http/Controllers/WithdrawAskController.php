@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Api\Supervision\WithdrawAskPayload;
+use App\Api\Supervision\WithdrawAskPayload;
 use App\Asks\Commands\WithdrawAsk\WithdrawAskCommand;
 use App\Asks\Contracts\AskReader;
 use App\Asks\Data\AskCard;

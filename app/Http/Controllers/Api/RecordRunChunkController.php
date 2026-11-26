@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ChunkStored;
+use App\Api\Processes\RecordRunChunkPayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\ChunkStored;
-use App\Processes\Api\RecordRunChunkPayload;
 use App\Processes\Commands\RecordRunChunk\RecordRunChunkCommand;
 
 /**

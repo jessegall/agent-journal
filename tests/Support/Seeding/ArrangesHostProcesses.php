@@ -8,11 +8,15 @@ use App\Accounts\SignInChallenges;
 use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
 use App\Agents\ContainerManifest;
+use App\Agents\DriverCatalogue;
+use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\Contracts\ProcessDriver;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Processes\ProcessDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
 use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Drivers\Setup\DriverSetup;
 use App\Agents\Drivers\Work\DriverWork;
 use App\Agents\Drivers\Work\DriverWorkers;
 use App\Agents\Enums\SessionProcessStatus;
@@ -44,9 +48,12 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
+use App\Providers\DriversServiceProvider;
+use App\Support\Compatibility\PinnedBuilds;
 use App\Support\MountRules;
 use App\Terminals\PrivateValues;
 use App\Values\ClaimedRequest;
+use App\Values\DriverFamily;
 use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
@@ -469,6 +476,26 @@ trait ArrangesHostProcesses
     public function withDriverPart(string $part, string $replacement): self
     {
         $this->app->bind($part, $replacement);
+
+        return $this;
+    }
+
+    /**
+     * A driver family a module adds, registered in the catalogue and started as the existing family it runs like.
+     */
+    public function setUpDriverFamily(DriverFamily $family, string $runsLike): self
+    {
+        $this->service(DriverCatalogue::class)->registerFamily($family);
+        $setups = DriversServiceProvider::setups();
+        $like = array_values(array_filter($setups, fn (DriverSetup $setup) => $setup->family === $runsLike))[0];
+        $this->app->scoped(DriverProfiles::class, fn () => new DriverProfiles(
+            $this->app,
+            $this->service(DriverCatalogueContract::class),
+            $this->service(PinnedBuilds::class),
+            $this->service(HookReplies::class),
+            [...$setups, $like->forFamily($family->key)],
+        ));
+        $this->app->forgetInstance(DriverProfiles::class);
 
         return $this;
     }

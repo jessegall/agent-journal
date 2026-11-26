@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\RecordRunEventsPayload;
+use App\Api\Processes\RunEventsAccepted;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\RecordRunEventsPayload;
-use App\Processes\Api\RunEventsAccepted;
 use App\Processes\Commands\RecordRunEvents\RecordRunEventsCommand;
 use App\Processes\Values\RunEventBatch;
 

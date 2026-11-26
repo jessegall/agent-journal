@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ProposalStateChanged;
+use App\Api\Processes\WithdrawProposalPayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\WithdrawRuleProposal\WithdrawRuleProposalCommand;
-use App\Processes\Api\ProposalStateChanged;
-use App\Processes\Api\WithdrawProposalPayload;
 
 /**
  * Withdraws a proposal.

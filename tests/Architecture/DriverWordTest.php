@@ -31,7 +31,7 @@ final class DriverWordTest extends TestCase
      * sharing gateways' binaries, a shell part's program and the sign-in executable.
      */
     private const array EXECUTABLE_SENSE = [
-        'app/Processes/Api/ProposalList.php',
+        'app/Api/Processes/ProposalList.php',
         'domain/Sharing/src/Commands/ConfigureShareGateway/ConfigureShareGatewayCommand.php',
         'domain/Sharing/src/Console/Commands/ConfigureShareGatewayCommand.php',
         'domain/Sharing/src/Console/Commands/SuperviseSharingCommand.php',

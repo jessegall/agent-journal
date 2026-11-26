@@ -23,7 +23,10 @@ final readonly class HelperApi
         string $jobId,
         CallKey $requestKey = new CallKey(),
     ): HelperJobNamed {
-        return $this->sender->send(CancelHelperJobPayload::from(['jobId' => $jobId, 'requestKey' => $requestKey]));
+        return $this->sender->send(CancelHelperJobPayload::from([
+            'jobId' => $jobId,
+            'requestKey' => $requestKey,
+        ]));
     }
 
     public function continueHelper(
@@ -44,7 +47,8 @@ final readonly class HelperApi
 
     public function listHelperNotices(
     ): HelperNoticeListData {
-        return $this->sender->send(ListHelperNoticesPayload::from([]));
+        return $this->sender->send(ListHelperNoticesPayload::from([
+        ]));
     }
 
     /**

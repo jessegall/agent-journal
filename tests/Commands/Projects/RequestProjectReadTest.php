@@ -85,7 +85,7 @@ final class RequestProjectReadTest extends TestCase
         $this->journal->actAsUserId(TestIds::of(7));
 
         $pending = $files->file($this->binding, 'src/main.go');
-        $this->assertSame(ProjectReadStatus::Pending, $pending->state);
+        $this->assertSame(ProjectReadStatus::Pending, $pending->status);
 
         $read = ProjectRead::query()->findOrFail($pending->readId);
         $this->notifyText($read);
@@ -93,7 +93,7 @@ final class RequestProjectReadTest extends TestCase
 
         $answered = $files->file($this->binding, 'src/main.go');
         $this->assertSame($pending->readId, $answered->readId);
-        $this->assertSame(ProjectReadStatus::Answered, $answered->state);
+        $this->assertSame(ProjectReadStatus::Answered, $answered->status);
         $this->assertSame(self::SOURCE, $answered->text);
     }
 

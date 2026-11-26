@@ -80,7 +80,7 @@ final class RecordReceiptTest extends TestCase
         $this->assertSame(1, $this->rowCount());
         $this->assertSame(
             ReceiptStatus::Completed,
-            $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
+            $this->app->make(OperationResolver::class)->operation(self::KEY)->status,
         );
     }
 

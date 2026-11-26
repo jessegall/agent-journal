@@ -176,7 +176,7 @@ final class RequestShareTest extends TestCase
         $oldest->expires_at = CarbonImmutable::now()->subMinute();
         $oldest->save();
 
-        $this->assertSame(ShareStatus::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->state);
+        $this->assertSame(ShareStatus::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->status);
     }
 
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Api\Communication\ReadMessagePayload;
+use App\Api\Communication\ReadMessagePayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Messages\Commands\ReadMessage\ReadMessageCommand;

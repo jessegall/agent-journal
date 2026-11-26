@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Assignments\Api\ReassignRecordPayload;
+use App\Api\Assignments\ReassignRecordPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\ReadsAssignmentArguments;

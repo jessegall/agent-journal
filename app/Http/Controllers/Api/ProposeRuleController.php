@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ProposalReceived;
+use App\Api\Processes\ProposeRulePayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
 use App\CommandRules\Declarations\RuleDeclarations;
-use App\Processes\Api\ProposalReceived;
-use App\Processes\Api\ProposeRulePayload;
 
 /**
  * Proposes a rule from its declaration and answers the proposal.

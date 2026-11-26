@@ -28,7 +28,6 @@ use Tests\Fixtures\Bus\Garden\Commands\Water\WaterCommand;
 use Tests\Fixtures\Bus\Garden\Commands\Water\WaterHandler;
 use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantCommand as FinalPlantCommand;
 use Tests\Fixtures\Bus\Layouts\Commands\Plant\PlantHandler as FinalPlantHandler;
-use Tests\Fixtures\Bus\Layouts\Garden\Commands\Prune\PruneCommand;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\CheckStock;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
@@ -113,11 +112,6 @@ final class CommandRegistryTest extends TestCase
 
         $this->assertSame(FinalPlantHandler::class, $registry->handlerOf(FinalPlantCommand::class));
         $this->assertSame(CommandOwner::CORE, $registry->ownerOf(FinalPlantCommand::class));
-    }
-
-    public function test_a_core_pair_in_an_old_area_folder_is_refused(): void
-    {
-        $this->refusedWith(CommandDeclarationInvalid::class, 'Commands folder', [$this->layouts([PruneCommand::class])]);
     }
 
     public function test_a_command_outside_its_commands_folder_is_refused(): void
@@ -323,7 +317,7 @@ final class CommandRegistryTest extends TestCase
      * @param  list<class-string>  $exports  the commands it exports
      */
     /**
-     * A Core-named owner over the layout fixture, whose pairs sit in its final Commands folder or in an area's.
+     * A Core-named owner over the layout fixture, whose pairs sit in its Commands folder.
      *
      * @param  list<class-string>  $commands
      */

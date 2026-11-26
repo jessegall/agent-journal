@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\DisableAutoAssignmentPayload;
+use App\Api\Assignments\DisableAutoAssignmentPayload;
 use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Assignments\Data\AutoAssignmentChangeData;
 use App\Bus\Attributes\Dispatches;

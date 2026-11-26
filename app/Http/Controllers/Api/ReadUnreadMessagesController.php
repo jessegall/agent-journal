@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Api\Communication\ReadUnreadMessagesPayload;
-use App\Api\Api\Communication\UnreadMessages;
+use App\Api\Communication\ReadUnreadMessagesPayload;
+use App\Api\Communication\UnreadMessages;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;

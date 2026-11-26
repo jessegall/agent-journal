@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Api\Communication\ReadMessagePayload;
-use App\Api\Api\Communication\ReadUnreadMessagesPayload;
+use App\Api\Communication\ReadMessagePayload;
+use App\Api\Communication\ReadUnreadMessagesPayload;
 use App\Console\Concerns\RunsApiPipelines;
 use Illuminate\Console\Command;
 

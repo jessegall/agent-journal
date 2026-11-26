@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Projects\Values;
 
-use App\Connections\Api\ProjectCommandFrame;
+use App\Api\Connections\ProjectCommandFrame;
 use App\Connections\Enums\CommandRunStatus;
 
 /**

@@ -6,7 +6,7 @@ import { defineComponent, h, reactive } from 'vue';
 const page = reactive({
     component: 'Home',
     url: '/',
-    props: { window_plans: { state: 'ready', data: {} } } as Record<string, unknown>,
+    props: { window_plans: { status: 'ready', data: {} } } as Record<string, unknown>,
 });
 const replaced: Array<[string, unknown]> = [];
 

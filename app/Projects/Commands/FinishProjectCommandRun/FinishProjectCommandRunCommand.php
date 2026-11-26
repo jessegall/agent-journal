@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Projects\Commands\FinishProjectCommandRun;
 
 use App\Accounts\Enums\CommandEntry;
+use App\Api\Connections\ProjectCommandFrame;
 use App\Attributes\Commands\Entry;
-use App\Connections\Api\ProjectCommandFrame;
 use App\Support\Command;
 
 /**

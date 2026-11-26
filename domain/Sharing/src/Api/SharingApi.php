@@ -29,6 +29,7 @@ final readonly class SharingApi
 
     public function shareStatus(
     ): ShareProposals {
-        return $this->sender->send(ShareStatusPayload::from([]));
+        return $this->sender->send(ShareStatusPayload::from([
+        ]));
     }
 }

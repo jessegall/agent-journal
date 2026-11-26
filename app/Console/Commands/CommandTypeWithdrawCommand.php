@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Processes\WithdrawProposalPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Processes\Api\WithdrawProposalPayload;
 use Illuminate\Console\Command;
 
 /**

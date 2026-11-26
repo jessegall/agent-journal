@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Api\Processes\AdmissionRefusalDetails;
 use App\Contracts\Refusals\ApiRefusal as ApiRefusalContract;
 use App\Exceptions\ApiRefused;
-use App\Processes\Api\AdmissionRefusalDetails;
 
 /**
  * The journal refused the line at admission: nothing started. It prints why, the correction and, for a line held for

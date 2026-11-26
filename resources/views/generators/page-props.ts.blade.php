@@ -11,10 +11,10 @@ import type { DockOfferData } from './core';
  * with a neutral message, or denied.
  */
 export type WindowResult<T> =
-    | { state: 'ready'; data: T; dockOffer?: DockOfferData }
-    | { state: 'failed'; message: string; reason?: string | null }
-    | { state: 'denied' }
-    | { state: 'unavailable' };
+    | { status: 'ready'; data: T; dockOffer?: DockOfferData }
+    | { status: 'failed'; message: string; reason?: string | null }
+    | { status: 'denied' }
+    | { status: 'unavailable' };
 @foreach ($pages as $type => $members)
 
 export type {!! $type !!} = {

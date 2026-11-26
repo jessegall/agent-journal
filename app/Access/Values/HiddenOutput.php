@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Access\Values;
 
-use App\Access\Mcp\Tools\OutputsReadTool;
+use App\Mcp\Tools\OutputsReadTool;
 
 /**
  * One way a command line would hide output a check or build must keep: the part it hides, what is lost, the operator

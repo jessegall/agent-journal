@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory\Mcp\Resources;
 
 use App\Access\Contracts\ReadGrant;
-use App\CommandRules\Mcp\Contracts\JobPermissionReader;
+use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ToolArguments;
 use App\Values\ReadRequest;

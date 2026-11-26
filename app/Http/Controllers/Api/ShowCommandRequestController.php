@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\CommandRequestShown;
+use App\Api\Processes\ShowCommandRequestPayload;
 use App\CommandRules\CommandRequestViews;
-use App\Processes\Api\CommandRequestShown;
-use App\Processes\Api\ShowCommandRequestPayload;
 
 /**
  * Shows a held command request with its proposals and readers.

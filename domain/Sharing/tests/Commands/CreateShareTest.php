@@ -142,7 +142,7 @@ final class CreateShareTest extends TestCase
         $summary = $this->create($this->preview([TestIds::of(101)]));
         $share = Share::query()->findOrFail($summary->shareId);
 
-        $this->assertSame(ShareStatus::Pending, $summary->state);
+        $this->assertSame(ShareStatus::Pending, $summary->status);
         $this->assertSame($share->number, $summary->number);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $share->scope_version);
         $this->assertSame([TestIds::of(101)], ShareMember::query()->readAll('one member')->pluck('target_id')->all());
@@ -304,7 +304,7 @@ final class CreateShareTest extends TestCase
             );
         }
 
-        $this->assertSame(ShareStatus::Pending, $this->create($this->preview([]))->state);
+        $this->assertSame(ShareStatus::Pending, $this->create($this->preview([]))->status);
     }
 
     public function test_a_share_carries_its_roots_project(): void

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Api\Scripts\CheckProfileScriptPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Scripts\Api\CheckProfileScriptPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]

@@ -89,7 +89,6 @@ final class CancelProjectCommandRunTest extends TestCase
             true,
             false,
             0,
-            [],
             true,
         ));
 

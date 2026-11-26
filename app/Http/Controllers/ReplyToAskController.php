@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Api\Supervision\ReplyToAskPayload;
+use App\Api\Supervision\ReplyToAskPayload;
 use App\Asks\Commands\ReplyToAsk\ReplyToAskCommand;
 use App\Asks\Contracts\AskReader;
 use App\Asks\Data\AskCard;

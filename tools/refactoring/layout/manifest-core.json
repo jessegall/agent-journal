@@ -49174,10 +49174,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "5ca353168017f0dcbcbe0ea7aa30cdc9365c12dd",
-        "old_path": "app/CommandRules/Mcp/Contracts/JobPermissionReader.php",
-        "old_class": "App\\CommandRules\\Mcp\\Contracts\\JobPermissionReader",
-        "final_path": "app/CommandRules/Mcp/Contracts/JobPermissionReader.php",
-        "final_class": "App\\CommandRules\\Mcp\\Contracts\\JobPermissionReader",
+        "old_path": "app/Mcp/Contracts/JobPermissionReader.php",
+        "old_class": "App\\Mcp\\Contracts\\JobPermissionReader",
+        "final_path": "app/Mcp/Contracts/JobPermissionReader.php",
+        "final_class": "App\\Mcp\\Contracts\\JobPermissionReader",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -49193,10 +49193,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1d9b9d49a5ec1a55c462f21c526f5407f5513cec",
-        "old_path": "app/CommandRules/Mcp/Contracts/McpCall.php",
-        "old_class": "App\\CommandRules\\Mcp\\Contracts\\McpCall",
-        "final_path": "app/CommandRules/Mcp/Contracts/McpCall.php",
-        "final_class": "App\\CommandRules\\Mcp\\Contracts\\McpCall",
+        "old_path": "app/Mcp/Contracts/McpCall.php",
+        "old_class": "App\\Mcp\\Contracts\\McpCall",
+        "final_path": "app/Mcp/Contracts/McpCall.php",
+        "final_class": "App\\Mcp\\Contracts\\McpCall",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -49820,10 +49820,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d08ec70fd78e2ee7f440d813158ec108d8e1c6cd",
-        "old_path": "app/CommandRules/Mcp/Exceptions/ToolArgumentUnknown.php",
-        "old_class": "App\\CommandRules\\Mcp\\Exceptions\\ToolArgumentUnknown",
-        "final_path": "app/CommandRules/Mcp/Exceptions/ToolArgumentUnknown.php",
-        "final_class": "App\\CommandRules\\Mcp\\Exceptions\\ToolArgumentUnknown",
+        "old_path": "app/Mcp/Exceptions/ToolArgumentUnknown.php",
+        "old_class": "App\\Mcp\\Exceptions\\ToolArgumentUnknown",
+        "final_path": "app/Mcp/Exceptions/ToolArgumentUnknown.php",
+        "final_class": "App\\Mcp\\Exceptions\\ToolArgumentUnknown",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -50561,10 +50561,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "c35ba9e33e816652694834d7f45e8c2c74cd8e15",
-        "old_path": "app/CommandRules/Mcp/Tools/JournalReadTool.php",
-        "old_class": "App\\CommandRules\\Mcp\\Tools\\JournalReadTool",
-        "final_path": "app/CommandRules/Mcp/Tools/JournalReadTool.php",
-        "final_class": "App\\CommandRules\\Mcp\\Tools\\JournalReadTool",
+        "old_path": "app/Mcp/Tools/JournalReadTool.php",
+        "old_class": "App\\Mcp\\Tools\\JournalReadTool",
+        "final_path": "app/Mcp/Tools/JournalReadTool.php",
+        "final_class": "App\\Mcp\\Tools\\JournalReadTool",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -50580,10 +50580,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0657d33bd98a2215b51fb67815cf1f726f191460",
-        "old_path": "app/CommandRules/Mcp/Tools/JournalTool.php",
-        "old_class": "App\\CommandRules\\Mcp\\Tools\\JournalTool",
-        "final_path": "app/CommandRules/Mcp/Tools/JournalTool.php",
-        "final_class": "App\\CommandRules\\Mcp\\Tools\\JournalTool",
+        "old_path": "app/Mcp/Tools/JournalTool.php",
+        "old_class": "App\\Mcp\\Tools\\JournalTool",
+        "final_path": "app/Mcp/Tools/JournalTool.php",
+        "final_class": "App\\Mcp\\Tools\\JournalTool",
         "status": "stay",
         "kind": "class",
         "generator": {

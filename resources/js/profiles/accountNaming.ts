@@ -99,7 +99,7 @@ function renamedIn(
     id: string,
     label: string,
 ): { page: WindowResult<AccountListData> } | Record<string, never> {
-    if (page.state !== 'ready' || !Array.isArray(page.data.rows)) {
+    if (page.status !== 'ready' || !Array.isArray(page.data.rows)) {
         return {};
     }
 

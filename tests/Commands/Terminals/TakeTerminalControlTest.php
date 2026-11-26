@@ -63,7 +63,7 @@ final class TakeTerminalControlTest extends TestCase
         $first = $this->take($runtime, $interest);
 
         $this->assertRefusedWith(TerminalControlRefusal::ControlHeld, fn () => $this->take($runtime, $interest));
-        $this->assertSame(TerminalGrantStatus::Taking, $first->state);
+        $this->assertSame(TerminalGrantStatus::Taking, $first->status);
         $this->assertSame(1, TerminalGrant::query()->acrossActors()->count());
         $this->assertSame(
             [DriverOperation::TakeControl],

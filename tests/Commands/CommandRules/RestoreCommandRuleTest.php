@@ -52,7 +52,7 @@ final class RestoreCommandRuleTest extends TestCase
         $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
         $restored = $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new RestoreCommandRuleCommand($rule->id, 1, 1, 'restore-1'));
-        $this->assertSame(ProposalStatus::Pending, $restored->state);
+        $this->assertSame(ProposalStatus::Pending, $restored->status);
         $this->assertSame(ClassificationStatus::Retired, $rule->refresh()->status);
 
         $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleProposalCommand($restored->proposalId, new OwnerApproval(1, 1, [], 'back again')));

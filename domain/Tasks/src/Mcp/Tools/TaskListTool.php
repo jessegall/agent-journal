@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp\Tools;
 
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalReadTool;
 use App\Support\AssignmentData;
 use App\Support\AssignmentHolder;
 use App\Support\NumberedPage;

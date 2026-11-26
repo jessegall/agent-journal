@@ -63,7 +63,7 @@ final class RecordRefusalReceiptTest extends TestCase
         $this->assertThrows(fn () => $bus->run(new RefuseNoteCommand('refused')), RefusalReplayed::class, $message);
         $this->assertSame(
             ReceiptStatus::Refused,
-            $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
+            $this->app->make(OperationResolver::class)->operation(self::KEY)->status,
         );
         $this->assertSame(0, $this->rowCount());
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Agents\Api\RecordHeartbeatPayload;
+use App\Api\Agents\RecordHeartbeatPayload;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
 use App\Contracts\Domains\ApiPayload;

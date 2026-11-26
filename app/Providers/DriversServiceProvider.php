@@ -102,7 +102,7 @@ final class DriversServiceProvider extends ServiceProvider
             $app->make(DriverCatalogueContract::class),
             $app->make(PinnedBuilds::class),
             $app->make(HookReplies::class),
-            [self::claudeCode(), self::codex()],
+            self::setups(),
         ));
     }
 
@@ -155,6 +155,16 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new AnyContext(), HostHomeAndPath::class),
             )
             ->startPlan(ConditionalPart::unless(new AccountStart(), CodexHomeFiles::class));
+    }
+
+    /**
+     * How the journal starts each driver family it ships.
+     *
+     * @return list<DriverSetup>
+     */
+    public static function setups(): array
+    {
+        return [self::claudeCode(), self::codex()];
     }
 
     private static function claudeCode(): DriverSetup

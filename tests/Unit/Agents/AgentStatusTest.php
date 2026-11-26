@@ -185,14 +185,14 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('evidence')]
     public function test_the_evidence_decides_the_state_label_and_actions(
         AgentEvidence $evidence,
-        SessionActivityStatus $status,
+        SessionActivityStatus $activity,
         string $label,
         array $actions,
     ): void {
         $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
-            [$status, $label, $actions],
+            [$activity, $label, $actions],
             [
                 $status->sessionState,
                 $status->label,
@@ -241,7 +241,7 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('readiness')]
     public function test_a_start_that_has_not_proved_its_conversation_is_verifying_with_check_status_and_cancel(
         StartReadiness $readiness,
-        SessionActivityStatus $status,
+        SessionActivityStatus $activity,
         array $actions,
     ): void {
         $evidence = new AgentEvidence(
@@ -262,7 +262,7 @@ final class AgentStatusTest extends TestCase
         $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
-            [$status, $status->label(), $status->reason(), $actions],
+            [$activity, $activity->label(), $activity->reason(), $actions],
             [
                 $status->sessionState,
                 $status->label,

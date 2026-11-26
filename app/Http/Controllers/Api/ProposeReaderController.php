@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ProposeReaderPayload;
+use App\Api\Processes\ReaderProposed;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\ProposeReader\ProposeReaderCommand;
-use App\Processes\Api\ProposeReaderPayload;
-use App\Processes\Api\ReaderProposed;
 
 /**
  * Proposes a draft reader for a held command.

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ProveReaderPayload;
+use App\Api\Processes\ReaderProofStarted;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\ProveReader\ProveReaderCommand;
-use App\Processes\Api\ProveReaderPayload;
-use App\Processes\Api\ReaderProofStarted;
 
 /**
  * Proves a reader over sample runs and answers its proof.

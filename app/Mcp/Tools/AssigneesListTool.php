@@ -6,7 +6,6 @@ namespace App\Mcp\Tools;
 
 use App\Actors\Contracts\ActorTypes;
 use App\Assignments\Contracts\AssigneeResolver;
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;

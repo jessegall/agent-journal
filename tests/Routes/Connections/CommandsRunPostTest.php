@@ -89,7 +89,6 @@ final class CommandsRunPostTest extends GuardedRouteEntryTestCase
             true,
             false,
             0,
-            [],
             true,
         ));
 

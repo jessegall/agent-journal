@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;

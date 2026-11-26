@@ -427,7 +427,7 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
-        $registry->registerFamily(
+        $this->journal->setUpDriverFamily(
             new DriverFamily(
                 'example',
                 'Example',
@@ -440,6 +440,7 @@ final class OpenAgentRuntimeTest extends TestCase
                 MarkTone::CurrentColor,
                 SignInCodeDirection::Outgoing,
             ),
+            DefaultDrivers::CLAUDE_CODE,
         );
 
         foreach ([
@@ -503,7 +504,7 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->assertInstanceOf(DriverCatalogue::class, $registry);
         $headless = $registry->forKey(DriverKey::from('claude-code-headless'))->descriptor();
         $claude = $registry->family(DefaultDrivers::CLAUDE_CODE);
-        $registry->registerFamily(
+        $this->journal->setUpDriverFamily(
             new DriverFamily(
                 'example',
                 'Example',
@@ -516,6 +517,7 @@ final class OpenAgentRuntimeTest extends TestCase
                 MarkTone::CurrentColor,
                 SignInCodeDirection::Outgoing,
             ),
+            DefaultDrivers::CLAUDE_CODE,
         );
         $registry->register(new DriverRegistration(
             DriverKey::from($key),

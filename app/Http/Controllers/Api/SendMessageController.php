@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Api\Communication\MessageNamed;
-use App\Api\Api\Communication\SendMessagePayload;
+use App\Api\Communication\MessageNamed;
+use App\Api\Communication\SendMessagePayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Messages\Commands\SendMessage\SendMessageCommand;

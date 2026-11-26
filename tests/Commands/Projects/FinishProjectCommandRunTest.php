@@ -94,7 +94,6 @@ final class FinishProjectCommandRunTest extends TestCase
             true,
             false,
             0,
-            [],
             true,
         ));
 

@@ -104,7 +104,7 @@ final class RecordScriptStepResultTest extends TestCase
 
         $outcome = $this->stopDirty(StepStatus::Completed, 'passed', 'All tests passed.');
 
-        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
+        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->status);
         $this->assertEquals(
             AgentText::of('core.stop.script_returned', ['evidence' => self::GUIDANCE]),
             $outcome->message,
@@ -119,7 +119,7 @@ final class RecordScriptStepResultTest extends TestCase
 
         $outcome = $this->stopDirty(StepStatus::Failed, 'failure', self::FAILED_TESTS);
 
-        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->state);
+        $this->assertSame(StopPreparationStatus::ReturnToActor, $outcome->status);
         $this->assertEquals(
             AgentText::of('core.stop.script_returned', ['evidence' => self::FAILED_TESTS]),
             $outcome->message,
@@ -138,11 +138,11 @@ final class RecordScriptStepResultTest extends TestCase
         $this->answerReads(isDirty: true);
         $stillHeld = $this->stopAgain();
 
-        $this->assertSame([StopPreparationStatus::Held, true], [$held->state, $held->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, true], [$held->status, $held->tellsOwner]);
         $reason = TestText::words(AgentText::of('core.stop.unchanged_returns', ['evidence' => self::GUIDANCE]));
         $this->assertSame(AgentText::of('core.stop.script_held', ['reason' => $reason])->key, $held->message->key);
         $this->assertStringContainsString($reason, TestText::words($held->message));
-        $this->assertSame([StopPreparationStatus::Held, false], [$stillHeld->state, $stillHeld->tellsOwner]);
+        $this->assertSame([StopPreparationStatus::Held, false], [$stillHeld->status, $stillHeld->tellsOwner]);
     }
 
     public function test_a_clean_workspace_goes_straight_to_the_final_checks(): void
@@ -150,12 +150,12 @@ final class RecordScriptStepResultTest extends TestCase
         $this->activateScriptedWriter();
         $this->writer = ActorReference::of(TestStart::start('writing-helper')->agent);
 
-        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->status);
         $this->answerReads(isDirty: false);
-        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::Preparing, $this->stopAgain()->status);
         $this->answerReads(isDirty: false);
 
-        $this->assertSame(StopPreparationStatus::FinalChecks, $this->stopAgain()->state);
+        $this->assertSame(StopPreparationStatus::FinalChecks, $this->stopAgain()->status);
     }
 
     private function notify(ProfileRun $run, string $step, StepStatus $status): void

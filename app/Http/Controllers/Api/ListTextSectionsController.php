@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Text\ListTextSectionsPayload;
 use App\Data\Pages\TextSections;
 use App\Reads\Contracts\TextResolver;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
-use App\Text\Api\ListTextSectionsPayload;
 
 /**
  * Answers a page of a text version's sections.

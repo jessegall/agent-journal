@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Api\Communication\SendMessagePayload;
+use App\Api\Communication\SendMessagePayload;
 use App\Console\Concerns\RunsApiPipelines;
 use Illuminate\Console\Command;
 

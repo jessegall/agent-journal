@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands\ReadOutputTail;
 
+use App\Api\Processes\OutputTail;
 use App\Bus\Contracts\CommandHandler;
 use App\CommandRules\Enums\EvidenceSource;
 use App\Models\CommandRules\EvidenceRead;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\OutputTail;
 use App\Processes\StoredOutput;
 use App\Values\EvidenceRange;
 

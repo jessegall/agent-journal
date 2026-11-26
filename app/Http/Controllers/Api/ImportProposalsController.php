@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\ImportProposalsPayload;
+use App\Api\Processes\ProposalsImported;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\CommandRules\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
-use App\Processes\Api\ImportProposalsPayload;
-use App\Processes\Api\ProposalsImported;
 
 /**
  * Imports declarations and answers each proposal.

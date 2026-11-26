@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Access\Mcp\Tools\OutputsReadTool;
-use App\Processes\Api\OutputTail;
+use App\Api\Processes\OutputTail;
+use App\Mcp\Tools\OutputsReadTool;
 use App\Processes\Commands\ReadOutputTail\ReadOutputTailCommand;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Values\PartKey;

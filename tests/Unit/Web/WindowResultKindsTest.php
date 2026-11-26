@@ -34,7 +34,7 @@ final class WindowResultKindsTest extends TestCase
         $missing = $this->resultOf(fn () => throw PrivateRecordMissing::forReader());
         $denied = $this->resultOf(fn () => throw PrivateRecordMissing::forReader());
 
-        $this->assertSame(['state' => 'denied'], $missing->toArray());
+        $this->assertSame(['status' => 'denied'], $missing->toArray());
         $this->assertSame(json_encode($missing->toArray()), json_encode($denied->toArray()));
     }
 
@@ -42,7 +42,7 @@ final class WindowResultKindsTest extends TestCase
     {
         $result = $this->resultOf(fn () => DeclaredLayoutData::of(LayoutPartData::collection('loans', 'list', [])));
 
-        $this->assertSame('ready', $result->toArray()['state']);
+        $this->assertSame('ready', $result->toArray()['status']);
     }
 
     public function test_a_broken_reader_is_logged_and_answers_the_neutral_failure(): void
@@ -55,7 +55,7 @@ final class WindowResultKindsTest extends TestCase
 
         $this->assertSame(
             [
-                'state' => 'failed',
+                'status' => 'failed',
                 'message' => FailedWindow::MESSAGE,
                 'reason' => 'RuntimeException: the table is gone',
             ],
@@ -85,7 +85,7 @@ final class WindowResultKindsTest extends TestCase
             fn () => DeclaredLayoutData::of(LayoutPartData::text('when', 'Now', 'clock')),
         );
 
-        $this->assertSame('failed', $result->toArray()['state']);
+        $this->assertSame('failed', $result->toArray()['status']);
         $this->assertStringContainsString('LayoutRefused', $result->toArray()['reason']);
         $this->assertStringContainsString(
             LayoutRefused::unknownStyle('root', LayoutTag::Text, 'clock')->getMessage(),
@@ -100,7 +100,7 @@ final class WindowResultKindsTest extends TestCase
         $result = $this->resultOf(fn () => throw new RuntimeException('the table is gone'));
 
         $this->assertSame(
-            ['state' => 'failed', 'message' => FailedWindow::MESSAGE, 'reason' => null],
+            ['status' => 'failed', 'message' => FailedWindow::MESSAGE, 'reason' => null],
             $result->toArray(),
         );
     }

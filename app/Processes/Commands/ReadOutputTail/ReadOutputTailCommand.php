@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Commands\ReadOutputTail;
 
 use App\Agents\Enums\AccessType;
+use App\Api\Processes\OutputTail;
 use App\Attributes\Commands\Authorize;
 use App\Policies\ProcessPolicy;
-use App\Processes\Api\OutputTail;
 use App\Processes\Enums\OutputStream;
 use App\Support\Command;
 

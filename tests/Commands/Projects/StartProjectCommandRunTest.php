@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Connections\Api\ProjectCommandFrame;
+use App\Api\Connections\ProjectCommandFrame;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Enums\CommandRunStatus;
 use App\Connections\Values\CommandFingerprint;
@@ -169,7 +169,6 @@ final class StartProjectCommandRunTest extends TestCase
             true,
             false,
             0,
-            [],
             true,
         ));
 

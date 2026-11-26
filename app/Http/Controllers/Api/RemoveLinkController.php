@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Records\LinkChanged;
+use App\Api\Records\RemoveLinkPayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\Contracts\CommandBus;
 use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
-use App\Records\Api\LinkChanged;
-use App\Records\Api\RemoveLinkPayload;
 use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 

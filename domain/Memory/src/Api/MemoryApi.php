@@ -33,14 +33,19 @@ final readonly class MemoryApi
     public function listMemories(
         int $page = 1,
     ): MemoryPage {
-        return $this->sender->send(ListMemoriesPayload::from(['page' => $page]));
+        return $this->sender->send(ListMemoriesPayload::from([
+            'page' => $page,
+        ]));
     }
 
     public function removeMemory(
         string $memoryId,
         CallKey $requestKey = new CallKey(),
     ): MemoryNamed {
-        return $this->sender->send(RemoveMemoryPayload::from(['memoryId' => $memoryId, 'requestKey' => $requestKey]));
+        return $this->sender->send(RemoveMemoryPayload::from([
+            'memoryId' => $memoryId,
+            'requestKey' => $requestKey,
+        ]));
     }
 
     public function saveMemory(

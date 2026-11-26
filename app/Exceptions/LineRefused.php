@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Actors\Contracts\AgentTexts;
+use App\Api\Processes\AdmissionRefusalDetails;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
-use App\Processes\Api\AdmissionRefusalDetails;
 use App\Values\AdmissionRefusal;
 use RuntimeException;
 

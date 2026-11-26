@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Accounts\Enums\CommandEntry;
+use App\Api\Connections\CancelProjectCommandPayload;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\JournalCommands;
-use App\Connections\Api\CancelProjectCommandPayload;
 use App\Projects\Commands\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use App\Support\AgentContext;
 use App\Values\ApiAccepted;

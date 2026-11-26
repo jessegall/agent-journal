@@ -85,7 +85,6 @@ final class RecordProjectCommandProcessTest extends TestCase
             true,
             false,
             0,
-            [],
             true,
         ));
 

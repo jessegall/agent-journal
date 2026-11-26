@@ -53,7 +53,46 @@ final readonly class LayoutRoots
     /**
      * The subject folders of the subject-first layout, each holding its own subject's classes.
      */
-    private const array SUBJECT_FOLDERS = ['Agents'];
+    private const array SUBJECT_FOLDERS = [
+        'Access',
+        'Accounts',
+        'Actors',
+        'Agents',
+        'Asks',
+        'Assignments',
+        'Bootstrap',
+        'Bus',
+        'CommandRules',
+        'Connections',
+        'Docking',
+        'Engine',
+        'Files',
+        'Hooks',
+        'Hosts',
+        'Inboxes',
+        'Links',
+        'Messages',
+        'Navigation',
+        'Notifications',
+        'Numbers',
+        'Processes',
+        'Profiles',
+        'Projects',
+        'Reads',
+        'Records',
+        'Reflection',
+        'Scripts',
+        'Search',
+        'Sessions',
+        'Settings',
+        'Sharing',
+        'Skills',
+        'Stacks',
+        'Terminals',
+        'Text',
+        'Time',
+        'Web',
+    ];
 
     /**
      * Core's roots.

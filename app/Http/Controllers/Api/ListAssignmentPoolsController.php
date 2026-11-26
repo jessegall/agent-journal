@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Assignments\Api\ListAssignmentPoolsPayload;
-use App\Assignments\Api\PoolList;
+use App\Api\Assignments\ListAssignmentPoolsPayload;
+use App\Api\Assignments\PoolList;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Data\PoolDefinitionData;
 

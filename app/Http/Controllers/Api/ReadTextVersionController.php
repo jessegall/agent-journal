@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Text\ReadTextVersionPayload;
 use App\Data\Pages\TextVersionSummary;
 use App\Reads\Contracts\TextResolver;
 use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
-use App\Text\Api\ReadTextVersionPayload;
 
 /**
  * Answers a record's text version.

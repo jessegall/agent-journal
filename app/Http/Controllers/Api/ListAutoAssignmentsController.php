@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Api\ListAutoAssignmentsPayload;
+use App\Api\Assignments\ListAutoAssignmentsPayload;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Data\AutoAssignmentPageData;

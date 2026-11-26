@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Api\Supervision\ListAsksPayload;
+use App\Api\Supervision\ListAsksPayload;
 use App\Asks\Contracts\AskReader;
 use App\Asks\Data\AskInbox;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\CommandRules;
 
+use App\Api\Processes\CommandRequestShown;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\Runs\ReaderRevision;
-use App\Processes\Api\CommandRequestShown;
 
 /**
  * A held command request of the current project as a call and a tool show it: its line, state, steps and next

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Api\Processes\OutputSummary;
+use App\Api\Processes\ReadOutputSummaryPayload;
 use App\Bus\Attributes\Dispatches;
 use App\CommandRules\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Models\Runs\ProcessRun;
-use App\Processes\Api\OutputSummary;
-use App\Processes\Api\ReadOutputSummaryPayload;
 use App\Processes\OutputSummaries;
 
 /**

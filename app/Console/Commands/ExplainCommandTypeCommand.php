@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Api\Exceptions\CommandStopped;
+use App\Api\Processes\ProcessApi;
 use App\Bus\Attributes\Console\JournalRoute;
 use App\CommandRules\Enums\JournalRouteType;
-use App\Processes\Api\ProcessApi;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Enums\ShellDialect;
 use Illuminate\Console\Command;
