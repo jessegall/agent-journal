@@ -137,6 +137,14 @@ final class ReadSkillStateTest extends TestCase
                 $this->hooks->shell('git status'),
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
             )
+            ->given(
+                $this->hooks->shell('php artisan skill:show beta'),
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
+            )
+            ->given(
+                $this->hooks->shell('php artisan skill:show beta; rm -rf x'),
+                fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
+            )
             ->given($this->read('beta'), fn (StateObservation $state) => $state->assertFinished());
     }
 

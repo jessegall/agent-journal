@@ -18,6 +18,7 @@ use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Values\AgentText;
+use App\Values\ProvenSkillRead;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -73,7 +74,7 @@ final class ReadSkillState extends AgentState implements UniqueState
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if ($input->isReadOnly()) {
+        if ($input->isReadOnly() || $this->showsASkill($input)) {
             return Decision::delegate();
         }
 
@@ -137,6 +138,15 @@ final class ReadSkillState extends AgentState implements UniqueState
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * Whether the line is php artisan skill:show of one skill, which the shell classifier does not know as a read and
+     * which the agent must still be able to run once its tool uses are spent.
+     */
+    private function showsASkill(ShellCommandRequested $input): bool
+    {
+        return preg_match(ProvenSkillRead::SKILL_SHOW, trim($input->command->source)) === 1;
+    }
 
     private function isWaiting(): bool
     {

@@ -20,7 +20,7 @@ final readonly class ProvenSkillRead
 
     private const string SHELL_READ = '~^cat\s+([\'"]?)(\S+)\1\s*$~';
 
-    private const string SKILL_SHOW = '~^php\s+artisan\s+skill:show\s+('.self::KEY.')\s*$~';
+    public const string SKILL_SHOW = '~^php\s+artisan\s+skill:show\s+('.self::KEY.')\s*$~';
 
     private const string DOTTED_SEGMENT = '~(?:^|/)\.\.?(?:/|$)~';
 
