@@ -21,7 +21,6 @@
             <directory>tests/Hooks</directory>
             <directory>tests/Middleware</directory>
             <directory>tests/Reads</directory>
-            <directory>tests/StandIn</directory>
             <directory>domain/*/tests/Commands</directory>
             <directory>domain/*/tests/States</directory>
             <directory>domain/*/tests/Routes</directory>
