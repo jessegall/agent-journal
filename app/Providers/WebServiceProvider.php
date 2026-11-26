@@ -27,7 +27,9 @@ use App\Navigation\Contracts\DraftProducers as DraftProducersContract;
 use App\Navigation\Contracts\NavigationRecords as NavigationRecordsContract;
 use App\Navigation\Contracts\RecordMenus as RecordMenusContract;
 use App\Navigation\Contracts\SlotSections;
+use App\Navigation\Contracts\WindowOffers;
 use App\Navigation\Contracts\WindowResults as WindowResultsContract;
+use App\Navigation\NoWindowOffers;
 use App\Notifications\Contracts\Refusals\FieldRefusal;
 use App\Policies\LayoutPolicy;
 use App\Policies\PresencePolicy;
@@ -99,6 +101,7 @@ final class WebServiceProvider extends ServiceProvider
 
         $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
         $this->app->bind(WindowResultsContract::class, WindowResults::class);
+        $this->app->bindIf(WindowOffers::class, NoWindowOffers::class);
         $this->app->bind(ClientOwnerAvailabilityContract::class, ClientOwnerAvailability::class);
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);

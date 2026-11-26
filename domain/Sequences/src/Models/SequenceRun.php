@@ -10,26 +10,13 @@ use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Docking\Sources\Contracts\CardContext;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\JournalModel;
-use App\Processes\Cards\Duration;
-use App\Processes\Cards\StateLabel;
-use App\Processes\Enums\Tone;
 use App\Records\Contracts\AuthoredModel;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
-use App\Support\Cards\Row;
-use App\Support\Cards\Stack;
-use App\Support\Cards\Subtitle;
-use App\Support\Cards\Title;
-use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\DockDefinition;
 use App\Values\StackTarget;
-use App\Web\Enums\Alignment;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Enums\SequenceRunStatus;
 use Domain\Sequences\Events\SequenceEnded;
@@ -58,7 +45,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @mixin \Eloquent
  */
-final class SequenceRun extends JournalModel implements AuthoredModel, Dockable, EventSource, Numbered, ReadableModel
+final class SequenceRun extends JournalModel implements AuthoredModel, EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
@@ -181,55 +168,6 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
     public function stepLine(int $step): string
     {
         return "step {$step} of ".count($this->steps).' · '.$this->steps[$step - 1];
-    }
-
-    // ----------[ Transformers ]----------
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    /**
-     * Its card where the chat shows it: its name and where it stands, each step with whether it is done, runs now or
-     * waits, and how long it has run, frozen at its end.
-     */
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        $steps = array_map(fn (string $step, int $index) => new Row(
-            "step-{$index}",
-            Alignment::Between,
-            new Subtitle("step-{$index}-text", ($index + 1).' · '.$step),
-            $this->stepLabel($index + 1),
-        ), $this->steps, array_keys($this->steps));
-
-        $started = CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
-        $ended = $this->status->needsWork() ? null : CarbonImmutable::instance($this->updated_at ?? $started);
-
-        return DockCard::named($this->name, Stack::of(
-            'root',
-            new Title('title', $this->name),
-            new Duration('duration', $started, $ended),
-            ...$steps,
-        ));
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * Where a step stands: done, running now, or waiting for its turn, and how the run ended on its current step.
-     */
-    private function stepLabel(int $step): StateLabel
-    {
-        $key = "step-{$step}-state";
-        $isDone = $step < $this->current_step || $this->status === SequenceRunStatus::Finished;
-        $isRunning = $step === $this->current_step && $this->status->needsWork();
-
-        return match (true) {
-            $isDone => new StateLabel($key, 'Done', Tone::Muted),
-            $isRunning => new StateLabel($key, 'Running', Tone::Note),
-            default => new StateLabel($key, 'Waiting', Tone::Neutral),
-        };
     }
 
     // ----------[ Queries ]----------

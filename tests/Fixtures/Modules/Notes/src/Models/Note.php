@@ -8,21 +8,13 @@ use App\Assignments\Contracts\Assignable;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
-use App\Docking\Sources\Contracts\CardContext;
 use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
 use App\Records\Contracts\Commentable;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
-use App\Support\Cards\Stack;
-use App\Support\Cards\Subtitle;
-use App\Support\Cards\Title;
 use App\Support\RecordIdentity;
-use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\DockDefinition;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -42,7 +34,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable(['text'])]
 #[Table('module_notes')]
-final class Note extends Model implements Assignable, Commentable, Dockable, Numbered, ReadableModel
+final class Note extends Model implements Assignable, Commentable, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
@@ -67,15 +59,5 @@ final class Note extends Model implements Assignable, Commentable, Dockable, Num
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::linkType(), $this->id);
-    }
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        return DockCard::named($this->text, Stack::of('root', new Title('title', $this->text), new Subtitle('kind', 'Note')));
     }
 }

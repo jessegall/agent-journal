@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Enums;
 
-use App\Processes\Cards\StateLabel;
 use App\Processes\Enums\Tone;
+use App\Records\Values\RecordStanding;
 
 /**
  * Whether a record still asks for attention, or was settled as needing none.
@@ -16,13 +16,13 @@ enum AttentionStatus: string
     case Settled = 'settled';
 
     /**
-     * The state as a docked card shows it.
+     * The state as a record's short card shows it.
      */
-    public function stateLabel(): StateLabel
+    public function standing(): RecordStanding
     {
         return match ($this) {
-            self::Active => new StateLabel('state', 'Open', Tone::Note),
-            self::Settled => new StateLabel('state', 'Closed', Tone::Muted),
+            self::Active => new RecordStanding('Open', Tone::Note),
+            self::Settled => new RecordStanding('Closed', Tone::Muted),
         };
     }
 }

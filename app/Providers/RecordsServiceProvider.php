@@ -11,20 +11,20 @@ use App\Agents\Enums\AccessType;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\LinkAddCommand;
 use App\Console\Commands\LinkRemoveCommand;
-use App\Docking\RecordFallbackDocks;
-use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Links\IdentityLinks;
 use App\Links\RecordLinker;
-use App\Models\Records\Link;
 use App\Policies\RecordLinkPolicy;
 use App\Records\Contracts\RecordLinker as RecordLinkerContract;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
+use App\Records\Contracts\RecordSummaries;
 use App\Records\RecordProviders;
+use App\Records\SummaryProviders;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Serves the routes and the link:add and link:remove commands that read and link records of every domain.
+ * Serves the routes and the link:add and link:remove commands that read and link records of every domain, and the
+ * registry of record summaries.
  */
 final class RecordsServiceProvider extends ServiceProvider
 {
@@ -36,7 +36,7 @@ final class RecordsServiceProvider extends ServiceProvider
         $this->app->bind(IdentityLinksContract::class, IdentityLinks::class);
         $this->app->bind(RecordProviderRegistration::class, RecordProviders::class);
         $this->app->bind(RecordResolver::class, RecordProviders::class);
-        $this->app->bind(FallbackDocks::class, RecordFallbackDocks::class);
+        $this->app->bind(RecordSummaries::class, SummaryProviders::class);
     }
 
     public function boot(PolicyCatalogue $policies): void

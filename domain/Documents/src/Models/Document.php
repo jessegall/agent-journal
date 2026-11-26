@@ -11,7 +11,6 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Docking\Sources\Contracts\CardContext;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProjectOrGlobal;
 use App\Models\Support\JournalModel;
@@ -22,11 +21,7 @@ use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
 use App\Sharing\Contracts\Shareable;
 use App\Support\ActorReference;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
 use App\Support\ShareRecordCard;
-use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\DockDefinition;
 use App\Values\ProjectOwner;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
@@ -42,7 +37,6 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
-use Domain\Documents\Support\Cards\DocumentDockCard;
 use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -76,7 +70,6 @@ use Illuminate\Database\Query\JoinClause;
  */
 final class Document extends JournalModel implements
     Commentable,
-    Dockable,
     EventSource,
     Numbered,
     ProjectOwned,
@@ -213,19 +206,6 @@ final class Document extends JournalModel implements
         $revision = DocumentRevision::findPublishedOf($this, $version);
 
         return TextVersion::ofMarkdown((string) $revision->number, "Revision {$revision->number}", $revision->body);
-    }
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    /**
-     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
-     */
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        return new DocumentDockCard($this, $context)->card;
     }
 
     /**

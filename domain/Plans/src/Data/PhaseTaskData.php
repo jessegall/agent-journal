@@ -30,7 +30,7 @@ final class PhaseTaskData extends Data
             (string) $summary->number,
             $summary->title,
             $summary->status,
-            $summary->status->stateLabel()->text,
+            $summary->status->standing()->word,
             $waits,
         );
     }

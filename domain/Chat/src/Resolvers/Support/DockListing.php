@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Chat\Resolvers\Support;
 
 use App\Models\Inboxes\Inbox;
-use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockedSourceData;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Enums\DockedStatus;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Support\DockProjection;
+use Domain\Chat\Support\Wire\EncodedCard;
 
 /**
  * The placements of one chat for a journal or MCP caller: type, source, title and state, never a card's

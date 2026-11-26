@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Events;
 
 use App\Contracts\Events\Event;
-use App\Support\Sources\Contracts\DockSourceDeleted;
+use App\Records\Contracts\RecordDeleted;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
 /**
  * A note was deleted for good, after the deletion committed.
  */
-final readonly class NoteRemoved implements DockSourceDeleted, Event
+final readonly class NoteRemoved implements Event, RecordDeleted
 {
     public function __construct(public string $noteId) {}
 
-    public function dockType(): string
+    public function recordType(): string
     {
         return Note::linkType();
     }
 
-    public function dockId(): string
+    public function recordId(): string
     {
         return $this->noteId;
     }

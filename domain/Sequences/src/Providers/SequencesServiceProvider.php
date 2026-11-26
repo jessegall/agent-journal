@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Providers;
 
-use App\Docking\Sources\Contracts\DockRegistration;
+use App\Records\Contracts\RecordSummaries;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Sequences\Support\SequenceRunDocking;
+use Domain\Sequences\Support\SequenceRunSummaries;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Registers the stable link names of Sequences's own models, and a run as a record its chat lines show.
+ * Registers a sequence run's summary, as the chat lines that show a run read it.
  */
 final class SequencesServiceProvider extends ServiceProvider
 {
-    public function boot(DockRegistration $docks): void
+    public function boot(RecordSummaries $summaries): void
     {
-
-        $docks->register(SequenceRun::linkType(), SequenceRun::class, SequenceRunDocking::class);
+        $summaries->register(SequenceRun::linkType(), SequenceRunSummaries::class);
     }
 }

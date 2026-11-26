@@ -6,7 +6,7 @@ namespace Domain\Plans\Providers;
 
 use App\Access\Contracts\ReadEntitlements;
 use App\Access\Values\ReadEntitlement;
-use App\Docking\Sources\Contracts\DockRegistration;
+use App\Records\Contracts\RecordSummaries;
 use App\Support\FolderClasses;
 use App\Time\Contracts\VerificationTiming;
 use Domain\Plans\Contracts\PlanDetailsResolver as PlanDetailsResolverContract;
@@ -17,9 +17,8 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Domain\Plans\Resolvers\PlanDetailsResolver;
 use Domain\Plans\Resolvers\PlanResolver;
-use Domain\Plans\Support\DockedPlan;
 use Domain\Plans\Support\PhaseTiming;
-use Domain\Plans\Support\PlanDocking;
+use Domain\Plans\Support\PlanSummaries;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -42,11 +41,11 @@ final class PlansServiceProvider extends ServiceProvider
     public function boot(
         ExceptionHandler $exceptions,
         ReadEntitlements $reads,
-        DockRegistration $docks,
+        RecordSummaries $summaries,
     ): void {
         $readGrant = ReadEntitlement::grant(PlanPolicy::class);
 
-        $docks->offerDockFor($docks->register(Plan::linkType(), DockedPlan::class, PlanDocking::class));
+        $summaries->register(Plan::linkType(), PlanSummaries::class);
         $reads->declare('plans_read', $readGrant);
         $reads->declare('plans_list', $readGrant);
         $reads->declare('plans_assigned', $readGrant);

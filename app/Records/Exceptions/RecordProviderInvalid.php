@@ -7,13 +7,19 @@ namespace App\Records\Exceptions;
 use LogicException;
 
 /**
- * A domain registered a record provider twice for one alias, or a class that is no record provider.
+ * A domain registered a record or summary provider twice for one alias, or a class that is no such provider, or a
+ * provider was asked for an alias nobody registered.
  */
 final class RecordProviderInvalid extends LogicException
 {
     public static function repeated(string $type): self
     {
         return new self("A record provider is already registered for {$type}.");
+    }
+
+    public static function unknown(string $type): self
+    {
+        return new self("No provider is registered for {$type}.");
     }
 
     public static function notAProvider(string $type, string $class): self

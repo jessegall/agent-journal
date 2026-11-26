@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use App\Support\Wire\EncodedCard;
 use Domain\Chat\Enums\ChatMessageType;
+use Domain\Chat\Support\Wire\EncodedCard;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;

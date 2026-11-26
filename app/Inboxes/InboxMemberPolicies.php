@@ -9,7 +9,7 @@ use App\Inboxes\Contracts\InboxMemberPolicies as InboxMemberPoliciesContract;
 
 /**
  * The policies an inbox member may be granted at all, each registered by the domain that owns it: reading, posting,
- * pinning, docking and changing members of the inboxes it is in. Every other policy refuses an inbox member.
+ * pinning, adding records to and changing members of the inboxes it is in. Every other policy refuses an inbox member.
  */
 final class InboxMemberPolicies implements InboxMemberPoliciesContract
 {

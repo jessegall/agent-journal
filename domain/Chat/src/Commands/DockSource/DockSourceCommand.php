@@ -8,8 +8,8 @@ use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RetainedActorRequestKey;
 use App\Support\Command;
-use App\Support\Sources\DockDefinition;
 use Domain\Chat\Policies\DockPlacementPolicy;
+use Domain\Chat\Values\DockDefinition;
 use Domain\Chat\Values\DockResult;
 
 /**

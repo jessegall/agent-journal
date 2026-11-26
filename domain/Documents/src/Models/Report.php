@@ -11,7 +11,6 @@ use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Docking\Sources\Contracts\CardContext;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\JournalModel;
@@ -22,12 +21,8 @@ use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
 use App\Sharing\Contracts\Shareable;
 use App\Support\ActorReference;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
 use App\Support\MarkdownText;
 use App\Support\ShareRecordCard;
-use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\DockDefinition;
 use App\Values\ProjectOwner;
 use App\Values\TextVersion;
 use Carbon\CarbonImmutable;
@@ -44,7 +39,6 @@ use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Models\Concerns\SharedWithComments;
-use Domain\Documents\Support\Cards\ReportDockCard;
 use Domain\Documents\Support\RecordViews;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -74,7 +68,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class Report extends JournalModel implements
     Commentable,
-    Dockable,
     EventSource,
     Numbered,
     ProjectOwned,
@@ -217,19 +210,6 @@ final class Report extends JournalModel implements
     public function textVersion(string|null $version = null): TextVersion
     {
         return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
-    }
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    /**
-     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
-     */
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        return new ReportDockCard($this, $context)->card;
     }
 
     // ----------[ Scopes ]----------

@@ -8,7 +8,6 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Docking\Sources\Contracts\CardContext;
 use App\Events\Processes\ProcessRunConsumed;
 use App\Events\Processes\ProcessRunLost;
 use App\Events\Processes\ProcessRunMarkedStale;
@@ -17,31 +16,19 @@ use App\Events\Processes\ProcessRunOutlasted;
 use App\Events\Processes\ProcessRunStopped;
 use App\Events\Processes\ProcessRunUpdateCounted;
 use App\Models\Access\User;
-use App\Models\Agents\Agent;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\JournalModel;
-use App\Processes\Cards\Duration;
-use App\Processes\Cards\StateLabel;
 use App\Processes\Enums\CaptureStatus;
 use App\Processes\Enums\LifecycleStatus;
-use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
-use App\Processes\Enums\Tone;
 use App\Processes\Exceptions\RetryRefused;
 use App\Projects\Contracts\ProjectOwned;
 use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
-use App\Support\Cards\DockCard;
-use App\Support\Cards\DockIdentity;
-use App\Support\Cards\Stack;
-use App\Support\Cards\Subtitle;
-use App\Support\Cards\Title;
-use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\DockDefinition;
 use App\Values\ExecutionPlan;
 use App\Values\RelationRead;
 use App\Values\RunAdmission;
@@ -91,7 +78,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-final class ProcessRun extends JournalModel implements Dockable, EventSource, ProjectOwned, ReadableModel
+final class ProcessRun extends JournalModel implements EventSource, ProjectOwned, ReadableModel
 {
     use BelongsToOneActor;
     use BelongsToProject;
@@ -100,19 +87,14 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
     use RaisesEvents;
 
     /**
-     * The type a run docks under.
-     */
-    public const string DOCK_TYPE = 'process.run';
-
-    /**
      * How long a quick command runs at most; a run past it shows in its agent's conversation.
      */
     public const int QUICK_COMMAND_SECOND_LIMIT = 10;
 
     /**
-     * The most parts, attempts included, a docked run loads with its card.
+     * The most parts, attempts included, a run reads with itself.
      */
-    public const int DOCK_PART_LIMIT = 500;
+    public const int PART_LIMIT = 500;
 
     /**
      * @var array<string, mixed>
@@ -305,7 +287,7 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
      */
     public function hasCompleteEvidence(): bool
     {
-        $parts = $this->parts()->readLimit(500)->get();
+        $parts = $this->parts()->readLimit(self::PART_LIMIT)->get();
 
         return $parts->isNotEmpty() && $parts->every(
             fn (PartRun $part) => $part->lifecycle === LifecycleStatus::Ended
@@ -318,7 +300,15 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
      */
     public function hasEnded(): bool
     {
-        return self::areAllPartsFinal($this->parts()->readLimit(500)->get());
+        return self::areAllPartsFinal($this->parts()->readLimit(self::PART_LIMIT)->get());
+    }
+
+    /**
+     * Whether every part it was read with has reached a final state; a run read with no part has not ended.
+     */
+    public function areLoadedPartsFinal(): bool
+    {
+        return self::areAllPartsFinal($this->parts);
     }
 
     /**
@@ -398,41 +388,6 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
         }
 
         return [];
-    }
-
-    public function identifyFor(DockDefinition $definition): DockIdentity
-    {
-        return $definition->identity($this->id);
-    }
-
-    /**
-     * Its card in a dock, from its loaded parts: the operation it runs, never its arguments, whether it still runs,
-     * how long it ran, frozen at its end, and how it ended.
-     */
-    public function composeDockCard(CardContext $context): DockCard
-    {
-        $parts = $this->parts->sortBy(['syntax_node', 'attempt']);
-
-        $last = $parts->last();
-        $title = $last === null ? 'Process run' : "Run of {$last->operation}";
-        $ended = self::areAllPartsFinal($parts);
-        $startedAt = $parts->first()?->started_at;
-
-        $cardParts = [
-            new Title('title', $title),
-            new StateLabel('state', $ended ? 'Ended' : 'Running', $ended ? Tone::Muted : Tone::Note),
-        ];
-
-        if ($startedAt !== null) {
-            $cardParts[] = new Duration('duration', $startedAt, $ended ? $last?->ended_at : null);
-        }
-
-        if ($ended && $last !== null) {
-            $exit = $last->end_type === PartEndType::Exited ? "Exit {$last->end_code}" : 'Did not exit';
-            $cardParts[] = new Subtitle('exit', $exit);
-        }
-
-        return DockCard::named($title, Stack::of('root', ...$cardParts));
     }
 
     // ----------[ Relations ]----------
@@ -520,14 +475,14 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
     // ----------[ Scopes ]----------
 
     /**
-     * Runs read for a dock, with their parts.
+     * Runs read with all their parts, at most PART_LIMIT of them.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withDockParts(Builder $query): void
+    protected function withAllParts(Builder $query): void
     {
-        $query->with(['parts' => RelationRead::complete(max: self::DOCK_PART_LIMIT)->constraint()]);
+        $query->with(['parts' => RelationRead::complete(max: self::PART_LIMIT)->constraint()]);
     }
 
     /**

@@ -24,13 +24,6 @@ final class ServiceNamesTest extends TestCase
         'TextReading' => 'a bounded read of a text, a value',
         'RecordReading' => 'a bounded read of a document or report, a value',
         'ActorProvisioning' => 'the only implementation of the ActorProvisioning contract, named after it',
-        'OutputDocking' => 'a dockable provider',
-        'RunDocking' => 'a dockable provider',
-        'DocumentDocking' => 'a dockable provider',
-        'ReportDocking' => 'a dockable provider',
-        'PlanDocking' => 'a dockable provider',
-        'SequenceRunDocking' => 'a dockable provider',
-        'TaskDocking' => 'a dockable provider',
     ];
 
     public function test_no_support_class_is_named_with_a_gerund_of_its_own(): void
