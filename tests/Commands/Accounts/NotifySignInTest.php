@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
 use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
+use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Data\Accounts\SignInAttemptData;
 use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInRefusal;
 use App\Enums\Accounts\SignInStatus;
 use App\Jobs\SignInDeadline;
@@ -16,9 +20,11 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\EnrolledHost;
 use App\Support\SignInChallenges;
+use App\Values\ClaimedSignIn;
+use App\Values\SignInIdentity;
+use App\Values\SignInPoll;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -60,10 +66,9 @@ final class NotifySignInTest extends TestCase
     {
         $host = $this->enrollHost();
         $attemptId = $this->begin();
-        $this->signed($host, '/host/sign-ins/claim')->assertOk();
+        $this->claim($host);
 
-        $this->notify($host, $attemptId, 'failed', ['refusal' => 'Invalid API key · Fix external API key'])
-            ->assertNoContent();
+        $this->notify($host, $attemptId, SignInOutcome::Failed, refusal: 'Invalid API key · Fix external API key');
 
         $attempt = $this->signInAttempt($attemptId);
         $this->assertSame(SignInStatus::Failed, $attempt->status);
@@ -77,10 +82,9 @@ final class NotifySignInTest extends TestCase
     {
         $host = $this->enrollHost();
         $attemptId = $this->begin();
-        $this->signed($host, '/host/sign-ins/claim')->assertOk();
+        $this->claim($host);
 
-        $this->notify($host, $attemptId, 'failed', ['refusal' => 'stack trace at /home/user/.claude/secret line 3'])
-            ->assertNoContent();
+        $this->notify($host, $attemptId, SignInOutcome::Failed, refusal: 'stack trace at /home/user/.claude/secret line 3');
 
         $this->assertSame(SignInRefusal::Unknown->text(), $this->signInAttempt($attemptId)->refusal);
     }
@@ -89,15 +93,15 @@ final class NotifySignInTest extends TestCase
     {
         $host = $this->enrollHost();
         $attemptId = $this->begin();
-        $this->signed($host, '/host/sign-ins/claim');
+        $this->claim($host);
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
-        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
-        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
+        $this->publishChallenge($host, $attemptId, $challenge);
+        $this->notify($host, $attemptId, SignInOutcome::Waiting);
         $this->travelTo($this->signInAttempt($attemptId)->expires_at->addSecond());
 
-        $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
-        $this->notify($host, $attemptId, 'verified', $proof);
-        $this->notify($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
+        $proof = new SignInIdentity('work@example.test', 'subject-1', 'workspace-1');
+        $this->notify($host, $attemptId, SignInOutcome::Verified, $proof);
+        $this->notify($host, $attemptId, SignInOutcome::Failed, refusal: 'Too late');
 
         $attempt = $this->signInAttempt($attemptId);
         $this->assertSame(SignInStatus::Expired, $attempt->status);
@@ -121,26 +125,34 @@ final class NotifySignInTest extends TestCase
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }
 
-    /**
-     * @param  array<string, string>  $identity
-     */
-    private function notify(
-        EnrolledHost $host,
-        string $attemptId,
-        string $outcome,
-        array $identity = [],
-    ): TestResponse {
-        $body = ['outcome' => $outcome, 'generation' => 0, ...$identity];
-
-        return $this->signed($host, "/host/sign-ins/{$attemptId}/report", $body);
+    private function claim(EnrolledHost $host): ClaimedSignIn|null
+    {
+        return $this->journal->asSystem(new ClaimSignInCommand($host->hostId));
     }
 
     /**
-     * @param  array<string, mixed>  $body
+     * @param  array{address: string, code: string|null}  $challenge
      */
-    private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
+    private function publishChallenge(EnrolledHost $host, string $attemptId, array $challenge): void
     {
-        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        $this->journal->asSystem(
+            new PublishSignInChallengeCommand($host->hostId, $attemptId, $challenge['address'], $challenge['code']),
+        );
+    }
+
+    private function takeCode(EnrolledHost $host, string $attemptId, int $generation): SignInPoll
+    {
+        return $this->journal->asSystem(new TakeSignInCodeCommand($host->hostId, $attemptId, $generation));
+    }
+
+    private function notify(
+        EnrolledHost $host,
+        string $attemptId,
+        SignInOutcome $outcome,
+        SignInIdentity $identity = new SignInIdentity(null, null, null),
+        string|null $refusal = null,
+    ): void {
+        $this->journal->asSystem(new NotifySignInCommand($host->hostId, $attemptId, 0, $outcome, $identity, $refusal));
     }
 
     private function enrollHost(): EnrolledHost

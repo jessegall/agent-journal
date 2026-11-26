@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
+use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
+use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
 use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInOutcome;
+use App\Exceptions\SignInChallengeRefused;
 use App\Jobs\SignInDeadline;
 use App\Support\EnrolledHost;
+use App\Values\ClaimedSignIn;
+use App\Values\SignInIdentity;
+use App\Values\SignInPoll;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -58,10 +65,10 @@ final class PublishSignInChallengeTest extends TestCase
             'driver' => 'claude-code',
             'method' => 'oauth',
         ])->assertStatus(303);
-        $attemptId = (string) $this->signed($host, '/host/sign-ins/claim')->json('attempt_id');
+        $attemptId = (string) $this->claim($host)?->attemptId;
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
-        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
-        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
+        $this->publishChallenge($host, $attemptId, $challenge);
+        $this->notify($host, $attemptId, SignInOutcome::Waiting);
 
         $page = $this->actingAs($owner)->get('/accounts?add=1')->assertOk();
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->assertOk();
@@ -75,11 +82,10 @@ final class PublishSignInChallengeTest extends TestCase
         $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
         $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
         $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
-        $code = "/host/sign-ins/{$attemptId}/code";
-        $poll = fn (int $generation) => $this->signed($host, $code, ['generation' => $generation]);
-        $poll(0)->assertExactJson(['live' => true, 'code' => '1234']);
-        $poll(0)->assertExactJson(['live' => true, 'code' => null]);
-        $poll(1)->assertExactJson(['live' => false, 'code' => null]);
+        $poll = fn (int $generation) => $this->takeCode($host, $attemptId, $generation);
+        $this->assertEquals(new SignInPoll(true, '1234'), $poll(0));
+        $this->assertEquals(new SignInPoll(true, null), $poll(0));
+        $this->assertEquals(SignInPoll::ended(), $poll(1));
         $stranger = $this->journal->createUser('Stranger');
         $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
     }
@@ -89,21 +95,22 @@ final class PublishSignInChallengeTest extends TestCase
         $owner = $this->journal->ownerUser();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
-        $this->signed($host, '/host/sign-ins/claim');
+        $this->claim($host);
 
         foreach ([
             'https://claude.ai.evil.test/oauth',
             'http://claude.ai/oauth',
             'https://evil.test/claude.ai',
         ] as $address) {
-            $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", ['address' => $address, 'code' => null])
-                ->assertStatus(422)
-                ->assertDontSee($address, false);
+            $this->assertThrows(
+                fn () => $this->publishChallenge($host, $attemptId, ['address' => $address, 'code' => null]),
+                SignInChallengeRefused::class,
+            );
         }
 
         $this->assertNull($this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->json('address'));
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
-        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
+        $this->publishChallenge($host, $attemptId, $challenge);
         $stranger = $this->actingAs(
             $this->journal->createUser('Stranger'),
         )->post("/accounts/sign-ins/{$attemptId}/challenge");
@@ -121,26 +128,34 @@ final class PublishSignInChallengeTest extends TestCase
         return $started->attemptId;
     }
 
-    /**
-     * @param  array<string, string>  $identity
-     */
-    private function notify(
-        EnrolledHost $host,
-        string $attemptId,
-        string $outcome,
-        array $identity = [],
-    ): TestResponse {
-        $body = ['outcome' => $outcome, 'generation' => 0, ...$identity];
-
-        return $this->signed($host, "/host/sign-ins/{$attemptId}/report", $body);
+    private function claim(EnrolledHost $host): ClaimedSignIn|null
+    {
+        return $this->journal->asSystem(new ClaimSignInCommand($host->hostId));
     }
 
     /**
-     * @param  array<string, mixed>  $body
+     * @param  array{address: string, code: string|null}  $challenge
      */
-    private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
+    private function publishChallenge(EnrolledHost $host, string $attemptId, array $challenge): void
     {
-        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        $this->journal->asSystem(
+            new PublishSignInChallengeCommand($host->hostId, $attemptId, $challenge['address'], $challenge['code']),
+        );
+    }
+
+    private function takeCode(EnrolledHost $host, string $attemptId, int $generation): SignInPoll
+    {
+        return $this->journal->asSystem(new TakeSignInCodeCommand($host->hostId, $attemptId, $generation));
+    }
+
+    private function notify(
+        EnrolledHost $host,
+        string $attemptId,
+        SignInOutcome $outcome,
+        SignInIdentity $identity = new SignInIdentity(null, null, null),
+        string|null $refusal = null,
+    ): void {
+        $this->journal->asSystem(new NotifySignInCommand($host->hostId, $attemptId, 0, $outcome, $identity, $refusal));
     }
 
     private function enrollHost(): EnrolledHost

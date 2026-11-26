@@ -10,9 +10,12 @@ use App\Enums\Agents\SessionProcessStatus;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageTokens;
 use App\Support\EnrolledHost;
+use App\Values\ReportedStart;
+use App\Values\ThreadTokens;
+use App\Values\UsageSource;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -22,7 +25,7 @@ use Tests\TestCase;
 /**
  * A host reports a thread's token count under a claimed start, and a newer count replaces it, never adds to it.
  */
-#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
+#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and empties several tables.')]
 #[TestsCommand(RecordThreadTokensCommand::class)]
 final class RecordThreadTokensTest extends TestCase
 {
@@ -56,34 +59,28 @@ final class RecordThreadTokensTest extends TestCase
     public function test_a_newer_thread_count_replaces_the_earlier_one(): void
     {
         $key = $this->claimedStart($this->account);
-        $tokens = fn (int $total) => ['type' => 'thread_tokens', 'thread_id' => 'thread-1', 'total' => $total,
-            'input' => null, 'cached_input' => null, 'output' => null, 'reasoning_output' => null, 'last_turn_total' => null];
-
-        $this->notify($key, 'tokens-1', $tokens(100))->assertNoContent();
-        $this->notify($key, 'tokens-2', $tokens(250), observedAt: '2026-11-21T11:00:00Z')->assertNoContent();
+        $this->recordTokens($key, 'tokens-1', 100, '2026-11-21T10:00:00Z');
+        $this->recordTokens($key, 'tokens-2', 250, '2026-11-21T11:00:00Z');
 
         $count = AccountUsageTokens::query()->withoutGlobalScopes()->sole();
         $this->assertSame([$this->account->id, 250], [$count->account_id, $count->total]);
     }
 
-    /**
-     * @param  array<string, mixed>  $measurement
-     */
-    private function notify(
-        string $key,
-        string $source,
-        array $measurement,
-        EnrolledHost|null $host = null,
-        string $observedAt = '2026-11-21T10:00:00Z',
-    ): TestResponse {
-        return $this->journal->hostCall($host ?? $this->host, 'POST', '/host/reports/usage', [
-            'start_key' => $key,
-            'generation' => 1,
-            'source_id' => $source,
-            'source_order' => 1,
-            'observed_at' => $observedAt,
-            'measurement' => $measurement,
-        ]);
+    private function recordTokens(string $key, string $source, int $total, string $observedAt): void
+    {
+        $this->journal->asSystem(new RecordThreadTokensCommand(
+            new ReportedStart($this->host->hostId, $key, 1),
+            new ThreadTokens(
+                'thread-1',
+                $total,
+                null,
+                null,
+                null,
+                null,
+                null,
+                UsageSource::of($source, 1, CarbonImmutable::parse($observedAt)),
+            ),
+        ));
     }
 
     private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string

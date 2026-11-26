@@ -6,13 +6,17 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
 use App\Enums\Accounts\AccountProcessRole;
+use App\Enums\Accounts\UsageWindowSlot;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageWindow;
 use App\Support\EnrolledHost;
+use App\Values\ReportedStart;
+use App\Values\UsageSource;
+use App\Values\UsageWindowReading;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -22,7 +26,7 @@ use Tests\TestCase;
 /**
  * A host reports a usage window under a claimed start, and it lands on the start's account with its used share.
  */
-#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
+#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and empties several tables.')]
 #[TestsCommand(RecordUsageWindowCommand::class)]
 final class RecordUsageWindowTest extends TestCase
 {
@@ -57,36 +61,20 @@ final class RecordUsageWindowTest extends TestCase
     {
         $key = $this->claimedStart($this->account);
 
-        $this->notify($key, 'window-1', [
-            'type' => 'window',
-            'limit_id' => 'claude',
-            'slot' => 'seven_day',
-            'used_percent' => 42,
-            'resets_at' => '2026-11-24T10:00:00Z',
-        ])->assertNoContent();
+        $this->journal->asSystem(new RecordUsageWindowCommand(
+            new ReportedStart($this->host->hostId, $key, 1),
+            new UsageWindowReading(
+                'claude',
+                UsageWindowSlot::SevenDay,
+                42.0,
+                null,
+                CarbonImmutable::parse('2026-11-24T10:00:00Z')->getTimestamp(),
+                UsageSource::of('window-1', 1, CarbonImmutable::parse('2026-11-21T10:00:00Z')),
+            ),
+        ));
 
         $window = AccountUsageWindow::query()->withoutGlobalScopes()->sole();
         $this->assertSame([$this->account->id, 42.0], [$window->account_id, $window->used_percent]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $measurement
-     */
-    private function notify(
-        string $key,
-        string $source,
-        array $measurement,
-        EnrolledHost|null $host = null,
-        string $observedAt = '2026-11-21T10:00:00Z',
-    ): TestResponse {
-        return $this->journal->hostCall($host ?? $this->host, 'POST', '/host/reports/usage', [
-            'start_key' => $key,
-            'generation' => 1,
-            'source_id' => $source,
-            'source_order' => 1,
-            'observed_at' => $observedAt,
-            'measurement' => $measurement,
-        ]);
     }
 
     private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string

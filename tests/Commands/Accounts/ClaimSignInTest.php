@@ -6,16 +6,23 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
+use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
+use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Enums\Accounts\SignInMethod;
+use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Accounts\SignInStatus;
+use App\Exceptions\SignInAttemptMissing;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\EnrolledHost;
+use App\Values\ClaimedSignIn;
+use App\Values\SignInIdentity;
+use App\Values\SignInPoll;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -58,16 +65,16 @@ final class ClaimSignInTest extends TestCase
         $host = $this->enrollHost();
         $attemptId = $this->begin();
 
-        $claim = $this->signed($host, '/host/sign-ins/claim')->assertOk();
-        $this->assertSame($attemptId, $claim->json('attempt_id'));
-        $this->assertSame('oauth', $claim->json('method'));
+        $claim = $this->claim($host);
+        $this->assertSame($attemptId, $claim?->attemptId);
+        $this->assertSame(SignInMethod::OAuth, $claim?->method);
         $this->assertSame(SignInMethod::OAuth, $this->signInAttempt($attemptId)->method);
-        $this->signed($host, '/host/sign-ins/claim')->assertNoContent();
+        $this->assertNull($this->claim($host));
 
-        $this->notify($host, $attemptId, 'waiting')->assertNoContent();
+        $this->notify($host, $attemptId, SignInOutcome::Waiting);
         $this->assertSame(SignInStatus::Waiting, $this->signInAttempt($attemptId)->status);
-        $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
-        $this->notify($host, $attemptId, 'verified', $proof)->assertNoContent();
+        $proof = new SignInIdentity('work@example.test', 'subject-1', 'workspace-1');
+        $this->notify($host, $attemptId, SignInOutcome::Verified, $proof);
 
         $this->assertSame(SignInStatus::Complete, $this->signInAttempt($attemptId)->status);
         $account = Account::query()->withoutGlobalScopes()->sole();
@@ -82,10 +89,9 @@ final class ClaimSignInTest extends TestCase
         $host = $this->enrollHost();
         $other = $this->enrollHost();
         $attemptId = $this->begin();
-        $this->signed($host, '/host/sign-ins/claim')->assertOk();
+        $this->claim($host);
 
-        $this->notify($other, $attemptId, 'failed')->assertNotFound();
-        $this->call('POST', '/host/sign-ins/claim')->assertUnauthorized();
+        $this->assertThrows(fn () => $this->notify($other, $attemptId, SignInOutcome::Failed), SignInAttemptMissing::class);
 
         $this->assertSame(SignInStatus::Starting, $this->signInAttempt($attemptId)->status);
     }
@@ -105,26 +111,34 @@ final class ClaimSignInTest extends TestCase
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }
 
-    /**
-     * @param  array<string, string>  $identity
-     */
-    private function notify(
-        EnrolledHost $host,
-        string $attemptId,
-        string $outcome,
-        array $identity = [],
-    ): TestResponse {
-        $body = ['outcome' => $outcome, 'generation' => 0, ...$identity];
-
-        return $this->signed($host, "/host/sign-ins/{$attemptId}/report", $body);
+    private function claim(EnrolledHost $host): ClaimedSignIn|null
+    {
+        return $this->journal->asSystem(new ClaimSignInCommand($host->hostId));
     }
 
     /**
-     * @param  array<string, mixed>  $body
+     * @param  array{address: string, code: string|null}  $challenge
      */
-    private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
+    private function publishChallenge(EnrolledHost $host, string $attemptId, array $challenge): void
     {
-        return $this->journal->hostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
+        $this->journal->asSystem(
+            new PublishSignInChallengeCommand($host->hostId, $attemptId, $challenge['address'], $challenge['code']),
+        );
+    }
+
+    private function takeCode(EnrolledHost $host, string $attemptId, int $generation): SignInPoll
+    {
+        return $this->journal->asSystem(new TakeSignInCodeCommand($host->hostId, $attemptId, $generation));
+    }
+
+    private function notify(
+        EnrolledHost $host,
+        string $attemptId,
+        SignInOutcome $outcome,
+        SignInIdentity $identity = new SignInIdentity(null, null, null),
+        string|null $refusal = null,
+    ): void {
+        $this->journal->asSystem(new NotifySignInCommand($host->hostId, $attemptId, 0, $outcome, $identity, $refusal));
     }
 
     private function enrollHost(): EnrolledHost

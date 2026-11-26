@@ -9,17 +9,21 @@ use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Accounts\AccountUsageChanged;
+use App\Exceptions\AccountMissing;
+use App\Exceptions\SessionProcessUnknown;
+use App\Exceptions\UsageCostConflict;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
-use App\Models\Accounts\AccountUsageWindow;
 use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Values\AccountLabel;
+use App\Values\ReportedStart;
+use App\Values\UsageCost;
+use App\Values\UsdAmount;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -27,10 +31,10 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A host's usage report lands under the saved account of the start that host claimed, never under an account the
- * report names: another host is refused, a retry is acknowledged once more, and a removed account takes none.
+ * A host's reported cost lands under the saved account of the start that host claimed, never under an account the
+ * report names: another host's start is refused, a retry keeps one cost, and a removed account takes none.
  */
-#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and sends signed calls, emptying several tables.')]
+#[TimeLimit(seconds: 4, reason: 'It enrolls hosts and empties several tables.')]
 #[TestsCommand(AddUsageCostCommand::class)]
 final class AddUsageCostTest extends TestCase
 {
@@ -61,59 +65,51 @@ final class AddUsageCostTest extends TestCase
         $this->host = $this->journal->enrolledHost();
     }
 
-    public function test_reports_on_two_accounts_of_one_program_land_under_each_start_account(): void
+    public function test_costs_on_two_accounts_of_one_program_land_under_each_start_account(): void
     {
         $other = Account::create(DefaultDrivers::CLAUDE_CODE, AccountLabel::from('Home'), '/journal/accounts/home');
         $first = $this->claimedStart($this->account);
         $second = $this->claimedStart($other);
 
-        $this->notify($first, 'result-1', ['type' => 'result_cost', 'usd' => '0.25'])->assertNoContent();
-        $this->notify($second, 'window-1', [
-            'type' => 'window',
-            'limit_id' => 'claude',
-            'slot' => 'seven_day',
-            'used_percent' => 42,
-            'resets_at' => '2026-11-24T10:00:00Z',
-        ])->assertNoContent();
+        $this->addCost($first, 'result-1', '0.25');
+        $this->addCost($second, 'result-2', '0.5');
 
-        $this->assertSame($this->account->id, AccountUsageCost::query()->withoutGlobalScopes()->sole()->account_id);
-        $window = AccountUsageWindow::query()->withoutGlobalScopes()->sole();
-        $this->assertSame([$other->id, 42.0], [$window->account_id, $window->used_percent]);
+        $this->assertEqualsCanonicalizing(
+            [$this->account->id, $other->id],
+            AccountUsageCost::query()->withoutGlobalScopes()->pluck('account_id')->all(),
+        );
     }
 
-    public function test_an_unrelated_host_is_refused_and_nothing_is_written(): void
+    public function test_a_start_of_another_host_is_refused_and_nothing_is_written(): void
     {
         $key = $this->claimedStart($this->account);
         $stranger = $this->journal->enrolledHost();
 
-        $answer = $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'], $stranger);
+        $this->assertThrows(fn () => $this->addCost($key, 'result-1', '1', $stranger), SessionProcessUnknown::class);
 
-        $answer->assertNotFound();
-        $this->assertStringNotContainsString($this->account->id, (string) $answer->getContent());
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_an_identical_retry_is_acknowledged_again_and_keeps_one_cost(): void
+    public function test_an_identical_retry_keeps_one_cost_and_another_amount_conflicts(): void
     {
         $key = $this->claimedStart($this->account);
         Event::fake([AccountUsageChanged::class]);
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
-        Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
+        $this->addCost($key, 'result-1', '0.5');
 
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.6'])->assertConflict();
+        $this->addCost($key, 'result-1', '0.5');
+        $this->assertThrows(fn () => $this->addCost($key, 'result-1', '0.6'), UsageCostConflict::class);
 
         Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
         $this->assertSame(1, AccountUsageCost::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_committed_report_refreshes_the_accounts_page_once_and_a_duplicate_not_at_all(): void
+    public function test_a_committed_cost_refreshes_the_accounts_page_once_and_a_duplicate_not_at_all(): void
     {
         $key = $this->claimedStart($this->account);
         Event::fake([AccountsChanged::class]);
 
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->addCost($key, 'result-1', '0.5');
+        $this->addCost($key, 'result-1', '0.5');
 
         Event::assertDispatchedTimes(AccountsChanged::class, 1);
         Event::assertDispatched(
@@ -127,57 +123,28 @@ final class AddUsageCostTest extends TestCase
         $key = $this->claimedStart($this->account, SessionProcessStatus::Stopped);
         DB::table('accounts')->where('id', $this->account->id)->increment('sign_in_generation');
 
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '2'])->assertNoContent();
-        $this->notify($key, 'window-1', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'five_hour'])
-            ->assertNoContent();
+        $this->addCost($key, 'result-1', '2');
 
         $cost = AccountUsageCost::query()->withoutGlobalScopes()->sole();
         $this->assertSame([$this->account->id, 1], [$cost->account_id, $cost->sign_in_generation]);
-        $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_report_on_a_removed_account_is_refused_and_writes_nothing(): void
+    public function test_a_cost_on_a_removed_account_is_refused_and_writes_nothing(): void
     {
         $key = $this->claimedStart($this->account);
         DB::table('accounts')->where('id', $this->account->id)->update(['status' => 'removed']);
 
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '1'])->assertNotFound();
+        $this->assertThrows(fn () => $this->addCost($key, 'result-1', '1'), AccountMissing::class);
 
         $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_malformed_or_future_report_is_refused(): void
+    private function addCost(string $key, string $source, string $usd, EnrolledHost|null $host = null): void
     {
-        $key = $this->claimedStart($this->account);
-
-        $this->notify($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.0000000000001'])->assertUnprocessable();
-        $this->notify($key, 'result-2', ['type' => 'window', 'limit_id' => 'claude', 'slot' => 'week'])
-            ->assertUnprocessable();
-        $future = CarbonImmutable::now()->addHour()->toAtomString();
-        $this->notify($key, 'result-3', ['type' => 'result_cost', 'usd' => '1'], observedAt: $future)
-            ->assertUnprocessable();
-
-        $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
-    }
-
-    /**
-     * @param  array<string, mixed>  $measurement
-     */
-    private function notify(
-        string $key,
-        string $source,
-        array $measurement,
-        EnrolledHost|null $host = null,
-        string $observedAt = '2026-11-21T10:00:00Z',
-    ): TestResponse {
-        return $this->journal->hostCall($host ?? $this->host, 'POST', '/host/reports/usage', [
-            'start_key' => $key,
-            'generation' => 1,
-            'source_id' => $source,
-            'source_order' => 1,
-            'observed_at' => $observedAt,
-            'measurement' => $measurement,
-        ]);
+        $this->journal->asSystem(new AddUsageCostCommand(
+            new ReportedStart(($host ?? $this->host)->hostId, $key, 1),
+            UsageCost::of($source, UsdAmount::from($usd), CarbonImmutable::parse('2026-11-21T10:00:00Z')),
+        ));
     }
 
     private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string
