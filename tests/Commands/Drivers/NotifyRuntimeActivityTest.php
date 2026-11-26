@@ -38,9 +38,9 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
- * A host reports a runtime's activity: it acknowledges only the claimed wake and nothing from before it was taken, an
- * idle wake with nothing pending starts no turn while one with work goes to the host, a heartbeat keeps the report
- * fresh, a report of an older generation is refused, and only a change of state tells the pages.
+ * A host reports a runtime's activity: an idle wake with nothing pending starts no turn while one with work goes to the
+ * host, a heartbeat keeps the report fresh, a report of an older generation is refused, and only a change of state tells
+ * the pages.
  */
 #[TestsCommand(NotifyRuntimeActivityCommand::class)]
 final class NotifyRuntimeActivityTest extends TestCase
@@ -63,63 +63,6 @@ final class NotifyRuntimeActivityTest extends TestCase
         'session_processes',
         'links',
     ];
-
-    public function test_session_activity_acknowledges_only_the_claimed_wake_and_a_later_one_stays_pending(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->journal->asSystem(
-            new NotifyRuntimeActivityCommand(
-                $host->hostId,
-                $opened->runtimeId,
-                RuntimeActivity::Running,
-                HoldReason::None,
-                1,
-            ),
-        );
-        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
-        $turns = $this->app->make(NativeTurnRecords::class);
-
-        $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
-
-        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
-        $this->assertSame(
-            [1, 2, RequestProgress::Accepted],
-            [$wake->wake_acknowledged, $wake->wake_requested, $wake->progress],
-        );
-
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-        $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
-
-        $wake->refresh();
-        $this->assertSame([2, RequestProgress::Applied], [$wake->wake_acknowledged, $wake->progress]);
-        $this->assertNull($wake->outcome);
-    }
-
-    public function test_activity_from_before_the_wake_was_taken_acknowledges_nothing(): void
-    {
-        [$host, $opened] = $this->openRuntime();
-        $this->journal->asSystem(
-            new NotifyRuntimeActivityCommand(
-                $host->hostId,
-                $opened->runtimeId,
-                RuntimeActivity::Running,
-                HoldReason::None,
-                1,
-            ),
-        );
-        $this->asOwner(new WakeAgentCommand($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
-        $this->journal->asSystem(new ClaimDriverRequestsCommand($host->hostId, 10, BrowserInputCapabilities::none()));
-
-        $this->app->make(NativeTurnRecords::class)->acknowledgeWake(
-            $opened->sessionId,
-            CarbonImmutable::now()->subMinute(),
-        );
-
-        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
-        $this->assertSame([0, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
-    }
 
     public function test_a_wake_of_an_idle_session_with_nothing_pending_settles_as_no_work_and_starts_no_turn(): void
     {

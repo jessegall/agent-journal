@@ -25,7 +25,6 @@ use App\Support\NativeTurnRecords;
 use App\Support\OperationDeadline;
 use App\Support\StackAccess;
 use App\Values\AgentText;
-use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -72,7 +71,7 @@ final readonly class HookController
             $sessionId = $access->target()->sessionId;
             $generation = $request->processGeneration();
             $this->turns->checkGeneration($sessionId, $generation);
-            $this->turns->acknowledgeWake($sessionId, CarbonImmutable::now());
+            $this->turns->acknowledgeWake($sessionId);
 
             $call = $adapter->callFor($hookInput, $access->hookIdentity());
             $capabilities = $adapter->capabilities();

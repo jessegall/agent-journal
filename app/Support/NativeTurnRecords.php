@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Commands\Drivers\AcknowledgeWake\AcknowledgeWakeCommand;
 use App\Commands\Drivers\RecordPromptTurn\RecordPromptTurnCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\NativeTurnRecords as NativeTurnRecordsContract;
-use App\Contracts\Work\StackTransactionRunner;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\RequestProgress;
 use App\Exceptions\StaleProcessGeneration;
 use App\Models\Agents\AgentRuntime;
-use App\Models\Drivers\DriverRequest;
-use Carbon\CarbonImmutable;
 
 /**
  * Checks a hook call's process generation against its runtime, records the native turns its prompts start and
@@ -22,7 +18,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NativeTurnRecords implements NativeTurnRecordsContract
 {
-    public function __construct(private StackTransactionRunner $transaction, private CommandBus $commands) {}
+    public function __construct(private CommandBus $commands) {}
 
     /**
      * @throws StaleProcessGeneration
@@ -40,25 +36,9 @@ final readonly class NativeTurnRecords implements NativeTurnRecordsContract
      * An authenticated hook of the session is activity after its wake was taken: it acknowledges the watermark the
      * host claimed, and never reads or answers a message.
      */
-    public function acknowledgeWake(string $sessionId, CarbonImmutable $activityAt): void
+    public function acknowledgeWake(string $sessionId): void
     {
-        $runtime = AgentRuntime::findForSession($sessionId);
-
-        if ($runtime === null) {
-            return;
-        }
-
-        // The hook is answered after this, in a transaction of its own, so the acknowledgement takes one too.
-        $this->transaction->run(fn () => DriverRequest::query()
-            ->ofAgentRuntime($runtime->id)
-            ->withOperation(DriverOperation::Wake)
-            ->withAnyProgress([
-                RequestProgress::Staged,
-                RequestProgress::Applying,
-            ])
-            ->lockForUpdate()
-            ->get()
-            ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($activityAt)));
+        $this->commands->run(new AcknowledgeWakeCommand($sessionId));
     }
 
     /**
