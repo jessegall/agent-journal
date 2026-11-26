@@ -1,0 +1,122 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Support\Hosts;
+
+use App\Data\Hosts\HostFrameData;
+use App\Data\Hosts\HostOutputData;
+use App\Values\FeedEntry;
+use Illuminate\Contracts\Redis\Factory as RedisFactory;
+use Illuminate\Redis\Connections\Connection;
+
+/**
+ * What each process on a host printed lately, kept in Redis for an hour: its latest frame, and its last frames and
+ * chunks in a stream a worker reads after its cursor. It is a cache: a worker that finds no frame orders a snapshot.
+ */
+final readonly class ProcessFeed
+{
+    public const int TTL_SECONDS = 3600;
+
+    /**
+     * The most frames and chunks of a process kept in its stream.
+     */
+    public const int ENTRY_LIMIT = 256;
+
+    /**
+     * The cursor of a stream read from its start.
+     */
+    public const string FIRST_CURSOR = '0';
+
+    public function __construct(private RedisFactory $redis) {}
+
+    public function push(string $processId, HostOutputData $output): void
+    {
+        $key = self::streamKey($processId);
+
+        foreach ($output->frames as $frame) {
+            $encoded = (string) json_encode($frame->toArray(), JSON_THROW_ON_ERROR);
+            $this->connection()->xadd($key, '*', ['frame' => $encoded], self::ENTRY_LIMIT, true);
+            $this->connection()->setex(self::latestKey($processId), self::TTL_SECONDS, $encoded);
+        }
+
+        foreach ($output->chunks as $chunk) {
+            $encoded = (string) json_encode($chunk->toArray(), JSON_THROW_ON_ERROR);
+            $this->connection()->xadd($key, '*', ['chunk' => $encoded], self::ENTRY_LIMIT, true);
+        }
+
+        $this->connection()->expire($key, self::TTL_SECONDS);
+    }
+
+    public function latestFrame(string $processId): HostFrameData|null
+    {
+        $encoded = $this->connection()->get(self::latestKey($processId));
+
+        if (! is_string($encoded)) {
+            return null;
+        }
+
+        return HostFrameData::from(json_decode($encoded, true, flags: JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * The entries pushed after the cursor, waiting up to the milliseconds when there are none yet.
+     *
+     * @return list<FeedEntry>
+     */
+    public function after(string $processId, string $cursor, int $waitMs): array
+    {
+        return $this->read([self::streamKey($processId) => $cursor], $waitMs);
+    }
+
+    /**
+     * What a worker waits on: the process's new output and its runtime's wakes together, after their cursors.
+     *
+     * @param  array<string, string>  $cursors  stream key => cursor
+     * @return list<FeedEntry>
+     */
+    public function read(array $cursors, int $waitMs): array
+    {
+        $read = $this->connection()->xread($cursors, self::ENTRY_LIMIT, $waitMs);
+
+        if (! is_array($read)) {
+            return [];
+        }
+
+        $entries = [];
+
+        foreach ($read as $stream => $streamEntries) {
+            foreach ($streamEntries as $cursor => $fields) {
+                $entries[] = FeedEntry::of(self::unprefixed((string) $stream), (string) $cursor, $fields);
+            }
+        }
+
+        return $entries;
+    }
+
+    public static function streamKey(string $processId): string
+    {
+        return "host:process:{$processId}";
+    }
+
+    public static function latestKey(string $processId): string
+    {
+        return "host:process:{$processId}:latest";
+    }
+
+    /**
+     * A stream's key as this class names it, without the connection's prefix Redis answers with.
+     */
+    private static function unprefixed(string $stream): string
+    {
+        $start = strpos($stream, 'host:process:');
+        $start = $start === false ? strpos($stream, 'driver:wake:') : $start;
+
+        return $start === false ? $stream : substr($stream, $start);
+    }
+
+    private function connection(): Connection
+    {
+        return $this->redis->connection();
+    }
+}

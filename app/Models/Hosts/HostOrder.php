@@ -14,6 +14,7 @@ use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostRefusal;
 use App\Events\Connections\HostOrderAnswered;
+use App\Events\Connections\HostOrderMade;
 use App\Events\Connections\HostOrderRefused;
 use App\Exceptions\HostOrderStateRefused;
 use App\Models\Drivers\DriverRequest;
@@ -101,6 +102,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $order->expires_at = $expires;
         $order->status = HostOrderStatus::Pending;
         $order->assertSaved($order->save());
+        $order->raise(new HostOrderMade($order->id, $host->id));
 
         return $order;
     }
