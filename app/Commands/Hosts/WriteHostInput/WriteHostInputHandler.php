@@ -22,6 +22,6 @@ final readonly class WriteHostInputHandler implements CommandHandler
             $command->source,
             HostOrderType::WriteStdin,
             ['bytes' => base64_encode($command->bytes)],
-        )->id;
+        )->getKey();
     }
 }

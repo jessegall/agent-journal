@@ -25,6 +25,6 @@ final readonly class CreateTaskHandler extends TaskCommandHandler
             $creator,
             $command->owner(),
             $this->environment->environmentIds(),
-        )->id;
+        )->getKey();
     }
 }

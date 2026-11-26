@@ -12,8 +12,8 @@ use App\Commands\Hosts\ForwardUserKeys\ForwardUserKeysCommand;
 use App\Commands\Hosts\OpenHostPrivateEntry\OpenHostPrivateEntryCommand;
 use App\Commands\Hosts\ResizeHostProcess\ResizeHostProcessCommand;
 use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
-use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
+use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
 use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Commands\Navigation\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
 use App\Commands\Navigation\RaiseNavigation\RaiseNavigationCommand;
@@ -1090,8 +1090,8 @@ final class TerminalDriver implements ProcessDriver
         );
     }
 
-    private function snapshot(): SnapshotHostProcessCommand
+    private function snapshot(): TakeHostProcessSnapshotCommand
     {
-        return new SnapshotHostProcessCommand($this->process->id, HostOrderSource::forWorker($this->generation));
+        return new TakeHostProcessSnapshotCommand($this->process->id, HostOrderSource::forWorker($this->generation));
     }
 }

@@ -14,6 +14,11 @@ final readonly class CloseHostInputHandler implements CommandHandler
 
     public function handle(CloseHostInputCommand $command): string
     {
-        return $this->placement->forProcess($command->processId, $command->source, HostOrderType::CloseStdin, [])->id;
+        return $this->placement->forProcess(
+            $command->processId,
+            $command->source,
+            HostOrderType::CloseStdin,
+            [],
+        )->getKey();
     }
 }
