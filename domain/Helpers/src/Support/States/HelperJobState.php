@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support\States;
 
 use App\Attributes\States\StateType;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionStarted;
@@ -24,8 +23,8 @@ use Domain\Helpers\Support\States\Support\HelperJobStateReference;
  * records the job was given, adds each steering as it comes, tells the helper all of it whenever its context starts,
  * and ends when the job is held, left unfinished, reported or cancelled.
  */
-#[StateType(HelperJobStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
-final class HelperJobState extends AgentState
+#[StateType(HelperJobStateReference::TYPE_KEY, schemaVersion: 1)]
+final class HelperJobState extends AgentState implements UniqueSubjectState
 {
     /**
      * @var list<string>
@@ -48,9 +47,9 @@ final class HelperJobState extends AgentState
         private readonly string $brief,
     ) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->jobId;
     }
 
     public function isFinished(): bool

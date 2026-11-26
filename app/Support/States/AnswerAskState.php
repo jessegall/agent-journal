@@ -7,8 +7,8 @@ namespace App\Support\States;
 use App\Attributes\States\StateType;
 use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskEvent;
 use App\Events\Asks\AskHopAssigned;
@@ -21,8 +21,8 @@ use PhpOption\Some;
  * An agent that holds an ask's hop and has to answer it. The hop stays open until the state hears the ask closed or
  * handed on to another hop.
  */
-#[StateType(AnswerAskStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class AnswerAskState extends AgentState
+#[StateType(AnswerAskStateReference::TYPE_KEY, schemaVersion: 1)]
+final class AnswerAskState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isOpen = true;
 
@@ -31,9 +31,9 @@ final class AnswerAskState extends AgentState
         private readonly string $hopId
     ) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->hopId;
     }
 
     public function isFinished(): bool

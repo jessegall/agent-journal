@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Enums\Engine\FrameScope;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Support\States\AgentState;
 
 /**
  * A state about one subject that is finished once the test has finished that subject.
  */
-final class FinishableState extends AgentState
+final class FinishableState extends AgentState implements UniqueSubjectState
 {
     public function __construct(private readonly string $subject, private readonly FinishedSubjects $hasFinished) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->subject;
     }
 
     public function isFinished(): bool

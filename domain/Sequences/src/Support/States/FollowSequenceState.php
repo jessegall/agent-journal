@@ -6,7 +6,7 @@ namespace Domain\Sequences\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
@@ -22,8 +22,8 @@ use PhpOption\Some;
  * An agent following a sequence run, one step at a time. The state keeps the run's steps and the step it is on, moves
  * on when it hears the next step reached, and ends when it hears the run ended; a stop waits on the step in hand.
  */
-#[StateType(FollowSequenceStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class FollowSequenceState extends AgentState
+#[StateType(FollowSequenceStateReference::TYPE_KEY, schemaVersion: 1)]
+final class FollowSequenceState extends AgentState implements DurableState
 {
     private bool $isFollowing = true;
 

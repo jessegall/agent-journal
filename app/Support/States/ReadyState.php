@@ -6,8 +6,7 @@ namespace App\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\UniqueState;
 use App\Events\Sessions\StopCheckSettled;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\MessageLine;
@@ -32,8 +31,8 @@ use App\Values\SettledStopChecks;
  * waits on the stop conditions the session was started under, and the state keeps the outcomes of the attempts it
  * opened, so a run of unchanged failures is counted from its own record.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
-class ReadyState extends AgentState
+#[StateType(self::TYPE_KEY, schemaVersion: 1)]
+class ReadyState extends AgentState implements UniqueState
 {
     public const string TYPE_KEY = 'core.ready';
 
@@ -55,11 +54,6 @@ class ReadyState extends AgentState
         private readonly OperationPolicy $policy,
         private readonly StopConditionGate $stops,
     ) {}
-
-    public function frameScope(): FrameScope
-    {
-        return FrameScope::PerType;
-    }
 
     // ----------[ Hooks ]----------
 

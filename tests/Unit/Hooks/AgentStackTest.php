@@ -413,7 +413,10 @@ final class AgentStackTest extends TestCase
     {
         $factory = new InMemoryStateFactory([
             'single' => fn () => new SingleState(),
-            'guide' => fn () => new FinishableState('guide', new FinishedSubjects()),
+            'guide' => fn (StateReference $reference) => new FinishableState(
+                $this->subjectOf($reference),
+                new FinishedSubjects(),
+            ),
         ]);
         $stack = new AgentStack([$this->ready()], $factory, new StackTarget('agent-1', 'session-1'));
 
@@ -434,7 +437,7 @@ final class AgentStackTest extends TestCase
         $factory = new InMemoryStateFactory(['guide' => fn () => new FinishableState('guide', new FinishedSubjects())]);
         $finished = new Frame(
             'guide-1',
-            $this->reference('guide'),
+            $this->reference('guide', 'guide'),
             new FinishableState('guide', $done),
             CarbonImmutable::now(),
         );
@@ -444,7 +447,7 @@ final class AgentStackTest extends TestCase
             new StackTarget('agent-1', 'session-1'),
         );
 
-        $pushed = $stack->withStateOnTop($this->reference('guide'));
+        $pushed = $stack->withStateOnTop($this->reference('guide', 'guide'));
 
         $this->assertSame(['ready', 'top', 'pushed-1'], $pushed->frameIds());
     }
@@ -619,6 +622,13 @@ final class AgentStackTest extends TestCase
         }
 
         return new StateReference($typeKey, new SubjectReference((string) $subjectId, 1));
+    }
+
+    private function subjectOf(StateReference $reference): string
+    {
+        $this->assertInstanceOf(SubjectReference::class, $reference->subject);
+
+        return $reference->subject->id;
     }
 
     private function stop(): StopRequested

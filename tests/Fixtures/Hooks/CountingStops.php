@@ -7,8 +7,8 @@ namespace Tests\Fixtures\Hooks;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\States\Contracts\StopConditionGate;
-use App\Values\StopAnswer;
 use App\Values\SettledStopChecks;
+use App\Values\StopAnswer;
 
 /**
  * A stop gate that opens an attempt named after each stop callback and keeps the failures it was last asked with.

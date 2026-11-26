@@ -7,6 +7,8 @@ namespace App\Support\Stack\Frames;
 use App\Contracts\Bus\Command;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\ConditionalState;
+use App\Contracts\Work\UniqueState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Declarations\StateMethod;
 use App\Enums\Engine\StackMoment;
 use App\Exceptions\StateAnswerRefused;
@@ -80,11 +82,20 @@ final readonly class Frame
     }
 
     /**
-     * Whether a push of the reference finds this frame in place of adding one, as the state's frame scope says.
+     * Whether a push of the reference finds this frame in place of adding one, before the pushed state is built: a
+     * unique state of the same type, or a unique subject state of the same type whose subject the reference names.
      */
     public function keepsOneFrameFor(StateReference $reference): bool
     {
-        return $this->state->frameScope()->keepsOneFrame($this->reference, $reference);
+        if ($this->typeKey() !== $reference->typeKey) {
+            return false;
+        }
+
+        if ($this->state instanceof UniqueState) {
+            return true;
+        }
+
+        return $this->state instanceof UniqueSubjectState && $reference->isAbout($this->state->stateSubject());
     }
 
     public function isFinished(): bool

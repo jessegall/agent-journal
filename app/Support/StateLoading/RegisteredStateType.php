@@ -6,8 +6,8 @@ namespace App\Support\StateLoading;
 
 use App\Attributes\States\StateType;
 use App\Attributes\States\Ticks;
+use App\Contracts\Work\DurableState;
 use App\Contracts\Work\WorkOccurrenceGuard;
-use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateTypeUnknown;
 use App\Support\Reflector;
 use App\Support\States\AgentState;
@@ -27,7 +27,6 @@ final readonly class RegisteredStateType
         public string $key,
         public string $stateClass,
         public int $schemaVersion,
-        public SessionTransferType $transfer,
         public Closure $isOn,
     ) {}
 
@@ -40,7 +39,7 @@ final readonly class RegisteredStateType
     {
         $type = Reflector::of($class)->attribute(StateType::class);
 
-        return self::named($type->key, $class, $type->schemaVersion, $type->transfer);
+        return self::named($type->key, $class, $type->schemaVersion);
     }
 
     /**
@@ -49,13 +48,17 @@ final readonly class RegisteredStateType
      *
      * @param  class-string<AgentState>  $class
      */
-    public static function named(
-        string $key,
-        string $class,
-        int $schemaVersion = 1,
-        SessionTransferType $transfer = SessionTransferType::SessionOnly,
-    ): self {
-        return new self($key, $class, $schemaVersion, $transfer, static fn () => true);
+    public static function named(string $key, string $class, int $schemaVersion = 1): self
+    {
+        return new self($key, $class, $schemaVersion, static fn () => true);
+    }
+
+    /**
+     * Whether frames of this type carry into the session that continues the work.
+     */
+    public function isDurable(): bool
+    {
+        return Reflector::of($this->stateClass)->implements(DurableState::class);
     }
 
     /**

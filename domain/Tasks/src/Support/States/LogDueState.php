@@ -6,8 +6,7 @@ namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -25,8 +24,8 @@ use PhpOption\Some;
  * The agent owes a log line on the task it works on: it may use a few more tools, and then only reads and the
  * journal's own tools, until it logs on the task. It finishes the moment it hears the task logged.
  */
-#[StateType(LogDueStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
-final class LogDueState extends AgentState
+#[StateType(LogDueStateReference::TYPE_KEY, schemaVersion: 1)]
+final class LogDueState extends AgentState implements UniqueSubjectState
 {
     /**
      * The tool uses left before other work is refused.
@@ -39,9 +38,9 @@ final class LogDueState extends AgentState
 
     public function __construct(private readonly string $taskId, private readonly int $number) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->taskId;
     }
 
     public function isFinished(): bool

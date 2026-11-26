@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Tasks\States;
 
 use App\Attributes\States\StateType;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
 use App\Support\Decisions\ContextLine;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
@@ -19,8 +19,8 @@ use Tests\Support\TestText;
 /**
  * A fixture watcher whose context identifies the frame reacting to a Tasks fact.
  */
-#[StateType('tasks.task_watch', schemaVersion: 1, transfer: SessionTransferType::Durable)]
-class TaskWatchState extends AgentState
+#[StateType('tasks.task_watch', schemaVersion: 1)]
+class TaskWatchState extends AgentState implements DurableState
 {
     public function __construct(private readonly string $taskId, private readonly int $runNumber) {}
 

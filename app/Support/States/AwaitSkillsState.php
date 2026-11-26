@@ -7,8 +7,7 @@ namespace App\Support\States;
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
 use App\Contracts\Skills\SkillPublicationEvent;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\UniqueState;
 use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Support\Decisions\Decision;
@@ -23,17 +22,12 @@ use PhpOption\Some;
  * A session whose new skill set is not delivered yet: it may read, including skill:status and skill:show, but changes
  * no file until the set is delivered. It ends by itself once the publication settles.
  */
-#[StateType(AwaitSkillsStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
-final class AwaitSkillsState extends AgentState
+#[StateType(AwaitSkillsStateReference::TYPE_KEY, schemaVersion: 1)]
+final class AwaitSkillsState extends AgentState implements UniqueState
 {
     private PublicationStatus $publication = PublicationStatus::Pending;
 
     public function __construct(private readonly string $publicationId) {}
-
-    public function frameScope(): FrameScope
-    {
-        return FrameScope::PerType;
-    }
 
     public function isFinished(): bool
     {

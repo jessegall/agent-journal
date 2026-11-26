@@ -6,8 +6,8 @@ namespace Domain\Plans\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperFinishedOnRecord;
 use App\Support\Decisions\Decision;
@@ -29,8 +29,8 @@ use PhpOption\Some;
  * withdrawn, unless reviewers it sent are still out, whose reports wake it again. It keeps their ids with its frame.
  * It only nudges; the plan itself refuses changes while it is under review.
  */
-#[StateType(ReviewPlanStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class ReviewPlanState extends AgentState
+#[StateType(ReviewPlanStateReference::TYPE_KEY, schemaVersion: 1)]
+final class ReviewPlanState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isReviewing = true;
 
@@ -43,9 +43,9 @@ final class ReviewPlanState extends AgentState
         $this->reviewersOut = new ReviewersOutData();
     }
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->planId;
     }
 
     public function isFinished(): bool

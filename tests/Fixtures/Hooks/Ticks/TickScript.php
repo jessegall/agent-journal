@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks\Ticks;
 
 use App\Support\Ticks\TickCommands;
-use Closure;
 use App\Support\Ticks\TickContext;
+use Closure;
 
 /**
  * What the scripted ticking states of a test do: the ticks each subject got, and what a subject's tick answers. A

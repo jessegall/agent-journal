@@ -7,7 +7,6 @@ namespace Tests\Fixtures\Domains\Reviews\States;
 use App\Attributes\States\StateType;
 use App\Contracts\Settings\EnabledSettingsGroup;
 use App\Contracts\Work\ConditionalState;
-use App\Enums\Sessions\SessionTransferType;
 use App\Support\CurrentSettingsResolver;
 use App\Support\DisabledSettingsGroup;
 use App\Support\States\AgentState;
@@ -16,7 +15,7 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 /**
  * A review state that runs only while the review settings group is switched on, read from the settings each time.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
+#[StateType(self::TYPE_KEY, schemaVersion: 1)]
 final class ReviewState extends AgentState implements ConditionalState
 {
     public const string TYPE_KEY = 'reviews.reviewing';

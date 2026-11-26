@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Values\StackTarget;
 use App\Contracts\Events\Event;
+use App\Values\StackTarget;
 
 /**
  * An event whose payload can name a stack independently of the admitted scope.

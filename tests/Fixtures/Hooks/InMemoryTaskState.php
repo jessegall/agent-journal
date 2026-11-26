@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Enums\Engine\FrameScope;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\States\AgentState;
@@ -17,13 +17,13 @@ use Tests\Support\TestText;
  * A pretend task state for hook tests: it works on one task of the in-memory tasks and is finished once that task is
  * no longer started.
  */
-final class InMemoryTaskState extends AgentState
+final class InMemoryTaskState extends AgentState implements UniqueSubjectState
 {
     public function __construct(private readonly int $number, private readonly int $runNumber, private readonly InMemoryTasks $tasks) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return (string) $this->number;
     }
 
     public function isFinished(): bool

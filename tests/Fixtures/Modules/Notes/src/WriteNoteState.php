@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Modules\Notes;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Bus\Command;
+use App\Contracts\Work\DurableState;
 use App\Enums\Engine\NoSubject;
-use App\Enums\Sessions\SessionTransferType;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
@@ -21,8 +21,8 @@ use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 /**
  * While the agent writes a note, it may not stop.
  */
-#[StateType('notes.writing', schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class WriteNoteState extends AgentState
+#[StateType('notes.writing', schemaVersion: 1)]
+final class WriteNoteState extends AgentState implements DurableState
 {
     public function onStop(StopRequested $input): Decision
     {

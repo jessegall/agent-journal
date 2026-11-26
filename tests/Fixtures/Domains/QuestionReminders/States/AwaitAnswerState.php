@@ -6,19 +6,18 @@ namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
 use App\Attributes\States\StateType;
 use App\Attributes\States\Ticks;
-use App\Enums\Sessions\SessionTransferType;
 use App\Contracts\Work\TickableState;
 use App\Support\States\AgentState;
 use App\Support\Ticks\TickCommands;
 use App\Support\Ticks\TickContext;
-use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
+use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 
 /**
  * An agent waits for the answer to its question. Once it waited long enough the tick asks for one reminder; the
  * reminder's handler rechecks the question under its lock, so a second tick or a late answer sends nothing more.
  */
-#[StateType(self::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
+#[StateType(self::TYPE_KEY, schemaVersion: 1)]
 #[Ticks(guard: AwaitAnswerGuard::class)]
 final class AwaitAnswerState extends AgentState implements TickableState
 {

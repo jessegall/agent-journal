@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\Profiles\AccessRuleType;
 use App\Enums\Agents\AccessType;
+use App\Enums\Profiles\AccessRuleType;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\Operation;

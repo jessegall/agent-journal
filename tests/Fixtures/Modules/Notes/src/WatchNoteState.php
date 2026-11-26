@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes;
 
 use App\Attributes\States\StateType;
-use App\Enums\Sessions\SessionTransferType;
 use App\Contracts\Bus\Command;
 use App\Support\States\AgentState;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
@@ -13,7 +12,7 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 /**
  * An ordinary state listener with a result prescribed by the fixture.
  */
-#[StateType('notes.watching', schemaVersion: 1, transfer: SessionTransferType::SessionOnly)]
+#[StateType('notes.watching', schemaVersion: 1)]
 final class WatchNoteState extends AgentState
 {
     /**

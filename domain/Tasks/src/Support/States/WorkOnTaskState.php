@@ -6,8 +6,8 @@ namespace Domain\Tasks\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Assignments\AssignmentsEnded;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
@@ -35,8 +35,8 @@ use PhpOption\Some;
  * end of an earlier claim never closes a resumed run. A stop is held back while the run is open and held by this agent.
  * The task is in the agent's focus while its frame is the live top, and leaves it once the frame stops being live.
  */
-#[StateType(WorkOnTaskStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class WorkOnTaskState extends AgentState
+#[StateType(WorkOnTaskStateReference::TYPE_KEY, schemaVersion: 1)]
+final class WorkOnTaskState extends AgentState implements DurableState, UniqueSubjectState
 {
     /**
      * The tool uses after which a log on the task is due.
@@ -67,9 +67,9 @@ final class WorkOnTaskState extends AgentState
         private readonly int $runNumber,
     ) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->taskId;
     }
 
     public function isFinished(): bool

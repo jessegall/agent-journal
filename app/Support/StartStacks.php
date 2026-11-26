@@ -6,7 +6,6 @@ namespace App\Support;
 
 use App\Contracts\Time\ServerClock;
 use App\Enums\Engine\NoSubject;
-use App\Enums\Sessions\SessionTransferType;
 use App\Exceptions\StateSchemaUnknown;
 use App\Exceptions\StateTransferUnknown;
 use App\Models\Agents\AgentStackRow;
@@ -95,7 +94,7 @@ final readonly class StartStacks
                 throw StateSchemaUnknown::for($record->description(), $type->schemaVersion);
             }
 
-            if ($type->transfer === SessionTransferType::Durable) {
+            if ($type->isDurable()) {
                 $carriedFrames[] = $record;
             }
         }

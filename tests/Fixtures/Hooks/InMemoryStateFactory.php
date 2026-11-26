@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Support\Stack\Contracts\StateFactory;
 use App\Support\References\StateReference;
+use App\Support\Stack\Contracts\StateFactory;
 use App\Support\Stack\Frames\Frame;
 use App\Support\States\AgentState;
 use Carbon\CarbonImmutable;

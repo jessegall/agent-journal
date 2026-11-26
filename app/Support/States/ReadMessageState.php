@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\States;
 
 use App\Attributes\States\StateType;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
@@ -32,8 +32,8 @@ use PhpOption\Some;
  * once the budget is spent it refuses every tool but the journal's and reads until the agent reads. Each read pushes
  * the answering state for that message; it finishes when nothing is unread.
  */
-#[StateType(ReadMessageStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class ReadMessageState extends AgentState
+#[StateType(ReadMessageStateReference::TYPE_KEY, schemaVersion: 1)]
+final class ReadMessageState extends AgentState implements DurableState, UniqueSubjectState
 {
     /**
      * The messages of this inbox the agent has not read, oldest first.
@@ -55,9 +55,9 @@ final class ReadMessageState extends AgentState
         private readonly AnswerBudget $budget,
     ) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->inboxId;
     }
 
     public function isFinished(): bool

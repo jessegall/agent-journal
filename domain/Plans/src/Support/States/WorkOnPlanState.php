@@ -6,8 +6,8 @@ namespace Domain\Plans\Support\States;
 
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\FrameScope;
-use App\Enums\Sessions\SessionTransferType;
+use App\Contracts\Work\DurableState;
+use App\Contracts\Work\UniqueSubjectState;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
@@ -23,8 +23,8 @@ use PhpOption\Some;
  * An agent working on a started plan. The plan stays open until the state hears it finished or cancelled; it keeps
  * the newest counts it heard for the plan and shows them in its instruction.
  */
-#[StateType(WorkOnPlanStateReference::TYPE_KEY, schemaVersion: 1, transfer: SessionTransferType::Durable)]
-final class WorkOnPlanState extends AgentState
+#[StateType(WorkOnPlanStateReference::TYPE_KEY, schemaVersion: 1)]
+final class WorkOnPlanState extends AgentState implements DurableState, UniqueSubjectState
 {
     private bool $isOpen = true;
 
@@ -38,9 +38,9 @@ final class WorkOnPlanState extends AgentState
 
     public function __construct(private readonly string $planId) {}
 
-    public function frameScope(): FrameScope
+    public function stateSubject(): string
     {
-        return FrameScope::PerSubject;
+        return $this->planId;
     }
 
     public function isFinished(): bool

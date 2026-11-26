@@ -30,6 +30,14 @@ final readonly class StateReference
         return $this->typeKey === $other->typeKey && $this->subject == $other->subject;
     }
 
+    /**
+     * Whether it names a state about the subject of this id.
+     */
+    public function isAbout(string $subjectId): bool
+    {
+        return $this->subject instanceof SubjectReference && $this->subject->id === $subjectId;
+    }
+
     public function isForWork(WorkReference $work): bool
     {
         return $this->workReference()->key === $work->key;
