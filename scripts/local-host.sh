@@ -34,10 +34,10 @@ build_changed_images() {
     done
 }
 
-# The agent image follows its own folder: its Go programs are mounted from the checkout's builds.
+# The agent image follows its own folder and the Go programs its first stage builds into it.
 read_source_state() {
     case "$1" in
-        agent) git ls-files -co --exclude-standard -z -- .docker/helper \
+        agent) git ls-files -co --exclude-standard -z -- .docker/helper programs/agent \
             | xargs -0 shasum 2>/dev/null | shasum | cut -d' ' -f1 ;;
         runner) read_checkout_tree ;;
     esac

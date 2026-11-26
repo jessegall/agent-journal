@@ -14,8 +14,8 @@ import (
 
 	"journal-agent/client"
 	"journal-agent/host"
-	"journal-agent/upgrade"
 	"journal-agent/project"
+	"journal-agent/upgrade"
 )
 
 // errTicketMissing is returned when standard input holds no install line ticket.

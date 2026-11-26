@@ -35,7 +35,6 @@ use App\Events\Sessions\AgentSessionEnded;
 use App\Events\Sessions\AgentSessionHeartbeatRecorded;
 use App\Events\Sessions\AgentSessionSelectionUsed;
 use App\Events\Sessions\AgentSessionSkillsGenerated;
-use App\Events\Sessions\ChildCheckoutRequested;
 use App\Events\Sessions\CleanupPassRecorded;
 use App\Events\Sessions\ClosingWordsKeptPrivate;
 use App\Events\Sessions\ClosingWordsOffered;
@@ -145,13 +144,6 @@ return [
         ],
     ],
     AccountSettingsRequested::class => [
-        'role' => EventRole::Request,
-        'migrated' => false,
-        'producers' => [
-            'app/Sessions/StartExtensionRequests.php',
-        ],
-    ],
-    ChildCheckoutRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [

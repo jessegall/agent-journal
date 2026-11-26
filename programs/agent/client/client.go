@@ -14,7 +14,6 @@ import (
 	"net/url"
 	"strconv"
 	"time"
-
 )
 
 // Enrollment is what agents:host-enroll handed a host: where the journal is, which host it is and its secret.

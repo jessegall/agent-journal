@@ -103,12 +103,6 @@ func (target targetFolder) checkIdentity(state host.ConnectionState, out io.Writ
 	}
 
 	identity := folder.IdentityAgainst(state)
-	if identity == project.IdentityRetained {
-		for _, path := range folder.RetainedWorktrees() {
-			fmt.Fprintln(out, "journal: keeps "+path+", which an earlier disconnect left; it stays as it is.")
-		}
-		return nil
-	}
 	if identity != project.IdentityForeign {
 		return nil
 	}

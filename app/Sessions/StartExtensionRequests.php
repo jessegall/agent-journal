@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Events\Sessions\AccountSettingsRequested;
-use App\Events\Sessions\ChildCheckoutRequested;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -17,11 +16,6 @@ final readonly class StartExtensionRequests
     public function __construct(private Dispatcher $events) {}
 
     public function accountSettings(AccountSettingsRequested $request): void
-    {
-        $this->events->dispatch($request);
-    }
-
-    public function childCheckout(ChildCheckoutRequested $request): void
     {
         $this->events->dispatch($request);
     }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -85,7 +84,6 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 	record = host.DisconnectRecord{
 		BindingID: binding.BindingID, RootID: binding.RootID, CanonicalRoot: found.Root, JournalURL: binding.JournalURL,
 		Service: userservice.Service{BindingID: binding.BindingID}.Label(), Done: []host.DisconnectStep{},
-		Kept: []host.WorktreeCleanup{},
 	}
 	if err := record.Save(commands.stateFolder); err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
@@ -96,7 +94,7 @@ func (commands dispatcher) disconnect(flags []string, folder string, stdout, std
 }
 
 // finishDisconnect runs the record's remaining steps in order, saving the record after each, and finishes the record
-// last. Every run prints the kept worktrees, the step it stopped at and whether the server was contacted.
+// last. Every run prints the step it stopped at and whether the server was contacted.
 func (commands dispatcher) finishDisconnect(
 	record host.DisconnectRecord,
 	request disconnectRequest,
@@ -107,21 +105,18 @@ func (commands dispatcher) finishDisconnect(
 	fmt.Fprintln(stdout, resumeLine)
 	contacted := false
 	for _, step := range record.Remaining() {
-		kept, err := commands.disconnectStep(step, record, request, &contacted, stdout)
-		record.Kept = append(record.Kept, kept...)
+		err := commands.disconnectStep(step, record, request, &contacted, stdout)
 		if err == nil {
 			record.Done = append(record.Done, step)
 			err = record.Save(commands.stateFolder)
 		}
 		if err != nil {
-			printKept(record, stdout)
 			fmt.Fprintln(stderr, "journal: the disconnect stopped at the step to "+string(step)+": "+err.Error())
 			fmt.Fprintln(stdout, resumeLine)
 			printRevocation(contacted, stdout)
 			return 1
 		}
 	}
-	printKept(record, stdout)
 	if err := record.Finish(commands.stateFolder); err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
@@ -143,30 +138,28 @@ func (commands dispatcher) finishDisconnect(
 	return 0
 }
 
-// disconnectStep runs one step of the disconnect and answers the worktrees it kept.
+// disconnectStep runs one step of the disconnect.
 func (commands dispatcher) disconnectStep(
 	step host.DisconnectStep,
 	record host.DisconnectRecord,
 	request disconnectRequest,
 	contacted *bool,
 	stdout io.Writer,
-) ([]host.WorktreeCleanup, error) {
+) error {
 	state := record.Connection(commands.stateFolder)
 	switch step {
 	case host.StepFence:
-		return nil, state.Fence()
+		return state.Fence()
 	case host.StepService:
-		return nil, commands.disableOwnedService(record)
+		return commands.disableOwnedService(record)
 	case host.StepRelay:
-		return nil, commands.awaitQuiet(record)
-	case host.StepWorktrees:
-		return commands.retireWorktrees(record)
+		return commands.awaitQuiet(record)
 	case host.StepSignIns:
 		kept := localsession.KeptFiles{StateFolder: commands.stateFolder, BindingID: record.BindingID}
 
-		return nil, errors.Join(kept.Forget(), state.RemoveSignIns())
+		return errors.Join(kept.Forget(), state.RemoveSignIns())
 	default:
-		return nil, errors.Join(
+		return errors.Join(
 			commands.forgetIgnoreRule(record, stdout),
 			project.Folder{Root: record.CanonicalRoot}.Disconnect(),
 			state.Remove(),
@@ -175,13 +168,9 @@ func (commands dispatcher) disconnectStep(
 	}
 }
 
-// forgetIgnoreRule takes out the .journal/ line setup added to .gitignore and says so, unless kept worktrees still
-// need it or it changed since setup added it.
+// forgetIgnoreRule takes out the .journal/ line setup added to .gitignore and says so, unless it changed since setup
+// added it.
 func (commands dispatcher) forgetIgnoreRule(record host.DisconnectRecord, stdout io.Writer) error {
-	if len(record.Kept) > 0 {
-		fmt.Fprintln(stdout, "Kept the .journal/ line in .gitignore: the kept worktrees need it.")
-		return nil
-	}
 	removed, err := project.Folder{Root: record.CanonicalRoot}.ForgetIgnoreRule()
 	if err != nil || !removed {
 		return err
@@ -224,23 +213,6 @@ func (commands dispatcher) awaitQuiet(record host.DisconnectRecord) error {
 	return nil
 }
 
-// retireWorktrees retires every worktree that can go and answers those kept; the receipts go only when none is kept,
-// since a kept worktree's receipt is what proves whose it is.
-func (commands dispatcher) retireWorktrees(record host.DisconnectRecord) ([]host.WorktreeCleanup, error) {
-	// The relay is quiet and none of its processes runs, so no worktree is in use.
-	kept := []host.WorktreeCleanup{}
-	for _, cleanup := range (host.NativeWorktrees{Root: record.CanonicalRoot, Git: "git"}).Retire(context.Background(), nil) {
-		if cleanup.Outcome != host.CleanupRemoved {
-			kept = append(kept, cleanup)
-		}
-	}
-	if len(kept) > 0 {
-		return kept, nil
-	}
-
-	return kept, project.Folder{Root: record.CanonicalRoot}.ForgetReceipts()
-}
-
 // printMachineUndo names what the last removal did with the setup every connected folder shared: the releases, the
 // PATH lines and the journal link it removed, and those it kept because they changed since.
 func printMachineUndo(undo host.MachineUndo, stdout io.Writer) {
@@ -261,12 +233,6 @@ func machineChangeText(change host.MachineChange) string {
 	}
 
 	return "the journal's PATH lines in " + change.Path
-}
-
-func printKept(record host.DisconnectRecord, stdout io.Writer) {
-	for _, kept := range record.Kept {
-		fmt.Fprintln(stdout, "Kept work in progress at "+kept.Path+": "+kept.Reason+".")
-	}
 }
 
 // printRevocation says so when the disconnect never reached the journal, so the binding may still read connected there.

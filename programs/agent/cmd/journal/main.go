@@ -23,12 +23,12 @@ import (
 	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
 	"journal-agent/host"
-	"journal-agent/upgrade"
 	"journal-agent/hostapi"
 	"journal-agent/lease"
 	"journal-agent/localsession"
 	"journal-agent/project"
 	"journal-agent/release"
+	"journal-agent/upgrade"
 	"journal-agent/userservice"
 )
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Sessions;
 
 use App\Accounts\AccountStartRecipe;
-use App\Agents\Values\ChildCheckout;
 
 /**
  * What a host needs to make a claimed start's process: its key for every later report, the session, the account
@@ -15,9 +14,6 @@ use App\Agents\Values\ChildCheckout;
  */
 final readonly class ClaimedStart
 {
-    /**
-     * @param  list<ChildCheckout>  $childCheckouts  the child's checkout, none or one
-     */
     public function __construct(
         public string $startKey,
         public string $sessionId,
@@ -27,6 +23,5 @@ final readonly class ClaimedStart
         public AccountStartRecipe $recipe,
         public string|null $conversationTarget,
         public bool $isConversationRequired,
-        public array $childCheckouts = [],
     ) {}
 }

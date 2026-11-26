@@ -169,6 +169,10 @@
             "Composer\\Config::disableProcessTimeout",
             "php tools/installation-checks/run.php"
         ],
+        "installation-suite": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh scripts/installation-suite.sh"
+        ],
         "test:affected": [
             "Composer\\Config::disableProcessTimeout",
             "@php tests/bin/in-docker.php test:affected-inside"

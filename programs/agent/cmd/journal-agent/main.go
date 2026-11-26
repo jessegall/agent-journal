@@ -66,7 +66,7 @@ func main() {
 	hostCommands := map[string]func([]string) error{
 		"enroll": enroll, "serve": serve,
 		"install": install, "installation": installation, "status-line": statusLine,
-		"protection-probe": protectionProbe, "connect": connect,
+		"connect":         connect,
 		"install-release": installRelease, "relay": relay, "upgrade-binding": upgradeBinding, "protocol": protocolOnly,
 	}
 	maps.Copy(hostCommands, developmentCommands)

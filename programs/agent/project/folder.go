@@ -290,8 +290,6 @@ const (
 	// IdentityForeign: its connection.json or setup record belongs to no binding of this root on this machine: the
 	// folder was moved or copied, so none of that setup is resumed.
 	IdentityForeign Identity = "foreign"
-	// IdentityRetained: only worktrees or receipts a disconnect kept are left, which a new connection keeps as they are.
-	IdentityRetained Identity = "retained"
 )
 
 // IdentityAgainst compares the folder's marker and setup record with the binding this machine keeps for its root.
@@ -303,23 +301,6 @@ func (folder Folder) IdentityAgainst(state host.ConnectionState) Identity {
 	if markerErr == nil || len(folder.progress().Done) > 0 {
 		return IdentityForeign
 	}
-	if len(folder.RetainedWorktrees()) > 0 {
-		return IdentityRetained
-	}
 
 	return IdentityNone
-}
-
-// RetainedWorktrees are the worktree folders and receipts left under .journal, recognized with or without a
-// connection.json; they are a kept worktree's, never a sign of an older install.
-func (folder Folder) RetainedWorktrees() []string {
-	worktrees, _ := filepath.Glob(filepath.Join(folder.journalFolder(), "worktrees", "*"))
-	receipts, _ := filepath.Glob(filepath.Join(folder.journalFolder(), "receipts", "*.json"))
-
-	return append(worktrees, receipts...)
-}
-
-// ForgetReceipts removes the worktree receipts once no kept worktree needs them to prove whose it is.
-func (folder Folder) ForgetReceipts() error {
-	return os.RemoveAll(folder.path("receipts"))
 }

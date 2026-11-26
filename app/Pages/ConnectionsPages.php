@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Pages;
 
 use App\Agents\Drivers\Contracts\NativePartProvider;
-use App\Agents\Enums\ChildRole;
 use App\Connections\ConnectionsOwnerCheck;
 use App\Connections\Data\BindingListData;
 use App\Connections\Data\BindingProviderData;
@@ -129,7 +128,6 @@ final class ConnectionsPages implements NativePartProvider, NavigationProvider, 
             SupportRecordRowData::class,
             TerminalSignInRowData::class,
             BindingReadiness::class,
-            ChildRole::class,
             CommandRunStatus::class,
             ConnectionAuditActor::class,
             ConnectionAuditType::class,

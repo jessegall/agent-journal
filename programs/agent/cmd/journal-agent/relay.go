@@ -1,7 +1,6 @@
 package main
 
 import (
-	"maps"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -9,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"maps"
 	"net/http"
 	"os"
 	"os/signal"

@@ -19,32 +19,30 @@ const fenceName = "disconnecting"
 type DisconnectStep string
 
 const (
-	StepFence     DisconnectStep = "fence new work"
-	StepService   DisconnectStep = "disable the relay service"
-	StepRelay     DisconnectStep = "stop the relay and its children"
-	StepWorktrees DisconnectStep = "retire the worktrees"
-	StepSignIns   DisconnectStep = "remove this folder's sign-ins"
-	StepState     DisconnectStep = "remove the folder's setup and connection state"
+	StepFence   DisconnectStep = "fence new work"
+	StepService DisconnectStep = "disable the relay service"
+	StepRelay   DisconnectStep = "stop the relay and its children"
+	StepSignIns DisconnectStep = "remove this folder's sign-ins"
+	StepState   DisconnectStep = "remove the folder's setup and connection state"
 )
 
 // DisconnectSteps are every step of a disconnect, in order.
 var DisconnectSteps = []DisconnectStep{
-	StepFence, StepService, StepRelay, StepWorktrees, StepSignIns, StepState,
+	StepFence, StepService, StepRelay, StepSignIns, StepState,
 }
 
 // ErrNoDisconnect is returned for a binding with no disconnect left to finish.
 var ErrNoDisconnect = errors.New("no disconnect of this binding is left to finish")
 
 // DisconnectRecord is the private record of one disconnect, written before anything is removed: the binding, its
-// root, the service that keeps its relay running, the steps already done and the worktrees kept with their reasons.
+// root, the service that keeps its relay running and the steps already done.
 type DisconnectRecord struct {
-	BindingID     string            `json:"binding_id"`
-	RootID        string            `json:"root_id"`
-	CanonicalRoot string            `json:"canonical_root"`
-	JournalURL    string            `json:"journal_url"`
-	Service       string            `json:"service"`
-	Done          []DisconnectStep  `json:"done"`
-	Kept          []WorktreeCleanup `json:"kept"`
+	BindingID     string           `json:"binding_id"`
+	RootID        string           `json:"root_id"`
+	CanonicalRoot string           `json:"canonical_root"`
+	JournalURL    string           `json:"journal_url"`
+	Service       string           `json:"service"`
+	Done          []DisconnectStep `json:"done"`
 }
 
 // DisconnectOf is the cleanup record of the binding's disconnect; ErrNoDisconnect while none is left to finish.
