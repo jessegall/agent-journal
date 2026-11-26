@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
+use App\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
+use App\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
+use App\Sharing\Commands\CreateShare\CreateShareCommand;
+use App\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
+use App\Sharing\Commands\ExpireShares\ExpireSharesCommand;
+use App\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
+use App\Sharing\Commands\ReadShare\ReadShareCommand;
+use App\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
+use App\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
+use App\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
+use App\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
+use App\Sharing\Commands\RequestShare\RequestShareCommand;
+use App\Sharing\Commands\RetryShare\RetryShareCommand;
+use App\Sharing\Commands\RevokeShare\RevokeShareCommand;
+use App\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
-use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
-use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
-use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
-use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
-use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
-use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
-use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
-use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
-use Domain\Sharing\Commands\RecordGatewayHealth\RecordGatewayHealthCommand;
-use Domain\Sharing\Commands\RecordGatewayOutcome\RecordGatewayOutcomeCommand;
-use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;
-use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
-use Domain\Sharing\Commands\RequestShare\RequestShareCommand;
-use Domain\Sharing\Commands\RetryShare\RetryShareCommand;
-use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
-use Domain\Sharing\Commands\SaveSharePreview\SaveSharePreviewCommand;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
@@ -62,7 +62,7 @@ final class SharingBoundaryTest extends TestCase
         $sharing = array_values(
             array_filter(
                 array_keys($registry->handlerMap()),
-                fn (string $command) => str_starts_with($command, 'Domain\\Sharing\\'),
+                fn (string $command) => str_starts_with($command, 'App\\Sharing\\'),
             ),
         );
 

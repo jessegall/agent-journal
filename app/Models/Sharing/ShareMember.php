@@ -1,0 +1,245 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\Sharing;
+
+use App\Concerns\BoundedReads;
+use App\Concerns\InsertsRowSets;
+use App\Concerns\Linkable;
+use App\Concerns\OrdersById;
+use App\Models\Records\Link;
+use App\Models\Support\Accessor;
+use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use App\Sharing\Support\ConsumedPreview;
+use App\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+/**
+ * @property string $id
+ * @property string $share_id
+ * @property int $scope_version
+ * @property string $link_id
+ * @property string $source_type
+ * @property string $source_id
+ * @property string $target_type
+ * @property string $target_id
+ * @property CarbonImmutable|null $invalidated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read mixed $target
+ *
+ * @mixin \Eloquent
+ */
+final class ShareMember extends JournalModel implements ReadableModel
+{
+    use BoundedReads;
+    use InsertsRowSets;
+    use Linkable;
+    use OrdersById;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'scope_version' => 'integer',
+            'invalidated_at' => 'immutable_datetime',
+        ];
+    }
+
+    // ----------[ Constructors ]----------
+
+    /**
+     * Approves each target the preview selected, linked from its source, at the share's current scope version, in one
+     * insert.
+     *
+     * @return list<string> the ids of the rows written
+     */
+    public static function createMany(Share $share, ConsumedPreview $consumed): array
+    {
+        $members = [];
+
+        foreach ($consumed->selection as $target) {
+            $source = $consumed->candidates->sourceOf($target);
+            $member = new self();
+            $member->share_id = $share->id;
+            $member->scope_version = $share->scope_version;
+            $member->link_id = $target->linkId;
+            $member->source_type = $source->type;
+            $member->source_id = $source->id;
+            $member->target_type = $target->record->type;
+            $member->target_id = $target->record->id;
+            $members[] = $member;
+        }
+
+        return self::insertRows($members);
+    }
+
+    // ----------[ Accessors ]----------
+
+    /**
+     * @return Attribute<RecordIdentity, never>
+     */
+    protected function target(): Attribute
+    {
+        return Accessor::get(fn () => new RecordIdentity($this->target_type, $this->target_id));
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The members the share's current scope still approves.
+     *
+     * @return list<self>
+     */
+    public static function findCurrentOf(Share $share): array
+    {
+        return array_values(
+            self::query()
+                ->ofScope($share)
+                ->stillApproved()
+                ->oldestFirst()
+                ->readAll('a share scope holds at most the preview limit of members')
+                ->get()
+                ->all(),
+        );
+    }
+
+    /**
+     * The links the share's current scope still approves.
+     *
+     * @return list<string>
+     */
+    public static function resolveApprovedLinkIdsOf(Share $share): array
+    {
+        return array_values(
+            array_map(
+                strval(...),
+                self::query()
+                    ->ofScope($share)
+                    ->stillApproved()
+                    ->readAll('a share scope holds at most the preview limit of members')
+                    ->pluck('link_id')
+                    ->all(),
+            ),
+        );
+    }
+
+    /**
+     * Whether a live, unexpired share approves the record in its current scope.
+     */
+    public static function isApprovedInLiveShare(RecordIdentity $record): bool
+    {
+        $members = self::query()->targeting($record)->stillApproved()->limit(Share::LIVE_LIMIT)->get(
+            ['share_id', 'scope_version'],
+        );
+
+        $scopeOfShare = Share::resolveLiveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
+
+        return $members->contains(
+            fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version,
+        );
+    }
+
+    /**
+     * Whether the share's current scope approves the target linked from the source, over a link that still exists.
+     */
+    public static function isApprovedOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
+    {
+        $linkIds = self::query()->ofScope($share)
+            ->stillApproved()
+            ->fromSource($source)
+            ->targeting($target)
+            ->limit(1)
+            ->pluck('link_id')
+            ->all();
+
+        return $linkIds !== [] && Link::query()->whereKey($linkIds)->exists();
+    }
+
+    /**
+     * The targets the share's current scope approves from the source, grouped by their link alias.
+     *
+     * @return array<string, list<RecordIdentity>>
+     */
+    public static function resolveApprovedTargetsFrom(Share $share, RecordIdentity $source): array
+    {
+        $grouped = [];
+
+        $members = self::query()
+            ->ofScope($share)
+            ->stillApproved()
+            ->fromSource($source)
+            ->readAll('a share scope holds at most the preview limit of members')
+            ->get(['target_type', 'target_id']);
+
+        foreach ($members as $member) {
+            $grouped[$member->target_type][] = $member->target;
+        }
+
+        return $grouped;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<string>  $ids
+     */
+    #[Scope]
+    protected function onLinks(Builder $query, array $ids): void
+    {
+        $query->whereIn('link_id', $ids);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromSource(Builder $query, RecordIdentity $source): void
+    {
+        $query->where('source_type', $source->type)->where('source_id', $source->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function targeting(Builder $query, RecordIdentity $record): void
+    {
+        $query->where('target_type', $record->type)->where('target_id', $record->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillApproved(Builder $query): void
+    {
+        $query->whereNull('invalidated_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofShare(Builder $query, Share $share): void
+    {
+        $query->where('share_id', $share->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofScope(Builder $query, Share $share): void
+    {
+        $query->where('share_id', $share->id)->where('scope_version', $share->scope_version);
+    }
+}

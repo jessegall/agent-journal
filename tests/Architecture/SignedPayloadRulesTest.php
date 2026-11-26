@@ -175,6 +175,7 @@ final class SignedPayloadRulesTest extends TestCase
 
         $files = [
             ...glob(app_path('Console/Commands/*Command.php')) ?: [],
+            ...glob(app_path('Console/Commands/*/*Command.php')) ?: [],
             ...glob(base_path('domain/*/src/Console/Commands/*Command.php')) ?: [],
         ];
 

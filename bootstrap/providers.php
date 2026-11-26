@@ -26,6 +26,7 @@ use App\Providers\RecordsServiceProvider;
 use App\Providers\ReflectionServiceProvider;
 use App\Providers\ScriptsServiceProvider;
 use App\Providers\SettingsServiceProvider;
+use App\Providers\SharingServiceProvider;
 use App\Providers\SkillsServiceProvider;
 use App\Providers\SupervisionServiceProvider;
 use App\Providers\TextServiceProvider;
@@ -58,6 +59,7 @@ return [
     ReadsServiceProvider::class,
     NumbersServiceProvider::class,
     SettingsServiceProvider::class,
+    SharingServiceProvider::class,
     ProcessesServiceProvider::class,
     AccessServiceProvider::class,
     WebServiceProvider::class,

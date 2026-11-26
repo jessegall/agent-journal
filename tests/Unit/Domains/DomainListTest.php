@@ -36,7 +36,6 @@ final class DomainListTest extends TestCase
                 'Memory',
                 'Rules',
                 'Sequences',
-                'Sharing',
                 'Questions',
                 'Reminders',
                 'Helpers',

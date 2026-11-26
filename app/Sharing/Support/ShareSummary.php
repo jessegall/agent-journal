@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Sharing\Support;
+
+use App\Sharing\Enums\ShareStatus;
+
+/**
+ * What a share command answers with and its receipt keeps: the share's id, number and state, never its token or
+ * address.
+ */
+final readonly class ShareSummary
+{
+    public function __construct(
+        public string $shareId,
+        public int $number,
+        public ShareStatus $status,
+    ) {}
+}

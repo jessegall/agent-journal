@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Access\Contracts\PolicyCatalogue;
-use App\Access\Contracts\SharePolicy;
-use App\Access\NoSharePolicy;
 use App\Access\RecordPolicyMappings;
 use App\Bootstrap\Contracts\Domains\DomainAvailability as DomainAvailabilityContract;
 use App\Bootstrap\DomainAvailability;
@@ -51,7 +49,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->booting(fn () => $this->registerDomainProviders($registry));
         $this->keepMigrationsOfUnbootedDomains($registry);
-        $this->app->bindIf(SharePolicy::class, NoSharePolicy::class);
 
         $this->app->singleton(
             CommandRegistry::class,

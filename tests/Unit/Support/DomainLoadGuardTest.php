@@ -17,11 +17,11 @@ final class DomainLoadGuardTest extends TestCase
     {
         $this->expectException(DomainNotBooted::class);
 
-        class_exists('Domain\\Sharing\\'.'NotBootedHere');
+        class_exists('Domain\\Reminders\\'.'NotBootedHere');
     }
 
     public function test_a_domains_own_tests_folder_still_loads(): void
     {
-        $this->assertFalse(class_exists('Domain\\Sharing\\Tests\\'.'NotBootedHere'));
+        $this->assertFalse(class_exists('Domain\\Reminders\\Tests\\'.'NotBootedHere'));
     }
 }
