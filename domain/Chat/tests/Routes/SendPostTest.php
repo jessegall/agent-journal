@@ -7,6 +7,7 @@ namespace Domain\Chat\Tests\Routes;
 use App\Commands\Drivers\NotifyDriverTurn\NotifyDriverTurnCommand;
 use App\Commands\Messages\SendMessage\SendMessageCommand;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;
@@ -57,6 +58,29 @@ final class SendPostTest extends GuardedRouteEntryTestCase
         $this->send($call, $call->caller)->assertRedirect();
 
         $this->journal->assertMessageSent($inbox, 'Owner', 'Hello');
+    }
+
+    public function test_a_message_for_a_session_the_agent_no_longer_runs_is_refused_and_nothing_is_sent(): void
+    {
+        $session = $this->journal->owner()->idleAgent('Chat builder')
+            ->startSession('Chat builder', 'Chat builder')
+            ->sessionCalled('Chat builder');
+
+        $inbox = $this->journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Chat builder')
+            ->pairChatOf('Owner', 'Chat builder');
+
+        $this->journal->sinkCommands();
+
+        $this->journal->route('POST', 'chat.send', payload: [
+            'inboxId' => $inbox->id,
+            'requestKey' => 'home-send-1',
+            'body' => 'Still there?',
+            'agent' => $session->agent_id,
+            'expectedSessionId' => strtolower((string) Str::ulid()),
+            'expectedGeneration' => 0,
+        ])->assertSessionHasErrors(['session' => 'The agent now runs another session. Send the message again to reach it.']);
+
+        $this->journal->assertNothingDispatched();
     }
 
     protected function arrange(TestJournal $journal): RouteCall

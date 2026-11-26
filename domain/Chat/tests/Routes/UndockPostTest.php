@@ -27,6 +27,16 @@ final class UndockPostTest extends GuardedRouteEntryTestCase
         return DomainBoot::withRequirements(ChatDomain::class);
     }
 
+    public function test_undocking_on_chats_own_page_returns_to_that_page_and_its_dock_page(): void
+    {
+        $call = $this->arrangedCall();
+        $this->journal->sinkCommands()->sinkReplies($call->replies);
+        $chat = '/chat?agent=01m8b0000000000000000agent&dock=page-2';
+
+        $this->journal->route('POST', 'chat.undock', payload: $call->payload, headers: ['referer' => $chat])
+            ->assertRedirect($chat);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $inbox = $journal->owner()->inboxCalled('Owner');

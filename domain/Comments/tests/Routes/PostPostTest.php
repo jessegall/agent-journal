@@ -30,6 +30,41 @@ final class PostPostTest extends GuardedRouteEntryTestCase
         return DomainBoot::withRequirements(CommentsDomain::class, DocumentsDomain::class);
     }
 
+    public function test_a_mixed_or_partial_place_or_an_author_field_is_refused_and_nothing_is_sent(): void
+    {
+        $this->journal->owner();
+        $document = $this->journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
+        $this->journal->sinkCommands();
+
+        foreach ([
+            [
+                'version' => '1',
+                'section' => 3,
+                'quote' => 'x',
+                'first_line' => 1,
+                'last_line' => 1,
+                'start_offset' => 0,
+                'end_offset' => 1,
+            ],
+            [
+                'first_line' => 12,
+                'last_line' => 16,
+            ],
+            [
+                'author_id' => 'someone',
+            ],
+        ] as $place) {
+            $this->journal->jsonRoute('POST', 'comments.post', payload: [
+                'target' => "doc {$document->number}",
+                'body' => 'Here.',
+                'submission_key' => (string) Str::uuid(),
+                ...$place,
+            ])->assertUnprocessable();
+        }
+
+        $this->journal->assertDispatchedExactly([]);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();

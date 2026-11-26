@@ -34,6 +34,22 @@ final class StorePostTest extends GuardedRouteEntryTestCase
         'detached' => [],
     ];
 
+    public function test_a_name_used_by_the_owner_a_blank_name_or_an_empty_shape_is_refused_and_nothing_is_sent(): void
+    {
+        $this->journal->owner()->run(new SaveLayoutCommand('Review', LayoutShape::from(self::SHAPE)));
+        $this->journal->sinkCommands();
+
+        foreach ([
+            [['name' => 'Review', 'shape' => self::SHAPE], ['name']],
+            [['name' => '  ', 'shape' => self::SHAPE], ['name']],
+            [['name' => 'Other', 'shape' => ['grid' => []]], ['shape.grid', 'shape.detached']],
+        ] as [$payload, $fields]) {
+            $this->journal->route('POST', 'layouts.store', payload: $payload)->assertSessionHasErrors($fields);
+        }
+
+        $this->journal->assertNothingDispatched();
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();

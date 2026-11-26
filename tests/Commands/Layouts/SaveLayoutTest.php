@@ -20,20 +20,6 @@ final class SaveLayoutTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    /**
-     * @var array<string, mixed>
-     */
-    private array $shape = [
-        'grid' => [
-            'type' => 'pane',
-            'id' => 'pane-chat',
-            'windows' => ['chat'],
-            'active' => 'chat',
-            'isWidthLimited' => false,
-        ],
-        'detached' => [],
-    ];
-
     public function test_a_saved_layout_is_kept_as_the_users_with_its_shape(): void
     {
         $this->journal->owner();
@@ -43,27 +29,6 @@ final class SaveLayoutTest extends TestCase
         $layout = Layout::query()->sole();
         $this->assertSame(['Writing', $this->journal->ownerUser()->id], [$layout->name, $layout->user_id]);
         $this->assertSame(['chat'], $layout->shape->grid->windows);
-    }
-
-    public function test_a_name_is_used_once_per_user_and_may_not_be_blank(): void
-    {
-        $this->journal->owner();
-
-        $this->actingAs($this->journal->ownerUser())->post('/layouts', ['name' => 'Review', 'shape' => $this->shape]);
-
-        $this->actingAs($this->journal->ownerUser())->post(
-            '/layouts',
-            ['name' => 'Review', 'shape' => $this->shape],
-        )->assertSessionHasErrors('name');
-        $this->actingAs($this->journal->ownerUser())->post(
-            '/layouts',
-            ['name' => '  ', 'shape' => $this->shape],
-        )->assertSessionHasErrors('name');
-        $this->actingAs($this->journal->ownerUser())->post(
-            '/layouts',
-            ['name' => 'Other', 'shape' => ['grid' => []]],
-        )->assertSessionHasErrors(['shape.grid', 'shape.detached']);
-        $this->assertSame(1, Layout::query()->count());
     }
 
     /**

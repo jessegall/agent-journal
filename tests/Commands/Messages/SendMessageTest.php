@@ -13,7 +13,6 @@ use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
-use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
@@ -22,12 +21,10 @@ use App\Support\DomainRegistry;
 use App\Support\IsolatedListener;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\CommitsHookRows;
@@ -75,8 +72,6 @@ final class SendMessageTest extends TestCase
     private AgentSession $session;
 
     private string $chatInboxId;
-
-    private int $sends = 0;
 
     /**
      * @var list<string>
@@ -168,7 +163,7 @@ final class SendMessageTest extends TestCase
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void
+    public function test_a_sent_message_keeps_its_indentation(): void
     {
         $agent = Agent::create('Chat builder', 'main-agent', $this->localProject());
         $this->session = $this->app->make(StartSessions::class)->start(
@@ -189,83 +184,9 @@ final class SendMessageTest extends TestCase
 
         TEXT;
 
-        $home = route(
-            'home',
-            ConversationRequest::queryFor($this->session->agent_id),
-            false,
-        );
-
-        $this->actingAs($this->journal->ownerUser())->from($home)->post(
-            '/chat/messages',
-            [...$this->pair(), 'body' => $body, ...$this->seenSession()],
-        )
-            ->assertStatus(303)
-            ->assertRedirect($home);
+        $this->journal->run(new SendMessageCommand($this->chatInboxId, $body));
 
         $this->assertSame([$body], Message::query()->withoutGlobalScopes()->pluck('body')->all());
-        $this->actingAs($this->journal->ownerUser())->get($home)->assertInertia(fn (AssertableInertia $page) => $page
-            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.inboxId', $this->chatInboxId)
-                ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)));
-    }
-
-    public function test_a_message_written_for_a_session_the_agent_no_longer_runs_is_not_delivered(): void
-    {
-        $agent = Agent::create('Chat builder', 'main-agent', $this->localProject());
-        $this->session = $this->app->make(StartSessions::class)->start(
-            $agent,
-            TestSelections::of('claude-code'),
-            TestSelections::requestId(),
-        )->session;
-        $this->chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorReference::of($this->journal->ownerUser()),
-            ActorReference::of($agent),
-        )->id;
-
-        $outdated = [...$this->seenSession(), 'expectedSessionId' => strtolower((string) Str::ulid())];
-
-        $this->actingAs($this->journal->ownerUser())->from('/')
-            ->post('/chat/messages', [...$this->pair(), 'body' => 'Still there?', ...$outdated])
-            ->assertRedirect('/')
-            ->assertSessionHasErrors(
-                ['session' => 'The agent now runs another session. Send the message again to reach it.'],
-            );
-        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    public function test_a_user_sends_to_the_chosen_agent_and_sees_the_pair_exchange(): void
-    {
-        $owner = $this->journal->ownerUser();
-        $session = $this->journal->idleAgent('Chat builder')
-            ->startSession('Chat builder', 'Chat builder')
-            ->sessionCalled('Chat builder');
-
-        $chatInboxId = $this->journal->fixtures(ChatFixtures::class)->pairChat(
-            ActorReference::of($owner),
-            ActorReference::ofClass(Agent::class, $session->agent_id),
-        )->id;
-
-        $window = ConversationRequest::queryFor($session->agent_id);
-        $conversation = route('home', $window, false);
-
-        $this->actingAs($owner)
-            ->from($conversation)
-            ->post('/chat/messages', [
-                'inboxId' => $chatInboxId,
-                'requestKey' => 'host-send-1',
-                'body' => 'Is the build green?',
-                'agent' => $session->agent_id,
-                'expectedSessionId' => $session->id,
-                'expectedGeneration' => AgentRuntime::findForSession($session->id)?->process_generation ?? 0,
-            ])
-            ->assertRedirect($conversation);
-
-        $message = Message::query()->withoutGlobalScopes()->sole();
-        $this->assertSame($chatInboxId, $message->inbox_id);
-
-        $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(fn (AssertableInertia $page) => $page
-            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.inboxId', $chatInboxId)));
     }
 
     public function test_a_refused_send_tells_nothing_and_a_resent_request_tells_nothing_again(): void
@@ -356,30 +277,6 @@ final class SendMessageTest extends TestCase
         $messageId = $this->journal->actAs('Owner')->run(new SendMessageCommand($chat->id, 'To both.'));
 
         $this->assertSame($chat->id, Message::query()->withoutGlobalScopes()->findOrFail($messageId)->inbox_id);
-    }
-
-    /**
-     * The agent a send goes to and the session the sender saw it run.
-     *
-     * @return array{agent: string, expectedSessionId: string, expectedGeneration: int}
-     */
-    private function seenSession(): array
-    {
-        return [
-            'agent' => $this->session->agent_id,
-            'expectedSessionId' => $this->session->id,
-            'expectedGeneration' => AgentRuntime::findForSession($this->session->id)?->process_generation ?? 0,
-        ];
-    }
-
-    /**
-     * The pair's chat inbox and a request key of the send's own.
-     *
-     * @return array{inboxId: string, requestKey: string}
-     */
-    private function pair(): array
-    {
-        return ['inboxId' => $this->chatInboxId, 'requestKey' => 'home-send-'.++$this->sends];
     }
 
     private function pairInboxId(): string

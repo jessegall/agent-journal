@@ -12,12 +12,12 @@ use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\RequestKey;
+use App\Support\Wire\EncodedCard;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;
 use Domain\Chat\Commands\UndockSource\UndockSourceCommand;
 use Domain\Chat\Enums\DockOutcome;
 use Domain\Chat\Exceptions\ChatUnavailable;
-use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Models\DockPlacement;
 use Domain\Chat\Resolvers\Support\DockListing;
 use Domain\Chat\Support\DockProjection;
@@ -30,7 +30,6 @@ use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
-use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
@@ -280,8 +279,7 @@ final class DockSourceTest extends TestCase
         $this->assertSame(DockOutcome::Added, $this->runKeyed($dock, (string) Str::ulid())->outcome);
         $this->assertSame(DockOutcome::Present, $this->runKeyed($dock, (string) Str::ulid())->outcome);
 
-        $query = ConversationRequest::queryFor($session->agent_id);
-        $this->assertSame(['Build ready'], $this->dockedTitles($owner, $query));
+        $this->assertSame(['Build ready'], $this->dockedTitles(Inbox::query()->findOrFail($inboxId)));
     }
 
     public function test_notes_docked_by_the_owner_and_an_agent_show_each_side_only_what_it_may_read(): void
@@ -303,7 +301,10 @@ final class DockSourceTest extends TestCase
         $agentsNote->saveFor($this->agent->agent->id);
 
         $this->runKeyed(new DockSourceCommand($this->chatInboxId, Note::linkType(), $ownersNote->id), (string) Str::ulid());
-        $this->journal->runAsStart($this->agent, new DockSourceCommand(null, Note::linkType(), $agentsNote->id));
+
+        $this->journal->keyed(
+            fn () => $this->journal->runAsStart($this->agent, new DockSourceCommand(null, Note::linkType(), $agentsNote->id)),
+        );
 
         $this->agent->startRequest($this->app);
 
@@ -330,10 +331,10 @@ final class DockSourceTest extends TestCase
 
         $placement = DockPlacement::query()->where('dockable_id', $agentsNote->id)->sole();
 
-        $this->journal->runAsStart(
+        $this->journal->keyed(fn () => $this->journal->runAsStart(
             $this->agent,
             new UndockSourceCommand(null, $placement->id, Note::linkType(), $agentsNote->id),
-        );
+        ));
 
         $this->assertSame(1, DockPlacement::query()->count());
     }
@@ -371,26 +372,12 @@ final class DockSourceTest extends TestCase
     }
 
     /**
-     * @param  array<string, mixed>  $window
      * @return list<string>
      */
-    private function dockedTitles(User $owner, array $window): array
+    private function dockedTitles(Inbox $inbox): array
     {
-        $titles = [];
+        $cards = $this->journal->service(DockProjection::class)->page($inbox, null)->cards;
 
-        $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(
-            function (AssertableInertia $page) use (&$titles): AssertableInertia {
-                $read = function (AssertableInertia $reload) use (&$titles): AssertableInertia {
-                    $conversation = $reload->toArray()['props']['window_chat_conversation']['data']['conversation'];
-                    $titles = array_column($conversation['dock']['cards'], 'accessibleName');
-
-                    return $reload;
-                };
-
-                return $page->reloadOnly('window_chat_conversation', $read);
-            },
-        );
-
-        return $titles;
+        return array_map(fn (EncodedCard $card) => $card->accessibleName, $cards);
     }
 }

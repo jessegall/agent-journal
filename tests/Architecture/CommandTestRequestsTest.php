@@ -17,7 +17,7 @@ use Tests\TestCase;
 /**
  * A command test runs its command; a request to a route, an MCP tool or a host belongs to the route or tool test
  * (rule 106). The command tests of the old host protocol still send one until plan 80 removes their routes (task 3443),
- * and those task 3286 still rewrites; each leaves its list once it stops.
+ * and each leaves the waiting list once it stops.
  */
 final class CommandTestRequestsTest extends TestCase
 {
@@ -71,16 +71,6 @@ final class CommandTestRequestsTest extends TestCase
     ];
 
     /**
-     * The command tests whose web and relay scenarios task 3286 still rewrites to run their commands.
-     */
-    private const array REWRITING = [
-        'domain/Chat/tests/Commands/DockSourceTest.php',
-        'domain/Chat/tests/Commands/UndockSourceTest.php',
-        'tests/Commands/Layouts/SaveLayoutTest.php',
-        'tests/Commands/Messages/SendMessageTest.php',
-    ];
-
-    /**
      * The command tests of the old host and relay protocol, which plan 80 task 3443 rewrites or removes with their
      * routes.
      */
@@ -121,13 +111,13 @@ final class CommandTestRequestsTest extends TestCase
 
         $this->assertSame(
             [],
-            array_diff_key($sending, array_flip([...self::REWRITING, ...self::WAITING])),
+            array_diff_key($sending, array_flip(self::WAITING)),
             'These command tests send a request, by line; run the command with the test journal, and prove the '
                 .'request in its route or tool test:',
         );
         $this->assertSame(
             [],
-            array_values(array_diff([...self::REWRITING, ...self::WAITING], array_keys($sending))),
+            array_values(array_diff(self::WAITING, array_keys($sending))),
             'These command tests no longer send a request; take them off the waiting list:',
         );
     }
