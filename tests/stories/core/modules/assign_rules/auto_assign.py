@@ -82,7 +82,7 @@ def test_a_tag_added_later_gets_the_task_judged_again_and_assigned(new_story):
     story = new_story(fixture=BackendRule)
     task_id = new_task(story, '"Fix the cache"')
     unmatched = task_decision(story, task_id)
-    story.expect_success(f"task tag {task_id} backend --confirm {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"task tag {task_id} backend {ENVIRONMENT}", actor=story.user)
     decision = task_decision(story, task_id)
     story.expect_rows(unmatched.outcome == "unmatched", decision.outcome == "assigned", decision.id == unmatched.id,
                       [row.actor_id for row in task_assignments(story, task_id)] == [story.agent.id], detail=str((unmatched, decision)))
@@ -91,7 +91,7 @@ def test_a_tag_added_later_gets_the_task_judged_again_and_assigned(new_story):
 def test_a_tag_taken_off_gets_the_task_judged_again(new_story):
     story = new_story(fixture=BackendRule)
     rule_id = story.new_row_id(rule_line("tag lacks frontend"), actor=story.user)
-    task_id = new_task(story, '"Fix the font" --tag frontend --confirm')
+    task_id = new_task(story, '"Fix the font" --tag frontend')
     unmatched = task_decision(story, task_id)
     story.expect_success(f"task untag {task_id} frontend {ENVIRONMENT}", actor=story.user)
     decision = task_decision(story, task_id)

@@ -8,7 +8,7 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 def test_a_person_saves_shares_routes_and_an_outage_in_the_split_tab(split_story):
     story = split_story
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
-    story.expect_success("task tag 1 networking linux --confirm", actor=story.agent)
+    story.expect_success("task tag 1 networking linux", actor=story.agent)
     with server_story(story) as server:
         expect_browser(server, "workerSplit.browser.mjs", ["/tmp/journal-worker-688-split.png"])
     story.expect_text("worker-route list", "codex", "strongest", "networking")

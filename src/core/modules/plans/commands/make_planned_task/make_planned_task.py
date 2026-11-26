@@ -13,4 +13,3 @@ class MakePlannedTask(Command[Task], TaskCreation):
     task: MakeCommand[Task]
     phase_id: int | None = None
     tags: tuple[str, ...] = ()
-    confirmed_tags: bool = False

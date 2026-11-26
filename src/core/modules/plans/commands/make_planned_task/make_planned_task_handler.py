@@ -4,6 +4,7 @@ from engine.command.handler import Handler
 from core.modules.plans.commands.make_planned_task.make_planned_task import MakePlannedTask
 from core.modules.plans.commands.place_phase.place_phase import PlacePhase
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.support.task_tags import TaskTags
 
 
@@ -16,6 +17,9 @@ class MakePlannedTaskHandler(Handler[MakePlannedTask, Task]):
         self.bus, self.tags = bus, tags
 
     def handle(self, command: MakePlannedTask, context: Context) -> Task:
+        # A refused tag word refuses the command before its task is made, so no task is left without its tags.
+        for word in command.tags:
+            TaskTag.require_word(word)
         task = self.bus.dispatch(command.task, context)
         if command.phase_id is not None:
             self.bus.dispatch(PlacePhase(task.id, command.phase_id), context)

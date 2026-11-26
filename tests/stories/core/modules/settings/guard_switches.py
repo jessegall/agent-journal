@@ -1,14 +1,14 @@
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_dependencies import three_tasks
-from tests.stories.core.support.fixtures import DependencyChain
+from tests.stories.core.support.fixtures import DependencyChain, MessageAnswered
 
 
 def test_a_guard_switched_off_by_its_setting_lets_the_refused_command_through(new_story):
-    story = three_tasks(new_story)
-    story.expect_refusal("task tag 1 networking", "networking is a new tag", actor=story.agent)
+    story = new_story(fixture=MessageAnswered)
+    story.expect_refusal('message reply 1 "Done now" --environment main', "already has your reply", actor=story.agent)
     story.use_fixture_environment(None)
-    story.expect_success("setting make journal.core.settings.guard.tasks.known-tag-word false", "created: setting:1")
-    story.expect_success("task tag 1 networking", actor=story.agent)
+    story.expect_success("setting make journal.core.settings.guard.messages.one-reply-per-message false", "created: setting:1")
+    story.expect_success('message reply 1 "Done now" --environment main', "parent_id: 1", actor=story.agent)
 
 
 def test_a_safety_guard_stays_on_whatever_its_setting_says(new_story):

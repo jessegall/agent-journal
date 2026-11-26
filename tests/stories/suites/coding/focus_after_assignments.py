@@ -23,7 +23,7 @@ class ChoresRuleAndPortFocus(StoryFixture):
 
 
 def rule_task(story: Story, title: str) -> int:
-    return story.new_row_id(f'task make "{title}" --tag {RULE_TAG} --confirm --environment main', actor=story.user)
+    return story.new_row_id(f'task make "{title}" --tag {RULE_TAG} --environment main', actor=story.user)
 
 
 def test_e3_a_task_a_rule_gave_comes_after_the_focus_and_before_the_other_plans(new_story):
@@ -37,7 +37,7 @@ def test_e3_a_task_a_rule_gave_comes_after_the_focus_and_before_the_other_plans(
 
 def test_e4_a_rule_never_gives_a_plan_task_so_it_cannot_pull_the_agent_off_the_focus(new_story):
     story = new_story(fixture=ChoresRuleAndPortFocus)
-    planned = story.new_row_id(f'task make "Paint the depot" --phase 2 --tag {RULE_TAG} --confirm --environment main', actor=story.user)
+    planned = story.new_row_id(f'task make "Paint the depot" --phase 2 --tag {RULE_TAG} --environment main', actor=story.user)
     decision = task_decision(story, planned)
     story.expect_rows(decision.outcome == "planned", decision.actor_id is None, next_task_id(story) == 5, detail=str(decision))
 

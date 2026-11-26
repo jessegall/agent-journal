@@ -7,7 +7,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with
 
 def test_task_info_prints_the_delegating_facts_and_no_brief(new_story):
     story = new_story(fixture=UserJoined)
-    cart = story.new_row_id('task make "Fix the cart" --environment main --brief "The total adds up wrongly in the cart" --complexity 4 --tag cart --confirm', actor=story.agent)
+    cart = story.new_row_id('task make "Fix the cart" --environment main --brief "The total adds up wrongly in the cart" --complexity 4 --tag cart', actor=story.agent)
     totals = story.new_row_id('task make "Fix the totals" --environment main', actor=story.agent)
     story.run(f"task-dependency make {cart} {totals}", actor=story.agent)
     story.expect_success(f'task comment {cart} "Look at rounding" --environment main', actor=story.user)

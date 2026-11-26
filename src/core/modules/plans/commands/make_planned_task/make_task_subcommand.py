@@ -32,7 +32,7 @@ class MakeTaskSubcommand(Subcommand[Command[Task], Task]):
         task = self.make.command(arguments, caller)
         if arguments.phase_id is None and not arguments.tags:
             return task
-        return MakePlannedTask(task, arguments.phase_id, tuple(arguments.tags), self.flags.consume_short_flag(arguments, "confirm"))
+        return MakePlannedTask(task, arguments.phase_id, tuple(arguments.tags))
 
     def write_output(self, value: object, output: Output) -> None:
         super().write_output(value, output)

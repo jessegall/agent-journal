@@ -10,7 +10,7 @@ from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 @pytest.fixture
 def story(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success('task make "Existing" --tag networking --tag linux --confirm --complexity 2 --environment main', actor=story.user)
+    story.expect_success('task make "Existing" --tag networking --tag linux --complexity 2 --environment main', actor=story.user)
     return story
 
 

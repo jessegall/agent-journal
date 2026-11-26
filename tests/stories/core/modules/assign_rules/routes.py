@@ -19,7 +19,7 @@ class SonnetRule(StoryFixture):
 
 def routed_task(story: Story, program: str) -> tuple[int, int]:
     route_id = story.new_row_id(f"worker-route make --program {program} --tags backend {ENVIRONMENT}", actor=story.agent)
-    return route_id, new_task(story, '"Fix the backend cache" --tag backend --confirm')
+    return route_id, new_task(story, '"Fix the backend cache" --tag backend')
 
 
 def test_a_route_to_another_program_skips_the_rule_and_the_decision_names_the_route(new_story):
@@ -39,5 +39,5 @@ def test_a_route_to_the_rule_s_own_program_lets_the_rule_assign(new_story):
 
 def test_a_task_no_route_matches_is_assigned_by_the_rule(new_story):
     story = new_story(fixture=SonnetRule)
-    task_id = new_task(story, '"Fix the backend queue" --tag backend --confirm')
+    task_id = new_task(story, '"Fix the backend queue" --tag backend')
     story.expect_rows([row.actor_id for row in task_assignments(story, task_id)] == [story.helper.id], detail=str(task_decision(story, task_id)))

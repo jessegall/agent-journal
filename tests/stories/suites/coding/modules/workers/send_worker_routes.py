@@ -25,7 +25,7 @@ def routed_worker_task(split_story):
     story = split_story
     worker = dispatch(story, flags="--program claude --model sonnet")
     route_id = story.new_row_id("worker-route make --program codex --tags followup --environment main", actor=story.agent)
-    task_id = new_task(story, "A routed follow-up", "--tag followup --confirm")
+    task_id = new_task(story, "A routed follow-up", "--tag followup")
     return RoutedWorkerTask(story, worker, task_id, route_id)
 
 

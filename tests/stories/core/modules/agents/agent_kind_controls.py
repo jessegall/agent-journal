@@ -100,7 +100,7 @@ def test_s17_inheritance_allowed_models_narrow_the_model_of_the_profile_and_refu
 
 def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_no_worker(split_story, split_viewer):
     split_story.new_row_id("worker-route make --program codex --tags strict --strict --environment main", actor=split_story.agent)
-    split_story.expect_success("task tag 1 strict --confirm", actor=split_story.agent)
+    split_story.expect_success("task tag 1 strict", actor=split_story.agent)
     viewer_options(split_viewer, "worker allowed_providers=claude")
     expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "must go to codex")
 

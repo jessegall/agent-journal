@@ -264,15 +264,15 @@ def test_read_only_helper_tags_only_when_making_a_task(split_story):
     story = split_story
     helper_id, _ = started(story, f'helper start {PLANNER_PROFILE.name} --brief "Plan networking" --environment main')
     helper = Actor(helper_id, ActorType.AGENT)
-    task_id = story.new_row_id('task make "Network plan" --tag networking --complexity 3 --confirm --environment main', actor=helper)
-    story.expect_refusal(f'task tag {task_id} linux --confirm', "may not run task tag", actor=helper)
+    task_id = story.new_row_id('task make "Network plan" --tag networking --complexity 3 --environment main', actor=helper)
+    story.expect_refusal(f'task tag {task_id} linux', "may not run task tag", actor=helper)
     story.expect_refusal(f'task untag {task_id} networking', "may not run task untag", actor=helper)
 
 
 @pytest.fixture
 def routed_scored_task(split_story):
     story = split_story
-    story.expect_success('task tag 1 routed --confirm', actor=story.agent)
+    story.expect_success('task tag 1 routed', actor=story.agent)
     story.expect_success('task edit 1 --complexity 4', actor=story.agent)
     story.expect_success('worker-route make --program codex --tags routed --complexity-from 3 --environment main', actor=story.agent)
     return story
@@ -310,8 +310,8 @@ def batch_route_story(split_story):
     story = split_story
     story.expect_success('worker-route make --tags easy --tier fast --environment main', actor=story.agent)
     story.expect_success('worker-route make --tags server --program codex --tier strongest --environment main', actor=story.agent)
-    story.expect_success('task tag 1 easy --confirm', actor=story.agent)
-    task_id = new_task(story, 'Server', '--tag server --confirm')
+    story.expect_success('task tag 1 easy', actor=story.agent)
+    task_id = new_task(story, 'Server', '--tag server')
     return story, task_id
 
 
@@ -488,7 +488,7 @@ def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(trus
 
 def test_board_filters_tags_beyond_the_first_page(split_story, split_viewer):
     story = split_story
-    matching = new_task(story, 'Older matching task', '--tag networking --confirm')
+    matching = new_task(story, 'Older matching task', '--tag networking')
     for number in range(12):
         new_task(story, f'New unrelated {number}')
     board = split_viewer.value('tasks.tasks', ['task', 'board', '--tag', 'networking', '--limit', '1'])

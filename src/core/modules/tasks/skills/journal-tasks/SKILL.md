@@ -13,7 +13,7 @@ A task is one unit of work: open, started, then completed or cancelled. Declare 
   A missing phase or an ended plan refuses the command and leaves no new task.
 - Add repeated tags and a score while making a task: `journal task make "Fix the socket" --tag networking --tag linux --complexity 3`.
   Tags are lowercase words with no spaces. Read `journal task tags` before inventing a word; it lists words in use
-  and their task counts. An agent confirms a new word with `--confirm`, including the journal's first tag.
+  and their task counts.
   `journal task list --tag networking --tag linux` finds tasks with both tags. `journal task tag <n> networking linux`
   adds tags to an existing task, and `journal task edit <n> --complexity 3` changes its score.
 

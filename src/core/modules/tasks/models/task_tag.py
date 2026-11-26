@@ -20,5 +20,10 @@ class TaskTag(Model):
     word: str
 
     def __post_init__(self) -> None:
-        if not TAG_WORD.fullmatch(self.word):
+        TaskTag.require_word(self.word)
+
+    @staticmethod
+    def require_word(word: str) -> None:
+        """Refuses a word that is not one lower-case tag word."""
+        if not TAG_WORD.fullmatch(word):
             raise Refusal("a tag uses lower case letters, digits and hyphens", "use a single word")
