@@ -88,10 +88,10 @@ final class SignInReceiptLoaderTest extends TestCase
 
         $receipt = $this->read(['key' => 'tab-2', 'driver' => 'claude-code']);
         $this->assertSame(
-            [$attempt->id, SignInMethod::ApiKey, $attempt->refresh()->status],
+            [$attempt->id, SignInMethod::ApiKey, SignInReceiptStatus::Started],
             [$receipt->attemptId, $receipt->method, $receipt->status],
         );
-        $this->assertFalse($attempt->isLive());
+        $this->assertFalse($attempt->refresh()->isLive());
     }
 
     public function test_a_key_no_start_was_sent_under_tells_nothing(): void

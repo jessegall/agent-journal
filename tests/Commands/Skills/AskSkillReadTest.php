@@ -146,6 +146,6 @@ final class AskSkillReadTest extends TestCase
     {
         $this->journal->actAsAgentIds($session->agent_id, $session->id);
 
-        return $this->journal->runUnkeyed(new AskSkillReadCommand($session->id, $keys));
+        return $this->journal->runUnkeyed(new AskSkillReadCommand($session->id, $keys))->skillKeys;
     }
 }

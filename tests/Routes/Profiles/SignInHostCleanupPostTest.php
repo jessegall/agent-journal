@@ -29,6 +29,7 @@ final class SignInHostCleanupPostTest extends GuardedRouteEntryTestCase
                 'attempt' => $attemptId,
             ])
             ->payload([
+                'generation' => 0,
                 'removed' => [],
                 'store_removed' => true,
                 'directory_removed' => true,

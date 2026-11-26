@@ -61,7 +61,7 @@ final class AdmitStartSkillsTest extends TestCase
         $generation = SkillGeneration::findLatestReady();
         $this->assertNotNull($generation);
 
-        $session = $this->started($this->session(TestSelections::sessionColumns()));
+        $session = $this->started($this->handedSession(TestSelections::sessionColumns()));
 
         $keys = AgentSession::findById($session->id)->skill_keys;
         $this->assertNotEmpty($keys);
@@ -74,7 +74,7 @@ final class AdmitStartSkillsTest extends TestCase
 
     public function test_before_the_first_refresh_nothing_is_recorded_and_the_start_goes_ahead(): void
     {
-        $session = $this->started($this->session(TestSelections::sessionColumns()));
+        $session = $this->started($this->handedSession(TestSelections::sessionColumns()));
 
         $stored = AgentSession::findById($session->id);
         $this->assertNull($stored->skill_generation_id);
@@ -84,7 +84,7 @@ final class AdmitStartSkillsTest extends TestCase
     public function test_a_driver_without_a_skill_adapter_is_refused(): void
     {
         $this->journal->refreshSkills();
-        $session = $this->session([...TestSelections::sessionColumns(), 'driver_key' => 'no-such-driver']);
+        $session = $this->handedSession([...TestSelections::sessionColumns(), 'driver_key' => 'no-such-driver']);
 
         $this->expectException(StartRefused::class);
 
@@ -103,7 +103,7 @@ final class AdmitStartSkillsTest extends TestCase
                 requiredSkills: ['no-such-skill'],
             ),
         )));
-        $session = $this->session([
+        $session = $this->handedSession([
             ...TestSelections::sessionColumns(),
             'profile_key' => 'journal-reviewer',
             'profile_revision' => 1,
@@ -118,7 +118,7 @@ final class AdmitStartSkillsTest extends TestCase
     /**
      * @param  array<string, mixed>  $columns
      */
-    private function session(array $columns): AgentSession
+    private function handedSession(array $columns): AgentSession
     {
         $agent = Agent::create('Reviewer', 'read-only-helper', $this->localProject());
         $session = new AgentSession()->forceFill($columns);

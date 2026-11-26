@@ -6,7 +6,6 @@ namespace Tests\StandIn\Hosts;
 
 use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
 use App\Accounts\Commands\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Accounts\Commands\ReconcileAccounts\ReconcileAccountsCommand;
 use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Accounts\Enums\SignInMethod;
 use App\Accounts\Enums\SignInStatus;
@@ -70,7 +69,7 @@ final class SignInLifeTest extends TestCase
             [
                 parse_url($challenge->address, PHP_URL_HOST),
                 SignInAttempt::query()->whereKey($started->attemptId)->sole()->status,
-                Account::query()->where('driver', 'claude-code')->count(),
+                Account::query()->where('account_protocol', 'claude-code')->count(),
             ],
         );
     }
@@ -90,7 +89,7 @@ final class SignInLifeTest extends TestCase
                 parse_url($challenge->address, PHP_URL_HOST),
                 $challenge->code,
                 SignInAttempt::query()->whereKey($started->attemptId)->sole()->status,
-                Account::query()->where('driver', 'codex')->count(),
+                Account::query()->where('account_protocol', 'codex')->count(),
             ],
         );
     }
@@ -105,9 +104,9 @@ final class SignInLifeTest extends TestCase
         $account = $this->journal->chosenAccounts()['claude-code'];
 
         $again = $this->journal->asOwner(new BeginSignInAgainCommand($account->id));
-        $this->journal->asSystem(new ReconcileAccountsCommand());
+        $this->artisan('accounts:reconcile')->assertSuccessful();
         $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited, seconds: 15);
-        $this->journal->asSystem(new ReconcileAccountsCommand());
+        $this->artisan('accounts:reconcile')->assertSuccessful();
         $this->journal->runSignInsOnRealHost();
         $this->journal->signInChallengeOf($again->attemptId);
         $this->journal->asOwner(new SubmitSignInCodeCommand($again->attemptId, 'stand-in-code', 'code-1'));

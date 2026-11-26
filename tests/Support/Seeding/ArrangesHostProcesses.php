@@ -574,7 +574,12 @@ trait ArrangesHostProcesses
     public function runRealHost(string $host): self
     {
         $database = (string) $this->app->make(Repository::class)->get('database.connections.pgsql.database');
-        $this->realHost = RealHost::start($this->app->make(Factory::class), $this->hostCalled($host), $database);
+        $this->realHost = RealHost::start(
+            $this->app->make(Factory::class),
+            $this->hostCalled($host),
+            $database,
+            $this->ownerUser()->email,
+        );
 
         return $this;
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Listeners;
+namespace Tests\Commands\Skills;
 
 use App\Events\Hooks\ContextStarted;
 use App\Hooks\Enums\ContextStartType;

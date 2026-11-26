@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Skills;
+namespace Tests\Commands\Skills;
 
 use App\Events\Skills\SkillRead;
 use App\Models\Skills\SkillReadEntry;

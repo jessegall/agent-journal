@@ -357,7 +357,7 @@ final class ActivateProfilesTest extends TestCase
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
         $start = $snapshot->start;
-        $this->assertSame(DefaultDrivers::CODEX, $start->preferredDriver);
+        $this->assertSame(DefaultDrivers::CLAUDE_CODE, $start->preferredDriver);
         $this->assertSame([], $start->stopConditions->conditions);
         $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
         $this->assertSame($activation->configurationHash, $start->provenance->configurationHash);

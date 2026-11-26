@@ -12,6 +12,10 @@ use App\Bus\ListenerOwnership;
 use App\Bus\ListenerRegistry;
 use App\Engine\Enums\ListenerLane;
 use App\Events\Accounts\SignInAttemptFinished;
+use App\Events\Connections\HostOrderRefused;
+use App\Events\Connections\HostProcessExited;
+use App\Events\Connections\HostProcessLost;
+use App\Events\Connections\HostProcessRestarted;
 use App\Events\Links\LinksRemoved;
 use App\Events\Messages\MessageSent;
 use App\Events\Processes\OutputChunkCommitted;
@@ -100,6 +104,10 @@ final class TransactionListenerLaneTest extends TestCase
                 TaskCancelled::class,
                 PlanStarted::class,
                 SignInAttemptFinished::class,
+                HostOrderRefused::class,
+                HostProcessExited::class,
+                HostProcessLost::class,
+                HostProcessRestarted::class,
                 SequenceStarted::class,
                 StartSessionOpened::class,
                 QuestionAnswered::class,

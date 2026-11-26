@@ -44,6 +44,8 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
 
     private const int FORGET_BATCH = 100;
 
+    protected $table = 'skill_reads';
+
     /**
      * @return array<string, string>
      */

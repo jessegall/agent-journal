@@ -62,17 +62,18 @@ final class RealHost
         private readonly Factory $processes,
         public readonly string $folder,
         private readonly string $database,
+        private readonly string $ownerEmail,
     ) {}
 
     /**
-     * Starts the test application on the test's own database, the stand-in daemon and the host enrolled as the host
-     * given.
+     * Starts the test application on the test's own database with the test journal's owner, the stand-in daemon and the
+     * host enrolled as the host given.
      */
-    public static function start(Factory $processes, EnrolledHost $host, string $database): self
+    public static function start(Factory $processes, EnrolledHost $host, string $database, string $ownerEmail): self
     {
         $folder = sys_get_temp_dir().'/journal-real-host-'.bin2hex(random_bytes(6));
         mkdir($folder, 0o700, true);
-        $real = new self($processes, $folder, $database);
+        $real = new self($processes, $folder, $database, $ownerEmail);
         $real->port = self::freePort();
         $real->serveJournal();
         $socket = "{$folder}/docker.sock";
@@ -250,8 +251,9 @@ final class RealHost
     }
 
     /**
-     * What the served journal, its sign-in runner and the test share: the test's database, a cache every process
-     * reads, so a sign-in's challenge and code pass between them, and the account folders under this host's folder.
+     * What the served journal, its sign-in runner and the test share: the test's database and owner, a cache every
+     * process reads, so a sign-in's challenge and code pass between them, and the account folders under this host's
+     * folder.
      *
      * @return array<string, string>
      */
@@ -260,6 +262,7 @@ final class RealHost
         return [
             ...getenv(),
             'DB_DATABASE' => $this->database,
+            'JOURNAL_OWNER_EMAIL' => $this->ownerEmail,
             'CACHE_STORE' => 'file',
             'ACCOUNTS_ROOT' => $this->accountsFolder(),
         ];

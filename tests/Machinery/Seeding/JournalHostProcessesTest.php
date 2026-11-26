@@ -69,6 +69,16 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
+    public function test_the_owner_chooses_an_account_for_a_driver_family(): void
+    {
+        $this->journal->owner()->chooseActiveAccount(DefaultDrivers::CODEX, 'Spare account');
+
+        $this->journal->assertResult(
+            'Spare account',
+            $this->journal->chosenAccounts()[DefaultDrivers::CODEX]->label,
+        );
+    }
+
     public function test_a_contained_host_is_enrolled_contained(): void
     {
         $this->journal->enrollContainedHost('Box', [base_path()]);

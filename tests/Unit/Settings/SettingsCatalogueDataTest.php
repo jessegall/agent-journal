@@ -115,8 +115,8 @@ final class SettingsCatalogueDataTest extends TestCase
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
-        foreach (DomainFiles::in([app_path('Data/Settings')]) as $file) {
-            $class = Reflector::of('App\\Data\\Settings\\'.basename($file, '.php'));
+        foreach (DomainFiles::in([app_path('Settings/Data')]) as $file) {
+            $class = Reflector::of('App\\Settings\\Data\\'.basename($file, '.php'));
             $this->assertTrue($class->isFinal(), $class->name());
 
             $ownProperties = array_filter(

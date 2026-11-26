@@ -46,7 +46,7 @@ final class UpgradeHostTest extends TestCase
                 $payload['version'],
                 json_decode($payload['manifest'], true, flags: JSON_THROW_ON_ERROR)['version'],
                 $payload['signature'],
-                json_decode($payload['programs'], true, flags: JSON_THROW_ON_ERROR)['programs'][0]['executable'],
+                json_decode($payload['drivers'], true, flags: JSON_THROW_ON_ERROR)['drivers'][0]['executable'],
                 $this->host()->upgrade_order_id,
             ],
         );

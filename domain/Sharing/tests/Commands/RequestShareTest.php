@@ -39,7 +39,7 @@ use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * An agent proposes sharing a document it may read and learns only the proposal's number and state; it may not create
+ * An agent proposes sharing a document it may read and learns only the proposal's number and status; it may not create
  * a share itself. The owner approves the proposal from a fresh preview into a pending grant. Open proposals are
  * capped at 100, and an expired one frees its slot at once. The requester is kept as an actor, never by session.
  */
@@ -104,14 +104,14 @@ final class RequestShareTest extends TestCase
         $this->start = $this->journal->signedStart('Test agent');
     }
 
-    public function test_an_agent_request_creates_a_proposal_and_returns_its_number_and_state_only(): void
+    public function test_an_agent_request_creates_a_proposal_and_returns_its_number_and_status_only(): void
     {
         $status = $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $proposal = Share::query()->sole();
 
         $this->assertEquals(new ShareProposalStatus($proposal->number, ShareStatus::Proposed), $status);
 
-        $this->assertSame(['number', 'state'], array_keys(get_object_vars($status)));
+        $this->assertSame(['number', 'status'], array_keys(get_object_vars($status)));
 
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
@@ -179,7 +179,7 @@ final class RequestShareTest extends TestCase
         $this->assertSame(ShareStatus::Proposed, $this->request('01JD8X0G9M3QZ6V4K2PROPOSE3')->status);
     }
 
-    public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
+    public function test_the_agent_cli_requests_a_share_and_prints_number_and_status_only(): void
     {
         $this->owner = $this->journal->ownerUser();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -188,7 +188,7 @@ final class RequestShareTest extends TestCase
         $this->journal->relayAgentCommands($start);
 
         $this->artisan('share:request', ['alias' => 'doc', 'number' => '1', '--json' => true])
-            ->expectsOutputToContain('"state":"proposed"')
+            ->expectsOutputToContain('"status":"proposed"')
             ->doesntExpectOutputToContain('http')
             ->assertExitCode(0);
 

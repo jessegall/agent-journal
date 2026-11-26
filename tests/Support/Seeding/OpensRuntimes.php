@@ -138,12 +138,32 @@ trait OpensRuntimes
     public function chooseActiveAccounts(string $folder = '/journal/accounts'): self
     {
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            $account = Account::create($driver, AccountLabel::from('Test account'), "{$folder}/{$driver}");
-            ActiveAccount::findLockedFor($driver)->select($account);
-            $this->chosenAccounts[$driver] = $account;
+            $this->chooseAccountOf($driver, 'Test account', $folder);
         }
 
         return $this;
+    }
+
+    /**
+     * The owner saves a signed-in account of the label given for the driver family and chooses it, as on the Accounts
+     * page, so the starts of that family run with it.
+     */
+    public function chooseActiveAccount(string $family, string $label, string $folder = '/journal/accounts'): self
+    {
+        $owner = $this->ownerUser();
+        $this->requests->during(
+            fn () => $this->requests->asUser($owner),
+            fn () => $this->chooseAccountOf($family, $label, $folder),
+        );
+
+        return $this;
+    }
+
+    private function chooseAccountOf(string $family, string $label, string $folder): void
+    {
+        $account = Account::create($family, AccountLabel::from($label), "{$folder}/{$family}");
+        ActiveAccount::findLockedFor($family)->select($account);
+        $this->chosenAccounts[$family] = $account;
     }
 
     /**

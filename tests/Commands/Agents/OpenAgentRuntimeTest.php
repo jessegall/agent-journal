@@ -6,7 +6,6 @@ namespace Tests\Commands\Agents;
 
 use App\Access\Values\OwnerAuthority;
 use App\Accounts\Exceptions\AccountWriterTaken;
-use App\Accounts\Values\AccountLabel;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
 use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
@@ -29,8 +28,6 @@ use App\Hosts\Contracts\DockerImageVerifier;
 use App\Hosts\EnrolledHost;
 use App\Hosts\Exceptions\DriverNotContainable;
 use App\Listeners\AdmitStartSkills;
-use App\Models\Accounts\Account;
-use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
@@ -261,9 +258,7 @@ final class OpenAgentRuntimeTest extends TestCase
     public function test_a_driver_that_runs_alone_is_refused_on_an_account_in_use(): void
     {
         $this->registerFamily();
-        ActiveAccount::findLockedFor('example')->select(
-            Account::create('example', AccountLabel::from('Shared account'), '/journal/accounts/example'),
-        );
+        $this->journal->chooseActiveAccount('example', 'Shared account');
 
         $host = $this->enrollHost();
         $writer = $this->open($host, DriverType::Headless);
@@ -276,9 +271,7 @@ final class OpenAgentRuntimeTest extends TestCase
     public function test_nothing_starts_on_an_account_a_driver_runs_alone_on(): void
     {
         $this->registerFamily();
-        ActiveAccount::findLockedFor('example')->select(
-            Account::create('example', AccountLabel::from('Shared account'), '/journal/accounts/example'),
-        );
+        $this->journal->chooseActiveAccount('example', 'Shared account');
 
         $host = $this->enrollHost();
         $alone = $this->open($host, DriverType::Terminal);
@@ -292,9 +285,7 @@ final class OpenAgentRuntimeTest extends TestCase
     {
         $key = 'example/echo-'.str_repeat('a', DriverKey::CHARACTER_LIMIT - strlen('example/echo-'));
         $this->register($key);
-        ActiveAccount::findLockedFor('example')->select(
-            Account::create('example', AccountLabel::from('Echo account'), '/journal/accounts/example'),
-        );
+        $this->journal->chooseActiveAccount('example', 'Echo account');
         $host = $this->enrollHost();
         $agent = $this->agent();
 

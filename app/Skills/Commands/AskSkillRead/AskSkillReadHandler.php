@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandHandler;
 use App\Models\Agents\AgentSession;
 use App\Skills\Exceptions\SkillReadRefused;
 use App\Skills\SkillReadAsks;
+use App\Skills\Values\AskedSkillReads;
 
 final readonly class AskSkillReadHandler implements CommandHandler
 {
@@ -16,11 +17,9 @@ final readonly class AskSkillReadHandler implements CommandHandler
     ) {}
 
     /**
-     * @return list<string>
-     *
      * @throws SkillReadRefused
      */
-    public function handle(AskSkillReadCommand $command): array
+    public function handle(AskSkillReadCommand $command): AskedSkillReads
     {
         $session = AgentSession::findById($command->sessionId);
 
@@ -36,6 +35,6 @@ final readonly class AskSkillReadHandler implements CommandHandler
 
         $this->asks->ask($session->target, $command->skillKeys);
 
-        return $command->skillKeys;
+        return new AskedSkillReads($command->skillKeys);
     }
 }

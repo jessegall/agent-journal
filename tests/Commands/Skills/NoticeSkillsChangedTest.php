@@ -96,7 +96,7 @@ final class NoticeSkillsChangedTest extends TestCase
                 requiredSkills: ['no-such-skill'],
             ),
         )));
-        $session = $this->session(['profile_key' => 'journal-reviewer', 'profile_revision' => 1]);
+        $session = $this->handedSession(['profile_key' => 'journal-reviewer', 'profile_revision' => 1]);
         $session->recordSkills(SkillGeneration::findLatestReady(), ['journal']);
 
         $reminders = $this->boundary($session);
@@ -109,7 +109,7 @@ final class NoticeSkillsChangedTest extends TestCase
     private function startedWithSkills(): AgentSession
     {
         $this->journal->refreshSkills();
-        $session = $this->session([]);
+        $session = $this->handedSession([]);
         $this->app->make(AdmitStartSkills::class)->handle(new SessionOpened($session->agent_id, $session->id));
 
         return AgentSession::findById($session->id);
@@ -118,7 +118,7 @@ final class NoticeSkillsChangedTest extends TestCase
     /**
      * @param  array<string, string|int>  $columns
      */
-    private function session(array $columns): AgentSession
+    private function handedSession(array $columns): AgentSession
     {
         $agent = Agent::create('Writer', 'main-agent', $this->localProject());
         $session = new AgentSession()->forceFill([...TestSelections::sessionColumns(), ...$columns]);

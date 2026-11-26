@@ -45,6 +45,7 @@ final class SkillStatusTest extends TestCase
 
         $this->journal->owner()->agent('Writer')->agent('Reader');
         $this->journal->refreshSkills();
+        $this->journal->actAs('Owner');
     }
 
     public function test_a_session_handed_skills_shows_its_generation_keys_and_skills_unchanged(): void
@@ -71,7 +72,7 @@ final class SkillStatusTest extends TestCase
             [new SectionDraft('notes', 'Notes', 'Read the diff first.')],
             '',
         ));
-        $this->journal->refreshSkills();
+        $this->journal->refreshSkills()->actAs('Owner');
 
         $skills = $this->skillsOf($session);
 
@@ -154,8 +155,6 @@ final class SkillStatusTest extends TestCase
      */
     private function skillsOf(AgentSession $session): array
     {
-        $this->app->forgetScopedInstances();
-
         return $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
     }
 }

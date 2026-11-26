@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Agents;
+namespace Tests\Commands\Skills;
 
 use App\Events\Sessions\AgentSessionSkillsGenerated;
 use App\Models\Agents\AgentSession;

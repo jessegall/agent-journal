@@ -71,7 +71,7 @@ final readonly class ProposeRuleHandler implements CommandHandler
 ```
 
 A handler that runs another handler directly, without the bus, binds that command to its own dispatcher with
-`withDispatcher($command->dispatchedBy())`, as `App\Commands\Agents\OpenHostMainRuntime\OpenHostMainRuntimeHandler`,
+`withDispatcher($command->dispatchedBy())`, as `App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeHandler`,
 `App\Agents\DriverHeartbeatSource` and `App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesHandler` do. Every other
 command goes through the bus.
 

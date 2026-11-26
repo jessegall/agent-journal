@@ -90,8 +90,9 @@ final class OpenBindingMainRuntimeTest extends TestCase
 
         $sessionId = AgentSession::query()->sole()->id;
         $settings = json_decode($plan['files'][0]['content'], true, flags: JSON_THROW_ON_ERROR);
+        $sealed = '{host:'.$this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->executableHostName().'}';
         $this->assertSame(
-            ['claude', [
+            [$sealed, [
                 '--session-id',
                 $sessionId,
             ], 'settings.json', $binding->canonical_root, true],

@@ -47,7 +47,7 @@ final class RecordHostCallFailureTest extends TestCase
     {
         parent::setUp();
 
-        $this->journal->owner();
+        $this->journal->owner()->showDriverArrangements();
         $this->researcher = $this->journal->idleAgent('Researcher', 'read-only-helper')->agentCalled('Researcher');
 
         $this->chooseActiveAccounts();

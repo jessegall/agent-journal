@@ -33,7 +33,8 @@ final class StartSignInRequest extends FormRequest
     }
 
     /**
-     * A method the driver does not declare on this host is refused with the request, before any attempt.
+     * A method the driver does not declare on this host is refused with the request, before any attempt; a driver or
+     * method already refused is not judged again.
      *
      * @return list<Closure(Validator): void>
      */
@@ -42,7 +43,11 @@ final class StartSignInRequest extends FormRequest
         return [function (Validator $validator) use ($protocols): void {
             $method = SignInMethod::tryFrom((string) $this->input('method'));
 
-            if ($method !== null && ! in_array($method, $protocols->methodsOf($this->driver()), true)) {
+            if ($validator->errors()->hasAny(['driver', 'method']) || $method === null) {
+                return;
+            }
+
+            if (! in_array($method, $protocols->methodsOf($this->driver()), true)) {
                 $validator->errors()->add('method', 'This driver has no such sign-in method here.');
             }
         }];

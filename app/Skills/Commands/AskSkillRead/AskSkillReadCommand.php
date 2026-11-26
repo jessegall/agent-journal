@@ -7,12 +7,13 @@ namespace App\Skills\Commands\AskSkillRead;
 use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Policies\SkillPolicy;
+use App\Skills\Values\AskedSkillReads;
 use App\Support\Command;
 
 /**
  * Asks a session's agent to read skills its start handed it whole; answers the keys it was asked to read.
  *
- * @extends Command<list<string>>
+ * @extends Command<AskedSkillReads>
  */
 #[Authorize(SkillPolicy::class, AccessType::Read)]
 final readonly class AskSkillReadCommand extends Command

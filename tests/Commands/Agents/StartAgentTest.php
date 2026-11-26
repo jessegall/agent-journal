@@ -70,8 +70,8 @@ use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\FixedServerClock;
-use Tests\Support\TestIds;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Every Core start runs StartAgentCommand: one session per request id, refused for a retired or busy agent, and a receipt
@@ -312,7 +312,7 @@ final class StartAgentTest extends TestCase
 
     public function test_unproven_account_transport_refuses_before_account_selection_or_host_preparation(): void
     {
-        $this->journal->actAsUserId(TestIds::of(1));
+        $this->signIn();
         $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
             fn (HostCapabilityQuery $query) => new HostCapability(
@@ -326,12 +326,22 @@ final class StartAgentTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
         $actor = Agent::create('Builder', 'writing-helper', $this->localProject());
 
+        $refusals = [];
+
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            $this->assertThrows(
-                fn () => $commands->run(new StartAgentCommand($this->requestFor($actor, $driver))),
-                AccountContainerUnsupported::class,
-            );
+            try {
+                $commands->run(new StartAgentCommand($this->requestFor($actor, $driver)));
+                $refusals[$driver] = 'started';
+            } catch (Throwable $refusal) {
+                $refusals[$driver] = $refusal::class.': '.$refusal->getMessage();
+            }
         }
+
+        $this->assertSame(
+            array_fill_keys(DefaultDrivers::familyKeys(), AccountContainerUnsupported::class),
+            array_map(fn (string $refusal) => strstr($refusal.':', ':', true), $refusals),
+            json_encode($refusals, JSON_THROW_ON_ERROR),
+        );
     }
 
     public function test_a_host_without_a_proven_container_runtime_refuses_before_reserving(): void

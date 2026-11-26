@@ -63,7 +63,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * The owner creates a share from a fresh preview under a request key: it holds a new token, the selected members at
- * scope version 1, an open request for its gateway and its audit, answers with its id, number and state only, and
+ * scope version 1, an open request for its gateway and its audit, answers with its id, number and status only, and
  * runs once per key. The duration is checked and the 101st live share refused.
  */
 #[TestsCommand(CreateShareCommand::class)]
@@ -196,7 +196,7 @@ final class CreateShareTest extends TestCase
             (string) json_encode($receipt->getAttributes()),
         );
 
-        $this->assertSame(['shareId', 'number', 'state'], array_keys(get_object_vars($summary)));
+        $this->assertSame(['shareId', 'number', 'status'], array_keys(get_object_vars($summary)));
     }
 
     public function test_a_repeat_with_the_same_key_returns_the_same_share_and_a_changed_payload_conflicts(): void

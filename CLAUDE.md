@@ -52,6 +52,7 @@ yours to resolve at its source.
 - Work a plan phase by phase. Inside a phase, write every task back to back and run no tests, Pint, PHPStan or judge between tasks.
 - At the end of each phase, once: `composer test:affected`, then Pint, PHPStan and the judge (`journal commandments-judge-changes`).
 - After a failure, rerun only the failed test methods by name: `composer test:run -- --filter=<method> <file>`. Never rerun `composer test:affected` to check one fix.
+- **Fix the whole batch, then rerun once** (rule 113; user messages 27022, 27023, 27027, 27029): fix every failure on the list in one go, and only then rerun the failed tests. Never fix a few and rerun, never rerun in small batches.
 - **Never rerun the full suite to check a fix** (user messages 15226, 15229, rule 63). A run that stopped on Pint, PHPStan, types or a fatal error before its tests: rerun just that check. A full run with failures: write every failed test to one list, fix them, rerun only the failed tests by name, and run the full suite again only once the list is empty.
 - At the end of the whole plan, once: the full suite, `composer test`. Never the full suite between phases, never in a loop.
 - Commit after each phase, then go straight on to the next phase without stopping to report.

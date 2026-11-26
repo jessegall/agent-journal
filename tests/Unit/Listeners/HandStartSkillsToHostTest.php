@@ -54,7 +54,7 @@ final class HandStartSkillsToHostTest extends TestCase
 
     public function test_a_session_handed_no_generation_hands_nothing(): void
     {
-        $session = $this->session(DefaultDrivers::CLAUDE_CODE);
+        $session = $this->sessionOnDriver(DefaultDrivers::CLAUDE_CODE);
 
         $this->assertSame([], $this->grantOf($session)->folders());
     }
@@ -84,13 +84,13 @@ final class HandStartSkillsToHostTest extends TestCase
             ], ['journal', 'journal-plans', 'journal-tasks'])),
             null,
         );
-        $session = $this->session($driver);
+        $session = $this->sessionOnDriver($driver);
         $session->recordSkills($generation, $keys);
 
         return $session;
     }
 
-    private function session(string $driver): AgentSession
+    private function sessionOnDriver(string $driver): AgentSession
     {
         $agent = Agent::create('Writer', 'read-only-helper', $this->localProject());
         $session = new AgentSession()->forceFill(TestSelections::sessionColumns($driver));

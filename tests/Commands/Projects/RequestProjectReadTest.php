@@ -99,13 +99,17 @@ final class RequestProjectReadTest extends TestCase
 
     public function test_a_new_read_is_ordered_to_the_bindings_host_and_one_asked_again_is_not(): void
     {
-        $read = $this->read(ProjectReadType::File, 'src/main.go');
-        $this->read(ProjectReadType::File, 'src/main.go');
+        $this->ownedBy(7);
+        $this->journal->actAsUserId(TestIds::of(7));
+        $files = $this->app->make(ProjectFiles::class);
+
+        $read = $files->file($this->binding, 'src/main.go');
+        $files->file($this->binding, 'src/main.go');
 
         $order = HostOrder::query()->where('type', HostOrderType::ReadProject->value)->sole();
         $payload = $this->journal->payloadOf($order);
         $this->assertSame(
-            [$this->host->hostId, null, $read->id, 'src/main.go'],
+            [$this->host->hostId, null, $read->readId, 'src/main.go'],
             [$order->host_id, $order->host_process_id, $payload['id'], $payload['path']],
         );
     }
