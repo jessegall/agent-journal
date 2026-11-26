@@ -12,7 +12,7 @@ use Tests\Support\Seeding\TestJournal;
 use Tests\Support\Terminals\TakesTerminalControl;
 
 /**
- * The owner watching a terminal reads its first frame: nothing is sent on.
+ * The owner watching a terminal reads its first frame, or the frames after the one it holds: nothing is sent on.
  */
 #[TestsRoute('GET', 'web.terminal-frame')]
 final class TerminalFrameGetTest extends GuardedRouteEntryTestCase
@@ -22,10 +22,23 @@ final class TerminalFrameGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
+        return $this->frameCall($journal, 'terminal-first-frame');
+    }
+
+    public function test_the_frames_after_a_held_one_are_read(): void
+    {
+        $this->assertReachedAndDispatchesItsCommands($this->frameCall($this->journal, 'terminal-held-frame'));
+    }
+
+    /**
+     * The recorded frame read of a runtime the owner watches.
+     */
+    private function frameCall(TestJournal $journal, string $recording): RouteCall
+    {
         $journal->owner();
         $runtime = $this->controllableRuntime();
 
-        return RouteCall::recorded('terminal-first-frame', [
+        return RouteCall::recorded($recording, [
             '01JPAGEREQUESTAGENT0000000' => $runtime->session->agent_id,
             'interest-1' => $this->openInterest($runtime),
         ]);

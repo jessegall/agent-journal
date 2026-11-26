@@ -7,7 +7,7 @@ import { declaredLooks } from './driverLooks';
 
 /**
  * The ids every recorded request names, one for each record a route or a body points at; the server's replay
- * (tests/Feature/Web/PageRequestContractTest.php) makes each record and puts its real id in their place.
+ * (RouteCall::recorded in the route tests, tests/Support/Entries/RouteCall.php) puts each real id in their place.
  */
 export const RECORDED = {
     agent: '01JPAGEREQUESTAGENT0000000',

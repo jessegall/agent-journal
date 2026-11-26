@@ -42,9 +42,8 @@ final class SavePostTest extends GuardedRouteEntryTestCase
             'revision' => 0,
             'remote_projects' => '0',
         ]);
-        $this->journal->owner()->sinkCommands();
+        $this->journal->owner();
 
-        $this->assertLessThan(400, $this->send($call, Caller::User)->status());
-        $this->journal->assertNothingDispatched();
+        $this->assertReachedAndDispatchesItsCommands($call);
     }
 }

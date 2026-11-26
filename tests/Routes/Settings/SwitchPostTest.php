@@ -47,9 +47,8 @@ final class SwitchPostTest extends GuardedRouteEntryTestCase
                 'group' => new GroupReference('Core', 'domain_reminders'),
                 'expectedRevision' => 0,
             ]);
-        $this->journal->owner()->sinkCommands()->sinkReplies($call->replies);
+        $this->journal->owner();
 
-        $this->assertLessThan(400, $this->send($call, Caller::User)->status());
-        $this->journal->assertDispatchedExactly($call->expected);
+        $this->assertReachedAndDispatchesItsCommands($call);
     }
 }

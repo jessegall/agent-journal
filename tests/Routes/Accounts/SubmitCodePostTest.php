@@ -7,7 +7,6 @@ namespace Tests\Routes\Accounts;
 use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
@@ -23,18 +22,13 @@ final class SubmitCodePostTest extends GuardedRouteEntryTestCase
         $journal->owner()->user('Member');
         $attemptId = strtolower((string) Str::ulid());
 
-        return RouteCall::as(Caller::User)
-            ->parameters([
-                'attempt' => $attemptId,
-            ])
-            ->payload([
-                'code' => '123456',
-                'submission_key' => 'code-1',
-            ])
+        return RouteCall::recorded('account-sign-in-code', [
+            '01JPAGEREQUESTATTEMPT00000' => $attemptId,
+        ])
             ->expects(SubmitSignInCodeCommand::class, [
                 'attemptId' => $attemptId,
                 'code' => '123456',
-                'submissionKey' => 'code-1',
+                'submissionKey' => '00000000-0000-4000-8000-000000000001',
             ])
             ->hiddenFrom('Member');
     }

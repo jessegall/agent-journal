@@ -40,7 +40,15 @@ abstract class RouteEntryTestCase extends TestCase
 
     public function test_the_request_is_reached_and_dispatches_what_it_declares(): void
     {
-        $call = $this->arrangedCall();
+        $this->assertReachedAndDispatchesItsCommands($this->arrangedCall());
+    }
+
+    /**
+     * Sends the call as its caller: the answer is no error, the commands it sends are the declared ones and exactly
+     * those it expects, and a page renders its declared component; a test of a second case of the route sends its own.
+     */
+    protected function assertReachedAndDispatchesItsCommands(RouteCall $call): void
+    {
         $this->journal->sinkCommands()->sinkReplies($call->replies);
 
         $response = $this->send($call, $call->caller);

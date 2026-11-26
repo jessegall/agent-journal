@@ -41,6 +41,16 @@ final readonly class EntryAttributes
     }
 
     /**
+     * Every judged test file, by its path from the project root.
+     *
+     * @return list<string>
+     */
+    public function files(): array
+    {
+        return array_keys($this->testClasses());
+    }
+
+    /**
      * Each declared class under the tests that does not load, by its file: its namespace does not match its folder.
      *
      * @return list<string>
