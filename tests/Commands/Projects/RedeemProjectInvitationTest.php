@@ -119,19 +119,6 @@ final class RedeemProjectInvitationTest extends TestCase
         $this->assertSame(2, Project::query()->distinct()->count('key'));
     }
 
-    public function test_a_redemption_without_tls_is_refused(): void
-    {
-        $this->issueLine(self::TICKET);
-
-        $this->postJson(
-            'http://localhost/api/project-connections/redeem',
-            $this->redemptionBody(self::TICKET, 'nonce-aaaaaaaaaaaaaaaa'),
-        )
-            ->assertForbidden();
-
-        $this->assertSame(0, ProjectBinding::query()->count());
-    }
-
     public function test_a_new_line_makes_one_project_with_one_main_environment_and_the_binding_in_it(): void
     {
         $binding = $this->connected('new-ticket', 'nonce-aaaaaaaaaaaaaaaa');

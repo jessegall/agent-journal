@@ -76,7 +76,6 @@ final class CommandTestRequestsTest extends TestCase
     private const array REWRITING = [
         'domain/Chat/tests/Commands/DockSourceTest.php',
         'domain/Chat/tests/Commands/UndockSourceTest.php',
-        'domain/Comments/tests/Commands/PostCommentTest.php',
         'tests/Commands/Accounts/BeginSignInTest.php',
         'tests/Commands/Accounts/PublishSignInChallengeTest.php',
         'tests/Commands/Accounts/RenameAccountTest.php',
@@ -89,13 +88,7 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Projects/ApproveDeviceGrantTest.php',
         'tests/Commands/Projects/AssignBindingEnvironmentTest.php',
         'tests/Commands/Projects/IssueProjectInvitationTest.php',
-        'tests/Commands/Projects/PollDeviceGrantTest.php',
-        'tests/Commands/Projects/RecordBindingRuntimeStopTest.php',
-        'tests/Commands/Projects/RedeemProjectInvitationTest.php',
-        'tests/Commands/Projects/RevokeDeviceGrantTest.php',
         'tests/Commands/Projects/RevokeProjectBindingTest.php',
-        'tests/Commands/Projects/RevokeProjectBindingsTest.php',
-        'tests/Commands/Projects/RevokeProjectInvitationTest.php',
     ];
 
     /**

@@ -40,9 +40,7 @@ final class AssignBindingEnvironmentTest extends TestCase
         $refused = $this->start($binding)->assertForbidden();
         $this->assertStringContainsString(self::NO_ENVIRONMENT, (string) $refused->json('message'));
 
-        $this->actingAs($this->owner)
-            ->putJson("/project-connections/bindings/{$binding->id}/environment/{$main}")
-            ->assertNoContent();
+        $this->journal->asOwner(new AssignBindingEnvironmentCommand($binding->id, (string) $main));
         $this->assertFalse(ProjectBinding::query()->findOrFail($binding->id)->isEnvironmentUnassigned());
     }
 

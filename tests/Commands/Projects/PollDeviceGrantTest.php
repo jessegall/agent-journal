@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\DeviceGrant;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -48,9 +50,10 @@ final class PollDeviceGrantTest extends TestCase
 
         $this->travel(DeviceGrant::CODE_MINUTES + 1)->minutes();
 
-        $this->actingAs($this->owner)
-            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertNotFound();
+        $this->journal->assertRefused(
+            DeviceGrantRefused::class,
+            fn () => $this->journal->asOwner(new ApproveDeviceGrantCommand((string) $start->json('userCode'))),
+        );
         $expired = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(410);
         $this->assertSame('expired_token', $expired->json('details.outcome'));
     }
@@ -74,7 +77,7 @@ final class PollDeviceGrantTest extends TestCase
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->journal->asOwner(new ApproveDeviceGrantCommand((string) $start->json('userCode')));
         $this->app['auth']->forgetGuards();
         $issued = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
 

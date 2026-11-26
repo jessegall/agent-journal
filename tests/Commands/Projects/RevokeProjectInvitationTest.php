@@ -7,9 +7,11 @@ namespace Tests\Commands\Projects;
 use App\Commands\Projects\RevokeProjectInvitation\RevokeProjectInvitationCommand;
 use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
+use App\Models\Projects\ProjectInvitation;
 use App\Values\ReleaseManifest;
 use App\Values\ReleaseTarget;
 use App\Values\SettingReference;
+use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
@@ -25,9 +27,6 @@ final class RevokeProjectInvitationTest extends TestCase
 {
     use CommitsHookRows;
     use IssuesInstallLines;
-
-    private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
-        ."Copy a new one from the journal.\n";
 
     private const array TABLES = [
         'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'projects',
@@ -55,19 +54,15 @@ final class RevokeProjectInvitationTest extends TestCase
         });
     }
 
-    public function test_a_revoked_line_answers_the_generic_failure(): void
+    public function test_a_revoked_line_can_no_longer_be_redeemed(): void
     {
         $this->switchOn();
         $response = $this->issue('action-1');
-        $ticket = $this->ticketOf($response);
 
-        $this->actingAs($this->journal->ownerUser())
-            ->deleteJson('/project-connections/invitations/'.$response['invitationId'])
-            ->assertNoContent();
+        $this->journal->asOwner(new RevokeProjectInvitationCommand($response['invitationId']));
 
-        $this->assertSame(
-            self::UNUSABLE_LINE,
-            $this->get("/install/{$ticket}")->assertNotFound()->getContent(),
+        $this->assertFalse(
+            ProjectInvitation::query()->findOrFail($response['invitationId'])->isRedeemableAt(CarbonImmutable::now()),
         );
     }
 
@@ -77,17 +72,6 @@ final class RevokeProjectInvitationTest extends TestCase
     private function issue(string $issuanceKey): array
     {
         return $this->issuedLine(['issuanceKey' => $issuanceKey]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $issued
-     */
-    private function ticketOf(array $issued): string
-    {
-        $this->assertMatchesRegularExpression(self::LINE, (string) $issued['installLine']);
-        preg_match(self::LINE, (string) $issued['installLine'], $match);
-
-        return $match[1];
     }
 
     private function switchOn(): void

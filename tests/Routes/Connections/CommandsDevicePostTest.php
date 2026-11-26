@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Routes\Connections;
 
 use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Models\Projects\DeviceGrant;
 use App\Support\EnrolledHost;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -30,6 +32,14 @@ final class CommandsDevicePostTest extends RouteEntryTestCase
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
+    public function test_a_revoked_grant_is_refused(): void
+    {
+        $call = $this->arrangedCall();
+        $this->journal->asOwner(new RevokeDeviceGrantCommand(DeviceGrant::query()->sole()->id));
+
+        $this->send($call, $call->caller)->assertUnauthorized();
     }
 
     protected function arrange(TestJournal $journal): RouteCall

@@ -7,16 +7,13 @@ namespace Tests\Commands\Projects;
 use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use App\Models\Projects\ProjectBinding;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
-use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
 
 /**
- * An ended lease reads stop unconfirmed until its stop receipt arrives, which counts once.
+ * An ended lease reads stop unconfirmed until its stop receipt arrives; a repeated receipt changes nothing.
  */
 #[TestsCommand(RecordBindingRuntimeStopCommand::class)]
 final class RecordBindingRuntimeStopTest extends TestCase
@@ -29,7 +26,7 @@ final class RecordBindingRuntimeStopTest extends TestCase
         'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
-    public function test_an_ended_lease_reads_stop_unconfirmed_until_its_stop_receipt_which_counts_once(): void
+    public function test_an_ended_lease_reads_stop_unconfirmed_until_its_stop_receipt_and_a_repeat_changes_nothing(): void
     {
         $this->issueLine('the-ticket');
         $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
@@ -37,29 +34,26 @@ final class RecordBindingRuntimeStopTest extends TestCase
         $runtime = '01JAAAAAAAAAAAAAAAAAAAAAAA';
         ProjectBinding::query()->findOrFail($binding)->holdLease($runtime, CarbonImmutable::now()->subMinute());
 
-        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
-            AssertableInertia $page,
-        ) => $page
-            ->where(
-                'page.data.bindings.rows.0.stateText',
-                fn (string $text) => str_contains($text, 'Session stop unconfirmed'),
-            ));
+        $this->assertTrue($this->bindingOf($binding)->isStopUnconfirmedAt(CarbonImmutable::now()));
 
-        $this->sendStopReceipt($binding, $runtime)->assertNoContent();
-        $this->sendStopReceipt($binding, $runtime)->assertNoContent();
+        $this->stop($binding, $runtime);
+        $this->stop($binding, $runtime);
 
-        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
-            AssertableInertia $page,
-        ) => $page->where('page.data.bindings.rows.0.stateText', 'Ready.'));
+        $this->assertFalse($this->bindingOf($binding)->isStopUnconfirmedAt(CarbonImmutable::now()));
     }
 
-    private function sendStopReceipt(string $binding, string $runtime): TestResponse
+    /**
+     * The relay's stop receipt for the runtime, as the binding's host reports it.
+     */
+    private function stop(string $binding, string $runtime): void
     {
-        return $this->signedRelayCall(
-            $this->relayCredential('nonce-aaaaaaaaaaaaaaaa'),
-            "/host/bindings/{$binding}/runtimes/{$runtime}/stopped",
-            [],
-            (string) Str::uuid(),
+        $this->journal->asSystem(
+            new RecordBindingRuntimeStopCommand($this->bindingOf($binding)->host_id, $binding, $runtime),
         );
+    }
+
+    private function bindingOf(string $binding): ProjectBinding
+    {
+        return ProjectBinding::query()->findOrFail($binding);
     }
 }

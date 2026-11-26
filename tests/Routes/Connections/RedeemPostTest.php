@@ -26,6 +26,17 @@ final class RedeemPostTest extends RouteEntryTestCase
 
     private const string NONCE = 'nonce-0123456789abcdef';
 
+    public function test_a_redemption_without_tls_is_refused_and_nothing_is_sent(): void
+    {
+        $this->issueLine('the-ticket');
+        $this->journal->sinkCommands();
+
+        $this->journal->jsonRoute('POST', 'connections.redeem', payload: $this->redemptionBody('the-ticket', self::NONCE))
+            ->assertForbidden();
+
+        $this->journal->assertDispatchedExactly([]);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $this->issueLine('the-ticket');

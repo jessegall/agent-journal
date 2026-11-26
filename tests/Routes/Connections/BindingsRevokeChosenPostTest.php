@@ -20,6 +20,17 @@ use Tests\Support\Seeding\TestJournal;
 #[TestsRoute('POST', 'connections.bindings.revoke-chosen')]
 final class BindingsRevokeChosenPostTest extends GuardedRouteEntryTestCase
 {
+    public function test_the_page_is_told_each_bindings_outcome(): void
+    {
+        $call = $this->arrangedCall();
+        $this->journal->sinkCommands()->sinkReplies($call->replies);
+        $bindingId = $call->payload['bindings'][0];
+
+        $this->send($call, $call->caller)
+            ->assertRedirect()
+            ->assertSessionHas('inertia.flash_data', ['revokedBindings' => [$bindingId => 'Revoked']]);
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
@@ -32,7 +43,7 @@ final class BindingsRevokeChosenPostTest extends GuardedRouteEntryTestCase
                 ],
             ])
             ->reply(RevokeProjectBindingsCommand::class, new RevokedBindings([
-                new BindingOutcome($bindingId, 'revoked', '2026-11-26T10:00:00+00:00'),
+                new BindingOutcome($bindingId, 'Revoked', '2026-11-26T10:00:00+00:00'),
             ]))
             ->expects(RevokeProjectBindingsCommand::class, [
                 'ids' => [

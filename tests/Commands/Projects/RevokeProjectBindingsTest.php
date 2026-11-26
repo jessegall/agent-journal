@@ -41,11 +41,7 @@ final class RevokeProjectBindingsTest extends TestCase
         );
         $second = (string) $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated()->json('bindingId');
 
-        $this->actingAs($this->owner)
-            ->from('/connections')
-            ->post('/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
-            ->assertRedirect('/connections')
-            ->assertSessionHas('inertia.flash_data', ['revokedBindings' => [$first => 'Revoked', $second => 'Revoked']]);
+        $this->journal->asOwner(new RevokeProjectBindingsCommand([$first, $second]));
 
         $this->assertSame(
             [BindingReadiness::Revoked, BindingReadiness::Revoked],
