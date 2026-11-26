@@ -105,8 +105,6 @@ return [
         'phase_timing' => 'Plan {plan} phase {phase} still has {tasks}; tests and checks run at the end of the phase.',
     ],
     'skills' => [
-        'not_delivered' => 'The skills the journal gives you are {state}, not delivered yet, so file changes wait. Reading still '
-            .'works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
         'read_required' => 'Read the required skill {skill} whole before work it covers: php artisan skill:show '
             .'{skill}',
         'changed' => 'Your skills changed to {skills}: {driver} loads skills only when a session starts, so start a '

@@ -11,7 +11,6 @@ use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Profiles\Enums\AccessRuleType;
 use App\Stacks\AgentStack;
 use App\Stacks\AgentState;
-use App\Stacks\AwaitSkillsState;
 use App\Stacks\Decisions\ContextLine;
 use App\Stacks\Decisions\MessageLine;
 use App\Stacks\Exceptions\BottomStateCannotFinish;
@@ -139,7 +138,7 @@ final class AgentStackTest extends TestCase
         $this->assertSame($input->methodName(), $answer->steps[0]->hookMethod);
     }
 
-    public function test_file_policy_and_pending_skill_guards_are_enforced_under_a_state_that_passes(): void
+    public function test_file_policy_is_enforced_under_a_state_that_passes(): void
     {
         $passing = $this->frame('guide', ScriptedState::passing());
         $stack = $this->stack($this->ready(changesFiles: false), $passing);
@@ -147,18 +146,6 @@ final class AgentStackTest extends TestCase
         $file = $stack->answer(HookInputs::all()['file edit'], TestText::renderer());
 
         $this->assertSame(['guide delegate', 'ready deny'], $this->stepsOf($file));
-
-        $pending = $this->frame('skills', new AwaitSkillsState('publication-1'));
-        $guarded = $this->stack($this->ready(), $pending, $passing);
-
-        $this->assertSame(
-            ['guide delegate', 'skills deny'],
-            $this->stepsOf($guarded->answer(HookInputs::all()['shell command'], TestText::renderer())),
-        );
-        $this->assertSame(
-            ['guide delegate', 'skills deny'],
-            $this->stepsOf($guarded->answer(HookInputs::all()['file edit'], TestText::renderer())),
-        );
     }
 
     public function test_a_tool_handler_that_passes_cannot_hide_the_operation_policy(): void
