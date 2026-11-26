@@ -31,4 +31,13 @@ final class ClaimHostOrdersTest extends TestCase
             [count($orders), $orders[$open->id]['signature'], $open->status, $again->isEmpty()],
         );
     }
+
+    public function test_a_host_claims_none_of_another_hosts_orders(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->enrollHost('Other', [base_path()])->openHostProcess('Mac', 'shell');
+
+        $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($this->journal->hostCalled('Other')->hostId, 10));
+
+        $this->journal->assertResult(true, $claim->isEmpty());
+    }
 }

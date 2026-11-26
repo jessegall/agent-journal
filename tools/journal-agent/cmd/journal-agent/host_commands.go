@@ -28,6 +28,7 @@ import (
 	"journal-agent/drivers"
 	drivercontracts "journal-agent/drivers/contracts"
 	"journal-agent/host"
+	"journal-agent/hostapi"
 	"journal-agent/keyscripts"
 	"journal-agent/keyscripts/scripts"
 	"journal-agent/profiles"
@@ -215,6 +216,9 @@ func serve(arguments []string) error {
 	release := "development"
 	if *installationFolder != "" {
 		release = filepath.Base(*installationFolder)
+	}
+	if err := hostapi.CheckOrigin(journal.JournalURL(), arrangement.IsContained()); err != nil {
+		return err
 	}
 	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, opener.containers, release); err != nil {
 		return err
