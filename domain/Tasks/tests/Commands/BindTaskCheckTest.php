@@ -7,10 +7,10 @@ namespace Domain\Tasks\Tests\Commands;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Bus\ResultReceipts;
-use App\Contracts\Processes\ProcessRunCallers;
+use App\Contracts\Processes\ProcessRunResolver;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Runs\AssessmentOutcome;
-use App\Exceptions\ProcessRunOfAnotherCaller;
+use App\Exceptions\ProcessRunOfAnotherActor;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use App\Values\PublishedResult;
@@ -76,7 +76,7 @@ final class BindTaskCheckTest extends TestCase
         $own = (string) Str::ulid();
         $other = (string) Str::ulid();
 
-        $this->callersAre([
+        $this->actorsAre([
             $own => ActorReference::of($this->journal->ownerUser()),
             $other => ActorReference::ofClass(User::class, TestIds::of(9)),
         ]);
@@ -88,7 +88,7 @@ final class BindTaskCheckTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->runCommand(new RunTaskCheckCommand($task->id, 1, $other, 'acme verify')),
-            ProcessRunOfAnotherCaller::class,
+            ProcessRunOfAnotherActor::class,
         );
 
         $this->assertThrows(
@@ -162,21 +162,21 @@ final class BindTaskCheckTest extends TestCase
     }
 
     /**
-     * @param  array<string, ActorReference>  $callers
+     * @param  array<string, ActorReference>  $actors
      */
-    private function callersAre(array $callers): void
+    private function actorsAre(array $actors): void
     {
-        $this->app->instance(ProcessRunCallers::class, new readonly class($callers) implements ProcessRunCallers
+        $this->app->instance(ProcessRunResolver::class, new readonly class($actors) implements ProcessRunResolver
         {
             /**
-             * @param  array<string, ActorReference>  $callers
+             * @param  array<string, ActorReference>  $actors
              */
-            public function __construct(private array $callers) {}
+            public function __construct(private array $actors) {}
 
-            public function callerOf(string $runId): Option
+            public function actorOf(string $runId): Option
             {
-                if (isset($this->callers[$runId])) {
-                    return Some::create($this->callers[$runId]);
+                if (isset($this->actors[$runId])) {
+                    return Some::create($this->actors[$runId]);
                 }
 
                 return None::create();

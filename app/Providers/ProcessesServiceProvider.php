@@ -34,7 +34,7 @@ use App\Contracts\Bus\CommandClassifier as CommandClassifierContract;
 use App\Contracts\Bus\ResultReceipts as ResultReceiptsContract;
 use App\Contracts\Hosts\ServedEnvironment as ServedEnvironmentContract;
 use App\Contracts\Notifications\NotificationTargets;
-use App\Contracts\Processes\ProcessRunCallers as ProcessRunCallersContract;
+use App\Contracts\Processes\ProcessRunResolver as ProcessRunResolverContract;
 use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Contracts\Reads\OutputRecorder as OutputRecorderContract;
 use App\Contracts\Time\VerificationTiming;
@@ -52,7 +52,7 @@ use App\Support\JournalRoutes;
 use App\Support\OpenTiming;
 use App\Support\OutputDocking;
 use App\Support\OutputRecorder;
-use App\Support\ProcessRunCallers;
+use App\Support\ProcessRunResolver;
 use App\Support\ProgramClassifiers;
 use App\Support\ProjectRules;
 use App\Support\ReceiptPublisher;
@@ -92,7 +92,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ReceiptPublisher::class);
         $this->app->scoped(ResultReceiptsContract::class, ResultReceipts::class);
-        $this->app->scoped(ProcessRunCallersContract::class, ProcessRunCallers::class);
+        $this->app->scoped(ProcessRunResolverContract::class, ProcessRunResolver::class);
 
         $this->app->when(CommandClassifier::class)
             ->needs(CommandRuleRegistry::class)

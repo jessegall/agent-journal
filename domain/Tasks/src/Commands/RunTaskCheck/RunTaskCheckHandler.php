@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\RunTaskCheck;
 
-use App\Contracts\Processes\ProcessRunCallers;
-use App\Exceptions\ProcessRunOfAnotherCaller;
+use App\Contracts\Processes\ProcessRunResolver;
+use App\Exceptions\ProcessRunOfAnotherActor;
 use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskCheckRefused;
@@ -17,7 +17,7 @@ use Domain\Tasks\Models\TaskRun;
 
 final readonly class RunTaskCheckHandler extends TaskCommandHandler
 {
-    public function __construct(private ProcessRunCallers $callers) {}
+    public function __construct(private ProcessRunResolver $processRuns) {}
 
     /**
      * The new check's id; a run that is not the task's current one, a process run another caller opened, and a process
@@ -25,7 +25,7 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
      *
      * @throws TaskRunOfAnotherActor
      * @throws TaskRunMissing
-     * @throws ProcessRunOfAnotherCaller
+     * @throws ProcessRunOfAnotherActor
      * @throws TaskCheckRefused
      */
     public function handle(RunTaskCheckCommand $command, Task $task): string
@@ -34,9 +34,9 @@ final readonly class RunTaskCheckHandler extends TaskCommandHandler
         $run = TaskRun::findNumberedOf($task, $command->runNumber);
         $caller = $command->dispatchedBy();
 
-        $this->callers->callerOf($command->processRunId)
+        $this->processRuns->actorOf($command->processRunId)
             ->filter(fn (ActorReference $opener) => $opener->isSameAs($caller))
-            ->getOrThrow(ProcessRunOfAnotherCaller::forRun($command->processRunId));
+            ->getOrThrow(ProcessRunOfAnotherActor::forRun($command->processRunId));
 
         if (TaskCheck::findForProcessRun($command->processRunId) !== null) {
             throw TaskCheckRefused::alreadyRegistered($command->processRunId);

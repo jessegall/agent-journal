@@ -10,10 +10,10 @@ use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**
- * A process run that was not opened by the actor who names it as their own: another caller opened it, or no run of
+ * A process run that was not opened by the actor who names it as their own: another actor opened it, or no run of
  * this project has that id.
  */
-final class ProcessRunOfAnotherCaller extends RuntimeException implements CodedRefusal, CommandRefusal
+final class ProcessRunOfAnotherActor extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     public static function forRun(string $runId): self
     {

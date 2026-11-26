@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Processes\ProcessRunCallers as ProcessRunCallersContract;
+use App\Contracts\Processes\ProcessRunResolver as ProcessRunResolverContract;
 use App\Models\Runs\ProcessRun;
 use PhpOption\None;
 use PhpOption\Option;
@@ -13,9 +13,9 @@ use PhpOption\Some;
 /**
  * Reads who opened a run of the selected project from the run's own row.
  */
-final readonly class ProcessRunCallers implements ProcessRunCallersContract
+final readonly class ProcessRunResolver implements ProcessRunResolverContract
 {
-    public function callerOf(string $runId): Option
+    public function actorOf(string $runId): Option
     {
         $run = ProcessRun::query()->whereKey($runId)->first();
 
