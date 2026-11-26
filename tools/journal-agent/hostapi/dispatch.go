@@ -3,6 +3,7 @@ package hostapi
 import (
 	"context"
 	"errors"
+	"slices"
 	"sync"
 )
 
@@ -62,6 +63,16 @@ func (dispatcher *Dispatcher) Submit(ctx context.Context, order Order) {
 }
 
 // Wait returns once every order submitted so far was answered.
+// Capabilities are the order types this host carries out, as its inventory lists them.
+func (dispatcher *Dispatcher) Capabilities() []string {
+	capabilities := make([]string, 0, len(dispatcher.executors))
+	for orderType := range dispatcher.executors {
+		capabilities = append(capabilities, orderType)
+	}
+	slices.Sort(capabilities)
+	return capabilities
+}
+
 func (dispatcher *Dispatcher) Wait() {
 	dispatcher.running.Wait()
 }
@@ -100,7 +111,7 @@ func (dispatcher *Dispatcher) answerOf(ctx context.Context, order Order) Answer 
 	}
 	executor, found := dispatcher.executors[order.Type]
 	if !found {
-		return RefusedFor(order, Unsafe, map[string]any{"reason": "this host does not carry out " + order.Type})
+		return RefusedFor(order, UnknownOrder, map[string]any{"reason": "this host does not carry out " + order.Type})
 	}
 	facts, err := executor(ctx, order)
 	if err != nil {

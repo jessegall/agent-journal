@@ -120,6 +120,10 @@ final readonly class HostOrderPlacement
         HostOrderBody $body,
         int $seconds = self::ORDER_SECONDS,
     ): HostOrder {
+        if (! $host->carriesOut($body->type)) {
+            throw HostProtocolRefused::lacksCapability($host->id, $body->type);
+        }
+
         return HostOrder::findWithKey($body->idempotencyKey)
             ?? HostOrder::create($host, $process, $body, $this->clock->now()->addSeconds($seconds));
     }

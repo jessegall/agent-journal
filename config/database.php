@@ -182,6 +182,8 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
+            // Longer than the longest wait of a host's long poll (ClaimOrdersController::WAIT_LIMIT_SECONDS).
+            'read_timeout' => env('REDIS_READ_TIMEOUT', 60),
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),

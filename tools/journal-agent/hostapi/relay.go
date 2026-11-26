@@ -64,6 +64,7 @@ func (relay Relay) SendInventory(ctx context.Context) error {
 		Protocol:        Protocol,
 		Release:         relay.Release,
 		AnsweredThrough: relay.Record.AnsweredThrough(),
+		Capabilities:    relay.Dispatcher.Capabilities(),
 		Processes:       relay.Table.Inventory(),
 	})
 }

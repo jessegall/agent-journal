@@ -32,6 +32,7 @@ type Inventory struct {
 	Protocol        int                `json:"protocol"`
 	Release         string             `json:"release"`
 	AnsweredThrough string             `json:"answered_through,omitempty"`
+	Capabilities    []string           `json:"capabilities"`
 	Processes       []InventoryProcess `json:"processes"`
 }
 

@@ -14,6 +14,7 @@ use App\Data\Hosts\FailedHostCallData;
 use App\Data\Profiles\ProtectionReportData;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Hosts\HostOrderType;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Terminals\TerminalInputType;
 use App\Events\Connections\HostBrowserInputAdvertised;
@@ -50,6 +51,7 @@ use Spatie\LaravelData\DataCollection;
  * @property ArrangementType $arrangement
  * @property int $protocol
  * @property string|null $order_secret
+ * @property list<string> $capabilities
  * @property int $order_sequence
  * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property bool $browser_input
@@ -92,6 +94,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'arrangement' => ArrangementType::class,
             'protocol' => 'integer',
             'order_secret' => 'encrypted',
+            'capabilities' => 'array',
             'order_sequence' => 'integer',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
@@ -367,6 +370,25 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             || $reported !== []
             || $this->last_answered_at === null
             || $this->last_answered_at->lt($at->subMinute());
+    }
+
+    /**
+     * Keeps the order types the host's inventory says it carries out.
+     *
+     * @param  list<string>  $capabilities
+     */
+    public function recordCapabilities(array $capabilities): void
+    {
+        $this->capabilities = $capabilities;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * Whether the host carries out orders of the type: a host that sent no inventory yet is taken to carry out all.
+     */
+    public function carriesOut(HostOrderType $type): bool
+    {
+        return $this->capabilities === [] || in_array($type->value, $this->capabilities, true);
     }
 
     public function acceptsProtocol(int $protocol): bool

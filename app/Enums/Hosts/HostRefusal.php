@@ -15,4 +15,5 @@ enum HostRefusal: string
     case Unsafe = 'unsafe';
     case HostRestarted = 'host_restarted';
     case Fenced = 'fenced';
+    case UnknownOrder = 'unknown_order';
 }

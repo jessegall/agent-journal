@@ -17,12 +17,14 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class HostInventoryData extends Data
 {
     /**
+     * @param  list<string>  $capabilities  the order types the host carries out
      * @param  list<InventoryProcessData>  $processes
      */
     public function __construct(
         public readonly int $protocol,
         public readonly string $release,
         public readonly string|null $answeredThrough,
+        public readonly array $capabilities = [],
         #[DataCollectionOf(InventoryProcessData::class)]
         public readonly array $processes = [],
     ) {}

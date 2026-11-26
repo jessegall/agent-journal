@@ -1,0 +1,67 @@
+{
+  "secret": "the-order-secret",
+  "orders": [
+    {
+      "order": {
+        "id": "01jorder0000000000000000001",
+        "sequence": 7,
+        "type": "write_keys",
+        "process_id": "01jprocess000000000000000001",
+        "payload": "{\"bytes\":\"aGk=\",\"as_user\":true}",
+        "expires_at": "2026-11-26T10:00:05Z",
+        "signature": "cc55054280b01d6115d7cf90a9f2ff3e9be711a0787a7d5cbbeb90683ace968d"
+      },
+      "payload": {
+        "bytes": "aGk=",
+        "as_user": true
+      }
+    }
+  ],
+  "answers": [
+    {
+      "order_id": "01jorder0000000000000000001",
+      "status": "refused",
+      "refusal": "guard_moved",
+      "facts": {
+        "row_hash": "abc",
+        "input_generation": 2
+      }
+    },
+    {
+      "order_id": "01jorder0000000000000000002",
+      "status": "refused",
+      "refusal": "unknown_order",
+      "facts": {
+        "reason": "this host does not carry out teleport"
+      }
+    }
+  ],
+  "reports": [
+    {
+      "process_id": "01jprocess000000000000000001",
+      "report": "exited",
+      "identity": "pid:42",
+      "generation": 1,
+      "exit_code": 3,
+      "evidence": "the process exited with 3"
+    }
+  ],
+  "inventory": {
+    "protocol": 1,
+    "release": "6.0.0",
+    "answered_through": "01jorder0000000000000000001",
+    "capabilities": [
+      "open_process",
+      "write_keys"
+    ],
+    "processes": [
+      {
+        "process_id": "01jprocess000000000000000001",
+        "identity": "pid:42",
+        "is_alive": true,
+        "is_terminal_held": true,
+        "spool_offset": 0
+      }
+    ]
+  }
+}

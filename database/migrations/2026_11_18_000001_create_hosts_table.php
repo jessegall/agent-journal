@@ -23,6 +23,8 @@ return new class extends Migration
             $table->text('order_secret')->nullable();
             // The number of the host's last host-wide order: they are numbered under this row's lock.
             $table->unsignedBigInteger('order_sequence')->default(0);
+            // The order types the host's last inventory said it carries out; empty until its first inventory.
+            $table->jsonb('capabilities')->default('[]');
             // The combinations the host reported it can run.
             $table->jsonb('descriptors')->default('[]');
             // Whether the host's last claim said it carries out browser control of its terminals.

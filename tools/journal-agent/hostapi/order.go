@@ -53,6 +53,7 @@ const (
 	Unsafe        Refusal = "unsafe"
 	HostRestarted Refusal = "host_restarted"
 	Fenced        Refusal = "fenced"
+	UnknownOrder  Refusal = "unknown_order"
 )
 
 // Answer is what the host tells the journal of one order.

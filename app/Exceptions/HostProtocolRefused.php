@@ -50,6 +50,11 @@ final class HostProtocolRefused extends RuntimeException implements CodedRefusal
         return new self("Output of process {$processId} is {$bytes} bytes, more than one post may hold.");
     }
 
+    public static function lacksCapability(string $hostId, HostOrderType $order): self
+    {
+        return new self("Host {$hostId} does not carry out {$order->value} orders; update the host.");
+    }
+
     protected function status(): int
     {
         return 409;
