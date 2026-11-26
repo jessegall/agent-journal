@@ -13,9 +13,9 @@ import (
 // lastLinesLimit is how many characters of a program's last lines are kept as the reason it ended.
 const lastLinesLimit = 1000
 
-// exitOf waits until the container's program ends and answers how: its exit code, whether the kernel killed it for
+// ExitOf waits until the container's program ends and answers how: its exit code, whether the kernel killed it for
 // its memory, and the last lines it printed, as plain text.
-func (containers Containers) exitOf(ctx context.Context, name string) (ContainerExit, error) {
+func (containers Containers) ExitOf(ctx context.Context, name string) (ContainerExit, error) {
 	code, err := containers.exitCodeOf(ctx, name)
 	if err != nil {
 		return ContainerExit{}, err
@@ -100,7 +100,7 @@ func (turn *ContainerTurn) Start() error {
 // exit code with its own last lines.
 func (turn *ContainerTurn) Wait() error {
 	<-turn.copied
-	exit, err := turn.containers.exitOf(context.Background(), turn.name)
+	exit, err := turn.containers.ExitOf(context.Background(), turn.name)
 	if err != nil {
 		return err
 	}

@@ -496,17 +496,20 @@ type ContainerProcess struct {
 	Command     []string
 	Environment []string
 	// Restart is the command the container runs instead when it comes back after a restart of the agent daemon or the
-	// server: the program resuming its conversation. It runs once the conversation's transcript is in Transcript.
+	// server, such as the program resuming its conversation. It runs once a file matching RestartWhen exists.
 	Restart []string
-	// Transcript is where the conversation's transcript is found.
-	Transcript ConversationTranscript
+	// RestartWhen is the file whose presence makes a restarted container run Restart.
+	RestartWhen RestartFile
+	// IsHealedByHost leaves restarting a crashed container to the host's own supervision, which reports each restart,
+	// instead of the daemon's restart policy.
+	IsHealedByHost bool
 }
 
-// ConversationTranscript is the folder holding a conversation's transcripts and the conversation's id: Claude Code
-// and Codex both name the transcript file with the id and .jsonl at its end.
-type ConversationTranscript struct {
-	Folder         string
-	ConversationID string
+// RestartFile is a folder and a file name pattern in it, such as a conversation's transcript: a restarted container
+// runs its restart command once a file of the folder matches the pattern.
+type RestartFile struct {
+	Folder string `json:"folder"`
+	Glob   string `json:"glob"`
 }
 
 // into puts the process into what the daemon creates the container from: its environment, and its command after
@@ -514,6 +517,9 @@ type ConversationTranscript struct {
 func (process ContainerProcess) into(options client.ContainerCreateOptions, underInit bool) client.ContainerCreateOptions {
 	options.Config.Env = append(options.Config.Env, process.Environment...)
 	options.Config.Cmd = process.command()
+	if process.IsHealedByHost {
+		options.HostConfig.RestartPolicy = container.RestartPolicy{Name: container.RestartPolicyDisabled}
+	}
 	if underInit {
 		options.Config.Cmd = append([]string{"--"}, options.Config.Cmd...)
 	}
@@ -521,19 +527,18 @@ func (process ContainerProcess) into(options client.ContainerCreateOptions, unde
 	return options
 }
 
-// command is the process's own command, or, with a restart command, a shell that runs the restart command once the
-// conversation's transcript exists and the first command otherwise, so a container brought back by its restart
-// policy resumes the conversation instead of starting it a second time.
+// command is the process's own command, or, with a restart command, a shell that runs the restart command once its
+// file exists and the first command otherwise, so a container brought back by its restart policy resumes its program
+// instead of starting it a second time.
 func (process ContainerProcess) command() []string {
 	if len(process.Restart) == 0 {
 		return process.Command
 	}
 
-	script := `if find "$1" -name "*$2.jsonl" -print -quit 2>/dev/null | grep -q .; then exec ` +
+	script := `if find "$1" -name "$2" -print -quit 2>/dev/null | grep -q .; then exec ` +
 		shellwords.Quoted(process.Restart...) + `; fi; exec ` + shellwords.Quoted(process.Command...)
 
-	return []string{"/bin/sh", "-c", script, "journal-session", process.Transcript.Folder,
-		process.Transcript.ConversationID}
+	return []string{"/bin/sh", "-c", script, "journal-session", process.RestartWhen.Folder, process.RestartWhen.Glob}
 }
 
 // Create creates the container from the manifest, running the process, and answers its id; a daemon that would
@@ -694,6 +699,13 @@ func (containers Containers) IsRunning(ctx context.Context, id string) (bool, er
 	}
 
 	return inspected.Container.State != nil && inspected.Container.State.Running, nil
+}
+
+// Kill sends the signal to the container's program.
+func (containers Containers) Kill(ctx context.Context, id string, signal string) error {
+	_, err := containers.Daemon.ContainerKill(ctx, id, client.ContainerKillOptions{Signal: signal})
+
+	return err
 }
 
 // Stop stops the container within the bound and answers only once the daemon shows it stopped.

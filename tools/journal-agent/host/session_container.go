@@ -154,7 +154,7 @@ func (exit ContainerExit) Evidence() string {
 
 // Wait waits until the container's program ends, answers how, and removes the container and its network.
 func (container SessionContainer) Wait(ctx context.Context, network string) (ContainerExit, error) {
-	exit, err := container.Containers.exitOf(ctx, container.Name)
+	exit, err := container.Containers.ExitOf(ctx, container.Name)
 	if err != nil {
 		return ContainerExit{}, err
 	}

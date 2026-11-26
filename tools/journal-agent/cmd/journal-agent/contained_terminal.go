@@ -64,7 +64,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	process.Restart = resumed.Command
-	process.Transcript = host.ConversationTranscript{Folder: containerAccount, ConversationID: conversationID}
+	process.RestartWhen = host.RestartFile{Folder: containerAccount, Glob: "*" + conversationID + ".jsonl"}
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	ctx := context.Background()
 	if err := opener.writeProtectedAccountFiles(ctx, profile, manifest); err != nil {
