@@ -16,6 +16,6 @@ final class AdmissionAlreadyStarted extends AdmissionFetched
         #[MapName('run_id')]
         public readonly string $runId,
     ) {
-        $this->state = AdmissionStatus::AlreadyStarted;
+        $this->status = AdmissionStatus::AlreadyStarted;
     }
 }

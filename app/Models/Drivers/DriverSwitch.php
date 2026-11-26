@@ -330,10 +330,7 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
     protected function stoppingSession(Builder $query, string $sessionId): void
     {
         $query->where('expected_session_id', $sessionId)
-            ->whereIn('stage', [
-                DriverSwitchStage::Stopping->value,
-                DriverSwitchStage::StopUnconfirmed->value,
-            ]);
+            ->whereIn('stage', [DriverSwitchStage::Stopping->value, DriverSwitchStage::StopUnconfirmed->value]);
     }
 
     /**
@@ -345,10 +342,7 @@ final class DriverSwitch extends JournalModel implements EventSource, ReadableMo
     protected function startingSession(Builder $query, string $sessionId): void
     {
         $query->where('replacement_session_id', $sessionId)
-            ->whereIn('stage', [
-                DriverSwitchStage::Starting->value,
-                DriverSwitchStage::StartUnconfirmed->value,
-            ]);
+            ->whereIn('stage', [DriverSwitchStage::Starting->value, DriverSwitchStage::StartUnconfirmed->value]);
     }
 
     /**

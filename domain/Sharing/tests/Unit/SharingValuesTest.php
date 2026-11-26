@@ -39,25 +39,15 @@ final class SharingValuesTest extends TestCase
 {
     public function test_live_terminal_and_retryable_states_are_answered_by_the_state(): void
     {
-        $live = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->isLive()));
-        $terminal = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->isTerminal()));
-        $retryable = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $state) => $state->mayRetry()));
+        $live = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $status) => $status->isLive()));
+        $terminal = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $status) => $status->isTerminal()));
+        $retryable = array_values(array_filter(ShareStatus::cases(), fn (ShareStatus $status) => $status->mayRetry()));
 
-        $this->assertSame([
-            ShareStatus::Pending,
-            ShareStatus::Active,
-            ShareStatus::Failed,
-        ], $live);
+        $this->assertSame([ShareStatus::Pending, ShareStatus::Active, ShareStatus::Failed], $live);
 
-        $this->assertSame([
-            ShareStatus::Revoked,
-            ShareStatus::Expired,
-        ], $terminal);
+        $this->assertSame([ShareStatus::Revoked, ShareStatus::Expired], $terminal);
 
-        $this->assertSame([
-            ShareStatus::Pending,
-            ShareStatus::Failed,
-        ], $retryable);
+        $this->assertSame([ShareStatus::Pending, ShareStatus::Failed], $retryable);
     }
 
     public function test_the_twelve_audit_types_split_into_reads_and_life_steps(): void
@@ -66,10 +56,7 @@ final class SharingValuesTest extends TestCase
 
         $this->assertCount(12, ShareAuditType::cases());
 
-        $this->assertSame([
-            ShareAuditType::ReadAllowed,
-            ShareAuditType::ReadDenied,
-        ], $reads);
+        $this->assertSame([ShareAuditType::ReadAllowed, ShareAuditType::ReadDenied], $reads);
     }
 
     public function test_relation_sets_are_built_owned_linked_empty_or_together(): void
@@ -82,10 +69,7 @@ final class SharingValuesTest extends TestCase
         $this->assertSame([], ShareRelationSet::none()->relations);
 
         $this->assertEquals(
-            [
-                $comments,
-                $records,
-            ],
+            [$comments, $records],
             ShareRelationSet::owned('comments', 'share-comment')->with(
                 ShareRelationSet::linked('records', 'share-linked-record'),
             )->relations,

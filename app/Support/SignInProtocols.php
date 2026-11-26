@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Drivers\Setup\SignInDriver;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Enums\Accounts\SignInMethod;
 use App\Exceptions\SignInMethodMissing;
@@ -12,25 +14,9 @@ use Illuminate\Contracts\Container\Container;
 /**
  * The sign-in protocol of each method each driver declares, registered by its adapter.
  */
-final class SignInProtocols
+final readonly class SignInProtocols
 {
-    /**
-     * @var Registry<class-string<SignInProtocol>>
-     */
-    private readonly Registry $protocols;
-
-    public function __construct(private readonly Container $container)
-    {
-        $this->protocols = Registry::replacing(SignInMethodMissing::forKey(...));
-    }
-
-    /**
-     * @param  class-string<SignInProtocol>  $protocol
-     */
-    public function register(string $driver, SignInMethod $method, string $protocol): void
-    {
-        $this->protocols->put(self::keyOf($driver, $method), $protocol);
-    }
+    public function __construct(private Container $container, private DriverProfiles $profiles) {}
 
     /**
      * The methods the driver declares, in the order the sign-in form lists them, OAuth first.
@@ -46,11 +32,11 @@ final class SignInProtocols
     }
 
     /**
-     * Whether the host has a protocol for the driver's method, OAuth when no method is named.
+     * Whether the driver's setup has a protocol for the method, OAuth when no method is named.
      */
     public function supports(string $driver, SignInMethod $method = SignInMethod::OAuth): bool
     {
-        return $this->protocols->has(self::keyOf($driver, $method));
+        return array_key_exists($method->value, $this->profiles->ofFamily($driver)->signInMethods());
     }
 
     /**
@@ -60,11 +46,17 @@ final class SignInProtocols
      */
     public function for(string $driver, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
     {
-        return $this->container->make($this->protocols->get(self::keyOf($driver, $method)));
+        $protocol = $this->profiles->ofFamily($driver)->signInMethods()[$method->value]
+            ?? throw SignInMethodMissing::forKey("{$driver}:{$method->value}");
+
+        return $this->container->make($protocol);
     }
 
-    private static function keyOf(string $driver, SignInMethod $method): string
+    /**
+     * The driver as the sign-in runner runs it.
+     */
+    public function driverOf(string $driver): SignInDriver
     {
-        return "{$driver}:{$method->value}";
+        return $this->profiles->ofFamily($driver)->signInDriver();
     }
 }

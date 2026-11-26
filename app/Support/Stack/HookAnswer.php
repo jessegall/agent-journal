@@ -40,10 +40,7 @@ final readonly class HookAnswer
      */
     public function replacedBy(Decision $decision, AgentStack $stack): self
     {
-        return clone ($this, [
-            'decision' => $decision,
-            'stack' => $stack,
-        ]);
+        return clone ($this, ['decision' => $decision, 'stack' => $stack]);
     }
 
     /**
@@ -53,10 +50,7 @@ final readonly class HookAnswer
      */
     public function withRemindersFirst(array $reminders): self
     {
-        return clone ($this, ['context' => [
-            ...$reminders,
-            ...$this->context,
-        ]]);
+        return clone ($this, ['context' => [...$reminders, ...$this->context]]);
     }
 
     /**
@@ -64,10 +58,7 @@ final readonly class HookAnswer
      */
     public function withContextAdded(string $line): self
     {
-        return clone ($this, ['context' => [
-            ...$this->context,
-            $line,
-        ]]);
+        return clone ($this, ['context' => [...$this->context, $line]]);
     }
 
     /**
@@ -127,22 +118,10 @@ final readonly class HookAnswer
     private function withFollowingWalk(self $following): self
     {
         return clone ($this, [
-            'context' => [
-                ...$this->context,
-                ...$following->context,
-            ],
-            'steps' => [
-                ...$this->steps,
-                ...$following->steps,
-            ],
-            'messages' => [
-                ...$this->messages,
-                ...$following->messages,
-            ],
-            'effects' => [
-                ...$this->effects,
-                ...$following->effects,
-            ],
+            'context' => [...$this->context, ...$following->context],
+            'steps' => [...$this->steps, ...$following->steps],
+            'messages' => [...$this->messages, ...$following->messages],
+            'effects' => [...$this->effects, ...$following->effects],
         ]);
     }
 }

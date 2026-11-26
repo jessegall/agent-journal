@@ -31,14 +31,14 @@ type ProviderImport struct {
 	Off       []ProviderOff
 }
 
-// importProviders looks up each provider's official program on the search path, resolving links, and imports it
-// when it is the native program and reports the pinned build.
-func importProviders(providers []Provider, searchPath string) ProviderImport {
+// importProviders looks up each listed program's official install on the search path, resolving links, and imports
+// it when it is the native program and reports the pinned build.
+func importProviders(programs []Program, searchPath string) ProviderImport {
 	imported := ProviderImport{}
-	for _, provider := range providers {
-		artifact, err := importProvider(provider, searchPath)
+	for _, program := range programs {
+		artifact, err := importProvider(program, searchPath)
 		if err != nil {
-			imported.Off = append(imported.Off, ProviderOff{Name: provider.Name, Reason: err.Error()})
+			imported.Off = append(imported.Off, ProviderOff{Name: program.Name, Reason: err.Error()})
 			continue
 		}
 		imported.Artifacts = append(imported.Artifacts, artifact)
@@ -47,7 +47,7 @@ func importProviders(providers []Provider, searchPath string) ProviderImport {
 	return imported
 }
 
-func importProvider(provider Provider, searchPath string) (host.Artifact, error) {
+func importProvider(provider Program, searchPath string) (host.Artifact, error) {
 	program := provider.Executable
 	found, err := findProgram(program, searchPath)
 	if err != nil {
@@ -61,7 +61,7 @@ func importProvider(provider Provider, searchPath string) (host.Artifact, error)
 		return host.Artifact{}, fmt.Errorf("the official %s on the PATH (%s) is the npm package's script, not the "+
 			"native program: install the native build of %s, then install again", program, resolved, provider.Name)
 	}
-	reported, err := exec.Command(resolved, "--version").Output()
+	reported, err := exec.Command(resolved, provider.Check...).Output()
 	if err != nil {
 		return host.Artifact{}, fmt.Errorf("the official %s (%s) did not report its build: %w", program, resolved, err)
 	}

@@ -38,12 +38,8 @@ final class SaveSharePreviewPostTest extends GuardedRouteEntryTestCase
         $preview = $journal->run(new SaveSharePreviewCommand($root->type, $root->id, [], $configuration->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'reference' => "doc {$document->number}",
-            ])
-            ->payload([
-                'selected' => [],
-            ])
+            ->parameters(['reference' => "doc {$document->number}"])
+            ->payload(['selected' => []])
             ->reply(SaveSharePreviewCommand::class, $preview)
             ->expects(SaveSharePreviewCommand::class, [
                 'rootType' => $root->type,

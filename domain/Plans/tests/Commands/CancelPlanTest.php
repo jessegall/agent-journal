@@ -70,10 +70,7 @@ final class CancelPlanTest extends TestCase
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
-        $plan = $this->startedPlan([
-            TaskStatus::Open,
-            TaskStatus::Started,
-        ]);
+        $plan = $this->startedPlan([TaskStatus::Open, TaskStatus::Started]);
 
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $plan->assignmentIdentity(),
@@ -85,21 +82,12 @@ final class CancelPlanTest extends TestCase
         $this->bus()->run(new CancelPlanCommand($plan->id, 1, 'Superseded.'));
 
         $this->assertSame(
-            [
-                PlanStatus::Cancelled,
-                'Superseded.',
-            ],
-            [
-                $plan->fresh()?->status,
-                $plan->fresh()?->cancel_reason,
-            ],
+            [PlanStatus::Cancelled, 'Superseded.'],
+            [$plan->fresh()?->status, $plan->fresh()?->cancel_reason],
         );
 
         $this->assertSame(
-            [
-                TaskStatus::Open,
-                TaskStatus::Started,
-            ],
+            [TaskStatus::Open, TaskStatus::Started],
             Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('status')->all(),
         );
 
@@ -132,7 +120,7 @@ final class CancelPlanTest extends TestCase
      */
     private function startedPlan(array $states): Plan
     {
-        $tasks = array_map(fn (TaskStatus $state) => $this->taskIn($state)->assignmentIdentity(), $states);
+        $tasks = array_map(fn (TaskStatus $status) => $this->taskIn($status)->assignmentIdentity(), $states);
 
         return $this->plans->startedPlan('Release')->phase(
             'Release',
@@ -140,11 +128,11 @@ final class CancelPlanTest extends TestCase
         )->placeTasks('Work', ...$tasks)->planCalled('Release');
     }
 
-    private function taskIn(TaskStatus $state): Task
+    private function taskIn(TaskStatus $status): Task
     {
         $task = Task::factory()->create();
 
-        match ($state) {
+        match ($status) {
             TaskStatus::Started => $task->start(ActorReference::system()),
             TaskStatus::Blocked => $task->block('Waits.'),
             TaskStatus::Finished => $task->finish('Done.'),

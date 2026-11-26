@@ -35,15 +35,10 @@ final class ClosePostTest extends GuardedRouteEntryTestCase
             $journal->actorCalled('Sam'),
         ]));
 
-        return RouteCall::recorded('chat-close', [
-            '01JPAGEREQUESTINBOX0000000' => $group,
-        ])
+        return RouteCall::recorded('chat-close', ['01JPAGEREQUESTINBOX0000000' => $group])
             ->expects(LeaveInboxCommand::class, [
                 'inboxId' => $group,
-                'actors' => [
-                    $journal->actorCalled('Sam'),
-                    $journal->actorCalled('Owner'),
-                ],
+                'actors' => [$journal->actorCalled('Sam'), $journal->actorCalled('Owner')],
             ]);
     }
 }

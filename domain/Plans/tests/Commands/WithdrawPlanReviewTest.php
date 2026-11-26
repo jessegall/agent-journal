@@ -56,16 +56,8 @@ final class WithdrawPlanReviewTest extends TestCase
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
 
         $this->assertSame(
-            [
-                PlanReviewStatus::Withdrawn,
-                $this->journal->ownerUser()->id,
-                PlanStatus::Planned,
-            ],
-            [
-                $review->status,
-                $review->decided_by_id,
-                $this->plan->refresh()->status,
-            ],
+            [PlanReviewStatus::Withdrawn, $this->journal->ownerUser()->id, PlanStatus::Planned],
+            [$review->status, $review->decided_by_id, $this->plan->refresh()->status],
         );
     }
 

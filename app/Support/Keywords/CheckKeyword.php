@@ -33,9 +33,6 @@ final readonly class CheckKeyword implements ScriptStatement
 
     public function flow(): FlowShape
     {
-        return FlowShape::action([
-            'passed',
-            'failure',
-        ]);
+        return FlowShape::action(['passed', 'failure']);
     }
 }

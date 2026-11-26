@@ -53,9 +53,6 @@ final class CommandRequestProveTool extends JournalWriteTool
 
     protected function present(mixed $reply): ToolResult
     {
-        return ToolResult::ok([
-            'proof_id' => $reply,
-            'state' => 'awaiting_approval',
-        ]);
+        return ToolResult::ok(['proof_id' => $reply, 'state' => 'awaiting_approval']);
     }
 }

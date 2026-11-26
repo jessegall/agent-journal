@@ -31,10 +31,7 @@ final class RemoveMemoryToolTest extends McpToolEntryTestCase
         $memory = $journal->fixtures(MemoryFixtures::class)->createMemory('Rule', 'Builder', 'Run the phase tests once.');
 
         return ToolCall::by($start)
-            ->arguments([
-                'memory_id' => $memory->id,
-                'request_key' => 'write-1',
-            ])
+            ->arguments(['memory_id' => $memory->id, 'request_key' => 'write-1'])
             ->reply(RemoveMemoryCommand::class, $memory->id)
             ->expects(RemoveMemoryCommand::class, ['memoryId' => $memory->id]);
     }

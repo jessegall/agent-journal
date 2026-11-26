@@ -57,10 +57,7 @@ final class CreateReportTool extends JournalWriteTool
 
     protected function present(mixed $createdReport): ToolResult
     {
-        return ToolResult::ok([
-            'report_id' => $createdReport->number,
-            'record_id' => $createdReport->id,
-        ]);
+        return ToolResult::ok(['report_id' => $createdReport->number, 'record_id' => $createdReport->id]);
     }
 
     /**

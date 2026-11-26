@@ -31,10 +31,7 @@ final class CancelHelperJobToolTest extends McpToolEntryTestCase
         $helpers = $journal->fixtures(HelperFixtures::class)->openJob('Review', 'Planner', 'Review the change.');
 
         return ToolCall::by($start)
-            ->arguments([
-                'job_id' => $helpers->jobCalled('Review')->id,
-                'request_key' => 'helper-1',
-            ])
+            ->arguments(['job_id' => $helpers->jobCalled('Review')->id, 'request_key' => 'helper-1'])
             ->reply(CancelHelperJobCommand::class, $helpers->jobCalled('Review')->id)
             ->expects(CancelHelperJobCommand::class, ['jobId' => $helpers->jobCalled('Review')->id]);
     }

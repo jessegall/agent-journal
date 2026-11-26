@@ -30,8 +30,6 @@ final class AgentDockListPostTest extends GuardedRouteEntryTestCase
         $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Builder');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'limit' => 5,
-            ]);
+            ->payload(['limit' => 5]);
     }
 }

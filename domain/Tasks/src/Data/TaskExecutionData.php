@@ -20,7 +20,7 @@ final class TaskExecutionData extends Data
         public readonly string $actorId,
         public readonly string|null $actorLabel,
         public readonly int $runNumber,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
     ) {}
 
     public static function fromExecution(TaskExecution $execution): self
@@ -30,7 +30,7 @@ final class TaskExecutionData extends Data
             $execution->actorId,
             $execution->actorLabel,
             $execution->runNumber,
-            $execution->state,
+            $execution->status,
         );
     }
 
@@ -40,6 +40,6 @@ final class TaskExecutionData extends Data
     public function label(): string
     {
         return "run {$this->runNumber} by ".($this->actorLabel
-            ?? "{$this->actorType} {$this->actorId}").", {$this->state->value}";
+            ?? "{$this->actorType} {$this->actorId}").", {$this->status->value}";
     }
 }

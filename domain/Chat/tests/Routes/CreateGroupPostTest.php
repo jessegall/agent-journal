@@ -31,9 +31,6 @@ final class CreateGroupPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::recorded('chat-create-group', [])
             ->reply(OpenInboxCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, [
-                'providerKey' => PairChats::GROUP_PROVIDER,
-                'label' => 'Design',
-            ]);
+            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::GROUP_PROVIDER, 'label' => 'Design']);
     }
 }

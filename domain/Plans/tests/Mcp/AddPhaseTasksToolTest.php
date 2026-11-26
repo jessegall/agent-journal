@@ -39,9 +39,6 @@ final class AddPhaseTasksToolTest extends McpToolEntryTestCase
                 'expected_revision' => 1,
                 'request_key' => 'plans-1',
             ])
-            ->expects(AddPhaseTasksCommand::class, [
-                'phaseId' => $phase->id,
-                'taskIds' => [$task->id],
-            ]);
+            ->expects(AddPhaseTasksCommand::class, ['phaseId' => $phase->id, 'taskIds' => [$task->id]]);
     }
 }

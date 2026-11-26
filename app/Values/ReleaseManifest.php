@@ -71,7 +71,6 @@ final readonly class ReleaseManifest
                 $bytes,
                 $isMeasured && isset($files[$folder]),
                 self::namesAt($version, $target, 'prerequisites'),
-                self::namesAt($version, $target, 'providers'),
             );
         }
 
@@ -120,7 +119,7 @@ final readonly class ReleaseManifest
 
     /**
      * Whether the window may offer this release's install line: it has every capability and ships for at least one
-     * platform with measured sizes, prerequisites and both providers.
+     * platform with measured sizes and prerequisites.
      */
     public function canBeOffered(): bool
     {

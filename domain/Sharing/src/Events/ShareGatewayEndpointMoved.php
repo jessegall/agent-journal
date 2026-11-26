@@ -14,6 +14,6 @@ final readonly class ShareGatewayEndpointMoved implements ShareEvent, ShareGatew
 {
     public function __construct(
         public string $endpointId,
-        public GatewayEndpointStatus $state,
+        public GatewayEndpointStatus $status,
     ) {}
 }

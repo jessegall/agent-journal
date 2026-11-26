@@ -121,13 +121,7 @@ final class StartPlanTest extends TestCase
             $this->plans->planCalled('Later')->id,
         ];
 
-        $this->assertSame([
-            true,
-            false,
-        ], [
-            $canStart[$release],
-            $canStart[$later],
-        ]);
+        $this->assertSame([true, false], [$canStart[$release], $canStart[$later]]);
     }
 
     public function test_a_request_without_an_actor_cannot_start(): void

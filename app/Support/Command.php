@@ -38,8 +38,6 @@ abstract readonly class Command implements CommandContract
      */
     final public function withDispatcher(ActorReference $dispatcher): static
     {
-        return clone ($this, [
-            'dispatchingActor' => $dispatcher,
-        ]);
+        return clone ($this, ['dispatchingActor' => $dispatcher]);
     }
 }

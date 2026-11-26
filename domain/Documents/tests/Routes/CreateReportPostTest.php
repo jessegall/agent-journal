@@ -34,11 +34,7 @@ final class CreateReportPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::User)
             ->headers([SelectProject::HEADER => TestProjects::local()->id])
-            ->payload([
-                'title' => 'Design',
-                'abstract' => 'The plan.',
-                'body' => '# Design',
-            ])
+            ->payload(['title' => 'Design', 'abstract' => 'The plan.', 'body' => '# Design'])
             ->reply(CreateReportCommand::class, new CreatedRecord(
                 strtolower((string) Str::ulid()),
                 3,

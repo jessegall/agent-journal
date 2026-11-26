@@ -79,9 +79,6 @@ final class SupervisorRoutes extends Data
             fn (SupervisorOverride $override) => $override->type->key !== $type->key,
         ));
 
-        return new self($this->default, [
-            ...$overrides,
-            new SupervisorOverride($type, $target),
-        ]);
+        return new self($this->default, [...$overrides, new SupervisorOverride($type, $target)]);
     }
 }

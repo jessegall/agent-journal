@@ -39,10 +39,7 @@ final readonly class PlanReviewView
     {
         $plan = Plan::query()->whereKey($planId)->sole();
 
-        $allowed = $this->authorizer->filterActions(PlanPolicy::class, $plan, [
-            AccessType::Edit,
-            AccessType::Admin,
-        ]);
+        $allowed = $this->authorizer->filterActions(PlanPolicy::class, $plan, [AccessType::Edit, AccessType::Admin]);
 
         $mayEdit = in_array(AccessType::Edit, $allowed, true);
         $requested = PlanReviewEdition::findRequestedOf($plan->id);

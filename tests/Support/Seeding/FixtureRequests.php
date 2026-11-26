@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -11,8 +13,6 @@ use App\Contracts\Authorization\AuthoritySource;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\OperationDeadline;

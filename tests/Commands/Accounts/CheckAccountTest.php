@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Accounts\AccountCheckResult;
@@ -14,7 +15,6 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;

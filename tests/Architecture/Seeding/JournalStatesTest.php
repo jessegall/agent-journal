@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Contracts\Actors\CurrentActor;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\AnswerType;
 use App\Models\Agents\AgentSession;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\Decisions\StateReferenceKeys;
-use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\StopRequested;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;
@@ -47,7 +47,10 @@ final class JournalStatesTest extends TestCase
     /**
      * Facts reach a stack only once its change commits, so these tests commit and empty what they wrote.
      */
-    protected const array TABLES = ['agent_stacks', 'command_receipts'];
+    protected const array TABLES = [
+        'agent_stacks',
+        'command_receipts',
+    ];
 
     private TickScript $ticks;
 
@@ -78,7 +81,10 @@ final class JournalStatesTest extends TestCase
 
     public function test_a_push_the_engine_keeps_on_one_frame_binds_that_frame(): void
     {
-        $task = new StateReference('test.tasks', new SubjectReference(SubjectIds::of('42'), 1), ['number' => 42, 'runNumber' => 1]);
+        $task = new StateReference('test.tasks', new SubjectReference(SubjectIds::of('42'), 1), [
+            'number' => 42,
+            'runNumber' => 1,
+        ]);
         $this->journal->pushState($this->writerSession(), $task);
 
         $this->journal->pushState(

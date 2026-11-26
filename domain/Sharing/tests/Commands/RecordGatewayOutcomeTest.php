@@ -107,10 +107,7 @@ final class RecordGatewayOutcomeTest extends TestCase
         $this->assertThrows(fn () => $this->claim(self::FIRST_RUN), GatewayRunStale::class);
 
         $this->assertSame(
-            [
-                2,
-                GatewayEndpointStatus::Opening,
-            ],
+            [2, GatewayEndpointStatus::Opening],
             [
                 $taken?->operation->endpointVersion,
                 ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->status,
@@ -157,13 +154,7 @@ final class RecordGatewayOutcomeTest extends TestCase
         $this->assertSame(ShareStatus::Revoked, $this->share->fresh()?->status);
         $close = $this->claim(self::FIRST_RUN);
 
-        $this->assertSame([
-            GatewayOperationType::Close,
-            1,
-        ], [
-            $close?->type,
-            $close?->operation->endpointVersion,
-        ]);
+        $this->assertSame([GatewayOperationType::Close, 1], [$close?->type, $close?->operation->endpointVersion]);
 
         $this->assertSame(GatewayEndpointStatus::Closing, ShareGatewayEndpoint::query()->sole()->status);
 
@@ -173,10 +164,7 @@ final class RecordGatewayOutcomeTest extends TestCase
 
     public function test_share_activated_reaches_a_listener_after_commit_once_and_not_on_a_replay(): void
     {
-        Event::listen([
-            ShareActivated::class,
-            ShareRevoked::class,
-        ], function (object $event): void {
+        Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {
             $this->received[] = $event;
         });
 
@@ -198,12 +186,7 @@ final class RecordGatewayOutcomeTest extends TestCase
         $this->assertInstanceOf(ShareActivated::class, $this->received[0]);
 
         $this->assertSame(
-            [
-                $this->share->id,
-                $this->configuration->id,
-                ShareStatus::Active,
-                Share::FIRST_SCOPE_VERSION,
-            ],
+            [$this->share->id, $this->configuration->id, ShareStatus::Active, Share::FIRST_SCOPE_VERSION],
             [
                 $this->received[0]->share->shareId,
                 $this->received[0]->share->configurationId,

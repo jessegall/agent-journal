@@ -122,7 +122,7 @@ find_existing_command_placement() {
     refuse "another journal command wins on PATH at $1. Remove it or put it later on PATH, then run the install line again."
 }
 
-# journal-agent is checked against the manifest before it runs; it verifies the manifest's signature itself.
+# journal-agent is checked against the manifest before it runs; it verifies the manifest's signature and the program list.
 install_release() {
     local program="$3/journal-agent" line sha256
     line="\"name\":\"bin/journal-agent\",\"source\":\"$4/bin/journal-agent\",\"sha256\":\""
@@ -134,7 +134,10 @@ install_release() {
     [ "$(read_digest "$program")" = "$sha256" ] ||
         refuse "the verification step failed: journal-agent was damaged on the way. Run the install line again."
     chmod 700 "$program"
-    "$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" --into "$5" ||
+    fetch_file "$1/releases/current/programs.json" "$3/programs.json" ||
+        refuse "the download step failed: the journal's program list could not be downloaded from $1."
+    "$program" install-release --origin "$1" --manifest "$3/manifest.json" --signature "$3/manifest.json.sig" \
+        --programs "$3/programs.json" --into "$5" ||
         refuse "the install-release step failed: the release could not be installed."
 }
 

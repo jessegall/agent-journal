@@ -456,10 +456,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
             self::assertUniqueKeys(
                 $owner,
                 'loader',
-                array_map(fn (Loader $loader) => $loader->name, [
-                    ...$owner->loaders,
-                    ...$pageLoaders,
-                ]),
+                array_map(fn (Loader $loader) => $loader->name, [...$owner->loaders, ...$pageLoaders]),
             );
 
             foreach ($owner->loaders as $loader) {
@@ -545,10 +542,7 @@ final readonly class ClientDeclarations implements DeclaredPages, SlotSections
                     $declaration->propName,
                     $declaration->key,
                 ],
-                [
-                    ...array_values($this->pages),
-                    ...array_values($this->sections),
-                ],
+                [...array_values($this->pages), ...array_values($this->sections)],
             ),
             ...array_map(fn (RegisteredLoader $loader) => [
                 $loader->prop,

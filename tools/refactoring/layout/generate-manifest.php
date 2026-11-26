@@ -112,16 +112,9 @@ function destinationOf(string $old, string $scope, array $rules): string
 
         // A class in a role folder (app/Values/Operation.php, app/Data/Agents/UsageReportData.php) is already where
         // the layout wants it; Pipelines and Contracts were areas too, so only their direct files count.
-        $roleRoot = in_array($top, [
-            ...$rules['kind_roots'],
-            'Support',
-            'Concerns',
-        ], true);
+        $roleRoot = in_array($top, [...$rules['kind_roots'], 'Support', 'Concerns'], true);
 
-        if ($roleRoot && (count($segments) === 2 || ! in_array($top, [
-            'Pipelines',
-            'Contracts',
-        ], true))) {
+        if ($roleRoot && (count($segments) === 2 || ! in_array($top, ['Pipelines', 'Contracts'], true))) {
             return $old;
         }
 
@@ -435,10 +428,7 @@ function kindOf(string $root, string $path): string
 
 function classOf(string $root, string $path, string $kind): string|null
 {
-    if (! in_array($kind, [
-        'class',
-        'seeder',
-    ], true)) {
+    if (! in_array($kind, ['class', 'seeder'], true)) {
         return null;
     }
 
@@ -453,10 +443,7 @@ function classOf(string $root, string $path, string $kind): string|null
 
 function classOfPath(string $path, string $kind, string $root, string $old): string|null
 {
-    if (! in_array($kind, [
-        'class',
-        'seeder',
-    ], true)) {
+    if (! in_array($kind, ['class', 'seeder'], true)) {
         return null;
     }
 

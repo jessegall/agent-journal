@@ -36,13 +36,7 @@ final class TaskFixturesTest extends TestCase
 
         $task = $this->tasks->taskCalled('Write it');
 
-        $this->assertSame([
-            TaskStatus::Open,
-            $this->journal->ownerUser()->id,
-        ], [
-            $task->status,
-            $task->creator_id,
-        ]);
+        $this->assertSame([TaskStatus::Open, $this->journal->ownerUser()->id], [$task->status, $task->creator_id]);
     }
 
     public function test_a_created_task_is_given_back_and_still_found_by_its_name(): void
@@ -90,13 +84,7 @@ final class TaskFixturesTest extends TestCase
     {
         $task = $this->tasks->taskIn('Blocked work', TaskStatus::Blocked)->taskCalled('Blocked work');
 
-        $this->assertSame([
-            TaskStatus::Blocked,
-            $this->journal->ownerUser()->id,
-        ], [
-            $task->status,
-            $task->creator_id,
-        ]);
+        $this->assertSame([TaskStatus::Blocked, $this->journal->ownerUser()->id], [$task->status, $task->creator_id]);
 
         $this->tasks->assertRunCount('Blocked work', 0);
     }
@@ -107,18 +95,8 @@ final class TaskFixturesTest extends TestCase
         $cancelled = $this->tasks->cancelledTask('Dropped', 'Out of scope.')->taskCalled('Dropped');
 
         $this->assertSame(
-            [
-                TaskStatus::Finished,
-                'Merged.',
-                TaskStatus::Cancelled,
-                'Out of scope.',
-            ],
-            [
-                $finished->status,
-                $finished->result_note,
-                $cancelled->status,
-                $cancelled->cancel_reason,
-            ],
+            [TaskStatus::Finished, 'Merged.', TaskStatus::Cancelled, 'Out of scope.'],
+            [$finished->status, $finished->result_note, $cancelled->status, $cancelled->cancel_reason],
         );
     }
 
@@ -128,13 +106,7 @@ final class TaskFixturesTest extends TestCase
 
         $run = $this->tasks->runOf('Write it', 1);
 
-        $this->assertSame([
-            1,
-            $run->id,
-        ], [
-            $run->run_number,
-            $this->tasks->currentRunOf('Write it')->id,
-        ]);
+        $this->assertSame([1, $run->id], [$run->run_number, $this->tasks->currentRunOf('Write it')->id]);
 
         $this->assertThrows(fn () => $this->tasks->runOf('Write it', 2), AssertionFailedError::class);
         $this->assertThrows(fn () => $this->tasks->task('Idle')->currentRunOf('Idle'), AssertionFailedError::class);

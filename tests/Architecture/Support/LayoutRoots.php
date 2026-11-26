@@ -10,16 +10,50 @@ namespace Tests\Architecture\Support;
  */
 final readonly class LayoutRoots
 {
-    private const array CORE_ROOT_FILES = ['CoreCommands.php', 'CorePages.php', 'CoreMcpTools.php'];
+    private const array CORE_ROOT_FILES = [
+        'CoreCommands.php',
+        'CorePages.php',
+        'CoreMcpTools.php',
+    ];
 
     /**
      * The role folders a root may hold; Actions is Access's alone, which FolderLayoutTest checks on its own.
      */
     private const array ROLE_FOLDERS = [
-        'Actions', 'Api', 'Attributes', 'Casts', 'CommandMiddleware', 'Commands', 'Concerns', 'Console', 'Contracts',
-        'Data', 'Declarations', 'Enums', 'Events', 'Exceptions', 'Http', 'Jobs', 'Listeners', 'Mcp', 'Models',
-        'Observers', 'Pages', 'Pipelines', 'Pipes', 'Policies', 'Providers', 'Resolvers', 'Support', 'Values',
+        'Actions',
+        'Api',
+        'Attributes',
+        'Casts',
+        'CommandMiddleware',
+        'Commands',
+        'Concerns',
+        'Console',
+        'Contracts',
+        'Data',
+        'Declarations',
+        'Enums',
+        'Events',
+        'Exceptions',
+        'Http',
+        'Jobs',
+        'Listeners',
+        'Mcp',
+        'Models',
+        'Observers',
+        'Pages',
+        'Pipelines',
+        'Pipes',
+        'Policies',
+        'Providers',
+        'Resolvers',
+        'Support',
+        'Values',
     ];
+
+    /**
+     * The subject folders of the subject-first layout, each holding its own subject's classes.
+     */
+    private const array SUBJECT_FOLDERS = ['Agents'];
 
     /**
      * Core's roots.
@@ -48,7 +82,7 @@ final readonly class LayoutRoots
     public function misplaced(array $folders, array $files, array $rootFiles): array
     {
         return [
-            ...array_values(array_diff($folders, self::ROLE_FOLDERS)),
+            ...array_values(array_diff($folders, self::ROLE_FOLDERS, self::SUBJECT_FOLDERS)),
             ...array_values(array_diff($files, $rootFiles)),
         ];
     }

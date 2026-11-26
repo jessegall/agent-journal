@@ -83,10 +83,7 @@ final class WorkOnTaskState extends AgentState implements DurableState, WorkStat
      */
     public function instruction(): Option
     {
-        return new Some(AgentText::of('tasks.working_on', [
-            'task' => $this->number,
-            'run' => $this->runNumber,
-        ]));
+        return new Some(AgentText::of('tasks.working_on', ['task' => $this->number, 'run' => $this->runNumber]));
     }
 
     public function listensTo(Event $event): bool

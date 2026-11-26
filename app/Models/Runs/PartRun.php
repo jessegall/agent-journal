@@ -180,11 +180,11 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
         $this->raise(new PartRunCaptured($this->id));
     }
 
-    public function markCapture(CaptureStatus $state): void
+    public function markCapture(CaptureStatus $status): void
     {
-        $this->capture_state = $state;
+        $this->capture_state = $status;
         $this->assertSaved($this->save());
-        $this->raise(new PartRunCaptureMarked($this->id, $state));
+        $this->raise(new PartRunCaptureMarked($this->id, $status));
     }
 
     /**
@@ -327,9 +327,9 @@ final class PartRun extends JournalModel implements EventSource, ReadableModel
 
     // ----------[ Internals ]----------
 
-    private function finishAs(LifecycleStatus $state): void
+    private function finishAs(LifecycleStatus $status): void
     {
-        $this->moveTo($state);
+        $this->moveTo($status);
         $this->ended_at = CarbonImmutable::now();
         $this->save();
     }

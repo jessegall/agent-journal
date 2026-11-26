@@ -14,15 +14,19 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 20, reason: 'It reads every source file of the project.')]
 final class DriverStateFilesTest extends TestCase
 {
-    private const array FOLDERS = ['app', 'domain', 'tools', 'scripts', '.docker'];
+    private const array FOLDERS = [
+        'app',
+        'domain',
+        'tools',
+        'scripts',
+        '.docker',
+    ];
 
     private const array ALLOWED = [
         // The account's first-run step settles Claude Code's welcome and trust once, beside the navigation.
-        'app/Support/Drivers/ClaudeFirstRun.php',
+        'app/Agents/Drivers/ClaudeCode/ClaudeFirstRun.php',
         // The settings that keep file tools from reading the account's own files name them to refuse them.
-        'app/Support/Drivers/ClaudeAccountProtection.php',
-        // Codex runs the journal's hooks only in a trusted folder: the empty working root the journal made.
-        'app/Support/Drivers/CodexFolderTrust.php',
+        'app/Agents/Drivers/ClaudeCode/ClaudeAccountProtection.php',
         // The evidence script proves a trusted folder's own settings load, so no work folder is ever trusted.
         'tools/accounts/check-codex.php',
     ];

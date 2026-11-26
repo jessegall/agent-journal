@@ -31,18 +31,12 @@ final class RequestReviewPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'review-1',
-            ])
+            ->parameters(['plan' => $plan->number])
+            ->headers(['Idempotency-Key' => 'review-1'])
             ->reply(RequestPlanReviewCommand::class, Str::ulid())
             ->expects(RequestPlanReviewCommand::class, [
                 'planId' => $plan->id,
-                'reviewers' => [
-                    $journal->actorCalled('Owner'),
-                ],
+                'reviewers' => [$journal->actorCalled('Owner')],
             ]);
     }
 }

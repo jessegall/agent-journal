@@ -132,13 +132,7 @@ final class ApproveRuleTest extends TestCase
 
         $approved = Rule::query()->findOrFail($proposal->id);
 
-        $this->assertSame([
-            RuleStatus::Active,
-            null,
-        ], [
-            $approved->status,
-            $approved->project_id,
-        ]);
+        $this->assertSame([RuleStatus::Active, null], [$approved->status, $approved->project_id]);
     }
 
     public function test_a_replacement_ending_with_another_owner_than_its_replaced_rule_is_refused(): void

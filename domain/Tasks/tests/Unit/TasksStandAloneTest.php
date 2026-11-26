@@ -20,11 +20,7 @@ final class TasksStandAloneTest extends TestCase
         $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(dirname(__DIR__, 2)));
 
         foreach ($files as $file) {
-            if (! $file instanceof SplFileInfo || ! in_array($file->getExtension(), [
-                'php',
-                'ts',
-                'vue',
-            ], true)) {
+            if (! $file instanceof SplFileInfo || ! in_array($file->getExtension(), ['php', 'ts', 'vue'], true)) {
                 continue;
             }
 

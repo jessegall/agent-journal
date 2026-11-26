@@ -94,10 +94,7 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
         ) : GroupAvailability::Always;
 
         $availability = $group instanceof ToggleGroup
-            ? ToggleGroupAvailabilityData::from([
-                'state' => $state,
-                'isDefaultEnabled' => $group->isDefaultEnabled,
-            ])
+            ? ToggleGroupAvailabilityData::from(['state' => $state, 'isDefaultEnabled' => $group->isDefaultEnabled])
             : PlainGroupAvailabilityData::from([]);
 
         return SettingGroupData::from([
@@ -173,10 +170,6 @@ final readonly class SettingsCatalogue implements SettingsCatalogueContract
 
     private function identity(string $owner, string $key): SettingIdentityData
     {
-        return SettingIdentityData::from([
-            'owner' => $owner,
-            'key' => $key,
-            'canonicalKey' => "{$owner}.{$key}",
-        ]);
+        return SettingIdentityData::from(['owner' => $owner, 'key' => $key, 'canonicalKey' => "{$owner}.{$key}"]);
     }
 }

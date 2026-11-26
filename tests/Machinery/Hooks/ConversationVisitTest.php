@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverConversationResolver;
@@ -15,7 +16,6 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Support\ConversationVisits;
-use App\Support\DefaultDrivers;
 use App\Support\RecordIdentity;
 use App\Support\StartSessions;
 use App\Values\StartPolicy;
@@ -117,8 +117,14 @@ final class ConversationVisitTest extends TestCase
         );
 
         $this->assertSame(
-            [['native-a', TestSelections::MODEL]],
-            array_map(fn ($conversation) => [$conversation->nativeId, $conversation->lastModel], $conversations),
+            [[
+                'native-a',
+                TestSelections::MODEL,
+            ]],
+            array_map(fn ($conversation) => [
+                $conversation->nativeId,
+                $conversation->lastModel,
+            ], $conversations),
         );
         $this->assertSame(
             [],

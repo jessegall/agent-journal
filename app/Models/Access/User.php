@@ -60,12 +60,7 @@ use Override;
  * @mixin \Eloquent
  */
 #[UseFactory(UserFactory::class)]
-#[Hidden([
-    'password',
-    'two_factor_secret',
-    'two_factor_recovery_codes',
-    'remember_token',
-])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements
     Assignee,
     MessageReceiver,

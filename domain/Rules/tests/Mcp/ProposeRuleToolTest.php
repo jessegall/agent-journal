@@ -30,15 +30,8 @@ final class ProposeRuleToolTest extends McpToolEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
 
         return ToolCall::by($start)
-            ->arguments([
-                'text' => 'Run the phase tests once.',
-                'reason' => 'User 24714.',
-                'request_key' => 'write-1',
-            ])
+            ->arguments(['text' => 'Run the phase tests once.', 'reason' => 'User 24714.', 'request_key' => 'write-1'])
             ->reply(ProposeRuleCommand::class, Str::ulid())
-            ->expects(ProposeRuleCommand::class, [
-                'text' => 'Run the phase tests once.',
-                'reason' => 'User 24714.',
-            ]);
+            ->expects(ProposeRuleCommand::class, ['text' => 'Run the phase tests once.', 'reason' => 'User 24714.']);
     }
 }

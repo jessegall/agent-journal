@@ -23,16 +23,10 @@ trait HasNumber
 {
     public static function bootHasNumber(): void
     {
-        static::creating([
-            NumberObserver::class,
-            'creating',
-        ]);
+        static::creating([NumberObserver::class, 'creating']);
 
         static::updating(function (Model $record): void {
-            if ($record->isDirty([
-                'number',
-                'number_group_id',
-            ])) {
+            if ($record->isDirty(['number', 'number_group_id'])) {
                 throw NumberChanged::for($record);
             }
         });

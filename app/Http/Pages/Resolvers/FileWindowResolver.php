@@ -66,7 +66,7 @@ final readonly class FileWindowResolver implements PageResolver
 
         $answer = $this->files->file($binding, $path);
 
-        return match ($answer->state) {
+        return match ($answer->status) {
             ProjectReadStatus::Pending => $this->window(FileWindowStatus::Pending, $path),
             ProjectReadStatus::Answered => $this->answered($binding, $answer),
             ProjectReadStatus::Failed, ProjectReadStatus::Expired => $this->window($this->failedState($answer), $path),
@@ -102,7 +102,7 @@ final readonly class FileWindowResolver implements PageResolver
         }
 
         return FileWindowData::from([
-            'state' => $isTruncated ? FileWindowStatus::TooLarge : FileWindowStatus::Ready,
+            'status' => $isTruncated ? FileWindowStatus::TooLarge : FileWindowStatus::Ready,
             'name' => basename($answer->path),
             'path' => $answer->path,
             'isMarkdown' => $this->isMarkdown($answer->path),
@@ -117,10 +117,10 @@ final readonly class FileWindowResolver implements PageResolver
         ]);
     }
 
-    private function window(FileWindowStatus $state, string $path): FileWindowData
+    private function window(FileWindowStatus $status, string $path): FileWindowData
     {
         return FileWindowData::from([
-            'state' => $state,
+            'status' => $status,
             'name' => basename($path),
             'path' => $path,
             'isMarkdown' => $this->isMarkdown($path),
@@ -197,9 +197,6 @@ final readonly class FileWindowResolver implements PageResolver
 
     private function isMarkdown(string $path): bool
     {
-        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), [
-            'md',
-            'markdown',
-        ], true);
+        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['md', 'markdown'], true);
     }
 }

@@ -66,23 +66,11 @@ final class ConfigureShareGatewayTest extends TestCase
 
         $second = $this->configure(FakeShareGateway::KEY, true);
 
-        $this->assertSame([
-            1,
-            2,
-        ], [
-            $first->configurationVersion,
-            $second->configurationVersion,
-        ]);
+        $this->assertSame([1, 2], [$first->configurationVersion, $second->configurationVersion]);
 
         $this->assertSame(
-            [
-                $first->configurationId,
-                1,
-            ],
-            [
-                $share->fresh()?->share_gateway_configuration_id,
-                $share->fresh()?->configuration_version,
-            ],
+            [$first->configurationId, 1],
+            [$share->fresh()?->share_gateway_configuration_id, $share->fresh()?->configuration_version],
         );
 
         $this->assertTrue(ShareGatewayConfiguration::query()->findOrFail($second->configurationId)->is_default);

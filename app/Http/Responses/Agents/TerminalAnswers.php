@@ -78,10 +78,7 @@ final readonly class TerminalAnswers
             $code = RefusalCode::of($refusal);
 
             return $this->uncached(
-                new JsonResponse([
-                    'code' => $code->value,
-                    'message' => $refusal->getMessage(),
-                ], $code->status()),
+                new JsonResponse(['code' => $code->value, 'message' => $refusal->getMessage()], $code->status()),
             );
         }
 

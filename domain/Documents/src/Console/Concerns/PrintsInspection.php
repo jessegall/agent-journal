@@ -15,7 +15,7 @@ trait PrintsInspection
 {
     protected function inspectionReport(RecordInspection $inspection): CommandReport
     {
-        $editing = $inspection->editing->state === EditingStatus::Free
+        $editing = $inspection->editing->status === EditingStatus::Free
             ? 'free'
             : "held by {$this->holderOf($inspection)}";
 

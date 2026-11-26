@@ -49,14 +49,7 @@ final class SkillListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table([
-            'Key',
-            'Name',
-            'Owner',
-            'Source',
-            'Revision',
-            'Digest',
-        ], array_map(array_values(...), $rows));
+        $this->table(['Key', 'Name', 'Owner', 'Source', 'Revision', 'Digest'], array_map(array_values(...), $rows));
 
         return self::SUCCESS;
     }

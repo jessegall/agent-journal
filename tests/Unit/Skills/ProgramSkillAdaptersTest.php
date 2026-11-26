@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
+use App\Agents\Drivers\Codex\CodexSkills;
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Enums\Skills\SkillReload;
 use App\Exceptions\DriverSkillsUnsupported;
-use App\Support\Drivers\ClaudeCodeSkills;
-use App\Support\Drivers\CodexSkills;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
 use App\Values\SkillKey;
 use Tests\TestCase;

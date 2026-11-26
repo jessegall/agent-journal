@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Enums\Drivers\StartProfileType;
 use App\Enums\Projects\CapabilityStatusType;
 use App\Models\Accounts\Account;
 use App\Support\ArrangementSetting;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\RecordIdentity;
@@ -43,7 +43,10 @@ final class StartProfilesTest extends TestCase
 
     public function test_the_trial_names_its_drivers_as_a_comma_list(): void
     {
-        $this->assertSame([DefaultDrivers::CLAUDE_CODE, DefaultDrivers::CODEX], StartProfiles::trialOf(' claude-code , codex '));
+        $this->assertSame([
+            DefaultDrivers::CLAUDE_CODE,
+            DefaultDrivers::CODEX,
+        ], StartProfiles::trialOf(' claude-code , codex '));
         $this->assertSame([], StartProfiles::trialOf(''));
     }
 

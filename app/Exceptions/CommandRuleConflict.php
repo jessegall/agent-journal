@@ -35,10 +35,7 @@ final class CommandRuleConflict extends LogicException
             'first_scope' => $first->scope->name(),
             'second' => $second->id,
             'second_scope' => $second->scope->name(),
-            'words' => implode(' ', [
-                $first->program->family,
-                ...$first->subcommands,
-            ]),
+            'words' => implode(' ', [$first->program->family, ...$first->subcommands]),
         ]));
     }
 }

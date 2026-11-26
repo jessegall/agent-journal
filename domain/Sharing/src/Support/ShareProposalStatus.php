@@ -13,6 +13,6 @@ final readonly class ShareProposalStatus
 {
     public function __construct(
         public int $number,
-        public ShareStatus $state,
+        public ShareStatus $status,
     ) {}
 }

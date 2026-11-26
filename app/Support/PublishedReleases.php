@@ -94,9 +94,7 @@ final readonly class PublishedReleases
      */
     public function compatibility(): ReleaseCompatibilityData
     {
-        return ReleaseCompatibilityData::from([
-            'release' => $this->current === '' ? null : $this->current,
-        ]);
+        return ReleaseCompatibilityData::from(['release' => $this->current === '' ? null : $this->current]);
     }
 
     private function hasCurrentManifest(): bool

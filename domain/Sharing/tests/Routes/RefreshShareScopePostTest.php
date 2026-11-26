@@ -44,16 +44,9 @@ final class RefreshShareScopePostTest extends GuardedRouteEntryTestCase
         $preview = $journal->run(new SaveSharePreviewCommand($root->type, $root->id, [], $configuration->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'share' => $share->id,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'share-1',
-            ])
-            ->payload([
-                'previewId' => $preview->previewId,
-                'previewChecksum' => $preview->checksum,
-            ])
+            ->parameters(['share' => $share->id])
+            ->headers(['Idempotency-Key' => 'share-1'])
+            ->payload(['previewId' => $preview->previewId, 'previewChecksum' => $preview->checksum])
             ->reply(RefreshShareScopeCommand::class, new ShareSummary($share->id, $share->number, ShareStatus::Active))
             ->expects(RefreshShareScopeCommand::class, [
                 'shareId' => $share->id,

@@ -55,16 +55,8 @@ final class RuleFixturesTest extends TestCase
         $rule = $this->rules->proposedRule('Idea', 'A new rule.', proposer: 'Colleague')->ruleCalled('Idea');
 
         $this->assertSame(
-            [
-                RuleStatus::Proposed,
-                $this->journal->userCalled('Colleague')->id,
-                'A new rule.',
-            ],
-            [
-                $rule->status,
-                $rule->proposer_id,
-                $rule->text,
-            ],
+            [RuleStatus::Proposed, $this->journal->userCalled('Colleague')->id, 'A new rule.'],
+            [$rule->status, $rule->proposer_id, $rule->text],
         );
 
         $this->assertThrows(fn () => $this->rules->assertHolds('Idea'), AssertionFailedError::class);

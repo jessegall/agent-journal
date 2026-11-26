@@ -23,7 +23,6 @@ use App\Contracts\Sessions\BuiltInStartProfiles as BuiltInStartProfilesContract;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Contracts\Sessions\ProfileRules;
 use App\Contracts\Sessions\ProfileSelections as ProfileSelectionsContract;
-use App\Enums\Accounts\SignInMethod;
 use App\Enums\Agents\AccessType;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
@@ -45,11 +44,6 @@ use App\Support\AccountDraftProducer;
 use App\Support\AgentImage;
 use App\Support\BuiltInAuthorizations;
 use App\Support\BuiltInStartProfiles;
-use App\Support\ClaudeKeySignIn;
-use App\Support\ClaudeSignIn;
-use App\Support\ClaudeTokenSignIn;
-use App\Support\CodexKeySignIn;
-use App\Support\CodexSignIn;
 use App\Support\CommandAdmission;
 use App\Support\CommandPermissionResolver;
 use App\Support\DraftProducers;
@@ -93,7 +87,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(StartProfileAdmissionContract::class, StartProfileAdmission::class);
         $this->app->bind(BuiltInStartProfilesContract::class, BuiltInStartProfiles::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
-        $this->app->singleton(SignInProtocols::class);
+        $this->app->scoped(SignInProtocols::class);
 
         $this->app->singleton(AgentImage::class, fn () => AgentImage::fromConfig(
             $this->app->make('config')->string('agents.agent_image'),
@@ -102,17 +96,6 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(
             $this->app->make('config')->string('accounts.egress_proxy'),
         ));
-
-        $this->callAfterResolving(
-            SignInProtocols::class,
-            function (SignInProtocols $protocols): void {
-                $protocols->register('claude-code', SignInMethod::OAuth, ClaudeSignIn::class);
-                $protocols->register('claude-code', SignInMethod::ProviderToken, ClaudeTokenSignIn::class);
-                $protocols->register('claude-code', SignInMethod::ApiKey, ClaudeKeySignIn::class);
-                $protocols->register('codex', SignInMethod::OAuth, CodexSignIn::class);
-                $protocols->register('codex', SignInMethod::ApiKey, CodexKeySignIn::class);
-            },
-        );
 
         $this->callAfterResolving(
             DraftProducers::class,
@@ -133,10 +116,7 @@ final class ProfilesServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             ProfileAdministrationPolicy::class,
-            [
-                AccessType::Create,
-                AccessType::Edit,
-            ],
+            [AccessType::Create, AccessType::Edit],
         ));
 
         // A switch's replacement starts as the journal once the old session's stop is proven, on the account the
@@ -155,12 +135,7 @@ final class ProfilesServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             AccountPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Delete,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
         ));
 
         $this->scopeAccountsToOwner($events);

@@ -38,13 +38,8 @@ final class AssignWorkPostTest extends GuardedRouteEntryTestCase
         $root = new RecordIdentity('plans.plan', $plan->id);
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->payload([
-                'recipient_type' => 'agent',
-                'recipient_id' => $builder->agent->id,
-            ])
+            ->parameters(['plan' => $plan->number])
+            ->payload(['recipient_type' => 'agent', 'recipient_id' => $builder->agent->id])
             ->reply(AssignPlanWorkCommand::class, new AssignmentResult(
                 [new AssignmentOutcome($root, null, AssignmentOutcomeType::Changed)],
                 [],

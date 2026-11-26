@@ -15,7 +15,7 @@ final readonly class RuleView
         public string $id,
         public int $number,
         public string $text,
-        public RuleStatus $state,
+        public RuleStatus $status,
         public bool $canReview,
     ) {}
 }

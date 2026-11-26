@@ -44,11 +44,7 @@ final readonly class RecordStopConditionResultsCommand extends Command
         sort($fingerprints);
 
         return hash('sha256', json_encode(
-            [
-                $this->policyDigest,
-                $this->workspaceGeneration,
-                $fingerprints,
-            ],
+            [$this->policyDigest, $this->workspaceGeneration, $fingerprints],
             JSON_THROW_ON_ERROR,
         ));
     }

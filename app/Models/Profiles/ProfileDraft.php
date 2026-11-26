@@ -77,10 +77,7 @@ final class ProfileDraft extends JournalModel implements ReadableModel
         foreach ($profiles as $profile) {
             $draft = new self();
 
-            $draft->setRawAttributes([
-                'id' => (string) Str::ulid(),
-                'profile_key' => $profile,
-            ]);
+            $draft->setRawAttributes(['id' => (string) Str::ulid(), 'profile_key' => $profile]);
 
             $draft->insertIfAbsent();
         }

@@ -23,28 +23,15 @@ final readonly class TaskDraftProducer implements DraftProducer
         return [
             DraftQuestionData::from([
                 'prompt' => 'What should be done?',
-                'suggestions' => [
-                    'Fix a bug',
-                    'Add a page',
-                    'Write a test',
-                    'Update the docs',
-                ],
+                'suggestions' => ['Fix a bug', 'Add a page', 'Write a test', 'Update the docs'],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'How will you know it is done?',
-                'suggestions' => [
-                    'The tests pass',
-                    'It shows on the page',
-                    'The user can do it',
-                ],
+                'suggestions' => ['The tests pass', 'It shows on the page', 'The user can do it'],
             ]),
             DraftQuestionData::from([
                 'prompt' => 'Is there anything it must not touch?',
-                'suggestions' => [
-                    'Nothing',
-                    'The database',
-                    'Other domains',
-                ],
+                'suggestions' => ['Nothing', 'The database', 'Other domains'],
             ]),
         ];
     }

@@ -18,7 +18,7 @@ final class FailedWindow extends Data
     public const string MESSAGE = 'This window could not be loaded.';
 
     public function __construct(
-        public readonly WindowStatus $state,
+        public readonly WindowStatus $status,
         public readonly string $message,
         public readonly string|null $reason = null,
     ) {}

@@ -75,10 +75,7 @@ final class ProfileAuthorization extends Data
      */
     public function denying(array $commands): self
     {
-        $denied = array_values(array_unique([
-            ...$this->deniedCommands,
-            ...$commands,
-        ]));
+        $denied = array_values(array_unique([...$this->deniedCommands, ...$commands]));
 
         return clone ($this, ['deniedCommands' => $denied]);
     }

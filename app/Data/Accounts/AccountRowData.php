@@ -31,7 +31,7 @@ final class AccountRowData extends Data
         public readonly string $label,
         public readonly int $nameRevision,
         public readonly SignInMethodData $signIn,
-        public readonly AccountStatus $state,
+        public readonly AccountStatus $status,
         public readonly string|null $identity,
         public readonly string|null $workspace,
         public readonly bool $isActive,

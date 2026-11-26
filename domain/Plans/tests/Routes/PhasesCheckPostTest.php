@@ -42,9 +42,6 @@ final class PhasesCheckPostTest extends GuardedRouteEntryTestCase
                 'request_key' => 'plans-1',
             ])
             ->reply(RecordPhaseCheckCommand::class, Str::ulid())
-            ->expects(RecordPhaseCheckCommand::class, [
-                'phaseId' => $phase->id,
-                'receiptId' => $receipt,
-            ]);
+            ->expects(RecordPhaseCheckCommand::class, ['phaseId' => $phase->id, 'receiptId' => $receipt]);
     }
 }

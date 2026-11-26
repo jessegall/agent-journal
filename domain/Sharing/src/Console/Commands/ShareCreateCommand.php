@@ -33,7 +33,7 @@ final class ShareCreateCommand extends Command
         $minutes = $this->option('minutes') === null ? ShareDuration::STANDARD_MINUTES : (int) $this->option('minutes');
         $summary = $commands->run(new CreateShareCommand($preview->id, $preview->checksum, $minutes, $key));
 
-        $this->line("Share {$summary->number} ({$summary->shareId}) is {$summary->state->value}.");
+        $this->line("Share {$summary->number} ({$summary->shareId}) is {$summary->status->value}.");
 
         return self::SUCCESS;
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\StatusLineLimits;
 use App\Enums\Accounts\UsageWindowSlot;
-use App\Support\Drivers\Processes\StatusLineLimits;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
@@ -24,9 +24,19 @@ final class StatusLineLimitsTest extends TestCase
         $readings = StatusLineLimits::readingsOf($input, 'process-1-status-0', 3, CarbonImmutable::parse('2026-11-26'));
 
         $this->assertSame(
-            [[UsageWindowSlot::FiveHour, 12.5, 1795449600, 'process-1-status-0-five_hour']],
+            [[
+                UsageWindowSlot::FiveHour,
+                12.5,
+                1795449600,
+                'process-1-status-0-five_hour',
+            ]],
             array_map(
-                fn (UsageWindowReading $reading) => [$reading->slot, $reading->usedPercent, $reading->resetsAt, $reading->source->id],
+                fn (UsageWindowReading $reading) => [
+                    $reading->slot,
+                    $reading->usedPercent,
+                    $reading->resetsAt,
+                    $reading->source->id,
+                ],
                 $readings,
             ),
         );

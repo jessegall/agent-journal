@@ -116,10 +116,7 @@ final class SettingsDocumentCast implements CastsAttributes
 
         foreach ($rows as $position => $entry) {
             if (! $entry instanceof stdClass
-                || ! $this->holdsExactly($entry, [
-                    'key',
-                    'value',
-                ])
+                || ! $this->holdsExactly($entry, ['key', 'value'])
                 || ! is_string($entry->key)
                 || ! SettingKey::isValidKey($entry->key)) {
                 throw SettingsDocumentInvalid::malformedEntry($owner, $listName, $position);
@@ -146,10 +143,7 @@ final class SettingsDocumentCast implements CastsAttributes
     private function isEnvelope(mixed $envelope): bool
     {
         return $envelope instanceof stdClass
-            && $this->holdsExactly($envelope, [
-                'settings',
-                'toggles',
-            ])
+            && $this->holdsExactly($envelope, ['settings', 'toggles'])
             && is_array($envelope->settings) && array_is_list($envelope->settings)
             && is_array($envelope->toggles) && array_is_list($envelope->toggles);
     }

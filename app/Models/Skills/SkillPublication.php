@@ -339,11 +339,7 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
     {
         $publications = self::query()
             ->ofSessions($sessionIds)
-            ->inAnyState([
-                PublicationStatus::Pending,
-                PublicationStatus::Preparing,
-                PublicationStatus::Delivered,
-            ])
+            ->inAnyState([PublicationStatus::Pending, PublicationStatus::Preparing, PublicationStatus::Delivered])
             ->newestFirst()
             ->readExactly(max(1, 2 * count($sessionIds)))
             ->get()
@@ -373,11 +369,7 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
     public static function findSettled(int $limit): array
     {
         $settled = self::query()
-            ->inAnyState([
-                PublicationStatus::Delivered,
-                PublicationStatus::Failed,
-                PublicationStatus::Superseded,
-            ])
+            ->inAnyState([PublicationStatus::Delivered, PublicationStatus::Failed, PublicationStatus::Superseded])
             ->newestFirst()
             ->readExactly($limit)
             ->get();
@@ -393,10 +385,7 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
     public static function findOpen(int $limit): array
     {
         $open = self::query()
-            ->inAnyState([
-                PublicationStatus::Pending,
-                PublicationStatus::Preparing,
-            ])
+            ->inAnyState([PublicationStatus::Pending, PublicationStatus::Preparing])
             ->oldestFirst()
             ->readExactly($limit)
             ->get();
@@ -501,9 +490,9 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, PublicationStatus $state): void
+    protected function inState(Builder $query, PublicationStatus $status): void
     {
-        $query->where('status', $state->value);
+        $query->where('status', $status->value);
     }
 
     /**
@@ -538,7 +527,7 @@ final class SkillPublication extends JournalModel implements EventSource, Readab
     #[Scope]
     protected function inAnyState(Builder $query, array $states): void
     {
-        $query->whereIn('status', array_map(fn (PublicationStatus $state) => $state->value, $states));
+        $query->whereIn('status', array_map(fn (PublicationStatus $status) => $status->value, $states));
     }
 
     /**

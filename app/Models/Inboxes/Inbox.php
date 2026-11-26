@@ -207,10 +207,7 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
     #[Scope]
     protected function ownedByCore(Builder $query): void
     {
-        $query->whereIn('provider_key', [
-            self::NAMED_PROVIDER,
-            self::PERSONAL_PROVIDER,
-        ]);
+        $query->whereIn('provider_key', [self::NAMED_PROVIDER, self::PERSONAL_PROVIDER]);
     }
 
     /**

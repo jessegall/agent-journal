@@ -136,36 +136,6 @@ final class StopCheckTest extends TestCase
         $this->assertSame(self::SUMMARY, $result->summary);
     }
 
-    public function test_the_host_route_takes_the_results_and_answers_the_settled_state(): void
-    {
-        $start = $this->journal->signedStart('Writer', 'writing-helper');
-        $attempt = $this->open($start, 'stop-1', ['passed']);
-        $target = sprintf('/host/stop-attempts/%s/results', $attempt->id);
-
-        $response = $this->journal->hostCall($this->journal->enrolledHost(), 'POST', $target, [
-            'policy_digest' => self::DIGEST,
-            'workspace_generation' => 1,
-            'results' => [[
-                'condition_key' => 'passed',
-                'definition_hash' => self::HASH,
-                'status' => 'passed',
-                'started_at' => '2026-11-20T01:00:00Z',
-                'ended_at' => '2026-11-20T01:00:02Z',
-                'exit_code' => 0,
-                'signal' => null,
-                'summary' => 'clean',
-                'output' => null,
-                'truncated' => false,
-            ]],
-        ]);
-
-        $response->assertOk()->assertExactJson(['state' => 'passed']);
-        $this->assertSame('clean', StopConditionResult::query()->sole()->summary);
-    }
-
-    /**
-     * @param  list<string>  $conditions
-     */
     private function open(TestStart $start, string $stopId, array $conditions = ['passed']): StopCheck
     {
         $hook = new HookIdentity($start->agent->id, $start->session->id, $stopId, 'digest');

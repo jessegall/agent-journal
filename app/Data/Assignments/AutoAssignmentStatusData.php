@@ -33,8 +33,8 @@ final class AutoAssignmentStatusData extends Data
     {
         return self::from([
             'isEnabled' => $status->isEnabled,
-            'state' => $status->state->value,
-            'stateLabel' => $status->state->label(),
+            'state' => $status->status->value,
+            'stateLabel' => $status->status->label(),
             'revision' => $status->revision,
             'pool' => $status->pool->map(fn (PoolDescription $pool) => $pool->label)->getOrElse(Optional::create()),
             'size' => $status->size->getOrElse(Optional::create()),

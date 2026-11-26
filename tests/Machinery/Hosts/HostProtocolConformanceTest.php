@@ -38,10 +38,10 @@ final class HostProtocolConformanceTest extends TestCase
             $order->sequence = $vector['order']['sequence'];
             $order->type = HostOrderType::from($vector['order']['type']);
             $order->host_process_id = $vector['order']['process_id'];
-            $order->payload = $vector['payload'];
+            $order->payload = HostOrderPayload::encode($vector['payload']);
             $order->expires_at = CarbonImmutable::parse($vector['order']['expires_at']);
 
-            $this->assertSame($vector['order']['payload'], HostOrderPayload::encode($order->payload));
+            $this->assertSame($vector['order']['payload'], $order->payload);
             $this->assertSame($vector['order']['signature'], $host->signOrder($order));
         }
     }
@@ -60,7 +60,10 @@ final class HostProtocolConformanceTest extends TestCase
         ));
         $this->assertSame([3, 'pid:42'], [$report->exitCode, $report->identity]);
         $this->assertSame(
-            [['open_process', 'write_keys'], '01jprocess000000000000000001', true],
+            [[
+                'open_process',
+                'write_keys',
+            ], '01jprocess000000000000000001', true],
             [$inventory->capabilities, $inventory->processes[0]->processId, $inventory->processes[0]->isTerminalHeld],
         );
     }

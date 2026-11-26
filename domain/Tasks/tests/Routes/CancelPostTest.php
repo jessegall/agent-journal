@@ -33,14 +33,8 @@ final class CancelPostTest extends GuardedRouteEntryTestCase
         $journal->run(new StartTaskCommand($task->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'task' => $task->number,
-            ])
-            ->payload([
-                'reason' => 'Not needed.',
-                'revision' => 1,
-                'run' => 1,
-            ])
+            ->parameters(['task' => $task->number])
+            ->payload(['reason' => 'Not needed.', 'revision' => 1, 'run' => 1])
             ->expects(CancelTaskCommand::class, [
                 'taskId' => $task->id,
                 'reason' => 'Not needed.',

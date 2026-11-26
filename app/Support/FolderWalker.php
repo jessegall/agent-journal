@@ -142,10 +142,7 @@ final readonly class FolderWalker
             throw FileUnreadable::at($folder->label());
         }
 
-        return array_values(array_diff($names, [
-            '.',
-            '..',
-        ]));
+        return array_values(array_diff($names, ['.', '..']));
     }
 
     /**

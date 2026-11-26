@@ -15,6 +15,6 @@ final readonly class SkillPublicationMoved implements SkillEvent, SkillPublicati
     public function __construct(
         public string $publicationId,
         public string $sessionId,
-        public PublicationStatus $state,
+        public PublicationStatus $status,
     ) {}
 }

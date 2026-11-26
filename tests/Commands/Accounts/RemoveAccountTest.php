@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\RemoveAccount\RemoveAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -16,7 +17,6 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
 use App\Support\Command;
-use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Bus;

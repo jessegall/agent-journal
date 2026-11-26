@@ -6,7 +6,7 @@ namespace Tests\Commands\Agents;
 
 use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
 use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -22,18 +22,46 @@ final class CheckSignInTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'hosts', 'host_processes', 'host_orders', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
-        'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
-        'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
+        'hosts',
+        'host_processes',
+        'host_orders',
+        'agents',
+        'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
+        'agent_runtimes',
+        'driver_requests',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'session_requests',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
     ];
 
     public function test_only_an_accepted_sign_in_in_the_accounts_own_folder_proves_the_start(): void
     {
         $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->enrollHost('Mac', [base_path()]);
         $answers = [
-            'Signed' => fn (string $folder) => ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => $folder],
-            'Elsewhere' => fn () => ['loggedIn' => true, 'authMethod' => 'claude.ai', 'configDirectory' => '/other'],
-            'Keyed' => fn (string $folder) => ['loggedIn' => true, 'authMethod' => 'api_key', 'configDirectory' => $folder],
+            'Signed' => fn (string $folder) => [
+                'loggedIn' => true,
+                'authMethod' => 'claude.ai',
+                'configDirectory' => $folder,
+            ],
+            'Elsewhere' => fn () => [
+                'loggedIn' => true,
+                'authMethod' => 'claude.ai',
+                'configDirectory' => '/other',
+            ],
+            'Keyed' => fn (string $folder) => [
+                'loggedIn' => true,
+                'authMethod' => 'api_key',
+                'configDirectory' => $folder,
+            ],
             'Out' => fn () => ['loggedIn' => false],
         ];
         $results = [];
@@ -57,10 +85,14 @@ final class CheckSignInTest extends TestCase
             ];
         }
 
-        $notSignedIn = [SessionProcessStatus::Stopped, HostRefusal::NotSignedIn->explanation(), false];
+        $notSignedIn = [SessionProcessStatus::Stopped, StartRefusalReason::NotSignedIn->explanation(), false];
         $this->journal->assertResult(
             [
-                'Signed' => [SessionProcessStatus::Starting, null, true],
+                'Signed' => [
+                    SessionProcessStatus::Starting,
+                    null,
+                    true,
+                ],
                 'Elsewhere' => $notSignedIn,
                 'Keyed' => $notSignedIn,
                 'Out' => $notSignedIn,

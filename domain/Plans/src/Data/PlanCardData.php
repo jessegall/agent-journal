@@ -28,7 +28,7 @@ final class PlanCardData extends Data
         public readonly string $number,
         public readonly string $title,
         public readonly PlanType $type,
-        public readonly PlanStatus $state,
+        public readonly PlanStatus $status,
         public readonly bool $isFocused,
         public readonly int $finishedTasks,
         public readonly int $cancelledTasks,
@@ -50,19 +50,16 @@ final class PlanCardData extends Data
             'number' => (string) $card->number,
             'title' => $card->title,
             'type' => $card->type,
-            'state' => $card->state,
+            'status' => $card->status,
             'isFocused' => $card->isFocused,
             'finishedTasks' => $card->progress->finished,
             'cancelledTasks' => $card->progress->cancelled,
             'totalTasks' => $card->progress->total,
-            'isReadyToFinish' => $card->state === PlanStatus::Started && $card->progress->unfinished() === 0,
+            'isReadyToFinish' => $card->status === PlanStatus::Started && $card->progress->unfinished() === 0,
             'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
             'start' => $card->canStart
-                ? StartPlanData::from([
-                    'planId' => (string) $card->id,
-                    'planNumber' => (string) $card->number,
-                ])
+                ? StartPlanData::from(['planId' => (string) $card->id, 'planNumber' => (string) $card->number])
                 : null,
         ], fn (mixed $fieldValue) => $fieldValue !== null));
     }

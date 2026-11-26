@@ -42,11 +42,7 @@ final readonly class HostFrameScreens
             'captured' => $now->toIso8601ZuluString(),
             'columns' => $frame->columns,
             'rows' => array_map(fn (string $row) => [['text' => $row]], $frame->rows),
-            'cursor' => [
-                'row' => $frame->cursorRow,
-                'column' => $frame->cursorColumn,
-                'isVisible' => true,
-            ],
+            'cursor' => ['row' => $frame->cursorRow, 'column' => $frame->cursorColumn, 'isVisible' => true],
             'buffer' => $frame->buffer,
             'is_plain' => true,
             'is_too_large' => false,

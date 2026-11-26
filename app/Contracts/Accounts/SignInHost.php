@@ -10,6 +10,7 @@ use App\Values\ClaimedAccountCheck;
 use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;
 use App\Values\CleanupProgress;
+use App\Values\HostFolderAnswer;
 use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;
 use App\Values\SignInPoll;
@@ -70,4 +71,24 @@ interface SignInHost
      * Whether the attempt is still live in the generation the host runs it in, with the code the user typed, once.
      */
     public function poll(ClaimedSignIn $claimed): SignInPoll;
+
+    /**
+     * Asks the journal to order this host to make an account folder for the operation, and answers the order's id.
+     */
+    public function orderFolderMake(string $folder, string $operation): string;
+
+    /**
+     * Asks the journal to order this host to remove an account folder, and answers the order's id.
+     */
+    public function orderFolderRemove(string $folder, string $operation): string;
+
+    /**
+     * Asks the journal to order this host to say whether a container still binds an account folder.
+     */
+    public function orderFolderUse(string $folder, string $operation): string;
+
+    /**
+     * Where this host's folder order stands.
+     */
+    public function folderAnswer(string $orderId): HostFolderAnswer;
 }

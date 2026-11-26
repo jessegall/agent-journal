@@ -15,7 +15,7 @@ final readonly class TaskSummary
     public function __construct(
         public int $number,
         public string $title,
-        public TaskStatus $state,
+        public TaskStatus $status,
         public CarbonImmutable $changedAt,
     ) {}
 }

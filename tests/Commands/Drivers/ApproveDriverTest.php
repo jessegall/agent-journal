@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Drivers\ApproveDriver\ApproveDriverCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -13,7 +14,6 @@ use App\Enums\Drivers\MarkTone;
 use App\Enums\Drivers\SignInCodeDirection;
 use App\Models\Drivers\DriverApproval;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\DriverCatalogue;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;

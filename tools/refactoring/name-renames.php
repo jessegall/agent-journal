@@ -40,20 +40,12 @@ function renameNames(array $arguments): int
 
     foreach ($chosen as $declared) {
         $line = renameLine($declared, $options);
-        $declared->owner !== '' && in_array($declared->declarationType, [
-            'class',
-            'interface',
-            'trait',
-            'enum',
-        ], true)
+        $declared->owner !== '' && in_array($declared->declarationType, ['class', 'interface', 'trait', 'enum'], true)
             ? $typeLines[] = $line
             : $memberLines[] = $line;
     }
 
-    echo implode("\n", [
-        ...$typeLines,
-        ...$memberLines,
-    ])."\n";
+    echo implode("\n", [...$typeLines, ...$memberLines])."\n";
 
     if (! $options['apply']) {
         return 0;

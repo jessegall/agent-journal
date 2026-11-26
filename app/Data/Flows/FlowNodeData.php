@@ -26,9 +26,6 @@ final class FlowNodeData extends Data
 
     public function placedAt(int $rank, int $order): self
     {
-        return clone ($this, [
-            'rank' => $rank,
-            'order' => $order,
-        ]);
+        return clone ($this, ['rank' => $rank, 'order' => $order]);
     }
 }

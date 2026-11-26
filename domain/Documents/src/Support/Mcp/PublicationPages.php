@@ -57,11 +57,7 @@ final readonly class PublicationPages
             revision: $position->revision,
         ), $key)] : [];
 
-        return ToolResult::ok([
-            ...$card->toArray(),
-            'abstract' => $abstract,
-            'outline' => $entries,
-        ], $actions);
+        return ToolResult::ok([...$card->toArray(), 'abstract' => $abstract, 'outline' => $entries], $actions);
     }
 
     public function comments(
@@ -74,10 +70,7 @@ final readonly class PublicationPages
         $entry = $page->comments[0] ?? null;
 
         if ($entry === null) {
-            return ToolResult::ok([
-                ...$card->toArray(),
-                'comments' => [],
-            ]);
+            return ToolResult::ok([...$card->toArray(), 'comments' => []]);
         }
 
         $comment = $entry->comment;
@@ -99,10 +92,7 @@ final readonly class PublicationPages
         return ToolResult::ok($commentPage->responseFields, [$this->continuations->link(new Continuation(
             $position->tool,
             $position->selector,
-            [
-                ...$position->filters,
-                'after_comment' => $page->nextAfter,
-            ],
+            [...$position->filters, 'after_comment' => $page->nextAfter],
             1,
             revision: $position->revision,
         ), $key)]);

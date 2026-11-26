@@ -65,18 +65,11 @@ final class SequencesDomain extends Domain implements
         return [
             new PolicyDefinition(
                 SequencePolicy::class,
-                [
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Create, AccessType::Edit],
             ),
             new PolicyDefinition(
                 StoredSequencePolicy::class,
-                [
-                    AccessType::Read,
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
         ];
     }

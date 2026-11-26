@@ -32,11 +32,7 @@ final readonly class MemorySearchProvider implements SearchProvider
             admitted: fn () => self::ownedBy($owner),
             idColumn: 'id',
             titleColumn: 'text',
-            columns: [
-                'id',
-                'number',
-                'text',
-            ],
+            columns: ['id', 'number', 'text'],
             titleOf: fn (Memory $memory): string => $memory->text,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $memoryId) => self::ownedBy($owner)->whereKey($memoryId)->exists()

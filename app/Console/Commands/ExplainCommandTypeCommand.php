@@ -52,13 +52,7 @@ final class ExplainCommandTypeCommand extends Command
             $this->line('No executable parts.');
         }
 
-        $this->table([
-            'Node',
-            'Type',
-            'Parent',
-            'Source',
-            'Redirects',
-        ], array_map(fn (ExplainedNodeData $node) => [
+        $this->table(['Node', 'Type', 'Parent', 'Source', 'Redirects'], array_map(fn (ExplainedNodeData $node) => [
             $node->id,
             $node->type,
             $node->parent ?? '-',

@@ -35,16 +35,16 @@ function ask(): void {
 
 const { gaveUp, retry, restart } = usePendingPoll(
     () => props.data,
-    () => props.data.state === 'pending' || isLoadingIn(props.data.entries),
+    () => props.data.status === 'pending' || isLoadingIn(props.data.entries),
     ask,
 );
 /**
  * What the window shows: the reading placeholder while the host has not answered, or the project's state, whose tree
  * shows for every state without a look of its own.
  */
-const shown = computed(() => (props.data.state === 'pending' && !gaveUp.value ? 'reading' : props.data.state));
+const shown = computed(() => (props.data.status === 'pending' && !gaveUp.value ? 'reading' : props.data.status));
 
-const treeState = computed(() => (props.data.state === 'failed' || gaveUp.value ? 'failed' : 'ready'));
+const treeState = computed(() => (props.data.status === 'failed' || gaveUp.value ? 'failed' : 'ready'));
 
 function changeOpen(paths: string[]): void {
     openFolders.value = paths;

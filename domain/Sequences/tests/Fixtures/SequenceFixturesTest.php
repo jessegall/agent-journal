@@ -32,10 +32,7 @@ final class SequenceFixturesTest extends TestCase
     public function test_a_started_run_follows_the_agent_at_its_first_step(): void
     {
         $runs = $this->journal->owner()->agent('Ada')->fixtures(SequenceFixtures::class)
-            ->run('Close', [
-                'Read the brief.',
-                'Run the phase tests.',
-            ])
+            ->run('Close', ['Read the brief.', 'Run the phase tests.'])
             ->startRun('Close', 'Ada');
 
         $runs->assertStep('Close', step: 1, follower: 'Ada');

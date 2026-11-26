@@ -35,17 +35,8 @@ final class AgentDockAddPostTest extends GuardedRouteEntryTestCase
         $taskId = strtolower((string) Str::ulid());
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'type' => 'tasks.task',
-                'id' => $taskId,
-                'chat' => null,
-                'request_key' => 'dock-add-1',
-            ])
+            ->payload(['type' => 'tasks.task', 'id' => $taskId, 'chat' => null, 'request_key' => 'dock-add-1'])
             ->reply(DockSourceCommand::class, DockResult::of(DockOutcome::Added, strtolower((string) Str::ulid())))
-            ->expects(DockSourceCommand::class, [
-                'chat' => null,
-                'type' => 'tasks.task',
-                'id' => $taskId,
-            ]);
+            ->expects(DockSourceCommand::class, ['chat' => null, 'type' => 'tasks.task', 'id' => $taskId]);
     }
 }

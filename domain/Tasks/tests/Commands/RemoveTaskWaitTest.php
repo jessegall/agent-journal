@@ -71,10 +71,7 @@ final class RemoveTaskWaitTest extends TestCase
         $this->runCommand(new RemoveTaskWaitCommand($this->second->id, $this->first->id));
 
         $this->assertSame(
-            [
-                TaskWaitChange::Added,
-                TaskWaitChange::Removed,
-            ],
+            [TaskWaitChange::Added, TaskWaitChange::Removed],
             TaskWaitHistory::query()->orderBy('created_at')->orderBy('id')->pluck('change')->all(),
         );
 

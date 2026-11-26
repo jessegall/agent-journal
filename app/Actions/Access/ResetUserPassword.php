@@ -22,9 +22,7 @@ final class ResetUserPassword implements ResetsUserPasswords
      */
     public function reset(User $user, array $input): void
     {
-        $this->validation->make($input, [
-            'password' => $this->passwordRules(),
-        ])->validate();
+        $this->validation->make($input, ['password' => $this->passwordRules()])->validate();
 
         $user->changePassword($input['password']);
     }

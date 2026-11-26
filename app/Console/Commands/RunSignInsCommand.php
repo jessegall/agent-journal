@@ -8,9 +8,9 @@ use App\Contracts\Files\Files;
 use App\Exceptions\SignInRunnerRefused;
 use App\Support\AccountFolderUses;
 use App\Support\ArrangementSetting;
+use App\Support\FolderOrderWait;
 use App\Support\HostAccountFolders;
 use App\Support\HostSecret;
-use App\Support\HostStartSocket;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInHost;
@@ -35,18 +35,23 @@ final class RunSignInsCommand extends Command
         ArrangementSetting $arrangement,
         Files $files,
     ): int {
+        $host = new SignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
+            (string) getenv('JOURNAL_HOST_SECRET_FILE'),
+            (string) getenv('JOURNAL_HOST_SECRET'),
+        ), $arrangement->arrangement);
+
+        $pause = static fn () => usleep(500_000);
+        $wait = new FolderOrderWait($host, $pause);
+
         $runner = new PrivateSignInProcesses(
-            new SignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
-                (string) getenv('JOURNAL_HOST_SECRET_FILE'),
-                (string) getenv('JOURNAL_HOST_SECRET'),
-            ), $arrangement->arrangement),
+            $host,
             $protocols,
-            static fn () => usleep(500_000),
+            $pause,
             $files,
             $arrangement->arrangement->isContained()
-                ? new HostAccountFolders(new HostStartSocket((string) getenv('AGENTS_HOST_START_SOCKET')))
+                ? new HostAccountFolders($host, $wait)
                 : new LocalAccountFolders($files),
-            new AccountFolderUses((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
+            new AccountFolderUses($host, $wait, $arrangement->arrangement),
         );
 
         $runner->reconcileAtStart();

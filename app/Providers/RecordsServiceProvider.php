@@ -43,19 +43,13 @@ final class RecordsServiceProvider extends ServiceProvider
     {
         $policies->register(
             'Core',
-            new PolicyDefinition(RecordLinkPolicy::class, [
-                AccessType::Create,
-                AccessType::Edit,
-            ]),
+            new PolicyDefinition(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
         );
 
         $this->loadCoreRoutes('records/links.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                LinkAddCommand::class,
-                LinkRemoveCommand::class,
-            ]);
+            $this->commands([LinkAddCommand::class, LinkRemoveCommand::class]);
         }
     }
 }

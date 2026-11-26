@@ -117,10 +117,7 @@ final readonly class NavigationMerge
 
                 $this->log->warning(
                     "The navigation item {$key} listed at {$path} was dropped: its key is declared or listed twice.",
-                    [
-                        'key' => $key,
-                        'path' => $paths[$contribution],
-                    ],
+                    ['key' => $key, 'path' => $paths[$contribution]],
                 );
             }
         }

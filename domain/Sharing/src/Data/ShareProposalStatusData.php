@@ -17,11 +17,11 @@ final class ShareProposalStatusData extends Data
 {
     public function __construct(
         public readonly int $number,
-        public readonly ShareStatus $state,
+        public readonly ShareStatus $status,
     ) {}
 
     public static function fromStatus(ShareProposalStatus $status): self
     {
-        return new self($status->number, $status->state);
+        return new self($status->number, $status->status);
     }
 }

@@ -106,13 +106,7 @@ final class CloseDocumentTest extends TestCase
 
         $this->assertSame(3, $draft->version);
 
-        $this->assertSame([
-            2,
-            true,
-        ], [
-            $closed->revisionNumber,
-            $closed->isPublished,
-        ]);
+        $this->assertSame([2, true], [$closed->revisionNumber, $closed->isPublished]);
 
         $this->assertStringContainsString(self::RISKS_TEXT, $this->documents()->show(1)->body);
 
@@ -132,13 +126,7 @@ final class CloseDocumentTest extends TestCase
         $first = $this->bus()->run(new CloseDocumentCommand($draft->target()));
         $repeated = $this->bus()->run(new CloseDocumentCommand($draft->target()));
 
-        $this->assertSame([
-            1,
-            false,
-        ], [
-            $first->revisionNumber,
-            $first->isPublished,
-        ]);
+        $this->assertSame([1, false], [$first->revisionNumber, $first->isPublished]);
 
         $this->assertEquals($first, $repeated);
         $this->assertSame(1, DocumentClose::query()->count());
@@ -241,19 +229,10 @@ final class CloseDocumentTest extends TestCase
 
         $this->assertSame(0, DocumentDraft::query()->count());
 
-        $this->assertSame([
-            '2',
-            '1',
-        ], [
-            $this->documents()->show(1)->revision,
-            $this->documents()->show(2)->revision,
-        ]);
+        $this->assertSame(['2', '1'], [$this->documents()->show(1)->revision, $this->documents()->show(2)->revision]);
 
         $this->assertSame(
-            [
-                CloseCause::Lifecycle,
-                CloseCause::Lifecycle,
-            ],
+            [CloseCause::Lifecycle, CloseCause::Lifecycle],
             DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all(),
         );
     }

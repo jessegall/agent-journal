@@ -72,13 +72,7 @@ enum StepType: string
     {
         return in_array(
             $this,
-            [
-                self::Pipeline,
-                self::Background,
-                self::Subshell,
-                self::Substitution,
-                self::Shell,
-            ],
+            [self::Pipeline, self::Background, self::Subshell, self::Substitution, self::Shell],
             true,
         );
     }

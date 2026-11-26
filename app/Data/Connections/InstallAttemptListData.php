@@ -26,9 +26,6 @@ final class InstallAttemptListData extends Data
 
     public static function fromPage(InstallAttemptPage $page): self
     {
-        return self::from([
-            'rows' => $page->rows,
-            'nextCursor' => $page->nextCursor,
-        ]);
+        return self::from(['rows' => $page->rows, 'nextCursor' => $page->nextCursor]);
     }
 }

@@ -61,16 +61,8 @@ final class RequestPlanChangesTest extends TestCase
         $review = PlanReviewEdition::query()->findOrFail($reviewId);
 
         $this->assertSame(
-            [
-                PlanReviewStatus::ChangesRequested,
-                'Split the second phase.',
-                PlanStatus::Planned,
-            ],
-            [
-                $review->status,
-                $review->decision_reason,
-                $this->plan->refresh()->status,
-            ],
+            [PlanReviewStatus::ChangesRequested, 'Split the second phase.', PlanStatus::Planned],
+            [$review->status, $review->decision_reason, $this->plan->refresh()->status],
         );
     }
 

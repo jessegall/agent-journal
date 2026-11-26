@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\RecordAccountFailure\RecordAccountFailureCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Drivers\DriverFailure;
@@ -11,7 +12,6 @@ use App\Events\Sessions\DriverFailed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;

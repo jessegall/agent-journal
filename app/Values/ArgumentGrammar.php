@@ -62,18 +62,12 @@ final class ArgumentGrammar extends Data
 
     public function withOptions(OptionGrammar ...$options): self
     {
-        return clone ($this, ['options' => [
-            ...$this->options,
-            ...array_values($options),
-        ]]);
+        return clone ($this, ['options' => [...$this->options, ...array_values($options)]]);
     }
 
     public function withOperands(OperandType ...$operands): self
     {
-        return clone ($this, ['operands' => [
-            ...$this->operands,
-            ...array_values($operands),
-        ]]);
+        return clone ($this, ['operands' => [...$this->operands, ...array_values($operands)]]);
     }
 
     /**

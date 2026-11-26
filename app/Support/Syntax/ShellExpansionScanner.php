@@ -338,13 +338,7 @@ final readonly class ShellExpansionScanner
 
             $isBareEsac = $this->startsWord($cursor, $position, 'esa') === false
                 && substr_compare($cursor->source, 'esac', $position, 4) === 0
-                && in_array($cursor->at($position + 4), [
-                    '',
-                    ')',
-                    ' ',
-                    ';',
-                    "\n",
-                ], true)
+                && in_array($cursor->at($position + 4), ['', ')', ' ', ';', "\n"], true)
                 && str_contains(" \t\n;", $cursor->source[$position - 1] ?? ' ');
 
             if ($this->startsWord($cursor, $position, 'esac') || $isBareEsac) {
@@ -377,11 +371,7 @@ final readonly class ShellExpansionScanner
         $delimiterStart += strspn($cursor->source, " \t", $delimiterStart);
         $delimiterLength = strcspn($cursor->source, " \t\n;&|<>()", $delimiterStart);
 
-        $delimiter = str_replace([
-            "'",
-            '"',
-            '\\',
-        ], '', substr($cursor->source, $delimiterStart, $delimiterLength));
+        $delimiter = str_replace(["'", '"', '\\'], '', substr($cursor->source, $delimiterStart, $delimiterLength));
 
         if ($delimiter === '') {
             return $index + 2;

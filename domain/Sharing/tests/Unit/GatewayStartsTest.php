@@ -50,14 +50,8 @@ final class GatewayStartsTest extends TestCase
         });
 
         $this->assertSame(
-            [
-                'run-1:3',
-                FakeShareGateway::PUBLIC_ORIGIN,
-            ],
-            [
-                $endpoint->processReference,
-                $endpoint->publicOrigin,
-            ],
+            ['run-1:3', FakeShareGateway::PUBLIC_ORIGIN],
+            [$endpoint->processReference, $endpoint->publicOrigin],
         );
 
         $this->assertFalse($child->hasReceivedSignal(15));

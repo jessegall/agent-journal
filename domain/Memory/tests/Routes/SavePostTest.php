@@ -30,15 +30,8 @@ final class SavePostTest extends GuardedRouteEntryTestCase
         $start = $journal->owner()->signedStart('Builder');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'text' => 'Run the phase tests once.',
-                'weight' => 7,
-                'request_key' => 'write-1',
-            ])
+            ->payload(['text' => 'Run the phase tests once.', 'weight' => 7, 'request_key' => 'write-1'])
             ->reply(SaveMemoryCommand::class, Str::ulid())
-            ->expects(SaveMemoryCommand::class, [
-                'text' => 'Run the phase tests once.',
-                'weight' => 7,
-            ]);
+            ->expects(SaveMemoryCommand::class, ['text' => 'Run the phase tests once.', 'weight' => 7]);
     }
 }

@@ -21,7 +21,7 @@ final class AssignedTaskCardData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
         public readonly AssignmentData $holder,
         public readonly TaskExecutionData|null $execution = null,
     ) {}
@@ -31,7 +31,7 @@ final class AssignedTaskCardData extends Data
         return self::from([
             'id' => $card->id,
             'title' => $card->title,
-            'state' => $card->state,
+            'status' => $card->status,
             'holder' => AssignmentData::ofHolder($card->holder->get()),
             'execution' => $card->execution === null ? null : TaskExecutionData::fromExecution($card->execution),
         ]);

@@ -20,7 +20,7 @@ final class TerminalControlData extends Data
     public function __construct(
         public readonly string $takeId,
         public readonly string|null $grantId,
-        public readonly TerminalGrantStatus $state,
+        public readonly TerminalGrantStatus $status,
         public readonly int $expiresInSeconds,
         public readonly int $nextSequence,
         // Whether the host offers private entry for this terminal; without it no private field is offered.

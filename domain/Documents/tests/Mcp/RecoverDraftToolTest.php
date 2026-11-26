@@ -43,15 +43,8 @@ final class RecoverDraftToolTest extends McpToolEntryTestCase
         );
 
         return ToolCall::by($start)
-            ->arguments([
-                'draft_id' => $retained->id,
-                'expected_revision' => 1,
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['draft_id' => $retained->id, 'expected_revision' => 1, 'request_key' => 'documents-1'])
             ->reply(RecoverDraftCommand::class, $opened)
-            ->expects(RecoverDraftCommand::class, [
-                'draftId' => $retained->id,
-                'expectedRevision' => 1,
-            ]);
+            ->expects(RecoverDraftCommand::class, ['draftId' => $retained->id, 'expectedRevision' => 1]);
     }
 }

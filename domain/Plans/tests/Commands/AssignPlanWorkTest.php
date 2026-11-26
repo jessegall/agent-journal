@@ -114,22 +114,10 @@ final class AssignPlanWorkTest extends TestCase
         $this->assertCount(4, $result->changes);
 
         $this->assertEqualsCanonicalizing([
-            [
-                Plan::linkType(),
-                $this->plan->id,
-            ],
-            [
-                Phase::linkType(),
-                $this->working->id,
-            ],
-            [
-                Phase::linkType(),
-                $this->empty->id,
-            ],
-            [
-                'tasks.task',
-                $this->open->id,
-            ],
+            [Plan::linkType(), $this->plan->id],
+            [Phase::linkType(), $this->working->id],
+            [Phase::linkType(), $this->empty->id],
+            ['tasks.task', $this->open->id],
         ], AssignmentRecord::query()->get()->map(
             fn (AssignmentRecord $row) => [
                 $row->record_type,
@@ -178,10 +166,7 @@ final class AssignPlanWorkTest extends TestCase
         $this->main = $this->journal->signedStart('Main agent', 'main-agent');
         $this->helper = $this->journal->signedStart('Reader', 'read-only-helper');
 
-        $plan = Plan::factory()->create([
-            'title' => 'Release',
-            'type' => PlanType::Build,
-        ]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
         $open = $this->tasks()->createTask('Open command');
         $finished = $this->tasks()->createTask('Finished command');
@@ -193,11 +178,7 @@ final class AssignPlanWorkTest extends TestCase
 
         $this->artisan(
             'plan:assign-work',
-            [
-                'type' => Plan::linkType(),
-                'id' => $plan->id,
-                '--to' => "agent:{$this->helper->agent->id}",
-            ],
+            ['type' => Plan::linkType(), 'id' => $plan->id, '--to' => "agent:{$this->helper->agent->id}"],
         )
             ->expectsOutputToContain(
                 sprintf(
@@ -218,11 +199,7 @@ final class AssignPlanWorkTest extends TestCase
         )
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
 
-        $this->artisan('plan:assign-work', [
-            'type' => Plan::linkType(),
-            'id' => $plan->id,
-            '--to' => 'nobody',
-        ])
+        $this->artisan('plan:assign-work', ['type' => Plan::linkType(), 'id' => $plan->id, '--to' => 'nobody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
     }
 

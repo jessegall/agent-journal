@@ -40,9 +40,4 @@ final class ProfileRefused extends RuntimeException
     {
         return new self("{$driver}'s sandbox does not keep its tools from its sign-in: it is not started in a container");
     }
-
-    public static function contraryArgument(string $argument, string $what): self
-    {
-        return new self("the argument {$argument} {$what}");
-    }
 }

@@ -29,8 +29,9 @@ function tasks(phase: string, from: number, count: number): PhaseTaskPageData['r
     return Array.from({ length: count }, (_, index) => ({
         number: `${phase}${from + index}`,
         title: `Task ${from + index} of phase ${phase}`,
-        state: 'open',
+        status: 'open',
         stateLabel: 'Open',
+        hasWaits: false,
     })) as PhaseTaskPageData['rows'];
 }
 

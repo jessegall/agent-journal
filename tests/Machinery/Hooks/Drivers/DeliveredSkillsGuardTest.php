@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
+use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Hooks\HookPayload;
+use App\Agents\Drivers\Hooks\JudgedCall;
+use App\Contracts\Drivers\DriverCall;
 use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Models\Agents\AgentRuntime;
 use App\Support\Decisions\Decision;
-use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Support\Drivers\Adapters\CodexAdapter;
-use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\Contracts\DriverCall;
-use App\Support\Drivers\DriverReply;
-use App\Support\Drivers\HookPayload;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;

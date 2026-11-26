@@ -133,14 +133,8 @@ final readonly class FileRules
             CommandRule::forProgram(
                 'core.php.artisan-config-clear',
                 ProgramSpellings::php(),
-                [
-                    'artisan',
-                    'config:clear',
-                ],
-                ArgumentGrammar::options([
-                    '--ansi',
-                    '--no-ansi',
-                ]),
+                ['artisan', 'config:clear'],
+                ArgumentGrammar::options(['--ansi', '--no-ansi']),
                 $deleteClasses,
             ),
             CommandRule::forProgram(

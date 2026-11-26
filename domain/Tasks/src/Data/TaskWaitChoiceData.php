@@ -18,11 +18,11 @@ final class TaskWaitChoiceData extends Data
     public function __construct(
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
     ) {}
 
     public static function ofCard(TaskCard $card): self
     {
-        return new self((string) $card->number, $card->title, $card->state);
+        return new self((string) $card->number, $card->title, $card->status);
     }
 }

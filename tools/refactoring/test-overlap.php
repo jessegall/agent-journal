@@ -222,10 +222,7 @@ function isCommandTest(string $name): bool
  */
 function jaccard(array $first, array $second): float
 {
-    $union = count(array_unique([
-        ...$first,
-        ...$second,
-    ]));
+    $union = count(array_unique([...$first, ...$second]));
 
     if ($union === 0) {
         return 0.0;

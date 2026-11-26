@@ -17,6 +17,6 @@ final class DockedSourceData extends Data
         public readonly string $type,
         public readonly string $sourceId,
         public readonly string $title,
-        public readonly DockedStatus $state,
+        public readonly DockedStatus $status,
     ) {}
 }

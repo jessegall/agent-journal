@@ -51,10 +51,7 @@ final class ProposeRuleTool extends JournalWriteTool
 
     protected function present(mixed $ruleId): ToolResult
     {
-        return ToolResult::ok([
-            'rule_id' => $ruleId,
-            'state' => RuleStatus::Proposed->value,
-        ]);
+        return ToolResult::ok(['rule_id' => $ruleId, 'state' => RuleStatus::Proposed->value]);
     }
 
     /**

@@ -31,8 +31,6 @@ final class SharePreviewGetTest extends GuardedRouteEntryTestCase
         $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'reference' => "doc {$document->number}",
-            ]);
+            ->parameters(['reference' => "doc {$document->number}"]);
     }
 }

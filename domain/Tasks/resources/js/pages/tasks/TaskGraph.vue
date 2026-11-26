@@ -299,7 +299,7 @@ function undo(): void {
                             <h3 class="text-text">Task {{ selected.number }}: {{ selected.title }}</h3>
                             <FactList>
                                 <FactItem term="State">
-                                    <StateBadge v-bind="taskStateLook[selected.state]" outlined />
+                                    <StateBadge v-bind="taskStateLook[selected.status]" outlined />
                                 </FactItem>
                                 <FactItem term="Waits for">
                                     <template v-if="waitsFor.length === 0">nothing</template>

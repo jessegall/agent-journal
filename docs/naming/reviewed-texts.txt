@@ -593,8 +593,8 @@ until {{ dateTime(signIn.expiresAt) }}
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ row.entry.name }} could not be read
 {{ summary.length }} more outcomes
-{{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.
+{{ target.name }} is not offered yet: the release does not say what it needs installed first.
 {{ target.name }}: {{ size(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
 {{ title }} can sit beside this pane or join its tabs.
 {{ window.value }}% used

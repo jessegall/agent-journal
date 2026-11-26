@@ -59,10 +59,7 @@ final class NavigationAnswerTool extends JournalWriteTool
 
     protected function present(mixed $decision): ToolResult
     {
-        return ToolResult::ok([
-            'round' => $decision->requestId,
-            'progress' => $decision->progress->value,
-        ], []);
+        return ToolResult::ok(['round' => $decision->requestId, 'progress' => $decision->progress->value], []);
     }
 
     /**
@@ -75,12 +72,7 @@ final class NavigationAnswerTool extends JournalWriteTool
         $confirm = $arguments->optionalText('confirm');
         $parameter = $arguments->optionalText('type_parameter');
 
-        $given = array_filter([
-            $keys !== [],
-            $choose !== null,
-            $confirm !== null,
-            $parameter !== null,
-        ]);
+        $given = array_filter([$keys !== [], $choose !== null, $confirm !== null, $parameter !== null]);
 
         if (count($given) !== 1) {
             throw NavigationAnswerRefused::oneAnswer();

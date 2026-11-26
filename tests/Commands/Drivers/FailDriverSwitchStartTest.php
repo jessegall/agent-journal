@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Drivers\FailDriverSwitchStart\FailDriverSwitchStartCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\JournalCommands;
@@ -14,7 +15,6 @@ use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\StartSessions;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
+use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Hooks\JudgedCall;
+use App\Agents\Drivers\Hooks\NotificationCall;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\Drivers\DriverPermission;
 use App\Enums\Files\FileOperation;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
-use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\Adapters\NotificationCall;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
@@ -44,11 +44,6 @@ final class ClaudeCodeTest extends TestCase
     protected static function fixtureFolder(): string
     {
         return 'ClaudeCode';
-    }
-
-    protected static function selectedModel(): string
-    {
-        return 'claude-opus-5-5';
     }
 
     #[DataProvider('mapping')]

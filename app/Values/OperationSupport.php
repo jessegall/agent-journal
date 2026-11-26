@@ -12,7 +12,7 @@ use App\Enums\Drivers\SupportStatus;
 final readonly class OperationSupport
 {
     private function __construct(
-        public SupportStatus $state,
+        public SupportStatus $status,
         public string|null $reason,
     ) {}
 
@@ -33,6 +33,6 @@ final readonly class OperationSupport
 
     public function isAllowed(): bool
     {
-        return $this->state === SupportStatus::Allowed;
+        return $this->status === SupportStatus::Allowed;
     }
 }

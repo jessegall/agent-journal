@@ -124,13 +124,7 @@ final class DockSourceTest extends TestCase
         $added = $this->runKeyed($this->dockTask(), (string) Str::ulid());
         $present = $this->runKeyed($this->dockTask(), (string) Str::ulid());
 
-        $this->assertSame([
-            DockOutcome::Added,
-            DockOutcome::Present,
-        ], [
-            $added->outcome,
-            $present->outcome,
-        ]);
+        $this->assertSame([DockOutcome::Added, DockOutcome::Present], [$added->outcome, $present->outcome]);
 
         $this->assertSame($added->placementId, $present->placementId);
         $this->assertSame(1, DockPlacement::query()->count());
@@ -149,10 +143,7 @@ final class DockSourceTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                TestProjects::local()->id,
-                $this->journal->projectCalled('B')->id,
-            ],
+            [TestProjects::local()->id, $this->journal->projectCalled('B')->id],
             [
                 DockPlacement::query()->findOrFail($local->placementId)->project_id,
                 DockPlacement::query()->findOrFail($inB->placementId)->project_id,
@@ -209,15 +200,12 @@ final class DockSourceTest extends TestCase
         $this->artisan('dock:list', ['--json' => true])
             ->expectsOutputToContain(
                 "\"placementId\":\"{$placement->id}\",\"type\":\"tasks.task\",\"sourceId\":\"{$this->task->id}\","
-                .'"title":"Ship the dock","state":"shown"',
+                .'"title":"Ship the dock","status":"shown"',
             )
             ->doesntExpectOutputToContain('"root"')
             ->assertExitCode(0);
 
-        $this->artisan('dock:remove', [
-            'placement' => $placement->id,
-            '--json' => true,
-        ])
+        $this->artisan('dock:remove', ['placement' => $placement->id, '--json' => true])
             ->expectsOutputToContain('"outcome":"removed"')
             ->assertExitCode(0);
 
@@ -245,10 +233,7 @@ final class DockSourceTest extends TestCase
 
         $this->journal->relayAgentCommands($this->start);
 
-        $this->artisan('dock:add', [
-            'type' => 'tasks.task',
-            'id' => $this->task->id,
-        ])
+        $this->artisan('dock:add', ['type' => 'tasks.task', 'id' => $this->task->id])
             ->expectsOutputToContain(ChatUnavailable::unnamed()->getMessage())
             ->assertFailed();
 
@@ -313,18 +298,9 @@ final class DockSourceTest extends TestCase
             ->toArray();
 
         $this->assertSame(
-            [
-                [
-                    'unavailable',
-                    '',
-                ],
-                [
-                    'shown',
-                    self::TASK_TITLE,
-                ],
-            ],
+            [['unavailable', ''], ['shown', self::TASK_TITLE]],
             array_map(fn (array $placement) => [
-                $placement['state'],
+                $placement['status'],
                 $placement['title'],
             ], $listed['placements']),
         );

@@ -21,12 +21,7 @@ final readonly class OfflineReplySeal
 
     public function seal(string $token, StartProfilePin $profile, OfflineReplyMode $mode): string
     {
-        $sealed = implode("\n", [
-            $token,
-            $profile->key,
-            $profile->revision,
-            $mode->value,
-        ]);
+        $sealed = implode("\n", [$token, $profile->key, $profile->revision, $mode->value]);
 
         return hash_hmac('sha256', $sealed, $this->key);
     }

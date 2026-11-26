@@ -13,6 +13,6 @@ final readonly class CleanupPassRecorded implements SessionEvent
 {
     public function __construct(
         public string $operationId,
-        public CleanupStatus $state,
+        public CleanupStatus $status,
     ) {}
 }

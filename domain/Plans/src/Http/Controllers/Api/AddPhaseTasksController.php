@@ -20,9 +20,6 @@ final readonly class AddPhaseTasksController
     {
         $commands->run(new AddPhaseTasksCommand($call->phaseId, $call->expectedRevision, $call->taskIds));
 
-        return PhaseTasksAdded::from([
-            'phaseId' => $call->phaseId,
-            'added' => count($call->taskIds),
-        ]);
+        return PhaseTasksAdded::from(['phaseId' => $call->phaseId, 'added' => count($call->taskIds)]);
     }
 }

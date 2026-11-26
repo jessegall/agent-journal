@@ -39,11 +39,7 @@ final class ApprovePatchTest extends GuardedRouteEntryTestCase
         $journal->actAs('Owner');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'rule' => Rule::query()->findOrFail($ruleId)->number,
-            ])
-            ->expects(ApproveRuleCommand::class, [
-                'ruleId' => $ruleId,
-            ]);
+            ->parameters(['rule' => Rule::query()->findOrFail($ruleId)->number])
+            ->expects(ApproveRuleCommand::class, ['ruleId' => $ruleId]);
     }
 }

@@ -34,10 +34,7 @@ return new class extends Migration
 
             $table->index('status');
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
         });
 
         Schema::create('phases', function (Blueprint $table) {
@@ -55,16 +52,9 @@ return new class extends Migration
             $table->unsignedInteger('started_tasks')->default(0);
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
 
-            $table->index([
-                'plan_id',
-                'number',
-                'id',
-            ]);
+            $table->index(['plan_id', 'number', 'id']);
         });
 
         DB::statement('ALTER TABLE plans ADD CONSTRAINT plans_number_positive CHECK (number > 0)');
@@ -76,16 +66,9 @@ return new class extends Migration
             $table->ulid('task_id')->unique();
             $table->unsignedInteger('position');
 
-            $table->unique([
-                'phase_id',
-                'position',
-            ]);
+            $table->unique(['phase_id', 'position']);
 
-            $table->index([
-                'phase_id',
-                'position',
-                'task_id',
-            ]);
+            $table->index(['phase_id', 'position', 'task_id']);
         });
 
     }

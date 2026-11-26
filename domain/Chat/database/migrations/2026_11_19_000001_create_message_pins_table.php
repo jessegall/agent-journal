@@ -19,18 +19,9 @@ return new class extends Migration
             $table->timestampTz('pinned_at');
             $table->timestampsTz();
 
-            $table->unique([
-                'actor_type',
-                'actor_id',
-                'inbox_id',
-                'message_id',
-            ]);
+            $table->unique(['actor_type', 'actor_id', 'inbox_id', 'message_id']);
 
-            $table->index([
-                'actor_type',
-                'actor_id',
-                'pinned_at',
-            ]);
+            $table->index(['actor_type', 'actor_id', 'pinned_at']);
         });
     }
 

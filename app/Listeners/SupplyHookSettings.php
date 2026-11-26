@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Contracts\Drivers\DriverAdapters;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\StartSettingsRequested;
-use App\Support\Drivers\Contracts\DriverAdapters;
 
 /**
  * Adds the journal's hooks for a driver it supports to the start's isolated settings, allows the journal's own MCP

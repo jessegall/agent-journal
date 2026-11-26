@@ -28,10 +28,7 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
     {
         $due = NavigationRequest::query()
             ->acrossActors()
-            ->withAnyState([
-                NavigationStatus::Open,
-                NavigationStatus::Answering,
-            ])
+            ->withAnyState([NavigationStatus::Open, NavigationStatus::Answering])
             ->expiredBefore(CarbonImmutable::now())
             ->withDriverRequestAndRuntime()
             ->lockForUpdate()

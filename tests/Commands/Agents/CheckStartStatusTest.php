@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Agents\ConversationModeType;
@@ -18,7 +19,6 @@ use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\AgentWakes;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\ReadinessCheckSweep;
@@ -184,7 +184,12 @@ final class CheckStartStatusTest extends TestCase
             InitialWakeSettlement::keyOf($session->id),
         );
 
-        return [$host, $opened, DriverRequest::query()->findOrFail($receipt->requestId), $record];
+        return [
+            $host,
+            $opened,
+            DriverRequest::query()->findOrFail($receipt->requestId),
+            $record,
+        ];
     }
 
     /**

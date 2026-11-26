@@ -40,9 +40,6 @@ final class CloseDocumentTool extends JournalWriteTool
 
     protected function present(mixed $publication): ToolResult
     {
-        return ToolResult::ok([
-            'revision' => $publication->revisionNumber,
-            'published' => $publication->isPublished,
-        ]);
+        return ToolResult::ok(['revision' => $publication->revisionNumber, 'published' => $publication->isPublished]);
     }
 }

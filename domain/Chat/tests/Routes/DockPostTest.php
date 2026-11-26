@@ -33,16 +33,8 @@ final class DockPostTest extends GuardedRouteEntryTestCase
         $taskId = strtolower((string) Str::ulid());
 
         return RouteCall::as(Caller::User)
-            ->payload([
-                'inboxId' => $inbox->id,
-                'type' => 'tasks.task',
-                'id' => $taskId,
-            ])
+            ->payload(['inboxId' => $inbox->id, 'type' => 'tasks.task', 'id' => $taskId])
             ->reply(DockSourceCommand::class, DockResult::of(DockOutcome::Added, strtolower((string) Str::ulid())))
-            ->expects(DockSourceCommand::class, [
-                'chat' => $inbox->id,
-                'type' => 'tasks.task',
-                'id' => $taskId,
-            ]);
+            ->expects(DockSourceCommand::class, ['chat' => $inbox->id, 'type' => 'tasks.task', 'id' => $taskId]);
     }
 }

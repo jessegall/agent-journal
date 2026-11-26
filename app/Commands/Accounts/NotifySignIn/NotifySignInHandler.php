@@ -65,9 +65,9 @@ final readonly class NotifySignInHandler implements CommandHandler
      * Ends a live attempt through its one guarded step, so one past its deadline ends Expired instead, and forgets its
      * challenge and any staged answer.
      */
-    private function end(SignInAttempt $attempt, SignInStatus $state, string|null $reason): void
+    private function end(SignInAttempt $attempt, SignInStatus $status, string|null $reason): void
     {
-        $attempt->finishAt($state, CarbonImmutable::now(), $reason);
+        $attempt->finishAt($status, CarbonImmutable::now(), $reason);
         $this->challenges->forget($attempt->id);
         $this->facts->runTransactionListeners();
     }

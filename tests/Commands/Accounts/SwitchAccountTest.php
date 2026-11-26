@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -16,7 +17,6 @@ use App\Exceptions\ActorNotAllowed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Support\Facades\Event;
@@ -54,7 +54,10 @@ final class SwitchAccountTest extends TestCase
     public function test_switching_commits_in_order_and_a_repeated_click_changes_nothing(): void
     {
         Event::fake([AccountsChanged::class]);
-        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        [$work, $home] = [
+            $this->account('Work'),
+            $this->account('Home'),
+        ];
 
         $this->bus()->run(new SwitchAccountCommand($work->id));
         $this->bus()->run(new SwitchAccountCommand($home->id));
@@ -68,7 +71,10 @@ final class SwitchAccountTest extends TestCase
 
     public function test_a_choice_made_against_an_older_selection_is_refused_and_leaves_the_newer_one(): void
     {
-        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        [$work, $home] = [
+            $this->account('Work'),
+            $this->account('Home'),
+        ];
         $this->bus()->run(new SwitchAccountCommand($work->id, 0));
 
         $this->assertRefused(AccountSelectionChanged::class, new SwitchAccountCommand($home->id, 0));
@@ -81,7 +87,10 @@ final class SwitchAccountTest extends TestCase
 
     public function test_a_refused_choice_leaves_the_other_programs_default_alone(): void
     {
-        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        [$work, $home] = [
+            $this->account('Work'),
+            $this->account('Home'),
+        ];
         $codex = Account::create(DefaultDrivers::CODEX, AccountLabel::from('Codex'), '/journal/accounts/Codex');
         $this->bus()->run(new SwitchAccountCommand($codex->id, 0));
         $this->bus()->run(new SwitchAccountCommand($work->id, 0));

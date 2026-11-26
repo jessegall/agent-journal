@@ -52,10 +52,7 @@ final readonly class RegisteredSection
                 $section->dataClass,
             ),
             componentFile: $owner->presentationFile($key, $section->component, $section->isDeclared),
-            propName: 'section_'.str_replace([
-                '.',
-                '-',
-            ], '_', "{$section->slot}.{$key}"),
+            propName: 'section_'.str_replace(['.', '-'], '_', "{$section->slot}.{$key}"),
         );
     }
 

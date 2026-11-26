@@ -32,9 +32,7 @@ final class ApplyWaitsPostTest extends GuardedRouteEntryTestCase
         $journal->service(PlanGraphService::class)->suggest($plan);
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
+            ->parameters(['plan' => $plan->number])
             ->reply(ApplyTaskWaitsCommand::class, 'graph-2')
             ->expects(ApplyTaskWaitsCommand::class);
     }

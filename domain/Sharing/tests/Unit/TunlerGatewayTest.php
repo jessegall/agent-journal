@@ -74,10 +74,7 @@ final class TunlerGatewayTest extends TestCase
         $this->assertTrue($this->gateway()->setupCheck($this->configuration())->isComplete());
 
         $this->processes->fake(
-            [
-                '*version*' => 'tunler 1.3.9',
-                '*status*' => '{"logged_in": false, "host": "other.test"}',
-            ],
+            ['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}'],
         );
 
         config(['sharing.tunler.subdomain' => null]);
@@ -109,13 +106,7 @@ final class TunlerGatewayTest extends TestCase
 
         $endpoint = $this->gateway()->open($this->operation());
 
-        $this->assertSame([
-            self::ORIGIN,
-            'run-1:1',
-        ], [
-            $endpoint->publicOrigin,
-            $endpoint->processReference,
-        ]);
+        $this->assertSame([self::ORIGIN, 'run-1:1'], [$endpoint->publicOrigin, $endpoint->processReference]);
 
         $this->processes->assertRan(
             fn ($process) => str_contains(implode(' ', (array) $process->command), '8090 --domain=docs --inspect=0'),

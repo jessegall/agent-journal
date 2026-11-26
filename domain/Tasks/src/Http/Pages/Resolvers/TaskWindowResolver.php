@@ -86,10 +86,7 @@ final readonly class TaskWindowResolver implements PageResolver
             );
 
             return $this->index->of(
-                TaskFiltersData::from([
-                    ...$this->request->filters()->toArray(),
-                    'task' => $reader->number,
-                ]),
+                TaskFiltersData::from([...$this->request->filters()->toArray(), 'task' => $reader->number]),
                 [$this->readerPage($reader)->part($this->request->chosenTab())],
             );
         } catch (TaskMissing|TaskPassageUnavailable $missing) {
@@ -173,10 +170,7 @@ final readonly class TaskWindowResolver implements PageResolver
     {
         $task = Task::findForId($taskId);
 
-        $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [
-            AccessType::Edit,
-            AccessType::Admin,
-        ]);
+        $allowed = $this->authorizer->filterActions(TaskPolicy::class, $task, [AccessType::Edit, AccessType::Admin]);
 
         $hasEnded = $task->status->hasEnded();
         $search = $this->request->prerequisiteSearch();
@@ -210,10 +204,7 @@ final readonly class TaskWindowResolver implements PageResolver
         $allowed = $this->authorizer->filterActions(
             TaskRunPolicy::class,
             $task,
-            [
-                AccessType::Create,
-                AccessType::Edit,
-            ],
+            [AccessType::Create, AccessType::Edit],
         );
 
         $mayCreate = in_array(AccessType::Create, $allowed, true);

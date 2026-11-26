@@ -83,7 +83,7 @@ final class RecordThreadTokensTest extends TestCase
         ));
     }
 
-    private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string
+    private function claimedStart(Account $account, SessionProcessStatus $status = SessionProcessStatus::Running): string
     {
         $key = (string) Str::ulid();
         DB::table('session_processes')->insert([
@@ -96,7 +96,7 @@ final class RecordThreadTokensTest extends TestCase
             'account_id' => $account->id,
             'account_generation' => 1,
             'directory' => (string) $account->directory,
-            'status' => $state->value,
+            'status' => $status->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

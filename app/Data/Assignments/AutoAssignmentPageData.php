@@ -24,9 +24,6 @@ final class AutoAssignmentPageData extends Data
 
     public static function of(AutoAssignmentPage $page): self
     {
-        return self::from([
-            'facts' => $page->facts,
-            'nextAfterId' => $page->nextAfterId,
-        ]);
+        return self::from(['facts' => $page->facts, 'nextAfterId' => $page->nextAfterId]);
     }
 }

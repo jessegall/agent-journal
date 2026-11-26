@@ -38,10 +38,7 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
      */
     public function handle(ApplyTaskWaitsCommand $command): string
     {
-        $locked = $this->lock->lockAll([
-            ...$command->taskIds,
-            ...$this->tasksNamed($command),
-        ]);
+        $locked = $this->lock->lockAll([...$command->taskIds, ...$this->tasksNamed($command)]);
 
         if ($this->version->current($command->taskIds) !== $command->baseVersion) {
             throw TaskGraphChanged::since($command->baseVersion);
@@ -104,10 +101,7 @@ final readonly class ApplyTaskWaitsHandler extends TaskCommandHandler
                 $pair->dependentTaskId,
                 $pair->prerequisiteTaskId,
             ],
-            [
-                ...$command->removed,
-                ...$command->added,
-            ],
+            [...$command->removed, ...$command->added],
         ));
     }
 }

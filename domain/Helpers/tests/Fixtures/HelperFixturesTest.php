@@ -49,16 +49,8 @@ final class HelperFixturesTest extends TestCase
         $receipt = $this->helpers->receiptOf('Review');
 
         $this->assertSame(
-            [
-                $this->helpers->jobCalled('Review')->id,
-                $this->helpers->identityOf('Review')->id,
-                false,
-            ],
-            [
-                $receipt->jobId,
-                $receipt->identityId,
-                $receipt->isNewJob,
-            ],
+            [$this->helpers->jobCalled('Review')->id, $this->helpers->identityOf('Review')->id, false],
+            [$receipt->jobId, $receipt->identityId, $receipt->isNewJob],
         );
     }
 

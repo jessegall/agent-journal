@@ -13,16 +13,17 @@ use JsonSerializable;
 final readonly class HostOrderClaim implements JsonSerializable
 {
     /**
-     * How long a host may go without a call before the journal takes it as idle.
-     */
-    public const int IDLE_WINDOW_SECONDS = 600;
-
-    /**
      * @param  list<ClaimedHostOrder>  $orders
      * @param  int|null  $retakeableInSeconds  when an order the host claimed and left unanswered may be handed out
      *                                         again; null when it holds none
+     * @param  int  $idleWindowSeconds  how long a host that holds no live process stays online
      */
-    public function __construct(public array $orders, public string $now, public int|null $retakeableInSeconds) {}
+    public function __construct(
+        public array $orders,
+        public string $now,
+        public int|null $retakeableInSeconds,
+        public int $idleWindowSeconds,
+    ) {}
 
     public function isEmpty(): bool
     {
@@ -45,7 +46,7 @@ final readonly class HostOrderClaim implements JsonSerializable
     {
         return [
             'orders' => $this->orders,
-            'idle_window_s' => self::IDLE_WINDOW_SECONDS,
+            'idle_window_s' => $this->idleWindowSeconds,
             'now' => $this->now,
         ];
     }

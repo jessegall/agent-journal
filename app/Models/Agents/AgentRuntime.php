@@ -12,6 +12,7 @@ use App\Contracts\Records\ReadableModel;
 use App\Data\Processes\RuntimeStatus;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
 use App\Enums\Hosts\HostProcessPurpose;
@@ -303,6 +304,21 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * The ids of the runtime's live terminal or turn: the agent driver itself, which waits while its stop is checked.
+     *
+     * @return list<string>
+     */
+    public function liveAgentProcessIds(): array
+    {
+        $agentProcesses = [HostProcessPurpose::AgentTerminal, HostProcessPurpose::AgentTurn];
+
+        return array_values(array_map(
+            strval(...),
+            $this->hostProcesses()->live()->whereIn('purpose', $agentProcesses)->limit(8)->pluck('id')->all(),
+        ));
+    }
+
+    /**
      * Whether a turn of the runtime ran before, so the next one resumes its conversation.
      */
     public function hasRunTurn(): bool
@@ -388,10 +404,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function hasEnded(): bool
     {
-        return in_array($this->activity, [
-            RuntimeActivity::Stopping,
-            RuntimeActivity::Stopped,
-        ], true);
+        return in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
     }
 
     /**
@@ -442,10 +455,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
      */
     public function isHeldFromWork(): bool
     {
-        return in_array($this->hold_reason, [
-            HoldReason::Interrupted,
-            HoldReason::NeedsAttention,
-        ], true);
+        return in_array($this->hold_reason, [HoldReason::Interrupted, HoldReason::NeedsAttention], true);
     }
 
     public function isHeldFor(HoldReason $reason): bool
@@ -479,10 +489,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function isObservedRunningAfter(int $boundary): bool
     {
         return $this->observation_sequence > $boundary
-            && ! in_array($this->activity, [
-                RuntimeActivity::Stopping,
-                RuntimeActivity::Stopped,
-            ], true);
+            && ! in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
     }
 
     public function isAtGeneration(int $processGeneration): bool
@@ -512,6 +519,14 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     public function session(): BelongsTo
     {
         return $this->belongsTo(AgentSession::class, 'agent_session_id');
+    }
+
+    /**
+     * Where this runtime's host runs a driver's executable from.
+     */
+    public function executablePlace(): ExecutablePlace
+    {
+        return $this->loadMissing('host')->host->executablePlace();
     }
 
     /**
@@ -748,10 +763,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     #[Scope]
     protected function notStopping(Builder $query): void
     {
-        $query->whereNotIn('activity', [
-            RuntimeActivity::Stopping,
-            RuntimeActivity::Stopped,
-        ]);
+        $query->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped]);
     }
 
     /**

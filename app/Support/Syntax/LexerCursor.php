@@ -180,12 +180,7 @@ final class LexerCursor
 
     private function isNegation(): bool
     {
-        return $this->isAtCommandStart() && in_array($this->at($this->position + 1), [
-            ' ',
-            "\t",
-            "\n",
-            '',
-        ], true);
+        return $this->isAtCommandStart() && in_array($this->at($this->position + 1), [' ', "\t", "\n", ''], true);
     }
 
     /**

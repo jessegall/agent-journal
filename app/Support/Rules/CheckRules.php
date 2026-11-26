@@ -50,10 +50,7 @@ final readonly class CheckRules
         $php = ProgramSpellings::php();
 
         return [
-            $this->check('core.php.artisan-test', $php, [
-                'artisan',
-                'test',
-            ], $this->testRunner(), $read),
+            $this->check('core.php.artisan-test', $php, ['artisan', 'test'], $this->testRunner(), $read),
             $this->check(
                 'core.phpunit',
                 new ProgramSpellings('phpunit', ['phpunit.phar']),
@@ -100,10 +97,7 @@ final readonly class CheckRules
             ),
             $this->check('core.commandments.judge', new ProgramSpellings(
                 'commandments',
-                [
-                    'commandments-release',
-                    'commandments-go',
-                ],
+                ['commandments-release', 'commandments-go'],
             ), ['judge'], $pathOperands->withOptions(
                 OptionGrammar::flag('--changes'),
                 OptionGrammar::flag('--changed-files'),
@@ -152,10 +146,7 @@ final readonly class CheckRules
             $this->check(
                 'core.vp.test',
                 new ProgramSpellings('vp'),
-                [
-                    'test',
-                    'run',
-                ],
+                ['test', 'run'],
                 $pathOperands->repeating(),
                 $read,
             ),

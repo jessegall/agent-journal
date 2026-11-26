@@ -63,21 +63,11 @@ final class OpenDocumentTest extends TestCase
         $opened = $this->bus()->run(new OpenDocumentCommand('1'));
         $again = $this->bus()->run(new OpenDocumentCommand('1'));
 
-        $this->assertSame([
-            1,
-            1,
-        ], [
-            $opened->version,
-            $opened->baseRevisionNumber,
-        ]);
+        $this->assertSame([1, 1], [$opened->version, $opened->baseRevisionNumber]);
 
         $this->assertSame($opened->token, $again->token);
 
-        $this->assertSame([
-            '1 Goal',
-            '2 Steps',
-            '3 Risks',
-        ], $opened->outline);
+        $this->assertSame(['1 Goal', '2 Steps', '3 Risks'], $opened->outline);
     }
 
     public function test_another_user_is_refused_naming_the_holder_who_cannot_open_a_second_document(): void
@@ -101,13 +91,13 @@ final class OpenDocumentTest extends TestCase
     public function test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first(): void
     {
         $this->bus()->run(new OpenDocumentCommand('1'));
-        $this->assertSame(EditingStatus::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->state);
+        $this->assertSame(EditingStatus::HeldByViewer, $this->app->make(DraftResolver::class)->stateOf(1)->status);
 
         $this->app->forgetScopedInstances();
         $this->journal->actAsUserId(TestIds::of(2));
 
         $state = $this->app->make(DraftResolver::class)->stateOf(1);
-        $this->assertSame(EditingStatus::Held, $state->state);
+        $this->assertSame(EditingStatus::Held, $state->status);
         $this->assertNotSame(TestIds::of(2), Document::query()->sole()->creator_id);
     }
 

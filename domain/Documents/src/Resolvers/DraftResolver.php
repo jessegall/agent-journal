@@ -45,11 +45,11 @@ final readonly class DraftResolver implements DraftResolverContract
         $draft = $document->draft;
 
         if ($draft === null) {
-            return DraftState::from(['state' => EditingStatus::Free]);
+            return DraftState::from(['status' => EditingStatus::Free]);
         }
 
         if (! $this->editors->isEditing($draft)) {
-            $held = ['state' => EditingStatus::Held, 'holder' => $draft->holderLabel];
+            $held = ['status' => EditingStatus::Held, 'holder' => $draft->holderLabel];
 
             $administrativeAccesses = [AccessType::Edit];
 
@@ -65,9 +65,6 @@ final readonly class DraftResolver implements DraftResolverContract
             ] : $held);
         }
 
-        return DraftState::from([
-            'state' => EditingStatus::HeldByViewer,
-            'draft' => $draft->view($document),
-        ]);
+        return DraftState::from(['status' => EditingStatus::HeldByViewer, 'draft' => $draft->view($document)]);
     }
 }

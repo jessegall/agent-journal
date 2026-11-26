@@ -56,7 +56,7 @@ const paragraphs = computed(() =>
             <div
                 class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-text-3"
             >
-                <StateBadge v-bind="stateLook[card.state]" outlined />
+                <StateBadge v-bind="stateLook[card.status]" outlined />
                 <template v-if="holder">
                     <span class="[overflow-wrap:anywhere]"
                         >Held by {{ holder.name }} ({{ holder.type }}), assignment
@@ -85,7 +85,7 @@ const paragraphs = computed(() =>
                 <PlanReviewPanel
                     :review="reader.review"
                     :number="card.number"
-                    :state="card.state"
+                    :state="card.status"
                     :holder="holder"
                 />
             </template>

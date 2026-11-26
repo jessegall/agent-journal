@@ -477,12 +477,7 @@ final class Task extends JournalModel implements
         $unique = array_values(array_unique($ids));
 
         return self::query()->whereKey($unique)->readExactly(count($unique))
-            ->get([
-                'id',
-                'number',
-                'title',
-                'status',
-            ])->keyBy('id')->all();
+            ->get(['id', 'number', 'title', 'status'])->keyBy('id')->all();
     }
 
     /**

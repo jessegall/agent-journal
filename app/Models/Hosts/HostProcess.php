@@ -444,10 +444,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     #[Scope]
     protected function live(Builder $query): void
     {
-        $query->whereIn('status', [
-            HostProcessStatus::Ordered,
-            HostProcessStatus::Running,
-        ]);
+        $query->whereIn('status', [HostProcessStatus::Ordered, HostProcessStatus::Running]);
     }
 
     /**

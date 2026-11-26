@@ -37,10 +37,7 @@ final class DiscardUploadToolTest extends McpToolEntryTestCase
         );
 
         return ToolCall::by($start)
-            ->arguments([
-                'upload_id' => $upload,
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['upload_id' => $upload, 'request_key' => 'documents-1'])
             ->expects(DiscardUploadCommand::class, ['uploadId' => $upload]);
     }
 }

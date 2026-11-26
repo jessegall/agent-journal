@@ -36,10 +36,7 @@ final readonly class OperationsResolver
         try {
             $operation = $this->operations->operation($requestKey);
         } catch (OperationUnavailable) {
-            return ToolResult::ok([
-                'request_key' => $requestKey,
-                'state' => self::UNKNOWN,
-            ], []);
+            return ToolResult::ok(['request_key' => $requestKey, 'state' => self::UNKNOWN], []);
         }
 
         return $this->page($operation, $offset);
@@ -57,7 +54,7 @@ final readonly class OperationsResolver
         $pageFields = [
             'request_key' => $operation->requestKey,
             'command' => $operation->command,
-            'state' => $operation->state->value,
+            'state' => $operation->status->value,
             'refusal' => $operation->refusalCode === null ? null : [
                 'code' => $operation->refusalCode->value,
                 'message' => $operation->refusalMessage,

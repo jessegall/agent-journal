@@ -48,10 +48,7 @@ final readonly class AgentSessions
 
         $this->databases->connection()->statement(
             'select pg_advisory_xact_lock(?, hashtext(?))',
-            [
-                self::START_RESERVATION_LOCKS,
-                $agent->id,
-            ],
+            [self::START_RESERVATION_LOCKS, $agent->id],
         );
     }
 

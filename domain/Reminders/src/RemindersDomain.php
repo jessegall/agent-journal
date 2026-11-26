@@ -62,11 +62,7 @@ final class RemindersDomain extends Domain implements
         return [
             new PolicyDefinition(
                 ReminderPolicy::class,
-                [
-                    AccessType::Read,
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
         ];
     }

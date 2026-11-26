@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\Codex\CodexResult;
 use App\Enums\Drivers\RequestProgress;
-use App\Support\Drivers\Processes\CodexResult;
 use App\Values\ThreadTokens;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;

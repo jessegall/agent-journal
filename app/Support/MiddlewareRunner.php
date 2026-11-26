@@ -57,10 +57,7 @@ final readonly class MiddlewareRunner
             );
 
             $inside = fn (CommandCall $current, Closure $handler) => $this->through(
-                [
-                    ...$this->core(CommandFrame::INSIDE),
-                    ...$this->module($name, MiddlewareStage::InsideTransaction),
-                ],
+                [...$this->core(CommandFrame::INSIDE), ...$this->module($name, MiddlewareStage::InsideTransaction)],
                 $current,
                 $handler,
             );

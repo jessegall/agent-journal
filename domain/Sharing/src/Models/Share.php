@@ -81,10 +81,7 @@ use PhpOption\Option;
  *
  * @mixin \Eloquent
  */
-#[Hidden([
-    'token_digest',
-    'token_ciphertext',
-])]
+#[Hidden(['token_digest', 'token_ciphertext'])]
 final class Share extends JournalModel implements EventSource, Numbered, ProjectOwned, ReadableModel
 {
     use BelongsToOneRoot;
@@ -476,12 +473,12 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     private static function forRoot(
         RecordIdentity $root,
         ProjectOwner $owner,
-        ShareStatus $state,
+        ShareStatus $status,
         CarbonImmutable $expiresAt,
     ): self {
         $share = new self();
         $share->assignOwner($owner);
-        $share->status = $state;
+        $share->status = $status;
         $share->root_type = $root->type;
         $share->root_id = $root->id;
         $share->scope_version = 0;
@@ -746,7 +743,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     #[Scope]
     protected function unended(Builder $query): void
     {
-        $query->whereIn('status', array_map(fn (ShareStatus $state) => $state->value, ShareStatus::liveStates()));
+        $query->whereIn('status', array_map(fn (ShareStatus $status) => $status->value, ShareStatus::liveStates()));
     }
 
     /**
@@ -757,10 +754,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     {
         $query->whereIn(
             'status',
-            [
-                ShareStatus::Pending->value,
-                ShareStatus::Failed->value,
-            ],
+            [ShareStatus::Pending->value, ShareStatus::Failed->value],
         )->where('expires_at', '>', CarbonImmutable::now());
     }
 
@@ -768,9 +762,9 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, ShareStatus $state): void
+    protected function inState(Builder $query, ShareStatus $status): void
     {
-        $query->where('status', $state->value);
+        $query->where('status', $status->value);
     }
 
     /**
@@ -810,7 +804,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
 
         $query->whereIn(
             'status',
-            array_map(fn (ShareStatus $state) => $state->value, $open),
+            array_map(fn (ShareStatus $status) => $status->value, $open),
         )->where('expires_at', '<=', CarbonImmutable::now());
     }
 
@@ -858,7 +852,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     {
         $query->whereIn(
             'status',
-            array_map(fn (ShareStatus $state) => $state->value, ShareStatus::liveStates()),
+            array_map(fn (ShareStatus $status) => $status->value, ShareStatus::liveStates()),
         )->where('expires_at', '>', CarbonImmutable::now());
     }
 
@@ -909,7 +903,7 @@ final class Share extends JournalModel implements EventSource, Numbered, Project
     #[Scope]
     protected function filteredBy(Builder $query, ShareListFilters $filters): void
     {
-        $query->when($filters->state, fn (Builder $kept, ShareStatus $state) => $kept->inState($state))
+        $query->when($filters->status, fn (Builder $kept, ShareStatus $status) => $kept->inState($status))
             ->when($filters->rootType, fn (Builder $kept, string $type) => $kept->ofRootType($type))
             ->when($filters->configurationId, fn (Builder $kept, string $id) => $kept->servedBy($id))
             ->when($filters->expiresBefore, fn (Builder $kept, CarbonImmutable $by) => $kept->expiringBefore($by))

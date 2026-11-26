@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks\Drivers;
 
+use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Hooks\JudgedCall;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\Engine\NoSubject;
 use App\Enums\Files\FileOperation;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
-use App\Support\Drivers\Adapters\CodexAdapter;
-use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
@@ -46,11 +46,6 @@ final class CodexTest extends TestCase
     protected static function fixtureFolder(): string
     {
         return 'Codex';
-    }
-
-    protected static function selectedModel(): string
-    {
-        return 'gpt-5-codex';
     }
 
     #[DataProvider('mapping')]

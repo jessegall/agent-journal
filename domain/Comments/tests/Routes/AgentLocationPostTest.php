@@ -39,9 +39,6 @@ final class AgentLocationPostTest extends GuardedRouteEntryTestCase
         $commentId = $journal->runAs('Writer', new PostCommentCommand($target, 'Is this still open?', (string) Str::uuid()));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'target' => $reference,
-                'comment' => $commentId,
-            ]);
+            ->payload(['target' => $reference, 'comment' => $commentId]);
     }
 }

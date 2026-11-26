@@ -222,9 +222,9 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
 
     // ----------[ Internals ]----------
 
-    private function settle(ProjectReadStatus $state): void
+    private function settle(ProjectReadStatus $status): void
     {
-        $this->status = $state;
+        $this->status = $status;
         $this->answered_at = CarbonImmutable::now();
         $this->save();
     }
@@ -348,9 +348,9 @@ final class ProjectRead extends JournalModel implements EventSource, ReadableMod
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withState(Builder $query, ProjectReadStatus $state): void
+    protected function withState(Builder $query, ProjectReadStatus $status): void
     {
-        $query->where('status', $state);
+        $query->where('status', $status);
     }
 
     /**

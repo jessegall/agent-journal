@@ -50,8 +50,6 @@ final class WorkUnassignPostTest extends GuardedRouteEntryTestCase
                 [new AssignmentOutcome($root, null, AssignmentOutcomeType::Changed)],
                 [],
             ))
-            ->expects(UnassignPlanWorkCommand::class, [
-                'root' => $root,
-            ]);
+            ->expects(UnassignPlanWorkCommand::class, ['root' => $root]);
     }
 }

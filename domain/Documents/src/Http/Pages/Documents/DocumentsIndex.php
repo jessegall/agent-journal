@@ -59,21 +59,11 @@ final readonly class DocumentsIndex extends DocumentsPage
         return ListPage::make('Documents', $rows, $this->emptyFor($filters))
             ->searching(
                 'Search documents',
-                LayoutFieldData::from([
-                    'name' => 'query',
-                    'value' => $filters->query,
-                    'clears' => [
-                        'after',
-                        'page',
-                    ],
-                ]),
+                LayoutFieldData::from(['name' => 'query', 'value' => $filters->query, 'clears' => ['after', 'page']]),
             )
             ->creatingWith($this->creation('doc', 'New document'), $this->creation('report', 'New report'))
             ->paged(ListPaging::cursor($type === LibraryTypeFilter::All ? null : $this->nextOf($documents ?? $reports)))
-            ->withReader(LayoutBackData::from([
-                'href' => '/documents',
-                'label' => 'Documents',
-            ]), ...$reader)
+            ->withReader(LayoutBackData::from(['href' => '/documents', 'label' => 'Documents']), ...$reader)
             ->layout();
     }
 
@@ -110,11 +100,7 @@ final readonly class DocumentsIndex extends DocumentsPage
             return $this->nothingMatches(
                 $filters->searches() ? "Nothing matches \"{$filters->query}\"." : 'Nothing matches this filter.',
                 'Clear search',
-                [
-                    'query' => '',
-                    'attention' => AttentionFilter::Active->value,
-                    'after' => '',
-                ],
+                ['query' => '', 'attention' => AttentionFilter::Active->value, 'after' => ''],
             );
         }
 
@@ -151,10 +137,7 @@ final readonly class DocumentsIndex extends DocumentsPage
         return $this->creationDialog(
             $creation,
             LayoutPartData::action('open', $label, LayoutActionData::changing([]), $openerStyle),
-            LayoutFormData::from([
-                'method' => ActionMethod::Post,
-                'href' => route($route, [], false),
-            ]),
+            LayoutFormData::from(['method' => ActionMethod::Post, 'href' => route($route, [], false)]),
             [
                 LayoutPartData::field('title', 'Title', LayoutFieldData::from(['name' => 'title']), 'text'),
                 LayoutPartData::field(

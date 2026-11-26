@@ -110,15 +110,7 @@ final class HelperFixtures
         $job = $this->jobCalled($name);
         $owner = $this->journal->actorCalled($parent);
 
-        Assert::assertSame([
-            $owner->type,
-            $owner->id,
-            $brief,
-        ], [
-            $job->actor_type,
-            $job->actor_id,
-            $job->brief,
-        ]);
+        Assert::assertSame([$owner->type, $owner->id, $brief], [$job->actor_type, $job->actor_id, $job->brief]);
 
         return $this;
     }

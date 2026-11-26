@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 /*
- * Lists every array of two or more entries that does not put each entry on its own line, unless the array is the value
- * of a local variable. --fix splits each, the outermost first; run it until it
- * lists nothing. An array with comments between its entries, or written as array(), is only listed.
+ * Lists every array of two or more entries that does not put each entry on its own line, unless it is the value of a
+ * local variable or an argument that fits its line; an argument split over lines that one line would hold is listed to
+ * join. --fix splits or joins each; run it until it lists nothing. A commented array or array() is only listed.
  *
  *   php tools/refactoring/array-lines.php app domain tools
  *   php tools/refactoring/array-lines.php --fix app
@@ -67,6 +67,86 @@ function mayStayOnOneLine(Array_ $array): bool
 }
 
 /**
+ * Whether the array is passed as an argument, or stands inside one, outside a validate call's rules.
+ */
+function isArgument(Array_ $array): bool
+{
+    $holder = outermostArrayOf($array)->getAttribute('parent');
+
+    return $holder instanceof Arg && ! isValidationRules($holder);
+}
+
+/**
+ * The line the array stands on, written with all its entries on that one line.
+ */
+function joinedLine(string $source, Array_ $array): string
+{
+    $lineStart = strrpos(substr($source, 0, $array->getStartFilePos()), "\n");
+    $lineStart = $lineStart === false ? 0 : $lineStart + 1;
+    $lineEnd = strpos($source, "\n", $array->getEndFilePos());
+    $lineEnd = $lineEnd === false ? strlen($source) : $lineEnd;
+
+    return substr($source, $lineStart, $array->getStartFilePos() - $lineStart)
+        .joinedArray($source, $array)
+        .substr($source, $array->getEndFilePos() + 1, $lineEnd - $array->getEndFilePos() - 1);
+}
+
+/**
+ * The array written on one line, its entries separated by a comma and a space.
+ */
+function joinedArray(string $source, Array_ $array): string
+{
+    $entries = array_map(
+        fn (ArrayItem $item) => substr($source, $item->getStartFilePos(), $item->getEndFilePos() + 1 - $item->getStartFilePos()),
+        array_values(array_filter($array->items)),
+    );
+
+    return '['.implode(', ', $entries).']';
+}
+
+/**
+ * Whether the array is an argument that fits its line once joined: each entry on one line, the line 120 wide at most.
+ */
+function fitsAsArgument(string $source, Array_ $array): bool
+{
+    if (! isArgument($array) || ! isSplittable($array)) {
+        return false;
+    }
+
+    if (array_any(array_filter($array->items), fn (ArrayItem $item) => $item->getStartLine() !== $item->getEndLine())) {
+        return false;
+    }
+
+    return mb_strlen(joinedLine($source, $array)) <= 120;
+}
+
+/**
+ * Whether the array is an argument split over lines that one line would hold.
+ */
+function isJoinable(string $source, Array_ $array): bool
+{
+    if ($array->getStartLine() === $array->getEndLine() || ! fitsAsArgument($source, $array)) {
+        return false;
+    }
+
+    return ! sharesItsLineWithSplitArray($source, $array);
+}
+
+/**
+ * Whether another split array closes on the array's first line or opens on its last, so joining one alone would let
+ * the two together outgrow the line.
+ */
+function sharesItsLineWithSplitArray(string $source, Array_ $array): bool
+{
+    $lineStart = strrpos(substr($source, 0, $array->getStartFilePos()), "\n");
+    $before = substr($source, $lineStart === false ? 0 : $lineStart + 1, $array->getStartFilePos() - ($lineStart === false ? 0 : $lineStart + 1));
+    $lineEnd = strpos($source, "\n", $array->getEndFilePos());
+    $after = substr($source, $array->getEndFilePos() + 1, ($lineEnd === false ? strlen($source) : $lineEnd) - $array->getEndFilePos() - 1);
+
+    return substr_count($before, ']') > substr_count($before, '[') || substr_count($after, '[') > substr_count($after, ']');
+}
+
+/**
  * Whether the node sits in a request class: one that extends a class whose name ends in Request.
  */
 function isInRequestClass(Node $node): bool
@@ -120,13 +200,39 @@ function sharesLines(Array_ $array): bool
  * @param  list<Node>  $ast
  * @return list<Array_>
  */
-function crampedArrays(array $ast): array
+function crampedArrays(array $ast, string $source): array
+{
+    return array_values(array_filter(arraysOf($ast), fn (Array_ $array) => sharesLines($array)
+        && ! mayStayOnOneLine($array)
+        && ! fitsAsArgument($source, $array)));
+}
+
+/**
+ * The argument arrays of a file split over lines that one line would hold, last first.
+ *
+ * @param  list<Node>  $ast
+ * @return list<Array_>
+ */
+function joinableArrays(array $ast, string $source): array
+{
+    $joinable = array_values(array_filter(arraysOf($ast), fn (Array_ $array) => isJoinable($source, $array)));
+    usort($joinable, fn (Array_ $one, Array_ $other) => $other->getStartFilePos() <=> $one->getStartFilePos());
+
+    return $joinable;
+}
+
+/**
+ * Every array of a file, each knowing what holds it.
+ *
+ * @param  list<Node>  $ast
+ * @return list<Array_>
+ */
+function arraysOf(array $ast): array
 {
     $traverser = new NodeTraverser(new ParentConnectingVisitor());
     $traverser->traverse($ast);
-    $arrays = new NodeFinder()->findInstanceOf($ast, Array_::class);
 
-    return array_values(array_filter($arrays, fn (Array_ $array) => sharesLines($array) && ! mayStayOnOneLine($array)));
+    return new NodeFinder()->findInstanceOf($ast, Array_::class);
 }
 
 /**
@@ -199,6 +305,29 @@ function splitArray(string $source, Array_ $array): string
 }
 
 /**
+ * The source with each joinable array written on one line; an array inside one already joined waits for the next run.
+ *
+ * @param  list<Array_>  $joinable  last first
+ */
+function joined(string $source, array $joinable): string
+{
+    $joinedFrom = PHP_INT_MAX;
+
+    foreach ($joinable as $array) {
+        if ($array->getEndFilePos() >= $joinedFrom) {
+            continue;
+        }
+
+        $source = substr($source, 0, $array->getStartFilePos())
+            .joinedArray($source, $array)
+            .substr($source, $array->getEndFilePos() + 1);
+        $joinedFrom = $array->getStartFilePos();
+    }
+
+    return $source;
+}
+
+/**
  * @param  list<string>  $arguments
  */
 function runArrayLines(array $arguments): int
@@ -210,14 +339,27 @@ function runArrayLines(array $arguments): int
     foreach (array_values(array_diff(array_slice($arguments, 1), ['--fix'])) as $path) {
         foreach (phpFiles($path) as $file) {
             $source = (string) file_get_contents($file);
-            $cramped = crampedArrays(parsedOnce($parser, $file, $source));
+            $ast = parsedOnce($parser, $file, $source);
+            $cramped = crampedArrays($ast, $source);
+            $joinable = joinableArrays($ast, $source);
 
             foreach ($cramped as $array) {
                 $faultCount++;
                 echo "{$file}:{$array->getStartLine()}\tputs two entries of an array on one line; give each its own\n";
             }
 
+            foreach ($joinable as $array) {
+                $faultCount++;
+                echo "{$file}:{$array->getStartLine()}\tsplits an argument array that fits one line; join it\n";
+            }
+
             if (! $fix) {
+                continue;
+            }
+
+            if ($joinable !== []) {
+                file_put_contents($file, joined($source, $joinable));
+
                 continue;
             }
 

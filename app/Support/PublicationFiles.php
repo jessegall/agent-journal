@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
 use App\Values\PublicationManifest;
 use App\Values\SkillKey;
@@ -58,11 +58,7 @@ final readonly class PublicationFiles
 
         return new self(
             "{$targets->generationsFolder()}/{$generation->id}/{$publication->id}",
-            [
-                ...$skills,
-                ...$driver->supportFiles(),
-                self::MANIFEST => $manifest->text(),
-            ],
+            [...$skills, ...$driver->supportFiles(), self::MANIFEST => $manifest->text()],
             $manifest,
         );
     }

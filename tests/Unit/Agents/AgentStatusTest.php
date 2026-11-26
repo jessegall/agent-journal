@@ -74,13 +74,19 @@ final class AgentStatusTest extends TestCase
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'capacity-unavailable')),
                 SessionActivityStatus::NoCapacity,
                 'No capacity',
-                ['check-capacity', 'dismiss'],
+                [
+                    'check-capacity',
+                    'dismiss',
+                ],
             ],
             'sessionless refusal' => [
                 self::stopped(self::startOutcome(StartDisposition::Refused, 'model-required')),
                 SessionActivityStatus::Refused,
                 'Start refused',
-                ['start', 'dismiss'],
+                [
+                    'start',
+                    'dismiss',
+                ],
             ],
             'lost reply' => [
                 self::stopped(self::startOutcome(StartDisposition::Accepted)),
@@ -179,14 +185,14 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('evidence')]
     public function test_the_evidence_decides_the_state_label_and_actions(
         AgentEvidence $evidence,
-        SessionActivityStatus $state,
+        SessionActivityStatus $status,
         string $label,
         array $actions,
     ): void {
         $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
-            [$state, $label, $actions],
+            [$status, $label, $actions],
             [
                 $status->sessionState,
                 $status->label,
@@ -201,11 +207,31 @@ final class AgentStatusTest extends TestCase
     public static function readiness(): array
     {
         return [
-            'accepted' => [StartReadiness::Accepted, SessionActivityStatus::Verifying, ['check-status', 'cancel-start']],
-            'preparing' => [StartReadiness::PreparingIdentity, SessionActivityStatus::Verifying, ['check-status', 'cancel-start']],
-            'uncertain' => [StartReadiness::Uncertain, SessionActivityStatus::Unverified, ['check-status', 'cancel-start']],
-            'ready' => [StartReadiness::Ready, SessionActivityStatus::Idle, ['switch']],
-            'cancelled' => [StartReadiness::Cancelled, SessionActivityStatus::Idle, ['switch']],
+            'accepted' => [
+                StartReadiness::Accepted,
+                SessionActivityStatus::Verifying,
+                ['check-status', 'cancel-start'],
+            ],
+            'preparing' => [
+                StartReadiness::PreparingIdentity,
+                SessionActivityStatus::Verifying,
+                ['check-status', 'cancel-start'],
+            ],
+            'uncertain' => [
+                StartReadiness::Uncertain,
+                SessionActivityStatus::Unverified,
+                ['check-status', 'cancel-start'],
+            ],
+            'ready' => [
+                StartReadiness::Ready,
+                SessionActivityStatus::Idle,
+                ['switch'],
+            ],
+            'cancelled' => [
+                StartReadiness::Cancelled,
+                SessionActivityStatus::Idle,
+                ['switch'],
+            ],
         ];
     }
 
@@ -215,7 +241,7 @@ final class AgentStatusTest extends TestCase
     #[DataProvider('readiness')]
     public function test_a_start_that_has_not_proved_its_conversation_is_verifying_with_check_status_and_cancel(
         StartReadiness $readiness,
-        SessionActivityStatus $state,
+        SessionActivityStatus $status,
         array $actions,
     ): void {
         $evidence = new AgentEvidence(
@@ -236,7 +262,7 @@ final class AgentStatusTest extends TestCase
         $status = AgentStatusRules::of($evidence, self::words(false));
 
         $this->assertSame(
-            [$state, $state->label(), $state->reason(), $actions],
+            [$status, $status->label(), $status->reason(), $actions],
             [
                 $status->sessionState,
                 $status->label,
@@ -289,7 +315,13 @@ final class AgentStatusTest extends TestCase
             self::words(false),
         );
 
-        $this->assertSame([SessionActivityStatus::Idle, SessionActivityStatus::Unknown], [$afterWake->sessionState, $afterDelivery->sessionState]);
+        $this->assertSame([
+            SessionActivityStatus::Idle,
+            SessionActivityStatus::Unknown,
+        ], [
+            $afterWake->sessionState,
+            $afterDelivery->sessionState,
+        ]);
     }
 
     /**
@@ -375,7 +407,11 @@ final class AgentStatusTest extends TestCase
 
         $this->assertSame(
             [
-                [StatusActionType::Stop, StatusActionType::Switch, StatusActionType::Interrupt],
+                [
+                    StatusActionType::Stop,
+                    StatusActionType::Switch,
+                    StatusActionType::Interrupt,
+                ],
                 [StatusActionType::Switch],
             ],
             [

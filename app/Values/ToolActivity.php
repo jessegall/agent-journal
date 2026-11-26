@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
 use App\Enums\Agents\ActivityType;
 use App\Enums\Drivers\CodexTool;
 use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\ToolResult;
-use App\Support\ToolNames\Enums\ClaudeCodeTool;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

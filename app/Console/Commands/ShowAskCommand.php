@@ -21,8 +21,6 @@ final class ShowAskCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ShowAskPayload::from([
-            'id' => (string) $this->argument('ask'),
-        ]));
+        return $this->runCall(ShowAskPayload::from(['id' => (string) $this->argument('ask')]));
     }
 }

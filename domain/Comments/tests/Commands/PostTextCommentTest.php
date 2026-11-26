@@ -123,13 +123,7 @@ final class PostTextCommentTest extends TestCase
         $comment = Comment::query()->with('anchor')->findOrFail($commentId);
         $this->assertSame(self::LINES_QUESTION, $comment->body);
 
-        $this->assertSame([
-            2,
-            3,
-        ], [
-            $comment->anchor->first_line,
-            $comment->anchor->last_line,
-        ]);
+        $this->assertSame([2, 3], [$comment->anchor->first_line, $comment->anchor->last_line]);
     }
 
     public function test_a_record_without_text_refuses_a_comment_on_text_and_keeps_none(): void
@@ -217,12 +211,7 @@ final class PostTextCommentTest extends TestCase
         $kept = ProjectFileVersion::query()->pluck('text')->all();
         sort($kept);
 
-        $this->assertSame([
-            'fifth',
-            'first',
-            'fourth',
-            'third',
-        ], $kept);
+        $this->assertSame(['fifth', 'first', 'fourth', 'third'], $kept);
     }
 
     public function test_a_note_page_is_read_and_takes_its_first_text_comment_beside_a_whole_record_one(): void
@@ -237,13 +226,7 @@ final class PostTextCommentTest extends TestCase
 
         TEXT));
 
-        $this->assertSame([
-            '1',
-            4,
-        ], [
-            $this->text()->version($page)->id,
-            $this->text()->version($page)->lineCount,
-        ]);
+        $this->assertSame(['1', 4], [$this->text()->version($page)->id, $this->text()->version($page)->lineCount]);
 
         $this->assertSame(
             ['Plan'],

@@ -33,9 +33,7 @@ final class ConfigureShareGatewayPostTest extends GuardedRouteEntryTestCase
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         return RouteCall::as(Caller::User)
-            ->headers([
-                'Idempotency-Key' => 'gateway-1',
-            ])
+            ->headers(['Idempotency-Key' => 'gateway-1'])
             ->payload([
                 'gatewayKey' => 'fake',
                 'executableVersion' => '1.0.0',

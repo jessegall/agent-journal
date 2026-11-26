@@ -40,9 +40,7 @@ final class ReassignWorkPostTest extends GuardedRouteEntryTestCase
         $root = new RecordIdentity('plans.plan', $plan->id);
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
+            ->parameters(['plan' => $plan->number])
             ->payload([
                 'recipient_type' => 'agent',
                 'recipient_id' => $reviewer->agent->id,

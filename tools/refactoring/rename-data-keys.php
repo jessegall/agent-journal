@@ -136,10 +136,7 @@ function calledClass(Node\Expr\StaticCall $call): string|null
         return null;
     }
 
-    if (! in_array($call->class->toLowerString(), [
-        'self',
-        'static',
-    ], true)) {
+    if (! in_array($call->class->toLowerString(), ['self', 'static'], true)) {
         return $call->class->toString();
     }
 

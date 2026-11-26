@@ -33,8 +33,6 @@ final class AgentDocsDraftPostTest extends GuardedRouteEntryTestCase
         $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'number' => (string) $document->number,
-            ]);
+            ->payload(['number' => (string) $document->number]);
     }
 }

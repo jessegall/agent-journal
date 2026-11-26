@@ -78,17 +78,7 @@ function oracleReadings(array $cases): array
     if (! is_executable(ORACLE)) {
         fail('Build the oracle first: go -C tools/shell-oracle build -o bin/shell-oracle .');
     }
-    $process = proc_open([ORACLE], [
-        [
-            'pipe',
-            'r',
-        ],
-        [
-            'pipe',
-            'w',
-        ],
-        STDERR,
-    ], $pipes);
+    $process = proc_open([ORACLE], [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes);
 
     if (! is_resource($process)) {
         fail('The oracle did not start');

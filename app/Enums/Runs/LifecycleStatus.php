@@ -46,12 +46,6 @@ enum LifecycleStatus: string
 
     public function isFinal(): bool
     {
-        return in_array($this, [
-            self::Ended,
-            self::Stopped,
-            self::Lost,
-            self::SpawnFailed,
-            self::Skipped,
-        ], true);
+        return in_array($this, [self::Ended, self::Stopped, self::Lost, self::SpawnFailed, self::Skipped], true);
     }
 }

@@ -30,7 +30,7 @@ export function rowStateLook(
 
     return account.isHeldForCheck
         ? { label: 'Checking', tone: 'busy' }
-        : accountStateLook[account.state];
+        : accountStateLook[account.status];
 }
 
 /**

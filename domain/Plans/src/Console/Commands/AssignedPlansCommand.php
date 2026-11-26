@@ -48,7 +48,7 @@ final class AssignedPlansCommand extends Command
                 $card->id,
                 $card->title,
                 $card->type->value,
-                $card->state->value,
+                $card->status->value,
                 $card->holder->label(),
                 $card->holder->reference,
             ], $assignedPlanPage->cards));

@@ -29,11 +29,7 @@ final readonly class HostClaimSlots
     {
         $token = Str::random(16);
 
-        $this->connection()->command('set', [
-            self::key($hostId),
-            $token,
-            ['ex' => self::SLOT_SECONDS],
-        ]);
+        $this->connection()->command('set', [self::key($hostId), $token, ['ex' => self::SLOT_SECONDS]]);
 
         return $token;
     }

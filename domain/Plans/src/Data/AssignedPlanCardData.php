@@ -23,7 +23,7 @@ final class AssignedPlanCardData extends Data
         public readonly string $id,
         public readonly string $title,
         public readonly PlanType $type,
-        public readonly PlanStatus $state,
+        public readonly PlanStatus $status,
         public readonly AssignmentData $holder,
     ) {}
 
@@ -33,7 +33,7 @@ final class AssignedPlanCardData extends Data
             'id' => $card->id,
             'title' => $card->title,
             'type' => $card->type,
-            'state' => $card->state,
+            'status' => $card->status,
             'holder' => AssignmentData::ofHolder($card->holder->get()),
         ]);
     }

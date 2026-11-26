@@ -34,10 +34,7 @@ final class CreateTaskPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::User)
             ->headers([SelectProject::HEADER => TestProjects::local()->id])
-            ->payload([
-                'title' => 'Ship the dock',
-                'brief' => 'Dock the source beside the chat.',
-            ])
+            ->payload(['title' => 'Ship the dock', 'brief' => 'Dock the source beside the chat.'])
             ->reply(CreateTaskCommand::class, $task->id)
             ->expects(CreateTaskCommand::class, [
                 'title' => 'Ship the dock',

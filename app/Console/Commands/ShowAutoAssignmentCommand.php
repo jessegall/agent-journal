@@ -28,8 +28,7 @@ final class ShowAutoAssignmentCommand extends Command
     public function handle(): int
     {
         try {
-            $call = ShowAutoAssignmentPayload::from([...$this->keyFields(),
-            ]);
+            $call = ShowAutoAssignmentPayload::from([...$this->keyFields()]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 

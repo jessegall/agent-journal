@@ -99,12 +99,7 @@ final class RulesDomain extends Domain implements
         return [
             new PolicyDefinition(
                 RulePolicy::class,
-                [
-                    AccessType::Read,
-                    AccessType::Create,
-                    AccessType::Edit,
-                    AccessType::Delete,
-                ],
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
             ),
         ];
     }

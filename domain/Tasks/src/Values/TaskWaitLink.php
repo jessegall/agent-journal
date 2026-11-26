@@ -18,7 +18,7 @@ final readonly class TaskWaitLink
         public string $taskId,
         public int|null $number,
         public string|null $title,
-        public TaskStatus|null $state,
+        public TaskStatus|null $status,
         public bool $isSatisfied,
         public string|null $waiveReason,
         public CarbonImmutable|null $waivedAt,

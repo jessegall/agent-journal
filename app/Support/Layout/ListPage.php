@@ -121,10 +121,7 @@ final readonly class ListPage
      */
     public function withReader(LayoutBackData $back, LayoutPartData ...$parts): self
     {
-        return clone ($this, [
-            'back' => $back,
-            'reader' => array_values($parts),
-        ]);
+        return clone ($this, ['back' => $back, 'reader' => array_values($parts)]);
     }
 
     public function withReaderWidth(ReaderWidth $width): self

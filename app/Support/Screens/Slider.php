@@ -55,23 +55,14 @@ final readonly class Slider implements MenuRegion
 
         $onBar = array_keys(array_filter(
             $bar,
-            fn (string $character) => in_array($character, [
-                self::BAR,
-                $this->marker,
-            ], true),
+            fn (string $character) => in_array($character, [self::BAR, $this->marker], true),
         ));
 
         $marker = (int) array_search($this->marker, $bar, true);
 
-        $barStart = min([
-            $marker,
-            ...$onBar,
-        ]);
+        $barStart = min([$marker, ...$onBar]);
 
-        $barEnd = max([
-            $marker,
-            ...$onBar,
-        ]);
+        $barEnd = max([$marker, ...$onBar]);
 
         $below = new ScreenRow($frame->rows[$range->first + 1])->text;
         preg_match_all('/\S+/u', $below, $words, PREG_OFFSET_CAPTURE);

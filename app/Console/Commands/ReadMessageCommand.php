@@ -26,9 +26,6 @@ final class ReadMessageCommand extends Command
 
         return $this->runCall($messageId === null
             ? ReadUnreadMessagesPayload::from(['requestKey' => $this->requestKey()])
-            : ReadMessagePayload::from([
-                'messageId' => (string) $messageId,
-                'requestKey' => $this->requestKey(),
-            ]));
+            : ReadMessagePayload::from(['messageId' => (string) $messageId, 'requestKey' => $this->requestKey()]));
     }
 }

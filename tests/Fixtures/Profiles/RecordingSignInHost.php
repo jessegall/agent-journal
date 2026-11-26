@@ -7,10 +7,12 @@ namespace Tests\Fixtures\Profiles;
 use App\Contracts\Accounts\SignInHost;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\SignInOutcome;
+use App\Enums\Hosts\HostOrderStatus;
 use App\Values\ClaimedAccountCheck;
 use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;
 use App\Values\CleanupProgress;
+use App\Values\HostFolderAnswer;
 use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;
 use App\Values\SignInPoll;
@@ -71,7 +73,48 @@ final class RecordingSignInHost implements SignInHost
      */
     public array $reconciled = [];
 
-    public function __construct(private ClaimedSignIn|null $next) {}
+    /**
+     * The folder orders asked for, each as its kind and folder.
+     *
+     * @var list<string>
+     */
+    public array $folderOrders = [];
+
+    /**
+     * How the host answers every folder order.
+     */
+    public HostFolderAnswer $folderAnswer;
+
+    public function __construct(private ClaimedSignIn|null $next)
+    {
+        $this->folderAnswer = new HostFolderAnswer(HostOrderStatus::Done, '', false);
+    }
+
+    public function orderFolderMake(string $folder, string $operation): string
+    {
+        $this->folderOrders[] = "make {$folder}";
+
+        return 'order-'.count($this->folderOrders);
+    }
+
+    public function orderFolderRemove(string $folder, string $operation): string
+    {
+        $this->folderOrders[] = "remove {$folder}";
+
+        return 'order-'.count($this->folderOrders);
+    }
+
+    public function orderFolderUse(string $folder, string $operation): string
+    {
+        $this->folderOrders[] = "use {$folder}";
+
+        return 'order-'.count($this->folderOrders);
+    }
+
+    public function folderAnswer(string $orderId): HostFolderAnswer
+    {
+        return $this->folderAnswer;
+    }
 
     public function claim(): ClaimedSignIn|null
     {

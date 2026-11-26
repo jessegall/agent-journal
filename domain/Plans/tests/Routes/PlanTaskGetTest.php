@@ -34,9 +34,6 @@ final class PlanTaskGetTest extends GuardedRouteEntryTestCase
             ->phaseWithTask('Release', 'Working', $task->assignmentIdentity());
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plans->planCalled('Release')->number,
-                'task' => $task->number,
-            ]);
+            ->parameters(['plan' => $plans->planCalled('Release')->number, 'task' => $task->number]);
     }
 }

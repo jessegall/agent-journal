@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Support\Drivers\HookPayload;
+use App\Agents\Drivers\Hooks\HookPayload;
 
 /**
  * The recorded hook payloads of one driver and the mapping its capability record expects, read from

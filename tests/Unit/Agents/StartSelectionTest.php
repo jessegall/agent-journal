@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
@@ -14,7 +15,6 @@ use App\Exceptions\DefaultUnavailable;
 use App\Exceptions\DriverRequired;
 use App\Exceptions\DriverUnsupported;
 use App\Exceptions\ModelRequired;
-use App\Support\DefaultDrivers;
 use App\Values\ModelSelection;
 use App\Values\ProfileDefaults;
 use App\Values\SelectedDriver;
@@ -29,7 +29,11 @@ final class StartSelectionTest extends TestCase
 {
     public function test_missing_and_blank_model_input_is_refused_as_model_required(): void
     {
-        foreach ([null, '', '   '] as $input) {
+        foreach ([
+            null,
+            '',
+            '   ',
+        ] as $input) {
             try {
                 ModelSelection::fromInput($input);
                 $this->fail('A start without a model was accepted.');
@@ -107,21 +111,53 @@ final class StartSelectionTest extends TestCase
      */
     public static function tierModels(): iterable
     {
-        yield 'Claude Code, simplest' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Simplest, 'haiku'];
+        yield 'Claude Code, simplest' => [
+            DefaultDrivers::CLAUDE_CODE,
+            ModelTier::Simplest,
+            'haiku',
+        ];
 
-        yield 'Claude Code, general' => [DefaultDrivers::CLAUDE_CODE, ModelTier::General, 'sonnet'];
+        yield 'Claude Code, general' => [
+            DefaultDrivers::CLAUDE_CODE,
+            ModelTier::General,
+            'sonnet',
+        ];
 
-        yield 'Claude Code, complex' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Inventive, 'opus'];
+        yield 'Claude Code, complex' => [
+            DefaultDrivers::CLAUDE_CODE,
+            ModelTier::Inventive,
+            'opus',
+        ];
 
-        yield 'Claude Code, exceptional' => [DefaultDrivers::CLAUDE_CODE, ModelTier::Exceptional, 'fable'];
+        yield 'Claude Code, exceptional' => [
+            DefaultDrivers::CLAUDE_CODE,
+            ModelTier::Exceptional,
+            'fable',
+        ];
 
-        yield 'Codex, simplest' => [DefaultDrivers::CODEX, ModelTier::Simplest, 'gpt-6-luna'];
+        yield 'Codex, simplest' => [
+            DefaultDrivers::CODEX,
+            ModelTier::Simplest,
+            'gpt-6-luna',
+        ];
 
-        yield 'Codex, general' => [DefaultDrivers::CODEX, ModelTier::General, 'gpt-6.1-terra'];
+        yield 'Codex, general' => [
+            DefaultDrivers::CODEX,
+            ModelTier::General,
+            'gpt-6.1-terra',
+        ];
 
-        yield 'Codex, complex' => [DefaultDrivers::CODEX, ModelTier::Inventive, 'gpt-6.2-sol'];
+        yield 'Codex, complex' => [
+            DefaultDrivers::CODEX,
+            ModelTier::Inventive,
+            'gpt-6.2-sol',
+        ];
 
-        yield 'Codex, exceptional' => [DefaultDrivers::CODEX, ModelTier::Exceptional, 'gpt-6.2-astra'];
+        yield 'Codex, exceptional' => [
+            DefaultDrivers::CODEX,
+            ModelTier::Exceptional,
+            'gpt-6.2-astra',
+        ];
     }
 
     #[DataProvider('tierModels')]

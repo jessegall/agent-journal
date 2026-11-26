@@ -69,10 +69,7 @@ final readonly class TasksShow extends TasksPage
                     'comments',
                     LayoutNativeData::of(
                         'comments/RecordComments',
-                        RecordCommentsPartData::from([
-                            'comments' => $reader->comments,
-                            'target' => $reader->label,
-                        ]),
+                        RecordCommentsPartData::from(['comments' => $reader->comments, 'target' => $reader->label]),
                     ),
                 )),
                 PublicationTab::deferred('brief', 'Brief', fn () => $brief),
@@ -136,7 +133,7 @@ final readonly class TasksShow extends TasksPage
      */
     private function factsOf(TaskReaderData $reader): array
     {
-        $facts = [self::factRow('state', 'State', $reader->state->badge()[0])];
+        $facts = [self::factRow('state', 'State', $reader->status->badge()[0])];
 
         $holder = $reader->holder instanceof Optional ? 'Nobody yet' : $reader->holder->label();
         $facts[] = self::factRow('holder', 'Holder', $holder);
@@ -247,10 +244,6 @@ final readonly class TasksShow extends TasksPage
 
     private static function factRow(string $key, string $label, string $value): LayoutRowData
     {
-        return LayoutRowData::from([
-            'key' => $key,
-            'label' => $label,
-            'value' => $value,
-        ]);
+        return LayoutRowData::from(['key' => $key, 'label' => $label, 'value' => $value]);
     }
 }

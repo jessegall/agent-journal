@@ -72,14 +72,8 @@ final class FinishTaskTest extends TestCase
         $this->journal->run(new FinishTaskCommand($this->task->id, $this->run, 'Built and tested.'));
 
         $this->assertSame(
-            [
-                TaskStatus::Finished,
-                'Built and tested.',
-            ],
-            [
-                $this->task->refresh()->status,
-                $this->task->result_note,
-            ],
+            [TaskStatus::Finished, 'Built and tested.'],
+            [$this->task->refresh()->status, $this->task->result_note],
         );
 
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
@@ -108,10 +102,7 @@ final class FinishTaskTest extends TestCase
         $facts = [];
 
         $this->app->make(Dispatcher::class)->listen(
-            [
-                TaskFinished::class,
-                TaskCancelled::class,
-            ],
+            [TaskFinished::class, TaskCancelled::class],
             function (object $fact) use (&$facts): void {
                 $facts[] = $fact::class;
             },
@@ -135,11 +126,7 @@ final class FinishTaskTest extends TestCase
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void
     {
-        Event::fake([
-            TaskFinished::class,
-            TaskBlocked::class,
-            TaskCancelled::class,
-        ]);
+        Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
 
         $this->journal->actAsUserId(TestIds::of(7));
 
@@ -157,16 +144,8 @@ final class FinishTaskTest extends TestCase
         $bus->run(new CancelTaskCommand($cancelled->id, 'Dropped.'));
 
         $this->assertSame(
-            [
-                TaskStatus::Finished,
-                TaskStatus::Blocked,
-                TaskStatus::Cancelled,
-            ],
-            [
-                $finished->fresh()?->status,
-                $blocked->fresh()?->status,
-                $cancelled->fresh()?->status,
-            ],
+            [TaskStatus::Finished, TaskStatus::Blocked, TaskStatus::Cancelled],
+            [$finished->fresh()?->status, $blocked->fresh()?->status, $cancelled->fresh()?->status],
         );
 
         Event::assertDispatchedTimes(TaskFinished::class, 1);
@@ -176,11 +155,7 @@ final class FinishTaskTest extends TestCase
 
     public function test_a_task_nobody_has_is_refused_and_nothing_is_announced(): void
     {
-        Event::fake([
-            TaskFinished::class,
-            TaskBlocked::class,
-            TaskCancelled::class,
-        ]);
+        Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
 
         $this->journal->actAsUserId(TestIds::of(7));
 
@@ -195,11 +170,7 @@ final class FinishTaskTest extends TestCase
 
     public function test_another_runs_finish_is_refused_and_nothing_is_announced(): void
     {
-        Event::fake([
-            TaskFinished::class,
-            TaskBlocked::class,
-            TaskCancelled::class,
-        ]);
+        Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
 
         $this->journal->actAsUserId(TestIds::of(7));
 

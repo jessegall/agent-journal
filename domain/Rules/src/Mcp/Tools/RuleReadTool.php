@@ -49,15 +49,12 @@ final class RuleReadTool extends JournalReadTool
     {
         $rule = $this->rules->rule($arguments->ulid('rule_id'));
 
-        $text = array_filter([
-            'text' => $rule->text,
-            'reason' => $rule->reason,
-        ], is_string(...));
+        $text = array_filter(['text' => $rule->text, 'reason' => $rule->reason], is_string(...));
 
         $card = [
             'rule_id' => $rule->id,
             'number' => $rule->number,
-            'state' => $rule->state->value,
+            'state' => $rule->status->value,
             'proposer' => $rule->proposerType === null ? null : [
                 'type' => $rule->proposerType,
                 'id' => $rule->proposerId,
@@ -74,10 +71,7 @@ final class RuleReadTool extends JournalReadTool
         }
 
         if (strlen(json_encode($text, JSON_THROW_ON_ERROR)) <= 4000) {
-            return ToolResult::ok([
-                ...$card,
-                ...$text,
-            ]);
+            return ToolResult::ok([...$card, ...$text]);
         }
 
         $position = $this->fields->start(new Continuation($this->name(), $rule->id, [], 1), $text);

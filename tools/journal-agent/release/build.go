@@ -28,11 +28,10 @@ func Build(profile Profile, sources Sources, folder string, version string, key 
 	manifest := Manifest{
 		Version:      version,
 		Profile:      profile.Name,
-		Providers:    profile.Providers,
 		Capabilities: Capabilities,
 	}
 	for _, target := range Targets {
-		targetArtifacts := TargetArtifacts{Target: target, Prerequisites: prerequisitesOf(target), Providers: LocalProviders}
+		targetArtifacts := TargetArtifacts{Target: target, Prerequisites: prerequisitesOf(target)}
 		for _, file := range profile.Files {
 			artifact, err := buildFile(file, sources, folder, target)
 			if err != nil {

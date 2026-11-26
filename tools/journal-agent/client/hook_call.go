@@ -14,7 +14,7 @@ import (
 )
 
 // HookReply is the journal's answer to one native hook call, as the provider reads it back: the hook's standard
-// output, standard error and exit code (App\Support\Drivers\DriverReplyData).
+// output, standard error and exit code (App\Agents\Drivers\Hooks\DriverReplyData).
 type HookReply struct {
 	Stdout   string `json:"stdout"`
 	Stderr   string `json:"stderr"`

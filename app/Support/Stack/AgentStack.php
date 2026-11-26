@@ -166,10 +166,7 @@ final readonly class AgentStack
             return $this;
         }
 
-        return clone ($this, ['frames' => [
-            ...$this->withoutFrame($lifted)->frames,
-            $lifted,
-        ]]);
+        return clone ($this, ['frames' => [...$this->withoutFrame($lifted)->frames, $lifted]]);
     }
 
     /**
@@ -206,10 +203,7 @@ final readonly class AgentStack
             throw StackTooDeep::for($this->target->description(), self::DEPTH_LIMIT);
         }
 
-        return clone ($this, ['frames' => [
-            ...$this->frames,
-            $frame,
-        ]]);
+        return clone ($this, ['frames' => [...$this->frames, $frame]]);
     }
 
     /**

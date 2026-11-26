@@ -107,13 +107,13 @@ final readonly class AutoAssignmentStatuses
      */
     private function status(
         AutoAssignmentFact $fact,
-        AutoAssignmentStatus $state,
+        AutoAssignmentStatus $status,
         Option $pool,
         Option $totals,
     ): AutoAssignmentView {
         return new AutoAssignmentView(
             $fact->isEnabled,
-            $state,
+            $status,
             $fact->revision,
             $pool,
             Some::create($fact->size),

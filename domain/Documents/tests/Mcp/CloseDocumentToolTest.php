@@ -36,11 +36,7 @@ final class CloseDocumentToolTest extends McpToolEntryTestCase
         $opened = $journal->runAs('Writer', new OpenDocumentCommand((string) $document->number));
 
         return ToolCall::by($start)
-            ->arguments([
-                'doc_id' => $document->number,
-                'edit_id' => $opened->token,
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['doc_id' => $document->number, 'edit_id' => $opened->token, 'request_key' => 'documents-1'])
             ->reply(CloseDocumentCommand::class, new CloseResult(2, true))
             ->expects(CloseDocumentCommand::class, ['draft' => new DraftTarget((string) $document->number, $opened->token, null)]);
     }

@@ -17,6 +17,7 @@ final readonly class HostOrderSource
         public string|null $step,
         public int $attempt,
         public int|null $workerGeneration,
+        public string|null $key = null,
     ) {}
 
     public static function forStep(string $driverRequestId, string $step, int $attempt, int $workerGeneration): self
@@ -37,8 +38,20 @@ final readonly class HostOrderSource
         return new self(null, null, 0, null);
     }
 
+    /**
+     * A journal order made once for the key given: the same key asked again finds the order already made.
+     */
+    public static function keyed(string $key): self
+    {
+        return new self(null, null, 0, null, $key);
+    }
+
     public function idempotencyKey(): string
     {
+        if ($this->key !== null) {
+            return $this->key;
+        }
+
         if ($this->driverRequestId === null) {
             return (string) Str::ulid();
         }

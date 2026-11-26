@@ -20,26 +20,26 @@ final class TaskChangedSinceRead extends RuntimeException implements CodedRefusa
 {
     use RendersRefusal;
 
-    public static function now(int $number, TaskStatus $state, int $runNumber): self
+    public static function now(int $number, TaskStatus $status, int $runNumber): self
     {
         $run = $runNumber === 0 ? 'no run yet' : "run {$runNumber}";
 
-        return new self("Task {$number} changed since you read it: it is now {$state->value}, {$run}.");
+        return new self("Task {$number} changed since you read it: it is now {$status->value}, {$run}.");
     }
 
-    public static function notCancellable(int $number, TaskStatus $state): self
+    public static function notCancellable(int $number, TaskStatus $status): self
     {
-        return new self("Task {$number} is {$state->value}, so it cannot be cancelled.");
+        return new self("Task {$number} is {$status->value}, so it cannot be cancelled.");
     }
 
-    public static function notBlockable(int $number, TaskStatus $state): self
+    public static function notBlockable(int $number, TaskStatus $status): self
     {
-        return new self("Task {$number} is {$state->value}; only a started run can be blocked.");
+        return new self("Task {$number} is {$status->value}; only a started run can be blocked.");
     }
 
-    public static function notFocusable(int $number, TaskStatus $state): self
+    public static function notFocusable(int $number, TaskStatus $status): self
     {
-        return new self("Task {$number} is {$state->value}; only a started task can be in focus.");
+        return new self("Task {$number} is {$status->value}; only a started task can be in focus.");
     }
 
     public function refusalCode(): RefusalCode

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\Contracts\DriverCall;
-use App\Support\Drivers\HookPayload;
+use App\Agents\Drivers\Hooks\HookPayload;
+use App\Agents\Drivers\Hooks\JudgedCall;
+use App\Contracts\Drivers\DriverCall;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
 
@@ -22,7 +22,10 @@ trait ChecksProgramFixtures
     public static function mapping(): iterable
     {
         foreach (self::programFixture()->mapping() as $name => $expected) {
-            yield $name => [$name, $expected];
+            yield $name => [
+                $name,
+                $expected,
+            ];
         }
     }
 

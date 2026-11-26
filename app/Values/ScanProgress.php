@@ -43,10 +43,7 @@ final readonly class ScanProgress
         string $frameId,
         array $deliveredNow,
     ): self {
-        return new self($stackId, $stackVersion, $position, $frameId, [
-            ...$this->delivered,
-            ...$deliveredNow,
-        ]);
+        return new self($stackId, $stackVersion, $position, $frameId, [...$this->delivered, ...$deliveredNow]);
     }
 
     /**

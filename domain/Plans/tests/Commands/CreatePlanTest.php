@@ -43,29 +43,13 @@ final class CreatePlanTest extends TestCase
         $plan = Plan::query()->findOrFail($planId);
 
         $this->assertSame(
-            [
-                'Ship version 6.',
-                PlanType::Build,
-                PlanStatus::Planned,
-                1,
-            ],
-            [
-                $plan->brief,
-                $plan->type,
-                $plan->status,
-                $plan->revision,
-            ],
+            ['Ship version 6.', PlanType::Build, PlanStatus::Planned, 1],
+            [$plan->brief, $plan->type, $plan->status, $plan->revision],
         );
 
         $this->assertSame(
-            [
-                User::storedType(),
-                $this->journal->ownerUser()->id,
-            ],
-            [
-                $plan->creator_type,
-                $plan->creator_id,
-            ],
+            [User::storedType(), $this->journal->ownerUser()->id],
+            [$plan->creator_type, $plan->creator_id],
         );
     }
 
@@ -135,13 +119,7 @@ final class CreatePlanTest extends TestCase
 
         $phase = $this->app->make(PlanStructure::class)->addPhase($plan, 'First');
 
-        $this->assertSame([
-            $shop,
-            $shop,
-        ], [
-            $plan->project_id,
-            $phase->project_id,
-        ]);
+        $this->assertSame([$shop, $shop], [$plan->project_id, $phase->project_id]);
     }
 
     private function localId(): string

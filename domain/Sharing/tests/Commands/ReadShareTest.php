@@ -88,10 +88,7 @@ final class ReadShareTest extends TestCase
 
         $this->document = Document::query()->where('number', 1)->sole();
 
-        $this->plan = Plan::factory()->create([
-            'title' => 'Version 6',
-            'type' => PlanType::Build,
-        ]);
+        $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
 
         Link::createForModels($this->plan, $this->document);
 
@@ -118,11 +115,7 @@ final class ReadShareTest extends TestCase
     
                 TEXT,
             ],
-            [
-                $page->title,
-                $page->publicationVersion,
-                $page->body,
-            ],
+            [$page->title, $page->publicationVersion, $page->body],
         );
 
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
@@ -147,10 +140,7 @@ final class ReadShareTest extends TestCase
         $this->assertFalse($denied->isAllowed);
         $this->assertSame('', $denied->body);
 
-        $this->assertSame([
-            ShareAuditType::ReadDenied,
-            ShareAuditType::ReadDenied,
-        ], $this->auditTypes());
+        $this->assertSame([ShareAuditType::ReadDenied, ShareAuditType::ReadDenied], $this->auditTypes());
     }
 
     public function test_a_plan_reads_its_approved_linked_document_and_an_unapproved_step_is_denied(): void
@@ -219,10 +209,7 @@ final class ReadShareTest extends TestCase
 
         foreach ($documents as $document) {
             $link = $links->sole(
-                fn (Link $link) => in_array($document->id, [
-                    $link->target_id,
-                    $link->source_id,
-                ], true),
+                fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true),
             );
 
             $target = new ShareSelectedTarget($document->shareIdentity(), $link->id, '1');

@@ -12,6 +12,8 @@ use App\Contracts\Events\EventSource;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Sessions\StopCheckStatus;
 use App\Events\Sessions\StopCheckCertified;
+use App\Events\Sessions\StopCheckConditionsOrdered;
+use App\Events\Sessions\StopCheckOpened;
 use App\Events\Sessions\StopCheckSettled;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<string,string> $condition_hashes
  * @property StopCheckStatus $status
  * @property string|null $submission_digest
+ * @property string|null $fence_order_id
  * @property CarbonImmutable|null $certified_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -98,7 +101,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         $attempt->condition_hashes = $conditionHashes;
         $attempt->status = StopCheckStatus::Pending;
 
-        $attempt->insertIfAbsent();
+        if ($attempt->insertIfAbsent()) {
+            $attempt->raise(new StopCheckOpened($attempt->id, $attempt->session_id));
+        }
 
         return self::findOfStop($stop);
     }
@@ -108,12 +113,22 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
     /**
      * Records that one submission of the host's results settled the attempt, with what its refusing conditions said.
      */
-    public function settle(StopCheckStatus $state, string $submissionDigest, string $failureSummary): void
+    public function settle(StopCheckStatus $status, string $submissionDigest, string $failureSummary): void
     {
-        $this->status = $state;
+        $this->status = $status;
         $this->submission_digest = $submissionDigest;
         $this->assertSaved($this->save());
-        $this->raise(new StopCheckSettled($this->id, $state, $this->outcomeOf($failureSummary)));
+        $this->raise(new StopCheckSettled($this->id, $status, $this->outcomeOf($failureSummary)));
+    }
+
+    /**
+     * Records the run_fenced order its conditions run under on the session's host, whose answer settles it.
+     */
+    public function runUnder(string $orderId): void
+    {
+        $this->fence_order_id = $orderId;
+        $this->assertSaved($this->save());
+        $this->raise(new StopCheckConditionsOrdered($this->id, $orderId));
     }
 
     /**
@@ -276,6 +291,16 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
         return self::query()->withoutGlobalScope(AgentSessionScope::class)->ofStop($stop)->sole();
     }
 
+    /**
+     * The attempt whose conditions run under the run_fenced order, none or one.
+     *
+     * @return list<self>
+     */
+    public static function findRunUnder(string $orderId): array
+    {
+        return array_values(self::query()->acrossSessions()->where('fence_order_id', $orderId)->limit(1)->get()->all());
+    }
+
     // ----------[ Scopes ]----------
 
     /**
@@ -307,9 +332,9 @@ final class StopCheck extends JournalModel implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, StopCheckStatus $state): void
+    protected function inState(Builder $query, StopCheckStatus $status): void
     {
-        $query->where('status', $state->value);
+        $query->where('status', $status->value);
     }
 
     /**

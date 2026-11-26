@@ -97,10 +97,7 @@ final class TaskHistoryEntry extends JournalModel implements ReadableModel
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by([
-            'task_history.task_id',
-            'task_history.sequence',
-        ], 'task_history.id');
+        return ReadOrder::by(['task_history.task_id', 'task_history.sequence'], 'task_history.id');
     }
 
     // ----------[ Accessors ]----------

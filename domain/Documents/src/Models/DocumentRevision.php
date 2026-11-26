@@ -214,14 +214,7 @@ final class DocumentRevision extends JournalModel implements Numbered, ReadableM
     #[Scope]
     protected function forCards(Builder $query): void
     {
-        $query->select([
-            'id',
-            'document_id',
-            'number',
-            'title',
-            'abstract',
-            'closed_at',
-        ]);
+        $query->select(['id', 'document_id', 'number', 'title', 'abstract', 'closed_at']);
     }
 
     /**

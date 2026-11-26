@@ -84,10 +84,7 @@ function main(array $paths): void
 function isArrayWrite(Node $node): bool
 {
     if ($node instanceof New_) {
-        return $node->class instanceof Node\Name && in_array($node->class->toString(), [
-            'self',
-            'static',
-        ], true)
+        return $node->class instanceof Node\Name && in_array($node->class->toString(), ['self', 'static'], true)
             && isset($node->args[0]) && $node->args[0]->value instanceof Array_;
     }
 
@@ -102,10 +99,7 @@ function isArrayWrite(Node $node): bool
         return false;
     }
 
-    if (in_array($node->name->toString(), [
-        'create',
-        'forceCreate',
-    ], true)) {
+    if (in_array($node->name->toString(), ['create', 'forceCreate'], true)) {
         return $node->var instanceof StaticCall && $node->var->name instanceof Node\Identifier
             && $node->var->name->toString() === 'query';
     }

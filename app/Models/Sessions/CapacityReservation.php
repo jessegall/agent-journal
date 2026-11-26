@@ -168,8 +168,8 @@ final class CapacityReservation extends JournalModel implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function withState(Builder $query, ReservationStatus $state): void
+    protected function withState(Builder $query, ReservationStatus $status): void
     {
-        $query->where('status', $state);
+        $query->where('status', $status);
     }
 }

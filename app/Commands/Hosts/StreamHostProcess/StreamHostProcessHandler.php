@@ -21,10 +21,7 @@ final readonly class StreamHostProcessHandler implements CommandHandler
             $command->processId,
             $command->source,
             HostOrderType::Stream,
-            [
-                'frames_per_second' => $command->framesPerSecond,
-                'raw' => $command->isRaw,
-            ],
+            ['frames_per_second' => $command->framesPerSecond, 'raw' => $command->isRaw],
         )->getKey();
     }
 }

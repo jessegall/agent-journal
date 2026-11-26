@@ -84,10 +84,7 @@ final class LayoutPartData extends Data
             null,
             null,
             [],
-            [
-                $list,
-                ...array_values($reader),
-            ],
+            [$list, ...array_values($reader)],
             split: $split,
         );
     }
@@ -219,10 +216,7 @@ final class LayoutPartData extends Data
         array $fields,
         array $footer,
     ): self {
-        $sheet = self::form('form', $form, 'stack', ...[
-            ...$fields,
-            self::box('footer', 'row', ...$footer),
-        ]);
+        $sheet = self::form('form', $form, 'stack', ...[...$fields, self::box('footer', 'row', ...$footer)]);
 
         return new self(
             LayoutTag::Dialog,
@@ -232,10 +226,7 @@ final class LayoutPartData extends Data
             null,
             null,
             [],
-            [
-                $opener,
-                $sheet,
-            ],
+            [$opener, $sheet],
             dialog: $dialog,
         );
     }
@@ -393,10 +384,7 @@ final class LayoutPartData extends Data
     private function hasOpenerAndForm(): bool
     {
         return count($this->children) === 2
-            && in_array($this->children[0]->tag, [
-                LayoutTag::Action,
-                LayoutTag::Menu,
-            ], true)
+            && in_array($this->children[0]->tag, [LayoutTag::Action, LayoutTag::Menu], true)
             && $this->children[1]->tag === LayoutTag::Form;
     }
 

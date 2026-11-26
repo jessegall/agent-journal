@@ -86,10 +86,7 @@ final class TaskLogEntry extends JournalModel implements EventSource, ReadableMo
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by([
-            'task_log_entries.task_id',
-            'task_log_entries.sequence',
-        ], 'task_log_entries.id');
+        return ReadOrder::by(['task_log_entries.task_id', 'task_log_entries.sequence'], 'task_log_entries.id');
     }
 
     // ----------[ Accessors ]----------

@@ -375,11 +375,7 @@ function main(array $arguments): void
 
     foreach ($generated as $index => $row) {
         $source = stringField($row, 'source', "generated row {$index}");
-        $cases->add($source, DIALECT, [
-            'type' => 'generated',
-            'seed' => 7,
-            'index' => $index,
-        ], [
+        $cases->add($source, DIALECT, ['type' => 'generated', 'seed' => 7, 'index' => $index], [
             'shapes_say' => $row['forms'] ?? null,
             'version5_read' => $row['observed'] ?? null,
             'known_difference' => $differences[$source] ?? null,
@@ -387,19 +383,11 @@ function main(array $arguments): void
     }
 
     foreach (BOUNDARY_CASES as $index => [$source, $note]) {
-        $cases->add($source, DIALECT, [
-            'type' => 'boundary',
-            'index' => $index,
-            'note' => $note,
-        ], []);
+        $cases->add($source, DIALECT, ['type' => 'boundary', 'index' => $index, 'note' => $note], []);
     }
 
     foreach (ADVERSARIAL_CASES as $index => [$source, $dialect, $note]) {
-        $cases->add($source, $dialect, [
-            'type' => 'adversarial',
-            'index' => $index,
-            'note' => $note,
-        ], []);
+        $cases->add($source, $dialect, ['type' => 'adversarial', 'index' => $index, 'note' => $note], []);
     }
 
     $folder = OUTPUT_FOLDER;
@@ -486,11 +474,7 @@ final class CaseSet
         if (trim($source) === '') {
             $this->emptyInputs++;
         }
-        $key = hash('sha256', json_encode([
-            $source,
-            $dialect,
-            CONTEXT,
-        ], JSON_THROW_ON_ERROR));
+        $key = hash('sha256', json_encode([$source, $dialect, CONTEXT], JSON_THROW_ON_ERROR));
         $this->cases[$key] ??= [
             'id' => 'case-'.substr($key, 0, 16),
             'source' => $source,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Agents\Drivers\Work\DriverRestartSignal;
 use App\Contracts\Time\ServerClock;
-use App\Support\Drivers\DriverRestartSignal;
 use Illuminate\Console\Command;
 
 /**

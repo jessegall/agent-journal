@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Contracts\Events\Listener;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Events\Connections\HostProcessLost;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
-use App\Support\Drivers\HeadlessStarts;
 
 /**
  * A terminal the journal drives that its host lost, as a restart of the host ends the terminals it held, is opened

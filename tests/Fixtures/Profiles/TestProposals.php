@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Enums\Profiles\ModelTier;
-use App\Support\DefaultDrivers;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Enums\Profiles\InstancePolicy;
+use App\Enums\Profiles\ModelTier;
 use App\Support\PolicyOverride;
 use App\Support\ProfileProposal;
 use App\Support\ProposedProfile;

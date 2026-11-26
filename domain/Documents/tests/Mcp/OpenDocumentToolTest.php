@@ -33,11 +33,7 @@ final class OpenDocumentToolTest extends McpToolEntryTestCase
         $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return ToolCall::by($start)
-            ->arguments([
-                'doc_id' => $document->number,
-                'expected_revision' => 1,
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['doc_id' => $document->number, 'expected_revision' => 1, 'request_key' => 'documents-1'])
             ->reply(OpenDocumentCommand::class, new DraftReference($document->id, $document->number, 'edit-1', 1, 1, ['# Design']))
             ->expects(OpenDocumentCommand::class, [
                 'documentNumber' => (string) $document->number,

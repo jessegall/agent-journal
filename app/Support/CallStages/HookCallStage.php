@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\CallStages;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Contracts\Actors\AgentTexts;
 use App\Models\Agents\AgentStackRow;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Stack\HookAnswer;

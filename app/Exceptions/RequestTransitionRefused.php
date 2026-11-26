@@ -12,9 +12,9 @@ use RuntimeException;
  */
 final class RequestTransitionRefused extends RuntimeException
 {
-    public static function from(RequestStatus $state, RequestStatus $next, string $owed): self
+    public static function from(RequestStatus $status, RequestStatus $next, string $owed): self
     {
-        return new self("A request that is {$state->value} cannot become {$next->value}: {$owed}");
+        return new self("A request that is {$status->value} cannot become {$next->value}: {$owed}");
     }
 
     public static function notTheRequester(): self

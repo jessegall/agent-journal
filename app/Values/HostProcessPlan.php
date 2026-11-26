@@ -63,7 +63,20 @@ final readonly class HostProcessPlan
          */
         public array $restartArgv = [],
         public RestartFile|null $restartWhenFile = null,
+        /**
+         * The fence of the session the process runs for, which a run_fenced order of that session closes; none for a
+         * process of no session.
+         */
+        public string|null $fence = null,
     ) {}
+
+    /**
+     * The same plan under the fence of the session it runs for.
+     */
+    public function withFence(string $sessionId): self
+    {
+        return new self(...[...get_object_vars($this), 'fence' => $sessionId]);
+    }
 
     /**
      * The same plan with more variables in its environment, each as NAME=value.
@@ -72,13 +85,7 @@ final readonly class HostProcessPlan
      */
     public function withEnvironment(array $environment): self
     {
-        return new self(...[
-            ...get_object_vars($this),
-            'environment' => [
-                ...$this->environment,
-                ...$environment,
-            ],
-        ]);
+        return new self(...[...get_object_vars($this), 'environment' => [...$this->environment, ...$environment]]);
     }
 
     public function orderType(): HostOrderType
@@ -117,6 +124,7 @@ final readonly class HostProcessPlan
             'shield_rules' => $this->shieldRules,
             'restart_argv' => $this->restartArgv,
             'restart_when_file' => $this->restartWhenFile,
+            'fence' => $this->fence,
         ];
     }
 }

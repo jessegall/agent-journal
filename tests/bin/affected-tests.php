@@ -80,12 +80,11 @@ if ($selection->runFiles() === []) {
 
 fwrite(STDOUT, sprintf(
     'Running the %d test methods nearest the change, in %d files, reached %d steps out; %d reached methods left out.'
-    ." Every architecture test runs beside them: %d files.\n",
+    ." The architecture tests run only when named or in the full suite.\n",
     $selection->methodCount(),
     count($selection->testsByFile),
     $selection->reach,
     $selection->leftOut,
-    count($selection->wholeTests),
 ));
 
 $configuration = configurationFor($root, $selection->runFiles());

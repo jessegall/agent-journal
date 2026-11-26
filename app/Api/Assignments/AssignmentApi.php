@@ -108,9 +108,7 @@ final readonly class AssignmentApi
     public function listAssignmentPools(
         string $assignableType,
     ): PoolList {
-        return $this->sender->send(ListAssignmentPoolsPayload::from([
-            'assignableType' => $assignableType,
-        ]));
+        return $this->sender->send(ListAssignmentPoolsPayload::from(['assignableType' => $assignableType]));
     }
 
     public function listAutoAssignments(
@@ -151,10 +149,7 @@ final readonly class AssignmentApi
         string $recordType,
         string $recordId,
     ): RecordHolderData {
-        return $this->sender->send(ShowAssignmentPayload::from([
-            'recordType' => $recordType,
-            'recordId' => $recordId,
-        ]));
+        return $this->sender->send(ShowAssignmentPayload::from(['recordType' => $recordType, 'recordId' => $recordId]));
     }
 
     public function showAutoAssignment(

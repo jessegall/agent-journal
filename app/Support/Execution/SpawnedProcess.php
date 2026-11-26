@@ -87,10 +87,7 @@ final class SpawnedProcess
     ): bool {
         $deadline = null;
 
-        $streams = array_filter([
-            1 => $this->pipes[1] ?? null,
-            2 => $this->pipes[2] ?? null,
-        ], is_resource(...));
+        $streams = array_filter([1 => $this->pipes[1] ?? null, 2 => $this->pipes[2] ?? null], is_resource(...));
 
         foreach ($streams as $stream) {
             stream_set_blocking($stream, false);

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\ArrayLines;
 
 /**
- * Arrays the array lines scan lists (an argument, a return, a property default) beside those it leaves alone: a
- * local value, a destructuring and the rules passed to a validate call.
+ * Arrays the array lines scan lists (a return, a property default, an argument split though it fits one line) beside
+ * those it leaves alone: an argument that fits its line, a local value, a destructuring and a validate call's rules.
  */
 final class CrampedArrays
 {
@@ -28,5 +28,13 @@ final class CrampedArrays
     public function check(): void
     {
         $this->validate(['size' => ['required', 'string'], 'count' => ['integer', 'min:1']]);
+    }
+
+    public function pick(): bool
+    {
+        return in_array('small', [
+            'small',
+            'large',
+        ], true);
     }
 }

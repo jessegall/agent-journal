@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Data\Hosts\HostFrameData;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Screens\ScreenType;
-use App\Support\Drivers\Profiles\CodexProfile;
 use App\Support\Screens\ScreenClassifier;
 use App\Support\Screens\ScreenHolds;
 use App\Support\Screens\ScreenReading;
@@ -36,7 +36,10 @@ final class CodexScreensTest extends TestCase
     {
         $families = [];
 
-        foreach ([...$this->framesOf('keyscripts/model-choice'), ...$this->framesOf('keyscripts/effort-change')] as $frame) {
+        foreach ([
+            ...$this->framesOf('keyscripts/model-choice'),
+            ...$this->framesOf('keyscripts/effort-change'),
+        ] as $frame) {
             $families[] = $this->readingOf($frame)->menu?->name;
         }
 
@@ -65,7 +68,12 @@ final class CodexScreensTest extends TestCase
 
     public function test_an_empty_composer_reads_as_ready_and_a_draft_does_not(): void
     {
-        $empty = $this->frame(['', '› Ask Codex to do anything', '', '  ? for shortcuts'], 300, cursorRow: 1, cursorColumn: 2);
+        $empty = $this->frame([
+            '',
+            '› Ask Codex to do anything',
+            '',
+            '  ? for shortcuts',
+        ], 300, cursorRow: 1, cursorColumn: 2);
         $draft = $this->frame(['', '› hello', '', '  ? for shortcuts'], 300, cursorRow: 1, cursorColumn: 7);
 
         $this->journal->assertResult(
@@ -76,7 +84,7 @@ final class CodexScreensTest extends TestCase
 
     private function readingOf(HostFrameData $frame): ScreenReading
     {
-        $layout = $this->journal->service(CodexProfile::class)->layout();
+        $layout = $this->journal->driverProfile(DefaultDrivers::CODEX)->layout();
 
         return new ScreenClassifier()->readingOf($layout, $frame);
     }

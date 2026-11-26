@@ -65,10 +65,7 @@ final readonly class NavigationRecords implements NavigationRecordsContract
             } catch (Throwable $failure) {
                 $this->log->error(
                     "The count of {$key} failed: {$failure->getMessage()}",
-                    [
-                        'key' => $key,
-                        'exception' => $failure,
-                    ],
+                    ['key' => $key, 'exception' => $failure],
                 );
             }
         }

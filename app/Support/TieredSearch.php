@@ -234,15 +234,9 @@ final readonly class TieredSearch implements TieredSearchContract
             ->orderBy($source->idColumn)
             ->limit($rowLimit)
             ->select($source->columns)
-            ->selectRaw("substr({$body->column}, ?, ?) as ".self::SEGMENT, [
-                $start,
-                self::SEGMENT_CHARACTER_LIMIT,
-            ])
+            ->selectRaw("substr({$body->column}, ?, ?) as ".self::SEGMENT, [$start, self::SEGMENT_CHARACTER_LIMIT])
             ->selectRaw("length({$body->column}) as ".self::LENGTH)
-            ->selectRaw(self::linesBefore($body->column), [
-                $start - 1,
-                $start - 1,
-            ])
+            ->selectRaw(self::linesBefore($body->column), [$start - 1, $start - 1])
             ->get());
 
         $hits = [];

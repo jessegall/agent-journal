@@ -43,13 +43,7 @@ final readonly class AskClock
             foreach ($queue as $hop) {
                 $ask = $asks[$hop->ask_id];
 
-                $start = max([
-                    $hop->accepted_at,
-                    ...array_filter([
-                        $free,
-                        $answeringDeadline,
-                    ]),
-                ]);
+                $start = max([$hop->accepted_at, ...array_filter([$free, $answeringDeadline])]);
 
                 $deadline = $start->add($this->types->get($ask->type_key)->allowance());
                 $answeringDeadline ??= $deadline;

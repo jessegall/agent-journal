@@ -45,10 +45,7 @@ final readonly class RulesWindowResolver implements PageResolver
                 LayoutPartData::field(
                     'search',
                     'Search rules',
-                    new LayoutFieldData('q', $filters->search, [
-                        'page',
-                        'rule',
-                    ]),
+                    new LayoutFieldData('q', $filters->search, ['page', 'rule']),
                 ),
             ),
             LayoutPartData::box(
@@ -78,23 +75,19 @@ final readonly class RulesWindowResolver implements PageResolver
                 LayoutPartData::action(
                     'clear',
                     'Clear search',
-                    LayoutActionData::changing([
-                        'q' => '',
-                        'page' => '',
-                        'rule' => '',
-                    ]),
+                    LayoutActionData::changing(['q' => '', 'page' => '', 'rule' => '']),
                 ),
             );
         }
 
-        $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->state === RuleStatus::Proposed);
+        $isAwaitingReview = array_any($page->rules, fn (RuleView $rule) => $rule->status === RuleStatus::Proposed);
 
         $rows = array_map(
             fn (RuleView $rule) => LayoutRowData::from(
                 [
                     'key' => $rule->id,
                     'label' => $rule->text,
-                    'value' => "{$rule->number} · {$rule->state->label()}",
+                    'value' => "{$rule->number} · {$rule->status->label()}",
                     'query' => ['rule' => $rule->id],
                     'isCurrent' => $rule->id === $selected,
                 ],
@@ -110,10 +103,7 @@ final readonly class RulesWindowResolver implements PageResolver
             'list',
             'stack',
             ...$review,
-            ...[
-                LayoutPartData::collection('rows', 'list', $rows),
-                $this->pagerOf($page),
-            ],
+            ...[LayoutPartData::collection('rows', 'list', $rows), $this->pagerOf($page)],
         );
     }
 
@@ -159,7 +149,7 @@ final readonly class RulesWindowResolver implements PageResolver
                 'meta',
                 'row',
                 LayoutPartData::text('title', "Rule {$shown->number}", 'heading'),
-                LayoutPartData::badge('state', $shown->state->label(), $shown->state->tone()),
+                LayoutPartData::badge('state', $shown->status->label(), $shown->status->tone()),
             ),
             LayoutPartData::text('text', $shown->text, 'paragraph'),
         ];
@@ -180,10 +170,7 @@ final readonly class RulesWindowResolver implements PageResolver
         $review = fn (string $key, string $route, string $label, string $style) => LayoutPartData::form(
             $key,
             LayoutFormData::from(
-                [
-                    'method' => ActionMethod::Patch,
-                    'href' => route($route, ['rule' => $rule->number], false),
-                ],
+                ['method' => ActionMethod::Patch, 'href' => route($route, ['rule' => $rule->number], false)],
             ),
             'inline',
             LayoutPartData::action('send', $label, LayoutActionData::submitting(), $style),

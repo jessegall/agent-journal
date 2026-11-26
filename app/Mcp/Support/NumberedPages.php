@@ -87,10 +87,7 @@ final readonly class NumberedPages implements NumberedPagesContract
                 $this->rest($continuation, $page, $retainedCards->offsets[array_keys($cards)[$count]]),
             ],
             $page->hasNextPage() => [
-                new NextAction($continuation->tool, [
-                    ...$continuation->filters,
-                    'page' => $page->page + 1,
-                ]),
+                new NextAction($continuation->tool, [...$continuation->filters, 'page' => $page->page + 1]),
             ],
             default => [],
         };

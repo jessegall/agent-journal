@@ -284,10 +284,7 @@ final class AgentStatusRules
     private static function isWakeRefused(DriverRequestStatus|null $request): bool
     {
         return $request?->operation === DriverOperation::Wake
-            && in_array($request->progress, [
-                RequestProgress::Failed,
-                RequestProgress::Unavailable,
-            ], true);
+            && in_array($request->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
     }
 
     private static function failedRequest(AgentEvidence $evidence, DriverRequestStatus $request): AgentStatus
@@ -374,10 +371,7 @@ final class AgentStatusRules
             new StatusOperation($start->requestId, 'start', $start->version(), 1),
             null,
             null,
-            [
-                ...$primary,
-                StatusAction::of(StatusActionType::Dismiss),
-            ],
+            [...$primary, StatusAction::of(StatusActionType::Dismiss)],
         );
     }
 
@@ -410,12 +404,12 @@ final class AgentStatusRules
      * @param  list<StatusAction>  $actions
      */
     private static function plain(
-        SessionActivityStatus $state,
+        SessionActivityStatus $status,
         AgentEvidence $evidence,
         array $actions,
         StatusOperation|null $operation = null,
     ): AgentStatus {
-        return self::labelled($state, $state->label(), $evidence, $actions, $operation);
+        return self::labelled($status, $status->label(), $evidence, $actions, $operation);
     }
 
     /**
@@ -425,7 +419,7 @@ final class AgentStatusRules
      * @param  list<StatusAction>  $actions
      */
     private static function labelled(
-        SessionActivityStatus $state,
+        SessionActivityStatus $status,
         string $label,
         AgentEvidence $evidence,
         array $actions,
@@ -439,17 +433,14 @@ final class AgentStatusRules
             : [];
 
         return new AgentStatus(
-            $state,
+            $status,
             $commandOutcome === null ? $label : "{$label} · {$commandOutcome}",
             $reason,
             null,
             $operation,
             $commandOutcome,
             $evidence->runtime?->observationAgeSeconds,
-            [
-                ...$actions,
-                ...$dismiss,
-            ],
+            [...$actions, ...$dismiss],
             $evidence->sessionProcess === SessionProcessStatus::Running,
         );
     }

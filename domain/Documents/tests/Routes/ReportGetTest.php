@@ -31,8 +31,6 @@ final class ReportGetTest extends GuardedRouteEntryTestCase
         $report = $journal->run(new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'report' => $report->number,
-            ]);
+            ->parameters(['report' => $report->number]);
     }
 }

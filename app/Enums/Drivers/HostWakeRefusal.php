@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Drivers;
 
-use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Enums\Sessions\StartRefusalType;
 
 /**
@@ -38,18 +38,18 @@ enum HostWakeRefusal: string
     /**
      * The start refusal this host reason is kept as on the start's receipt, so it reads in the refusal's own words.
      */
-    public function startReason(): StartRefusalType|HostRefusal
+    public function startReason(): StartRefusalType|StartRefusalReason
     {
         return match ($this) {
             self::ContainerUnavailable => StartRefusalType::ContainerUnavailable,
             self::ImageUnverified => StartRefusalType::ImageUnverified,
             self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
-            self::ProtectedAccountFolderRejected => HostRefusal::AccountFolderRejected,
-            self::PinnedBuildMissing => HostRefusal::PinnedBuildMissing,
-            self::NotSignedIn => HostRefusal::NotSignedIn,
-            self::ConversationUnknown => HostRefusal::ConversationUnknown,
+            self::ProtectedAccountFolderRejected => StartRefusalReason::AccountFolderRejected,
+            self::PinnedBuildMissing => StartRefusalReason::PinnedBuildMissing,
+            self::NotSignedIn => StartRefusalReason::NotSignedIn,
+            self::ConversationUnknown => StartRefusalReason::ConversationUnknown,
             // no_observation answers Check status, never a start, so on a start's wake it is no reason the start knows
-            self::NoObservation, self::Unknown => HostRefusal::Unknown,
+            self::NoObservation, self::Unknown => StartRefusalReason::Unknown,
         };
     }
 }

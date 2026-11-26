@@ -15,6 +15,6 @@ final readonly class ShareSummary
     public function __construct(
         public string $shareId,
         public int $number,
-        public ShareStatus $state,
+        public ShareStatus $status,
     ) {}
 }

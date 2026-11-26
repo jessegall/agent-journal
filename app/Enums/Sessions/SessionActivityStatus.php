@@ -32,11 +32,7 @@ enum SessionActivityStatus: string
      */
     public function isStartRefused(): bool
     {
-        return in_array($this, [
-            self::Refused,
-            self::NoCapacity,
-            self::WaitingForSignIn,
-        ], true);
+        return in_array($this, [self::Refused, self::NoCapacity, self::WaitingForSignIn], true);
     }
 
     /**

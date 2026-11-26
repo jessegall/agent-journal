@@ -80,7 +80,7 @@ func RunProjectCommand(
 // CommandStatus mirrors App\Api\Connections\ProjectCommandStatus: where a request id's run stands and, once it
 // settled with an outcome, the frames it recorded, ending with its exit frame.
 type CommandStatus struct {
-	State  string         `json:"state"`
+	Status string         `json:"status"`
 	Frames []CommandFrame `json:"frames"`
 }
 
@@ -94,8 +94,8 @@ const (
 
 // IsSettled is whether the run ended with an outcome whose frames the status carries.
 func (status CommandStatus) IsSettled() bool {
-	return status.State != CommandRunning && status.State != CommandCancellationRequested &&
-		status.State != CommandInterrupted && status.State != CommandUnknown
+	return status.Status != CommandRunning && status.Status != CommandCancellationRequested &&
+		status.Status != CommandInterrupted && status.Status != CommandUnknown
 }
 
 // ReadProjectCommandStatus reads, signed with the grant, what became of this agent's verb of the request id on the

@@ -26,8 +26,8 @@ defineProps<{ release: ReleaseOfferData }>();
             </template>
             <template v-else>
                 <li>
-                    {{ target.name }} is not offered yet, because it does not
-                    run {{ target.missingProviders.join(' or ') }}.
+                    {{ target.name }} is not offered yet: the release does not
+                    say what it needs installed first.
                 </li>
             </template>
         </template>

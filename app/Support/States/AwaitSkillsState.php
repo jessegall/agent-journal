@@ -67,7 +67,7 @@ final class AwaitSkillsState extends AgentState implements UniqueState
 
     public function onSkillPublicationMoved(SkillPublicationMoved $event): void
     {
-        $this->publication = $event->state;
+        $this->publication = $event->status;
     }
 
     // ----------[ Internals ]----------

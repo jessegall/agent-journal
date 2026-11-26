@@ -217,10 +217,7 @@ foreach ($trees as $file => [$source, $tree]) {
 }
 
 if ($failures !== []) {
-    exit(fail([
-        'Nothing was written:',
-        ...$failures,
-    ]));
+    exit(fail(['Nothing was written:', ...$failures]));
 }
 
 foreach ($rewritten as $file => $result) {

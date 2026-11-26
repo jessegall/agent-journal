@@ -44,10 +44,7 @@ final readonly class TaskExecutions
             array_values($tasks->map(fn (Task $task) => $task->focusIdentity())->all()),
         );
 
-        $labels = $this->labels->labelsFor([
-            ...array_values($runners),
-            ...array_values($focusers),
-        ]);
+        $labels = $this->labels->labelsFor([...array_values($runners), ...array_values($focusers)]);
 
         return $tasks->mapWithKeys(fn (Task $task) => [
             $task->id => isset($runners[$task->id])

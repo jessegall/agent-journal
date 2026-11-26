@@ -285,11 +285,11 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
 
     // ----------[ Internals ]----------
 
-    private function moveTo(JobStatus $state): void
+    private function moveTo(JobStatus $status): void
     {
         $this->assertNotFinished();
 
-        $this->status = $state;
+        $this->status = $status;
     }
 
     // ----------[ Queries ]----------
@@ -334,8 +334,8 @@ final class HelperJob extends JournalModel implements Assignable, EventSource, P
     protected function open(Builder $query): void
     {
         $query->whereNotIn('status', array_map(
-            fn (JobStatus $state) => $state->value,
-            array_filter(JobStatus::cases(), fn (JobStatus $state) => $state->isFinal()),
+            fn (JobStatus $status) => $status->value,
+            array_filter(JobStatus::cases(), fn (JobStatus $status) => $status->isFinal()),
         ));
     }
 

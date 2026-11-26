@@ -24,10 +24,7 @@ return new class extends Migration
             $table->timestampTz('last_health_at')->nullable();
             $table->timestampsTz();
 
-            $table->unique([
-                'share_gateway_configuration_id',
-                'endpoint_version',
-            ]);
+            $table->unique(['share_gateway_configuration_id', 'endpoint_version']);
         });
     }
 

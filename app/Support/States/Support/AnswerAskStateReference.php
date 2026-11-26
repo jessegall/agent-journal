@@ -23,10 +23,7 @@ final class AnswerAskStateReference extends StateReferenceFactory
     {
         return self::about(
             new SubjectReference($hop->id, $hop->version),
-            [
-                'askId' => $hop->ask_id,
-                'hopId' => $hop->id,
-            ],
+            ['askId' => $hop->ask_id, 'hopId' => $hop->id],
         );
     }
 }

@@ -11,7 +11,7 @@ use Domain\Documents\Enums\AttentionStatus;
  */
 final readonly class ReportReadCard
 {
-    public function __construct(public int $number, public string $id, public AttentionStatus $state) {}
+    public function __construct(public int $number, public string $id, public AttentionStatus $status) {}
 
     /**
      * @return array{report_id: int, record_id: string, state: string}
@@ -21,7 +21,7 @@ final readonly class ReportReadCard
         return [
             'report_id' => $this->number,
             'record_id' => $this->id,
-            'state' => $this->state->value,
+            'state' => $this->status->value,
         ];
     }
 }

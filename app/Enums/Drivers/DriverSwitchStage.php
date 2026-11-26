@@ -26,12 +26,7 @@ enum DriverSwitchStage: string
      */
     public function isFinal(): bool
     {
-        return in_array($this, [
-            self::Refused,
-            self::Confirmed,
-            self::StartFailed,
-            self::Cancelled,
-        ], true);
+        return in_array($this, [self::Refused, self::Confirmed, self::StartFailed, self::Cancelled], true);
     }
 
     /**
@@ -57,10 +52,7 @@ enum DriverSwitchStage: string
      */
     public function isUnconfirmed(): bool
     {
-        return in_array($this, [
-            self::StopUnconfirmed,
-            self::StartUnconfirmed,
-        ], true);
+        return in_array($this, [self::StopUnconfirmed, self::StartUnconfirmed], true);
     }
 
     /**
@@ -69,12 +61,7 @@ enum DriverSwitchStage: string
      */
     public function blocksWriter(): bool
     {
-        return in_array($this, [
-            self::Stopping,
-            self::StopUnconfirmed,
-            self::Starting,
-            self::StartUnconfirmed,
-        ], true);
+        return in_array($this, [self::Stopping, self::StopUnconfirmed, self::Starting, self::StartUnconfirmed], true);
     }
 
     public function mayMoveTo(self $next): bool

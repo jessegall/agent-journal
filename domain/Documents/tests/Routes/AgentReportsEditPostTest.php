@@ -42,8 +42,6 @@ final class AgentReportsEditPostTest extends GuardedRouteEntryTestCase
         $report = $journal->runAs('Writer', new CreateReportCommand('Check', 'What we found', "Text\n", TestProjects::local()->id));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'number' => (string) $report->number,
-            ]);
+            ->payload(['number' => (string) $report->number]);
     }
 }

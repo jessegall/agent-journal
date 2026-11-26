@@ -279,9 +279,6 @@ final class SequenceRun extends JournalModel implements AuthoredModel, Dockable,
     #[Scope]
     protected function onePerFollower(Builder $query): void
     {
-        $query->whereNotNull('actor_id')->select([
-            'actor_type',
-            'actor_id',
-        ])->groupBy('actor_type', 'actor_id');
+        $query->whereNotNull('actor_id')->select(['actor_type', 'actor_id'])->groupBy('actor_type', 'actor_id');
     }
 }

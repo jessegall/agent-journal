@@ -44,13 +44,13 @@ const endedWords: Record<string, string> = {
     cancelled: 'This sign-in was cancelled.',
     expired: 'This sign-in expired. Start it again to continue.',
 };
-const endedText = computed(() => (props.attempt === undefined ? null : (endedWords[props.attempt.state] ?? null)));
+const endedText = computed(() => (props.attempt === undefined ? null : (endedWords[props.attempt.status] ?? null)));
 const isStarting = computed(
     () =>
         props.attempt === undefined ||
         isWaitingForAgents.value ||
         (props.method.isSecret
-            ? props.attempt.state !== 'waiting'
+            ? props.attempt.status !== 'waiting'
             : props.actions.challenge.value.address === null),
 );
 

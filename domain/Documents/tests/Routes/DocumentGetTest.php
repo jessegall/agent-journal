@@ -31,8 +31,6 @@ final class DocumentGetTest extends GuardedRouteEntryTestCase
         $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ]);
+            ->parameters(['document' => $document->number]);
     }
 }

@@ -37,10 +37,7 @@ final readonly class TaskGraphVersion
         sort($states);
         sort($edges);
 
-        return hash('sha256', json_encode([
-            $states,
-            $edges,
-        ], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([$states, $edges], JSON_THROW_ON_ERROR));
     }
 
     /**

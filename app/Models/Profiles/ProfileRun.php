@@ -163,14 +163,14 @@ final class ProfileRun extends JournalModel implements EventSource, ReadableMode
     /**
      * Ends the run in a finished state with what it told the actor and how many unchanged returns led to it.
      */
-    public function finish(ProfileRunStatus $state, string $message, int $unchangedReturns): void
+    public function finish(ProfileRunStatus $status, string $message, int $unchangedReturns): void
     {
-        $this->status = $state;
+        $this->status = $status;
         $this->message = $message;
         $this->unchanged_returns = $unchangedReturns;
         $this->awaited_step = null;
         $this->assertSaved($this->save());
-        $this->raise(new ProfileRunFinished($this->id, $state));
+        $this->raise(new ProfileRunFinished($this->id, $status));
     }
 
     // ----------[ Predicates ]----------

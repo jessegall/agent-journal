@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Commands\Agents\StartSwitchReplacement\StartSwitchReplacementCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
@@ -21,7 +22,6 @@ use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Sessions\SessionRequest;
 use App\Support\AgentSessions;
-use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
 use App\Support\ProposedProfile;
 use App\Support\StartReceipt;
@@ -133,7 +133,12 @@ final class StartSwitchReplacementTest extends TestCase
         $record = SessionRequest::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::linkType());
 
-        return [$record->family, $record->driver_type, $record->account_chosen, $account->id];
+        return [
+            $record->family,
+            $record->driver_type,
+            $record->account_chosen,
+            $account->id,
+        ];
     }
 
     private static function main(ModelTier $tier, string $preferredDriver): ProposedProfile

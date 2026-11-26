@@ -14,9 +14,9 @@ declare(strict_types=1);
  *   echo '{"account":"...","working_roots":"...","root":"...","tables":["..."]}' | php tools/accounts/prepare-codex.php
  */
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Enums\Sessions\TransportProfileType;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\DefaultDrivers;
 use App\Support\Drivers\AccountConfigurationWrite;
 use App\Support\Drivers\CodexFolderTrust;
 use App\Support\Drivers\CodexJournalServer;
@@ -28,10 +28,7 @@ $workingRoots = realpath((string) $request['working_roots']);
 $name = (string) $request['root'];
 $transport = TransportProfileType::from($request['transport_profile'] ?? TransportProfileType::Mcp->value);
 
-if ($workingRoots === false || $name === '' || basename($name) !== $name || in_array($name, [
-    '.',
-    '..',
-], true)) {
+if ($workingRoots === false || $name === '' || basename($name) !== $name || in_array($name, ['.', '..'], true)) {
     fwrite(STDERR, "The working roots folder or the root's name is not usable.\n");
     exit(2);
 }

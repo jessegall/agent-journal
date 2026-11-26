@@ -42,9 +42,6 @@ final class LocationGetTest extends GuardedRouteEntryTestCase
         $target = $journal->service(RecordResolver::class)->identify(RecordReference::parse($reference));
         $commentId = $journal->run(new PostCommentCommand($target, 'Is this still open?', (string) Str::uuid()));
 
-        return RouteCall::as(Caller::User)->query([
-            'target' => $reference,
-            'comment' => $commentId,
-        ]);
+        return RouteCall::as(Caller::User)->query(['target' => $reference, 'comment' => $commentId]);
     }
 }

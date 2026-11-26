@@ -53,48 +53,63 @@ final class StateMethodsTest extends TestCase
      */
     public static function invalidMethods(): iterable
     {
-        yield 'event name' => [new class extends AgentState
-        {
-            public function onTaskStart(TaskStarted $event): null
+        yield 'event name' => [
+            new class extends AgentState
             {
-                return null;
-            }
-        }, '::onTaskStart must be named onTaskStarted.'];
+                public function onTaskStart(TaskStarted $event): null
+                {
+                    return null;
+                }
+            },
+            '::onTaskStart must be named onTaskStarted.',
+        ];
 
-        yield 'non-concrete parameter' => [new class extends AgentState
-        {
-            public function onTaskStarted(Event $event): null
+        yield 'non-concrete parameter' => [
+            new class extends AgentState
             {
-                return null;
-            }
-        }, '::onTaskStarted must be a public instance method with one required Event.'];
+                public function onTaskStarted(Event $event): null
+                {
+                    return null;
+                }
+            },
+            '::onTaskStarted must be a public instance method with one required Event.',
+        ];
 
-        yield 'static method' => [new class extends AgentState
-        {
-            public static function onTaskStarted(TaskStarted $event): null
+        yield 'static method' => [
+            new class extends AgentState
             {
-                return null;
-            }
-        }, '::onTaskStarted must be a public instance method with one required Event.'];
+                public static function onTaskStarted(TaskStarted $event): null
+                {
+                    return null;
+                }
+            },
+            '::onTaskStarted must be a public instance method with one required Event.',
+        ];
 
-        yield 'nullable answer' => [new class extends AgentState
-        {
-            public function onTaskStarted(TaskStarted $event): Decision|null
+        yield 'nullable answer' => [
+            new class extends AgentState
             {
-                return null;
-            }
-        }, '::onTaskStarted must return void or what a hook returns'];
+                public function onTaskStarted(TaskStarted $event): Decision|null
+                {
+                    return null;
+                }
+            },
+            '::onTaskStarted must return void or what a hook returns',
+        ];
 
-        yield 'array answer' => [new class extends AgentState
-        {
-            /**
-             * @return list<Decision>
-             */
-            public function onTaskStarted(TaskStarted $event): array
+        yield 'array answer' => [
+            new class extends AgentState
             {
-                return [Decision::delegate()];
-            }
-        }, '::onTaskStarted must return void or what a hook returns'];
+                /**
+                 * @return list<Decision>
+                 */
+                public function onTaskStarted(TaskStarted $event): array
+                {
+                    return [Decision::delegate()];
+                }
+            },
+            '::onTaskStarted must return void or what a hook returns',
+        ];
     }
 
     public function test_an_event_method_may_answer_with_a_command_or_a_delegate_decision(): void

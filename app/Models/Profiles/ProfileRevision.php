@@ -178,10 +178,7 @@ final class ProfileRevision extends JournalModel implements ReadableModel
         }
 
         return self::query()->currentOfProfiles($keys)
-            ->select([
-                'profiles.key as profile_key',
-                'profile_revisions.script_source',
-            ])
+            ->select(['profiles.key as profile_key', 'profile_revisions.script_source'])
             ->readExactly(count($keys))
             ->get()
             ->mapWithKeys(fn (self $revision) => [
@@ -198,10 +195,7 @@ final class ProfileRevision extends JournalModel implements ReadableModel
 
         self::query()
             ->currentOfUnretiredProfiles()
-            ->select([
-                'profile_revisions.*',
-                'profiles.key as profile_key',
-            ])
+            ->select(['profile_revisions.*', 'profiles.key as profile_key'])
             ->readInChunks(50, function ($revisions) use (&$profiles): void {
                 foreach ($revisions as $revision) {
                     $profiles[] = new SupervisorProfile(

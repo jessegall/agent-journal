@@ -15,7 +15,7 @@ use Spatie\LaravelData\Data;
 abstract class AdmissionFetched extends Data implements PropertyMorphableData
 {
     #[PropertyForMorph]
-    public AdmissionStatus $state;
+    public AdmissionStatus $status;
 
     /**
      * @param  array{state: AdmissionStatus}  $properties

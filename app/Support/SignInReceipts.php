@@ -28,7 +28,7 @@ final readonly class SignInReceipts
         }
 
         $receipt = $answers[0];
-        $state = $receipt->isExpired ? ReceiptStatus::Expired : $receipt->state;
+        $state = $receipt->isExpired ? ReceiptStatus::Expired : $receipt->status;
 
         return match ($state) {
             ReceiptStatus::Completed => $this->startedFrom($receipt->fields),

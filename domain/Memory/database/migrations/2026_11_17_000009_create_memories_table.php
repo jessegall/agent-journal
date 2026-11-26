@@ -22,15 +22,9 @@ return new class extends Migration
             $table->unsignedInteger('revision')->default(1);
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
 
-            $table->index([
-                'actor_type',
-                'actor_id',
-            ]);
+            $table->index(['actor_type', 'actor_id']);
         });
 
         DB::statement('ALTER TABLE memories ADD CONSTRAINT memories_number_positive CHECK (number > 0)');

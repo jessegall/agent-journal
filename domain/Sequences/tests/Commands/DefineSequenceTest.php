@@ -35,13 +35,7 @@ final class DefineSequenceTest extends TestCase
 
         $sequence = Sequence::query()->findOrFail($sequenceId);
 
-        $this->assertSame([
-            'Release',
-            1,
-        ], [
-            $sequence->name,
-            $sequence->version,
-        ]);
+        $this->assertSame(['Release', 1], [$sequence->name, $sequence->version]);
 
         $this->assertEquals([self::step('tests')->toArray()], $sequence->steps->toArray());
 

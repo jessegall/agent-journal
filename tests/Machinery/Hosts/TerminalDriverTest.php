@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Processes\TerminalDriver;
 use App\Commands\Drivers\NotifyEntryReplayed\NotifyEntryReplayedCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
@@ -20,8 +22,6 @@ use App\Enums\Drivers\RequestProgress;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Navigation\NavigationKey;
 use App\Enums\Navigation\NavigationReason;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\Processes\TerminalDriver;
 use App\Support\NavigationRaiseAnswer;
 use App\Support\Reflector;
 use App\Values\ClaimedRequest;
@@ -111,12 +111,23 @@ final class TerminalDriverTest extends TestCase
 
         $host->assertTypedThrough(6);
         $this->journal->assertResult(
-            [true, true, [$this->pasted($inputs[2]), $this->pasted($inputs[5])], [2, 1, 2]],
+            [true, true, [
+                $this->pasted($inputs[2]),
+                $this->pasted($inputs[5]),
+            ], [
+                2,
+                1,
+                2,
+            ]],
             [
                 $this->hasOrdered(StopHostProcessCommand::class),
                 $this->isHeldFor(HoldReason::TrustRequired),
                 $this->pastes,
-                [$this->keyOrdersOf('deliver-1'), $this->keyOrdersOf('interrupt-1'), $this->keyOrdersOf('deliver-2')],
+                [
+                    $this->keyOrdersOf('deliver-1'),
+                    $this->keyOrdersOf('interrupt-1'),
+                    $this->keyOrdersOf('deliver-2'),
+                ],
             ],
         );
     }
@@ -148,11 +159,19 @@ final class TerminalDriverTest extends TestCase
         // Codex takes no bracketed paste: each prompt is typed as it is.
         $host->assertTypedThrough(4);
         $this->journal->assertResult(
-            [true, [], [2, 1, 2]],
+            [true, [], [
+                2,
+                1,
+                2,
+            ]],
             [
                 $this->hasOrdered(StopHostProcessCommand::class),
                 $this->pastes,
-                [$this->keyOrdersOf('deliver-1'), $this->keyOrdersOf('interrupt-1'), $this->keyOrdersOf('deliver-2')],
+                [
+                    $this->keyOrdersOf('deliver-1'),
+                    $this->keyOrdersOf('interrupt-1'),
+                    $this->keyOrdersOf('deliver-2'),
+                ],
             ],
         );
     }

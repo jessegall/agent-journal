@@ -81,35 +81,26 @@ final readonly class DocumentApi
     public function editReport(
         string $number,
     ): ApiAccepted {
-        return $this->sender->send(EditReportPayload::from([
-            'number' => $number,
-        ]));
+        return $this->sender->send(EditReportPayload::from(['number' => $number]));
     }
 
     public function inspectDocument(
         string $number,
     ): RecordInspection {
-        return $this->sender->send(InspectDocumentPayload::from([
-            'number' => $number,
-        ]));
+        return $this->sender->send(InspectDocumentPayload::from(['number' => $number]));
     }
 
     public function inspectReport(
         string $number,
     ): RecordInspection {
-        return $this->sender->send(InspectReportPayload::from([
-            'number' => $number,
-        ]));
+        return $this->sender->send(InspectReportPayload::from(['number' => $number]));
     }
 
     public function listDocumentRevisions(
         string $number,
         int $page = 1,
     ): RevisionList {
-        return $this->sender->send(ListDocumentRevisionsPayload::from([
-            'number' => $number,
-            'page' => $page,
-        ]));
+        return $this->sender->send(ListDocumentRevisionsPayload::from(['number' => $number, 'page' => $page]));
     }
 
     public function listDocuments(
@@ -252,27 +243,19 @@ final readonly class DocumentApi
         string $number,
         int $revision,
     ): RevisionView {
-        return $this->sender->send(ShowDocumentRevisionPayload::from([
-            'number' => $number,
-            'revision' => $revision,
-        ]));
+        return $this->sender->send(ShowDocumentRevisionPayload::from(['number' => $number, 'revision' => $revision]));
     }
 
     public function showDraft(
         string $number,
     ): DraftView {
-        return $this->sender->send(ShowDraftPayload::from([
-            'number' => $number,
-        ]));
+        return $this->sender->send(ShowDraftPayload::from(['number' => $number]));
     }
 
     public function showReport(
         string $number,
         TextSelection $selection = new TextSelection(),
     ): RecordText {
-        return $this->sender->send(ShowReportPayload::from([
-            'number' => $number,
-            'selection' => $selection,
-        ]));
+        return $this->sender->send(ShowReportPayload::from(['number' => $number, 'selection' => $selection]));
     }
 }

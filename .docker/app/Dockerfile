@@ -161,13 +161,12 @@ RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/ap
 COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
 
 # Compose cannot chown a named volume: a volume mounted on an empty folder of the image takes its owner and mode on
-# first use, so the agent host's state and start socket folders and the accounts folder are made here, owner-only for
-# 10001.
+# first use, so the agent host's state folder and the accounts folder are made here, owner-only for 10001.
 RUN groupadd --gid 10001 journal \
     && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
-    && mkdir -p /var/lib/journal-host /run/journal-start /srv/journal/accounts \
-    && chown 10001:10001 /var/lib/journal-host /run/journal-start /srv/journal/accounts \
-    && chmod 0700 /var/lib/journal-host /run/journal-start /srv/journal/accounts
+    && mkdir -p /var/lib/journal-host /srv/journal/accounts \
+    && chown 10001:10001 /var/lib/journal-host /srv/journal/accounts \
+    && chmod 0700 /var/lib/journal-host /srv/journal/accounts
 
 COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
 

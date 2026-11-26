@@ -33,14 +33,10 @@ final class OpenDocumentPostTest extends GuardedRouteEntryTestCase
         $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
+            ->parameters(['document' => $document->number])
             ->reply(OpenDocumentCommand::class, new DraftReference($document->id, $document->number, 'edit-1', 1, 1, [
                 '# Design',
             ]))
-            ->expects(OpenDocumentCommand::class, [
-                'documentNumber' => (string) $document->number,
-            ]);
+            ->expects(OpenDocumentCommand::class, ['documentNumber' => (string) $document->number]);
     }
 }

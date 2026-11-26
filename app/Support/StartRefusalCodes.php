@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Enums\Sessions\StartPreflightRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartUnavailableReason;
 
@@ -17,19 +17,19 @@ use App\Enums\Sessions\StartUnavailableReason;
 final class StartRefusalCodes
 {
     /**
-     * @var list<class-string<StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal>>
+     * @var list<class-string<StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|StartRefusalReason>>
      */
     private const array REASONS = [
         StartRefusalType::class,
         StartPreflightRefusal::class,
         ResumeRefusal::class,
         StartUnavailableReason::class,
-        HostRefusal::class,
+        StartRefusalReason::class,
     ];
 
     public static function reasonOf(
         string $code,
-    ): StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal {
+    ): StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|StartRefusalReason {
         foreach (self::REASONS as $reasons) {
             $reason = $reasons::tryFrom($code);
 
@@ -38,6 +38,6 @@ final class StartRefusalCodes
             }
         }
 
-        return HostRefusal::Unknown;
+        return StartRefusalReason::Unknown;
     }
 }

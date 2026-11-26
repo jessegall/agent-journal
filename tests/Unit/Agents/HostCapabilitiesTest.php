@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Files\Files;
 use App\Contracts\Hosts\HostCapabilities as HostCapabilitiesContract;
 use App\Enums\Accounts\AccountModeType;
@@ -15,7 +16,6 @@ use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\CapabilityMatrixInvalid;
 use App\Exceptions\HostCapabilityUnsupported;
 use App\Resolvers\HostCapabilities;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapabilityQuery;
 use Tests\TestCase;
 

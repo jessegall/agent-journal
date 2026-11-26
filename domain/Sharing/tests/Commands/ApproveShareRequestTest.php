@@ -102,10 +102,7 @@ final class ApproveShareRequestTest extends TestCase
     {
         $facts = [];
 
-        Event::listen([
-            ShareRequested::class,
-            ShareCreated::class,
-        ], function (object $fact) use (&$facts): void {
+        Event::listen([ShareRequested::class, ShareCreated::class], function (object $fact) use (&$facts): void {
             $facts[] = [
                 $fact::class,
                 $fact->share->state,
@@ -132,13 +129,7 @@ final class ApproveShareRequestTest extends TestCase
 
         $granted = Share::query()->findOrFail($proposal->id);
 
-        $this->assertSame([
-            $proposal->id,
-            ShareStatus::Pending,
-        ], [
-            $summary->shareId,
-            $summary->state,
-        ]);
+        $this->assertSame([$proposal->id, ShareStatus::Pending], [$summary->shareId, $summary->state]);
 
         $this->assertSame($this->owner->id, $granted->owner_user_id);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $granted->scope_version);
@@ -162,16 +153,7 @@ final class ApproveShareRequestTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                [
-                    ShareRequested::class,
-                    ShareStatus::Proposed,
-                ],
-                [
-                    ShareCreated::class,
-                    ShareStatus::Pending,
-                ],
-            ],
+            [[ShareRequested::class, ShareStatus::Proposed], [ShareCreated::class, ShareStatus::Pending]],
             $facts,
         );
 

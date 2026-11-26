@@ -37,11 +37,7 @@ final class AgentRequestPostTest extends GuardedRouteEntryTestCase
         $root = Document::query()->findOrFail($document->id)->shareIdentity();
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'alias' => 'doc',
-                'number' => (string) $document->number,
-                'request_key' => 'share-1',
-            ])
+            ->payload(['alias' => 'doc', 'number' => (string) $document->number, 'request_key' => 'share-1'])
             ->reply(RequestShareCommand::class, new ShareProposalStatus(1, ShareStatus::Proposed))
             ->expects(RequestShareCommand::class, [
                 'rootType' => $root->type,

@@ -46,14 +46,11 @@ final readonly class ProjectWindowResolver implements PageResolver
 
         $open = $this->request->openFolders();
 
-        $answers = $this->files->folders($binding, [
-            '',
-            ...$open,
-        ]);
+        $answers = $this->files->folders($binding, ['', ...$open]);
 
         $root = $answers->of('');
 
-        $state = match ($root->state) {
+        $state = match ($root->status) {
             ProjectReadStatus::Answered => ProjectWindowStatus::Ready,
             ProjectReadStatus::Pending => ProjectWindowStatus::Pending,
             ProjectReadStatus::Failed, ProjectReadStatus::Expired => ProjectWindowStatus::Failed,
@@ -70,13 +67,13 @@ final readonly class ProjectWindowResolver implements PageResolver
      * @param  list<ProjectTreeEntryData>  $entries
      */
     private function window(
-        ProjectWindowStatus $state,
+        ProjectWindowStatus $status,
         string|null $projectLabel,
         string|null $machineLabel,
         array $entries = [],
     ): ProjectWindowData {
         return ProjectWindowData::from([
-            'state' => $state,
+            'status' => $status,
             'projectLabel' => $projectLabel,
             'machineLabel' => $machineLabel,
             'connectAddress' => route('connections.connect', absolute: false),
@@ -104,12 +101,9 @@ final readonly class ProjectWindowResolver implements PageResolver
                 'isFolder' => $entry->isFolder,
                 'size' => $entry->size,
                 'isOpen' => $isOpen,
-                'isLoading' => $answer?->state === ProjectReadStatus::Pending,
-                'isFailed' => in_array($answer?->state, [
-                    ProjectReadStatus::Failed,
-                    ProjectReadStatus::Expired,
-                ], true),
-                'children' => $answer?->state === ProjectReadStatus::Answered
+                'isLoading' => $answer?->status === ProjectReadStatus::Pending,
+                'isFailed' => in_array($answer?->status, [ProjectReadStatus::Failed, ProjectReadStatus::Expired], true),
+                'children' => $answer?->status === ProjectReadStatus::Answered
                     ? $this->tree($answers, $path, $answer->entries, $open)
                     : [],
             ]);

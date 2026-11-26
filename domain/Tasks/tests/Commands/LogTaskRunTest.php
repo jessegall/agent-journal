@@ -64,28 +64,13 @@ final class LogTaskRunTest extends TestCase
         $older = $log->before($task->id, (int) $newest->olderBefore, 2);
         $newer = $log->after($task->id, 3, 10);
 
-        $this->assertSame([
-            'Line 4.',
-            'Line 5.',
-        ], self::texts($newest->lines));
+        $this->assertSame(['Line 4.', 'Line 5.'], self::texts($newest->lines));
 
-        $this->assertSame([
-            4,
-            5,
-        ], [
-            $newest->olderBefore,
-            $newest->newerAfter,
-        ]);
+        $this->assertSame([4, 5], [$newest->olderBefore, $newest->newerAfter]);
 
-        $this->assertSame([
-            'Line 2.',
-            'Line 3.',
-        ], self::texts($older->lines));
+        $this->assertSame(['Line 2.', 'Line 3.'], self::texts($older->lines));
 
-        $this->assertSame([
-            'Line 4.',
-            'Line 5.',
-        ], self::texts($newer->lines));
+        $this->assertSame(['Line 4.', 'Line 5.'], self::texts($newer->lines));
 
         $this->assertSame([1], array_values(array_unique(array_map(
             fn (TaskLogLine $line) => $line->runNumber,

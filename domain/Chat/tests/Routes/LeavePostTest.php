@@ -35,14 +35,7 @@ final class LeavePostTest extends GuardedRouteEntryTestCase
             $journal->actorCalled('Sam'),
         ]));
 
-        return RouteCall::recorded('chat-leave', [
-            '01JPAGEREQUESTINBOX0000000' => $group,
-        ])
-            ->expects(LeaveInboxCommand::class, [
-                'inboxId' => $group,
-                'actors' => [
-                    $journal->actorCalled('Owner'),
-                ],
-            ]);
+        return RouteCall::recorded('chat-leave', ['01JPAGEREQUESTINBOX0000000' => $group])
+            ->expects(LeaveInboxCommand::class, ['inboxId' => $group, 'actors' => [$journal->actorCalled('Owner')]]);
     }
 }

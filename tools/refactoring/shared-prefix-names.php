@@ -153,10 +153,7 @@ function renamesIn(ClassMethod $method, string $old, string $new): array
 {
     $replacements = [];
     $variables = new NodeFinder()->find(
-        [
-            ...$method->getParams(),
-            ...(array) $method->getStmts(),
-        ],
+        [...$method->getParams(), ...(array) $method->getStmts()],
         fn (Node $node) => $node instanceof Variable && $node->name === $old,
     );
 

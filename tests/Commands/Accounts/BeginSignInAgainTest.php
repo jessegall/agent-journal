@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CompleteSignIn\CompleteSignInCommand;
 use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
@@ -19,7 +20,6 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Command;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\AccountLabel;
 use App\Values\SignInIdentity;
@@ -180,7 +180,10 @@ final class BeginSignInAgainTest extends TestCase
         $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
         $attempt->waitForUser();
 
-        return [$attemptId, (string) $attempt->directory];
+        return [
+            $attemptId,
+            (string) $attempt->directory,
+        ];
     }
 
     private static function proved(string $subject): SignInIdentity

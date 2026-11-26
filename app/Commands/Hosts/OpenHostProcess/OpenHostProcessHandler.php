@@ -26,8 +26,10 @@ final readonly class OpenHostProcessHandler implements CommandHandler
             ? null
             : SessionProcess::findLockedById($command->sessionProcessId);
 
-        $process = HostProcess::create($host, $runtime, $command->plan, $start);
-        $this->placement->forOpening($process, $command->plan, $command->source);
+        // Every process of a start runs under its session's fence, which the session's stop conditions close.
+        $plan = $start === null ? $command->plan : $command->plan->withFence($start->session_id);
+        $process = HostProcess::create($host, $runtime, $plan, $start);
+        $this->placement->forOpening($process, $plan, $command->source);
 
         return $process->getKey();
     }

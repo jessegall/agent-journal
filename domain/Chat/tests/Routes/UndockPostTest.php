@@ -44,12 +44,7 @@ final class UndockPostTest extends GuardedRouteEntryTestCase
         $taskId = strtolower((string) Str::ulid());
 
         return RouteCall::as(Caller::User)
-            ->payload([
-                'inboxId' => $inbox->id,
-                'placementId' => $placementId,
-                'type' => 'tasks.task',
-                'id' => $taskId,
-            ])
+            ->payload(['inboxId' => $inbox->id, 'placementId' => $placementId, 'type' => 'tasks.task', 'id' => $taskId])
             ->reply(UndockSourceCommand::class, DockResult::of(DockOutcome::Removed, $placementId))
             ->expects(UndockSourceCommand::class, [
                 'chat' => $inbox->id,

@@ -15,11 +15,6 @@ final readonly class CommandFingerprint
      */
     public static function of(array $argv, string $pipedInput, string $bindingId, string $agentId): string
     {
-        return hash('sha256', json_encode([
-            $argv,
-            $pipedInput,
-            $bindingId,
-            $agentId,
-        ], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([$argv, $pipedInput, $bindingId, $agentId], JSON_THROW_ON_ERROR));
     }
 }

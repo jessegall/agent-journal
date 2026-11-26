@@ -20,10 +20,7 @@ final readonly class PipedCommands
 
     public function with(int $command): self
     {
-        return new self($this->start, [
-            ...$this->commands,
-            $command,
-        ]);
+        return new self($this->start, [...$this->commands, $command]);
     }
 
     public function cursor(): TokenCursor

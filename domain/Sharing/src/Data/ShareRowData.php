@@ -18,7 +18,7 @@ final class ShareRowData extends Data
     public function __construct(
         public readonly string $id,
         public readonly int $number,
-        public readonly ShareStatus $state,
+        public readonly ShareStatus $status,
         public readonly string $rootType,
         public readonly string $rootId,
         public readonly string|null $gatewayKey,

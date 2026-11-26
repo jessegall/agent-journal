@@ -15,8 +15,6 @@ final readonly class ListHelperNoticesController
 {
     public function __invoke(ListHelperNoticesPayload $call, HelperNotices $notices): HelperNoticeListData
     {
-        return HelperNoticeListData::from([
-            'notices' => $notices->newest(),
-        ]);
+        return HelperNoticeListData::from(['notices' => $notices->newest()]);
     }
 }

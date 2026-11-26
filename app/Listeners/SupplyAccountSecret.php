@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeTokenSignIn;
 use App\Contracts\Events\Listener;
 use App\Enums\Accounts\SignInMethod;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
-use App\Support\ClaudeTokenSignIn;
 
 /**
  * A start on a Claude Code account signed in by a provider token gets its token the way the sign-in proved it: the

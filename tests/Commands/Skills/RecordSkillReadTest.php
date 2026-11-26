@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Skills\RecordSkillRead\RecordSkillReadCommand;
 use App\Contracts\Bus\CommandBus;
@@ -26,7 +27,6 @@ use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\DomainRegistry;
-use App\Support\Drivers\ClaudeCodeSkills;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Support\ReminderContribution;

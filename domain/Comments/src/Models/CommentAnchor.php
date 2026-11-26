@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Domain\Comments\Models;
 
 use App\Concerns\BoundedReads;
+use App\Concerns\Linkable;
 use App\Contracts\Records\ReadableModel;
 use App\Enums\Records\TextAnchorType;
 use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\JournalModel;
+use App\Values\ReadOrder;
 use App\Values\TextAnchor;
 use Domain\Comments\Exceptions\CommentAnchorCorrupt;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class CommentAnchor extends JournalModel implements ReadableModel
 {
     use BoundedReads;
+    use Linkable;
 
     public $timestamps = false;
 
@@ -47,6 +50,11 @@ final class CommentAnchor extends JournalModel implements ReadableModel
             'start_offset' => 'integer',
             'end_offset' => 'integer',
         ];
+    }
+
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['comment_anchors.comment_id'], 'comment_anchors.id');
     }
 
     // ----------[ Constructors ]----------

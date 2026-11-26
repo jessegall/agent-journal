@@ -49,12 +49,7 @@ final readonly class DocumentSearchProvider implements SearchProvider
             admitted: fn () => self::admitted($constraints),
             idColumn: 'documents.id',
             titleColumn: 'published.title',
-            columns: [
-                'documents.id',
-                'documents.number',
-                'published.title as title',
-                'published.number as revision',
-            ],
+            columns: ['documents.id', 'documents.number', 'published.title as title', 'published.number as revision'],
             titleOf: fn (Document $document) => (string) $document->getAttribute('title'),
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $documentId) => $this->access->admitsOpen($query->reader, $documentId),

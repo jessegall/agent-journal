@@ -111,35 +111,20 @@ final class RequestShareTest extends TestCase
 
         $this->assertEquals(new ShareProposalStatus($proposal->number, ShareStatus::Proposed), $status);
 
-        $this->assertSame([
-            'number',
-            'state',
-        ], array_keys(get_object_vars($status)));
+        $this->assertSame(['number', 'state'], array_keys(get_object_vars($status)));
 
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
 
         $this->assertSame(
-            [
-                Agent::storedType(),
-                $this->start->agent->id,
-            ],
-            [
-                $proposal->requester_type,
-                $proposal->requester_id,
-            ],
+            [Agent::storedType(), $this->start->agent->id],
+            [$proposal->requester_type, $proposal->requester_id],
         );
 
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
 
-        $this->assertSame([
-            ShareAuditType::Created,
-            Agent::storedType(),
-        ], [
-            $audit->type,
-            $audit->actor_type,
-        ]);
+        $this->assertSame([ShareAuditType::Created, Agent::storedType()], [$audit->type, $audit->actor_type]);
     }
 
     public function test_a_repeated_request_with_the_same_key_makes_one_proposal(): void
@@ -202,11 +187,7 @@ final class RequestShareTest extends TestCase
         $start = $this->journal->signedStart('Main agent', 'main-agent');
         $this->journal->relayAgentCommands($start);
 
-        $this->artisan('share:request', [
-            'alias' => 'doc',
-            'number' => '1',
-            '--json' => true,
-        ])
+        $this->artisan('share:request', ['alias' => 'doc', 'number' => '1', '--json' => true])
             ->expectsOutputToContain('"state":"proposed"')
             ->doesntExpectOutputToContain('http')
             ->assertExitCode(0);

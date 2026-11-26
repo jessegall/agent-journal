@@ -53,10 +53,7 @@ final class RuleFiltersData extends Data
      */
     public function onPage(int $page): self
     {
-        return self::from([
-            ...$this->toArray(),
-            'page' => $page,
-        ]);
+        return self::from([...$this->toArray(), 'page' => $page]);
     }
 
     public function toDomain(): RuleFilters

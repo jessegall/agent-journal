@@ -22,10 +22,7 @@ final readonly class ReviseProposalController
         RuleDeclarations $declarations,
         CommandBus $commands,
     ): ProposalReceived {
-        $declared = $declarations->readOne([
-            ...$call->declaration,
-            'request_id' => $call->proposal,
-        ]);
+        $declared = $declarations->readOne([...$call->declaration, 'request_id' => $call->proposal]);
 
         $command = new ReviseRuleProposalCommand($call->proposal, (int) $call->expectedRevision, $declared->proposed);
 

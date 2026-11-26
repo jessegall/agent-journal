@@ -74,10 +74,7 @@ final class PlanGraphEditingTest extends TestCase
         $this->graphAction('suggest')->assertRedirect();
         $this->graphAction('apply')->assertRedirect();
 
-        $this->assertSame([[
-            'ship',
-            'build',
-        ]], $this->waits());
+        $this->assertSame([['ship', 'build']], $this->waits());
 
         $this->graphAction('apply')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
@@ -103,20 +100,7 @@ final class PlanGraphEditingTest extends TestCase
 
         $this->graphAction('undo')->assertRedirect();
 
-        $this->assertEqualsCanonicalizing([
-            [
-                'ship',
-                'design',
-            ],
-            [
-                'ship',
-                'build',
-            ],
-            [
-                'build',
-                'design',
-            ],
-        ], $this->waits());
+        $this->assertEqualsCanonicalizing([['ship', 'design'], ['ship', 'build'], ['build', 'design']], $this->waits());
 
         $this->graphAction('undo')->assertSessionHas('refusal_code', 'plan-graph-change-missing');
     }
@@ -129,16 +113,7 @@ final class PlanGraphEditingTest extends TestCase
 
         $this->graphAction('undo')->assertSessionHas('refusal_code', 'task-graph-changed');
 
-        $this->assertEqualsCanonicalizing([
-            [
-                'ship',
-                'build',
-            ],
-            [
-                'ship',
-                'design',
-            ],
-        ], $this->waits());
+        $this->assertEqualsCanonicalizing([['ship', 'build'], ['ship', 'design']], $this->waits());
     }
 
     private function graphAction(string $action): TestResponse

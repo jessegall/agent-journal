@@ -22,10 +22,7 @@ return new class extends Migration
             $table->ulid('current_revision_id')->nullable()->index();
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
         });
 
         Schema::create('document_revisions', function (Blueprint $table) {
@@ -41,15 +38,9 @@ return new class extends Migration
             $table->timestampTz('closed_at')->nullable();
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
 
-            $table->unique([
-                'document_id',
-                'number',
-            ]);
+            $table->unique(['document_id', 'number']);
         });
 
         Schema::create('reports', function (Blueprint $table) {
@@ -66,10 +57,7 @@ return new class extends Migration
             $table->string('attention', 16)->default('active');
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
         });
 
         DB::statement('ALTER TABLE documents ADD CONSTRAINT documents_number_positive CHECK (number > 0)');

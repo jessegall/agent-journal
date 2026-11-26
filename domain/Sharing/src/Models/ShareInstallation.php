@@ -59,10 +59,7 @@ final class ShareInstallation extends JournalModel implements EventSource, Reada
     {
         $installation = new self();
 
-        $installation->setRawAttributes([
-            'id' => $installation->newUniqueId(),
-            'name' => self::NAME,
-        ]);
+        $installation->setRawAttributes(['id' => $installation->newUniqueId(), 'name' => self::NAME]);
 
         $installation->insertIfAbsent();
 

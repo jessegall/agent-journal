@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Drivers\Work;
+
+use App\Contracts\Actors\AgentTexts;
+use App\Enums\Drivers\DriverOperation;
+use App\Enums\Drivers\RequestProgress;
+use App\Enums\Runs\RuntimeActivity;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Drivers\DriverRequest;
+use App\Models\Sessions\SessionProcess;
+use App\Models\Sessions\SessionRequest;
+use App\Support\ActorReference;
+use App\Support\ClaimedRequests;
+use App\Support\PendingWorkSources;
+use App\Values\AgentText;
+use App\Values\ClaimedRequest;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
+
+/**
+ * Hands out the pending requests of the runtimes given in turn per runtime; a session's stop waits until its helpers
+ * are proven stopped. A wake of an idle session with no pending work anywhere is settled as NoWork here and never
+ * handed out, so no turn starts for nothing.
+ */
+final readonly class DriverRequestClaims
+{
+    public function __construct(
+        private PendingWorkSources $pendingWork,
+        private AgentTexts $texts,
+    ) {}
+
+    /**
+     * Every waiting stop, interrupt and recording of the runtimes first, then their other requests up to the limit.
+     *
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     */
+    public function claimFor(Collection $runtimes, int $limit): ClaimedRequests
+    {
+        $control = $this->controlOf($runtimes);
+
+        return new ClaimedRequests([...$control, ...$this->workOf($runtimes, $limit - count($control))]);
+    }
+
+    /**
+     * Only the waiting stops, interrupts and recordings of the runtimes, for a process that runs one turn: the work it
+     * was opened for is its own, and the next work waits for the next turn.
+     *
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     */
+    public function claimControlFor(Collection $runtimes): ClaimedRequests
+    {
+        return new ClaimedRequests($this->controlOf($runtimes));
+    }
+
+    /**
+     * Only the next work of the runtimes, up to the limit, for the journal opening a turn for it.
+     *
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     */
+    public function claimWorkFor(Collection $runtimes, int $limit): ClaimedRequests
+    {
+        return new ClaimedRequests($this->workOf($runtimes, $limit));
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     * @return list<ClaimedRequest>
+     */
+    private function controlOf(Collection $runtimes): array
+    {
+        $control = DriverRequest::query()
+            ->ofAgentRuntimes($runtimes->keys()->all())
+            ->withProgress(RequestProgress::Accepted)
+            ->withAnyOperation(DriverOperation::control())
+            ->bySequence()
+            ->lockForUpdate()
+            ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
+            ->get();
+
+        $now = CarbonImmutable::now();
+        $sessions = $this->sessionsOf($runtimes);
+        $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);
+        $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers($sessions);
+        $claimed = [];
+
+        foreach ($control as $request) {
+            $runtime = $runtimes->get($request->agent_runtime_id);
+
+            if ($this->isStopWaitingOnHelpers($request, $runtime, $waitingOnHelpers)) {
+                continue;
+            }
+
+            $request->stage($now);
+
+            $claimed[] = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, false);
+        }
+
+        return $claimed;
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     * @return list<ClaimedRequest>
+     */
+    private function workOf(Collection $runtimes, int $limit): array
+    {
+        if ($limit < 1) {
+            return [];
+        }
+
+        $pending = DriverRequest::query()
+            ->ofAgentRuntimes($runtimes->keys()->all())
+            ->withProgress(RequestProgress::Accepted)
+            ->offerable(CarbonImmutable::now())
+            ->excludingControl()
+            ->bySequence()
+            ->lockForUpdate()
+            ->readUpTo($limit * max(1, $runtimes->count()))
+            ->get()
+            ->groupBy('agent_runtime_id');
+
+        $now = CarbonImmutable::now();
+        $sessions = $this->sessionsOf($runtimes);
+        $held = SessionRequest::resolveSessionsHoldingDeliveries($sessions);
+        $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);
+        $claimed = [];
+        $bootstrapped = [];
+
+        for ($round = 0; count($claimed) < $limit && $pending->isNotEmpty(); $round++) {
+            foreach ($pending as $runtimeId => $requests) {
+                $request = $requests->shift();
+
+                if ($request === null) {
+                    $pending->forget($runtimeId);
+
+                    continue;
+                }
+
+                if ($this->settledWithoutWork($request, $runtimes->get($runtimeId))) {
+                    continue;
+                }
+
+                // A runtime the journal holds, interrupted or needing attention, gets no work until its hold is
+                // released; the host keeps no hold of its own.
+                if ($request->operation->startsWork() && $runtimes->get($runtimeId)->isHeldFromWork()) {
+                    continue;
+                }
+
+                $runtime = $runtimes->get($runtimeId);
+                $sessionId = $runtime->agent_session_id;
+
+                // Until a start's driver proves its conversation, only its bootstrap goes out; the rest waits.
+                $isBootstrap = in_array($sessionId, $held, true);
+
+                if ($isBootstrap) {
+                    if (! $request->isInitialWakeOf($sessionId)) {
+                        continue;
+                    }
+
+                    $bootstrapped[] = $sessionId;
+                }
+
+                $request->stage($now);
+                $claim = $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, $isBootstrap);
+                $claimed[] = $this->withWakePrompt($request, $claim);
+
+                if (count($claimed) === $limit) {
+                    break;
+                }
+            }
+        }
+
+        if ($bootstrapped !== []) {
+            SessionRequest::findLockedAcceptedOf($bootstrapped)->each(
+                fn (SessionRequest $record) => $record->prepareIdentity(),
+            );
+        }
+
+        return $claimed;
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes
+     * @return list<string>
+     */
+    private function sessionsOf(Collection $runtimes): array
+    {
+        return array_values(array_map(fn (AgentRuntime $runtime) => $runtime->agent_session_id, $runtimes->all()));
+    }
+
+    /**
+     * A stop of a session whose helpers are not all proven stopped stays waiting, so the helpers end first.
+     *
+     * @param  list<string>  $waiting
+     */
+    private function isStopWaitingOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waiting): bool
+    {
+        return $request->operation === DriverOperation::Stop
+            && in_array($runtime->agent_session_id, $waiting, true);
+    }
+
+    /**
+     * A wake carries the pending-work prompt; the agent's states say what waits, such as an unread message.
+     */
+    private function withWakePrompt(DriverRequest $request, ClaimedRequest $claim): ClaimedRequest
+    {
+        if ($request->operation !== DriverOperation::Wake) {
+            return $claim;
+        }
+
+        return $claim->withMessage($this->texts->render(AgentText::of('core.drivers.pending_work')));
+    }
+
+    private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool
+    {
+        if ($request->operation !== DriverOperation::Wake || $runtime->activity !== RuntimeActivity::Idle) {
+            return false;
+        }
+
+        if ($this->pendingWork->hasWorkFor(ActorReference::of($runtime->session->agent))) {
+            return false;
+        }
+
+        $request->settleWithoutWork();
+
+        return true;
+    }
+}

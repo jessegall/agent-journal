@@ -13,8 +13,8 @@ use RuntimeException;
  */
 final class NavigationTransitionRefused extends RuntimeException implements CommandRefusal
 {
-    public static function from(NavigationStatus $state, NavigationStatus $next): self
+    public static function from(NavigationStatus $status, NavigationStatus $next): self
     {
-        return new self("A navigation request that is {$state->value} cannot become {$next->value}.");
+        return new self("A navigation request that is {$status->value} cannot become {$next->value}.");
     }
 }

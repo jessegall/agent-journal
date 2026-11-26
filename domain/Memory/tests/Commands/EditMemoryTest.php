@@ -44,16 +44,8 @@ final class EditMemoryTest extends TestCase
         $this->journal->run(new EditMemoryCommand($this->memory->id, 1, 'Better words.', 9));
 
         $this->assertSame(
-            [
-                'Better words.',
-                9,
-                2,
-            ],
-            [
-                $this->memory->refresh()->text,
-                $this->memory->weight,
-                $this->memory->revision,
-            ],
+            ['Better words.', 9, 2],
+            [$this->memory->refresh()->text, $this->memory->weight, $this->memory->revision],
         );
     }
 
@@ -66,13 +58,7 @@ final class EditMemoryTest extends TestCase
             MemoryRevisionChanged::class,
         );
 
-        $this->assertSame([
-            'Newer words.',
-            2,
-        ], [
-            $this->memory->refresh()->text,
-            $this->memory->revision,
-        ]);
+        $this->assertSame(['Newer words.', 2], [$this->memory->refresh()->text, $this->memory->revision]);
     }
 
     public function test_a_blank_text_or_nothing_to_change_is_refused_and_keeps_the_revision(): void
@@ -89,13 +75,7 @@ final class EditMemoryTest extends TestCase
             'text:',
         );
 
-        $this->assertSame([
-            'First words.',
-            1,
-        ], [
-            $this->memory->refresh()->text,
-            $this->memory->revision,
-        ]);
+        $this->assertSame(['First words.', 1], [$this->memory->refresh()->text, $this->memory->revision]);
     }
 
     public function test_another_agents_memory_is_not_there_for_it_and_stays_as_it_was(): void

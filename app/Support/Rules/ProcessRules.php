@@ -50,10 +50,7 @@ final readonly class ProcessRules
                 'core.jobs',
                 new ProgramSpellings('jobs'),
                 [],
-                ArgumentGrammar::options([
-                    '-l',
-                    '-p',
-                ]),
+                ArgumentGrammar::options(['-l', '-p']),
                 $control,
             ),
         ];

@@ -23,10 +23,7 @@ final readonly class ForwardUserKeysHandler implements CommandHandler
             $command->processId,
             $command->source,
             HostOrderType::WriteKeys,
-            [
-                'bytes' => base64_encode($command->bytes),
-                'as_user' => true,
-            ],
+            ['bytes' => base64_encode($command->bytes), 'as_user' => true],
             HostOrderPlacement::KEY_SECONDS,
         );
 

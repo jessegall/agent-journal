@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Drivers\ClaudeCode;
+
+use App\Agents\Drivers\DefaultDrivers;
+use App\Contracts\Drivers\DriverKeyScripts;
+use App\Support\KeyScripts\KeyScript;
+use App\Support\KeyScripts\KeyStep;
+use App\Support\KeyScripts\ScreenExpectation;
+
+/**
+ * The key scripts recorded for Claude Code: each changes a setting for this session only and ends on Claude
+ * Code's own line saying it applied (recordings keyscripts/model-choice and keyscripts/effort-change).
+ */
+final readonly class ClaudeCodeKeyScripts implements DriverKeyScripts
+{
+    /**
+     * The build whose recordings under resources/recordings/claude-code establish its key scripts.
+     */
+    private const string KEY_SCRIPTS_BUILD = '2.1.323';
+
+    /**
+     * Claude Code's key scripts for the recorded build.
+     *
+     * @return list<KeyScript>
+     */
+    public function __invoke(): array
+    {
+        $changeModel = [
+            ...KeyScript::command('/model', '❯ /model'),
+            KeyStep::find('find the model', 'model-picker', 'model'),
+            KeyStep::press('set it for this session only', ScreenExpectation::menu('model-picker'), 's'),
+            KeyStep::evidence('see the model applied', 'set model to {model}'),
+        ];
+
+        $changeEffort = [
+            ...KeyScript::command('/effort', '❯ /effort'),
+            KeyStep::find('find the effort level', 'effort-picker', 'effort'),
+            KeyStep::press('set it for this session only', ScreenExpectation::menu('effort-picker'), 's'),
+            KeyStep::evidence('see the effort applied', 'set effort level to {effort}'),
+        ];
+
+        $driver = DefaultDrivers::CLAUDE_CODE;
+
+        return [
+            new KeyScript('ChangeModel', $driver, self::KEY_SCRIPTS_BUILD, ['model'], $changeModel),
+            new KeyScript('ChangeEffort', $driver, self::KEY_SCRIPTS_BUILD, ['effort'], $changeEffort),
+        ];
+    }
+}

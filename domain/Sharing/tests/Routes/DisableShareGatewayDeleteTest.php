@@ -33,12 +33,8 @@ final class DisableShareGatewayDeleteTest extends GuardedRouteEntryTestCase
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'configuration' => $configuration->id,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'gateway-1',
-            ])
+            ->parameters(['configuration' => $configuration->id])
+            ->headers(['Idempotency-Key' => 'gateway-1'])
             ->reply(DisableShareGatewayCommand::class, $configuration->to_configuration)
             ->expects(DisableShareGatewayCommand::class, [
                 'configurationId' => $configuration->id,

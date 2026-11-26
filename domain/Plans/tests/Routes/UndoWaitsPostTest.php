@@ -34,9 +34,7 @@ final class UndoWaitsPostTest extends GuardedRouteEntryTestCase
         $journal->keyed(fn () => $graph->apply($plan));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
+            ->parameters(['plan' => $plan->number])
             ->reply(ApplyTaskWaitsCommand::class, 'graph-3')
             ->expects(ApplyTaskWaitsCommand::class);
     }

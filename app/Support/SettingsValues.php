@@ -38,11 +38,7 @@ final class SettingsValues
      */
     public static function isEditable(SettingData $setting): bool
     {
-        return in_array($setting->type, [
-            SettingType::String,
-            SettingType::Boolean,
-            SettingType::Integer,
-        ], true)
+        return in_array($setting->type, [SettingType::String, SettingType::Boolean, SettingType::Integer], true)
             || $setting->default instanceof StringChoiceValueData;
     }
 }

@@ -194,13 +194,7 @@ final class ApiGroups
         return match (true) {
             $defaultArgument instanceof UnitEnum => ' = \\'.$defaultArgument::class.'::'.$defaultArgument->name,
             is_object($defaultArgument) => ' = new \\'.$defaultArgument::class.'()',
-            default => ' = '.str_replace([
-                "array (\n)",
-                'NULL',
-            ], [
-                '[]',
-                'null',
-            ], var_export($defaultArgument, true)),
+            default => ' = '.str_replace(["array (\n)", 'NULL'], ['[]', 'null'], var_export($defaultArgument, true)),
         };
     }
 

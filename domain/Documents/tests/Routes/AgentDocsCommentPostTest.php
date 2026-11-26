@@ -33,11 +33,7 @@ final class AgentDocsCommentPostTest extends GuardedRouteEntryTestCase
         $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'doc_id' => $document->id,
-                'body' => 'Section two is unclear.',
-                'request_key' => 'documents-1',
-            ])
+            ->payload(['doc_id' => $document->id, 'body' => 'Section two is unclear.', 'request_key' => 'documents-1'])
             ->reply(CommentOnDocumentCommand::class, Str::ulid())
             ->expects(CommentOnDocumentCommand::class, [
                 'documentId' => $document->id,

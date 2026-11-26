@@ -67,10 +67,7 @@ final readonly class SupervisorDefinitions implements SupervisorDefinitionsContr
 
         $this->requireAcyclic(
             $profiles,
-            [
-                ...SupervisorLink::resolveGraphRoutes(),
-                SupervisorTarget::forActor($command->actor)->key => $routes,
-            ],
+            [...SupervisorLink::resolveGraphRoutes(), SupervisorTarget::forActor($command->actor)->key => $routes],
         );
 
         $link->change($routes, $type);

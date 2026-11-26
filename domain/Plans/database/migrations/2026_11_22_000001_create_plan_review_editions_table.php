@@ -26,10 +26,7 @@ return new class extends Migration
             $table->boolean('is_historical')->default(false);
             $table->timestampsTz();
 
-            $table->unique([
-                'plan_id',
-                'number',
-            ]);
+            $table->unique(['plan_id', 'number']);
         });
     }
 

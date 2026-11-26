@@ -22,12 +22,7 @@ return new class extends Migration
             $table->timestampTz('settled_at');
             $table->timestampsTz();
 
-            $table->index([
-                'parent_type',
-                'parent_id',
-                'settled_at',
-                'id',
-            ], 'record_settlements_parent_order');
+            $table->index(['parent_type', 'parent_id', 'settled_at', 'id'], 'record_settlements_parent_order');
         });
 
         DB::statement("ALTER TABLE record_settlements ADD CONSTRAINT record_settlements_parent_type CHECK (parent_type IN ('documents.document', 'documents.report'))");

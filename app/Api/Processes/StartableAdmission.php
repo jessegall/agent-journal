@@ -26,6 +26,6 @@ final class StartableAdmission extends AdmissionFetched
         public readonly string $treeDigest,
         public readonly ExecutionPlan $plan,
     ) {
-        $this->state = AdmissionStatus::ToRun;
+        $this->status = AdmissionStatus::ToRun;
     }
 }

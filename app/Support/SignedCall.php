@@ -80,11 +80,7 @@ final readonly class SignedCall
     ): string {
         return self::sign(
             $token,
-            [
-                ...self::envelope($method, $url, $callId, $issuedAt, $body),
-                $profile->key,
-                (string) $profile->revision,
-            ],
+            [...self::envelope($method, $url, $callId, $issuedAt, $body), $profile->key, (string) $profile->revision],
         );
     }
 

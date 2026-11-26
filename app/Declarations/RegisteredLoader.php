@@ -37,10 +37,7 @@ final readonly class RegisteredLoader
         return new self(
             owner: $owner,
             key: $key,
-            prop: 'load_'.str_replace([
-                '.',
-                '-',
-            ], '_', $key),
+            prop: 'load_'.str_replace(['.', '-'], '_', $key),
             reader: $loader->reader,
             inputClass: $types->input,
             answerClass: $types->answer,

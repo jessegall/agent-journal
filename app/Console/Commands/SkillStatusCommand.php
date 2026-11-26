@@ -50,10 +50,7 @@ final class SkillStatusCommand extends Command
 
         if ($this->option('json')) {
             $this->line(json_encode(
-                [
-                    ...$status->jsonSerialize(),
-                    'skills' => $skills,
-                ],
+                [...$status->jsonSerialize(), 'skills' => $skills],
                 JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
             ));
 
@@ -76,15 +73,7 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            [
-                'Skill',
-                'Stored revision',
-                'Generated',
-                'Selected',
-                'Delivered',
-                'Loaded',
-                'New session needed',
-            ],
+            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Delivered', 'Loaded', 'New session needed'],
             array_map(fn (SessionSkillStatus $skill) => [
                 $skill->key,
                 $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,
@@ -108,15 +97,7 @@ final class SkillStatusCommand extends Command
         }
 
         $this->table(
-            [
-                'Session',
-                'Publication',
-                'State',
-                'Generation',
-                'Selection',
-                'Target',
-                'Error',
-            ],
+            ['Session', 'Publication', 'State', 'Generation', 'Selection', 'Target', 'Error'],
             array_map(fn (PublicationReport $publication) => $this->row($publication), $status->publications),
         );
 
@@ -138,7 +119,7 @@ final class SkillStatusCommand extends Command
         }
 
         $error = $generation->error === null ? '' : ": {$generation->error}";
-        $this->line("Generation {$generation->generationId} is {$generation->state->value}{$error}");
+        $this->line("Generation {$generation->generationId} is {$generation->status->value}{$error}");
         $this->line("Catalogue digest: {$generation->catalogueDigest}");
     }
 
@@ -150,7 +131,7 @@ final class SkillStatusCommand extends Command
         return [
             $publication->sessionId,
             $publication->publicationId,
-            $publication->state->value,
+            $publication->status->value,
             $publication->generationId,
             substr($publication->selectionDigest, 0, 12),
             $publication->target,

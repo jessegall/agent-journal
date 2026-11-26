@@ -23,11 +23,7 @@ final readonly class DeclaredRoutes
 
     public function register(Router $router): void
     {
-        $router->middleware([
-            'web',
-            'auth',
-            'journal.user',
-        ])->group(function () use ($router): void {
+        $router->middleware(['web', 'auth', 'journal.user'])->group(function () use ($router): void {
             foreach ($this->declarations->pages() as $page) {
                 $this->requireVisibility(
                     $router->get($page->address(), PageController::class)->name($page->routeName()),
@@ -63,10 +59,7 @@ final readonly class DeclaredRoutes
 
             $taken = array_values(
                 array_intersect(
-                    [
-                        explode('/', $route->uri())[0],
-                        explode('.', (string) $route->getName())[0],
-                    ],
+                    [explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]],
                     array_keys($prefixes),
                 ),
             );

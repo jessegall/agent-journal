@@ -42,11 +42,7 @@ final class FileTellPostTest extends GuardedRouteEntryTestCase
             ])
             ->reply(OpenInboxCommand::class, $inboxId)
             ->reply(SendMessageCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, [
-                'providerKey' => PairChats::PAIR_PROVIDER,
-            ])
-            ->expects(SendMessageCommand::class, [
-                'inboxId' => $inboxId,
-            ]);
+            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::PAIR_PROVIDER])
+            ->expects(SendMessageCommand::class, ['inboxId' => $inboxId]);
     }
 }

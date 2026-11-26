@@ -27,7 +27,7 @@ const card = {
     number: '12',
     title: 'Build the release page',
     type: 'build',
-    state: 'started',
+    status: 'started',
     isFocused: false,
     isReadyToFinish: true,
     phase: '1',

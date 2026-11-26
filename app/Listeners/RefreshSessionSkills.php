@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Events\Listener;
@@ -17,7 +18,6 @@ use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Resolvers\Support\SkillContextResolver;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\SkillPublications;
 use App\Support\SkillSelection;
 use App\Support\SkillTargets;
@@ -111,9 +111,6 @@ final readonly class RefreshSessionSkills implements Listener
     {
         $keys = $selected->selectedKeys() === [] ? 'none' : implode(', ', $selected->selectedKeys());
 
-        return AgentText::of('core.skills.changed', [
-            'skills' => $keys,
-            'driver' => $driver->key,
-        ]);
+        return AgentText::of('core.skills.changed', ['skills' => $keys, 'driver' => $driver->key]);
     }
 }

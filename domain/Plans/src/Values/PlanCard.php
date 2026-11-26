@@ -24,7 +24,7 @@ final readonly class PlanCard
         public int $number,
         public string $title,
         public PlanType $type,
-        public PlanStatus $state,
+        public PlanStatus $status,
         public bool $canStart,
         public bool $isFocused,
         public PlanProgress $progress,

@@ -20,13 +20,7 @@ const LEAST_LINE_BREAKS = 2;
  */
 function heredocBody(string $inner): string
 {
-    return str_replace([
-        '\\n',
-        '\\"',
-    ], [
-        "\n",
-        '"',
-    ], $inner);
+    return str_replace(['\\n', '\\"'], ["\n", '"'], $inner);
 }
 
 /**
@@ -35,11 +29,7 @@ function heredocBody(string $inner): string
  */
 function fitsNowdoc(string $inner): bool
 {
-    $withoutPlainEscapes = str_replace([
-        '\\n',
-        '\\"',
-        '\\\\',
-    ], '', $inner);
+    $withoutPlainEscapes = str_replace(['\\n', '\\"', '\\\\'], '', $inner);
 
     return ! str_contains($withoutPlainEscapes, '\\') && ! str_contains($withoutPlainEscapes, '$');
 }
@@ -66,15 +56,7 @@ function markerFor(string $body): string
 function rewritten(string $inner, string $indent): string
 {
     $nowdoc = fitsNowdoc($inner);
-    $body = $nowdoc ? str_replace([
-        '\\n',
-        '\\"',
-        '\\\\',
-    ], [
-        "\n",
-        '"',
-        '\\',
-    ], $inner) : heredocBody($inner);
+    $body = $nowdoc ? str_replace(['\\n', '\\"', '\\\\'], ["\n", '"', '\\'], $inner) : heredocBody($inner);
     $marker = markerFor($body);
     $inside = $indent.'    ';
     $lines = array_map(fn (string $line) => $line === '' ? '' : $inside.$line, explode("\n", $body));

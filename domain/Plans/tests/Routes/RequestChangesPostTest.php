@@ -31,16 +31,9 @@ final class RequestChangesPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'review-1',
-            ])
-            ->payload([
-                'edition' => 1,
-                'reason' => 'Split the second phase.',
-            ])
+            ->parameters(['plan' => $plan->number])
+            ->headers(['Idempotency-Key' => 'review-1'])
+            ->payload(['edition' => 1, 'reason' => 'Split the second phase.'])
             ->reply(RequestPlanChangesCommand::class, Str::ulid())
             ->expects(RequestPlanChangesCommand::class, [
                 'planId' => $plan->id,

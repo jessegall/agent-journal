@@ -59,12 +59,7 @@ final class ApplyTaskWaitsTest extends TestCase
 
         $this->tasks = array_map(
             fn (int $place) => $this->tasks()->task("Step {$place}")->taskCalled("Step {$place}"),
-            [
-                1,
-                2,
-                3,
-                4,
-            ],
+            [1, 2, 3, 4],
         );
 
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
@@ -78,16 +73,10 @@ final class ApplyTaskWaitsTest extends TestCase
             $this->ids(),
             $this->version(),
             [$this->pair(3, 2)],
-            [
-                $this->pair(1, 0),
-                $this->pair(2, 0),
-            ],
+            [$this->pair(1, 0), $this->pair(2, 0)],
         ));
 
-        $this->assertSame([[
-            $this->tasks[3]->id,
-            $this->tasks[2]->id,
-        ]], $this->waits());
+        $this->assertSame([[$this->tasks[3]->id, $this->tasks[2]->id]], $this->waits());
 
         $this->assertSame($this->version(), $version);
         $batches = TaskWaitHistory::query()->whereNotNull('batch_id')->pluck('batch_id')->all();

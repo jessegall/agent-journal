@@ -336,13 +336,7 @@ function renameMember(ParsedProject $project, array $rename, array $with): array
 
     if (! in_array(
         $what,
-        [
-            'method',
-            'property',
-            'constant',
-            'variable',
-            'argument',
-        ],
+        ['method', 'property', 'constant', 'variable', 'argument'],
         true,
     ) || $owner === '' || $old === '' || $new === '') {
         throw RenameRefused::malformed();
@@ -471,10 +465,7 @@ function typeIndex(array $files): array
             if ($type instanceof Node\Stmt\Class_) {
                 $related = array_map(
                     static fn (Node\Name $name) => $name->toString(),
-                    array_values(array_filter([
-                        $type->extends,
-                        ...$type->implements,
-                    ])),
+                    array_values(array_filter([$type->extends, ...$type->implements])),
                 );
             }
 
@@ -714,10 +705,7 @@ function receiverType(Node\Expr $receiver, array $index): string|null
         $receiver instanceof Node\Expr\Variable && is_string($receiver->name) => variableType($receiver, $receiver->name, $index),
         $receiver instanceof Node\Expr\New_ && $receiver->class instanceof Node\Name => $receiver->class->toString(),
         $receiver instanceof Node\Expr\FuncCall && $receiver->name instanceof Node\Name
-            && in_array($receiver->name->toLowerString(), [
-                'app',
-                'resolve',
-            ], true) => madeClass($receiver),
+            && in_array($receiver->name->toLowerString(), ['app', 'resolve'], true) => madeClass($receiver),
         $receiver instanceof Node\Expr\MethodCall && $receiver->name instanceof Node\Identifier
             && $receiver->name->toString() === 'make' => madeClass($receiver),
         $receiver instanceof Node\Expr\PropertyFetch, $receiver instanceof Node\Expr\NullsafePropertyFetch => memberType(receiverType($receiver->var, $index), $receiver->name, 'propertyTypes', $index),
@@ -748,10 +736,7 @@ function madeClass(Node\Expr\FuncCall|Node\Expr\MethodCall $call): string|null
  */
 function staticClass(Node\Name $name): string|null
 {
-    if (in_array($name->toLowerString(), [
-        'self',
-        'static',
-    ], true)) {
+    if (in_array($name->toLowerString(), ['self', 'static'], true)) {
         return enclosingClass($name);
     }
 
@@ -934,11 +919,7 @@ function memberSites(
     // self, static and parent name the class the code stands in, so they belong to the family only inside one of it
     $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || (in_array(
         $class->toLowerString(),
-        [
-            'self',
-            'static',
-            'parent',
-        ],
+        ['self', 'static', 'parent'],
         true,
     ) && isInsideFamily($node, $family)));
 
@@ -997,11 +978,7 @@ function staticCallReaches(Node\Expr\StaticCall $call, array $family): bool
         return false;
     }
 
-    if (in_array($call->class->toLowerString(), [
-        'self',
-        'static',
-        'parent',
-    ], true)) {
+    if (in_array($call->class->toLowerString(), ['self', 'static', 'parent'], true)) {
         return isset($family[declaringType($call)]);
     }
 
@@ -1238,10 +1215,7 @@ function namedArgumentEdits(ParsedProject $project, Node\FunctionLike $function,
     $functionName = $function instanceof Node\Stmt\ClassMethod || $function instanceof Node\Stmt\Function_ ? $function->name->toString() : null;
     $classOf = static fn (Node\Expr\New_ $node): string|null => match (true) {
         ! $node->class instanceof Node\Name => null,
-        in_array($node->class->toLowerString(), [
-            'self',
-            'static',
-        ], true) => enclosingClass($node),
+        in_array($node->class->toLowerString(), ['self', 'static'], true) => enclosingClass($node),
         default => $node->class->toString(),
     };
     $callsFunction = static fn (Node $node): bool => match (true) {
@@ -1312,10 +1286,7 @@ function namesCarriedBy(Node $node): array
         default => [],
     };
 
-    return array_values(array_unique([
-        ...$ownNames,
-        ...$argumentNames,
-    ]));
+    return array_values(array_unique([...$ownNames, ...$argumentNames]));
 }
 
 /**
@@ -1493,14 +1464,8 @@ function testCases(): array
                     $identity,
                 ),
                 'app/Use/run.php' => str_replace(
-                    [
-                        '$one->kind',
-                        'kind: \'a\'',
-                    ],
-                    [
-                        '$one->type',
-                        'type: \'a\'',
-                    ],
+                    ['$one->kind', 'kind: \'a\''],
+                    ['$one->type', 'type: \'a\''],
                     $user,
                 ),
             ],
@@ -1562,13 +1527,7 @@ function testCases(): array
             ],
             [
                 'app/Ids/Identity.php' => $identity,
-                'app/Use/run.php' => str_replace([
-                    '$kind = ',
-                    '? $kind.',
-                ], [
-                    '$type = ',
-                    '? $type.',
-                ], $user),
+                'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user),
             ],
             false,
             [],
@@ -1760,16 +1719,8 @@ function testCases(): array
                 'app/Units/Store.php' => str_replace('function own', 'function claim', $owners['app/Units/Store.php']),
                 'app/Memories/Memories.php' => $owners['app/Memories/Memories.php'],
                 'app/Use/Work.php' => str_replace(
-                    [
-                        '$this->units->own()',
-                        '$owner->own()',
-                        'app(Owner::class)->own()',
-                    ],
-                    [
-                        '$this->units->claim()',
-                        '$owner->claim()',
-                        'app(Owner::class)->claim()',
-                    ],
+                    ['$this->units->own()', '$owner->own()', 'app(Owner::class)->own()'],
+                    ['$this->units->claim()', '$owner->claim()', 'app(Owner::class)->claim()'],
                     $owners['app/Use/Work.php'],
                 ),
             ],

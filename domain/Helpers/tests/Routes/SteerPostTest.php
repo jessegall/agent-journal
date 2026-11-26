@@ -34,15 +34,8 @@ final class SteerPostTest extends GuardedRouteEntryTestCase
         $identity = $helpers->identityOf('Review');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'identity_id' => $identity->id,
-                'text' => 'Look at the tests too.',
-                'request_key' => 'helper-1',
-            ])
+            ->payload(['identity_id' => $identity->id, 'text' => 'Look at the tests too.', 'request_key' => 'helper-1'])
             ->reply(SteerHelperCommand::class, SteerReceipt::steered($job->id))
-            ->expects(SteerHelperCommand::class, [
-                'identityId' => $identity->id,
-                'text' => 'Look at the tests too.',
-            ]);
+            ->expects(SteerHelperCommand::class, ['identityId' => $identity->id, 'text' => 'Look at the tests too.']);
     }
 }

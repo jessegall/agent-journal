@@ -85,14 +85,8 @@ final class ColumnUse
 
     public function add(self $other): void
     {
-        $this->equal = array_values(array_unique([
-            ...$this->equal,
-            ...$other->equal,
-        ]));
-        $this->ranged = array_values(array_unique([
-            ...$this->ranged,
-            ...$other->ranged,
-        ]));
+        $this->equal = array_values(array_unique([...$this->equal, ...$other->equal]));
+        $this->ranged = array_values(array_unique([...$this->ranged, ...$other->ranged]));
     }
 
     /**
@@ -104,10 +98,7 @@ final class ColumnUse
     {
         $ranged = array_values(array_diff($this->ranged, $this->equal));
 
-        return array_values(array_filter([
-            ...$this->equal,
-            $ranged[0] ?? null,
-        ]));
+        return array_values(array_filter([...$this->equal, $ranged[0] ?? null]));
     }
 }
 
@@ -325,10 +316,7 @@ function rootModelOf(MethodCall $call, string $ownClass): string|null
 
     $class = $root->class->toString();
 
-    if (in_array($class, [
-        'self',
-        'static',
-    ], true)) {
+    if (in_array($class, ['self', 'static'], true)) {
         return $ownClass;
     }
 
@@ -404,11 +392,7 @@ function declaredIndexOf(MethodCall $call, string $name): array
 {
     $first = $call->getArgs()[0]->value ?? null;
 
-    if (in_array($name, [
-        'index',
-        'unique',
-        'primary',
-    ], true) && $first instanceof Node\Expr\Array_) {
+    if (in_array($name, ['index', 'unique', 'primary'], true) && $first instanceof Node\Expr\Array_) {
         return array_values(array_filter(array_map(
             fn ($item) => $item?->value instanceof Node\Scalar\String_ ? $item->value->value : null,
             $first->items,
@@ -423,11 +407,7 @@ function declaredIndexOf(MethodCall $call, string $name): array
         return [$first->value];
     }
 
-    if (in_array($name, [
-        'index',
-        'unique',
-        'primary',
-    ], true) && $call->var instanceof MethodCall) {
+    if (in_array($name, ['index', 'unique', 'primary'], true) && $call->var instanceof MethodCall) {
         $column = $call->var;
 
         while ($column instanceof MethodCall && ! $column->var instanceof Node\Expr\Variable) {

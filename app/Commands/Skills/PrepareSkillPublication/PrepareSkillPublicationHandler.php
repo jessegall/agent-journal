@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\Skills\PrepareSkillPublication;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Skills\SkillPublisher;
 use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\PublicationFiles;
 use App\Support\SkillTargets;
 use App\Values\PreparationProgress;

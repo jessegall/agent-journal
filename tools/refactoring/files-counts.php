@@ -51,10 +51,7 @@ mkdir($folder.'/deep/'.implode('/', array_map(fn (int $level) => "level-{$level}
 sleep(2);
 
 $config = new Repository(['files' => [
-    'places' => [
-        'project' => $folder,
-        'temporary' => $folder,
-    ],
+    'places' => ['project' => $folder, 'temporary' => $folder],
     'cached_bytes' => CACHED_BYTES,
     'largest_cached_file' => LARGEST_CACHED_FILE,
 ]]);

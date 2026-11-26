@@ -82,13 +82,7 @@ final class QuestionFixtures
     {
         $question = $this->questionCalled($name);
 
-        Assert::assertSame([
-            null,
-            null,
-        ], [
-            $question->answer,
-            $question->answered_at,
-        ], "{$name} was answered.");
+        Assert::assertSame([null, null], [$question->answer, $question->answered_at], "{$name} was answered.");
 
         return $this;
     }
@@ -102,16 +96,8 @@ final class QuestionFixtures
         $target = $this->journal->actorCalled($by);
 
         Assert::assertSame(
-            [
-                $target->type,
-                $target->id,
-                $answer,
-            ],
-            [
-                $question->target_type,
-                $question->target_id,
-                $question->answer,
-            ],
+            [$target->type, $target->id, $answer],
+            [$question->target_type, $question->target_id, $question->answer],
             "{$name} was answered otherwise.",
         );
 

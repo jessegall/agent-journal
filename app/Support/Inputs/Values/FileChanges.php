@@ -46,10 +46,7 @@ final readonly class FileChanges
 
         $destinations = array_map(fn (array $move) => new FileChange(trim($move[2]), FileOperation::Write), $moves);
 
-        return new self([
-            ...$changes,
-            ...$destinations,
-        ]);
+        return new self([...$changes, ...$destinations]);
     }
 
     /**

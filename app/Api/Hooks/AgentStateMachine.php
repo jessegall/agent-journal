@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Api\Hooks;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Bus\PipelineRunner;
 use App\Exceptions\HookDeadlineExpired;
+use App\Exceptions\ReplayFound;
 use App\Pipelines\AnswerHookPipeline;
 use App\Support\CallStages\HookCallStage;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReply;
-use App\Support\Drivers\Exceptions\ReplayFound;
 use App\Support\IncomingWorkRegistration;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\OperationDeadline;

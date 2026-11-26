@@ -91,11 +91,7 @@ final readonly class ContainerManifest implements JsonSerializable
             $startProfile->capabilities(),
             false,
             $network,
-            [
-                $mount,
-                ...$rules->accountMounts(),
-                ...$rules->sessionMounts($sessionId, $resumedSessionId),
-            ],
+            [$mount, ...$rules->accountMounts(), ...$rules->sessionMounts($sessionId, $resumedSessionId)],
             [],
             $policy->budgets,
             $rules,
@@ -144,11 +140,7 @@ final readonly class ContainerManifest implements JsonSerializable
             throw ManifestRefused::because('a protected start binds the account folder it protects');
         }
 
-        if (in_array($network, [
-            'host',
-            'none',
-            '',
-        ], true)) {
+        if (in_array($network, ['host', 'none', ''], true)) {
             throw ManifestRefused::because("the network {$network} is not a dedicated start network");
         }
 

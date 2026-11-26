@@ -32,10 +32,7 @@ final class CommandTypeReviseCommand extends Command
 
         return $this->runCall(ReviseProposalPayload::from([
             'proposal' => (string) $this->argument('proposal'),
-            'declaration' => [
-                ...$declaration,
-                'evidence' => (string) $this->option('evidence'),
-            ],
+            'declaration' => [...$declaration, 'evidence' => (string) $this->option('evidence')],
             'expectedRevision' => (int) $this->option('expected-revision'),
             'requestKey' => $this->requestKey(),
         ]));

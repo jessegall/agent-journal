@@ -14,6 +14,6 @@ final readonly class ProjectCommandReconciled implements ConnectionEvent, Projec
 {
     public function __construct(
         public string $runId,
-        public CommandRunStatus $state,
+        public CommandRunStatus $status,
     ) {}
 }

@@ -38,12 +38,7 @@ final class OperationsReadTool extends JournalReadTool
         return [
             'status' => $schema->string()->required(),
             'request_key' => $schema->string()->required(),
-            'state' => $schema->string()->enum([
-                'completed',
-                'refused',
-                'taken',
-                'unknown',
-            ])->required(),
+            'state' => $schema->string()->enum(['completed', 'refused', 'taken', 'unknown'])->required(),
             'next_actions' => $schema->array()->required(),
         ];
     }

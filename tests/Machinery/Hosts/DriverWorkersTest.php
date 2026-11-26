@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Agents\Drivers\Work\DriverRestartSignal;
+use App\Agents\Drivers\Work\DriverWorkers;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
-use App\Support\Drivers\DriverRestartSignal;
-use App\Support\Drivers\DriverWorkers;
 use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
@@ -62,7 +62,10 @@ final class DriverWorkersTest extends TestCase
         $this->journal->stepDriverWorker($work, self::WAIT_MS);
 
         $this->journal->assertResult(
-            [['frames_per_second' => 4, 'raw' => false], ['signal' => 'SIGUSR2']],
+            [[
+                'frames_per_second' => 4,
+                'raw' => false,
+            ], ['signal' => 'SIGUSR2']],
             [$this->journal->payloadOf($stream), $this->journal->payloadOf($this->lastOrder())],
         );
     }

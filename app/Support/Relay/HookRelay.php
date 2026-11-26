@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Relay;
 
+use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Hooks\OutageReply;
 use App\Contracts\Files\Files;
 use App\Contracts\Sessions\AgentRequestClient;
 use App\Enums\Files\Place;
@@ -14,8 +16,6 @@ use App\Exceptions\DriverReplyMalformed;
 use App\Exceptions\JournalUnreachable;
 use App\Exceptions\OutputGrantsInvalid;
 use App\Support\AgentCallReply;
-use App\Support\Drivers\DriverReply;
-use App\Support\Drivers\OutageReply;
 use App\Support\Inputs\ProtectedFileRead;
 use App\Values\LoggedBypass;
 use Carbon\CarbonImmutable;

@@ -109,10 +109,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_the_owner_saves_a_preview_of_two_of_three_candidates_with_its_checksum(): void
     {
-        $saved = $this->save([
-            TestIds::of(101),
-            TestIds::of(103),
-        ]);
+        $saved = $this->save([TestIds::of(101), TestIds::of(103)]);
 
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
@@ -120,10 +117,7 @@ final class SaveSharePreviewTest extends TestCase
         $this->assertSame($preview->checksum, $saved->checksum);
 
         $this->assertSame(
-            [
-                TestIds::of(101),
-                TestIds::of(103),
-            ],
+            [TestIds::of(101), TestIds::of(103)],
             array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection->items()),
         );
 
@@ -169,10 +163,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_a_changed_publication_version_a_wrong_checksum_and_another_owner_are_refused(): void
     {
-        $saved = $this->save([
-            TestIds::of(101),
-            TestIds::of(102),
-        ]);
+        $saved = $this->save([TestIds::of(101), TestIds::of(102)]);
 
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
@@ -209,10 +200,7 @@ final class SaveSharePreviewTest extends TestCase
 
         $document = Document::query()->where('number', 1)->sole();
 
-        $plan = Plan::factory()->create([
-            'title' => self::PLAN_TITLE,
-            'type' => PlanType::Build,
-        ]);
+        $plan = Plan::factory()->create(['title' => self::PLAN_TITLE, 'type' => PlanType::Build]);
 
         $this->planStructure()->addPhase($plan, self::SECRET_PHASE);
         Link::createForModels($plan, $document);

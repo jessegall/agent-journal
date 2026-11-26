@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
+use App\Agents\Drivers\Work\WorkerLease;
 use App\Contracts\Bus\CommandMiddleware;
 use App\Models\Hosts\HostProcess;
 use App\Support\CommandCall;
 use App\Support\CommandNesting;
-use App\Support\Drivers\WorkerLease;
 use Closure;
 
 /**

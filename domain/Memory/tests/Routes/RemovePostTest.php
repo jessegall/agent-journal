@@ -33,13 +33,8 @@ final class RemovePostTest extends GuardedRouteEntryTestCase
             ->createMemory('Rule', 'Builder', 'Run the phase tests once.');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'memory_id' => $memory->id,
-                'request_key' => 'write-1',
-            ])
+            ->payload(['memory_id' => $memory->id, 'request_key' => 'write-1'])
             ->reply(RemoveMemoryCommand::class, $memory->id)
-            ->expects(RemoveMemoryCommand::class, [
-                'memoryId' => $memory->id,
-            ]);
+            ->expects(RemoveMemoryCommand::class, ['memoryId' => $memory->id]);
     }
 }

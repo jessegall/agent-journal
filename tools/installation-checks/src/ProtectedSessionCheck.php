@@ -158,14 +158,8 @@ final class ProtectedSessionCheck
         $clientRoot = '/proc/$(for p in /proc/[0-9]*; do [ "$(stat -c %u $p)" = 10001 ] && echo ${p#/proc/} && break; done)/root';
 
         $this->judgeBashLines($session, [
-            'the workspace marker reads through Bash' => [
-                'cat '.self::MARKER,
-                $marker,
-            ],
-            'Bash runs as the executor, user 10002' => [
-                'id -u',
-                '10002',
-            ],
+            'the workspace marker reads through Bash' => ['cat '.self::MARKER, $marker],
+            'Bash runs as the executor, user 10002' => ['id -u', '10002'],
         ]);
         $lines = [];
 

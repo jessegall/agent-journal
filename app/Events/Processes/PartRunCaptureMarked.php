@@ -14,6 +14,6 @@ final readonly class PartRunCaptureMarked implements PartRunEvent, ProcessEvent
 {
     public function __construct(
         public string $partId,
-        public CaptureStatus $state,
+        public CaptureStatus $status,
     ) {}
 }

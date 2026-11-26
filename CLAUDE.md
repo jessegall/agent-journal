@@ -41,6 +41,11 @@ yours to resolve at its source.
 
 @JOURNAL.md
 
+## No worker without the user's approval (user message 26430)
+
+- The main agent never dispatches a worker, or sends a kept worker new work, without the user's approval for that
+  worker. Ask, and wait for a yes; a yes for one worker is not a yes for the next.
+
 ## Testing a plan, phase by phase (user messages 11168, 11179, 11183)
 
 - **A worker runs no tests or checks at all** (user messages 13733, 13735): no test of any kind, no Pint, PHPStan, vue-tsc, judge, names or texts check, not at a phase end and not after a fix. It writes its whole unit, proves each point with file:line, and asks for the merge once at the end. The main agent runs every check below at the merge and sends back what fails. The rest of this section is for the main agent.

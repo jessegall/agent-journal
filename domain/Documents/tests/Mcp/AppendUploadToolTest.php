@@ -44,10 +44,6 @@ final class AppendUploadToolTest extends McpToolEntryTestCase
                 'digest' => hash('sha256', 'notes'),
                 'request_key' => 'documents-1',
             ])
-            ->expects(AppendUploadCommand::class, [
-                'uploadId' => $upload,
-                'index' => 0,
-                'text' => 'notes',
-            ]);
+            ->expects(AppendUploadCommand::class, ['uploadId' => $upload, 'index' => 0, 'text' => 'notes']);
     }
 }

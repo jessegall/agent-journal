@@ -30,10 +30,7 @@ final readonly class ReadAndOrPipeline implements PipelineDefinition
         return [
             ParseFirstAndOrOperand::class,
             Step::repeated(
-                [
-                    SkipAndOrOperator::class,
-                    ParseNextAndOrOperand::class,
-                ],
+                [SkipAndOrOperator::class, ParseNextAndOrOperand::class],
                 while: fn (AndOrChain $chain) => $chain->isAtAndOr()
             ),
             CompleteAndOrChain::class,

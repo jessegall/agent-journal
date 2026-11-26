@@ -109,10 +109,7 @@ final class CommandRule extends Data
 
         $binding = self::usualBinding($program);
 
-        $contract = VerificationContract::unproven(implode(' ', [
-            $program->family,
-            ...$subcommands,
-        ]), $tool, $binding);
+        $contract = VerificationContract::unproven(implode(' ', [$program->family, ...$subcommands]), $tool, $binding);
 
         return new self(
             $id,
@@ -148,10 +145,7 @@ final class CommandRule extends Data
 
     public function operation(): string
     {
-        return implode(' ', [
-            $this->program->family,
-            ...$this->subcommands,
-        ]);
+        return implode(' ', [$this->program->family, ...$this->subcommands]);
     }
 
     /**
@@ -164,11 +158,7 @@ final class CommandRule extends Data
 
     private static function usualBinding(ProgramSpellings $program): ExecutableBinding
     {
-        return ExecutableBinding::builtin($program->family, [
-            '/usr/bin',
-            '/bin',
-            '/usr/local/bin',
-        ]);
+        return ExecutableBinding::builtin($program->family, ['/usr/bin', '/bin', '/usr/local/bin']);
     }
 
     public function ownedBy(RuleScope $scope, int $revision): self

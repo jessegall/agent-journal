@@ -95,7 +95,6 @@ func serve(arguments []string) error {
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket a contained host starts containers through")
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
-	startSocketFolder := flags.String("start-socket-dir", "", "an owner-only folder for the start socket, the state folder by default")
 	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	seccomp := flags.String("seccomp-profile", "", "the seccomp profile a contained host's agent containers run under")
@@ -126,17 +125,14 @@ func serve(arguments []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	journal := client.New(enrollment).WithArrangement(string(arrangement))
-	executor := &accountExecutor{}
 	containers := host.Containers{}
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage,
-			DevelopmentPrograms: *developmentPrograms}
+			Allowed: host.NewAllowedImages(), DevelopmentPrograms: *developmentPrograms}
 		containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err
 		}
-		executor.bindsAccount = containers.BindsAccount
-		executor.accountFolders = containers
 		evidence := host.NativeEvidence{Folder: *stateFolder}
 		// Without a report the journal refuses every contained start, so a failed report stops no other work.
 		if err := host.NotifyContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
@@ -151,18 +147,9 @@ func serve(arguments []string) error {
 		return err
 	}
 	if _, err := startHostProtocol(ctx, journal, enrollment, *stateFolder,
-		hostNamesOf(journal, *installationFolder, *hookCommand), containers, release, nil); err != nil {
+		hostNamesOf(journal, *installationFolder, *hookCommand), containers, release, hostProtocolOptions{}); err != nil {
 		return err
 	}
-	if *startSocketFolder == "" {
-		*startSocketFolder = *stateFolder
-	}
-	socket := host.StartSocket{Folder: *startSocketFolder, Executor: executor}
-	listener, err := socket.Listen()
-	if err != nil {
-		return err
-	}
-	defer listener.Close()
-	socket.Serve(ctx, listener)
+	<-ctx.Done()
 	return nil
 }

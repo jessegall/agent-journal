@@ -61,14 +61,8 @@ final class BlockTaskTest extends TestCase
         $this->journal->run(new BlockTaskCommand($this->task->id, $this->run, 'Waits on review.'));
 
         $this->assertSame(
-            [
-                TaskStatus::Blocked,
-                'Waits on review.',
-            ],
-            [
-                $this->task->refresh()->status,
-                $this->task->block_reason,
-            ],
+            [TaskStatus::Blocked, 'Waits on review.'],
+            [$this->task->refresh()->status, $this->task->block_reason],
         );
     }
 
@@ -107,24 +101,9 @@ final class BlockTaskTest extends TestCase
 
         $this->assertSame(
             [
-                [
-                    2,
-                    TaskStatus::Blocked,
-                    TaskStatus::Started,
-                    null,
-                ],
-                [
-                    1,
-                    TaskStatus::Started,
-                    TaskStatus::Blocked,
-                    'Waits for the schema.',
-                ],
-                [
-                    1,
-                    TaskStatus::Open,
-                    TaskStatus::Started,
-                    null,
-                ],
+                [2, TaskStatus::Blocked, TaskStatus::Started, null],
+                [1, TaskStatus::Started, TaskStatus::Blocked, 'Waits for the schema.'],
+                [1, TaskStatus::Open, TaskStatus::Started, null],
             ],
             array_map(
                 fn (TaskTransition $entry) => [
@@ -137,11 +116,7 @@ final class BlockTaskTest extends TestCase
             ),
         );
 
-        $this->assertSame([
-            3,
-            2,
-            1,
-        ], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
+        $this->assertSame([3, 2, 1], array_map(fn (TaskTransition $entry) => $entry->sequence, $history->entries));
     }
 
     private function tasks(): TaskFixtures

@@ -17,7 +17,7 @@ final class ShareControlsPartData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly ShareStatus $state,
+        public readonly ShareStatus $status,
         public readonly bool $mayReveal,
         public readonly bool $mayRetry,
         public readonly bool $mayRevoke,

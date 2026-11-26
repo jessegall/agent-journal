@@ -37,10 +37,6 @@ final class FinishPostTest extends GuardedRouteEntryTestCase
                 'note' => 'Shipped.',
                 'request_key' => 'plans-1',
             ])
-            ->expects(FinishPlanCommand::class, [
-                'planId' => $plan->id,
-                'expectedRevision' => 1,
-                'note' => 'Shipped.',
-            ]);
+            ->expects(FinishPlanCommand::class, ['planId' => $plan->id, 'expectedRevision' => 1, 'note' => 'Shipped.']);
     }
 }

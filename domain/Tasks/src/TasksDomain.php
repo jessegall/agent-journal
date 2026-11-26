@@ -275,19 +275,11 @@ final class TasksDomain extends Domain implements
         return [
             new PolicyDefinition(
                 TaskPolicy::class,
-                [
-                    AccessType::Read,
-                    AccessType::Create,
-                    AccessType::Edit,
-                    AccessType::Admin,
-                ],
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Admin],
             ),
             new PolicyDefinition(
                 TaskRunPolicy::class,
-                [
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Create, AccessType::Edit],
             ),
         ];
     }

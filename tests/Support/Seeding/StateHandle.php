@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\StackTransaction;
-use App\Support\Drivers\DriverCapabilities;
 use App\Support\EnginePass;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;

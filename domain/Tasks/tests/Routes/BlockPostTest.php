@@ -33,13 +33,8 @@ final class BlockPostTest extends GuardedRouteEntryTestCase
         $journal->run(new StartTaskCommand($task->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'task' => $task->number,
-            ])
-            ->payload([
-                'reason' => 'Waits on the review.',
-                'run' => 1,
-            ])
+            ->parameters(['task' => $task->number])
+            ->payload(['reason' => 'Waits on the review.', 'run' => 1])
             ->expects(BlockTaskCommand::class, [
                 'taskId' => $task->id,
                 'runNumber' => 1,

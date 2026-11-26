@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -20,8 +22,6 @@ use App\Support\ActorProvisioning;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\AgentRuntimes;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
@@ -92,11 +92,7 @@ trait CommittedHookStack
     private function startedTarget(): StackTarget
     {
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent()->forceFill(
-            [
-                'name' => 'Hook agent',
-                'profile_key' => 'main-agent',
-                'project_id' => TestProjects::local()->id,
-            ],
+            ['name' => 'Hook agent', 'profile_key' => 'main-agent', 'project_id' => TestProjects::local()->id],
         );
         $agent->id = TestIds::of(1);
         $agent->save();
@@ -199,11 +195,7 @@ trait CommittedHookStack
         return new DriverCapabilities(
             'Test driver',
             'pre-tool, post-tool and stop replies',
-            [
-                'onShellCommand',
-                'onToolFinished',
-                'onStop',
-            ],
+            ['onShellCommand', 'onToolFinished', 'onStop'],
             $rewrites,
         );
     }

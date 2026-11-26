@@ -50,9 +50,6 @@ final readonly class TextApi
         string $target,
         string|null $version = null,
     ): TextVersionSummary {
-        return $this->sender->send(ReadTextVersionPayload::from([
-            'target' => $target,
-            'version' => $version,
-        ]));
+        return $this->sender->send(ReadTextVersionPayload::from(['target' => $target, 'version' => $version]));
     }
 }

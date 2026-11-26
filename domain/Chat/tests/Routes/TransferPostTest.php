@@ -40,10 +40,7 @@ final class TransferPostTest extends GuardedRouteEntryTestCase
         $member = $journal->userCalled('Sam');
 
         return RouteCall::as(Caller::User)
-            ->payload([
-                'inboxId' => $group,
-                'participant' => "user:{$member->id}",
-            ])
+            ->payload(['inboxId' => $group, 'participant' => "user:{$member->id}"])
             ->expects(HandOverInboxCommand::class, [
                 'inboxId' => $group,
                 'from' => $journal->actorCalled('Owner'),

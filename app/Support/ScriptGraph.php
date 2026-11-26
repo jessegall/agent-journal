@@ -42,10 +42,7 @@ final class ScriptGraph
 
         $times = array_map($this->remainingSeconds(...), array_values($instruction->successors));
 
-        $seconds = $instruction->seconds() + max([
-            0,
-            ...$times,
-        ]);
+        $seconds = $instruction->seconds() + max([0, ...$times]);
 
         if ($seconds > self::EXECUTION_BUDGET) {
             throw ScriptSyntaxError::at(

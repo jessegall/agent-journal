@@ -7,7 +7,8 @@ A program's sign-in writes the account's credentials, so it never runs in the ap
   `JOURNAL_URL` and the enrolled host's `JOURNAL_HOST_SECRET` in its environment.
 - **On a server (the contained arrangement):** the always-on `accounts` compose service runs it from the runner image
   as uid 10001, with `JOURNAL_URL=http://app:8000`, the host secret in the owner-only file `JOURNAL_HOST_SECRET_FILE`
-  names, `ACCOUNTS_ROOT=/accounts` on the volume `accounts-data`, and `AGENTS_HOST_START_SOCKET`.
+  names and `ACCOUNTS_ROOT=/accounts` on the volume `accounts-data`; its account folders are made and removed by the
+  agent host, through folder orders the journal places for it.
 
 A server the user runs for themselves counts as user-operated, like the Mac, so every method below is offered on both.
 

@@ -51,12 +51,7 @@ enum CommandClass: string
      */
     public function isFileChange(): bool
     {
-        return in_array($this, [
-            self::Write,
-            self::Edit,
-            self::Delete,
-            self::PackageInstall,
-        ], true);
+        return in_array($this, [self::Write, self::Edit, self::Delete, self::PackageInstall], true);
     }
 
     /**

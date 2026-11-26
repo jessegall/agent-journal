@@ -19,11 +19,7 @@ return new class extends Migration
             $table->string('status', 16);
             $table->timestampsTz();
 
-            $table->index([
-                'actor_type',
-                'actor_id',
-                'due_at',
-            ]);
+            $table->index(['actor_type', 'actor_id', 'due_at']);
         });
     }
 

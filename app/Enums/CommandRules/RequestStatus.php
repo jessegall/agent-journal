@@ -31,11 +31,7 @@ enum RequestStatus: string
      */
     public function isOpen(): bool
     {
-        return ! in_array($this, [
-            self::Active,
-            self::Rejected,
-            self::Withdrawn,
-        ], true);
+        return ! in_array($this, [self::Active, self::Rejected, self::Withdrawn], true);
     }
 
     /**

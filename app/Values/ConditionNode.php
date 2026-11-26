@@ -61,11 +61,7 @@ final readonly class ConditionNode
         }
 
         foreach (array_keys($this->fields) as $field) {
-            if (! in_array($field, [
-                'type',
-                'version',
-                ...$fields,
-            ], true)) {
+            if (! in_array($field, ['type', 'version', ...$fields], true)) {
                 throw SkillConditionInvalid::field($this->at((string) $field), 'is not a field of this type');
             }
         }

@@ -18,10 +18,7 @@ require_once __DIR__.'/project-names.php';
 const EXAMPLE_COUNT = 3;
 
 chdir(dirname(__DIR__, 2));
-$options = getopt('', [
-    'type:',
-    'since:',
-], $rest);
+$options = getopt('', ['type:', 'since:'], $rest);
 $paths = array_slice($argv, $rest) ?: PROJECT_FOLDERS;
 $type = $options['type'] ?? null;
 $names = array_filter(projectNames($paths), fn (DeclaredName $declared) => $type === null || $declared->declarationType === $type);

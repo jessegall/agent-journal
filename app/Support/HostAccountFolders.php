@@ -5,52 +5,54 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Accounts\AccountFolders;
-use App\Data\Hosts\AccountFolderReplyData;
+use App\Contracts\Accounts\SignInHost;
 use App\Exceptions\AccountFolderRefused;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Str;
 
 /**
- * Where agents run in containers, the accounts root is root's, so the agent host makes and removes each account
- * folder as root, named by its plain id, and the sign-in service only writes inside the folder it was given. A make
- * names its operation, so a make sent again after a lost reply finds its own folder; a remove of a gone folder is done.
+ * A contained host's account folders: made and removed by the host's agent daemon as root, through an order the
+ * journal places for this host, as the sign-in runner owns no daemon itself.
  */
 final readonly class HostAccountFolders implements AccountFolders
 {
-    public function __construct(private HostStartSocket $socket) {}
+    public function __construct(private SignInHost $host, private FolderOrderWait $wait) {}
 
     public function make(string $directory): void
     {
-        $this->ask('makeFolder', [
-            'folder' => basename($directory),
-            'operation' => (string) Str::uuid(),
-        ]);
+        $operation = (string) Str::uuid();
+        $this->settle($this->ask(fn () => $this->host->orderFolderMake(basename($directory), $operation)));
     }
 
     public function remove(string $directory): void
     {
-        $this->ask('removeFolder', ['folder' => basename($directory)]);
+        $operation = (string) Str::uuid();
+        $this->settle($this->ask(fn () => $this->host->orderFolderRemove(basename($directory), $operation)));
     }
 
     /**
-     * Sends the request, and once more as it was when its reply is lost: the host answers the same request the same
-     * way, so the second answer says what became of the first.
+     * Places the order, and once more when its reply was lost: the same operation finds the order already made.
      *
-     * @param  array<string, string>  $request
+     * @param  callable(): string  $order
      */
-    private function ask(string $operation, array $request): void
+    private function ask(callable $order): string
     {
-        $reply = $this->socket->ask([$operation => $request], AccountFolderReplyData::class);
-
-        if ($reply === null) {
-            $reply = $this->socket->ask([$operation => $request], AccountFolderReplyData::class);
+        try {
+            return $order();
+        } catch (ConnectionException) {
+            return $order();
         }
+    }
 
-        if (! $reply instanceof AccountFolderReplyData) {
-            throw AccountFolderRefused::hostUnreachable();
-        }
+    /**
+     * @throws AccountFolderRefused
+     */
+    private function settle(string $orderId): void
+    {
+        $answer = $this->wait->answerOf($orderId);
 
-        if (! $reply->isDone) {
-            throw AccountFolderRefused::byHost($reply->reason);
+        if ($answer->isRefused()) {
+            throw AccountFolderRefused::byHost($answer->reason);
         }
     }
 }

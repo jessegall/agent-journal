@@ -246,14 +246,14 @@ export class TerminalSubscription {
 
             return;
         }
-        if (answer.state === 'restarted') {
+        if (answer.status === 'restarted') {
             this.open();
             this.restarted = true;
             this.publish(this.current);
 
             return;
         }
-        if (answer.state === 'ended') {
+        if (answer.status === 'ended') {
             this.interest = '';
             this.publish({
                 ...blank('ended', this.current.receivedAt),
@@ -279,11 +279,11 @@ export class TerminalSubscription {
         if (answer.liveForMs !== undefined) {
             this.liveUntil = this.now() + answer.liveForMs;
         }
-        if (answer.state === 'unchanged') {
+        if (answer.status === 'unchanged') {
             return;
         }
-        if (answer.state === 'preview_unavailable' || answer.state === 'connection_lost') {
-            this.publish({ ...blank(answer.state, this.now()), identity });
+        if (answer.status === 'preview_unavailable' || answer.status === 'connection_lost') {
+            this.publish({ ...blank(answer.status, this.now()), identity });
 
             return;
         }
@@ -292,7 +292,7 @@ export class TerminalSubscription {
             return;
         }
         this.publish({
-            ...blank(answer.state, Date.parse(answer.receivedAt ?? '') || this.now()),
+            ...blank(answer.status, Date.parse(answer.receivedAt ?? '') || this.now()),
             frame,
             identity,
         });

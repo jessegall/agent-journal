@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Enums\Drivers\RewriteSupport;
 use App\Exceptions\UnsupportedHook;
 use App\Support\Decisions\Decision;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;

@@ -58,7 +58,7 @@ describe('PlanCard', () => {
     });
 
     it('shows the state as an outlined badge in words', () => {
-        const badge = row({ state: 'started' }).get('.rounded-badge');
+        const badge = row({ status: 'started' }).get('.rounded-badge');
 
         expect(badge.text()).toBe('Started');
         expect(badge.find('svg').exists()).toBe(true);

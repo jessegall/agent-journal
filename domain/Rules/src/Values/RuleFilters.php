@@ -18,7 +18,7 @@ final readonly class RuleFilters
         public string $search = '',
         public int $page = 1,
         public string|null $selectedRuleId = null,
-        public RuleStatus|null $state = null,
+        public RuleStatus|null $status = null,
         public int $perPage = self::PAGE_SIZE,
     ) {}
 }

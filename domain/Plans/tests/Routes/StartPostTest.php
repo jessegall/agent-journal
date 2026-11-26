@@ -30,11 +30,7 @@ final class StartPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->expects(StartPlanCommand::class, [
-                'planId' => $plan->id,
-            ]);
+            ->parameters(['plan' => $plan->number])
+            ->expects(StartPlanCommand::class, ['planId' => $plan->id]);
     }
 }

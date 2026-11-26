@@ -106,13 +106,7 @@ final class StartTaskTest extends TestCase
         $run = $this->journal->actAs('First')->run($start, self::START_KEY);
         $retry = $this->journal->run($start, self::START_KEY);
 
-        $this->assertSame([
-            1,
-            1,
-        ], [
-            $run,
-            $retry,
-        ]);
+        $this->assertSame([1, 1], [$run, $retry]);
 
         $this->tasks->assertStarted('Owned work', by: 'First')->assertRunCount('Owned work', 1);
     }
@@ -223,10 +217,7 @@ final class StartTaskTest extends TestCase
 
         $classes = array_map(fn (object $event) => $event::class, $sent());
 
-        $this->assertSame([
-            TaskStarted::class,
-            TaskStarted::class,
-        ], $classes);
+        $this->assertSame([TaskStarted::class, TaskStarted::class], $classes);
 
         $this->assertSame($this->journal->ownerUser()->id, $sent()[0]->actor->id);
         $this->assertEquals($sent()[0], unserialize(serialize($sent()[0])));
@@ -264,13 +255,7 @@ final class StartTaskTest extends TestCase
         $this->assertThrows(fn () => $this->journal->run(new StartTaskCommand($task->id)), StackAlreadyClosed::class);
         $stored = $task->refresh();
 
-        $this->assertSame([
-            TaskStatus::Open,
-            0,
-        ], [
-            $stored->status,
-            $stored->run_number,
-        ]);
+        $this->assertSame([TaskStatus::Open, 0], [$stored->status, $stored->run_number]);
     }
 
     public function test_a_failure_after_the_push_leaves_no_task_run_or_stack_change(): void
@@ -285,10 +270,7 @@ final class StartTaskTest extends TestCase
         $stackRows = AgentStackRow::query()->withoutGlobalScopes()->count();
 
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
-            TaskStarted::class => [
-                PushTaskState::class.'@handle',
-                FailsAfterPush::class.'@handle',
-            ],
+            TaskStarted::class => [PushTaskState::class.'@handle', FailsAfterPush::class.'@handle'],
         ]));
 
         $this->assertThrows(fn () => $this->start($task), RuntimeException::class);

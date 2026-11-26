@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
@@ -13,7 +14,6 @@ use App\Exceptions\SignInAnswerRefused;
 use App\Exceptions\SignInCodeInvalid;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\SignInChallenges;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
@@ -104,7 +104,10 @@ final class SubmitSignInCodeTest extends TestCase
         $pasted = "Error in event handler: TypeError: Cannot read properties of undefined (reading 'id')";
         $code = 'Ksaw83zu7MDwmacNrrJ8tHqQXm1P6Rs1n7KMTUjY2lKY1#DV0-PaIOKpbJKqe--nxwxE48';
 
-        foreach ([SignInMethod::OAuth, SignInMethod::ProviderToken] as $index => $method) {
+        foreach ([
+            SignInMethod::OAuth,
+            SignInMethod::ProviderToken,
+        ] as $index => $method) {
             $attempt = $this->signInAttempt(DefaultDrivers::CLAUDE_CODE, $method, "request-{$index}");
 
             $this->assertThrows(

@@ -100,7 +100,7 @@ const accountIdentity = computed(() => resultRow.value?.identity ?? null);
 const namedAccountId = ref<string | null>(null);
 const unnamedAccount = computed(() => {
     if (
-        followed.value?.state !== 'complete' ||
+        followed.value?.status !== 'complete' ||
         followed.value.type !== 'new_account' ||
         resultRow.value === undefined ||
         resultRow.value.id === namedAccountId.value
@@ -313,7 +313,7 @@ function close(): void {
     }
 
     if (
-        ended?.state === 'complete' &&
+        ended?.status === 'complete' &&
         ended.type === 'sign_in_again' &&
         ended.accountId !== null
     ) {
@@ -517,7 +517,7 @@ function cancelAndClose(): void {
                         :form="formId"
                         variant="primary"
                         :disabled="
-                            followed?.state !== 'waiting' ||
+                            followed?.status !== 'waiting' ||
                             followed.isWaitingForAgents ||
                             answerForm.code === ''
                         "
@@ -544,7 +544,7 @@ function cancelAndClose(): void {
                     >
                 </template>
             </template>
-            <template v-else-if="followed?.state === 'checking'">
+            <template v-else-if="followed?.status === 'checking'">
                 <span class="flex-1" />
                 <Button @click="close">Close</Button>
             </template>
@@ -554,14 +554,14 @@ function cancelAndClose(): void {
                     >Save</Button
                 >
             </template>
-            <template v-else-if="followed?.state === 'complete'">
+            <template v-else-if="followed?.status === 'complete'">
                 <Button @click="addAnother">Add another</Button>
                 <span class="flex-1" />
                 <Button variant="primary" @click="close">Done</Button>
             </template>
             <template
                 v-else-if="
-                    followed?.state === 'already_added' &&
+                    followed?.status === 'already_added' &&
                     followed.resultAccountId !== null
                 "
             >
@@ -573,7 +573,7 @@ function cancelAndClose(): void {
                     >Show the account</Button
                 >
             </template>
-            <template v-else-if="followed?.state === 'already_added'">
+            <template v-else-if="followed?.status === 'already_added'">
                 <span class="flex-1" />
                 <Button variant="primary" @click="close"
                     >Back to Accounts</Button
@@ -581,8 +581,8 @@ function cancelAndClose(): void {
             </template>
             <template
                 v-else-if="
-                    followed?.state === 'different_account' ||
-                    followed?.state === 'unverified'
+                    followed?.status === 'different_account' ||
+                    followed?.status === 'unverified'
                 "
             >
                 <span class="flex-1" />

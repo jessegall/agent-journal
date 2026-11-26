@@ -19,18 +19,13 @@ final readonly class AgentApi
     public function recordHeartbeat(
         CallKey $requestKey = new CallKey(),
     ): ApiAccepted {
-        return $this->sender->send(RecordHeartbeatPayload::from([
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(RecordHeartbeatPayload::from(['requestKey' => $requestKey]));
     }
 
     public function retireAgent(
         string $agentId,
         CallKey $requestKey = new CallKey(),
     ): AssignmentResultData {
-        return $this->sender->send(RetireAgentPayload::from([
-            'agentId' => $agentId,
-            'requestKey' => $requestKey,
-        ]));
+        return $this->sender->send(RetireAgentPayload::from(['agentId' => $agentId, 'requestKey' => $requestKey]));
     }
 }

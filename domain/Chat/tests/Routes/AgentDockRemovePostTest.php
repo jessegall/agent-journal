@@ -40,11 +40,7 @@ final class AgentDockRemovePostTest extends GuardedRouteEntryTestCase
         $placement = DockPlacement::query()->sole();
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'placement' => $placement->id,
-                'chat' => null,
-                'request_key' => 'dock-remove-1',
-            ])
+            ->payload(['placement' => $placement->id, 'chat' => null, 'request_key' => 'dock-remove-1'])
             ->reply(UndockSourceCommand::class, DockResult::of(DockOutcome::Removed, $placement->id))
             ->expects(UndockSourceCommand::class, [
                 'chat' => null,

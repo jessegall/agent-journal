@@ -31,15 +31,9 @@ final class ApproveReviewPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'review-1',
-            ])
-            ->payload([
-                'edition' => 1,
-            ])
+            ->parameters(['plan' => $plan->number])
+            ->headers(['Idempotency-Key' => 'review-1'])
+            ->payload(['edition' => 1])
             ->reply(ApprovePlanReviewCommand::class, Str::ulid())
             ->expects(ApprovePlanReviewCommand::class, [
                 'planId' => $plan->id,

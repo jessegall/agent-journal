@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
+use App\Agents\Drivers\Hooks\DriverReplies;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Enums\Drivers\DriverPermission;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\HookEvent;
 use App\Exceptions\InvalidStopAnswer;
 use App\Support\Decisions\Decision;
-use App\Support\Drivers\DriverReplies;
-use App\Support\Drivers\DriverReply;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Stack\AgentStack;
 use App\Support\Stack\HookAnswer;
@@ -69,7 +69,11 @@ final class ProgramRepliesTest extends TestCase
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
             'permissionDecision' => 'allow',
-            'updatedInput' => ['command' => 'journal run tests', 'description' => 'Run the tests', 'timeout' => 120],
+            'updatedInput' => [
+                'command' => 'journal run tests',
+                'description' => 'Run the tests',
+                'timeout' => 120,
+            ],
         ]], json_decode($reply->stdout, true));
     }
 
@@ -160,7 +164,10 @@ final class ProgramRepliesTest extends TestCase
             $this->assertStringNotContainsString('"allow"', $reply->stdout);
         }
 
-        foreach ([...$admitted, ...$others] as $reply) {
+        foreach ([
+            ...$admitted,
+            ...$others,
+        ] as $reply) {
             $this->assertDoesNotMatchRegularExpression('/"ask"|"continue"/', $reply->stdout);
         }
     }

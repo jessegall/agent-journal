@@ -12,8 +12,8 @@ use LogicException;
  */
 final class ShareEndInvalid extends LogicException
 {
-    public static function for(string $shareId, ShareStatus $state): self
+    public static function for(string $shareId, ShareStatus $status): self
     {
-        return new self("Share {$shareId} cannot end as {$state->value}; it ends only as revoked or expired.");
+        return new self("Share {$shareId} cannot end as {$status->value}; it ends only as revoked or expired.");
     }
 }

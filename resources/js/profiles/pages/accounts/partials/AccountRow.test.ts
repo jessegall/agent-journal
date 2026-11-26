@@ -92,7 +92,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
         driver: 'codex',
         label: 'jesse@example.com',
         signIn: subscription,
-        state: 'authenticated',
+        status: 'authenticated',
         identity: null,
         workspace: null,
         isActive: false,
@@ -404,7 +404,7 @@ describe('the settings dialog', () => {
 
     it('shows how many agents still run while a removed account drains, and Back keeps it', async () => {
         const draining = row({
-            account: account({ state: 'removing', runningCount: 2 }),
+            account: account({ status: 'removing', runningCount: 2 }),
             isChosen: true,
         });
         expect(draining.text()).toContain('Removing');
@@ -443,7 +443,7 @@ describe('the settings dialog', () => {
     });
 
     it('offers the way back first for an account that must sign in again', async () => {
-        const shown = row({ account: account({ state: 'unauthenticated' }) });
+        const shown = row({ account: account({ status: 'unauthenticated' }) });
         await openSettings(shown);
         await button(shown, 'Sign in again')!.trigger('click');
 

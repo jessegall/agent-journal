@@ -55,18 +55,8 @@ final class CreateChatMessageTest extends TestCase
         $chatMessage = ChatMessage::query()->withoutGlobalScopes()->findOrFail($chatMessageId);
 
         $this->assertSame(
-            [
-                $this->chat->id,
-                $source->getMorphClass(),
-                $source->id,
-                ChatMessageType::Message,
-            ],
-            [
-                $chatMessage->inbox_id,
-                $chatMessage->source_type,
-                $chatMessage->source_id,
-                $chatMessage->type,
-            ],
+            [$this->chat->id, $source->getMorphClass(), $source->id, ChatMessageType::Message],
+            [$chatMessage->inbox_id, $chatMessage->source_type, $chatMessage->source_id, $chatMessage->type],
         );
     }
 

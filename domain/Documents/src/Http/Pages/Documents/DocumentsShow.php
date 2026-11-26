@@ -180,16 +180,13 @@ final readonly class DocumentsShow extends DocumentsPage
      */
     private function editingOf(DocumentView $document, DraftState $editing): array
     {
-        if ($editing->state === EditingStatus::HeldByViewer && ! $editing->draft instanceof Optional) {
-            $editor = DraftEditorPartData::from([
-                'number' => $document->number,
-                'draft' => $editing->draft,
-            ]);
+        if ($editing->status === EditingStatus::HeldByViewer && ! $editing->draft instanceof Optional) {
+            $editor = DraftEditorPartData::from(['number' => $document->number, 'draft' => $editing->draft]);
 
             return [LayoutPartData::native('editing', LayoutNativeData::of('documents/DraftEditor', $editor))];
         }
 
-        if ($editing->state === EditingStatus::Held && ! $editing->held instanceof Optional) {
+        if ($editing->status === EditingStatus::Held && ! $editing->held instanceof Optional) {
             $recovery = RecoverDraftPartData::from([
                 'number' => $document->number,
                 'holder' => $this->holderOf($editing),
@@ -199,7 +196,7 @@ final readonly class DocumentsShow extends DocumentsPage
             return [LayoutPartData::native('editing', LayoutNativeData::of('documents/RecoverForm', $recovery))];
         }
 
-        if ($editing->state === EditingStatus::Held) {
+        if ($editing->status === EditingStatus::Held) {
             return [LayoutPartData::notice('editing', 'info', "{$this->holderOf($editing)} is editing this document.")];
         }
 
@@ -233,15 +230,11 @@ final readonly class DocumentsShow extends DocumentsPage
                     [
                         'key' => 'editing',
                         'label' => 'Editing',
-                        'value' => $editing->state->word($this->holderOf($editing)),
+                        'value' => $editing->status->word($this->holderOf($editing)),
                     ],
                 ),
                 LayoutRowData::from(
-                    [
-                        'key' => 'attention',
-                        'label' => 'Attention',
-                        'value' => $document->attention->value,
-                    ],
+                    ['key' => 'attention', 'label' => 'Attention', 'value' => $document->attention->value],
                 ),
             ]),
         ];

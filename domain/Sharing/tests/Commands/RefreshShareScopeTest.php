@@ -89,10 +89,7 @@ final class RefreshShareScopeTest extends TestCase
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, $refreshed->scope_version);
 
         $this->assertSame(
-            [[
-                TestIds::of(102),
-                Share::FIRST_SCOPE_VERSION + 1,
-            ]],
+            [[TestIds::of(102), Share::FIRST_SCOPE_VERSION + 1]],
             ShareMember::query()->readAll('one member')->get()->map(
                 fn (ShareMember $member) => [
                     $member->target_id,

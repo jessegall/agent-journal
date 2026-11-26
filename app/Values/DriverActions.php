@@ -31,9 +31,6 @@ final readonly class DriverActions
 
     public function then(self $more): self
     {
-        return new self([
-            ...$this->commands,
-            ...$more->commands,
-        ]);
+        return new self([...$this->commands, ...$more->commands]);
     }
 }

@@ -361,7 +361,7 @@ export class TerminalControl {
             return;
         }
 
-        if (current.grantId === null || current.state !== 'granted') {
+        if (current.grantId === null || current.status !== 'granted') {
             this.forget('watching');
             this.publish({ notice: 'The host did not give control; the terminal stays in Watch.' });
 
@@ -441,5 +441,5 @@ export class TerminalControl {
  * Whether a take is still waiting for its grant.
  */
 function isStillTaking(answer: TerminalControlData): boolean {
-    return answer.grantId === null && answer.state === 'taking';
+    return answer.grantId === null && answer.status === 'taking';
 }

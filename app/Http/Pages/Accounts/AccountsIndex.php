@@ -54,10 +54,7 @@ final readonly class AccountsIndex extends AccountsPage
             ? [LayoutPartData::native('sign-in', LayoutNativeData::of('accounts/AddAccountPart', $accounts))]
             : $this->readerOf($accounts, $chosen);
 
-        $adding = LayoutActionData::changing([
-            'add' => '1',
-            'account' => '',
-        ]);
+        $adding = LayoutActionData::changing(['add' => '1', 'account' => '']);
 
         return ListPage::make(
             'Accounts',
@@ -81,15 +78,10 @@ final readonly class AccountsIndex extends AccountsPage
             'key' => $row->id,
             'label' => $row->label,
             'detail' => $this->detailOf($row),
-            'query' => [
-                'account' => $row->id,
-                'add' => '',
-            ],
+            'query' => ['account' => $row->id, 'add' => ''],
             'isCurrent' => $row->id === $chosen,
             'hasColumns' => true,
-            'leading' => [
-                LayoutPartData::text('driver', $row->driver, 'driver'),
-            ],
+            'leading' => [LayoutPartData::text('driver', $row->driver, 'driver')],
             'trailing' => [
                 ...$this->usageMeterOf($row),
                 LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
@@ -208,14 +200,14 @@ final readonly class AccountsIndex extends AccountsPage
     {
         $rows = [$this->nameRow($row)];
 
-        if ($row->state === AccountStatus::Authenticated) {
+        if ($row->status === AccountStatus::Authenticated) {
             $rows[] = $this->defaultRow($row);
         }
 
         $rows[] = SettingsRow::control(
             'sign-in',
             'Sign-in',
-            $row->state === AccountStatus::Unauthenticated
+            $row->status === AccountStatus::Unauthenticated
                 ? $this->form('sign-in-again', 'accounts.sign-in-again', $row->id, 'Sign in again')
                 : LayoutPartData::badge('state', $this->stateWordOf($row), $this->stateToneOf($row)),
             $this->signInHelp($row),
@@ -277,8 +269,8 @@ final readonly class AccountsIndex extends AccountsPage
     private function signInHelp(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountStatus::Authenticated && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
-            $row->state === AccountStatus::Authenticated => 'Signed in.',
+            $row->status === AccountStatus::Authenticated && $row->expiresAt !== null => "Signed in. It expires on {$this->dayOf($row->expiresAt)}.",
+            $row->status === AccountStatus::Authenticated => 'Signed in.',
             $this->hasExpired($row) => 'Expired. Sign in again so agents can use it.',
             default => 'Not signed in yet. Sign in so agents can use it.',
         };
@@ -375,7 +367,7 @@ final readonly class AccountsIndex extends AccountsPage
      */
     private function stateToneOf(AccountRowData $row): string
     {
-        if ($row->state === AccountStatus::Unauthenticated) {
+        if ($row->status === AccountStatus::Unauthenticated) {
             return 'waiting';
         }
 
@@ -385,10 +377,10 @@ final readonly class AccountsIndex extends AccountsPage
     private function stateWordOf(AccountRowData $row): string
     {
         return match (true) {
-            $row->state === AccountStatus::Authenticated => 'Signed in',
-            $row->state === AccountStatus::Unauthenticated && $this->hasExpired($row) => 'Expired',
-            $row->state === AccountStatus::Unauthenticated => 'Not signed in',
-            $row->state === AccountStatus::Removing => 'Removing',
+            $row->status === AccountStatus::Authenticated => 'Signed in',
+            $row->status === AccountStatus::Unauthenticated && $this->hasExpired($row) => 'Expired',
+            $row->status === AccountStatus::Unauthenticated => 'Not signed in',
+            $row->status === AccountStatus::Removing => 'Removing',
             default => 'Removed',
         };
     }

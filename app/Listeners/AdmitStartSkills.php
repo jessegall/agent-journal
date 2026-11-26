@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -15,7 +16,6 @@ use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Resolvers\Support\SkillContextResolver;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\SkillPublications;
 use App\Support\SkillSelection;
 use App\Support\SkillTargets;

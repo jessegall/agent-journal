@@ -16,10 +16,7 @@ final readonly class AccountUseCounts
 
     public function with(RecordIdentity $account, int $running): self
     {
-        return new self([
-            ...$this->runningByAccount,
-            self::keyOf($account) => $running,
-        ]);
+        return new self([...$this->runningByAccount, self::keyOf($account) => $running]);
     }
 
     public function runningFor(RecordIdentity $account): int

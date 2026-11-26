@@ -33,15 +33,8 @@ final class CommentOnReportToolTest extends McpToolEntryTestCase
         $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return ToolCall::by($start)
-            ->arguments([
-                'report_id' => $report->number,
-                'body' => 'Confirmed.',
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['report_id' => $report->number, 'body' => 'Confirmed.', 'request_key' => 'documents-1'])
             ->reply(CommentOnReportCommand::class, Str::ulid())
-            ->expects(CommentOnReportCommand::class, [
-                'reportId' => (string) $report->number,
-                'body' => 'Confirmed.',
-            ]);
+            ->expects(CommentOnReportCommand::class, ['reportId' => (string) $report->number, 'body' => 'Confirmed.']);
     }
 }

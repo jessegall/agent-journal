@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
+use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\HookPayload;
+use App\Contracts\Drivers\DriverAdapters;
+use App\Contracts\Drivers\DriverCall;
 use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
 use App\Contracts\Sessions\StartTransaction;
-use App\Support\DefaultDrivers;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Support\Drivers\Adapters\CodexAdapter;
-use App\Support\Drivers\Contracts\DriverAdapters;
-use App\Support\Drivers\Contracts\DriverCall;
-use App\Support\Drivers\HookPayload;
 use App\Support\HookRetryWindow;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
@@ -36,14 +36,23 @@ final class HookRuntimeStartTest extends TestCase
 
     private const string INVENTORY_ROW = '| %s | %s |';
 
-    private const array SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
+    private const array SHELL_CALL = [
+        'tool_input' => ['command' => 'git status'],
+        'tool_response' => [],
+    ];
 
     private const array EVENT_FIELDS = [
         'claude-code' => [
             'SessionStart' => ['source' => 'startup'],
             'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
-            'PreToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
-            'PostToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
+            'PreToolUse' => [
+                'tool_name' => 'Bash',
+                ...self::SHELL_CALL,
+            ],
+            'PostToolUse' => [
+                'tool_name' => 'Bash',
+                ...self::SHELL_CALL,
+            ],
             'Stop' => ['stop_hook_active' => false],
             'StopFailure' => ['error' => 'rate_limit'],
             'SessionEnd' => ['reason' => 'other'],
@@ -51,8 +60,14 @@ final class HookRuntimeStartTest extends TestCase
         'codex' => [
             'SessionStart' => ['source' => 'startup'],
             'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
-            'PreToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
-            'PostToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
+            'PreToolUse' => [
+                'tool_name' => 'Bash',
+                ...self::SHELL_CALL,
+            ],
+            'PostToolUse' => [
+                'tool_name' => 'Bash',
+                ...self::SHELL_CALL,
+            ],
             'Stop' => ['stop_hook_active' => false],
             'SessionEnd' => ['reason' => 'other'],
         ],
@@ -78,7 +93,10 @@ final class HookRuntimeStartTest extends TestCase
 
         foreach ($events as [$driver, $nativeEvents]) {
             foreach ($nativeEvents as $event) {
-                yield "{$driver} {$event}" => [$driver, $event];
+                yield "{$driver} {$event}" => [
+                    $driver,
+                    $event,
+                ];
             }
         }
     }
@@ -128,7 +146,12 @@ final class HookRuntimeStartTest extends TestCase
         $this->assertInstanceOf(ShellCommandParser::class, $this->app->make(ShellCommandParserContract::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(StartTransaction::class));
 
-        foreach (['core.ready', 'tasks.work', 'core.messages.answer', 'sequences.follow'] as $typeKey) {
+        foreach ([
+            'core.ready',
+            'tasks.work',
+            'core.messages.answer',
+            'sequences.follow',
+        ] as $typeKey) {
             $this->assertTrue($registry->has($typeKey), $typeKey);
         }
     }

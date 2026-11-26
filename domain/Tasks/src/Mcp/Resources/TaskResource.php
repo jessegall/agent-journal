@@ -34,10 +34,7 @@ final class TaskResource extends JournalResource implements HasUriTemplate
     {
         $taskId = ToolArguments::uriId($request);
 
-        $view = ToolArguments::query($this->name(), $request, [
-            'view',
-            'continuation',
-        ]);
+        $view = ToolArguments::query($this->name(), $request, ['view', 'continuation']);
 
         $this->reads->assertAllowed(TaskReadResult::requestFor($taskId));
 

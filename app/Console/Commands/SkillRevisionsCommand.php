@@ -31,13 +31,7 @@ final class SkillRevisionsCommand extends Command
             $skill = $console->storedSkill($this->skillNumber());
 
             $this->table(
-                [
-                    'Revision',
-                    'Name',
-                    'Author',
-                    'Copied from',
-                    'Saved',
-                ],
+                ['Revision', 'Name', 'Author', 'Copied from', 'Saved'],
                 array_map(
                     fn (SkillRevision $revision) => [
                         $revision->revision,

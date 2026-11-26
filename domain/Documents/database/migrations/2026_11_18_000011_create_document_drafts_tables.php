@@ -24,10 +24,7 @@ return new class extends Migration
             $table->timestampTz('opened_at');
             $table->timestampsTz();
 
-            $table->unique([
-                'author_type',
-                'author_id',
-            ], 'document_drafts_author_unique');
+            $table->unique(['author_type', 'author_id'], 'document_drafts_author_unique');
         });
 
         Schema::create('document_closes', function (Blueprint $table) {

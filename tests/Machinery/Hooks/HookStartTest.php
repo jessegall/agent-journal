@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -15,9 +18,6 @@ use App\Models\Agents\AgentStackRow;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
-use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\StopDetails;
@@ -83,7 +83,10 @@ final class HookStartTest extends TestCase
             array_keys($settings['hooks']),
         );
         $this->assertSame(
-            [['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]],
+            [['hooks' => [[
+                'type' => 'command',
+                'command' => 'journal-hook claude-code',
+            ]]]],
             $settings['hooks']['Stop'],
         );
         $this->assertSame(

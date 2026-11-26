@@ -38,16 +38,9 @@ final class PhasesAddTasksPostTest extends GuardedRouteEntryTestCase
             ->payload([
                 'phase_id' => $phase->id,
                 'expected_revision' => 1,
-                'task_ids' => [
-                    $task->id,
-                ],
+                'task_ids' => [$task->id],
                 'request_key' => 'plans-1',
             ])
-            ->expects(AddPhaseTasksCommand::class, [
-                'phaseId' => $phase->id,
-                'taskIds' => [
-                    $task->id,
-                ],
-            ]);
+            ->expects(AddPhaseTasksCommand::class, ['phaseId' => $phase->id, 'taskIds' => [$task->id]]);
     }
 }

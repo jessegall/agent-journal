@@ -21,7 +21,7 @@ final class RootShareData extends Data
     public function __construct(
         public readonly string $id,
         public readonly int $number,
-        public readonly ShareStatus $state,
+        public readonly ShareStatus $status,
     ) {}
 
     public static function fromShare(Share $share): self

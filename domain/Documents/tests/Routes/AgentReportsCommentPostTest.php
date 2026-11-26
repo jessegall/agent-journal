@@ -33,15 +33,8 @@ final class AgentReportsCommentPostTest extends GuardedRouteEntryTestCase
         $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'report_id' => $report->id,
-                'body' => 'Confirmed.',
-                'request_key' => 'documents-1',
-            ])
+            ->payload(['report_id' => $report->id, 'body' => 'Confirmed.', 'request_key' => 'documents-1'])
             ->reply(CommentOnReportCommand::class, Str::ulid())
-            ->expects(CommentOnReportCommand::class, [
-                'reportId' => $report->id,
-                'body' => 'Confirmed.',
-            ]);
+            ->expects(CommentOnReportCommand::class, ['reportId' => $report->id, 'body' => 'Confirmed.']);
     }
 }

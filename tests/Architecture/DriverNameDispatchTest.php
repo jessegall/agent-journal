@@ -30,7 +30,10 @@ final class DriverNameDispatchTest extends TestCase
     /**
      * Where a default driver's name is declared: its registration and the pinned build of its family.
      */
-    private const array ALLOWED = ['app/Support/DefaultDrivers.php', 'app/Support/Compatibility/DriverCompatibility.php'];
+    private const array ALLOWED = [
+        'app/Agents/Drivers/DefaultDrivers.php',
+        'app/Support/Compatibility/DriverCompatibility.php',
+    ];
 
     public function test_no_code_outside_the_registrations_dispatches_on_a_driver_name(): void
     {
@@ -55,7 +58,11 @@ final class DriverNameDispatchTest extends TestCase
             ."\$headless = str_contains(\$key, 'headless');\n"
             ."\$label = match (\$key) {\n    'codex' => 'Codex',\n};\n";
 
-        $this->assertSame(['fixture.php:2', 'fixture.php:4', 'fixture.php:6'], self::dispatchesIn('fixture.php', $fixture));
+        $this->assertSame([
+            'fixture.php:2',
+            'fixture.php:4',
+            'fixture.php:6',
+        ], self::dispatchesIn('fixture.php', $fixture));
     }
 
     /**

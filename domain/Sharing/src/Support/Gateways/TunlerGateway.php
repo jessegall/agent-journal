@@ -71,15 +71,9 @@ final readonly class TunlerGateway implements ShareGateway
         }
 
         try {
-            $status = TunlerStatus::fromOutput($this->run([
-                'status',
-                '--json',
-            ]));
+            $status = TunlerStatus::fromOutput($this->run(['status', '--json']));
         } catch (TunlerStatusUnreadable) {
-            return new GatewaySetupCheck([
-                ...$problems,
-                'Tunler did not report its login status.',
-            ]);
+            return new GatewaySetupCheck([...$problems, 'Tunler did not report its login status.']);
         }
 
         if (! $status->isLoggedIn) {
@@ -105,12 +99,7 @@ final readonly class TunlerGateway implements ShareGateway
         }
 
         $child = $this->processes->newPendingProcess()->env($this->environment())->timeout(0)
-            ->start([
-                $this->binary,
-                (string) $settings->listenerPort,
-                "--domain={$this->subdomain}",
-                '--inspect=0',
-            ]);
+            ->start([$this->binary, (string) $settings->listenerPort, "--domain={$this->subdomain}", '--inspect=0']);
 
         return $this->starts->open(
             self::KEY,
@@ -191,10 +180,7 @@ final readonly class TunlerGateway implements ShareGateway
     private function run(array $arguments): string
     {
         return $this->processes->newPendingProcess()->env($this->environment())->timeout(self::STATUS_SECONDS)->run(
-            [
-                $this->binary,
-                ...$arguments,
-            ],
+            [$this->binary, ...$arguments],
         )->output();
     }
 

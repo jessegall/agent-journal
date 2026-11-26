@@ -14,8 +14,8 @@ function entry(path: string, isFolder: boolean, more: Partial<ProjectTreeEntryDa
     return { path, name: path.split('/').pop() ?? path, isFolder, size: 0, isOpen: false, isLoading: false, isFailed: false, children: [], ...more };
 }
 
-function windowData(state: ProjectWindowData['state'], entries: ProjectTreeEntryData[] = []): ProjectWindowData {
-    return { state, projectLabel: 'Shop', machineLabel: 'Owner laptop', connectAddress: '/connections', entries };
+function windowData(status: ProjectWindowData['status'], entries: ProjectTreeEntryData[] = []): ProjectWindowData {
+    return { status, projectLabel: 'Shop', machineLabel: 'Owner laptop', connectAddress: '/connections', entries };
 }
 
 afterEach(() => {

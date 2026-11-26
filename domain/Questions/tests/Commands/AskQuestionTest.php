@@ -51,28 +51,17 @@ final class AskQuestionTest extends TestCase
                 $this->journal->agentCalled('Planner')->id,
                 $this->journal->ownerUser()->id,
             ],
-            [
-                $question->text,
-                $question->type,
-                $question->sender_id,
-                $question->target_id,
-            ],
+            [$question->text, $question->type, $question->sender_id, $question->target_id],
         );
     }
 
     public function test_a_choice_keeps_its_options_trimmed(): void
     {
         $questionId = $this->journal->run(
-            $this->ask('Which database?', QuestionType::Choice, [
-                ' Postgres ',
-                'SQLite',
-            ]),
+            $this->ask('Which database?', QuestionType::Choice, [' Postgres ', 'SQLite']),
         );
 
-        $this->assertSame([
-            'Postgres',
-            'SQLite',
-        ], Question::query()->findOrFail($questionId)->options);
+        $this->assertSame(['Postgres', 'SQLite'], Question::query()->findOrFail($questionId)->options);
     }
 
     public function test_a_blank_text_an_open_question_with_options_and_a_choice_without_two_options_are_refused(): void
@@ -84,10 +73,7 @@ final class AskQuestionTest extends TestCase
         );
 
         $this->assertThrows(
-            fn () => $this->journal->run($this->ask('Which?', QuestionType::Open, [
-                'A',
-                'B',
-            ])),
+            fn () => $this->journal->run($this->ask('Which?', QuestionType::Open, ['A', 'B'])),
             QuestionRefused::class,
             QuestionRefused::openTakesNoOptions()->getMessage(),
         );

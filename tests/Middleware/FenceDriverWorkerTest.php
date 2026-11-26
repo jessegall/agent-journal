@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
+use App\Agents\Drivers\Work\WorkerLease;
 use App\CommandMiddleware\FenceDriverWorker;
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Data\Hosts\HostProcessReportData;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Exceptions\WorkerFenced;
-use App\Support\Drivers\WorkerLease;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -38,10 +38,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
 
     protected function read(Request $request): Response
     {
-        $arguments = $this->pathArguments($request, [
-            'id',
-            'revision',
-        ]);
+        $arguments = $this->pathArguments($request, ['id', 'revision']);
 
         $id = $arguments->recordReference('id');
         $revision = $arguments->recordReference('revision');

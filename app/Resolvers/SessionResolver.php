@@ -37,10 +37,7 @@ final readonly class SessionResolver implements SessionResolverContract
     public function active(): array
     {
         return array_values($this->visibleSessions()->with(
-            [
-                'agent',
-                'currentConversation',
-            ],
+            ['agent', 'currentConversation'],
         )->withCount('visits')->whereIn(
             'status',
             array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()),
@@ -53,10 +50,7 @@ final readonly class SessionResolver implements SessionResolverContract
     public function requireActive(string $sessionId): StackTarget
     {
         $session = $this->visibleSessions()->with(
-            [
-                'agent',
-                'currentConversation',
-            ],
+            ['agent', 'currentConversation'],
         )->withCount('visits')->find($sessionId);
 
         if ($session === null || ! $session->isActive()) {

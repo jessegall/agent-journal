@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Commands;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -23,7 +24,6 @@ use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\RecordIdentity;
@@ -97,7 +97,7 @@ final class StartHelperTest extends TestCase
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);
         $this->assertSame(ConversationModeType::New, $receipt->startDetails->conversationMode);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $receipt->start->actualModel);
-        $this->assertSame(JobStatus::Accepted, $receipt->state);
+        $this->assertSame(JobStatus::Accepted, $receipt->status);
         $this->assertSame(self::SHELL_LIKE_BRIEF, HelperJob::query()->findOrFail($receipt->jobId)->brief);
         $this->assertSame(1, AssignmentRecord::query()->where('record_id', $receipt->jobId)->count());
     }
@@ -245,10 +245,7 @@ final class StartHelperTest extends TestCase
 
             $taken = $competing->transaction(fn () => $competing->selectOne(
                 'select pg_try_advisory_xact_lock(?, hashtext(?)) as taken',
-                [
-                    7_304_211,
-                    $helper->id,
-                ],
+                [7_304_211, $helper->id],
             ));
 
             $this->assertFalse($taken->taken);
@@ -261,10 +258,7 @@ final class StartHelperTest extends TestCase
     {
         $this->journal->relayAgentCommands($this->parent);
 
-        $this->artisan('helper:start', [
-            'profile' => 'plan-reviewer',
-            '--brief' => 'Review it.',
-        ])
+        $this->artisan('helper:start', ['profile' => 'plan-reviewer', '--brief' => 'Review it.'])
             ->expectsOutputToContain('model-required')
             ->assertFailed();
 

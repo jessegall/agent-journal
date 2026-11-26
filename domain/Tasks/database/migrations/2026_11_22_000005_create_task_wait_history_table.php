@@ -23,15 +23,9 @@ return new class extends Migration
             $table->ulid('batch_id')->nullable()->index();
             $table->timestampTz('created_at');
 
-            $table->index([
-                'dependent_task_id',
-                'created_at',
-            ]);
+            $table->index(['dependent_task_id', 'created_at']);
 
-            $table->index([
-                'prerequisite_task_id',
-                'created_at',
-            ]);
+            $table->index(['prerequisite_task_id', 'created_at']);
         });
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Skills\SkillResolver;
 use App\Enums\Skills\PublicationStatus;
@@ -17,7 +18,6 @@ use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Support\AgentInspection;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\SkillSelection;
 use App\Values\DriverKey;
 use App\Values\SessionSkillStatus;

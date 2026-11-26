@@ -22,10 +22,7 @@ final readonly class ProposeRuleController
         RuleDeclarations $declarations,
         CommandBus $commands,
     ): ProposalReceived {
-        $declared = $declarations->readOne([
-            ...$call->declaration,
-            'request_id' => $call->requestKey->value,
-        ]);
+        $declared = $declarations->readOne([...$call->declaration, 'request_id' => $call->requestKey->value]);
 
         $command = new ProposeCommandRuleCommand($call->commandRequest, $declared->requestId, $declared->proposed);
 

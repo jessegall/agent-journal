@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Enums\Hosts\HostProcessPurpose;
-use App\Support\Drivers\DriverSupervisor;
 use App\Support\Hosts\HostWake;
 use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfile;
 use App\Enums\Navigation\NavigationReason;
 use App\Enums\Screens\KeyMoveType;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\KeyScripts\KeyMove;
 use App\Support\KeyScripts\KeyScriptCatalogue;
 use App\Support\KeyScripts\KeyScriptRun;
@@ -100,8 +101,8 @@ final class ClaudeCodeKeyScriptsTest extends TestCase
         return $move;
     }
 
-    private function profile(): ClaudeCodeProfile
+    private function profile(): DriverProfile
     {
-        return $this->journal->service(ClaudeCodeProfile::class);
+        return $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
     }
 }

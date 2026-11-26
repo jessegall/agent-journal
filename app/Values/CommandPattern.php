@@ -22,10 +22,7 @@ final class CommandPattern extends Data
 
     public static function exact(string $program, string ...$words): self
     {
-        return new self([
-            basename($program),
-            ...array_values($words),
-        ]);
+        return new self([basename($program), ...array_values($words)]);
     }
 
     /**

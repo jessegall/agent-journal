@@ -15,13 +15,11 @@ use App\Support\ContainerManifest;
 use App\Support\FolderWorkspace;
 use App\Support\ManifestMount;
 use App\Support\MountRules;
-use App\Support\PreparedStart;
 use App\Support\RecordIdentity;
 use App\Support\SecurityOptions;
 use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
 use App\Values\SelectedAccount;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -34,6 +32,10 @@ use Tests\TestCase;
 #[TestsMachinery(ContainerManifest::class)]
 final class ContainerManifestTest extends TestCase
 {
+    private const string SESSION = 'session-1';
+
+    private const string WORKSPACE = '/workspaces/helper-7';
+
     use RefreshHookDatabase;
     use WithActiveAccount;
 
@@ -52,8 +54,8 @@ final class ContainerManifestTest extends TestCase
     public function test_a_writer_start_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
         $manifest = ContainerManifest::compile(
-            $this->prepared()->sessionId,
-            $this->prepared()->workspace,
+            self::SESSION,
+            self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
@@ -62,18 +64,7 @@ final class ContainerManifestTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                self::IMAGE,
-                '10001:10001',
-                '/workspace',
-                true,
-                [],
-                true,
-                null,
-                false,
-                [],
-                'journal-start-1',
-            ],
+            [self::IMAGE, '10001:10001', '/workspace', true, [], true, null, false, [], 'journal-start-1'],
             [
                 $manifest->image,
                 $manifest->user,
@@ -91,8 +82,8 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(2, $manifest->budgets->cpuCores);
         $this->assertFalse(
             ContainerManifest::compile(
-                $this->prepared()->sessionId,
-                $this->prepared()->workspace,
+                self::SESSION,
+                self::WORKSPACE,
                 WorkspaceUse::ReadOnly,
                 $this->policy(),
                 'journal-start-1',
@@ -336,8 +327,8 @@ final class ContainerManifestTest extends TestCase
     public function test_a_local_manifest_goes_on_the_wire_as_before_with_its_bind_type(): void
     {
         $manifest = ContainerManifest::compile(
-            $this->prepared()->sessionId,
-            $this->prepared()->workspace,
+            self::SESSION,
+            self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
@@ -395,8 +386,8 @@ final class ContainerManifestTest extends TestCase
         );
 
         $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
-            $this->prepared()->sessionId,
-            $this->prepared()->workspace,
+            self::SESSION,
+            self::WORKSPACE,
             WorkspaceUse::Shared,
             $this->policy(),
             'acme-s1',
@@ -609,20 +600,6 @@ final class ContainerManifestTest extends TestCase
     private function assertRefused(\Closure $make): void
     {
         $this->assertThrows($make, ManifestRefused::class);
-    }
-
-    private function prepared(): PreparedStart
-    {
-        return new PreparedStart(
-            'start-1',
-            'runtime-1',
-            'session-1',
-            TestSelections::of(),
-            ExecutionModeType::RequiredContainer,
-            'policy-1',
-            '/workspaces/helper-7',
-            'account-1',
-        );
     }
 
     private function policy(): ExecutionPolicy

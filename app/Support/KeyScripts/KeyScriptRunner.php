@@ -162,10 +162,7 @@ final readonly class KeyScriptRunner
 
         $distance = $targets[0] - $entries->highlighted;
 
-        $isChoice = in_array($step->action, [
-            KeyAction::ChooseEntry,
-            KeyAction::ConfirmEntry,
-        ], true);
+        $isChoice = in_array($step->action, [KeyAction::ChooseEntry, KeyAction::ConfirmEntry], true);
 
         if ($step->action === KeyAction::ConfirmEntry && $distance !== 0) {
             return KeyMove::uncertain($run, NavigationReason::HighlightWrong);

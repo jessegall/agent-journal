@@ -59,10 +59,7 @@ final readonly class ProjectCommands
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
         if ($started->isNew) {
-            return $this->execute($call, [
-                'JOURNAL_URL' => $this->journalUrl,
-                ...$startEnvironment,
-            ]);
+            return $this->execute($call, ['JOURNAL_URL' => $this->journalUrl, ...$startEnvironment]);
         }
 
         return $this->earlierFrames($requestKey, $started);
@@ -77,15 +74,15 @@ final readonly class ProjectCommands
      */
     private function earlierFrames(string $requestKey, CommandRunStart $started): array
     {
-        if ($started->state->isActive()) {
+        if ($started->status->isActive()) {
             throw VerbNotServed::stillRunning($requestKey);
         }
 
-        if ($started->state === CommandRunStatus::Interrupted) {
+        if ($started->status === CommandRunStatus::Interrupted) {
             throw VerbNotServed::interrupted($requestKey);
         }
 
-        if ($started->state === CommandRunStatus::Unknown) {
+        if ($started->status === CommandRunStatus::Unknown) {
             throw VerbNotServed::outcomeUnknown($requestKey);
         }
 
@@ -130,12 +127,7 @@ final readonly class ProjectCommands
     private function execute(RunProjectCommandPayload $call, array $environment): array
     {
         $process = new Process(
-            [
-                'php',
-                $this->artisanPath,
-                $call->verbName(),
-                ...array_slice($call->argv, 2),
-            ],
+            ['php', $this->artisanPath, $call->verbName(), ...array_slice($call->argv, 2)],
             dirname($this->artisanPath),
             $environment,
             $call->pipedInput(),

@@ -36,9 +36,9 @@ final class PlanProgressCount
         return self::withChange(self::withChange($progress, $from, -1), $to, 1);
     }
 
-    private static function withChange(PlanProgress $progress, TaskStatus $state, int $change): PlanProgress
+    private static function withChange(PlanProgress $progress, TaskStatus $status, int $change): PlanProgress
     {
-        return match ($state) {
+        return match ($status) {
             TaskStatus::Open => $progress,
             TaskStatus::Started => new PlanProgress(
                 $progress->finished,

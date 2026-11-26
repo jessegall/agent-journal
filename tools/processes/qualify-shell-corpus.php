@@ -240,10 +240,7 @@ function corpusRecords(): array
         $row = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $dialect = ShellDialect::tryFrom($row['shell'] ?? ShellDialect::Bash->value);
 
-        if (in_array($dialect, [
-            ShellDialect::Bash,
-            ShellDialect::Sh,
-        ], true)) {
+        if (in_array($dialect, [ShellDialect::Bash, ShellDialect::Sh], true)) {
             $add('github_commands.jsonl', $row['line'] ?? null, $row['shell'] ?? 'bash');
         }
     });
@@ -325,17 +322,7 @@ function jsonRows(string $path): array
  */
 function readings(array $command, string $input): array
 {
-    $process = proc_open($command, [
-        [
-            'pipe',
-            'r',
-        ],
-        [
-            'pipe',
-            'w',
-        ],
-        STDERR,
-    ], $pipes, ROOT);
+    $process = proc_open($command, [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes, ROOT);
 
     if (! is_resource($process)) {
         notRun(implode(' ', $command).' did not start');

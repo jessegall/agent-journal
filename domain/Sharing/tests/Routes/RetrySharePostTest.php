@@ -42,16 +42,9 @@ final class RetrySharePostTest extends GuardedRouteEntryTestCase
         $share = $shares->shareCalled('Design');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'share' => $share->id,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'share-1',
-            ])
+            ->parameters(['share' => $share->id])
+            ->headers(['Idempotency-Key' => 'share-1'])
             ->reply(RetryShareCommand::class, new ShareSummary($share->id, $share->number, ShareStatus::Active))
-            ->expects(RetryShareCommand::class, [
-                'shareId' => $share->id,
-                'requestKey' => 'share-1',
-            ]);
+            ->expects(RetryShareCommand::class, ['shareId' => $share->id, 'requestKey' => 'share-1']);
     }
 }

@@ -39,9 +39,6 @@ final readonly class PolicyAuthorizer implements Authorizer
             return Response::allow();
         }
 
-        return $this->gate->forUser($actor)->inspect('permits', [
-            $subject,
-            $access,
-        ]);
+        return $this->gate->forUser($actor)->inspect('permits', [$subject, $access]);
     }
 }

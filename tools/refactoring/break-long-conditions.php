@@ -46,19 +46,11 @@ function chainSteps(array $tokens, array $indexes): array
     foreach ($indexes as $index) {
         $token = $tokens[$index];
 
-        if (in_array($token->text, [
-            '(',
-            '[',
-            '{',
-        ], true) && $token->id < 256) {
+        if (in_array($token->text, ['(', '[', '{'], true) && $token->id < 256) {
             $depth++;
         }
 
-        if (in_array($token->text, [
-            ')',
-            ']',
-            '}',
-        ], true) && $token->id < 256) {
+        if (in_array($token->text, [')', ']', '}'], true) && $token->id < 256) {
             $depth--;
         }
 
@@ -114,19 +106,11 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
         foreach ($byLine[$lineNumber] ?? [] as $index) {
             $token = $tokens[$index];
 
-            if (in_array($token->text, [
-                '(',
-                '[',
-                '{',
-            ], true) && $token->id < 256) {
+            if (in_array($token->text, ['(', '[', '{'], true) && $token->id < 256) {
                 $depth++;
             }
 
-            if (in_array($token->text, [
-                ')',
-                ']',
-                '}',
-            ], true) && $token->id < 256) {
+            if (in_array($token->text, [')', ']', '}'], true) && $token->id < 256) {
                 $depth--;
             }
 

@@ -28,7 +28,7 @@ final class FileWindowData extends Data
      * @param  list<FileThreadData>  $threads
      */
     public function __construct(
-        public readonly FileWindowStatus $state,
+        public readonly FileWindowStatus $status,
         public readonly string $name,
         public readonly string $path,
         public readonly bool $isMarkdown,

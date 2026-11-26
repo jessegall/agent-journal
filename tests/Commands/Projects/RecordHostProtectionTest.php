@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Projects\RecordHostProtection\RecordHostProtectionCommand;
 use App\Contracts\Drivers\DriverCompatibilities;
@@ -12,7 +13,6 @@ use App\Support\ArrangementSetting;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -40,7 +40,12 @@ final class RecordHostProtectionTest extends TestCase
         .'in the agent image for linux-container-protected';
 
     private const array ITEMS = [
-        'account-secrets', 'foreign-history', 'keychain', 'control-sockets', 'process-inspection', 'install-writes',
+        'account-secrets',
+        'foreign-history',
+        'keychain',
+        'control-sockets',
+        'process-inspection',
+        'install-writes',
     ];
 
     public function test_a_report_with_unenforced_items_refuses_naming_them_and_why(): void
@@ -144,8 +149,18 @@ final class RecordHostProtectionTest extends TestCase
     {
         return array_map(
             fn (string $item): array => in_array($item, $unenforced, true)
-                ? ['item' => $item, 'isEnforced' => false, 'evidence' => '', 'reason' => $reason]
-                : ['item' => $item, 'isEnforced' => true, 'evidence' => 'run-1', 'reason' => ''],
+                ? [
+                    'item' => $item,
+                    'isEnforced' => false,
+                    'evidence' => '',
+                    'reason' => $reason,
+                ]
+                : [
+                    'item' => $item,
+                    'isEnforced' => true,
+                    'evidence' => 'run-1',
+                    'reason' => '',
+                ],
             self::ITEMS,
         );
     }

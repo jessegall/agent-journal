@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Accounts;
 
+use App\Agents\Drivers\Setup\SignInDriver;
 use App\Support\PrivateAccountProcess;
 use App\Values\SignInCard;
 use App\Values\SignInChallenge;
@@ -29,7 +30,7 @@ interface SignInProtocol
     /**
      * Starts the driver's sign-in for the folder and answers its private process.
      */
-    public function begin(string $directory): PrivateAccountProcess;
+    public function begin(SignInDriver $driver, string $directory): PrivateAccountProcess;
 
     /**
      * What the user needs to approve the sign-in, once the driver printed it; none before.
@@ -55,15 +56,15 @@ interface SignInProtocol
      * The driver's own proof that the sign-in it just ran succeeded in this folder, asked while its process is
      * still open.
      */
-    public function prove(PrivateAccountProcess $process, string $directory): SignInVerification;
+    public function prove(SignInDriver $driver, PrivateAccountProcess $process, string $directory): SignInVerification;
 
     /**
      * The driver's plain status check of the folder, for account checks and cleanup.
      */
-    public function verify(string $directory): SignInVerification;
+    public function verify(SignInDriver $driver, string $directory): SignInVerification;
 
     /**
      * Signs the folder's account out with the driver's own command, so its sign-in store forgets it.
      */
-    public function signOut(string $directory): void;
+    public function signOut(SignInDriver $driver, string $directory): void;
 }

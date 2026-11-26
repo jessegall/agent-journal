@@ -11,9 +11,9 @@ function graph(overrides: Partial<TaskGraphProps> = {}): TaskGraphProps {
         version: 'v1',
         returnAddress: '/plans/1',
         nodes: [
-            { id: 'a', number: 1, title: 'First', state: 'open', address: '/tasks/1', mayEditWaits: true },
-            { id: 'b', number: 2, title: 'Second', state: 'open', address: '/tasks/2', mayEditWaits: false, reason: 'Not yours' },
-            { id: 'c', number: 3, title: 'Third', state: 'open', address: '/tasks/3', mayEditWaits: true },
+            { id: 'a', number: 1, title: 'First', status: 'open', address: '/tasks/1', mayEditWaits: true },
+            { id: 'b', number: 2, title: 'Second', status: 'open', address: '/tasks/2', mayEditWaits: false, reason: 'Not yours' },
+            { id: 'c', number: 3, title: 'Third', status: 'open', address: '/tasks/3', mayEditWaits: true },
         ],
         edges: [{ prerequisiteId: 'a', dependentId: 'b', isSatisfied: false }],
         ...overrides,

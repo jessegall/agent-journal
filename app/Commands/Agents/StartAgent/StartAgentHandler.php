@@ -30,7 +30,6 @@ use App\Support\AccountSharingService;
 use App\Support\AgentSessions;
 use App\Support\AgentWakes;
 use App\Support\ContainerAdmission;
-use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Support\InitialWakeSettlement;
 use App\Support\RegisterPendingStart;
 use App\Support\StartedAgent;
@@ -59,7 +58,6 @@ final readonly class StartAgentHandler implements CommandHandler
         private AgentWakes $wakes,
         private PinnedBuilds $builds,
         private DriverCatalogue $drivers,
-        private DriverAdapters $adapters,
         private AccountSharingService $accountSharing,
     ) {}
 
@@ -217,7 +215,6 @@ final readonly class StartAgentHandler implements CommandHandler
             $isNewSession,
             $request->conversationMode,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
-            $this->adapters->for($selection->driver)->modelArguments($selection->model),
         );
     }
 }

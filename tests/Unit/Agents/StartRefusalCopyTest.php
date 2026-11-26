@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Enums\Sessions\CapacityResource;
-use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Enums\Sessions\StartPreflightRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartRemedyType;
 use App\Exceptions\CapacityUnavailable;
@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 final class StartRefusalCopyTest extends TestCase
 {
     /**
-     * @return array<string, array{StartRefusalType|StartPreflightRefusal|ResumeRefusal|HostRefusal, string, StartRemedyType, string, string}>
+     * @return array<string, array{StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartRefusalReason, string, StartRemedyType, string, string}>
      */
     public static function refusals(): array
     {
@@ -111,36 +111,36 @@ final class StartRefusalCopyTest extends TestCase
                 'Ask your host operator to connect a host.',
             ],
             'account-folder-rejected' => [
-                HostRefusal::AccountFolderRejected,
+                StartRefusalReason::AccountFolderRejected,
                 'The host could not verify the protection required for this account.',
                 StartRemedyType::OperatorInstruction,
                 'Check account-folder ownership on the host',
                 'Ask your host operator to check account-folder ownership on the host.',
             ],
             'identity-mismatch' => [
-                HostRefusal::IdentityMismatch,
-                HostRefusal::IdentityMismatch->explanation(),
+                StartRefusalReason::IdentityMismatch,
+                StartRefusalReason::IdentityMismatch->explanation(),
                 StartRemedyType::RetryStart,
                 'Start the agent again',
                 'Start the agent again',
             ],
             'pinned-build-missing' => [
-                HostRefusal::PinnedBuildMissing,
-                HostRefusal::PinnedBuildMissing->explanation(),
+                StartRefusalReason::PinnedBuildMissing,
+                StartRefusalReason::PinnedBuildMissing->explanation(),
                 StartRemedyType::OperatorInstruction,
                 'Restore the pinned build on the host, or end the session and start a new one',
                 'Ask your host operator to restore the pinned build on the host, or end the session and start a new one.',
             ],
             'not-signed-in' => [
-                HostRefusal::NotSignedIn,
-                HostRefusal::NotSignedIn->explanation(),
+                StartRefusalReason::NotSignedIn,
+                StartRefusalReason::NotSignedIn->explanation(),
                 StartRemedyType::OperatorInstruction,
                 'Sign the account in again',
                 'Ask your host operator to sign the account in again.',
             ],
             'conversation-unknown' => [
-                HostRefusal::ConversationUnknown,
-                HostRefusal::ConversationUnknown->explanation(),
+                StartRefusalReason::ConversationUnknown,
+                StartRefusalReason::ConversationUnknown->explanation(),
                 StartRemedyType::RetryStart,
                 'Start the agent again',
                 'Start the agent again',
@@ -174,7 +174,7 @@ final class StartRefusalCopyTest extends TestCase
                 'Start a new conversation',
             ],
             'unknown' => [
-                HostRefusal::Unknown,
+                StartRefusalReason::Unknown,
                 'The host declined this request.',
                 StartRemedyType::OperatorInstruction,
                 'Give the operator the safe request reference',
@@ -185,7 +185,7 @@ final class StartRefusalCopyTest extends TestCase
 
     #[DataProvider('refusals')]
     public function test_a_refusal_reads_as_its_explanation_and_its_one_next_step(
-        StartRefusalType|StartPreflightRefusal|ResumeRefusal|HostRefusal $refusal,
+        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartRefusalReason $refusal,
         string $explanation,
         StartRemedyType $type,
         string $operatorText,
@@ -206,7 +206,7 @@ final class StartRefusalCopyTest extends TestCase
             ...StartRefusalType::cases(),
             ...StartPreflightRefusal::cases(),
             ...ResumeRefusal::cases(),
-            ...HostRefusal::cases(),
+            ...StartRefusalReason::cases(),
         ];
 
         $this->assertCount(count($cases), $listed);

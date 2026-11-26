@@ -85,13 +85,7 @@ final class ProposeRuleTest extends TestCase
                 Agent::storedType(),
                 $this->journal->agentCalled('Planner')->id,
             ],
-            [
-                $rule->status,
-                $rule->reason,
-                $rule->replaces_rule_id,
-                $rule->proposer_type,
-                $rule->proposer_id,
-            ],
+            [$rule->status, $rule->reason, $rule->replaces_rule_id, $rule->proposer_type, $rule->proposer_id],
         );
 
         $this->assertSame(

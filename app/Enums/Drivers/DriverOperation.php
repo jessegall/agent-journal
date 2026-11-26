@@ -82,10 +82,6 @@ enum DriverOperation: string
      */
     public function startsWork(): bool
     {
-        return in_array($this, [
-            self::Deliver,
-            self::Wake,
-            self::KeyScript,
-        ], true);
+        return in_array($this, [self::Deliver, self::Wake, self::KeyScript], true);
     }
 }

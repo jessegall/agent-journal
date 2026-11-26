@@ -36,13 +36,8 @@ final class CloseDraftPostTest extends GuardedRouteEntryTestCase
         $opened = $journal->run(new OpenDocumentCommand((string) $document->number));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
-            ->payload([
-                'token' => $opened->token,
-                'version' => $opened->version,
-            ])
+            ->parameters(['document' => $document->number])
+            ->payload(['token' => $opened->token, 'version' => $opened->version])
             ->reply(CloseDocumentCommand::class, new CloseResult(2, true))
             ->expects(CloseDocumentCommand::class, [
                 'draft' => new DraftTarget((string) $document->number, $opened->token, $opened->version),

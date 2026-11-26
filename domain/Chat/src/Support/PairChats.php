@@ -134,10 +134,7 @@ final readonly class PairChats implements PairChatsContract
     public function joined(): Builder
     {
         return Inbox::query()
-            ->withAnyProviderKey([
-                self::PAIR_PROVIDER,
-                self::GROUP_PROVIDER,
-            ])
+            ->withAnyProviderKey([self::PAIR_PROVIDER, self::GROUP_PROVIDER])
             ->attachedTo($this->actors->actor())
             ->oldestFirst();
     }

@@ -18,7 +18,7 @@ final class ProjectCommandStatus extends Data
      * @param  list<ProjectCommandFrame>  $frames
      */
     public function __construct(
-        public readonly CommandRunStatus $state,
+        public readonly CommandRunStatus $status,
         #[DataCollectionOf(ProjectCommandFrame::class)]
         public readonly array $frames,
     ) {}
@@ -26,11 +26,8 @@ final class ProjectCommandStatus extends Data
     /**
      * @param  list<ProjectCommandFrame>  $frames
      */
-    public static function of(CommandRunStatus $state, array $frames): self
+    public static function of(CommandRunStatus $status, array $frames): self
     {
-        return self::from([
-            'state' => $state,
-            'frames' => $frames,
-        ]);
+        return self::from(['status' => $status, 'frames' => $frames]);
     }
 }

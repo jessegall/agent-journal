@@ -9,6 +9,7 @@ use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Projects\AgentProjects;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Messages\InboxPermission;
@@ -20,10 +21,13 @@ use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
+use App\Models\Sessions\StopCheck;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
+use App\Support\EventUnitLifecycle;
+use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Projects\CurrentProject;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
@@ -35,6 +39,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
@@ -203,6 +208,31 @@ final class TestJournal
         $this->runAsJournal(CommandEntry::HostControl, 'inbox install', new InstallInboxesCommand());
 
         return $this;
+    }
+
+    /**
+     * The session's agent stopped under the stop id, opening its attempt under the session's frozen stop conditions,
+     * as the stop gate opens one.
+     */
+    public function openStopAttempt(string $sessionId, string $stopId = 'stop-1'): StopCheck
+    {
+        $session = AgentSession::query()->findOrFail($sessionId);
+        $policy = $this->app->make(SessionPolicyReader::class)->policyFor($sessionId);
+        $stop = new HookIdentity($session->agent_id, $sessionId, $stopId, 'digest');
+
+        // Opened in its own unit, as the stop hook opens it, so its opening is heard.
+        return $this->app->make(EventUnitLifecycle::class)->run(
+            DB::connection(),
+            'a stop attempt of the test',
+            fn () => StopCheck::create(
+                $stop,
+                $policy->digest(),
+                StopCheck::FIRST_GENERATION,
+                $policy->stopConditions->definitionHashes(),
+            ),
+            fn () => null,
+            fn () => null,
+        );
     }
 
     /**

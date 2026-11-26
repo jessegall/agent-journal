@@ -41,10 +41,7 @@ final class NotificationCursorInvalid extends RuntimeException implements CodedR
     public function render(): JsonResponse
     {
         return new JsonResponse(
-            [
-                'message' => $this->getMessage(),
-                'errors' => [$this->field() => [$this->fieldError()]],
-            ],
+            ['message' => $this->getMessage(), 'errors' => [$this->field() => [$this->fieldError()]]],
             $this->refusalCode()->status(),
         );
     }

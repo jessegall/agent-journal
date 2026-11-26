@@ -160,10 +160,7 @@ function remove_folder(string $folder): void
         return;
     }
 
-    foreach (array_diff((array) scandir($folder), [
-        '.',
-        '..',
-    ]) as $name) {
+    foreach (array_diff((array) scandir($folder), ['.', '..']) as $name) {
         $path = $folder.'/'.$name;
 
         if (is_dir($path) && ! is_link($path)) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Agents\Drivers\Hooks\DriverAdapters;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\PruneHookHistoryCommand;
 use App\Console\Commands\RelayHookCommand;
@@ -11,6 +12,7 @@ use App\Contracts\Actors\ActorGuidance as ActorGuidanceContract;
 use App\Contracts\Actors\ActorProviderRegistration;
 use App\Contracts\Actors\ActorVisibility;
 use App\Contracts\Admission\StackAdmission as StackAdmissionContract;
+use App\Contracts\Drivers\DriverAdapters as DriverAdaptersContract;
 use App\Contracts\Drivers\DriverCompatibilities as DriverCompatibilitiesContract;
 use App\Contracts\Drivers\PinnedBuilds as PinnedBuildsContract;
 use App\Contracts\Events\FactStaging;
@@ -46,8 +48,6 @@ use App\Support\ContextBudget;
 use App\Support\CurrentState;
 use App\Support\Delivery\StateBridgeFactStaging;
 use App\Support\Delivery\StateEventDispatcher;
-use App\Support\Drivers\Adapters\DriverAdapters;
-use App\Support\Drivers\Contracts\DriverAdapters as DriverAdaptersContract;
 use App\Support\HelperRecordFacts;
 use App\Support\HookRetryWindow;
 use App\Support\IncomingWorkRegistration;
@@ -162,10 +162,7 @@ final class HooksServiceProvider extends ServiceProvider
         $actors->registerStackSessions(Agent::class, ActorStackSessionProvider::class);
         $this->loadCoreRoutes('hooks/hooks.php');
 
-        $this->commands([
-            PruneHookHistoryCommand::class,
-            RelayHookCommand::class,
-        ]);
+        $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
 
         $this->callAfterResolving(
             Schedule::class,

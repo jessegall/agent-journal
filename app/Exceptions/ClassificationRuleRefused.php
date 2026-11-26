@@ -34,9 +34,9 @@ final class ClassificationRuleRefused extends RuntimeException implements CodedR
         return new self("The rule {$ruleId} cannot activate revision {$revision}: revision {$active} is active.");
     }
 
-    public static function notActive(string $ruleId, ClassificationStatus $state): self
+    public static function notActive(string $ruleId, ClassificationStatus $status): self
     {
-        return new self("The rule {$ruleId} is {$state->value}, so it cannot be retired.");
+        return new self("The rule {$ruleId} is {$status->value}, so it cannot be retired.");
     }
 
     protected function status(): int

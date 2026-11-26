@@ -78,13 +78,7 @@ final readonly class ExecutionContext
      */
     public function insideAlias(string $aliasId, array $arguments): self
     {
-        return clone ($this, [
-            'positional' => $arguments,
-            'aliases' => [
-                ...$this->aliases,
-                $aliasId,
-            ],
-        ]);
+        return clone ($this, ['positional' => $arguments, 'aliases' => [...$this->aliases, $aliasId]]);
     }
 
     public function withPipefail(bool $isPipefail): self

@@ -123,9 +123,9 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
 
     // ----------[ Internals ]----------
 
-    private function decide(PlanReviewStatus $state, ActorReference $actor, string $requestKey, string|null $reason): void
+    private function decide(PlanReviewStatus $status, ActorReference $actor, string $requestKey, string|null $reason): void
     {
-        $this->status = $state;
+        $this->status = $status;
         $this->decided_by_type = $actor->type;
         $this->decided_by_id = $actor->id;
         $this->decided_at = CarbonImmutable::now();
@@ -205,9 +205,9 @@ final class PlanReviewEdition extends JournalModel implements EventSource, Reada
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, PlanReviewStatus $state): void
+    protected function inState(Builder $query, PlanReviewStatus $status): void
     {
-        $query->where('status', $state);
+        $query->where('status', $status);
     }
 
     /**

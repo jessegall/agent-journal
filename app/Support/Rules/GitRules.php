@@ -222,11 +222,7 @@ final readonly class GitRules
             $this->namedRule(
                 'tag-list',
                 ['tag'],
-                ArgumentGrammar::options([
-                    '-l',
-                    '--list',
-                    '-n',
-                ])->withOptions(...$this->valued('--sort', '--contains')),
+                ArgumentGrammar::options(['-l', '--list', '-n'])->withOptions(...$this->valued('--sort', '--contains')),
                 $read,
             ),
             $this->namedRule(
@@ -244,10 +240,7 @@ final readonly class GitRules
                 ArgumentGrammar::optionWithOperands('-d', OperandType::Name)->repeating(),
                 $delete,
             ),
-            $this->namedRule('remote-list', ['remote'], ArgumentGrammar::options([
-                '-v',
-                '--verbose',
-            ]), $read),
+            $this->namedRule('remote-list', ['remote'], ArgumentGrammar::options(['-v', '--verbose']), $read),
             $this->namedRule(
                 'config-get',
                 ['config'],
@@ -264,18 +257,9 @@ final readonly class GitRules
                 ),
                 $read,
             ),
-            $this->rule([
-                'stash',
-                'list',
-            ], ArgumentGrammar::none(), $read),
-            $this->rule([
-                'stash',
-                'show',
-            ], $revisions('-p', '--stat'), $read),
-            $this->rule([
-                'worktree',
-                'list',
-            ], ArgumentGrammar::options(['--porcelain']), $read),
+            $this->rule(['stash', 'list'], ArgumentGrammar::none(), $read),
+            $this->rule(['stash', 'show'], $revisions('-p', '--stat'), $read),
+            $this->rule(['worktree', 'list'], ArgumentGrammar::options(['--porcelain']), $read),
             $this->rule(
                 ['add'],
                 $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
@@ -352,23 +336,11 @@ final readonly class GitRules
                     )->withOptions(...$this->valued('-m', '--message', '-s', '--source', '-X', '--strategy-option')),
                     $change,
                 ),
-                [
-                    'checkout',
-                    'switch',
-                    'restore',
-                    'reset',
-                    'merge',
-                    'rebase',
-                    'cherry-pick',
-                    'revert',
-                ],
+                ['checkout', 'switch', 'restore', 'reset', 'merge', 'rebase', 'cherry-pick', 'revert'],
             ),
             ...array_map(
                 fn (string $subcommand) => $this->rule(
-                    [
-                        'stash',
-                        $subcommand,
-                    ],
+                    ['stash', $subcommand],
                     $revisions(
                         '-u',
                         '--include-untracked',
@@ -379,13 +351,7 @@ final readonly class GitRules
                     )->withOptions(...$this->valued('-m', '--message')),
                     $change,
                 ),
-                [
-                    'push',
-                    'pop',
-                    'apply',
-                    'drop',
-                    'clear',
-                ],
+                ['push', 'pop', 'apply', 'drop', 'clear'],
             ),
             $this->namedRule(
                 'stash-save',
@@ -474,10 +440,7 @@ final readonly class GitRules
                 $remoteChange,
             ),
             $this->rule(
-                [
-                    'submodule',
-                    'update',
-                ],
+                ['submodule', 'update'],
                 $pathOperands->repeating()->withOptions(
                     ...$this->flags('--init', '--recursive', '--remote'),
                 ),

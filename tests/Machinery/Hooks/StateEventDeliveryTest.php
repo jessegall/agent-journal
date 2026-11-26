@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Hooks\DriverReplies;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Events\Event;
 use App\Enums\Engine\NoSubject;
@@ -15,8 +17,6 @@ use App\Support\ActorReference;
 use App\Support\AgentStacks;
 use App\Support\AttentionOrigin;
 use App\Support\Delivery\StateEventBridge;
-use App\Support\Drivers\DriverReplies;
-use App\Support\Drivers\DriverReply;
 use App\Support\OperationDeadline;
 use App\Support\References\StateReference;
 use App\Support\References\SubjectReference;

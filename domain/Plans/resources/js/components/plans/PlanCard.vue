@@ -28,7 +28,7 @@ const props = defineProps<{
 }>();
 const holder = computed(() => props.card.holder);
 
-const state = computed(() => stateLook[props.card.state]);
+const state = computed(() => stateLook[props.card.status]);
 const name = computed(() => planName(props.card));
 const linkName = computed(() =>
     [

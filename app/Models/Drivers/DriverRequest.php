@@ -444,10 +444,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     public function canRetry(): bool
     {
-        return in_array($this->progress, [
-            RequestProgress::Failed,
-            RequestProgress::Unavailable,
-        ], true);
+        return in_array($this->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
     }
 
     /**
@@ -480,10 +477,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     public function canCancel(): bool
     {
-        return in_array($this->progress, [
-            RequestProgress::Accepted,
-            RequestProgress::Staged,
-        ], true);
+        return in_array($this->progress, [RequestProgress::Accepted, RequestProgress::Staged], true);
     }
 
     /**
@@ -499,10 +493,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
      */
     public function changesASetting(): bool
     {
-        return in_array($this->operation, [
-            DriverOperation::ChangeModel,
-            DriverOperation::ChangeEffort,
-        ], true);
+        return in_array($this->operation, [DriverOperation::ChangeModel, DriverOperation::ChangeEffort], true);
     }
 
     /**
@@ -718,10 +709,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     protected function inFlightFor(Builder $query, AgentRuntime $runtime): void
     {
         $query->where('agent_runtime_id', $runtime->id)
-            ->whereIn('progress', [
-                RequestProgress::Staged,
-                RequestProgress::Applying,
-            ]);
+            ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying]);
     }
 
     /**
@@ -743,10 +731,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     #[Scope]
     protected function turnsApplyingSince(Builder $query, CarbonImmutable $before): void
     {
-        $query->whereIn('operation', [
-            DriverOperation::Deliver,
-            DriverOperation::Wake,
-        ])
+        $query->whereIn('operation', [DriverOperation::Deliver, DriverOperation::Wake])
             ->where('progress', RequestProgress::Applying)
             ->where('updated_at', '<', $before);
     }
@@ -794,10 +779,7 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     #[Scope]
     protected function changingSettings(Builder $query): void
     {
-        $query->whereIn('operation', [
-            DriverOperation::ChangeModel,
-            DriverOperation::ChangeEffort,
-        ]);
+        $query->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort]);
     }
 
     /**

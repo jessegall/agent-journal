@@ -16,9 +16,6 @@ final readonly class StartReceipt
 {
     public const string ACTUAL_MODEL_NOT_REPORTED = 'not reported by this adapter';
 
-    /**
-     * @param  list<string>  $driverArguments
-     */
     public function __construct(
         public string $requestId,
         public string $sessionId,
@@ -27,6 +24,5 @@ final readonly class StartReceipt
         public bool $isNewSession,
         public ConversationModeType $conversationMode,
         public string $actualModel,
-        public array $driverArguments,
     ) {}
 }

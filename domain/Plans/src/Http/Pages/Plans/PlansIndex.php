@@ -69,7 +69,7 @@ final readonly class PlansIndex extends PlansPage
         $card = PlanCardData::fromPlanCard($plan);
         $trailing = $this->projectLabel->partsFor($plan->owner);
 
-        if ($card->state === PlanStatus::Cancelled) {
+        if ($card->status === PlanStatus::Cancelled) {
             $trailing[] = LayoutPartData::badge('state', 'Cancelled', 'quiet');
         }
 
@@ -80,10 +80,7 @@ final readonly class PlansIndex extends PlansPage
         return LayoutRowData::from([
             'key' => $card->id,
             'label' => $card->title,
-            'href' => route('plans.plan', [
-                'plan' => $card->number,
-                ...$filters->toQuery(),
-            ], false),
+            'href' => route('plans.plan', ['plan' => $card->number, ...$filters->toQuery()], false),
             'isCurrent' => $filters->plan === $card->number,
             'leading' => [LayoutPartData::text('number', $card->number, 'muted')],
             'trailing' => $trailing,
@@ -96,11 +93,7 @@ final readonly class PlansIndex extends PlansPage
             return $this->nothingMatches(
                 'No plan matches these filters.',
                 'Show all plans',
-                [
-                    'state' => '',
-                    'q' => '',
-                    'page' => '',
-                ],
+                ['state' => '', 'q' => '', 'page' => ''],
             );
         }
 
@@ -140,11 +133,7 @@ final readonly class PlansIndex extends PlansPage
             $creation,
             LayoutPartData::action('open', 'New plan', LayoutActionData::changing([]), $openerStyle),
             LayoutFormData::from(
-                [
-                    'method' => ActionMethod::Post,
-                    'href' => route('plans.create-plan', [], false),
-                    'isKeyed' => true,
-                ],
+                ['method' => ActionMethod::Post, 'href' => route('plans.create-plan', [], false), 'isKeyed' => true],
             ),
             [
                 LayoutPartData::field('title', 'Title', new LayoutFieldData('title'), 'text'),

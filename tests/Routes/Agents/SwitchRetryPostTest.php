@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverType;
 use App\Models\Drivers\DriverSwitch;
-use App\Support\DefaultDrivers;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use Illuminate\Support\Str;
@@ -43,11 +43,7 @@ final class SwitchRetryPostTest extends GuardedRouteEntryTestCase
         );
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'switch' => $switch->id,
-            ])
-            ->expects(RetryDriverSwitchCommand::class, [
-                'switchId' => $switch->id,
-            ]);
+            ->parameters(['switch' => $switch->id])
+            ->expects(RetryDriverSwitchCommand::class, ['switchId' => $switch->id]);
     }
 }

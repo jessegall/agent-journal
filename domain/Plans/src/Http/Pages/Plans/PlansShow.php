@@ -72,11 +72,7 @@ final readonly class PlansShow extends PlansPage
     private function factsOf(PlanCardData $card): array
     {
         $rows = [
-            LayoutRowData::from([
-                'key' => 'state',
-                'label' => 'State',
-                'value' => $card->state->value,
-            ]),
+            LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => $card->status->value]),
             LayoutRowData::from([
                 'key' => 'tasks',
                 'label' => 'Tasks',
@@ -87,19 +83,11 @@ final readonly class PlansShow extends PlansPage
         ];
 
         if (is_string($card->phase)) {
-            $rows[] = LayoutRowData::from([
-                'key' => 'phase',
-                'label' => 'Current phase',
-                'value' => $card->phase,
-            ]);
+            $rows[] = LayoutRowData::from(['key' => 'phase', 'label' => 'Current phase', 'value' => $card->phase]);
         }
 
         if ($card->holder instanceof AssignmentData) {
-            $rows[] = LayoutRowData::from([
-                'key' => 'holder',
-                'label' => 'Held by',
-                'value' => $card->holder->name,
-            ]);
+            $rows[] = LayoutRowData::from(['key' => 'holder', 'label' => 'Held by', 'value' => $card->holder->name]);
         }
 
         return $rows;

@@ -13,7 +13,6 @@ use App\Models\Projects\ProjectInvitation;
 use App\Support\InstallLineAvailability;
 use App\Support\PublishedReleases;
 use App\Values\ReleaseManifest;
-use App\Values\ReleaseTarget;
 use App\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
@@ -78,7 +77,11 @@ final class IssueProjectInvitationTest extends TestCase
             $this->assertStringNotContainsString($ticket, $line);
         }
 
-        foreach (['command_receipts', 'project_invitations', 'install_attempts'] as $table) {
+        foreach ([
+            'command_receipts',
+            'project_invitations',
+            'install_attempts',
+        ] as $table) {
             $this->assertStringNotContainsString($ticket, (string) json_encode(DB::table($table)->get()));
         }
     }
@@ -208,13 +211,20 @@ final class IssueProjectInvitationTest extends TestCase
         $this->assertTrue($this->availability()->canIssue());
         $this->assertSame([], $offer->missingCapabilities);
         $this->assertSame(
-            ['darwin-arm64', 9_004_000, ['git', 'curl'], [], true],
-            [$offer->targets[0]->name, $offer->targets[0]->bytes, $offer->targets[0]->prerequisites,
-                $offer->targets[0]->missingProviders, $offer->targets[0]->isSupported],
+            ['darwin-arm64', 9_004_000, [
+                'git',
+                'curl',
+            ], true],
+            [
+                $offer->targets[0]->name,
+                $offer->targets[0]->bytes,
+                $offer->targets[0]->prerequisites,
+                $offer->targets[0]->isSupported,
+            ],
         );
     }
 
-    public function test_a_platform_missing_a_provider_shows_it_withheld_and_issues_no_line_alone(): void
+    public function test_a_platform_naming_no_prerequisite_is_withheld_and_issues_no_line_alone(): void
     {
         $folder = sys_get_temp_dir().'/releases-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/".self::VERSION, 0755, true);
@@ -230,10 +240,9 @@ final class IssueProjectInvitationTest extends TestCase
 
         $this->switchOn();
         $manifest = PublicRelease::manifest(self::VERSION);
-        $manifest['targets'][0]['providers'] = [];
+        $manifest['targets'][0]['prerequisites'] = [];
         $this->publish($manifest);
 
-        $this->assertSame(['claude-code'], $this->offer()->targets[0]->missingProviders);
         $this->assertFalse($this->offer()->targets[0]->isSupported);
         $this->assertFalse($this->availability()->canIssue());
     }
@@ -288,8 +297,10 @@ final class IssueProjectInvitationTest extends TestCase
             'targets' => [[
                 'os' => 'linux',
                 'arch' => 'amd64',
-                'prerequisites' => ['git', 'curl'],
-                'providers' => ReleaseTarget::REQUIRED_PROVIDERS,
+                'prerequisites' => [
+                    'git',
+                    'curl',
+                ],
                 'artifacts' => [$relay('linux-amd64')],
             ]],
         ]));

@@ -79,10 +79,7 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
             'key' => $run->id,
             'label' => "Run {$run->number}",
             'detail' => $run->name,
-            'href' => route('sequences.run', [
-                'run' => $run->number,
-                ...$query,
-            ], false),
+            'href' => route('sequences.run', ['run' => $run->number, ...$query], false),
             'isCurrent' => $run->id === $chosenRunId,
             'trailing' => [$mark],
         ]);
@@ -99,10 +96,7 @@ final readonly class SequenceRunsIndex extends SequenceRunsPage
             fn (ActorReference $follower) => LayoutRowData::from([
                 'key' => $follower->text(),
                 'label' => $labels->nameOf($follower) ?? $follower->text(),
-                'query' => [
-                    'actor' => $follower->text(),
-                    'page' => '',
-                ],
+                'query' => ['actor' => $follower->text(), 'page' => ''],
                 'isCurrent' => $follower->text() === $chosen->text(),
             ]),
             $followers,

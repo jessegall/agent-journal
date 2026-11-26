@@ -55,12 +55,7 @@ final readonly class TaskSearchProvider implements SearchProvider
             admitted: fn () => $this->admitted($constraints),
             idColumn: 'id',
             titleColumn: 'title',
-            columns: [
-                'id',
-                'number',
-                'title',
-                'revision',
-            ],
+            columns: ['id', 'number', 'title', 'revision'],
             titleOf: fn (Task $task): string => $task->title,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $taskId) => $this->access->admitsOpen($query->reader, $taskId),

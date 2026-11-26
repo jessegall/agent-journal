@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\OpenJournalTerminal;
 
+use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Bus\JournalCommands;
@@ -12,8 +14,6 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
-use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Values\HostOrderSource;
 
 final readonly class OpenJournalTerminalHandler implements CommandHandler

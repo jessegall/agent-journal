@@ -147,10 +147,12 @@ func IsPinnedReference(reference string) bool {
 }
 
 // ContainerRules are what decides what a manifest may ask for: the host's arrangement and, when contained, the
-// installation name every volume of its containers opens with and the one agent image its containers run.
+// installation name every volume of its containers opens with, the images the journal allowed its containers to run,
+// and the agent image the host's own throwaway containers run.
 type ContainerRules struct {
 	Arrangement      Arrangement
 	InstallationName InstallationName
+	Allowed          *AllowedImages
 	AgentImage       string
 	// DevelopmentPrograms is a daemon folder of the journal's own programs built from the checkout, mounted over the
 	// image's copies in local development only, so a change to them needs no image build; empty everywhere else.
@@ -316,9 +318,10 @@ func (manifest ContainerManifest) CreateOptions(name string, labels StartLabels,
 // nanoCPUsInACore is one CPU core in the unit the daemon counts CPU budgets in.
 const nanoCPUsInACore = 1_000_000_000
 
-// permitsImage is whether the image is one a container may run here: on a contained host only the pinned agent image.
+// permitsImage is whether the image is one a container may run here: on a contained host only an image the journal
+// allowed.
 func (rules ContainerRules) permitsImage(image string) bool {
-	return !rules.Arrangement.IsContained() || image == rules.AgentImage
+	return !rules.Arrangement.IsContained() || rules.Allowed.Permits(image)
 }
 
 // permit is whether the mounts fit the arrangement: a local helper has exactly one folder of this machine; a

@@ -11,20 +11,20 @@ function controlled(client: Partial<TerminalControlClient>) {
     const sent: unknown[][] = [];
     const full: TerminalControlClient = {
         take: async () => answer({}),
-        cancel: async () => answer({ state: 'releasing' }),
-        renew: async () => answer({ state: 'granted', grantId: 'grant' }),
-        release: async () => answer({ state: 'releasing', grantId: 'grant' }),
+        cancel: async () => answer({ status: 'releasing' }),
+        renew: async () => answer({ status: 'granted', grantId: 'grant' }),
+        release: async () => answer({ status: 'releasing', grantId: 'grant' }),
         input: async (grantId, input, sequence, revision) => {
             const text = textOf(input);
             sent.push([grantId, text, input.type === 'text' && input.enter, sequence, revision]);
 
-            return answer({ state: 'granted', grantId: 'grant', nextSequence: sequence + 1 });
+            return answer({ status: 'granted', grantId: 'grant', nextSequence: sequence + 1 });
         },
-        choose: async () => answer({ state: 'granted', grantId: 'grant' }),
-        check: async () => answer({ state: 'granted', grantId: 'grant' }),
-        openPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
-        submitPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
-        cancelPrivate: async () => answer({ state: 'granted', grantId: 'grant' }),
+        choose: async () => answer({ status: 'granted', grantId: 'grant' }),
+        check: async () => answer({ status: 'granted', grantId: 'grant' }),
+        openPrivate: async () => answer({ status: 'granted', grantId: 'grant' }),
+        submitPrivate: async () => answer({ status: 'granted', grantId: 'grant' }),
+        cancelPrivate: async () => answer({ status: 'granted', grantId: 'grant' }),
         receipt: async (_take, sequence) =>
             answer({
                 state: 'granted',

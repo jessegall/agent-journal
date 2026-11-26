@@ -16,7 +16,7 @@ final readonly class PublicationReport implements JsonSerializable
     public function __construct(
         public string $publicationId,
         public string $sessionId,
-        public PublicationStatus $state,
+        public PublicationStatus $status,
         public string $generationId,
         public string $selectionDigest,
         public string $target,
@@ -28,7 +28,7 @@ final readonly class PublicationReport implements JsonSerializable
      */
     public function isRetryable(): bool
     {
-        return $this->state === PublicationStatus::Failed;
+        return $this->status === PublicationStatus::Failed;
     }
 
     public function retryCommand(): string
@@ -44,7 +44,7 @@ final readonly class PublicationReport implements JsonSerializable
         return [
             'session' => $this->sessionId,
             'publication' => $this->publicationId,
-            'state' => $this->state->value,
+            'state' => $this->status->value,
             'generation' => $this->generationId,
             'selection_digest' => $this->selectionDigest,
             'target' => $this->target,

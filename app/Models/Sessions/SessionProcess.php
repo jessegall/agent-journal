@@ -262,6 +262,21 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     /**
+     * The session's starts no host has taken yet, locked, so a cancelled start ends them before any process opens.
+     *
+     * @return list<self>
+     */
+    public static function findLockedPendingOf(string $sessionId): array
+    {
+        return array_values(self::query()->supervised()
+            ->ofSessions([$sessionId])
+            ->pending()
+            ->lockForUpdate()
+            ->get()
+            ->all());
+    }
+
+    /**
      * The session's start that may still run, for reading what it granted; none when no start runs.
      */
     public static function findCurrentOf(string $sessionId): self|null
@@ -403,7 +418,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     #[Scope]
     protected function unresolved(Builder $query): void
     {
-        $states = array_map(fn (SessionProcessStatus $state) => $state->value, SessionProcessStatus::unresolved());
+        $states = array_map(fn (SessionProcessStatus $status) => $status->value, SessionProcessStatus::unresolved());
         $query->whereIn('status', $states);
     }
 

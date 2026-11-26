@@ -28,7 +28,7 @@ final class ShareRevokeCommand extends Command
 
         $summary = $commands->run(new RevokeShareCommand((string) $this->argument('share'), $key));
 
-        $this->line("Share {$summary->number} is {$summary->state->value}.");
+        $this->line("Share {$summary->number} is {$summary->status->value}.");
 
         return self::SUCCESS;
     }

@@ -23,13 +23,13 @@ final class ShareFiltersData extends Data
         public readonly string|null $gateway,
         public readonly string|null $expiresBefore,
         public readonly string|null $after,
-        public readonly ShareStatus|Optional $state = new Optional(),
+        public readonly ShareStatus|Optional $status = new Optional(),
     ) {}
 
     public function toFilters(): ShareListFilters
     {
         return new ShareListFilters(
-            $this->state instanceof ShareStatus ? $this->state : null,
+            $this->status instanceof ShareStatus ? $this->status : null,
             $this->rootType,
             $this->gateway,
             $this->expiresBefore === null ? null : CarbonImmutable::parse($this->expiresBefore),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Profiles;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
@@ -39,7 +40,6 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AgentImage;
 use App\Support\ArrangementSetting;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\ProfileProposal;
@@ -113,13 +113,19 @@ final class ActivateProfilesTest extends TestCase
         'allow_operations' => [
             [
                 'name' => 'shell:journal-check.cleanup',
-                'resources' => [['type' => 'path', 'target' => '/workspace/.scratch']],
+                'resources' => [[
+                    'type' => 'path',
+                    'target' => '/workspace/.scratch',
+                ]],
             ],
             ['name' => 'shell:git.push'],
         ],
     ];
 
-    private const array ROUTE_PROFILE = ['base' => 'writing-helper', 'tier' => 2];
+    private const array ROUTE_PROFILE = [
+        'base' => 'writing-helper',
+        'tier' => 2,
+    ];
 
     private const string ROUTE_CYCLE = 'The question supervisor route has a cycle:';
 
@@ -217,7 +223,10 @@ final class ActivateProfilesTest extends TestCase
         $source = new ScriptSource("ON STOP\nYIELD \"Check again.\"\nEND");
         $commands->run(new SaveProfileDraftCommand($profile, 0, $source));
         $proposal = ProfileProposal::fromConfiguration(['profiles' => [
-            $profile->key => ['base' => 'read-only-helper', 'tier' => 3],
+            $profile->key => [
+                'base' => 'read-only-helper',
+                'tier' => 3,
+            ],
         ]]);
         $commands->run(new ActivateProfilesCommand($proposal, DraftExpectations::fromOptions([$profile->key.'=1'])));
 
@@ -274,11 +283,17 @@ final class ActivateProfilesTest extends TestCase
             ['question' => 'owner'],
             ['default' => null],
             ['default' => 'profile:missing'],
-            ['default' => 'owner', 'unknown' => 'owner'],
+            [
+                'default' => 'owner',
+                'unknown' => 'owner',
+            ],
         ] as $supervisor) {
             $this->assertThrows(
                 fn () => $this->activateConfiguration(
-                    ['profiles' => ['route-a' => [...self::ROUTE_PROFILE, 'supervisor' => $supervisor]]],
+                    ['profiles' => ['route-a' => [
+                        ...self::ROUTE_PROFILE,
+                        'supervisor' => $supervisor,
+                    ]]],
                 ),
                 SupervisorRouteInvalid::class,
             );
@@ -441,7 +456,10 @@ final class ActivateProfilesTest extends TestCase
         $this->activateAsCurrentActor([
             'revision' => 1,
             'base_overrides' => [
-                'writing-helper' => ['remove_paths' => ['delete:.'], 'deny_operations' => ['shell:git.push']],
+                'writing-helper' => [
+                    'remove_paths' => ['delete:.'],
+                    'deny_operations' => ['shell:git.push'],
+                ],
             ],
             'profiles' => ['journal-worker' => self::WORKER],
         ]);
@@ -483,12 +501,18 @@ final class ActivateProfilesTest extends TestCase
             'allow_operations' => [['name' => 'shell:rm.everything']],
         ]]]), ProfilePolicyRefused::class, 'shell:rm.everything');
         $this->assertThrows(
-            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [...self::WORKER, 'instances' => 'many']]]),
+            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [
+                ...self::WORKER,
+                'instances' => 'many',
+            ]]]),
             ProfileProposalRefused::class,
             'instances',
         );
         $this->assertThrows(
-            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [...self::WORKER, 'container' => 'host']]]),
+            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [
+                ...self::WORKER,
+                'container' => 'host',
+            ]]]),
             ProfilePolicyRefused::class,
             self::REQUIRED_CONTAINER,
         );
@@ -563,7 +587,11 @@ final class ActivateProfilesTest extends TestCase
     private function activation(): ActivateProfilesCommand
     {
         return new ActivateProfilesCommand(ProfileProposal::fromConfiguration(['profiles' => [
-            self::PROFILE => ['base' => 'writing-helper', 'tier' => 3, 'preferred_driver' => 'claude-code'],
+            self::PROFILE => [
+                'base' => 'writing-helper',
+                'tier' => 3,
+                'preferred_driver' => 'claude-code',
+            ],
         ]]));
     }
 

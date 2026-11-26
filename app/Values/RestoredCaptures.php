@@ -21,7 +21,7 @@ final readonly class RestoredCaptures
      */
     public function states(): array
     {
-        return array_map(fn (PartCapture $part) => $part->state, $this->parts);
+        return array_map(fn (PartCapture $part) => $part->status, $this->parts);
     }
 
     /**
@@ -32,7 +32,7 @@ final readonly class RestoredCaptures
         $states = [];
 
         foreach ($this->parts as $part) {
-            $states[$part->partId] = $part->state->value;
+            $states[$part->partId] = $part->status->value;
         }
 
         return $states;

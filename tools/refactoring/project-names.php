@@ -44,10 +44,7 @@ const NOT_PROJECT_NAMES = '#(^|/)(vendor|node_modules|\.build|testdata)/|resourc
 function projectNames(array $paths): array
 {
     $files = projectFiles($paths);
-    $listed = array_filter([
-        ...frontendNames($paths),
-        ...shellNames($paths),
-    ], fn (DeclaredName $declared) => in_array(
+    $listed = array_filter([...frontendNames($paths), ...shellNames($paths)], fn (DeclaredName $declared) => in_array(
         (string) preg_replace('/:\d+$/', '', $declared->place),
         $files,
         true,
@@ -70,14 +67,7 @@ function projectNames(array $paths): array
  */
 function projectFiles(array $paths): array
 {
-    $listed = commandLines([
-        'git',
-        'ls-files',
-        '-co',
-        '--exclude-standard',
-        '--',
-        ...$paths,
-    ]);
+    $listed = commandLines(['git', 'ls-files', '-co', '--exclude-standard', '--', ...$paths]);
     $named = array_filter($paths, fn (string $path) => preg_match(NOT_PROJECT_NAMES, rtrim($path, '/').'/') === 1);
 
     return array_values(array_filter($listed, fn (string $file) => is_file($file)
@@ -99,12 +89,7 @@ function frontendNames(array $paths): array
         return [];
     }
 
-    $lines = commandLines([
-        'node',
-        '--experimental-strip-types',
-        __DIR__.'/list-frontend-names.ts',
-        ...$sources,
-    ]);
+    $lines = commandLines(['node', '--experimental-strip-types', __DIR__.'/list-frontend-names.ts', ...$sources]);
 
     return array_map(function (string $line): DeclaredName {
         [$declarationType, $name, $place] = explode("\t", $line) + [
@@ -124,12 +109,7 @@ function frontendNames(array $paths): array
  */
 function shellNames(array $paths): array
 {
-    $lines = commandLines([
-        PHP_BINARY,
-        __DIR__.'/shell-scripts.php',
-        'names',
-        ...$paths,
-    ]);
+    $lines = commandLines([PHP_BINARY, __DIR__.'/shell-scripts.php', 'names', ...$paths]);
 
     return array_map(function (string $line): DeclaredName {
         [$declarationType, $name, $place] = explode("\t", $line) + [
@@ -268,10 +248,7 @@ function fileNames(array $files): array
     $named = array_filter($files, fn (string $file) => ! preg_match('/\.(php|vue)$/', $file));
 
     return array_values(array_map(function (string $file): DeclaredName {
-        $name = str_replace([
-            '-',
-            '.',
-        ], '_', (string) preg_replace('/\..*$/', '', basename($file)));
+        $name = str_replace(['-', '.'], '_', (string) preg_replace('/\..*$/', '', basename($file)));
 
         return new DeclaredName('file', $name, $file, str_ends_with($file, '.sh') ? 'action' : 'thing');
     }, $named));
@@ -285,16 +262,7 @@ function fileNames(array $files): array
  */
 function commandLines(array $command): array
 {
-    $process = proc_open($command, [
-        1 => [
-            'pipe',
-            'w',
-        ],
-        2 => [
-            'pipe',
-            'w',
-        ],
-    ], $pipes);
+    $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
     $output = stream_get_contents($pipes[1]);
     $errors = stream_get_contents($pipes[2]);
 

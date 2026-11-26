@@ -24,10 +24,7 @@ final class HostOrdersClaimPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::SharedHost, $host)
             ->payload(['limit' => 5, 'wait' => 0])
-            ->reply(ClaimHostOrdersCommand::class, new HostOrderClaim([], '2026-11-26T10:00:00.000Z', null))
-            ->expects(ClaimHostOrdersCommand::class, [
-                'hostId' => $host->hostId,
-                'limit' => 5,
-            ]);
+            ->reply(ClaimHostOrdersCommand::class, new HostOrderClaim([], '2026-11-26T10:00:00.000Z', null, 600))
+            ->expects(ClaimHostOrdersCommand::class, ['hostId' => $host->hostId, 'limit' => 5]);
     }
 }

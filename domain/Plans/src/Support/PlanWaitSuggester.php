@@ -29,10 +29,7 @@ final readonly class PlanWaitSuggester
             fn (TaskGraphEdge $edge) => ! $this->isImplied($edge, $needed),
         ));
 
-        return TaskGraphSuggestion::from([
-            'baseVersion' => $graph->version,
-            'edges' => $kept,
-        ]);
+        return TaskGraphSuggestion::from(['baseVersion' => $graph->version, 'edges' => $kept]);
     }
 
     /**

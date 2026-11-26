@@ -29,10 +29,7 @@ final readonly class ExportVariables implements Pipe
 
         return $call->ended(
             ExitStatus::Success->status(),
-            $context->withEnvironment([
-                ...$context->environment,
-                ...$assignments,
-            ]),
+            $context->withEnvironment([...$context->environment, ...$assignments]),
         );
     }
 }

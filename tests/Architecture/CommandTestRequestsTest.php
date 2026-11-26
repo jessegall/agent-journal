@@ -79,7 +79,6 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Projects/RecordHostProtectionTest.php',
         'tests/Commands/Projects/RecordProjectCommandProcessTest.php',
         'tests/Commands/Projects/StartProjectCommandRunTest.php',
-        'tests/Commands/Sessions/RecordStopConditionResultsTest.php',
     ];
 
     public function test_no_command_test_sends_a_request_but_those_waiting_on_their_routes_removal(): void
@@ -103,7 +102,11 @@ final class CommandTestRequestsTest extends TestCase
     {
         $fixture = 'tests/Fixtures/CommandTests/PostingCommandScenario.php';
 
-        $this->assertSame([$fixture => [21, 23, 27]], $this->requestsByFile([$fixture]));
+        $this->assertSame([$fixture => [
+            21,
+            23,
+            27,
+        ]], $this->requestsByFile([$fixture]));
     }
 
     /**
@@ -113,7 +116,10 @@ final class CommandTestRequestsTest extends TestCase
     {
         $files = [];
 
-        foreach ([base_path('tests/Commands'), base_path('domain')] as $folder) {
+        foreach ([
+            base_path('tests/Commands'),
+            base_path('domain'),
+        ] as $folder) {
             foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder)) as $file) {
                 $path = $file instanceof SplFileInfo ? substr($file->getPathname(), strlen(base_path()) + 1) : '';
 

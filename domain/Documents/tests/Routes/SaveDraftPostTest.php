@@ -36,9 +36,7 @@ final class SaveDraftPostTest extends GuardedRouteEntryTestCase
         $opened = $journal->run(new OpenDocumentCommand((string) $document->number));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
+            ->parameters(['document' => $document->number])
             ->payload([
                 'token' => $opened->token,
                 'version' => $opened->version,

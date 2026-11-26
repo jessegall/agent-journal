@@ -337,10 +337,7 @@ final class MenuEntry extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function currentOnBuild(Builder $query, string $build): void
     {
-        $query->whereJsonContains('builds', [[
-            'build' => $build,
-            'is_stale' => false,
-        ]]);
+        $query->whereJsonContains('builds', [['build' => $build, 'is_stale' => false]]);
     }
 
     /**

@@ -175,13 +175,25 @@ final class MarkdownPartsSectionsTest extends TestCase
      */
     public static function headingsAndKeys(): iterable
     {
-        yield 'comma' => ['Starting, blocking and finishing', 'starting-blocking-and-finishing'];
+        yield 'comma' => [
+            'Starting, blocking and finishing',
+            'starting-blocking-and-finishing',
+        ];
 
-        yield 'code and dashes' => ['Use `--permit` safely', 'use-permit-safely'];
+        yield 'code and dashes' => [
+            'Use `--permit` safely',
+            'use-permit-safely',
+        ];
 
-        yield 'accent' => ['Café rules', 'cafe-rules'];
+        yield 'accent' => [
+            'Café rules',
+            'cafe-rules',
+        ];
 
-        yield 'plan' => ['Holding plan work', 'holding-plan-work'];
+        yield 'plan' => [
+            'Holding plan work',
+            'holding-plan-work',
+        ];
     }
 
     #[DataProvider('headingsAndKeys')]
@@ -207,12 +219,15 @@ final class MarkdownPartsSectionsTest extends TestCase
      */
     public static function brokenFiles(): iterable
     {
-        yield 'no title' => [<<<'TEXT'
-        ## States
-
-        Text.
-
-        TEXT, SkillSourceInvalid::missingTitle('shell.md')];
+        yield 'no title' => [
+            <<<'TEXT'
+            ## States
+    
+            Text.
+    
+            TEXT,
+            SkillSourceInvalid::missingTitle('shell.md'),
+        ];
 
         yield 'text before the title' => [
             <<<'TEXT'
@@ -238,30 +253,42 @@ final class MarkdownPartsSectionsTest extends TestCase
             SkillSourceInvalid::missingTitle('shell.md'),
         ];
 
-        yield 'no heading at all' => ["Just text.\n", SkillSourceInvalid::missingTitle('shell.md')];
+        yield 'no heading at all' => [
+            "Just text.\n",
+            SkillSourceInvalid::missingTitle('shell.md'),
+        ];
 
-        yield 'second title' => [<<<'TEXT'
-        # Shell
+        yield 'second title' => [
+            <<<'TEXT'
+            # Shell
+    
+            ## States
+    
+            # Notes
+    
+            TEXT,
+            SkillSourceInvalid::secondTitle('shell.md', 'Notes'),
+        ];
 
-        ## States
+        yield 'title differs' => [
+            <<<'TEXT'
+            # Shells
+    
+            ## States
+    
+            TEXT,
+            SkillSourceInvalid::titleDiffers('shell.md', 'Shells', 'Shell'),
+        ];
 
-        # Notes
-
-        TEXT, SkillSourceInvalid::secondTitle('shell.md', 'Notes')];
-
-        yield 'title differs' => [<<<'TEXT'
-        # Shells
-
-        ## States
-
-        TEXT, SkillSourceInvalid::titleDiffers('shell.md', 'Shells', 'Shell')];
-
-        yield 'heading without key' => [<<<'TEXT'
-        # Shell
-
-        ## ???
-
-        TEXT, SkillSourceInvalid::headingWithoutKey('shell.md', '???')];
+        yield 'heading without key' => [
+            <<<'TEXT'
+            # Shell
+    
+            ## ???
+    
+            TEXT,
+            SkillSourceInvalid::headingWithoutKey('shell.md', '???'),
+        ];
     }
 
     #[DataProvider('brokenFiles')]
@@ -281,9 +308,15 @@ final class MarkdownPartsSectionsTest extends TestCase
      */
     public static function unreachablePaths(): iterable
     {
-        yield 'a missing file' => ['nope.md', 'nope.md does not exist'];
+        yield 'a missing file' => [
+            'nope.md',
+            'nope.md does not exist',
+        ];
 
-        yield 'a file outside the folder' => ['../secrets.md', 'is not a relative path inside'];
+        yield 'a file outside the folder' => [
+            '../secrets.md',
+            'is not a relative path inside',
+        ];
     }
 
     #[DataProvider('unreachablePaths')]

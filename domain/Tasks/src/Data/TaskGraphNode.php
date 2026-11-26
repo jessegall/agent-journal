@@ -20,7 +20,7 @@ final class TaskGraphNode extends Data
         public readonly string $id,
         public readonly int $number,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
         public readonly string $address,
         public readonly bool $mayEditWaits,
         public readonly string|Optional $reason = new Optional(),

@@ -42,9 +42,6 @@ final class ReactPostTest extends GuardedRouteEntryTestCase
             '01JPAGEREQUESTMESSAGE00000' => $messageId,
         ])
             ->reply(ReactCommand::class, Str::ulid())
-            ->expects(ReactCommand::class, [
-                'messageId' => $messageId,
-                'emoji' => '👍',
-            ]);
+            ->expects(ReactCommand::class, ['messageId' => $messageId, 'emoji' => '👍']);
     }
 }

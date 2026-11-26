@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\RewriteSupport;
@@ -13,8 +15,6 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\PendingAgentMessage;
 use App\Models\Drivers\DriverRequest;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
 use App\Support\Inputs\Values\FileChange;

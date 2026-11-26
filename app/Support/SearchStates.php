@@ -244,12 +244,7 @@ final readonly class SearchStates
 
     private function signatureOf(SearchOwner $owner, string $searchId, string $positionId): string
     {
-        $signed = implode("\n", [
-            self::PURPOSE,
-            $owner->binding(),
-            $searchId,
-            $positionId,
-        ]);
+        $signed = implode("\n", [self::PURPOSE, $owner->binding(), $searchId, $positionId]);
 
         return bin2hex(hash_hmac('sha256', $signed, $this->encrypter->getKey(), true));
     }

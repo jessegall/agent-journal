@@ -28,9 +28,8 @@ below.
 1. `journal-agent enroll --journal <url> --host <id>` with the host secret on standard input saves the enrollment in
    the owner-only state folder.
 2. `journal-agent serve --installation <folder> --hook-command "<installed relay>"` verifies the installation, sends
-   the start reports queued before a restart, reconciles the starts the journal counts as possibly running, opens the
-   local start socket (`start.sock` in the state folder) and serves the journal's requests. Set
-   `AGENTS_HOST_START_SOCKET` to that socket for the journal's PHP on the same machine.
+   the start reports queued before a restart, reconciles the starts the journal counts as possibly running and carries
+   out the orders it claims from the journal.
 3. `journal-agent attach --installation <folder> --agent <id> --folder <work folder> --program claude` opens an
    agent's main Claude Code runtime on a terminal. Codex has no terminal to attach to: its runtimes are threads on
    the account's shared app-server.
@@ -75,7 +74,8 @@ the account's Codex owner and every execution on it; an account the host cannot 
   with its private state on the `host-state` volume. It publishes no port and never sees the server's Docker socket.
 - `agent-host-enroll` enrolls it once from the compose secret `journal_host_secret` (a file, never the environment)
   and does nothing when `host-state` already holds the same enrollment.
-- The journal's PHP reaches the host's start socket through the `host-start-socket` volume.
+- The sign-in runner has its account folders made and removed through `make_folder` and `remove_folder` orders the
+  journal places for the host.
 - In place of the sealed installation folder, the two images are pinned by id (`AGENT_IMAGE`, `RUNNER_IMAGE`); the
   host checks both on the agent daemon before it serves, and the agent daemon holds no other image.
 - A Claude Code session's container gets its account's own sign-in folder, read-write, at `/home/journal/.account`,

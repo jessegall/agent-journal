@@ -30,10 +30,7 @@ final readonly class AcknowledgeWakeHandler implements CommandHandler
         DriverRequest::query()
             ->ofAgentRuntime($runtime->id)
             ->withOperation(DriverOperation::Wake)
-            ->withAnyProgress([
-                RequestProgress::Staged,
-                RequestProgress::Applying,
-            ])
+            ->withAnyProgress([RequestProgress::Staged, RequestProgress::Applying])
             ->lockForUpdate()
             ->get()
             ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($this->clock->now()));

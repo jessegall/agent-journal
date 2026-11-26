@@ -20,7 +20,7 @@ final class PrivateAccountProcess
     /**
      * How long a status check may run before it is stopped and proves nothing.
      */
-    private const int CHECK_SECONDS_LIMIT = 30;
+    public const int CHECK_SECONDS_LIMIT = 30;
 
     private bool $isClosed = false;
 
@@ -87,11 +87,7 @@ final class PrivateAccountProcess
      */
     public static function holding(string $workingDirectory): self
     {
-        return self::start([
-            '/bin/sh',
-            '-c',
-            'read -r line',
-        ], ['PATH' => '/usr/bin:/bin'], $workingDirectory);
+        return self::start(['/bin/sh', '-c', 'read -r line'], ['PATH' => '/usr/bin:/bin'], $workingDirectory);
     }
 
     /**

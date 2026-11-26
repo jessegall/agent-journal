@@ -19,7 +19,7 @@ final class PhaseTaskData extends Data
     public function __construct(
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
         public readonly string $stateLabel,
         public readonly bool $hasWaits,
     ) {}
@@ -29,8 +29,8 @@ final class PhaseTaskData extends Data
         return new self(
             (string) $summary->number,
             $summary->title,
-            $summary->state,
-            $summary->state->stateLabel()->text,
+            $summary->status,
+            $summary->status->stateLabel()->text,
             $waits,
         );
     }

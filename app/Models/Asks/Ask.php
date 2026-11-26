@@ -101,11 +101,7 @@ final class Ask extends JournalModel implements Assignable, EventSource, Readabl
     ): self {
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
 
-        $digest = hash('sha256', json_encode([
-            $type->key,
-            $body,
-            $work,
-        ], JSON_THROW_ON_ERROR));
+        $digest = hash('sha256', json_encode([$type->key, $body, $work], JSON_THROW_ON_ERROR));
 
         $ask = new self();
 

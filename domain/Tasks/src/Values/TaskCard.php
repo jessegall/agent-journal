@@ -22,7 +22,7 @@ final readonly class TaskCard
         public string $id,
         public int $number,
         public string $title,
-        public TaskStatus $state,
+        public TaskStatus $status,
         public Option $holder,
         public TaskExecution|null $execution,
         public ProjectOwner $owner,

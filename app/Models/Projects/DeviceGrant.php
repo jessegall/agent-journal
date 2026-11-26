@@ -252,10 +252,7 @@ final class DeviceGrant extends JournalModel implements EventSource, ReadableMod
      */
     public static function findForUserCode(string $code): self
     {
-        return self::query()->with([
-            'binding',
-            'environment',
-        ])->withUserCode($code)->firstOrFail();
+        return self::query()->with(['binding', 'environment'])->withUserCode($code)->firstOrFail();
     }
 
     /**

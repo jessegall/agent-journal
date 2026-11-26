@@ -20,14 +20,8 @@ final readonly class SignInChallengeController
         $challenge = $running !== null && $running->isLive() ? $challenges->challengeOf($running->id) : null;
 
         return new JsonResponse(
-            [
-                'address' => $challenge?->address,
-                'code' => $challenge?->code,
-            ],
-            headers: [
-                'Cache-Control' => 'no-store',
-                'Pragma' => 'no-cache',
-            ],
+            ['address' => $challenge?->address, 'code' => $challenge?->code],
+            headers: ['Cache-Control' => 'no-store', 'Pragma' => 'no-cache'],
         );
     }
 }

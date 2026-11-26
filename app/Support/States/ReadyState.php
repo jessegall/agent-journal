@@ -139,10 +139,7 @@ class ReadyState extends AgentState implements UniqueState
         }
 
         $this->openAttempts = array_slice(
-            [
-                ...$this->openAttempts,
-                $attemptId,
-            ],
+            [...$this->openAttempts, $attemptId],
             -StopConditionGate::UNCHANGED_FAILURE_LIMIT,
         );
     }

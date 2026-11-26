@@ -187,10 +187,7 @@ function roleOfType(Node|null $type, bool $returns): string
 
     return match (true) {
         $name === 'bool' => 'question',
-        $returns && in_array($name, [
-            'void',
-            'never',
-        ], true) => 'action',
+        $returns && in_array($name, ['void', 'never'], true) => 'action',
         default => 'thing',
     };
 }

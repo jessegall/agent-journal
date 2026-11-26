@@ -45,12 +45,7 @@ final readonly class HitIdentity
      */
     public function key(): string
     {
-        return implode("\0", [
-            $this->sourceKey,
-            $this->recordType,
-            $this->recordId,
-            $this->locationId ?? '',
-        ]);
+        return implode("\0", [$this->sourceKey, $this->recordType, $this->recordId, $this->locationId ?? '']);
     }
 
     private function compareLocation(self $other): int

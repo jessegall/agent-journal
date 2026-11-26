@@ -1,4 +1,3 @@
-cmd/journal-agent/install_release.go
 cmd/journal-agent/main.go
 cmd/journal-agent/protection.go
 cmd/journal/disconnect.go
@@ -16,5 +15,4 @@ host/sandbox_mechanisms.go
 host/session_files.go
 localsession/session.go
 localsession/sign_in.go
-release/manifest.go
 shellbridge/command.go

@@ -249,11 +249,7 @@ function faultOfChain(MethodCall $last, array $scopes, array $relations, array $
         && $root->name->toString() === 'query') {
         $model = ltrim($root->class->toString(), '\\');
 
-        if (in_array($model, [
-            'self',
-            'static',
-            'parent',
-        ], true)) {
+        if (in_array($model, ['self', 'static', 'parent'], true)) {
             return null;
         }
     } elseif ($calls !== [] && $calls[0]->name instanceof Node\Identifier && isset($relations[$calls[0]->name->toString()])) {

@@ -229,10 +229,7 @@ final readonly class PropertyRules
                 throw CommandDeclarationInvalid::for($command->name(), $problem);
             }
 
-            $this->refuseRulesInsideValue($command, $inside, [
-                ...$seen,
-                $name,
-            ]);
+            $this->refuseRulesInsideValue($command, $inside, [...$seen, $name]);
         }
     }
 

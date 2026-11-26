@@ -30,7 +30,7 @@ defineProps<{
         class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
         role="status"
     >
-        <SwitchCase :value="attempt.state">
+        <SwitchCase :value="attempt.status">
             <template #checking>
                 <Spinner large class="text-brand" />
                 <h4 class="mt-1 font-semibold text-card text-text">

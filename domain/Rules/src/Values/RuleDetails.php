@@ -16,7 +16,7 @@ final readonly class RuleDetails
         public string $id,
         public int $number,
         public string $text,
-        public RuleStatus $state,
+        public RuleStatus $status,
         public string|null $reason,
         public string|null $proposerType,
         public string|null $proposerId,

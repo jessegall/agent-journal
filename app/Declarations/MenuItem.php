@@ -57,10 +57,7 @@ final readonly class MenuItem
      */
     public function inGroup(string $group, int $position = 0): self
     {
-        return clone ($this, [
-            'group' => $group,
-            'position' => $position,
-        ]);
+        return clone ($this, ['group' => $group, 'position' => $position]);
     }
 
     public function withIcon(Icon $icon): self

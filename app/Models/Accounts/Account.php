@@ -472,10 +472,7 @@ final class Account extends JournalModel implements EventSource, ReadableModel
 
     public function isBeingRemoved(): bool
     {
-        return in_array($this->status, [
-            AccountStatus::Removing,
-            AccountStatus::Removed,
-        ], true);
+        return in_array($this->status, [AccountStatus::Removing, AccountStatus::Removed], true);
     }
 
     // ----------[ Calculations ]----------

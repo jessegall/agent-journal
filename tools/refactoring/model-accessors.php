@@ -109,10 +109,7 @@ function readsRows(string $source, string $class, Class_ $model, ClassMethod $me
 
         $own = $model->getMethod($name);
 
-        if ($own !== null && readsRows($source, $class, $model, $own, [
-            ...$followed,
-            $method->name->toString(),
-        ])) {
+        if ($own !== null && readsRows($source, $class, $model, $own, [...$followed, $method->name->toString()])) {
             return true;
         }
     }
@@ -160,10 +157,7 @@ function returnsModel(string $source, ClassMethod $method): bool
     $parts = array_diff(explode('|', ltrim($type, '?')), ['null']);
 
     return array_any($parts, function (string $part) use ($source): bool {
-        if (preg_match('/^\w+$/', $part) !== 1 || in_array($part, [
-            'self',
-            'static',
-        ], true)) {
+        if (preg_match('/^\w+$/', $part) !== 1 || in_array($part, ['self', 'static'], true)) {
             return false;
         }
 
@@ -250,10 +244,7 @@ function belongsInAccessor(string $source, string $class, Class_ $model, ClassMe
         && $method->params === []
         && givesAccessorValue($source, $returned)
         && ! str_starts_with($method->name->toString(), '__')
-        && in_array(sectionOf($method, $body), [
-            'Calculations',
-            'Transformers',
-        ], true)
+        && in_array(sectionOf($method, $body), ['Calculations', 'Transformers'], true)
         && preg_match(SIDE_EFFECTS, $body) !== 1
         && ! readsRows($source, $class, $model, $method, [])
         && ! str_contains((string) $method->getDocComment()?->getText(), '@throws')
@@ -350,11 +341,7 @@ function accessorDocOf(ClassMethod $method, string $returned): string
 {
     $lines = array_values(array_filter(
         explode("\n", (string) $method->getDocComment()?->getText()),
-        fn (string $line) => ! str_contains($line, '@return') && ! in_array(trim($line), [
-            '',
-            '/**',
-            '*/',
-        ], true),
+        fn (string $line) => ! str_contains($line, '@return') && ! in_array(trim($line), ['', '/**', '*/'], true),
     ));
 
     while ($lines !== [] && trim(end($lines)) === '*') {
@@ -441,10 +428,7 @@ $keptOption = array_values(preg_grep('/^--keep=/', $argv) ?: []);
 $kept = $keptOption === [] ? [] : explode(',', substr($keptOption[0], strlen('--keep=')));
 $faultCount = 0;
 
-foreach (array_values(array_diff(array_slice($argv, 1), [
-    '--fix',
-    ...$keptOption,
-])) as $path) {
+foreach (array_values(array_diff(array_slice($argv, 1), ['--fix', ...$keptOption])) as $path) {
     foreach (phpFiles($path) as $file) {
         $source = (string) file_get_contents($file);
         $models = array_filter(

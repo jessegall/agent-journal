@@ -12,7 +12,6 @@ use App\Events\Sessions\StartSettingsRequested;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Values\RuntimeIntent;
 use App\Values\SelectedDriver;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -30,7 +29,6 @@ final readonly class StartSessions
         private AgentRuntimes $runtimes,
         private Dispatcher $events,
         private CommandFacts $facts,
-        private DriverAdapters $adapters,
     ) {}
 
     /**
@@ -112,7 +110,6 @@ final readonly class StartSessions
             $session,
             $token,
             $settings->content(),
-            $this->adapters->for($selection->driver)->modelArguments($selection->model),
             $runtime,
             $firstRequest,
         );

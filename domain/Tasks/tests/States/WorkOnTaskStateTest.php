@@ -123,11 +123,7 @@ final class WorkOnTaskStateTest extends TestCase
 
         $this->working()
             ->given([
-                $this->claimed($this->agent(), [
-                    'claim-1',
-                    'seat-1',
-                    'work-1',
-                ]),
+                $this->claimed($this->agent(), ['claim-1', 'seat-1', 'work-1']),
                 $this->hooks()->stop('turn-1'),
             ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny))
             ->given([
@@ -144,14 +140,8 @@ final class WorkOnTaskStateTest extends TestCase
         $this->startWork();
 
         $this->working()->given([
-            $this->claimed($this->agent(), [
-                'claim-1',
-                'work-1',
-            ]),
-            $this->claimed($this->agent(), [
-                'claim-2',
-                'work-1',
-            ]),
+            $this->claimed($this->agent(), ['claim-1', 'work-1']),
+            $this->claimed($this->agent(), ['claim-2', 'work-1']),
             new AssignmentsEnded(['claim-1']),
             $this->hooks()->stop(),
         ], fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny));
@@ -177,10 +167,7 @@ final class WorkOnTaskStateTest extends TestCase
         $other = ActorReference::fromText('agent:01jd8x0g9m3qz6v4k2t7r5w1cz');
 
         $this->working()->given(
-            [
-                $this->claimed($other, ['claim-3']),
-                $this->hooks()->stop(),
-            ],
+            [$this->claimed($other, ['claim-3']), $this->hooks()->stop()],
             fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
         );
     }
@@ -209,10 +196,7 @@ final class WorkOnTaskStateTest extends TestCase
         $this->startWork();
 
         $this->working()->given(
-            [
-                $this->toolFinished(),
-                new TaskLogged($this->work->task->id, 'entry-1'),
-            ],
+            [$this->toolFinished(), new TaskLogged($this->work->task->id, 'entry-1')],
             fn (StateObservation $state) => $state->assertValue('toolUsesSinceLog', 0),
         );
     }
@@ -268,10 +252,7 @@ final class WorkOnTaskStateTest extends TestCase
         $this->journal->run(new StartTaskCommand($second->id));
         $this->journal->run(new FinishTaskCommand($second->id, 1, 'Done.'));
 
-        $this->assertSame([
-            "tasks.work {$first->id} 1",
-            "tasks.work {$second->id} 1",
-        ], $this->taskFrames());
+        $this->assertSame(["tasks.work {$first->id} 1", "tasks.work {$second->id} 1"], $this->taskFrames());
     }
 
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
@@ -299,10 +280,7 @@ final class WorkOnTaskStateTest extends TestCase
 
         $this->journal->run(new FinishTaskCommand($second->id, 1, 'Fixed.'));
 
-        $this->assertSame([
-            "tasks.work {$first->id} 1",
-            "tasks.work {$second->id} 1",
-        ], $this->taskFrames());
+        $this->assertSame(["tasks.work {$first->id} 1", "tasks.work {$second->id} 1"], $this->taskFrames());
 
         $this->assertSame($first->number, $current->currentForCaller()->get()->number);
     }
@@ -319,10 +297,7 @@ final class WorkOnTaskStateTest extends TestCase
         $this->journal->run(new CancelTaskCommand($cancelled->id, 'Dropped.'));
         $this->journal->run(new BlockTaskCommand($blocked->id, 1, 'Waits for review.'));
 
-        $this->assertSame([
-            "tasks.work {$blocked->id} 1",
-            "tasks.work {$cancelled->id} 1",
-        ], $this->taskFrames());
+        $this->assertSame(["tasks.work {$blocked->id} 1", "tasks.work {$cancelled->id} 1"], $this->taskFrames());
 
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
@@ -342,10 +317,7 @@ final class WorkOnTaskStateTest extends TestCase
 
         $this->assertSame([$first->id], $this->focusedTaskIds());
 
-        $this->assertSame([
-            "tasks.work {$second->id} 1",
-            "tasks.work {$first->id} 1",
-        ], $this->taskFrames());
+        $this->assertSame(["tasks.work {$second->id} 1", "tasks.work {$first->id} 1"], $this->taskFrames());
 
         $this->assertSame(
             $first->number,

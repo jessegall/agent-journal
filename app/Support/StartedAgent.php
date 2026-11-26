@@ -15,14 +15,10 @@ use App\Models\Drivers\DriverRequest;
  */
 final readonly class StartedAgent
 {
-    /**
-     * @param  list<string>  $driverArguments  the arguments the host starts the driver with, such as its model
-     */
     public function __construct(
         public AgentSession $session,
         public string $token,
         public string $settings,
-        public array $driverArguments,
         public AgentRuntime|null $runtime,
         public DriverRequest|null $firstRequest,
     ) {}

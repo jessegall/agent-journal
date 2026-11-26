@@ -9,16 +9,12 @@ use App\Enums\Hooks\AnswerType;
 use App\Enums\Sessions\StopCheckStatus;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Models\Sessions\SessionPolicy;
-use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\StopCheck;
-use App\Support\RecordIdentity;
 use App\Values\AgentText;
-use App\Values\SelectedAccount;
 use App\Values\StartPolicy;
 use App\Values\StopCondition;
 use App\Values\StopConditionResultReport;
 use App\Values\StopConditions;
-use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AsksTheStopGate;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -29,9 +25,8 @@ use Tests\TestCase;
 
 /**
  * A stop of a session with stop conditions opens its attempt and ends the turn with the job open while the host's
- * checks run; the host reads the frozen conditions of its own sessions; a failed result refuses the stop with its
- * summary and a passed one allows it; a session without conditions stops at once on a passed attempt. The host's
- * runner itself is proven by tools/journal-agent/host/stop_conditions_test.go.
+ * checks run; a failed result refuses the stop with its summary and a passed one allows it; a session without
+ * conditions stops at once on a passed attempt. The host's run_fenced runner is proven by the Go tests of hostapi.
  */
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
 #[TestsCommand(RecordStopConditionResultsCommand::class)]
@@ -57,30 +52,6 @@ final class RecordStopConditionResultsTest extends TestCase
             new StopConditions([StopCondition::cleanWorktree()])->definitionHashes(),
             $attempt->condition_hashes,
         );
-    }
-
-    public function test_the_host_reads_the_frozen_conditions_of_its_own_sessions(): void
-    {
-        $start = $this->helperWithConditions();
-        $this->stop($start, 'stop-1');
-        $host = $this->journal->enrolledHost();
-        $this->claimOn($start, $host->hostId);
-
-        $response = $this->journal->hostCall($host, 'GET', '/host/stop-attempts');
-
-        $condition = StopCondition::cleanWorktree();
-        $response->assertOk()
-            ->assertJsonPath('attempts.0.session_id', $start->session->id)
-            ->assertJsonPath('attempts.0.attempt_seconds', StopConditions::DEFAULT_ATTEMPT_SECONDS)
-            ->assertJsonPath('attempts.0.conditions.0.key', StopCondition::CLEAN_WORKTREE)
-            ->assertJsonPath('attempts.0.conditions.0.executable', $condition->executable)
-            ->assertJsonPath('attempts.0.conditions.0.arguments', $condition->arguments)
-            ->assertJsonPath('attempts.0.conditions.0.definition_hash', $condition->definitionHash());
-        $this->journal->hostCall(
-            $this->journal->enrolledHost(),
-            'GET',
-            '/host/stop-attempts',
-        )->assertOk()->assertExactJson(['attempts' => []]);
     }
 
     public function test_a_failed_result_refuses_the_stop_with_its_summary_and_a_passed_one_allows_it(): void
@@ -155,17 +126,5 @@ final class RecordStopConditionResultsTest extends TestCase
                 ),
             ]
         ));
-    }
-
-    private function claimOn(TestStart $start, string $hostId): void
-    {
-        $account = new SelectedAccount(
-            new RecordIdentity('profiles.account', (string) Str::ulid()),
-            'codex',
-            '/accounts/a',
-            1,
-        );
-        SessionProcess::create($start->session, $account);
-        SessionProcess::query()->supervised()->where('session_id', $start->session->id)->sole()->claimOn($hostId);
     }
 }

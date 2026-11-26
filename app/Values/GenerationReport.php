@@ -14,7 +14,7 @@ final readonly class GenerationReport implements JsonSerializable
 {
     public function __construct(
         public string $generationId,
-        public GenerationStatus $state,
+        public GenerationStatus $status,
         public string $catalogueDigest,
         public string|null $error,
     ) {}
@@ -26,7 +26,7 @@ final readonly class GenerationReport implements JsonSerializable
     {
         return [
             'generation' => $this->generationId,
-            'state' => $this->state->value,
+            'state' => $this->status->value,
             'digest' => $this->catalogueDigest,
             'error' => $this->error,
         ];

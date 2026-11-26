@@ -57,7 +57,7 @@ export function codeDirection(shown: DriverLook): SignInCodeDirection | undefine
 const liveStates = ['starting', 'waiting', 'checking'];
 
 export function isLive(attempt: SignInAttemptData): boolean {
-    return liveStates.includes(attempt.state);
+    return liveStates.includes(attempt.status);
 }
 
 /**
@@ -115,13 +115,13 @@ const endedMessages: Record<string, string> = {
  */
 export function endedMessage(attempt: SignInAttemptData): string | null {
     if (
-        (attempt.state === 'failed' || attempt.state === 'interrupted') &&
+        (attempt.status === 'failed' || attempt.status === 'interrupted') &&
         attempt.refusal !== null
     ) {
         return attempt.refusal;
     }
 
-    return endedMessages[attempt.state] ?? null;
+    return endedMessages[attempt.status] ?? null;
 }
 
 /**

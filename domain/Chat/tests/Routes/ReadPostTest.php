@@ -70,8 +70,6 @@ final class ReadPostTest extends GuardedRouteEntryTestCase
     {
         return $call
             ->reply(ReadMessageCommand::class, ShownMessage::of(Message::query()->findOrFail($messageId)))
-            ->expects(ReadMessageCommand::class, [
-                'messageId' => $messageId,
-            ]);
+            ->expects(ReadMessageCommand::class, ['messageId' => $messageId]);
     }
 }

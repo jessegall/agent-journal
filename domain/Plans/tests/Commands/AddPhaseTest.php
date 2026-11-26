@@ -47,11 +47,7 @@ final class AddPhaseTest extends TestCase
         }
 
         $this->assertSame(
-            [
-                'Read',
-                'Build',
-                'Check',
-            ],
+            ['Read', 'Build', 'Check'],
             Phase::query()->where('plan_id', $this->plan->id)->orderBy('number')->pluck('title')->all(),
         );
     }

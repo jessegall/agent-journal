@@ -37,8 +37,8 @@ final readonly class RuleResolver implements RuleResolverContract
         $this->actors->actor();
         $matching = Rule::query()->matching($filters->search);
 
-        if ($filters->state !== null) {
-            $matching->where('status', $filters->state);
+        if ($filters->status !== null) {
+            $matching->where('status', $filters->status);
         }
 
         $total = (clone $matching)->count();

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
+use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\Hooks\HookPayload;
+use App\Agents\Drivers\Hooks\JournalToolCall;
+use App\Agents\Drivers\Hooks\JudgedCall;
 use App\Contracts\Domains\JournalToolNames;
+use App\Contracts\Drivers\DriverAdapter;
 use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\DomainRegistry;
-use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
-use App\Support\Drivers\Adapters\CodexAdapter;
-use App\Support\Drivers\Adapters\JournalToolCall;
-use App\Support\Drivers\Adapters\JudgedCall;
-use App\Support\Drivers\Contracts\DriverAdapter;
-use App\Support\Drivers\HookPayload;
 use App\Support\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
@@ -50,9 +50,19 @@ final class JournalToolRecognitionTest extends TestCase
      */
     public static function drivers(): iterable
     {
-        yield 'Claude Code' => [ClaudeCodeAdapter::class, 'ToolSearch', 'ReadMcpResourceTool', 'ListMcpResourcesTool'];
+        yield 'Claude Code' => [
+            ClaudeCodeAdapter::class,
+            'ToolSearch',
+            'ReadMcpResourceTool',
+            'ListMcpResourcesTool',
+        ];
 
-        yield 'Codex' => [CodexAdapter::class, 'tool_search', 'read_mcp_resource', 'list_mcp_resources'];
+        yield 'Codex' => [
+            CodexAdapter::class,
+            'tool_search',
+            'read_mcp_resource',
+            'list_mcp_resources',
+        ];
     }
 
     /**
@@ -60,9 +70,15 @@ final class JournalToolRecognitionTest extends TestCase
      */
     public static function resourceReaders(): iterable
     {
-        yield 'Claude Code' => [ClaudeCodeAdapter::class, 'ReadMcpResourceTool'];
+        yield 'Claude Code' => [
+            ClaudeCodeAdapter::class,
+            'ReadMcpResourceTool',
+        ];
 
-        yield 'Codex' => [CodexAdapter::class, 'read_mcp_resource'];
+        yield 'Codex' => [
+            CodexAdapter::class,
+            'read_mcp_resource',
+        ];
     }
 
     public function test_the_catalogue_names_the_journal_tools_hooks_recognize(): void
@@ -85,7 +101,11 @@ final class JournalToolRecognitionTest extends TestCase
     ): void {
         $driver = $this->app->make($adapter);
 
-        foreach (['mcp__journal__tasks_assigned', $toolSearch, $listResources] as $toolName) {
+        foreach ([
+            'mcp__journal__tasks_assigned',
+            $toolSearch,
+            $listResources,
+        ] as $toolName) {
             $starting = $driver->callFor(self::toolPayload('PreToolUse', $toolName, []), $this->hook());
             $finished = $driver->callFor(self::toolPayload('PostToolUse', $toolName, []), $this->hook());
 

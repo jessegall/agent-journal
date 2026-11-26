@@ -31,8 +31,6 @@ final class AgentDocsRevisionsPostTest extends GuardedRouteEntryTestCase
         $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'number' => (string) $document->number,
-            ]);
+            ->payload(['number' => (string) $document->number]);
     }
 }

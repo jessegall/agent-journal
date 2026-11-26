@@ -23,7 +23,11 @@ final class JsonIntoDataTest extends TestCase
     private const string HOW_TO_FIX = 'These json_decode calls read JSON as a loose array; '
         ."hand the result straight to a Data class's from():\n";
 
-    private const array TAKERS = ['from', 'collect', 'validateAndCreate'];
+    private const array TAKERS = [
+        'from',
+        'collect',
+        'validateAndCreate',
+    ];
 
     /**
      * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape of ours to name: a value of any
@@ -41,10 +45,10 @@ final class JsonIntoDataTest extends TestCase
         'App\\Console\\Commands\\ImportProfileDraftCommand::readCommands',
         'App\\Support\\ConditionTree::fromJson',
         'App\\Support\\WorkspaceSources::fromJson',
-        'App\\Support\\Drivers\\ClaudeFirstRun::settle',
-        'App\\Support\\Drivers\\Processes\\ClaudeResult::readLine',
-        'App\\Support\\Drivers\\Processes\\CodexResult::readLine',
-        'App\\Support\\Drivers\\Profiles\\ClaudeSettingsMerge::withProtection',
+        'App\\Agents\\Drivers\\ClaudeCode\\ClaudeFirstRun::__invoke',
+        'App\\Agents\\Drivers\\ClaudeCode\\ClaudeResult::readLine',
+        'App\\Agents\\Drivers\\Codex\\CodexResult::readLine',
+        'App\\Agents\\Drivers\\ClaudeCode\\ClaudeSettingsMerge::withProtection',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

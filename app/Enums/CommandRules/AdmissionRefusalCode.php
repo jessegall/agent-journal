@@ -51,10 +51,6 @@ enum AdmissionRefusalCode: string
      */
     public function shouldOpenRequest(): bool
     {
-        return in_array($this, [
-            self::CommandUnknown,
-            self::OptionUnknown,
-            self::ReaderRequired,
-        ], true);
+        return in_array($this, [self::CommandUnknown, self::OptionUnknown, self::ReaderRequired], true);
     }
 }

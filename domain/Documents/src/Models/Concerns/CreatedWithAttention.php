@@ -20,9 +20,9 @@ trait CreatedWithAttention
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function inAttention(Builder $query, AttentionStatus|null $state): void
+    protected function inAttention(Builder $query, AttentionStatus|null $status): void
     {
-        $query->when($state !== null, fn (Builder $records) => $records->where('attention', $state?->value));
+        $query->when($status !== null, fn (Builder $records) => $records->where('attention', $status?->value));
     }
 
     /**

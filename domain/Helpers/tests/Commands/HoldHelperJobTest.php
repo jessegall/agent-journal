@@ -31,13 +31,7 @@ final class HoldHelperJobTest extends TestCase
 
         $held = HelperJob::query()->acrossActors()->findOrFail($job->id);
 
-        $this->assertSame([
-            JobStatus::Held,
-            'stop-attempt:attempt-2',
-        ], [
-            $held->status,
-            $held->stop_evidence_reference,
-        ]);
+        $this->assertSame([JobStatus::Held, 'stop-attempt:attempt-2'], [$held->status, $held->stop_evidence_reference]);
 
         $this->assertStringContainsString($job->id, HelperNotice::query()->acrossActors()->sole()->text);
     }

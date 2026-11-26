@@ -73,10 +73,7 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::by([
-            'phase_tasks.phase_id',
-            'phase_tasks.position',
-        ], 'phase_tasks.id');
+        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
     }
 
     // ----------[ Queries ]----------
@@ -109,10 +106,7 @@ final class PhaseTask extends Pivot implements ReadableModel
             ->ofPhases($phaseIds)
             ->inPositionOrder()
             ->readAll('every task of the phases a plan read shows')
-            ->get([
-                'phase_id',
-                'task_id',
-            ]);
+            ->get(['phase_id', 'task_id']);
 
         foreach ($phaseTasks as $phaseTask) {
             $taskIds[$phaseTask->phase_id][] = (string) $phaseTask->task_id;

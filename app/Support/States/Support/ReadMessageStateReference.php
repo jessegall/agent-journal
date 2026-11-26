@@ -20,9 +20,6 @@ final class ReadMessageStateReference extends StateReferenceFactory
 
     public static function forInbox(string $inboxId, string $agentId): StateReference
     {
-        return self::about(new SubjectReference($inboxId, 0), [
-            'inboxId' => $inboxId,
-            'agentId' => $agentId,
-        ]);
+        return self::about(new SubjectReference($inboxId, 0), ['inboxId' => $inboxId, 'agentId' => $agentId]);
     }
 }

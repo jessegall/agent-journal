@@ -32,15 +32,8 @@ final class PhasesCreatePostTest extends GuardedRouteEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'plan_id' => $plan->id,
-                'title' => 'Design',
-                'request_key' => 'plans-1',
-            ])
+            ->payload(['plan_id' => $plan->id, 'title' => 'Design', 'request_key' => 'plans-1'])
             ->reply(AddPhaseCommand::class, Str::ulid())
-            ->expects(AddPhaseCommand::class, [
-                'planId' => $plan->id,
-                'title' => 'Design',
-            ]);
+            ->expects(AddPhaseCommand::class, ['planId' => $plan->id, 'title' => 'Design']);
     }
 }

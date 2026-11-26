@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\Codex\CodexArguments;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfile;
+use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Sessions\TransportProfileType;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
 use App\Support\AccountStartRecipe;
-use App\Support\Drivers\Profiles\CodexProfile;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use Tests\TestCase;
@@ -49,12 +52,21 @@ final class CodexProfileTest extends TestCase
         $planned = [];
         $expected = [];
 
-        foreach (['turns/terminal-turn', 'keyscripts/model-choice', 'screens/first-start'] as $name) {
+        foreach ([
+            'turns/terminal-turn',
+            'keyscripts/model-choice',
+            'screens/first-start',
+        ] as $name) {
             $recorded = $this->recordedStart($name);
             $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, $recorded['working_folder']);
             $planned[] = $this->profile()->startPlan($start)->argv;
             // The recordings were made before the terminal asked no user; the rest is as they ran.
-            $expected[] = [...array_slice($recorded['arguments'], 0, 3), '--ask-for-approval', 'never', ...array_slice($recorded['arguments'], 3)];
+            $expected[] = [
+                ...array_slice($recorded['arguments'], 0, 3),
+                '--ask-for-approval',
+                'never',
+                ...array_slice($recorded['arguments'], 3),
+            ];
         }
 
         $this->journal->assertResult($expected, $planned);
@@ -69,7 +81,15 @@ final class CodexProfileTest extends TestCase
         $terminalArguments = $this->profile()->startPlan($terminal)->argv;
 
         $this->journal->assertResult(
-            [['resume', self::CONVERSATION, 'go on'], ['codex', 'resume', self::CONVERSATION]],
+            [[
+                'resume',
+                self::CONVERSATION,
+                'go on',
+            ], [
+                'codex',
+                'resume',
+                self::CONVERSATION,
+            ]],
             [array_slice($turnArguments, -3), array_slice($terminalArguments, 0, 3)],
         );
     }
@@ -77,7 +97,7 @@ final class CodexProfileTest extends TestCase
     public function test_only_the_pinned_build_is_accepted(): void
     {
         $profile = $this->profile();
-        $printed = fn (string $build) => sprintf('%s-cli %s', CodexProfile::EXECUTABLE, $build);
+        $printed = fn (string $build) => sprintf('%s-cli %s', CodexArguments::EXECUTABLE, $build);
         $profile->assertPinnedBuild($printed($profile->build()).PHP_EOL);
 
         $this->journal->assertRefused(BuildNotPinned::class, fn () => $profile->assertPinnedBuild($printed('0.170.0')));
@@ -107,20 +127,15 @@ final class CodexProfileTest extends TestCase
         $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($start));
     }
 
-    public function test_an_argument_that_would_undo_the_profile_is_refused(): void
+    public function test_a_connected_machine_runs_every_plan_from_its_sealed_program(): void
     {
-        $refused = [];
+        $profile = $this->profile();
+        $start = new DriverStart(self::CONVERSATION, HostProcessType::Terminal, '/work', executablePlace: ExecutablePlace::Sealed);
 
-        foreach (['--full-auto', '-c features.multi_agent=true', '--sandbox=danger-full-access', '--add-dir'] as $argument) {
-            try {
-                $this->profile()->assertNoContraryArgument([$argument]);
-            } catch (ProfileRefused) {
-                $refused[] = $argument;
-            }
-        }
-
-        $this->profile()->assertNoContraryArgument(['--search']);
-        $this->journal->assertResult(['--full-auto', '-c features.multi_agent=true', '--sandbox=danger-full-access', '--add-dir'], $refused);
+        $this->journal->assertResult(
+            ['{host:CODEX_EXECUTABLE}', '{host:CODEX_EXECUTABLE}'],
+            [$profile->startPlan($start)->argv[0], $profile->versionProbe('/work', ExecutablePlace::Sealed)->argv[0]],
+        );
     }
 
     public function test_a_start_with_no_account_trusts_each_hook_it_writes(): void
@@ -132,7 +147,12 @@ final class CodexProfileTest extends TestCase
 
         $this->journal->assertResult(
             ['hooks.json', 'config.toml', 6, true],
-            [$files[0]->name, $files[1]->name, substr_count($config, 'trusted_hash = "sha256:'), str_contains($files[0]->content, '/opt/journal/bin/hook codex')],
+            [
+                $files[0]->name,
+                $files[1]->name,
+                substr_count($config, 'trusted_hash = "sha256:'),
+                str_contains($files[0]->content, '/opt/journal/bin/hook codex'),
+            ],
         );
     }
 
@@ -144,13 +164,13 @@ final class CodexProfileTest extends TestCase
         $fixture = json_decode((string) file_get_contents(self::RECORDINGS."/{$name}/fixture.json"), true, flags: JSON_THROW_ON_ERROR);
         $state = $fixture['initial_state'];
         // The recorded argv starts with the program it ran; the plan's does too.
-        $state['arguments'][0] = CodexProfile::EXECUTABLE;
+        $state['arguments'][0] = CodexArguments::EXECUTABLE;
 
         return $state;
     }
 
-    private function profile(): CodexProfile
+    private function profile(): DriverProfile
     {
-        return $this->journal->service(CodexProfile::class);
+        return $this->journal->driverProfile(DefaultDrivers::CODEX);
     }
 }

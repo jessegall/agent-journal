@@ -32,11 +32,7 @@ final class TextServiceProvider extends ServiceProvider
         $this->loadCoreRoutes('text/text.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                TextVersionCommand::class,
-                TextSectionsCommand::class,
-                TextReadCommand::class,
-            ]);
+            $this->commands([TextVersionCommand::class, TextSectionsCommand::class, TextReadCommand::class]);
         }
     }
 }

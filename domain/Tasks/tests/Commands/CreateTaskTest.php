@@ -54,20 +54,8 @@ final class CreateTaskTest extends TestCase
         $task = Task::query()->findOrFail($this->journal->run(new CreateTaskCommand('Write it', 'Write the page.', $this->localId())));
 
         $this->assertSame(
-            [
-                TaskStatus::Open,
-                1,
-                'Write the page.',
-                User::storedType(),
-                $this->journal->ownerUser()->id,
-            ],
-            [
-                $task->status,
-                $task->revision,
-                $task->brief,
-                $task->creator_type,
-                $task->creator_id,
-            ],
+            [TaskStatus::Open, 1, 'Write the page.', User::storedType(), $this->journal->ownerUser()->id],
+            [$task->status, $task->revision, $task->brief, $task->creator_type, $task->creator_id],
         );
     }
 

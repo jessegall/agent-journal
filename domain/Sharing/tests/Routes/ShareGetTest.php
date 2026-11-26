@@ -39,8 +39,6 @@ final class ShareGetTest extends GuardedRouteEntryTestCase
         $share = $shares->shareCalled('Design');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'share' => $share->id,
-            ]);
+            ->parameters(['share' => $share->id]);
     }
 }

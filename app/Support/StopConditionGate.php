@@ -64,7 +64,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
         $policy = $this->policies->policyFor($stop->sessionId);
         $preparation = $this->prepare($stop, $policy);
 
-        return match ($preparation->state) {
+        return match ($preparation->status) {
             StopPreparationStatus::Preparing => StopAnswer::withoutAttempt(new MessageLine($preparation->message)),
             StopPreparationStatus::ReturnToActor => StopAnswer::withoutAttempt(Decision::deny($preparation->message)),
             StopPreparationStatus::Held => $this->holdPrepared($stop, $policy, $preparation),
@@ -123,7 +123,7 @@ final readonly class StopConditionGate implements StopConditionGateContract
 
         $stopOutcome = $this->evidence->result($attempt->reference);
 
-        return StopAnswer::forAttempt($attempt->id, match ($stopOutcome->state) {
+        return StopAnswer::forAttempt($attempt->id, match ($stopOutcome->status) {
             StopCheckStatus::Pending => new MessageLine(AgentText::of('core.stop.checks_running')),
             StopCheckStatus::Passed => $this->certifyCompletion($attempt),
             StopCheckStatus::Failed => $this->refuseOrHold($attempt, $settled, $stopOutcome->failureSummary()),

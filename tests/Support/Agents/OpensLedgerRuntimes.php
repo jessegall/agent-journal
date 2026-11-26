@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
 use App\Contracts\Bus\Command;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\ScriptParameter;
@@ -62,7 +62,10 @@ trait OpensLedgerRuntimes
             firstMessage: $firstMessage,
         );
 
-        return [$this->journal->hostCalled("Test host {$number}"), $opened];
+        return [
+            $this->journal->hostCalled("Test host {$number}"),
+            $opened,
+        ];
     }
 
     /**

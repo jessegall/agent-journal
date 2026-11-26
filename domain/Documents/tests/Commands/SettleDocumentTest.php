@@ -125,14 +125,8 @@ final class SettleDocumentTest extends TestCase
         );
 
         $this->assertSame(
-            [
-                AttentionStatus::Active,
-                AttentionStatus::Active,
-            ],
-            [
-                Document::query()->sole()->attention,
-                Report::query()->sole()->attention,
-            ],
+            [AttentionStatus::Active, AttentionStatus::Active],
+            [Document::query()->sole()->attention, Report::query()->sole()->attention],
         );
     }
 
@@ -173,11 +167,7 @@ final class SettleDocumentTest extends TestCase
         $this->bus()->run(new CloseReportCommand('1', 'Read.'));
 
         $this->assertSame(
-            [
-                'RecordSettled',
-                'ReportFiled',
-                'RecordSettled',
-            ],
+            ['RecordSettled', 'ReportFiled', 'RecordSettled'],
             $this->facts,
         );
 

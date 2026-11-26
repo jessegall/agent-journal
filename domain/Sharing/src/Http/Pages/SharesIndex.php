@@ -44,30 +44,24 @@ final readonly class SharesIndex extends SharingPage
 
     private function filtersOf(ShareFiltersData $filters): LayoutPartData
     {
-        $chosen = $filters->state instanceof ShareStatus ? $filters->state->value : '';
+        $chosen = $filters->status instanceof ShareStatus ? $filters->status->value : '';
 
         $states = [
             LayoutRowData::from(
                 [
                     'key' => 'any',
                     'label' => 'Any',
-                    'query' => [
-                        'state' => '',
-                        'after' => '',
-                    ],
+                    'query' => ['state' => '', 'after' => ''],
                     'isCurrent' => $chosen === '',
                 ],
             ),
             ...array_map(
-                fn (ShareStatus $state) => LayoutRowData::from(
+                fn (ShareStatus $status) => LayoutRowData::from(
                     [
-                        'key' => $state->value,
-                        'label' => $state->value,
-                        'query' => [
-                            'state' => $state->value,
-                            'after' => '',
-                        ],
-                        'isCurrent' => $chosen === $state->value,
+                        'key' => $status->value,
+                        'label' => $status->value,
+                        'query' => ['state' => $status->value, 'after' => ''],
+                        'isCurrent' => $chosen === $status->value,
                     ],
                 ),
                 ShareStatus::cases(),
@@ -110,7 +104,7 @@ final readonly class SharesIndex extends SharingPage
         ) => LayoutRowData::from([
             'key' => $row->id,
             'label' => ($row->isProposal ? 'Proposal' : 'Share')." {$row->number}",
-            'value' => $row->state->value,
+            'value' => $row->status->value,
             'detail' => implode(' · ', array_filter([
                 $row->rootType,
                 $row->gatewayKey,
@@ -133,19 +127,13 @@ final readonly class SharesIndex extends SharingPage
         return $this->nothingMatches(
             'No share matches these filters.',
             'Show all shares',
-            [
-                'state' => '',
-                'rootType' => '',
-                'gateway' => '',
-                'expiresBefore' => '',
-                'after' => '',
-            ],
+            ['state' => '', 'rootType' => '', 'gateway' => '', 'expiresBefore' => '', 'after' => ''],
         );
     }
 
     private function isFiltered(ShareFiltersData $filters): bool
     {
-        return ! $filters->state instanceof Optional
+        return ! $filters->status instanceof Optional
             || $filters->rootType !== null
             || $filters->gateway !== null
             || $filters->expiresBefore !== null;

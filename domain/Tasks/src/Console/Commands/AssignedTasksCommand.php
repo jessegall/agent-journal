@@ -43,16 +43,10 @@ final class AssignedTasksCommand extends Command
         return $this->runReport(function () use ($tasks, $call): int {
             $assignedTaskPage = $tasks->listAssignedTasks($call->search, $call->states, $call->page, $call->perPage);
 
-            $this->table([
-                'Id',
-                'Title',
-                'State',
-                'Holder',
-                'Reference',
-            ], array_map(fn (AssignedTaskCardData $card) => [
+            $this->table(['Id', 'Title', 'State', 'Holder', 'Reference'], array_map(fn (AssignedTaskCardData $card) => [
                 $card->id,
                 $card->title,
-                $card->state->value,
+                $card->status->value,
                 $card->holder->label(),
                 $card->holder->reference,
             ], $assignedTaskPage->cards));

@@ -54,10 +54,7 @@ abstract class PlanCascadeTool extends JournalWriteTool
      */
     final protected function root(ToolArguments $arguments): RecordIdentity
     {
-        $root = $arguments->object('root', [
-            'type',
-            'id',
-        ]);
+        $root = $arguments->object('root', ['type', 'id']);
 
         $type = $root->text('type');
 
@@ -77,8 +74,6 @@ abstract class PlanCascadeTool extends JournalWriteTool
             'changed' => $assignmentResult->count(AssignmentOutcomeType::Changed),
             'unchanged' => $assignmentResult->count(AssignmentOutcomeType::Unchanged),
             'skipped_finished' => $assignmentResult->count(AssignmentOutcomeType::SkippedFinished),
-        ], [
-            new NextAction('operations_read', ['request_key' => $this->key->requireFor(static::class)]),
-        ]);
+        ], [new NextAction('operations_read', ['request_key' => $this->key->requireFor(static::class)])]);
     }
 }

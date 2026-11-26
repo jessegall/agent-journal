@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfile;
 use App\Data\Hosts\HostFrameData;
 use App\Enums\Screens\KeyMoveType;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\Profiles\CodexProfile;
 use App\Support\KeyScripts\KeyMove;
 use App\Support\KeyScripts\KeyScriptCatalogue;
 use App\Support\KeyScripts\KeyScriptRun;
@@ -100,8 +100,8 @@ final class CodexKeyScriptsTest extends TestCase
         return $reading->isStill ? new ScreenHolds()->holdOf($reading)->answer : null;
     }
 
-    private function profile(): CodexProfile
+    private function profile(): DriverProfile
     {
-        return $this->journal->service(CodexProfile::class);
+        return $this->journal->driverProfile(DefaultDrivers::CODEX);
     }
 }

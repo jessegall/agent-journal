@@ -181,10 +181,7 @@ final class Report extends JournalModel implements
      */
     private function assertOnlyAttentionEdited(): void
     {
-        if (array_diff(array_keys($this->getDirty()), [
-            'attention',
-            'updated_at',
-        ]) !== []) {
+        if (array_diff(array_keys($this->getDirty()), ['attention', 'updated_at']) !== []) {
             throw RecordImmutable::for('report');
         }
     }

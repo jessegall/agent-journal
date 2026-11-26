@@ -23,10 +23,7 @@ final readonly class TakeSignInCodeController
         $poll = $commands->run(new TakeSignInCodeCommand($host->hostId, $attempt, $request->integer('generation')));
 
         return new JsonResponse(
-            [
-                'live' => $poll->isLive,
-                'code' => $poll->code,
-            ],
+            ['live' => $poll->isLive, 'code' => $poll->code],
             headers: ['Cache-Control' => 'no-store'],
         );
     }

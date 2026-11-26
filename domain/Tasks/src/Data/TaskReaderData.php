@@ -29,7 +29,7 @@ final class TaskReaderData extends Data
     public function __construct(
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
         public readonly int $revision,
         public readonly string $brief,
         public readonly TaskActionsData $actions,
@@ -70,7 +70,7 @@ final class TaskReaderData extends Data
         return self::from(array_filter([
             'number' => (string) $details->number,
             'title' => $details->title,
-            'state' => $details->state,
+            'status' => $details->status,
             'revision' => $details->revision,
             'brief' => $details->text instanceof TaskText ? $details->text->brief : '',
             'actions' => $actions,
@@ -87,13 +87,13 @@ final class TaskReaderData extends Data
             'proofs' => $proofs instanceof Optional ? null : $proofs,
             'waits' => $waits instanceof Optional ? null : $waits,
             'waitActions' => $waitActions instanceof Optional ? null : $waitActions,
-            'blockReason' => $details->state === TaskStatus::Blocked && $details->text instanceof TaskText
+            'blockReason' => $details->status === TaskStatus::Blocked && $details->text instanceof TaskText
                 ? $details->text->blockReason
                 : null,
-            'resultNote' => $details->state === TaskStatus::Finished && $details->text instanceof TaskText
+            'resultNote' => $details->status === TaskStatus::Finished && $details->text instanceof TaskText
                 ? $details->text->resultNote
                 : null,
-            'cancelReason' => $details->state === TaskStatus::Cancelled && $details->text instanceof TaskText
+            'cancelReason' => $details->status === TaskStatus::Cancelled && $details->text instanceof TaskText
                 ? $details->text->cancelReason
                 : null,
         ], fn (mixed $readerValue) => $readerValue !== null));

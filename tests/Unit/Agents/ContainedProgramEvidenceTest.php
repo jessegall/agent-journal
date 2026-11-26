@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\DefaultDrivers;
 use Tests\TestCase;
 
 /**

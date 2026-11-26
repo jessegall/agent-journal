@@ -65,8 +65,8 @@ final class JournalRoutesTest extends TestCase
         $this->journal->owner();
         $host = $this->journal->asSystem(new EnrollHostCommand('test host', [base_path()]));
 
-        $this->journal->hostCall($host, 'GET', '/host/stop-attempts')->assertOk()->assertExactJson(['attempts' => []]);
+        $this->journal->hostCall($host, 'GET', '/host/workspace-reads')->assertOk();
         $forged = ['HTTP_X_JOURNAL_CALL_SIGNATURE' => 'forged'];
-        $this->journal->hostCall($host, 'GET', '/host/stop-attempts', headers: $forged)->assertUnauthorized();
+        $this->journal->hostCall($host, 'GET', '/host/workspace-reads', headers: $forged)->assertUnauthorized();
     }
 }

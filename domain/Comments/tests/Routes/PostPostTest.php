@@ -74,11 +74,7 @@ final class PostPostTest extends GuardedRouteEntryTestCase
         $submissionKey = (string) Str::uuid();
 
         return RouteCall::as(Caller::User)
-            ->payload([
-                'target' => $reference,
-                'body' => 'Is this still open?',
-                'submission_key' => $submissionKey,
-            ])
+            ->payload(['target' => $reference, 'body' => 'Is this still open?', 'submission_key' => $submissionKey])
             ->reply(PostCommentCommand::class, Str::ulid())
             ->expects(PostCommentCommand::class, [
                 'target' => $target,

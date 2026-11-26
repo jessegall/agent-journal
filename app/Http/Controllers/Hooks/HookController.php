@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
+use App\Contracts\Drivers\DriverAdapters;
 use App\Exceptions\ConversationIncompatible;
 use App\Exceptions\HookDigestChanged;
 use App\Exceptions\HookIdentityExpired;
@@ -16,8 +18,6 @@ use App\Exceptions\StaleProcessGeneration;
 use App\Exceptions\UnreadablePayload;
 use App\Exceptions\UnsupportedHook;
 use App\Http\Requests\Hooks\HookRequest;
-use App\Support\Drivers\Contracts\DriverAdapters;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Hooks\HookFailure;
 use App\Support\Hooks\HookResponse;
 use App\Support\Inputs\Contracts\HookInput;

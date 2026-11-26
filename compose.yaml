@@ -337,7 +337,7 @@ services:
 
     # The contained agent host: it claims the journal's starts and runs every agent in a container of the agent
     # daemon, from the two pinned images. It publishes no port, never sees the server's Docker socket and holds no
-    # secret in its environment; PHP reaches its start socket through the host-start-socket volume.
+    # secret in its environment; the journal reaches it only through the orders it claims.
     agent-host:
         profiles: [contained]
         restart: unless-stopped
@@ -349,7 +349,6 @@ services:
             - serve
             - --arrangement=contained
             - --state=/var/lib/journal-host
-            - --start-socket-dir=/run/journal-start
             - --docker=unix:///run/agent-docker/docker.sock
             - --installation-name=${AGENTS_INSTALLATION_NAME:-journal}
             - --agent-image=${AGENT_IMAGE:-}
@@ -363,7 +362,6 @@ services:
         #     - deploy_key_main
         volumes:
             - host-state:/var/lib/journal-host
-            - host-start-socket:/run/journal-start
             - agent-docker-socket:/run/agent-docker
             # The seccomp profile agent containers run under, read by the Docker client (docs/accounts/host-protection.md).
             - ./.docker/helper/seccomp-agent.json:/etc/journal/security/seccomp-agent.json:ro
@@ -374,11 +372,6 @@ services:
                 condition: service_completed_successfully
             agent-images:
                 condition: service_completed_successfully
-        healthcheck:
-            test: ['CMD', 'test', '-S', '/run/journal-start/start.sock']
-            interval: 5s
-            timeout: 5s
-            retries: 30
 
     # The sign-in runner as an always-on service (doc 61): it runs every sign-in, check and cleanup of the
     # journal's accounts in /accounts, reaches the app on journal-api and the providers only through egress, and
@@ -395,7 +388,6 @@ services:
             ACCOUNTS_ROOT: /srv/journal/accounts
             JOURNAL_URL: http://app:8000
             JOURNAL_HOST_SECRET_FILE: /run/secrets/journal_host_secret
-            AGENTS_HOST_START_SOCKET: /run/journal-start/start.sock
             AGENTS_ARRANGEMENT: contained
             AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
             JOURNAL_EGRESS_PROXY: http://egress:3128
@@ -403,13 +395,12 @@ services:
             - journal_host_secret
         volumes:
             - accounts-data:/srv/journal/accounts
-            - host-start-socket:/run/journal-start
         networks:
             - journal-api
             - egress-internal
         depends_on:
             agent-host:
-                condition: service_healthy
+                condition: service_started
             egress:
                 condition: service_healthy
         healthcheck:
@@ -470,8 +461,6 @@ volumes:
     accounts-data:
     # The contained agent host's enrollment and start records, kept across restarts so it reconciles from them.
     host-state:
-    # The folder of the contained host's start socket, owned by 10001 as the runner image makes it.
-    host-start-socket:
 
 secrets:
     # The host secret agents:host-enroll printed, in a file only the operator writes (secrets/README.md).

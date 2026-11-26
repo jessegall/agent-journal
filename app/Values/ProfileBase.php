@@ -55,19 +55,8 @@ final readonly class ProfileBase
             'Main agent',
             'Changes and runs the project on this machine, and coordinates the journal\'s work.',
             ModelTier::Inventive,
-            [
-                ...self::looking(),
-                ...self::changing(),
-                AccessType::Delegate,
-                ...self::running(),
-            ],
-            [
-                HostAccess::root('.', [
-                    ...self::looking(),
-                    ...self::changing(),
-                    ...self::running(),
-                ]),
-            ],
+            [...self::looking(), ...self::changing(), AccessType::Delegate, ...self::running()],
+            [HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()])],
             ExecutionModeType::ProtectedHost,
             false,
             [],
@@ -89,16 +78,8 @@ final readonly class ProfileBase
             'Read-only helper',
             'Reads, searches and runs commands in a container, and changes no file of the project.',
             ModelTier::General,
-            [
-                ...self::journalWork(),
-                AccessType::Execute,
-            ],
-            [
-                HostAccess::root('.', [
-                    ...self::looking(),
-                    AccessType::Execute,
-                ]),
-            ],
+            [...self::journalWork(), AccessType::Execute],
+            [HostAccess::root('.', [...self::looking(), AccessType::Execute])],
             ExecutionModeType::RequiredContainer,
             false,
             [],
@@ -120,15 +101,8 @@ final readonly class ProfileBase
             'Writing helper',
             'Changes the project\'s files for one bounded job, in a container of its own.',
             ModelTier::General,
-            [
-                ...self::journalWork(),
-                ...self::running(),
-            ],
-            [HostAccess::root('.', [
-                ...self::looking(),
-                ...self::changing(),
-                ...self::running(),
-            ])],
+            [...self::journalWork(), ...self::running()],
+            [HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()])],
             ExecutionModeType::RequiredContainer,
             true,
             [StopCondition::cleanWorktree()],

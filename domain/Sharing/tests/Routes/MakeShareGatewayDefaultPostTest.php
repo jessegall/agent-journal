@@ -33,16 +33,9 @@ final class MakeShareGatewayDefaultPostTest extends GuardedRouteEntryTestCase
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'configuration' => $configuration->id,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'gateway-1',
-            ])
+            ->parameters(['configuration' => $configuration->id])
+            ->headers(['Idempotency-Key' => 'gateway-1'])
             ->reply(ConfigureShareGatewayCommand::class, $configuration->to_configuration)
-            ->expects(ConfigureShareGatewayCommand::class, [
-                'makesDefault' => true,
-                'requestKey' => 'gateway-1',
-            ]);
+            ->expects(ConfigureShareGatewayCommand::class, ['makesDefault' => true, 'requestKey' => 'gateway-1']);
     }
 }

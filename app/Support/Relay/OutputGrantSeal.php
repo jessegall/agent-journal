@@ -27,11 +27,7 @@ final readonly class OutputGrantSeal
         $sorted = $paths;
         sort($sorted);
 
-        return hash_hmac('sha256', implode("\n", [
-            $startKey,
-            $generation,
-            ...$sorted,
-        ]), $this->key);
+        return hash_hmac('sha256', implode("\n", [$startKey, $generation, ...$sorted]), $this->key);
     }
 
     /**

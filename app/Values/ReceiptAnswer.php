@@ -17,7 +17,7 @@ final readonly class ReceiptAnswer
      * @param  array<string, mixed>  $fields
      */
     public function __construct(
-        public ReceiptStatus $state,
+        public ReceiptStatus $status,
         public string $result,
         public array $fields,
         public string $refusalCode,

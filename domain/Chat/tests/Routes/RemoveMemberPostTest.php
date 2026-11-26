@@ -66,9 +66,7 @@ final class RemoveMemberPostTest extends GuardedRouteEntryTestCase
     {
         return $call->expects(LeaveInboxCommand::class, [
             'inboxId' => $group,
-            'actors' => [
-                $this->journal->actorCalled('Sam'),
-            ],
+            'actors' => [$this->journal->actorCalled('Sam')],
         ]);
     }
 }

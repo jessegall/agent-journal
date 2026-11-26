@@ -74,11 +74,7 @@ final readonly class CommandRuleRegistry
     {
         $active = $this->activeRules();
 
-        return self::from([
-            ...$active,
-            ...$this->held,
-            ...array_values($rules),
-        ], $active);
+        return self::from([...$active, ...$this->held, ...array_values($rules)], $active);
     }
 
     /**
@@ -91,13 +87,7 @@ final readonly class CommandRuleRegistry
         $active = $this->activeRules();
         $approved = array_merge([], ...array_map(fn (RuleBundle $bundle) => $bundle->rules, $bundles));
 
-        return self::from([
-            ...$active,
-            ...$this->held,
-        ], [
-            ...$active,
-            ...$approved,
-        ]);
+        return self::from([...$active, ...$this->held], [...$active, ...$approved]);
     }
 
     /**

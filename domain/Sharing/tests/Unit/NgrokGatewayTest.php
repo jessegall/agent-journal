@@ -69,14 +69,8 @@ final class NgrokGatewayTest extends TestCase
     public function test_it_accepts_its_own_endpoint_and_ignores_an_unrelated_one(): void
     {
         $this->controlApiAnswers([
-            [
-                'public_url' => 'https://random-words.ngrok-free.app',
-                'config' => ['addr' => 'http://127.0.0.1:9999'],
-            ],
-            [
-                'public_url' => self::ORIGIN,
-                'config' => ['addr' => 'http://127.0.0.1:8090'],
-            ],
+            ['public_url' => 'https://random-words.ngrok-free.app', 'config' => ['addr' => 'http://127.0.0.1:9999']],
+            ['public_url' => self::ORIGIN, 'config' => ['addr' => 'http://127.0.0.1:8090']],
         ]);
 
         $endpoint = $this->gateway()->open($this->operation(self::ORIGIN));
@@ -97,10 +91,7 @@ final class NgrokGatewayTest extends TestCase
     public function test_a_random_ngrok_address_and_an_unexpected_upstream_are_refused(): void
     {
         $this->controlApiAnswers(
-            [[
-                'public_url' => 'https://random-words.ngrok-free.app',
-                'config' => ['addr' => 'http://127.0.0.1:8090'],
-            ]],
+            [['public_url' => 'https://random-words.ngrok-free.app', 'config' => ['addr' => 'http://127.0.0.1:8090']]],
         );
 
         $this->assertThrows(
@@ -109,10 +100,7 @@ final class NgrokGatewayTest extends TestCase
             GatewayOpenFailed::unexpectedAddress('ngrok')->getMessage(),
         );
 
-        $this->controlApiAnswers([[
-            'public_url' => self::ORIGIN,
-            'config' => ['addr' => 'http://127.0.0.1:3000'],
-        ]]);
+        $this->controlApiAnswers([['public_url' => self::ORIGIN, 'config' => ['addr' => 'http://127.0.0.1:3000']]]);
 
         $this->assertThrows(
             fn () => $this->gateway()->open($this->operation(self::ORIGIN)),

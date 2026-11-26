@@ -241,9 +241,6 @@ final class BlankLineAroundMultilineStatementFixer implements FixerInterface
             return;
         }
 
-        $tokens[$index] = new Token([
-            T_WHITESPACE,
-            "\n".$token->getContent(),
-        ]);
+        $tokens[$index] = new Token([T_WHITESPACE, "\n".$token->getContent()]);
     }
 }

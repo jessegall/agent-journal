@@ -278,11 +278,11 @@ final class RuleProposal extends JournalModel implements EventSource, ProjectOwn
     /**
      * @throws RuleProposalRefused
      */
-    private function end(ProposalStatus $state): void
+    private function end(ProposalStatus $status): void
     {
         $this->assertOpen();
 
-        $this->status = $state;
+        $this->status = $status;
         $this->save();
     }
 

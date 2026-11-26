@@ -15,7 +15,7 @@ final readonly class NextStep
      * @param  list<string>  $steps
      */
     public function __construct(
-        public RequestStatus $state,
+        public RequestStatus $status,
         public array $steps,
         public string $command,
     ) {}

@@ -510,11 +510,7 @@ final class ProjectBinding extends JournalModel implements EventSource, ProjectO
      */
     public static function findPageAfter(string|null $cursor): CursorPaginator
     {
-        return self::query()->with([
-            'project',
-            'environment',
-            'host',
-        ])->oldestFirst()
+        return self::query()->with(['project', 'environment', 'host'])->oldestFirst()
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 

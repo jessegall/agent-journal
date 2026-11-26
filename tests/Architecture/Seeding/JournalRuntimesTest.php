@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
-use App\Support\DefaultDrivers;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;

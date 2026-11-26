@@ -83,7 +83,7 @@ final readonly class ReportResolver implements ReportResolverContract
         return RecordInspection::from([
             'label' => "report {$number}",
             'attention' => $report->attention,
-            'editing' => ['state' => EditingStatus::Free],
+            'editing' => ['status' => EditingStatus::Free],
             'settlements' => $report->settlements(),
             'closes' => [],
             'links' => $this->records->linkedCards($report),

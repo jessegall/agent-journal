@@ -19,7 +19,7 @@ final readonly class SequenceEnded implements ChatLineSource, SequenceEvent, Seq
     public function __construct(
         public string $runId,
         public ActorReference $follower,
-        public SequenceRunStatus $state,
+        public SequenceRunStatus $status,
     ) {}
 
     public function run(): RecordIdentity

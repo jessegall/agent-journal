@@ -21,7 +21,7 @@ final readonly class ProjectFileAnswer
     public function __construct(
         public string $readId,
         public string $path,
-        public ProjectReadStatus $state,
+        public ProjectReadStatus $status,
         public ProjectReadFailure|null $failure,
         public array $entries,
         public string|null $text,

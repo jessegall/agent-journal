@@ -15,5 +15,5 @@ final readonly class SampleOutcome
     /**
      * @param  list<int>  $unsampledStatuses
      */
-    public function __construct(public RequestStatus $state, public string $runId, public array $unsampledStatuses) {}
+    public function __construct(public RequestStatus $status, public string $runId, public array $unsampledStatuses) {}
 }

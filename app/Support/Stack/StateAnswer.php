@@ -60,10 +60,7 @@ final readonly class StateAnswer
 
     public function withLine(ContextLine|MessageLine $line): self
     {
-        return clone ($this, ['lines' => [
-            ...$this->lines,
-            $line,
-        ]]);
+        return clone ($this, ['lines' => [...$this->lines, $line]]);
     }
 
     /**
@@ -98,19 +95,13 @@ final readonly class StateAnswer
         }
 
         if ($part instanceof StateReference) {
-            return clone ($this, ['pushes' => [
-                ...$this->pushes,
-                $part,
-            ]]);
+            return clone ($this, ['pushes' => [...$this->pushes, $part]]);
         }
 
         if (! $part instanceof Command && ! $part instanceof Event) {
             throw HookAnswerRefused::notAnAnswer($this->state, $this->hook, get_debug_type($part));
         }
 
-        return clone ($this, ['effects' => [
-            ...$this->effects,
-            $part,
-        ]]);
+        return clone ($this, ['effects' => [...$this->effects, $part]]);
     }
 }

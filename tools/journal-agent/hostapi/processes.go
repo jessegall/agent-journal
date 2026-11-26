@@ -47,6 +47,8 @@ type OpenPlan struct {
 	ReadFiles []string `json:"read_files,omitempty"`
 	// ShieldRules are the screens of a terminal whose frames the host shields before they leave.
 	ShieldRules []ShieldRule `json:"shield_rules,omitempty"`
+	// Fence is the session the process runs for, whose run_fenced orders close its admission; empty for none.
+	Fence string `json:"fence,omitempty"`
 }
 
 // TerminalSize is a terminal's columns and rows.
@@ -86,9 +88,13 @@ type ProcessTable struct {
 	stateFolder string
 	// hostNames are the names on the installer's list a plan may name as {host:<NAME>}.
 	hostNames map[string]string
+	// allowed are the only programs a connected host opens; nil on a co-located host.
+	allowed *AllowedPrograms
 
 	mutex     sync.Mutex
 	processes map[string]*heldProcess
+	// fences are the fences a run_fenced order closed, each until its deadline, so one left closed opens again.
+	fences map[string]time.Time
 }
 
 // keptProcess is what the host keeps on disk of one process it holds that can outlive it: a container, or a native
@@ -132,6 +138,7 @@ func OpenProcessTable(stateFolder string, containers host.Containers, reports *R
 		keptPath:    filepath.Join(stateFolder, "orders", "processes.json"),
 		stateFolder: stateFolder,
 		processes:   map[string]*heldProcess{},
+		fences:      map[string]time.Time{},
 	}
 }
 
@@ -181,6 +188,11 @@ func (table *ProcessTable) Executors() map[string]Executor {
 		"signal":         table.signal,
 		"stop":           table.stop,
 		"remove":         table.remove,
+		"run_fenced":     table.runFenced,
+		"allow_images":   table.allowImages,
+		"make_folder":    table.makeFolder,
+		"remove_folder":  table.removeFolder,
+		"folder_use":     table.folderUse,
 	}
 }
 
@@ -269,10 +281,16 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 	if plan.Container == nil {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "open_container names no container"}
 	}
+	if err := table.admit(plan); err != nil {
+		return nil, err
+	}
 	if !host.IsPinnedReference(plan.Container.Image) {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
 	if plan, err = writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames); err != nil {
+		return nil, err
+	}
+	if err := table.requireListed(plan); err != nil {
 		return nil, err
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
@@ -420,7 +438,13 @@ func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[stri
 	if plan.Isolation != "" && plan.Isolation != "none" {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "this host does not launch with " + plan.Isolation}
 	}
+	if err := table.admit(plan); err != nil {
+		return nil, err
+	}
 	if plan, err = writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames); err != nil {
+		return nil, err
+	}
+	if err := table.requireListed(plan); err != nil {
 		return nil, err
 	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}

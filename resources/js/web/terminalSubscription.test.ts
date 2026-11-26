@@ -85,7 +85,7 @@ function frameOf(sequence: number, changes: Partial<ScreenFrameData> = {}): Scre
 
 function liveAnswer(sequence: number, liveForMs = 15_000): TerminalFrameData {
     return {
-        state: 'live',
+        status: 'live',
         identity: identityOf(),
         frame: frameOf(sequence),
         receivedAt: '2026-11-19T12:00:00Z',
@@ -167,7 +167,7 @@ describe('TerminalSubscription', () => {
 
         subscription.poll();
         client.reads[1].answer.resolve({
-            state: 'preview_unavailable',
+            status: 'preview_unavailable',
             identity: identityOf({ privacyRevision: 1 }),
             liveForMs: 15_000,
         } as TerminalFrameData);

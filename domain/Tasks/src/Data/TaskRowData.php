@@ -25,7 +25,7 @@ final class TaskRowData extends Data
         public readonly string $id,
         public readonly string $number,
         public readonly string $title,
-        public readonly TaskStatus $state,
+        public readonly TaskStatus $status,
         public readonly AssignmentData|Optional $holder = new Optional(),
     ) {}
 
@@ -35,7 +35,7 @@ final class TaskRowData extends Data
             'id' => $card->id,
             'number' => (string) $card->number,
             'title' => $card->title,
-            'state' => $card->state,
+            'status' => $card->status,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
         ], fn (mixed $rowValue) => $rowValue !== null));
     }

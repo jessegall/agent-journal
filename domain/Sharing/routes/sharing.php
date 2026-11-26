@@ -9,10 +9,7 @@ use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware([
-    'journal.agent',
-    SubstituteBindings::class,
-])
+Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
     ->name('shares.agent.')
     ->group(function (): void {

@@ -31,7 +31,7 @@ final class SignInAttemptData extends Data
         public readonly string|null $resultAccountId,
         public readonly bool $isWaitingForAgents,
         public readonly bool $isUnclaimed,
-        public readonly SignInStatus $state,
+        public readonly SignInStatus $status,
         public readonly bool $isAwaitingSignIn,
         public readonly string $expiresAt,
         public readonly string|null $refusal,

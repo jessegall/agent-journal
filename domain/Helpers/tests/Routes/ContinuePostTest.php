@@ -41,9 +41,6 @@ final class ContinuePostTest extends GuardedRouteEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(ContinueHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(ContinueHelperCommand::class, [
-                'identityId' => $identity->id,
-                'jobId' => $job->id,
-            ]);
+            ->expects(ContinueHelperCommand::class, ['identityId' => $identity->id, 'jobId' => $job->id]);
     }
 }

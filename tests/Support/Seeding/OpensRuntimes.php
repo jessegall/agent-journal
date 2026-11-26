@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Projects\ArrangementType;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
 use App\Support\AgentRuntimes;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\AccountLabel;
@@ -61,6 +62,22 @@ trait OpensRuntimes
             $intent,
             'start-token',
         );
+
+        return $this;
+    }
+
+    /**
+     * A contained host enrolled under the name, serving the folders, as a server's installation enrols.
+     *
+     * @param  list<string>  $folders
+     */
+    public function enrollContainedHost(string $name, array $folders): self
+    {
+        if (array_key_exists($name, $this->hosts)) {
+            throw FixtureRefused::occupiedAlias($name, 'host');
+        }
+
+        $this->hosts[$name] = $this->asSystem(new EnrollHostCommand($name, $folders, ArrangementType::Contained));
 
         return $this;
     }

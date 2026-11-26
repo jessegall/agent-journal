@@ -25,14 +25,7 @@ final class ProgramSpellings extends Data
      */
     public static function php(): self
     {
-        return new self('php', [
-            'php8.1',
-            'php8.2',
-            'php8.3',
-            'php8.4',
-            'php8.5',
-            'php8.6',
-        ]);
+        return new self('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5', 'php8.6']);
     }
 
     public function names(string $name): bool

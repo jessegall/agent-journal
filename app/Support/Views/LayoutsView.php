@@ -23,11 +23,7 @@ final readonly class LayoutsView
             ->get()
             ->map(
                 fn (Layout $layout) => LayoutData::from(
-                    [
-                        'id' => (string) $layout->id,
-                        'name' => $layout->name,
-                        'shape' => $layout->shape,
-                    ],
+                    ['id' => (string) $layout->id, 'name' => $layout->name, 'shape' => $layout->shape],
                 ),
             )
             ->all());

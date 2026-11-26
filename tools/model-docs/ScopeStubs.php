@@ -169,10 +169,7 @@ final readonly class ScopeStubs
 
         $name = $type->isBuiltin() ? $type->name() : '\\'.$type->className();
 
-        if ($parameter->allowsNull() && ! in_array($name, [
-            'mixed',
-            'null',
-        ], true)) {
+        if ($parameter->allowsNull() && ! in_array($name, ['mixed', 'null'], true)) {
             return "{$name}|null";
         }
 

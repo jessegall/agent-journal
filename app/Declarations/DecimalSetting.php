@@ -134,9 +134,7 @@ final readonly class DecimalSetting implements Setting
 
     public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
     {
-        return DecimalValueData::from([
-            'value' => $input instanceof Decimal ? $input->text : $input,
-        ]);
+        return DecimalValueData::from(['value' => $input instanceof Decimal ? $input->text : $input]);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

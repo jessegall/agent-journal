@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -14,7 +15,6 @@ use App\Exceptions\AccountLabelTaken;
 use App\Exceptions\AccountNameChanged;
 use App\Models\Accounts\Account;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
@@ -56,7 +56,10 @@ final class RenameAccountTest extends TestCase
 
     public function test_a_rename_trims_the_name_and_refuses_one_another_account_holds(): void
     {
-        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        [$work, $home] = [
+            $this->account('Work'),
+            $this->account('Home'),
+        ];
 
         $this->bus()->run(new RenameAccountCommand($work->id, '  Office '));
 
@@ -86,7 +89,10 @@ final class RenameAccountTest extends TestCase
     {
         $this->journal->owner();
         $this->app->make(Dispatcher::class)->listen(AccountsChanged::class, function (AccountsChanged $changed): void {
-            $this->changes[] = [$changed->driver, $changed->accountId];
+            $this->changes[] = [
+                $changed->driver,
+                $changed->accountId,
+            ];
         });
 
         $account = $this->account('Work');
@@ -95,14 +101,23 @@ final class RenameAccountTest extends TestCase
         $this->bus()->run(new SwitchAccountCommand($account->id));
         $this->bus()->run(new SwitchAccountCommand($account->id));
 
-        $this->assertSame([['claude-code', $account->id], ['claude-code', $account->id]], $this->changes);
+        $this->assertSame([[
+            'claude-code',
+            $account->id,
+        ], [
+            'claude-code',
+            $account->id,
+        ]], $this->changes);
     }
 
     public function test_a_refused_rename_refreshes_nothing(): void
     {
         $this->journal->owner();
         $this->app->make(Dispatcher::class)->listen(AccountsChanged::class, function (AccountsChanged $changed): void {
-            $this->changes[] = [$changed->driver, $changed->accountId];
+            $this->changes[] = [
+                $changed->driver,
+                $changed->accountId,
+            ];
         });
 
         $this->account('Work');

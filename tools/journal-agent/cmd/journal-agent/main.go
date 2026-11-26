@@ -67,7 +67,7 @@ func main() {
 		"enroll": enroll, "serve": serve, "protection": protection,
 		"install": install, "installation": installation, "status-line": statusLine,
 		"protection-probe": protectionProbe, "connect": connect,
-		"install-release": installRelease, "relay": relay, "protocol": protocolOnly,
+		"install-release": installRelease, "relay": relay, "upgrade-binding": upgradeBinding, "protocol": protocolOnly,
 	}
 	maps.Copy(hostCommands, developmentCommands)
 	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {

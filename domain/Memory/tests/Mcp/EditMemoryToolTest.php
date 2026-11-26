@@ -38,10 +38,6 @@ final class EditMemoryToolTest extends McpToolEntryTestCase
                 'request_key' => 'write-1',
             ])
             ->reply(EditMemoryCommand::class, $memory->id)
-            ->expects(EditMemoryCommand::class, [
-                'memoryId' => $memory->id,
-                'expectedRevision' => 1,
-                'weight' => 9,
-            ]);
+            ->expects(EditMemoryCommand::class, ['memoryId' => $memory->id, 'expectedRevision' => 1, 'weight' => 9]);
     }
 }

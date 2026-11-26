@@ -25,7 +25,7 @@ final class SignInReceiptData extends Data
         public readonly SignInType|null $type,
         public readonly string|null $resultAccountId,
         public readonly SignInMethod|null $method,
-        public readonly SignInStatus|null $state,
+        public readonly SignInStatus|null $signInStatus,
         public readonly string|null $refusal,
     ) {}
 

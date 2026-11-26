@@ -57,13 +57,13 @@ const choiceRefusal = computed(
 );
 const removing = useForm({});
 
-const needsSignIn = computed(() => props.account.state === 'unauthenticated');
+const needsSignIn = computed(() => props.account.status === 'unauthenticated');
 const isLeaving = computed(
     () =>
-        props.account.state === 'removing' || props.account.state === 'removed',
+        props.account.status === 'removing' || props.account.status === 'removed',
 );
 const canBeDefault = computed(
-    () => props.account.state === 'authenticated' && !props.isChosen,
+    () => props.account.status === 'authenticated' && !props.isChosen,
 );
 
 // Dates read as day, month, year and hours:minutes: 21 Nov 2026, 13:52.

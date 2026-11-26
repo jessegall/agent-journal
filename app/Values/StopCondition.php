@@ -55,6 +55,37 @@ final class StopCondition extends Data
     }
 
     /**
+     * The folder the condition runs in: its directory inside the workspace, which no step of it leaves.
+     */
+    public function folderIn(string $workspace): string
+    {
+        $segments = [];
+
+        foreach (explode('/', $this->directory === 'workspace' ? '' : $this->directory) as $segment) {
+            match ($segment) {
+                '', '.' => null,
+                '..' => array_pop($segments),
+                default => $segments[] = $segment,
+            };
+        }
+
+        return implode('/', [rtrim($workspace, '/'), ...$segments]);
+    }
+
+    /**
+     * The FencedRun the host runs for the condition in the workspace.
+     */
+    public function runIn(string $workspace): FencedRun
+    {
+        return new FencedRun(
+            [$this->executable, ...$this->arguments],
+            $this->folderIn($workspace),
+            $this->timeoutSeconds * 1000,
+            $this->outputBytes,
+        );
+    }
+
+    /**
      * The built-in check every writing helper must pass: no tracked or untracked change is left uncommitted.
      */
     public static function cleanWorktree(): self
@@ -64,10 +95,7 @@ final class StopCondition extends Data
             'Clean worktree',
             '/opt/journal/bin/journal-check',
             ['worktree-clean'],
-            [
-                AccessType::Read,
-                AccessType::Execute,
-            ],
+            [AccessType::Read, AccessType::Execute],
             'workspace',
             self::DEFAULT_SECONDS,
             self::OUTPUT_BYTES,

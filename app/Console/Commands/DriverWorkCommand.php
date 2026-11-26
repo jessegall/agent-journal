@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Support\Drivers\DriverWorkers;
+use App\Agents\Drivers\Work\DriverWorkers;
 use Illuminate\Console\Command;
 
 /**

@@ -72,7 +72,7 @@ abstract class TaskListTool extends JournalReadTool
             $cards[$card->id] = [
                 'id' => $card->id,
                 'title' => $card->title,
-                'state' => $card->state->value,
+                'state' => $card->status->value,
                 'holder' => $card->holder->map(
                     fn (AssignmentHolder $holder) => AssignmentData::ofHolder($holder)->toArray(),
                 )->getOrElse(null),

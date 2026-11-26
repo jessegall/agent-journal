@@ -77,7 +77,7 @@ final class RecordUsageWindowTest extends TestCase
         $this->assertSame([$this->account->id, 42.0], [$window->account_id, $window->used_percent]);
     }
 
-    private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string
+    private function claimedStart(Account $account, SessionProcessStatus $status = SessionProcessStatus::Running): string
     {
         $key = (string) Str::ulid();
         DB::table('session_processes')->insert([
@@ -90,7 +90,7 @@ final class RecordUsageWindowTest extends TestCase
             'account_id' => $account->id,
             'account_generation' => 1,
             'directory' => (string) $account->directory,
-            'status' => $state->value,
+            'status' => $status->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

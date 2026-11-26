@@ -30,12 +30,8 @@ final class StartPostTest extends GuardedRouteEntryTestCase
         $task = $journal->owner()->fixtures(TaskFixtures::class)->createTask('Ship the dock');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'task' => $task->number,
-            ])
+            ->parameters(['task' => $task->number])
             ->reply(StartTaskCommand::class, 1)
-            ->expects(StartTaskCommand::class, [
-                'taskId' => $task->id,
-            ]);
+            ->expects(StartTaskCommand::class, ['taskId' => $task->id]);
     }
 }

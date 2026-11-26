@@ -72,10 +72,7 @@ final class AssigneesListTool extends JournalReadTool
                 new Continuation(
                     $this->name(),
                     $type,
-                    [
-                        'after_id' => $assigneePage->nextAfterId,
-                        'limit' => $filters['limit'],
-                    ],
+                    ['after_id' => $assigneePage->nextAfterId, 'limit' => $filters['limit']],
                     0,
                 ),
             ),

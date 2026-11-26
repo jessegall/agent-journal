@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeResult;
 use App\Enums\Accounts\UsageWindowSlot;
 use App\Enums\Drivers\RequestProgress;
-use App\Support\Drivers\Processes\ClaudeResult;
 use App\Values\UsageCost;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
@@ -60,7 +60,11 @@ final class ClaudeResultTest extends TestCase
 
         $this->assertSame(
             [false, 3, false],
-            [$result->end(3)->isResultRead, $result->end(3)->exitCode, $result->end(3)->progress() === RequestProgress::Applied],
+            [
+                $result->end(3)->isResultRead,
+                $result->end(3)->exitCode,
+                $result->end(3)->progress() === RequestProgress::Applied,
+            ],
         );
     }
 

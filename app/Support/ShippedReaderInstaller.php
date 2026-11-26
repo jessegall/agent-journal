@@ -156,10 +156,7 @@ final readonly class ShippedReaderInstaller
             ReaderReference::required(),
         );
 
-        $rule = CommandRule::from([
-            ...$core->toArray(),
-            'contracts' => [$contract->toArray()],
-        ]);
+        $rule = CommandRule::from([...$core->toArray(), 'contracts' => [$contract->toArray()]]);
 
         return $rule->ownedBy(RuleScope::project(), 1)
             ->replacing(new RuleReference(RuleScope::core(), $core->id, $core->revision));

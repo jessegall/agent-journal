@@ -19,7 +19,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class TerminalFrameData extends Data
 {
     public function __construct(
-        public readonly TerminalFrameStatus $state,
+        public readonly TerminalFrameStatus $status,
         public readonly TerminalScreenIdentityData|Optional $identity = new Optional(),
         public readonly ScreenFrameData|Optional $frame = new Optional(),
         public readonly CarbonImmutable|Optional $receivedAt = new Optional(),

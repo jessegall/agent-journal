@@ -41,10 +41,7 @@ final class CommitUploadToolTest extends McpToolEntryTestCase
         $journal->runAs('Writer', new AppendUploadCommand($upload, 0, 'notes', hash('sha256', 'notes')));
 
         return ToolCall::by($start)
-            ->arguments([
-                'upload_id' => $upload,
-                'request_key' => 'documents-1',
-            ])
+            ->arguments(['upload_id' => $upload, 'request_key' => 'documents-1'])
             ->reply(CommitUploadCommand::class, Str::ulid())
             ->expects(CommitUploadCommand::class, ['uploadId' => $upload]);
     }

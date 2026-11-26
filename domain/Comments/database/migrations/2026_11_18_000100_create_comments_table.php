@@ -21,17 +21,9 @@ return new class extends Migration
             $table->string('submission_hash');
             $table->timestampTz('created_at');
 
-            $table->index([
-                'target_type',
-                'target_id',
-                'id',
-            ]);
+            $table->index(['target_type', 'target_id', 'id']);
 
-            $table->unique([
-                'author_type',
-                'author_id',
-                'submission_key',
-            ], 'comments_submission_unique');
+            $table->unique(['author_type', 'author_id', 'submission_key'], 'comments_submission_unique');
         });
 
         Schema::create('comment_anchors', function (Blueprint $table) {

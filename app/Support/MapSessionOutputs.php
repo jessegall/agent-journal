@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Contracts\Drivers\DriverAdapters;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Sessions\SessionOutputGrant;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Values\SessionOutputPaths;
 
 /**

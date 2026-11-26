@@ -9,12 +9,14 @@ use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\CleanupTarget;
 use App\Enums\Accounts\SignInMethod;
 use App\Enums\Accounts\SignInOutcome;
+use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Projects\ArrangementType;
 use App\Exceptions\SignInRunnerRefused;
 use App\Values\ClaimedAccountCheck;
 use App\Values\ClaimedCleanup;
 use App\Values\ClaimedSignIn;
 use App\Values\CleanupProgress;
+use App\Values\HostFolderAnswer;
 use App\Values\SignInChallenge;
 use App\Values\SignInIdentity;
 use App\Values\SignInPoll;
@@ -75,10 +77,7 @@ final readonly class SignInHost implements SignInHostContract
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
     {
-        $body = (string) json_encode([
-            'address' => $challenge->address,
-            'code' => $challenge->code,
-        ]);
+        $body = (string) json_encode(['address' => $challenge->address, 'code' => $challenge->code]);
 
         $this->send('profiles.sign-in-host.challenge', ['attempt' => $claimed->attemptId], $body);
     }
@@ -111,10 +110,7 @@ final readonly class SignInHost implements SignInHostContract
 
     public function notifyCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void
     {
-        $body = (string) json_encode([
-            'generation' => $claimed->generation,
-            'result' => $accountCheck->value,
-        ]);
+        $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $accountCheck->value]);
 
         $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
     }
@@ -169,6 +165,42 @@ final readonly class SignInHost implements SignInHostContract
         };
 
         $this->send($route, $parameters, $body);
+    }
+
+    public function orderFolderMake(string $folder, string $operation): string
+    {
+        return $this->orderFolder('profiles.account-host.folders.make', $folder, $operation);
+    }
+
+    public function orderFolderRemove(string $folder, string $operation): string
+    {
+        return $this->orderFolder('profiles.account-host.folders.remove', $folder, $operation);
+    }
+
+    public function orderFolderUse(string $folder, string $operation): string
+    {
+        return $this->orderFolder('profiles.account-host.folders.use', $folder, $operation);
+    }
+
+    public function folderAnswer(string $orderId): HostFolderAnswer
+    {
+        $response = $this->send('profiles.account-host.folders.answer', ['order' => $orderId], '');
+
+        return new HostFolderAnswer(
+            HostOrderStatus::from((string) $response->json('status')),
+            (string) $response->json('reason'),
+            $response->json('is_bound') === true,
+        );
+    }
+
+    /**
+     * @throws SignInRunnerRefused
+     */
+    private function orderFolder(string $route, string $folder, string $operation): string
+    {
+        $body = (string) json_encode(['folder' => $folder, 'operation' => $operation]);
+
+        return (string) $this->send($route, [], $body)->json('order_id');
     }
 
     /**

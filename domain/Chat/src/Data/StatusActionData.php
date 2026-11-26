@@ -24,9 +24,6 @@ final class StatusActionData extends Data
 
     public static function fromStatusAction(StatusAction $action): self
     {
-        return self::from([
-            'type' => $action->type,
-            'label' => $action->label,
-        ]);
+        return self::from(['type' => $action->type, 'label' => $action->label]);
     }
 }

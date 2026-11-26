@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
+use App\Agents\Drivers\Capabilities\CodexTerminalCapabilities;
+use App\Agents\Drivers\Capabilities\HeadlessCapabilities;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Drivers\Driver;
 use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
 use App\Enums\Drivers\DriverCapability;
@@ -13,10 +17,6 @@ use App\Exceptions\DriverKeyInvalid;
 use App\Exceptions\DriverRegisteredTwice;
 use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
-use App\Support\Capabilities\CodexHeadlessCapabilities;
-use App\Support\Capabilities\CodexTerminalCapabilities;
-use App\Support\Capabilities\HeadlessCapabilities;
-use App\Support\DefaultDrivers;
 use App\Support\DriverCatalogue;
 use App\Values\BoundTarget;
 use App\Values\DriverKey;
@@ -29,7 +29,12 @@ use Tests\TestCase;
  */
 final class DriverRegistryTest extends TestCase
 {
-    private const array LABELS = ['Claude Code', 'Claude Code headless', 'Codex', 'Codex headless'];
+    private const array LABELS = [
+        'Claude Code',
+        'Claude Code headless',
+        'Codex',
+        'Codex headless',
+    ];
 
     public function test_the_registry_lists_the_four_default_labels(): void
     {
@@ -74,7 +79,13 @@ final class DriverRegistryTest extends TestCase
         $this->assertSame('acme/reader', (string) DriverKey::from('acme/reader'));
         $this->assertSame(DriverKey::CHARACTER_LIMIT, strlen((string) DriverKey::from(str_repeat('a', DriverKey::CHARACTER_LIMIT))));
 
-        foreach ([str_repeat('a', DriverKey::CHARACTER_LIMIT + 1), 'Acme/Reader', 'a//b', 'a/b/c', '-a'] as $text) {
+        foreach ([
+            str_repeat('a', DriverKey::CHARACTER_LIMIT + 1),
+            'Acme/Reader',
+            'a//b',
+            'a/b/c',
+            '-a',
+        ] as $text) {
             $this->assertThrows(fn () => DriverKey::from($text), DriverKeyInvalid::class);
         }
     }
@@ -149,9 +160,21 @@ final class DriverRegistryTest extends TestCase
 
         $this->assertSame(
             [
-                ['claude-code-headless', true, DriverCapability::NO_NATIVE_BINARY],
-                ['claude-code', true, DriverCapability::NO_NATIVE_BINARY],
-                ['codex-headless', true, DriverCapability::NO_NATIVE_BINARY],
+                [
+                    'claude-code-headless',
+                    true,
+                    DriverCapability::NO_NATIVE_BINARY,
+                ],
+                [
+                    'claude-code',
+                    true,
+                    DriverCapability::NO_NATIVE_BINARY,
+                ],
+                [
+                    'codex-headless',
+                    true,
+                    DriverCapability::NO_NATIVE_BINARY,
+                ],
             ],
             $answers,
         );

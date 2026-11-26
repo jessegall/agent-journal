@@ -31,10 +31,7 @@ return new class extends Migration
             $table->text('encoded_text');
             $table->timestampsTz();
 
-            $table->unique([
-                'upload_id',
-                'position',
-            ]);
+            $table->unique(['upload_id', 'position']);
         });
     }
 

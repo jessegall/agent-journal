@@ -91,11 +91,7 @@ final class WorkOnPlanStateTest extends TestCase
         $this->assertFalse($state->listensTo(new PlanProgressChanged('plan-2', 40, 9, 9, 3_000)));
 
         $this->assertEquals(
-            AgentText::of('plans.working_on', [
-                'plan' => 12,
-                'finished' => 3,
-                'total' => 8,
-            ]),
+            AgentText::of('plans.working_on', ['plan' => 12, 'finished' => 3, 'total' => 8]),
             $state->instruction()->get(),
         );
     }

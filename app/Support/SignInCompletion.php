@@ -128,9 +128,9 @@ final readonly class SignInCompletion
      * An attempt that publishes nothing, as a different account, a starter without the grant or one past its deadline:
      * it ends in that state, its staging folder is cleaned, and a reconnected account keeps its saved folder and login.
      */
-    private function endWithout(SignInAttempt $attempt, SignInStatus $state, CarbonImmutable $now): void
+    private function endWithout(SignInAttempt $attempt, SignInStatus $status, CarbonImmutable $now): void
     {
-        $attempt->finishAt($state, $now);
+        $attempt->finishAt($status, $now);
         $this->facts->runTransactionListeners();
     }
 }

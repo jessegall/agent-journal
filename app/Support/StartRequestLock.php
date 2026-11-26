@@ -38,10 +38,7 @@ final readonly class StartRequestLock
         $connection = $this->databases->connection();
 
         if ($connection->transactionLevel() > 0) {
-            $connection->select('SELECT pg_advisory_xact_lock(?, hashtext(?))', [
-                self::FIRST_LOCK_KEY,
-                $requestId,
-            ]);
+            $connection->select('SELECT pg_advisory_xact_lock(?, hashtext(?))', [self::FIRST_LOCK_KEY, $requestId]);
 
             return $work();
         }

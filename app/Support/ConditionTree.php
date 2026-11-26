@@ -255,10 +255,7 @@ final readonly class ConditionTree
      */
     private function named(ConditionNode $node): SkillCondition
     {
-        $node->requireShape($node->version, [
-            'key',
-            'parameters',
-        ]);
+        $node->requireShape($node->version, ['key', 'parameters']);
 
         $key = $node->field('key', 'is not an owner-prefixed key such as plans.active-plan');
         $parameters = $node->hasField('parameters') ? $node->field('parameters', 'is not an object') : [];

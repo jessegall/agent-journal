@@ -9,7 +9,6 @@ use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Projects\ProjectInvitation;
 use App\Values\ReleaseManifest;
-use App\Values\ReleaseTarget;
 use App\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
@@ -29,8 +28,13 @@ final class RevokeProjectInvitationTest extends TestCase
     use IssuesInstallLines;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'projects',
-        'settings_records', 'users',
+        'command_receipts',
+        'connection_audits',
+        'project_invitations',
+        'install_attempts',
+        'projects',
+        'settings_records',
+        'users',
     ];
 
     private const string VERSION = '1.0.0';
@@ -100,8 +104,10 @@ final class RevokeProjectInvitationTest extends TestCase
             'targets' => [[
                 'os' => 'linux',
                 'arch' => 'amd64',
-                'prerequisites' => ['git', 'curl'],
-                'providers' => ReleaseTarget::REQUIRED_PROVIDERS,
+                'prerequisites' => [
+                    'git',
+                    'curl',
+                ],
                 'artifacts' => [$relay('linux-amd64')],
             ]],
         ]));

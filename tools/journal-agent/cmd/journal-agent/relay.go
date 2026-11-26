@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maps"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -23,8 +24,6 @@ import (
 )
 
 const (
-	// relayIdleWindow is how long a relay that holds no live process keeps its binding online.
-	relayIdleWindow = 10 * time.Minute
 	// relayReadyWait is how long connect waits for the relay's first acknowledged report.
 	relayReadyWait = 30 * time.Second
 	// relayRetry is the wait after a report the journal did not take, before the next one.
@@ -61,7 +60,7 @@ func relay(arguments []string) error {
 		installation: installation,
 		release:      filepath.Base(installation.Folder),
 		transport:    &http.Client{Timeout: 30 * time.Second},
-		idle:         relayIdleWindow,
+		idle:         &hostapi.IdleWindow{},
 	}
 	err = binder.run(ctx)
 	if errors.Is(err, host.ErrRelayRunning) {
@@ -79,7 +78,7 @@ type bindingRelay struct {
 	installation host.Installation
 	release      string
 	transport    *http.Client
-	idle         time.Duration
+	idle         *hostapi.IdleWindow
 }
 
 // run holds the binding's relay lock for the whole run, carries out the orders the journal sends this binding's host
@@ -102,7 +101,7 @@ func (binder bindingRelay) run(parent context.Context) error {
 	journal := client.ForRemoteProject(binder.binding.Enrollment, binder.transport)
 	serving, stopServing := context.WithCancel(ctx)
 	defer stopServing()
-	table, err := binder.serveOrders(serving, journal)
+	table, err := binder.serveOrders(serving, journal, stopAtFence)
 	if err != nil {
 		return err
 	}
@@ -110,10 +109,13 @@ func (binder bindingRelay) run(parent context.Context) error {
 	go binder.finishReconciliation(ctx, journal, reconciliation)
 
 	lastWork := time.Now()
-	for sequence := 1; ctx.Err() == nil && time.Now().Before(lastWork.Add(binder.idle)); sequence++ {
+	for sequence := 1; ctx.Err() == nil; sequence++ {
 		// A relay that holds a live process is never idle.
 		if len(table.Live()) > 0 {
 			lastWork = time.Now()
+		}
+		if binder.idle.HasPassedSince(lastWork) {
+			break
 		}
 		receipt, err := journal.NotifyPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
@@ -132,7 +134,9 @@ func (binder bindingRelay) run(parent context.Context) error {
 // serveOrders runs host protocol 1 for this binding alone, local and uncontained, from a folder of its own beside the
 // binding's state, so two bindings' relays never share a process table; the journal opens and drives every process
 // and reads the folder by orders.
-func (binder bindingRelay) serveOrders(ctx context.Context, journal *client.Client) (*hostapi.ProcessTable, error) {
+func (binder bindingRelay) serveOrders(
+	ctx context.Context, journal *client.Client, stop func(),
+) (*hostapi.ProcessTable, error) {
 	folder := host.RelayFolder(binder.state.Folder, binder.binding.BindingID)
 	if err := os.MkdirAll(folder, 0o700); err != nil {
 		return nil, err
@@ -142,8 +146,29 @@ func (binder bindingRelay) serveOrders(ctx context.Context, journal *client.Clie
 
 	reads := hostapi.ProjectReads{Reader: host.ProjectReader{Root: binder.binding.CanonicalRoot}, Journal: journal}
 
-	return startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{}, binder.release,
-		reads.Executors())
+	var table atomic.Pointer[hostapi.ProcessTable]
+	live := func() []string {
+		if held := table.Load(); held != nil {
+			return held.Live()
+		}
+		return []string{}
+	}
+	executors := reads.Executors()
+	maps.Copy(executors, binder.upgradeOrders(live, stop))
+	// A connected host opens only the programs its installer sealed, by the names the installer gave them.
+	allowed, err := hostapi.LoadAllowedPrograms(binder.state.Folder, filepath.Base(binder.installation.Folder))
+	if err != nil {
+		return nil, err
+	}
+	maps.Copy(names, allowed.Programs)
+	started, err := startHostProtocol(ctx, journal, binder.binding.Enrollment, folder, names, host.Containers{},
+		binder.release, hostProtocolOptions{Extra: executors, Idle: binder.idle, Allowed: allowed})
+	if err != nil {
+		return nil, err
+	}
+	table.Store(started)
+
+	return started, nil
 }
 
 // fenceCheck is how often a running relay looks whether a disconnect fenced its folder.

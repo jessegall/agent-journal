@@ -72,10 +72,7 @@ final class AddPhaseTasksTest extends TestCase
             $this->tasks->taskCalled('Second'),
         ];
 
-        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
-            $second->id,
-            $first->id,
-        ]));
+        $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$second->id, $first->id]));
 
         $this->plans->assertPhaseTask('Read', $second->assignmentIdentity(), 1)
             ->assertPhaseTask('Read', $first->assignmentIdentity(), 2);
@@ -87,10 +84,7 @@ final class AddPhaseTasksTest extends TestCase
 
         $this->journal->assertRefused(
             TaskMissing::class,
-            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
-                $real,
-                TestIds::of(999999),
-            ])),
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$real, TestIds::of(999999)])),
         );
 
         $this->assertSame([], $this->plans->phaseCalled('Read')->taskIds());
@@ -122,10 +116,7 @@ final class AddPhaseTasksTest extends TestCase
 
         $this->journal->assertRefused(
             TaskAlreadyInAPhase::class,
-            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [
-                $task,
-                $task,
-            ])),
+            fn () => $this->journal->run(new AddPhaseTasksCommand($this->phaseId(), 1, [$task, $task])),
             fn (TaskAlreadyInAPhase $refusal) => $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal),
         );
 
@@ -139,11 +130,7 @@ final class AddPhaseTasksTest extends TestCase
         [$first, $second, $third] = Task::factory()->count(3)->create()->all();
         $this->journal->actAsUserId($this->journal->ownerUser()->id);
 
-        $this->structure()->addTasks($phase, [
-            $first->id,
-            $second->id,
-            $third->id,
-        ]);
+        $this->structure()->addTasks($phase, [$first->id, $second->id, $third->id]);
 
         $this->runCommand(new StartTaskCommand($first->id));
         $this->runCommand(new StartTaskCommand($second->id));
@@ -155,14 +142,7 @@ final class AddPhaseTasksTest extends TestCase
             $plan->refresh()->progress,
         ] as $progress) {
             $this->assertSame(
-                [
-                    'total' => 3,
-                    'finished' => 1,
-                    'cancelled' => 1,
-                    'started' => 1,
-                    'blocked' => 0,
-                    'unfinished' => 1,
-                ],
+                ['total' => 3, 'finished' => 1, 'cancelled' => 1, 'started' => 1, 'blocked' => 0, 'unfinished' => 1],
                 self::tallies($progress),
             );
         }
@@ -170,14 +150,7 @@ final class AddPhaseTasksTest extends TestCase
         $this->runCommand(new CancelTaskCommand($first->id, 'Dropped.'));
 
         $this->assertSame(
-            [
-                'total' => 3,
-                'finished' => 1,
-                'cancelled' => 2,
-                'started' => 0,
-                'blocked' => 0,
-                'unfinished' => 0,
-            ],
+            ['total' => 3, 'finished' => 1, 'cancelled' => 2, 'started' => 0, 'blocked' => 0, 'unfinished' => 0],
             self::tallies($phase->refresh()->progress),
         );
     }

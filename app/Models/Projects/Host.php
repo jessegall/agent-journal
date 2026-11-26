@@ -13,6 +13,7 @@ use App\Data\Hosts\FailedHostCallData;
 use App\Data\Profiles\ProtectionReportData;
 use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
+use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Projects\ArrangementType;
 use App\Enums\Terminals\TerminalInputType;
@@ -47,6 +48,11 @@ use Spatie\LaravelData\DataCollection;
  * @property int $protocol
  * @property string|null $order_secret
  * @property list<string> $capabilities
+ * @property list<string> $allowed_images
+ * @property string|null $release
+ * @property string|null $upgrade_release
+ * @property string|null $upgrade_order_id
+ * @property string|null $upgrade_failure
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
  * @property CarbonImmutable|null $failing_since
@@ -76,6 +82,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      *
      * @column start_roots list<string>
      * @column capabilities list<string>
+     * @column allowed_images list<string>
      */
     protected function casts(): array
     {
@@ -84,6 +91,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'protocol' => 'integer',
             'order_secret' => 'encrypted',
             'capabilities' => 'array',
+            'allowed_images' => 'array',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
             'revoked_at' => 'immutable_datetime',
@@ -234,6 +242,18 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * Where this host runs a driver's executable from: a connected relay opens only the sealed copies its installer made.
+     */
+    public function executablePlace(): ExecutablePlace
+    {
+        if ($this->isConnectedFolderRelay()) {
+            return ExecutablePlace::Sealed;
+        }
+
+        return ExecutablePlace::Host;
+    }
+
+    /**
      * Whether a folder lies inside one of the roots this host may start in.
      */
     public function permitsFolder(string $folder): bool
@@ -272,6 +292,89 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->capabilities = $capabilities;
         $this->assertSaved($this->save());
+    }
+
+    /**
+     * Keeps the images the journal ordered this host to allow its containers, after the order was made.
+     *
+     * @param  list<string>  $images
+     */
+    public function allowImages(array $images): void
+    {
+        $this->allowed_images = $images;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * A host that restarted allows no image until the journal orders it again.
+     */
+    public function forgetAllowedImages(): void
+    {
+        $this->allowImages([]);
+    }
+
+    /**
+     * Whether the journal last ordered this host to allow exactly these images.
+     *
+     * @param  list<string>  $images
+     */
+    public function allowsImages(array $images): bool
+    {
+        return $this->allowed_images === $images;
+    }
+
+    /**
+     * Keeps the release the host's inventory named; the release an upgrade waited on ends that upgrade.
+     */
+    public function recordRelease(string $release): void
+    {
+        $this->release = $release;
+
+        if ($this->upgrade_release === $release) {
+            $this->upgrade_release = null;
+            $this->upgrade_order_id = null;
+        }
+
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * The host is to move to the release once its processes ended; an earlier failure no longer stands.
+     */
+    public function awaitUpgrade(string $release): void
+    {
+        $this->upgrade_release = $release;
+        $this->upgrade_order_id = null;
+        $this->upgrade_failure = null;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * Keeps the upgrade order the journal made for the awaited release.
+     */
+    public function orderUpgrade(string $orderId): void
+    {
+        $this->upgrade_order_id = $orderId;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * The awaited upgrade failed for the reason given; the host stays on the release it runs.
+     */
+    public function failUpgrade(string $reason): void
+    {
+        $this->upgrade_release = null;
+        $this->upgrade_order_id = null;
+        $this->upgrade_failure = $reason;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * Whether an upgrade waits for the host's processes to end and has no order yet.
+     */
+    public function awaitsUpgradeOrder(): bool
+    {
+        return $this->upgrade_release !== null && $this->upgrade_order_id === null;
     }
 
     /**

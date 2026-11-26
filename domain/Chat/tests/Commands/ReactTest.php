@@ -45,13 +45,7 @@ final class ReactTest extends TestCase
 
         $reply = Message::query()->findOrFail($replyId);
 
-        $this->assertSame([
-            '👍',
-            $this->message->id,
-        ], [
-            $reply->body,
-            $reply->target_message_id,
-        ]);
+        $this->assertSame(['👍', $this->message->id], [$reply->body, $reply->target_message_id]);
     }
 
     public function test_anything_but_one_emoji_is_refused_and_sends_nothing(): void

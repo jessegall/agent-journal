@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\ContinueStart\ContinueStartCommand;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverSourceType;
-use App\Support\DefaultDrivers;
 use App\Support\StartReceipt;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
@@ -30,12 +30,8 @@ final class ContinuePostTest extends GuardedRouteEntryTestCase
         $start = $journal->owner()->signedStart('Main');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'session' => $start->session->id,
-            ])
-            ->payload([
-                'agent_id' => $start->agent->id,
-            ])
+            ->parameters(['session' => $start->session->id])
+            ->payload(['agent_id' => $start->agent->id])
             ->reply(ContinueStartCommand::class, new StartReceipt(
                 strtolower((string) Str::ulid()),
                 $start->session->id,

@@ -19,10 +19,7 @@ final class CommandInputInvalid extends ValidationException implements CodedRefu
     {
         $refusal = new self($validator);
 
-        $refusal->message = implode("\n", [
-            'The input was refused.',
-            ...$refusal->fieldProblems(),
-        ]);
+        $refusal->message = implode("\n", ['The input was refused.', ...$refusal->fieldProblems()]);
 
         return $refusal;
     }

@@ -47,10 +47,7 @@ final readonly class SettingsDocument implements JsonSerializable
      */
     public function withSetting(EncodedSetting $setting): self
     {
-        return new self([
-            ...$this->settings,
-            $setting->key => $setting,
-        ], $this->toggles);
+        return new self([...$this->settings, $setting->key => $setting], $this->toggles);
     }
 
     public function withoutSetting(string $key): self
@@ -63,10 +60,7 @@ final readonly class SettingsDocument implements JsonSerializable
      */
     public function withToggle(EncodedToggle $toggle): self
     {
-        return new self($this->settings, [
-            ...$this->toggles,
-            $toggle->key => $toggle,
-        ]);
+        return new self($this->settings, [...$this->toggles, $toggle->key => $toggle]);
     }
 
     public function withoutToggle(string $key): self

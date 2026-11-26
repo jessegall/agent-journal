@@ -80,9 +80,6 @@ final readonly class ScriptChecks implements ScriptChecksContract
             $this->objects->all(),
         );
 
-        return hash('sha256', json_encode([
-            $keywords,
-            $objects,
-        ], JSON_THROW_ON_ERROR));
+        return hash('sha256', json_encode([$keywords, $objects], JSON_THROW_ON_ERROR));
     }
 }

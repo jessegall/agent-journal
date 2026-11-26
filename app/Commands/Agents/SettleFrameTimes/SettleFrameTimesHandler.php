@@ -50,10 +50,7 @@ final readonly class SettleFrameTimesHandler implements CommandHandler
                 'settled_at' => $settlement->settledAt,
             ], $settlements),
             ['frame_id'],
-            [
-                'stack_id',
-                'settled_at',
-            ],
+            ['stack_id', 'settled_at'],
         );
     }
 }

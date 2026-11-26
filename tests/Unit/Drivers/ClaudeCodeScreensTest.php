@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Data\Hosts\HostFrameData;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Screens\ScreenType;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\Screens\ScreenClassifier;
 use App\Support\Screens\ScreenHolds;
 use App\Support\Screens\ScreenReading;
@@ -42,12 +42,7 @@ final class ClaudeCodeScreensTest extends TestCase
 
     public function test_a_reworded_menu_still_reads_as_its_family_and_holds_for_it(): void
     {
-        $frame = $this->frame([
-            'SECURITY first: do you Trust what is here?',
-            '',
-            ' ❯ No, exit',
-            '   Yes, go on',
-        ], 400);
+        $frame = $this->frame(['SECURITY first: do you Trust what is here?', '', ' ❯ No, exit', '   Yes, go on'], 400);
 
         $reading = $this->readingOf($frame);
         $hold = new ScreenHolds()->holdOf($reading);
@@ -89,14 +84,14 @@ final class ClaudeCodeScreensTest extends TestCase
                 $this->readingOf($empty)->isStill,
                 $this->readingOf($draft)->type,
                 new ScreenHolds()->holdOf($this->readingOf($draft))->reason,
-                $this->journal->service(ClaudeCodeProfile::class)->layout()->menus[3]->isSecret,
+                $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->layout()->menus[3]->isSecret,
             ],
         );
     }
 
     private function readingOf(HostFrameData $frame): ScreenReading
     {
-        $layout = $this->journal->service(ClaudeCodeProfile::class)->layout();
+        $layout = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->layout();
 
         return new ScreenClassifier()->readingOf($layout, $frame);
     }

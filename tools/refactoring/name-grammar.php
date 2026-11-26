@@ -150,10 +150,7 @@ function verbsOf(array $names, bool $shouldIncludeActionClasses): array
 
     foreach ($names as $declared) {
         $isTest = preg_match('#Test\.php|_test\.go|tests/Support/#', $declared->place) === 1;
-        $isCommand = $declared->role === 'action' && in_array($declared->declarationType, [
-            'method',
-            'function',
-        ], true)
+        $isCommand = $declared->role === 'action' && in_array($declared->declarationType, ['method', 'function'], true)
             && ! str_contains($declared->place, '.sh');
         $isActionClass = $shouldIncludeActionClasses && $declared->role === 'action' && $declared->declarationType === 'class';
 
@@ -344,10 +341,7 @@ function purposeFault(DeclaredName $declared, array $verbs, array $nouns): strin
 {
     $words = wordsOf($declared->name);
     $first = $words[0] ?? '';
-    $isFunction = in_array($declared->declarationType, [
-        'method',
-        'function',
-    ], true);
+    $isFunction = in_array($declared->declarationType, ['method', 'function'], true);
 
     if ($declared->role !== 'thing' || in_array($first, QUESTION_WORDS, true) || ($isFunction && isset($verbs[$first]))) {
         return null;
@@ -430,14 +424,7 @@ function nounsOf(array $names): array
     $nouns = [];
 
     foreach ($names as $declared) {
-        if (in_array($declared->declarationType, [
-            'class',
-            'interface',
-            'enum',
-            'trait',
-            'type',
-            'component',
-        ], true)) {
+        if (in_array($declared->declarationType, ['class', 'interface', 'enum', 'trait', 'type', 'component'], true)) {
             $words = wordsOf($declared->name);
             $nouns[(string) end($words)] = true;
         }
@@ -528,11 +515,7 @@ function participleOrderFault(DeclaredName $declared, array $verbs, array $nouns
         return null;
     }
 
-    $reordered = implode(' ', [
-        $verb,
-        ...$happenedTo,
-        $participle,
-    ]);
+    $reordered = implode(' ', [$verb, ...$happenedTo, $participle]);
 
     return "names what happened with the participle before its thing ({$verb} {$participle} ".implode(' ', $happenedTo)
         ."): the thing comes first, then what happened to it ({$reordered})";
@@ -573,10 +556,7 @@ function isParticiple(string $word, array $verbs): bool
 function commandMoodFault(DeclaredName $declared, array $verbs): string|null
 {
     $first = firstWordOf($declared->name);
-    $isCommand = $declared->role === 'action' && in_array($declared->declarationType, [
-        'method',
-        'function',
-    ], true);
+    $isCommand = $declared->role === 'action' && in_array($declared->declarationType, ['method', 'function'], true);
     $stem = in_array($first, QUESTION_WORDS, true) ? null : stemOfThirdPerson($first, $verbs);
 
     if ($isCommand && $stem !== null) {
@@ -599,10 +579,7 @@ function questionFault(DeclaredName $declared, array $verbs): string|null
 
     $isThirdPerson = stemOfThirdPerson($first, $verbs) !== null || preg_match('/[^s]s$/', $first) === 1;
     // A method that starts with a verb acts and answers whether it did (claim, insertIfMissing): a command, not a question.
-    $isCommand = in_array($declared->declarationType, [
-        'method',
-        'function',
-    ], true) && isset($verbs[$first]);
+    $isCommand = in_array($declared->declarationType, ['method', 'function'], true) && isset($verbs[$first]);
     // boolean() reads a value as a boolean, as string() and integer() read theirs: a typed accessor.
     $isTypedAccessor = $declared->declarationType === 'method' && wordsOf($declared->name) === ['boolean'];
 
@@ -620,10 +597,7 @@ function questionFault(DeclaredName $declared, array $verbs): string|null
 function getterFault(DeclaredName $declared): string|null
 {
     $words = wordsOf($declared->name);
-    $isFunction = in_array($declared->declarationType, [
-        'method',
-        'function',
-    ], true);
+    $isFunction = in_array($declared->declarationType, ['method', 'function'], true);
 
     $isOwnName = $declared->role !== 'override';
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
@@ -37,8 +39,6 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ActorReference;
 use App\Support\ArrangementSetting;
-use App\Support\Capabilities\CodexHeadlessCapabilities;
-use App\Support\DefaultDrivers;
 use App\Support\DomainRegistry;
 use App\Support\DriverCatalogue;
 use App\Support\EnrolledHost;
@@ -344,8 +344,16 @@ final class OpenAgentRuntimeTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent', $this->localProject());
         [$build, $profile, $model] = $driver === 'codex'
-            ? ['0.165.0', 'codex', 'gpt-5.5']
-            : ['2.1.323', 'claude', 'claude-opus-5-5'];
+            ? [
+                '0.165.0',
+                'codex',
+                'gpt-5.5',
+            ]
+            : [
+                '2.1.323',
+                'claude',
+                'claude-opus-5-5',
+            ];
 
         return $this->app->make(CommandBus::class)->run(new OpenAgentRuntimeCommand(
             $agent->id,
@@ -435,8 +443,16 @@ final class OpenAgentRuntimeTest extends TestCase
         );
 
         foreach ([
-            ['example/echo-headless', DriverType::Headless, AcmeReaderCapabilities::class],
-            ['example/echo-terminal', DriverType::Terminal, RunsAloneCapabilities::class],
+            [
+                'example/echo-headless',
+                DriverType::Headless,
+                AcmeReaderCapabilities::class,
+            ],
+            [
+                'example/echo-terminal',
+                DriverType::Terminal,
+                RunsAloneCapabilities::class,
+            ],
         ] as [$key, $driverType, $capabilities]) {
             $registry->register(new DriverRegistration(
                 DriverKey::from($key),

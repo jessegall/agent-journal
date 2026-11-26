@@ -32,13 +32,8 @@ final class SettleReportPostTest extends GuardedRouteEntryTestCase
         $report = $journal->run(new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'report' => $report->number,
-            ])
-            ->payload([
-                'reason' => 'Fixed in task 12.',
-                'revision' => 1,
-            ])
+            ->parameters(['report' => $report->number])
+            ->payload(['reason' => 'Fixed in task 12.', 'revision' => 1])
             ->expects(CloseReportCommand::class, [
                 'reportReference' => (string) $report->number,
                 'reason' => 'Fixed in task 12.',

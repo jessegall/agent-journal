@@ -39,11 +39,7 @@ final readonly class TimingVerdict
 
         return AgentText::of(
             'core.shell.phase_timing',
-            [
-                'plan' => $this->plan,
-                'phase' => $this->phase,
-                'tasks' => $tasks,
-            ],
+            ['plan' => $this->plan, 'phase' => $this->phase, 'tasks' => $tasks],
         );
     }
 }

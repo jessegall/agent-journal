@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Support\ClaudeDriver;
-use App\Support\CodexDriver;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\SignInDriver;
 use App\Support\SignInEgress;
+use App\Values\SecretHandover;
 use Tests\TestCase;
 
 /**
@@ -15,7 +16,14 @@ use Tests\TestCase;
  */
 final class SignInEgressTest extends TestCase
 {
-    private const array PROXY_VARIABLES = ['HTTPS_PROXY', 'HTTP_PROXY', 'https_proxy', 'http_proxy', 'NO_PROXY', 'no_proxy'];
+    private const array PROXY_VARIABLES = [
+        'HTTPS_PROXY',
+        'HTTP_PROXY',
+        'https_proxy',
+        'http_proxy',
+        'NO_PROXY',
+        'no_proxy',
+    ];
 
     private string $folder = '';
 
@@ -70,11 +78,19 @@ final class SignInEgressTest extends TestCase
      */
     private function environments(): array
     {
-        $this->app->make(ClaudeDriver::class)->start([], $this->folder)->finish();
+        $this->program(DefaultDrivers::CLAUDE_CODE)->start([], $this->folder, SecretHandover::none())->finish();
         $claude = $this->readEnvironment();
-        $this->app->make(CodexDriver::class)->start([], $this->folder)->finish();
+        $this->program(DefaultDrivers::CODEX)->start([], $this->folder, SecretHandover::none())->finish();
 
-        return [$claude, $this->readEnvironment()];
+        return [
+            $claude,
+            $this->readEnvironment(),
+        ];
+    }
+
+    private function program(string $family): SignInDriver
+    {
+        return $this->journal->driverProfile($family)->signInDriver();
     }
 
     /**

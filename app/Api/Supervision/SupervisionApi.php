@@ -19,9 +19,7 @@ final readonly class SupervisionApi
     public function listAsks(
         string|null $before = null,
     ): AskInbox {
-        return $this->sender->send(ListAsksPayload::from([
-            'before' => $before,
-        ]));
+        return $this->sender->send(ListAsksPayload::from(['before' => $before]));
     }
 
     public function makeAsk(
@@ -51,18 +49,13 @@ final readonly class SupervisionApi
     public function showAsk(
         string $id,
     ): AskCard {
-        return $this->sender->send(ShowAskPayload::from([
-            'id' => $id,
-        ]));
+        return $this->sender->send(ShowAskPayload::from(['id' => $id]));
     }
 
     public function withdrawAsk(
         CallKey $requestKey,
         string $id,
     ): AskCard {
-        return $this->sender->send(WithdrawAskPayload::from([
-            'requestKey' => $requestKey,
-            'id' => $id,
-        ]));
+        return $this->sender->send(WithdrawAskPayload::from(['requestKey' => $requestKey, 'id' => $id]));
     }
 }

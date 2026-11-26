@@ -59,10 +59,10 @@ final readonly class SequenceRunsShow extends SequenceRunsPage
             ->withStanding(LayoutPartData::collection('steps', 'list', $steps));
     }
 
-    private function markOf(int $position, int $current, SequenceRunStatus $state): LayoutPartData
+    private function markOf(int $position, int $current, SequenceRunStatus $status): LayoutPartData
     {
-        if ($state !== SequenceRunStatus::Running) {
-            return LayoutPartData::text('mark', $state === SequenceRunStatus::Finished ? 'Done' : 'Not done', 'muted');
+        if ($status !== SequenceRunStatus::Running) {
+            return LayoutPartData::text('mark', $status === SequenceRunStatus::Finished ? 'Done' : 'Not done', 'muted');
         }
 
         return match (true) {

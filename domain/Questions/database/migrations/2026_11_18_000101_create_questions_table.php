@@ -25,17 +25,9 @@ return new class extends Migration
             $table->timestampTz('answered_at')->nullable();
             $table->timestampsTz();
 
-            $table->index([
-                'inbox_id',
-                'created_at',
-                'id',
-            ]);
+            $table->index(['inbox_id', 'created_at', 'id']);
 
-            $table->index([
-                'target_type',
-                'target_id',
-                'answered_at',
-            ]);
+            $table->index(['target_type', 'target_id', 'answered_at']);
         });
     }
 };

@@ -90,18 +90,8 @@ final class CommentOnDocumentTest extends TestCase
         $comment = Comment::query()->findOrFail($commentId);
 
         $this->assertSame(
-            [
-                Document::linkType(),
-                Document::query()->sole()->id,
-                'Looks good.',
-                $this->journal->ownerUser()->id,
-            ],
-            [
-                $comment->target_type,
-                $comment->target_id,
-                $comment->body,
-                $comment->author_id,
-            ],
+            [Document::linkType(), Document::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
+            [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
         );
     }
 
@@ -122,21 +112,12 @@ final class CommentOnDocumentTest extends TestCase
 
         $items = $this->comments()->list($this->document(), new IdListPage())->comments;
 
-        $this->assertSame([
-            'Looks right.',
-            'Which editor?',
-        ], array_map(fn ($item) => $item->comment->body, $items));
+        $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($item) => $item->comment->body, $items));
 
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
         $this->assertInstanceOf(TextCommentView::class, $items[1]);
 
-        $this->assertSame([
-            '1',
-            'the editor',
-        ], [
-            $items[1]->anchor->versionId,
-            $items[1]->anchor->quote,
-        ]);
+        $this->assertSame(['1', 'the editor'], [$items[1]->anchor->versionId, $items[1]->anchor->quote]);
 
         $this->assertSame('1', $this->documents()->show(1)->revision);
     }
@@ -195,12 +176,7 @@ final class CommentOnDocumentTest extends TestCase
         $this->assertInstanceOf(TextCommentLocation::class, $sectionPlace);
 
         $this->assertSame(
-            [
-                '1',
-                3,
-                7,
-                10,
-            ],
+            ['1', 3, 7, 10],
             [
                 $sectionPlace->anchor->versionId,
                 $sectionPlace->anchor->sectionNumber,
@@ -212,13 +188,7 @@ final class CommentOnDocumentTest extends TestCase
         $this->assertStringContainsString(self::THIRD_PART, $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
 
-        $this->assertSame([
-            2,
-            5,
-        ], [
-            $linesPlace->part->firstLine,
-            $linesPlace->part->lastLine,
-        ]);
+        $this->assertSame([2, 5], [$linesPlace->part->firstLine, $linesPlace->part->lastLine]);
     }
 
     public function test_a_quote_that_is_not_the_revision_text_is_refused_and_nothing_is_stored(): void
@@ -246,13 +216,7 @@ final class CommentOnDocumentTest extends TestCase
 
         $comment = $this->comments()->list($this->document(), new IdListPage())->comments[0]->comment;
 
-        $this->assertSame([
-            Agent::storedType(),
-            $agent->id,
-        ], [
-            $comment->authorType,
-            $comment->authorId,
-        ]);
+        $this->assertSame([Agent::storedType(), $agent->id], [$comment->authorType, $comment->authorId]);
     }
 
     public function test_a_comment_with_a_script_shows_as_text(): void

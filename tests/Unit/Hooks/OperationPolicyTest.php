@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
 use App\Contracts\Authorization\OperationPolicy;
 use App\Enums\Agents\AccessType;
 use App\Enums\Files\FileOperation;
@@ -15,7 +16,6 @@ use App\Support\Inputs\Values\FileChange;
 use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\States\ReadyState;
-use App\Support\ToolNames\Enums\ClaudeCodeTool;
 use App\Values\AccessDecision;
 use App\Values\AccessPolicy;
 use App\Values\HostAccess;

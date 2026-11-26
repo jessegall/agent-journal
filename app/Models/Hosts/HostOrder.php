@@ -212,10 +212,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public static function findExpiredAt(CarbonImmutable $now, int $limit): array
     {
         $orders = self::query()
-            ->whereIn('status', [
-                HostOrderStatus::Pending,
-                HostOrderStatus::Claimed,
-            ])
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
             ->where('expires_at', '<=', $now)
             ->lock('for update skip locked')
             ->readExactly($limit)
@@ -233,10 +230,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     {
         $orders = self::query()
             ->where('host_process_id', $processId)
-            ->whereIn('status', [
-                HostOrderStatus::Pending,
-                HostOrderStatus::Claimed,
-            ])
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
             ->lockForUpdate()
             ->get();
 
@@ -251,6 +245,17 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public static function findForProcess(string $processId): array
     {
         return array_values(self::query()->where('host_process_id', $processId)->orderBy('sequence')->get()->all());
+    }
+
+    /**
+     * The orders made for the host itself, for no process of it, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function findForHostItself(string $hostId): array
+    {
+        return array_values(self::query()->where('host_id', $hostId)->whereNull('host_process_id')->orderBy('sequence')
+            ->limit(64)->get()->all());
     }
 
     /**
@@ -328,11 +333,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     {
         $orders = self::query()
             ->ofDriverRequest($request)
-            ->whereIn('status', [
-                HostOrderStatus::Pending,
-                HostOrderStatus::Claimed,
-                HostOrderStatus::Done,
-            ])
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed, HostOrderStatus::Done])
             ->orderBy('sequence')
             ->get();
 
@@ -377,10 +378,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function answeredBefore(Builder $query, CarbonImmutable $before): void
     {
-        $query->whereIn('status', [
-            HostOrderStatus::Done,
-            HostOrderStatus::Refused,
-        ])
+        $query->whereIn('status', [HostOrderStatus::Done, HostOrderStatus::Refused])
             ->where('answered_at', '<', $before);
     }
 }

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
 use App\Commands\Hosts\WriteHostInput\WriteHostInputCommand;
 use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessType;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
+use App\Support\AgentImage;
+use App\Values\ClaimedHostOrder;
+use App\Values\HostOrderClaim;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -18,7 +22,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A host's claim takes every order waiting for it, signed, and an order once claimed is not handed out again at once.
+ * A host's claim takes every order waiting for it, signed, and an order once claimed is not handed out again at once;
+ * the answer names the idle window the journal is configured with.
  */
 #[TestsCommand(ClaimHostOrdersCommand::class)]
 final class ClaimHostOrdersTest extends TestCase
@@ -80,5 +85,47 @@ final class ClaimHostOrdersTest extends TestCase
         $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($this->journal->hostCalled('Other')->hostId, 10));
 
         $this->journal->assertResult(true, $claim->isEmpty());
+    }
+
+    public function test_the_answer_names_the_configured_idle_window(): void
+    {
+        config(['agents.idle_window_seconds' => 42]);
+        $this->journal->enrollHost('Mac', [base_path()]);
+
+        $claim = $this->journal->asSystem(new ClaimHostOrdersCommand($this->journal->hostCalled('Mac')->hostId, 10));
+
+        $this->journal->assertResult(42, $claim->jsonSerialize()['idle_window_s']);
+    }
+
+    public function test_a_contained_host_is_ordered_the_agent_image_once_and_again_after_its_restart(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()]);
+        $hostId = $this->journal->hostCalled('Box')->hostId;
+        $inventory = json_encode([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'answered_through' => null,
+            'processes' => [],
+        ], JSON_THROW_ON_ERROR);
+
+        $first = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
+        $second = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
+        $this->journal->asSystem(new NotifyHostInventoryCommand($hostId, $inventory));
+        $afterRestart = $this->journal->asSystem(new ClaimHostOrdersCommand($hostId, 10));
+
+        $typesOf = fn (HostOrderClaim $claim) => array_map(
+            fn (ClaimedHostOrder $order) => $order->type,
+            $claim->orders,
+        );
+        $image = $this->journal->service(AgentImage::class)->reference;
+        $this->journal->assertResult(
+            [['allow_images'], [], ['allow_images'], ['images' => [$image]]],
+            [
+                $typesOf($first),
+                $typesOf($second),
+                $typesOf($afterRestart),
+                $this->journal->payloadOf($this->journal->hostOrdersOn('Box')[0]),
+            ],
+        );
     }
 }

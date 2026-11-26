@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Commands;
 
+use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Sessions\SessionStartEnded;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Models\Sessions\SessionRequest;
-use App\Support\Capabilities\CodexHeadlessCapabilities;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;

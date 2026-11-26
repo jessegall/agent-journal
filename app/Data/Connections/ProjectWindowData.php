@@ -21,7 +21,7 @@ final class ProjectWindowData extends Data
      * @param  list<ProjectTreeEntryData>  $entries
      */
     public function __construct(
-        public readonly ProjectWindowStatus $state,
+        public readonly ProjectWindowStatus $status,
         public readonly string|null $projectLabel,
         public readonly string|null $machineLabel,
         public readonly string $connectAddress,

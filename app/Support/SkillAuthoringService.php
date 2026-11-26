@@ -164,11 +164,7 @@ final readonly class SkillAuthoringService
         }
 
         return json_encode(
-            [
-                'type' => 'all',
-                'version' => 1,
-                'children' => $children,
-            ],
+            ['type' => 'all', 'version' => 1, 'children' => $children],
             JSON_THROW_ON_ERROR,
         );
     }

@@ -45,11 +45,7 @@ final readonly class KeyScriptRun
      */
     public function advanced(int $captured): self
     {
-        return clone ($this, [
-            'step' => $this->step + 1,
-            'stepBegan' => $captured,
-            'highlightBefore' => null,
-        ]);
+        return clone ($this, ['step' => $this->step + 1, 'stepBegan' => $captured, 'highlightBefore' => null]);
     }
 
     /**
@@ -66,10 +62,7 @@ final readonly class KeyScriptRun
      */
     public function awaitingMoveFrom(string $highlighted): self
     {
-        return clone ($this, [
-            'stepBegan' => null,
-            'highlightBefore' => $highlighted,
-        ]);
+        return clone ($this, ['stepBegan' => null, 'highlightBefore' => $highlighted]);
     }
 
     /**

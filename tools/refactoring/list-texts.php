@@ -62,10 +62,7 @@ const TEXT_METHODS = [
 ];
 
 $arguments = array_slice($argv, 1);
-$mode = in_array($arguments[0] ?? null, [
-    '--check',
-    '--accept',
-], true) ? array_shift($arguments) : '--list';
+$mode = in_array($arguments[0] ?? null, ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
 $reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
 $texts = screenTexts($arguments);
 $current = array_values(array_unique(array_map(static fn (ScreenText $text) => $text->reviewLine(), $texts)));

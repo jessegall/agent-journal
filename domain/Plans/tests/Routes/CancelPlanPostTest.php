@@ -31,14 +31,8 @@ final class CancelPlanPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'plan' => $plan->number,
-            ])
-            ->payload([
-                'revision' => 1,
-                'state' => 'planned',
-                'text' => 'Shipped.',
-            ])
+            ->parameters(['plan' => $plan->number])
+            ->payload(['revision' => 1, 'state' => 'planned', 'text' => 'Shipped.'])
             ->expects(CancelPlanCommand::class, [
                 'planId' => $plan->id,
                 'expectedRevision' => 1,

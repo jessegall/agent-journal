@@ -15,7 +15,6 @@ use App\Models\Support\JournalModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\ShareRelationSet;
-use App\Values\TextAnchor;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Data\CommentDetails;
 use Domain\Comments\Events\CommentPosted;
@@ -61,16 +60,10 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     // ----------[ Constructors ]----------
 
     /**
-     * A comment about the whole record, or, with an anchor, about an exact place in one version of its text.
+     * A comment on a record; an anchor written for it makes it about an exact place in one version of its text.
      */
-    public static function create(
-        Model $target,
-        ActorReference $author,
-        string $body,
-        TextAnchor|null $anchor,
-        string $key,
-        string $hash,
-    ): self {
+    public static function create(Model $target, ActorReference $author, string $body, string $key, string $hash): self
+    {
         $comment = new self();
         $comment->body = $body;
         $comment->submission_key = $key;
@@ -81,7 +74,6 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
         $comment->author_id = $author->id;
 
         $comment->assertSaved($comment->save());
-        $comment->setRelation('anchor', $anchor === null ? null : CommentAnchor::create($comment, $anchor));
         $comment->raise(new CommentPosted($comment->id, $comment->target));
 
         return $comment;
@@ -213,10 +205,9 @@ final class Comment extends JournalModel implements EventSource, ReadableModel, 
     #[Scope]
     protected function excerpts(Builder $query, int $characters): void
     {
-        $query->select([
-            'id',
-            'created_at',
-        ])->selectRaw('left(body, ?) as excerpt', [$characters])->with('anchor:comment_id,quote');
+        $query->select(['id', 'created_at'])
+            ->selectRaw('left(body, ?) as excerpt', [$characters])
+            ->with('anchor:comment_id,quote');
     }
 
     /**

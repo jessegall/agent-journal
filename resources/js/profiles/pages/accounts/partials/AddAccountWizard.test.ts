@@ -120,7 +120,7 @@ const methods: DriverMethodsData[] = [
 ];
 
 function attempt(
-    state: SignInStatus,
+    status: SignInStatus,
     fields: Partial<SignInAttemptData> = {},
 ): SignInAttemptData {
     return {
@@ -132,8 +132,8 @@ function attempt(
         resultAccountId: null,
         isWaitingForAgents: false,
         isUnclaimed: false,
-        state,
-        isAwaitingSignIn: state === 'starting' || state === 'waiting',
+        status,
+        isAwaitingSignIn: status === 'starting' || status === 'waiting',
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
         ...fields,
@@ -146,7 +146,7 @@ function accountRow(id: string, label: string): AccountRowData {
         driver: 'claude-code',
         label,
         signIn: claudeMethods[1],
-        state: 'authenticated',
+        status: 'authenticated',
         identity: null,
         workspace: null,
         isActive: false,
@@ -534,7 +534,7 @@ describe('AddAccountWizard', () => {
     it('tells an expired and an interrupted sign-in apart, each with Start again', async () => {
         const view = openWizard();
 
-        for (const [state, text] of [
+        for (const [status, text] of [
             ['expired', 'The sign-in took too long and was stopped.'],
             [
                 'interrupted',
@@ -543,7 +543,7 @@ describe('AddAccountWizard', () => {
         ] as const) {
             await view.setProps({
                 request: { kind: 'resume', attemptId: 'attempt-1' },
-                attempts: [attempt(state)],
+                attempts: [attempt(status)],
             });
             await flushPromises();
 

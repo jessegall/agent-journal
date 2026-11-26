@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
 use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
 use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
@@ -24,7 +25,6 @@ use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\SignInIdentity;
 use App\Values\SignInStarted;
@@ -235,7 +235,10 @@ final class CompleteSignInTest extends TestCase
             SignInAttempt::query()->withoutGlobalScopes()->whereKey($attemptId)->with('resultAccount')->sole(),
         );
 
-        return [$attempt->accountId, $attempt->resultAccountId];
+        return [
+            $attempt->accountId,
+            $attempt->resultAccountId,
+        ];
     }
 
     private function bus(): CommandBus

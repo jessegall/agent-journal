@@ -13,7 +13,7 @@ use App\Enums\Agents\StopPreparationStatus;
 final readonly class StopPreparation
 {
     private function __construct(
-        public StopPreparationStatus $state,
+        public StopPreparationStatus $status,
         public AgentText $message,
         public bool $tellsOwner,
     ) {}

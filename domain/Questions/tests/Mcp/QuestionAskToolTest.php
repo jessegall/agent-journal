@@ -38,10 +38,7 @@ final class QuestionAskToolTest extends McpToolEntryTestCase
                 'target_id' => $journal->ownerUser()->id,
                 'text' => 'Which database?',
                 'type' => 'choice',
-                'options' => [
-                    'Postgres',
-                    'SQLite',
-                ],
+                'options' => ['Postgres', 'SQLite'],
                 'request_key' => 'write-1',
             ])
             ->reply(AskQuestionCommand::class, Str::ulid())
@@ -49,10 +46,7 @@ final class QuestionAskToolTest extends McpToolEntryTestCase
                 'inboxId' => $inbox->id,
                 'text' => 'Which database?',
                 'type' => QuestionType::Choice,
-                'options' => [
-                    'Postgres',
-                    'SQLite',
-                ],
+                'options' => ['Postgres', 'SQLite'],
             ]);
     }
 }

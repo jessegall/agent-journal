@@ -41,13 +41,7 @@ final class AnswerPostTest extends GuardedRouteEntryTestCase
         $journal->actAs('Owner');
 
         return RouteCall::as(Caller::User)
-            ->payload([
-                'questionId' => $question->id,
-                'answer' => 'Postgres',
-            ])
-            ->expects(AnswerQuestionCommand::class, [
-                'questionId' => $question->id,
-                'answer' => 'Postgres',
-            ]);
+            ->payload(['questionId' => $question->id, 'answer' => 'Postgres'])
+            ->expects(AnswerQuestionCommand::class, ['questionId' => $question->id, 'answer' => 'Postgres']);
     }
 }

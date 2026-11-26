@@ -22,10 +22,6 @@ enum HostProcessPurpose: string
      */
     public function isRuntimeProcess(): bool
     {
-        return ! in_array($this, [
-            self::AgentTurn,
-            self::BuildProbe,
-            self::SignInProbe,
-        ], true);
+        return ! in_array($this, [self::AgentTurn, self::BuildProbe, self::SignInProbe], true);
     }
 }

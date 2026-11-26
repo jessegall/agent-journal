@@ -36,14 +36,8 @@ final class RecoverDraftPostTest extends GuardedRouteEntryTestCase
         $opened = $journal->run(new OpenDocumentCommand((string) $document->number));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
-            ->payload([
-                'token' => $opened->token,
-                'version' => $opened->version,
-                'reason' => 'The session ended.',
-            ])
+            ->parameters(['document' => $document->number])
+            ->payload(['token' => $opened->token, 'version' => $opened->version, 'reason' => 'The session ended.'])
             ->reply(RecoverDocumentCommand::class, new CloseResult(2, true))
             ->expects(RecoverDocumentCommand::class, [
                 'draft' => new DraftTarget((string) $document->number, $opened->token, $opened->version),

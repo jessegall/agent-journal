@@ -53,7 +53,7 @@ final readonly class DockListing
             'type' => $placement->dockable_type,
             'sourceId' => $placement->dockable_id,
             'title' => $card === null ? '' : $card->accessibleName,
-            'state' => $card === null ? DockedStatus::Unavailable : DockedStatus::Shown,
+            'status' => $card === null ? DockedStatus::Unavailable : DockedStatus::Shown,
         ]);
     }
 }

@@ -42,16 +42,9 @@ final class RevokeShareDeleteTest extends GuardedRouteEntryTestCase
         $share = $shares->shareCalled('Design');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'share' => $share->id,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'share-1',
-            ])
+            ->parameters(['share' => $share->id])
+            ->headers(['Idempotency-Key' => 'share-1'])
             ->reply(RevokeShareCommand::class, new ShareSummary($share->id, $share->number, ShareStatus::Active))
-            ->expects(RevokeShareCommand::class, [
-                'shareId' => $share->id,
-                'requestKey' => 'share-1',
-            ]);
+            ->expects(RevokeShareCommand::class, ['shareId' => $share->id, 'requestKey' => 'share-1']);
     }
 }

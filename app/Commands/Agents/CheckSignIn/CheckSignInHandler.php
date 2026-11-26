@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Commands\Agents\CheckSignIn;
 
+use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Contracts\Bus\CommandHandler;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Models\Hosts\HostProcess;
-use App\Support\Drivers\HeadlessStarts;
-use App\Support\Drivers\Profiles\DriverProfiles;
 use App\Support\StartHeartbeats;
 
 final readonly class CheckSignInHandler implements CommandHandler
@@ -28,7 +28,7 @@ final readonly class CheckSignInHandler implements CommandHandler
         $runtime = $process->runtime;
 
         if (! $this->profiles->of($runtime)->hasAcceptedSignIn($command->printed, $start->directory)) {
-            $this->heartbeats->refuseStart($start, HostRefusal::NotSignedIn->explanation());
+            $this->heartbeats->refuseStart($start, StartRefusalReason::NotSignedIn->explanation());
 
             return;
         }

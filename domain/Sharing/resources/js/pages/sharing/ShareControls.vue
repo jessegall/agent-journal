@@ -102,7 +102,7 @@ function revoke(): void {
             </template>
             <template v-if="mayRevoke">
                 <Button type="button" @click="revoke">{{
-                    state === 'proposed' ? 'Dismiss' : 'Revoke'
+                    status === 'proposed' ? 'Dismiss' : 'Revoke'
                 }}</Button>
             </template>
         </div>

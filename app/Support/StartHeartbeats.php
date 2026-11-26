@@ -219,9 +219,6 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     {
         AgentSession::query()->withStatus(SessionStatus::Active)
             ->showedNoLifeSince($cutoff)
-            ->update([
-                'status' => SessionStatus::Silent->value,
-                'silent_since' => $now,
-            ]);
+            ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 }

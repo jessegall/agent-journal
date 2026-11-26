@@ -24,10 +24,7 @@ final class PresenceReportData extends Data
         public readonly int $sequence,
         #[Max(64)]
         public readonly string $release,
-        #[In([
-            'succeeded',
-            'failed',
-        ])]
+        #[In(['succeeded', 'failed'])]
         public readonly string $provisioning,
         public readonly bool $isTakeover = false,
         #[Min(0)]

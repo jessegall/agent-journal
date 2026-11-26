@@ -91,11 +91,7 @@ final readonly class RelaySettings
     private static function protectedAccountsOf(StartEnvironment $start): ProtectedAccounts
     {
         $given = array_filter(
-            [
-                'JOURNAL_ACCOUNTS_ROOT',
-                'CLAUDE_CONFIG_DIR',
-                'CODEX_HOME',
-            ],
+            ['JOURNAL_ACCOUNTS_ROOT', 'CLAUDE_CONFIG_DIR', 'CODEX_HOME'],
             fn (string $name) => $start->has($name) && $start->value($name) !== '',
         );
 
@@ -151,10 +147,7 @@ final readonly class RelaySettings
     {
         $query = $this->processGeneration > 0 ? ['generation' => $this->processGeneration] : [];
 
-        return route('hooks.answer', [
-            'driver' => $driver,
-            ...$query,
-        ], false);
+        return route('hooks.answer', ['driver' => $driver, ...$query], false);
     }
 
     public function client(): AgentClientSettings

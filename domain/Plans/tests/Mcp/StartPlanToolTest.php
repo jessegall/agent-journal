@@ -31,10 +31,7 @@ final class StartPlanToolTest extends McpToolEntryTestCase
         $plan = $journal->fixtures(PlanFixtures::class)->createPlan('Release');
 
         return ToolCall::by($start)
-            ->arguments([
-                'plan_id' => $plan->id,
-                'request_key' => 'plans-1',
-            ])
+            ->arguments(['plan_id' => $plan->id, 'request_key' => 'plans-1'])
             ->expects(StartPlanCommand::class, ['planId' => $plan->id]);
     }
 }

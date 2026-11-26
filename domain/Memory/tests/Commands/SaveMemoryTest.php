@@ -49,16 +49,8 @@ final class SaveMemoryTest extends TestCase
         $memory = Memory::query()->findOrFail($memoryId);
 
         $this->assertSame(
-            [
-                'Run migrate:fresh after a create-migration edit.',
-                7,
-                1,
-            ],
-            [
-                $memory->text,
-                $memory->weight,
-                $memory->revision,
-            ],
+            ['Run migrate:fresh after a create-migration edit.', 7, 1],
+            [$memory->text, $memory->weight, $memory->revision],
         );
 
         $this->assertSame(
@@ -104,9 +96,6 @@ final class SaveMemoryTest extends TestCase
         $this->journal->run(new SaveMemoryCommand('Lightest.', Memory::LIGHTEST));
         $this->journal->run(new SaveMemoryCommand('Heaviest.', Memory::HEAVIEST));
 
-        $this->assertSame([
-            1,
-            2,
-        ], Memory::query()->orderBy('number')->pluck('number')->all());
+        $this->assertSame([1, 2], Memory::query()->orderBy('number')->pluck('number')->all());
     }
 }

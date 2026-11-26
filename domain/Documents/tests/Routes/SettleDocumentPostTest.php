@@ -32,13 +32,8 @@ final class SettleDocumentPostTest extends GuardedRouteEntryTestCase
         $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
-            ->payload([
-                'reason' => 'Built in task 12.',
-                'revision' => 1,
-            ])
+            ->parameters(['document' => $document->number])
+            ->payload(['reason' => 'Built in task 12.', 'revision' => 1])
             ->expects(SettleDocumentCommand::class, [
                 'documentNumber' => $document->number,
                 'expectedRevision' => 1,

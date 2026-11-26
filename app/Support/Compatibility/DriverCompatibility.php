@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Compatibility;
 
-use App\Contracts\Accounts\AccountSettingsFiller;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Enums\Accounts\AuthenticationArrangement;
 use App\Enums\Drivers\DriverEvidence;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\ClaudeAccountSettings;
-use App\Support\Drivers\CodexAccountSettings;
 
 /**
  * What start preparation may rely on for one pinned driver: its version and binary digest, the flags and
@@ -24,7 +21,6 @@ final readonly class DriverCompatibility
     /**
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
-     * @param  class-string<AccountSettingsFiller>  $accountSettings  what fills the family's account start settings
      * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
      * @param  bool  $awaitsContainedReport  whether the shortfall is only that no contained host reported yet, which
      *                                       a later report may lift, rather than a report this build fails
@@ -38,7 +34,6 @@ final readonly class DriverCompatibility
         public AuthenticationArrangement $arrangement,
         public DriverEvidence $arrangementEvidence,
         public string $evidenceOwner,
-        public string $accountSettings,
         public string|null $containedShortfall = null,
         public bool $awaitsContainedReport = false,
     ) {}
@@ -53,31 +48,21 @@ final readonly class DriverCompatibility
                 $driver,
                 '2.1.323',
                 '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
-                [
-                    '--strict-mcp-config',
-                    '--mcp-config',
-                    '--settings',
-                    '--tools',
-                ],
+                ['--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
                 [],
                 AuthenticationArrangement::DirectProcesses,
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/claude-native-evidence.md',
-                ClaudeAccountSettings::class,
             ),
             DefaultDrivers::CODEX => new self(
                 $driver,
                 '0.165.0',
                 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
-                [
-                    'app-server',
-                    '--add-dir',
-                ],
+                ['app-server', '--add-dir'],
                 ['cli_auth_credentials_store' => 'file'],
                 AuthenticationArrangement::SharedOwner,
                 DriverEvidence::PrerequisiteMissing,
                 'the signed-in procedure of docs/accounts/codex-native-evidence.md',
-                CodexAccountSettings::class,
             ),
             default => throw DriverFamilyUnknown::for($driver),
         };
@@ -88,10 +73,7 @@ final readonly class DriverCompatibility
      */
     public function withEvidence(DriverEvidence $evidence, string $owner): self
     {
-        return clone ($this, [
-            'arrangementEvidence' => $evidence,
-            'evidenceOwner' => $owner,
-        ]);
+        return clone ($this, ['arrangementEvidence' => $evidence, 'evidenceOwner' => $owner]);
     }
 
     /**

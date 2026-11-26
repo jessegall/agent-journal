@@ -35,10 +35,7 @@ final readonly class PipedCommands implements SpawnablePart
 
     public function spawned(SpawnedPart $part): self
     {
-        return new self($this->toRun, array_slice($this->waiting, 1), [
-            ...$this->started,
-            $part,
-        ]);
+        return new self($this->toRun, array_slice($this->waiting, 1), [...$this->started, $part]);
     }
 
     public function refused(string $reason): self

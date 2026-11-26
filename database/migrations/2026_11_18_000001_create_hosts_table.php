@@ -23,6 +23,12 @@ return new class extends Migration
             $table->text('order_secret')->nullable();
             // The order types the host's last inventory said it carries out; empty until its first inventory.
             $table->jsonb('capabilities')->default('[]');
+            $table->jsonb('allowed_images')->default('[]');
+            // The release the host's last inventory named, the release an upgrade waits on, its order and why one failed.
+            $table->string('release')->nullable();
+            $table->string('upgrade_release')->nullable();
+            $table->ulid('upgrade_order_id')->nullable();
+            $table->text('upgrade_failure')->nullable();
             // The combinations the host reported it can run.
             // Whether the host's last claim said it carries out browser control of its terminals.
             $table->timestampTz('revoked_at')->nullable();

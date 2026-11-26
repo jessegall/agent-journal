@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\AccountSettingsRequested;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Fills in a claimed start's account settings for a driver the journal runs, from its pinned compatibility; a build
@@ -20,7 +20,7 @@ final class SupplyAccountSettings implements Listener
     public function __construct(
         private DriverCompatibilities $compatibilities,
         private Repository $config,
-        private Container $container,
+        private DriverProfiles $profiles,
         private DriverCatalogue $drivers,
     ) {}
 
@@ -41,7 +41,7 @@ final class SupplyAccountSettings implements Listener
             $compatibility->arrangement->value,
         );
 
-        $this->container->make($compatibility->accountSettings)->fill(
+        $this->profiles->ofFamily($driver)->accountSettings()->fill(
             $event->settings,
             $event->directory,
             $this->config->string('accounts.root'),

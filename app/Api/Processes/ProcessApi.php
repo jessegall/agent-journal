@@ -47,10 +47,7 @@ final readonly class ProcessApi
         string $line,
         ShellDialect $dialect = ShellDialect::Bash,
     ): ExplanationData {
-        return $this->sender->send(ExplainCommandPayload::from([
-            'line' => $line,
-            'dialect' => $dialect,
-        ]));
+        return $this->sender->send(ExplainCommandPayload::from(['line' => $line, 'dialect' => $dialect]));
     }
 
     public function fetchAdmission(
@@ -79,9 +76,7 @@ final readonly class ProcessApi
     public function listProposals(
         array $states = [],
     ): ProposalList {
-        return $this->sender->send(ListProposalsPayload::from([
-            'states' => $states,
-        ]));
+        return $this->sender->send(ListProposalsPayload::from(['states' => $states]));
     }
 
     public function proposeReader(
@@ -143,9 +138,7 @@ final readonly class ProcessApi
     public function readOutputSummary(
         string $processRun,
     ): OutputSummary {
-        return $this->sender->send(ReadOutputSummaryPayload::from([
-            'processRun' => $processRun,
-        ]));
+        return $this->sender->send(ReadOutputSummaryPayload::from(['processRun' => $processRun]));
     }
 
     public function readOutputTail(
@@ -233,9 +226,7 @@ final readonly class ProcessApi
     public function showCommandRequest(
         string $commandRequest,
     ): CommandRequestShown {
-        return $this->sender->send(ShowCommandRequestPayload::from([
-            'commandRequest' => $commandRequest,
-        ]));
+        return $this->sender->send(ShowCommandRequestPayload::from(['commandRequest' => $commandRequest]));
     }
 
     public function startEvidenceRun(

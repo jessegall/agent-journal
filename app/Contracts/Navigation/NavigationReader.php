@@ -24,14 +24,14 @@ interface NavigationReader
     public function menuEntries(
         ActorReference $owner,
         string|null $driver,
-        MenuEntryStatus|null $state,
+        MenuEntryStatus|null $status,
         int $page,
     ): array;
 
     /**
      * How many of the owner's menu entries match the filters, over every page.
      */
-    public function menuEntryCount(ActorReference $owner, string|null $driver, MenuEntryStatus|null $state): int;
+    public function menuEntryCount(ActorReference $owner, string|null $driver, MenuEntryStatus|null $status): int;
 
     /**
      * One menu entry of the owner, whole.

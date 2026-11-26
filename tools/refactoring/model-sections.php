@@ -133,11 +133,7 @@ function returnsScalar(ClassMethod $method): bool
     $names = array_map(fn (mixed $part) => $part instanceof Identifier ? $part->toLowerString() : '', $parts);
     $scalars = array_diff($names, ['null']);
 
-    $isScalar = fn (string $name) => in_array($name, [
-        'string',
-        'int',
-        'float',
-    ], true);
+    $isScalar = fn (string $name) => in_array($name, ['string', 'int', 'float'], true);
 
     return $scalars !== [] && array_all($scalars, $isScalar);
 }
@@ -148,11 +144,7 @@ function returnsScalar(ClassMethod $method): bool
  */
 function isPreamble(ClassMethod $method): bool
 {
-    return in_array($method->name->toString(), [
-        'casts',
-        'boot',
-        'booted',
-    ], true);
+    return in_array($method->name->toString(), ['casts', 'boot', 'booted'], true);
 }
 
 /**
@@ -172,10 +164,7 @@ function sectionOf(ClassMethod $method, string $body): string
         ! $method->isPublic() => 'Internals',
         $method->isStatic() && preg_match(ROW_MAKES, $body) === 1 => 'Constructors',
         $method->isStatic() => 'Queries',
-        in_array($returns, [
-            'void',
-            'never',
-        ], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
+        in_array($returns, ['void', 'never'], true) || preg_match(ROW_WRITES, $body) === 1 => 'Mutations',
         returnsBool($method) => 'Predicates',
         returnsScalar($method) => 'Calculations',
         default => 'Transformers',
@@ -270,10 +259,7 @@ function inlineFaultsOf(string $source, Class_ $class): array
 
     foreach ($class->getMethods() as $caller) {
         $calls = new NodeFinder()->find($caller->stmts ?? [], fn (Node $node) => $node instanceof StaticCall
-            && $node->class instanceof Name && in_array($node->class->toLowerString(), [
-                'self',
-                'static',
-            ], true)
+            && $node->class instanceof Name && in_array($node->class->toLowerString(), ['self', 'static'], true)
             && $node->name instanceof Identifier);
 
         foreach ($calls as $call) {
@@ -330,10 +316,7 @@ function readRowOf(Node\Stmt $statement): string|null
     $assign = $statement instanceof Node\Stmt\Expression ? $statement->expr : null;
     $read = $assign instanceof Node\Expr\Assign ? $assign->expr : null;
     $isRowRead = $read instanceof MethodCall && $read->name instanceof Identifier
-        && in_array($read->name->toString(), [
-            'first',
-            'find',
-        ], true);
+        && in_array($read->name->toString(), ['first', 'find'], true);
 
     if ($isRowRead && $assign->var instanceof Node\Expr\Variable && is_string($assign->var->name)) {
         return $assign->var->name;
@@ -475,10 +458,7 @@ function lookFaultOf(ClassMethod $method, string $section): string|null
     }
 
     $returnsNothing = $method->returnType instanceof Identifier
-        && in_array($method->returnType->toLowerString(), [
-            'void',
-            'never',
-        ], true);
+        && in_array($method->returnType->toLowerString(), ['void', 'never'], true);
 
     $givesObject = ! returnsBool($method) && ! returnsScalar($method) && ! $returnsNothing;
 
@@ -565,10 +545,7 @@ function isOverride(ClassMethod $method): bool
  */
 function endedQueryFaultOf(ClassMethod $method, string|null $section): string|null
 {
-    if (! in_array($section, [
-        'Constructors',
-        'Mutations',
-    ], true)) {
+    if (! in_array($section, ['Constructors', 'Mutations'], true)) {
         return null;
     }
 

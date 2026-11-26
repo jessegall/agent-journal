@@ -171,7 +171,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     }
 
     watch(
-        () => followed.value?.state,
+        () => followed.value?.status,
         (state) => {
             if (
                 state !== undefined &&

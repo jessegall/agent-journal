@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Setup\DriverProfile;
+use App\Enums\Drivers\ExecutablePlace;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
@@ -11,8 +15,6 @@ use App\Enums\Sessions\TransportProfileType;
 use App\Exceptions\BuildNotPinned;
 use App\Exceptions\ProfileRefused;
 use App\Support\AccountStartRecipe;
-use App\Support\Drivers\ClaudeAccountProtection;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\StartSetting;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
@@ -34,7 +36,10 @@ final class ClaudeCodeProfileTest extends TestCase
 
     public function test_a_headless_turn_is_planned_as_each_recorded_turn_ran(): void
     {
-        foreach (['turns/process-turn', 'one-shot-allowlist'] as $name) {
+        foreach ([
+            'turns/process-turn',
+            'one-shot-allowlist',
+        ] as $name) {
             $recorded = $this->recordedStart($name);
             $arguments = $recorded['arguments'];
             $start = new DriverStart(
@@ -66,7 +71,11 @@ final class ClaudeCodeProfileTest extends TestCase
 
         $this->journal->assertResult(
             [$recorded['permissions']['allow'], $recorded['permissions']['deny'], 'bypassPermissions'],
-            [$settings['permissions']['allow'], $settings['permissions']['deny'], $settings['permissions']['defaultMode']],
+            [
+                $settings['permissions']['allow'],
+                $settings['permissions']['deny'],
+                $settings['permissions']['defaultMode'],
+            ],
         );
     }
 
@@ -80,8 +89,36 @@ final class ClaudeCodeProfileTest extends TestCase
             fn () => $profile->assertPinnedBuild(sprintf(self::PRINTED_VERSION, '2.1.400')),
         );
         $this->journal->assertResult(
-            [['{host:INSTALLATION}/bin/claude', '--version'], HostProcessPurpose::BuildProbe],
-            [$profile->versionProbe('/work')->argv, $profile->versionProbe('/work')->purpose],
+            [[
+                '{host:INSTALLATION}/bin/claude',
+                '--version',
+            ], HostProcessPurpose::BuildProbe],
+            [
+                $profile->versionProbe('/work', ExecutablePlace::Host)->argv,
+                $profile->versionProbe('/work', ExecutablePlace::Host)->purpose,
+            ],
+        );
+    }
+
+    public function test_a_connected_machine_runs_every_plan_from_its_sealed_program(): void
+    {
+        $profile = $this->profile();
+        $start = new DriverStart(
+            '3d9b1c22-7e40-4a51-9f63-5b8e2a1c0d77',
+            HostProcessType::Pipe,
+            '/work',
+            'Run: ls.',
+            account: $this->account(),
+            executablePlace: ExecutablePlace::Sealed,
+        );
+
+        $this->journal->assertResult(
+            array_fill(0, 3, '{host:CLAUDE_CODE_EXECUTABLE}'),
+            [
+                $profile->startPlan($start)->argv[0],
+                $profile->versionProbe('/work', ExecutablePlace::Sealed)->argv[0],
+                $profile->signInProbe($start)->argv[0],
+            ],
         );
     }
 
@@ -93,11 +130,17 @@ final class ClaudeCodeProfileTest extends TestCase
 
         $this->journal->assertResult(
             [
-                ['--mcp-config', '{folder:files}/mcp.json'],
+                [
+                    '--mcp-config',
+                    '{folder:files}/mcp.json',
+                ],
                 true,
                 true,
                 ['{host:INSTALLATION}/bin/journal-mcp'],
-                ['home', 'empty-anthropic_config_dir'],
+                [
+                    'home',
+                    'empty-anthropic_config_dir',
+                ],
                 true,
             ],
             [
@@ -129,7 +172,10 @@ final class ClaudeCodeProfileTest extends TestCase
         $resumed[array_search('--session-id', $resumed, true)] = '--resume';
 
         $this->journal->assertResult(
-            [RestartPolicy::OnCrash, $resumed, ['folder' => '/accounts/a/projects', 'glob' => "*{$id}.jsonl"]],
+            [RestartPolicy::OnCrash, $resumed, [
+                'folder' => '/accounts/a/projects',
+                'glob' => "*{$id}.jsonl",
+            ]],
             [$plan->restart, $plan->restartArgv, $plan->restartWhenFile?->jsonSerialize()],
         );
     }
@@ -193,10 +239,12 @@ final class ClaudeCodeProfileTest extends TestCase
             'start-1',
             new JournalServer('/i/bin/php', '/i/journal-mcp'),
         )))->readFiles);
-        $this->journal->assertRefused(
-            ProfileRefused::class,
-            fn () => $this->profile()->seatbeltProfile('/accounts/"a', '/work'),
-        );
+        $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->startPlan($this->turn(new DriverAccount(
+            $this->recipe(),
+            'start-1',
+            new JournalServer('/i/bin/php', '/i/journal-mcp'),
+            folder: '/accounts/"a',
+        ))));
     }
 
     public function test_account_settings_that_would_undo_the_profile_refuse_the_start(): void
@@ -204,7 +252,10 @@ final class ClaudeCodeProfileTest extends TestCase
         $replacing = '{"permissions":{"defaultMode":"default"},"sandbox":{"enabled":true,"allowUnsandboxedCommands":false}}';
         $unsandboxed = '{"sandbox":{"enabled":false}}';
 
-        foreach ([$replacing, $unsandboxed] as $protection) {
+        foreach ([
+            $replacing,
+            $unsandboxed,
+        ] as $protection) {
             $this->journal->assertRefused(
                 ProfileRefused::class,
                 fn () => $this->profile()->startPlan($this->turn($this->account($protection))),
@@ -217,18 +268,9 @@ final class ClaudeCodeProfileTest extends TestCase
         );
     }
 
-    public function test_an_argument_that_would_undo_the_profile_is_refused(): void
+    private function profile(): DriverProfile
     {
-        foreach (['--tools=Agent', '--permission-mode', '--append=Task', 'CLAUDE_CONFIG_DIR=/x'] as $argument) {
-            $this->journal->assertRefused(ProfileRefused::class, fn () => $this->profile()->assertNoContraryArgument([$argument]));
-        }
-
-        $this->profile()->assertNoContraryArgument(['--model', 'opus']);
-    }
-
-    private function profile(): ClaudeCodeProfile
-    {
-        return $this->journal->service(ClaudeCodeProfile::class);
+        return $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE);
     }
 
     private function turn(DriverAccount|null $account = null): DriverStart
@@ -249,7 +291,10 @@ final class ClaudeCodeProfileTest extends TestCase
     private function recipe(string|null $protection = null, array $readFiles = []): AccountStartRecipe
     {
         return new AccountStartRecipe(
-            environment: [new StartSetting('CLAUDE_CONFIG_DIR', '/accounts/a'), new StartSetting('ANTHROPIC_API_KEY', 'leaked')],
+            environment: [
+                new StartSetting('CLAUDE_CONFIG_DIR', '/accounts/a'),
+                new StartSetting('ANTHROPIC_API_KEY', 'leaked'),
+            ],
             emptyFolderVariables: ['ANTHROPIC_CONFIG_DIR'],
             removedVariables: ['ANTHROPIC_API_KEY'],
             startFlags: [],

@@ -30,10 +30,10 @@ final readonly class NavigationReader implements NavigationReaderContract
     public function menuEntries(
         ActorReference $owner,
         string|null $driver,
-        MenuEntryStatus|null $state,
+        MenuEntryStatus|null $status,
         int $page,
     ): array {
-        $menuEntries = $this->menuQuery($owner, $driver, $state)
+        $menuEntries = $this->menuQuery($owner, $driver, $status)
             ->recentFirst()
             ->offset(($page - 1) * self::MENU_PAGE_SIZE)
             ->limit(self::MENU_PAGE_SIZE)
@@ -57,9 +57,9 @@ final readonly class NavigationReader implements NavigationReaderContract
         ]])->all();
     }
 
-    public function menuEntryCount(ActorReference $owner, string|null $driver, MenuEntryStatus|null $state): int
+    public function menuEntryCount(ActorReference $owner, string|null $driver, MenuEntryStatus|null $status): int
     {
-        return $this->menuQuery($owner, $driver, $state)->count();
+        return $this->menuQuery($owner, $driver, $status)->count();
     }
 
     public function menuEntry(ActorReference $owner, string $id): array
@@ -161,11 +161,11 @@ final readonly class NavigationReader implements NavigationReaderContract
     /**
      * @return ReadBuilder<MenuEntry>
      */
-    private function menuQuery(ActorReference $owner, string|null $driver, MenuEntryStatus|null $state): ReadBuilder
+    private function menuQuery(ActorReference $owner, string|null $driver, MenuEntryStatus|null $status): ReadBuilder
     {
         return MenuEntry::query()
             ->ownedBy($owner)
             ->when($driver !== null, fn (Builder $query) => $query->forDriver($driver))
-            ->when($state !== null, fn (Builder $query) => $query->where('status', $state));
+            ->when($status !== null, fn (Builder $query) => $query->where('status', $status));
     }
 }

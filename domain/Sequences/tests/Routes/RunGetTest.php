@@ -28,14 +28,9 @@ final class RunGetTest extends GuardedRouteEntryTestCase
     {
         $journal->owner();
 
-        $run = $journal->fixtures(SequenceFixtures::class)->createRun('Release', [
-            'Build',
-            'Ship',
-        ]);
+        $run = $journal->fixtures(SequenceFixtures::class)->createRun('Release', ['Build', 'Ship']);
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'run' => $run->number,
-            ]);
+            ->parameters(['run' => $run->number]);
     }
 }

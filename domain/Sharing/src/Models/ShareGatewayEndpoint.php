@@ -90,11 +90,11 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
 
     // ----------[ Mutations ]----------
 
-    public function moveTo(GatewayEndpointStatus $state): void
+    public function moveTo(GatewayEndpointStatus $status): void
     {
-        $this->status = $state;
+        $this->status = $status;
         $this->assertSaved($this->save());
-        $this->raise(new ShareGatewayEndpointMoved($this->id, $state));
+        $this->raise(new ShareGatewayEndpointMoved($this->id, $status));
     }
 
     /**
@@ -255,10 +255,7 @@ final class ShareGatewayEndpoint extends JournalModel implements EventSource, Re
     #[Scope]
     protected function stillRunning(Builder $query): void
     {
-        $query->whereIn('status', [
-            GatewayEndpointStatus::Opening->value,
-            GatewayEndpointStatus::Open->value,
-        ]);
+        $query->whereIn('status', [GatewayEndpointStatus::Opening->value, GatewayEndpointStatus::Open->value]);
     }
 
     /**

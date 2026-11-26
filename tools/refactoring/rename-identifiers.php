@@ -10,11 +10,7 @@ declare(strict_types=1);
  *   php tools/refactoring/rename-identifiers.php --map=old:new,old2:new2 --skip=app/Processes app domain tests
  *   php tools/refactoring/rename-identifiers.php ... --dry-run
  */
-$options = getopt('', [
-    'map:',
-    'skip::',
-    'dry-run',
-], $rest);
+$options = getopt('', ['map:', 'skip::', 'dry-run'], $rest);
 $map = [];
 
 foreach (explode(',', (string) ($options['map'] ?? '')) as $pair) {
@@ -132,10 +128,7 @@ function isMemberName(array $tokens, int $index): bool
         return true;
     }
 
-    return $next !== null && $next->text === ':' && ($previous === null || in_array($previous->text, [
-        '(',
-        ',',
-    ], true));
+    return $next !== null && $next->text === ':' && ($previous === null || in_array($previous->text, ['(', ','], true));
 }
 
 /**
@@ -144,11 +137,7 @@ function isMemberName(array $tokens, int $index): bool
 function neighbour(array $tokens, int $index, int $step): PhpToken|null
 {
     for ($at = $index + $step; isset($tokens[$at]); $at += $step) {
-        if (! $tokens[$at]->is([
-            T_WHITESPACE,
-            T_COMMENT,
-            T_DOC_COMMENT,
-        ])) {
+        if (! $tokens[$at]->is([T_WHITESPACE, T_COMMENT, T_DOC_COMMENT])) {
             return $tokens[$at];
         }
     }

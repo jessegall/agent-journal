@@ -43,9 +43,6 @@ final class EditDocumentToolTest extends McpToolEntryTestCase
                 'request_key' => 'documents-1',
             ])
             ->reply(EditDocumentCommand::class, $opened)
-            ->expects(EditDocumentCommand::class, [
-                'section' => '1',
-                'body' => 'New text.',
-            ]);
+            ->expects(EditDocumentCommand::class, ['section' => '1', 'body' => 'New text.']);
     }
 }

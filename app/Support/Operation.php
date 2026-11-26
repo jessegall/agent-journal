@@ -17,7 +17,7 @@ final readonly class Operation
     public function __construct(
         public string $requestKey,
         public string $command,
-        public ReceiptStatus $state,
+        public ReceiptStatus $status,
         public mixed $commandReply,
         public RefusalCode|null $refusalCode,
         public string|null $refusalMessage,

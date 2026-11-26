@@ -37,10 +37,7 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
     public function test_feedback_on_lines_names_the_lines_in_the_message(): void
     {
         $this->assertReachedAndDispatchesItsCommands(
-            $this->askFeedback($this->journal, [
-                'first_line' => 2,
-                'last_line' => 3,
-            ], 'lines 2-3 of doc 1'),
+            $this->askFeedback($this->journal, ['first_line' => 2, 'last_line' => 3], 'lines 2-3 of doc 1'),
         );
     }
 
@@ -55,18 +52,11 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
         $inboxId = strtolower((string) Str::ulid());
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-            ])
-            ->payload([
-                'agent' => $journal->agentCalled('Reviewer')->id,
-                ...$lines,
-            ])
+            ->parameters(['document' => $document->number])
+            ->payload(['agent' => $journal->agentCalled('Reviewer')->id, ...$lines])
             ->reply(OpenInboxCommand::class, $inboxId)
             ->reply(SendMessageCommand::class, Str::ulid())
-            ->expects(OpenInboxCommand::class, [
-                'providerKey' => PairChats::PAIR_PROVIDER,
-            ])
+            ->expects(OpenInboxCommand::class, ['providerKey' => PairChats::PAIR_PROVIDER])
             ->expects(SendMessageCommand::class, [
                 'inboxId' => $inboxId,
                 'body' => "Please give me feedback on {$subject}.",

@@ -67,7 +67,7 @@ final readonly class TaskGraphResolver implements TaskGraphResolverContract
                 'id' => $task->id,
                 'number' => $task->number,
                 'title' => $task->title,
-                'state' => $task->status,
+                'status' => $task->status,
                 'address' => "/tasks/{$task->number}",
                 'mayEditWaits' => $mayEdit,
                 'reason' => $mayEdit ? Optional::create() : $this->reasonFor($task),

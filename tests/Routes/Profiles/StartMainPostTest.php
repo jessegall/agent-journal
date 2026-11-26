@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverSourceType;
-use App\Support\DefaultDrivers;
 use App\Support\StartReceipt;
 use App\Values\ChosenAccount;
 use App\Values\ModelSelection;
@@ -49,9 +49,7 @@ final class StartMainPostTest extends GuardedRouteEntryTestCase
         );
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'profile' => 'journal-main',
-            ])
+            ->parameters(['profile' => 'journal-main'])
             ->payload([
                 'requestId' => $requestId,
                 'agentId' => $agent->id,

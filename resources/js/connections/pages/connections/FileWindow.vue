@@ -26,7 +26,7 @@ function ask(): void {
 
 const { gaveUp, retry } = usePendingPoll(
     () => props.data,
-    () => props.data.state === 'pending',
+    () => props.data.status === 'pending',
     ask,
 );
 
@@ -36,15 +36,15 @@ const { gaveUp, retry } = usePendingPoll(
  * them with Retry).
  */
 const shown = computed(() => {
-    if (props.data.state === 'pending' && !gaveUp.value) {
+    if (props.data.status === 'pending' && !gaveUp.value) {
         return 'reading';
     }
 
-    if (props.data.state === 'ready' && props.data.markdown !== undefined) {
+    if (props.data.status === 'ready' && props.data.markdown !== undefined) {
         return 'markdown';
     }
 
-    return props.data.state;
+    return props.data.status;
 });
 </script>
 
@@ -77,7 +77,7 @@ const shown = computed(() => {
                 <div class="prose min-h-0 flex-1 overflow-auto p-4" v-html="data.markdown?.html" />
             </template>
             <template #default>
-                <template v-if="data.state === 'too_large'">
+                <template v-if="data.status === 'too_large'">
                     <p role="status" class="border-b border-border px-3 py-1.5 text-small text-text-3">
                         {{ data.name }} is too large to show whole; this is its start.
                     </p>
@@ -86,7 +86,7 @@ const shown = computed(() => {
                     :name="data.name"
                     :lines="data.lines"
                     :is-markdown="false"
-                    :state="data.state === 'failed' || gaveUp ? 'failed' : 'ready'"
+                    :state="data.status === 'failed' || gaveUp ? 'failed' : 'ready'"
                     @retry="retry"
                 >
                     <template

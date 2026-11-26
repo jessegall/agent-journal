@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Support\Drivers\Contracts\DriverAdapter;
+use App\Contracts\Drivers\DriverAdapter;
 
 /**
  * The exact files one native conversation of a session may read back: its transcript and, for a driver that saves

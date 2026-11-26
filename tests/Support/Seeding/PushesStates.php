@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Contracts\Work\StackTransaction;
 use App\Enums\Drivers\RewriteSupport;
 use App\Models\Agents\AgentSession;
 use App\Support\AgentStacks;
-use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\References\StateReference;
 use App\Support\Stack\Frames\Frame;

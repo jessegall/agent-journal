@@ -19,10 +19,7 @@ final readonly class TaskGraphLock
      */
     public function lock(string $dependentId, string $prerequisiteId): array
     {
-        $locked = $this->lockAll([
-            $dependentId,
-            $prerequisiteId,
-        ]);
+        $locked = $this->lockAll([$dependentId, $prerequisiteId]);
 
         return [
             $locked[$dependentId] ?? Task::findLockedById($dependentId),

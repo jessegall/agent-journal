@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
 use App\Enums\Accounts\AccountProcessRole;
 use App\Enums\Agents\SessionProcessStatus;
@@ -14,7 +15,6 @@ use App\Exceptions\SessionProcessUnknown;
 use App\Exceptions\UsageCostConflict;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Values\AccountLabel;
 use App\Values\ReportedStart;
@@ -147,7 +147,7 @@ final class AddUsageCostTest extends TestCase
         ));
     }
 
-    private function claimedStart(Account $account, SessionProcessStatus $state = SessionProcessStatus::Running): string
+    private function claimedStart(Account $account, SessionProcessStatus $status = SessionProcessStatus::Running): string
     {
         $key = (string) Str::ulid();
         DB::table('session_processes')->insert([
@@ -160,7 +160,7 @@ final class AddUsageCostTest extends TestCase
             'account_id' => $account->id,
             'account_generation' => 1,
             'directory' => (string) $account->directory,
-            'status' => $state->value,
+            'status' => $status->value,
             'role' => AccountProcessRole::Execution->value,
             'created_at' => now(),
             'updated_at' => now(),

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Agents\Releases\CurrentDriversController;
 use App\Http\Controllers\Agents\Releases\CurrentManifestController;
 use App\Http\Controllers\Agents\Releases\CurrentSignatureController;
 use App\Http\Controllers\Agents\Releases\ReleaseArtifactController;
@@ -12,6 +13,7 @@ Route::prefix('releases')->name('agents.releases.')->group(function (): void {
     Route::get('/compatibility', ReleaseCompatibilityController::class)->name('compatibility');
     Route::get('/current/manifest.json', CurrentManifestController::class)->name('manifest');
     Route::get('/current/manifest.json.sig', CurrentSignatureController::class)->name('signature');
+    Route::get('/current/programs.json', CurrentDriversController::class)->name('programs');
 
     Route::get('/{version}/{target}/{name}', ReleaseArtifactController::class)
         ->where([

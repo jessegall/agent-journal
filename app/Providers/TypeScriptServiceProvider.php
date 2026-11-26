@@ -66,9 +66,6 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
             fn (string $folder) => ! str_starts_with($folder, app_path()),
         );
 
-        return array_values(array_unique([
-            app_path(),
-            ...$outside,
-        ]));
+        return array_values(array_unique([app_path(), ...$outside]));
     }
 }

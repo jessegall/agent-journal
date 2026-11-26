@@ -24,14 +24,14 @@ final class RuleProposalRefused extends RuntimeException implements CodedRefusal
         return new self("The request id {$requestId} already proposed another declaration; use a new request id.");
     }
 
-    public static function ended(string $id, ProposalStatus $state): self
+    public static function ended(string $id, ProposalStatus $status): self
     {
-        return new self("Proposal {$id} is {$state->value}, so it takes no new revision.");
+        return new self("Proposal {$id} is {$status->value}, so it takes no new revision.");
     }
 
-    public static function notPending(string $id, ProposalStatus $state): self
+    public static function notPending(string $id, ProposalStatus $status): self
     {
-        return new self("Proposal {$id} is {$state->value}; only a complete pending proposal is reviewed.");
+        return new self("Proposal {$id} is {$status->value}; only a complete pending proposal is reviewed.");
     }
 
     public static function notTheAuthor(string $id): self

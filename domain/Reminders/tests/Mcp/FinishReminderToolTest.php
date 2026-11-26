@@ -34,10 +34,7 @@ final class FinishReminderToolTest extends McpToolEntryTestCase
             ->createReminder('Check', 'Builder', CarbonImmutable::now()->addHour());
 
         return ToolCall::by($start)
-            ->arguments([
-                'reminder_id' => $reminder->id,
-                'request_key' => 'write-1',
-            ])
+            ->arguments(['reminder_id' => $reminder->id, 'request_key' => 'write-1'])
             ->expects(FinishReminderCommand::class, ['reminderId' => $reminder->id]);
     }
 }

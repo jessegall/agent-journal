@@ -22,22 +22,12 @@ return new class extends Migration
             $table->unsignedInteger('sequence');
             $table->timestampTz('created_at');
 
-            $table->unique([
-                'task_id',
-                'sequence',
-            ]);
+            $table->unique(['task_id', 'sequence']);
 
-            $table->index([
-                'task_id',
-                'sequence',
-                'id',
-            ]);
+            $table->index(['task_id', 'sequence', 'id']);
 
             // Search walks log lines by parent task and line id, the order their hits are ranked in.
-            $table->index([
-                'task_id',
-                'id',
-            ]);
+            $table->index(['task_id', 'id']);
         });
 
         // Search narrows log lines by their text through a trigram index, so a rare word reads no other line.

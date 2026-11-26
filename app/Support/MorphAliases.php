@@ -37,11 +37,7 @@ final readonly class MorphAliases
                 $place = array_diff(array_slice(explode('\\', $class), 1, -1), ['Models']);
                 $areas = array_map(fn (string $area) => Str::kebab($area), $place);
 
-                $alias = implode('.', [
-                    'core',
-                    ...$areas,
-                    self::modelName($class),
-                ]);
+                $alias = implode('.', ['core', ...$areas, self::modelName($class)]);
 
                 $map[$alias] = $class;
             }

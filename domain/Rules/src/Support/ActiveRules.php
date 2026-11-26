@@ -18,10 +18,7 @@ final readonly class ActiveRules
     public function reminders(): array
     {
         return array_map(
-            fn (Rule $rule) => AgentText::of('rules.reminder', [
-                'number' => $rule->number,
-                'text' => $rule->text,
-            ]),
+            fn (Rule $rule) => AgentText::of('rules.reminder', ['number' => $rule->number, 'text' => $rule->text]),
             $this->all(),
         );
     }
@@ -35,11 +32,7 @@ final readonly class ActiveRules
     {
         return array_values(
             Rule::query()->active()->oldestFirst()->readAll('every active rule holds for every agent')->get(
-                [
-                    'id',
-                    'number',
-                    'text',
-                ],
+                ['id', 'number', 'text'],
             )->all(),
         );
     }

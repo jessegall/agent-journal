@@ -474,10 +474,7 @@ final class NavigationRequest extends JournalModel implements Assignable, EventS
     #[Scope]
     protected function withDriverRequestAndRuntime(Builder $query): void
     {
-        $query->with([
-            'driverRequest',
-            'runtime',
-        ]);
+        $query->with(['driverRequest', 'runtime']);
     }
 
     /**

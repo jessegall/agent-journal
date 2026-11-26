@@ -6,7 +6,7 @@ namespace App\Support;
 
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Sessions\HostRefusal;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionRequest;
@@ -47,7 +47,7 @@ final readonly class StartIdentity
         $isAnotherConversation = $resumedConversation !== null && $resumedConversation !== $report->actualBinding;
 
         if ($isAnotherConversation || ! $record->bindIdentity($report->actualBinding)) {
-            $record->refuseFor(HostRefusal::IdentityMismatch);
+            $record->refuseFor(StartRefusalReason::IdentityMismatch);
 
             return;
         }

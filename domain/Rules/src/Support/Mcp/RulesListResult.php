@@ -29,7 +29,7 @@ final readonly class RulesListResult
             ],
             fn (ToolArguments $filters) => $this->page(new RuleFilters(
                 page: $filters->positiveInteger('page'),
-                state: $filters->enum('state', RuleStatus::class),
+                status: $filters->enum('state', RuleStatus::class),
             )),
         );
     }
@@ -43,7 +43,7 @@ final readonly class RulesListResult
             $cards[$rule->id] = [
                 'rule_id' => $rule->id,
                 'number' => $rule->number,
-                'state' => $rule->state->value,
+                'status' => $rule->status->value,
                 'preview' => mb_strimwidth($rule->text, 0, 180, '…'),
             ];
         }

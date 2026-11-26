@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
 use App\Contracts\Bus\CommandBus;
 use App\Enums\Drivers\RewriteSupport;
-use App\Support\Drivers\DriverCapabilities;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\Values\CompactionDetails;
 use Domain\Memory\MemoryDomain;

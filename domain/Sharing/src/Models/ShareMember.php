@@ -137,10 +137,7 @@ final class ShareMember extends JournalModel implements ReadableModel
     public static function isApprovedInLiveShare(RecordIdentity $record): bool
     {
         $members = self::query()->targeting($record)->stillApproved()->limit(Share::LIVE_LIMIT)->get(
-            [
-                'share_id',
-                'scope_version',
-            ],
+            ['share_id', 'scope_version'],
         );
 
         $scopeOfShare = Share::resolveLiveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
@@ -180,10 +177,7 @@ final class ShareMember extends JournalModel implements ReadableModel
             ->stillApproved()
             ->fromSource($source)
             ->readAll('a share scope holds at most the preview limit of members')
-            ->get([
-                'target_type',
-                'target_id',
-            ]);
+            ->get(['target_type', 'target_id']);
 
         foreach ($members as $member) {
             $grouped[$member->target_type][] = $member->target;

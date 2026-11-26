@@ -37,6 +37,8 @@ type Relay struct {
 	RetryAfter time.Duration
 	// Clock is the journal's time the dispatcher's verifier judges expiry by; each claim answer sets its offset.
 	Clock *JournalClock
+	// Idle keeps the idle window each claim answer names, for a host that leaves when idle; nil for one that stays.
+	Idle *IdleWindow
 }
 
 // Claim long-polls until the context ends; a journal that does not take protocol 1 stops it with that refusal.
@@ -51,6 +53,7 @@ func (relay Relay) Claim(ctx context.Context) error {
 			continue
 		}
 		relay.Clock.Observe(claimed.Now)
+		relay.Idle.Observe(claimed.IdleWindowSeconds)
 		for _, order := range claimed.Orders {
 			relay.Dispatcher.Submit(ctx, order)
 		}

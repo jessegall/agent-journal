@@ -18,9 +18,9 @@ final class ShareRefreshRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    public static function notLive(string $shareId, ShareStatus $state): self
+    public static function notLive(string $shareId, ShareStatus $status): self
     {
-        return new self("Share {$shareId} is {$state->value} and past changing; share the record again instead.");
+        return new self("Share {$shareId} is {$status->value} and past changing; share the record again instead.");
     }
 
     public static function otherRoot(string $shareId): self

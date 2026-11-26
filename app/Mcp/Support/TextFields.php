@@ -26,11 +26,7 @@ final readonly class TextFields implements TextFieldsContract
         return new Continuation(
             $record->tool,
             $record->selector,
-            [
-                ...$record->filters,
-                'field' => 0,
-                'text_digest' => $this->digest($text),
-            ],
+            [...$record->filters, 'field' => 0, 'text_digest' => $this->digest($text)],
             1,
             revision: $record->revision,
         );
@@ -46,11 +42,7 @@ final readonly class TextFields implements TextFieldsContract
         return new Continuation(
             $record->tool,
             $record->selector,
-            [
-                ...$record->filters,
-                'field' => $index === false ? 0 : $index,
-                'text_digest' => $this->digest($text),
-            ],
+            [...$record->filters, 'field' => $index === false ? 0 : $index, 'text_digest' => $this->digest($text)],
             $line,
             $character,
             revision: $record->revision,
@@ -101,10 +93,7 @@ final readonly class TextFields implements TextFieldsContract
             new Continuation(
                 $position->tool,
                 $position->selector,
-                [
-                    ...$position->filters,
-                    'field' => $chunk->hasMore ? $field : $field + 1,
-                ],
+                [...$position->filters, 'field' => $chunk->hasMore ? $field : $field + 1],
                 $chunk->hasMore ? $chunk->nextLine : 1,
                 $chunk->hasMore ? $chunk->nextCharacter : 0,
                 $position->revision,

@@ -14,7 +14,7 @@ use Domain\Sharing\Enums\ShareStatus;
 final readonly class ShareListFilters
 {
     public function __construct(
-        public ShareStatus|null $state,
+        public ShareStatus|null $status,
         public string|null $rootType,
         public string|null $configurationId,
         public CarbonImmutable|null $expiresBefore,

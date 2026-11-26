@@ -37,10 +37,7 @@ final class NavigationDoneTool extends JournalWriteTool
         return [
             'request' => $this->recordIdArgument($schema),
             'version' => $schema->integer()->min(1)->required(),
-            'completes' => $schema->string()->enum([
-                'goal',
-                'step',
-            ])->required(),
+            'completes' => $schema->string()->enum(['goal', 'step'])->required(),
             'proof' => $schema->string()->max(200)->required(),
         ];
     }
@@ -57,9 +54,6 @@ final class NavigationDoneTool extends JournalWriteTool
 
     protected function present(mixed $completion): ToolResult
     {
-        return ToolResult::ok([
-            'round' => $completion->requestId,
-            'progress' => $completion->progress->value,
-        ], []);
+        return ToolResult::ok(['round' => $completion->requestId, 'progress' => $completion->progress->value], []);
     }
 }

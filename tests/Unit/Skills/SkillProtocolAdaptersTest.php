@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverType;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Values\DriverKey;
 use Tests\TestCase;
 

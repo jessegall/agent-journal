@@ -53,24 +53,36 @@ final class CoreTextRulesTest extends TestCase
     public static function plantedFiles(): array
     {
         return [
-            'a desk that is an actor' => ['implementsActor', <<<'TEXT'
-            <?php
-            final class Desk implements Actor
-            {
-            }
-
-            TEXT, [2]],
-            'a bound interface' => ['bindsInterface', <<<'TEXT'
-            <?php
-            #[Bind(Seats::class)]
-            interface SeatReader {}
-
-            TEXT, [2]],
-            'a domain import' => ['namesDomain', <<<'TEXT'
-            <?php
-            use Domain\Chat\ChatDomain;
-
-            TEXT, [2]],
+            'a desk that is an actor' => [
+                'implementsActor',
+                <<<'TEXT'
+                <?php
+                final class Desk implements Actor
+                {
+                }
+    
+                TEXT,
+                [2],
+            ],
+            'a bound interface' => [
+                'bindsInterface',
+                <<<'TEXT'
+                <?php
+                #[Bind(Seats::class)]
+                interface SeatReader {}
+    
+                TEXT,
+                [2],
+            ],
+            'a domain import' => [
+                'namesDomain',
+                <<<'TEXT'
+                <?php
+                use Domain\Chat\ChatDomain;
+    
+                TEXT,
+                [2],
+            ],
         ];
     }
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Commands\Hosts\ClaimRuntimeRequests;
 
+use App\Agents\Drivers\Work\DriverRequestClaims;
 use App\Contracts\Bus\CommandHandler;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Support\ClaimedRequests;
-use App\Support\Drivers\DriverRequestClaims;
 
 /**
  * Hands the worker its runtime's pending requests, the way a host's claim hands out those of runtimes no worker

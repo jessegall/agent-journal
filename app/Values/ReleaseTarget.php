@@ -12,38 +12,20 @@ namespace App\Values;
 final readonly class ReleaseTarget
 {
     /**
-     * The local providers every advertised platform must run: Claude Code, while local Codex stays withheld until its
-     * hook calls carry a per-thread capability.
-     */
-    public const array REQUIRED_PROVIDERS = ['claude-code'];
-
-    /**
      * @param  list<string>  $prerequisites
-     * @param  list<string>  $providers
      */
     public function __construct(
         public string $name,
         public int $bytes,
         public bool $isMeasured,
         public array $prerequisites,
-        public array $providers,
     ) {}
 
     /**
-     * The required providers this platform does not run.
-     *
-     * @return list<string>
-     */
-    public function missingProviders(): array
-    {
-        return array_values(array_diff(self::REQUIRED_PROVIDERS, $this->providers));
-    }
-
-    /**
-     * Whether the platform may be advertised: every file measured, its prerequisites named and every provider run.
+     * Whether the platform may be advertised: every file measured and its prerequisites named.
      */
     public function isSupported(): bool
     {
-        return $this->isMeasured && $this->prerequisites !== [] && $this->missingProviders() === [];
+        return $this->isMeasured && $this->prerequisites !== [];
     }
 }

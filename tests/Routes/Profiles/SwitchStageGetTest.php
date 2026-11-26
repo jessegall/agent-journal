@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Enums\Drivers\DriverType;
 use App\Models\Drivers\DriverSwitch;
-use App\Support\DefaultDrivers;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
 use Illuminate\Support\Str;
@@ -41,8 +41,6 @@ final class SwitchStageGetTest extends GuardedRouteEntryTestCase
             'owner',
         );
 
-        return RouteCall::as(Caller::User)->parameters([
-            'requestId' => $switch->request_id,
-        ]);
+        return RouteCall::as(Caller::User)->parameters(['requestId' => $switch->request_id]);
     }
 }

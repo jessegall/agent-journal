@@ -88,13 +88,7 @@ final class RunTaskCheckTest extends TestCase
 
         $check = TaskCheck::query()->where('task_id', $task->id)->sole();
 
-        $this->assertSame([
-            1,
-            null,
-        ], [
-            $check->run_number,
-            $check->result_receipt_id,
-        ]);
+        $this->assertSame([1, null], [$check->run_number, $check->result_receipt_id]);
     }
 
     /**

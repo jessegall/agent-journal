@@ -128,17 +128,8 @@ function opensAList(array $tokens, int $open): bool
     }
 
     if ($tokens[$open]->text === '[') {
-        return ! in_array($before->id, [
-            T_VARIABLE,
-            T_STRING,
-            T_NAME_QUALIFIED,
-            T_NAME_FULLY_QUALIFIED,
-        ], true)
-            && ! in_array($before->text, [
-                ')',
-                ']',
-                '}',
-            ], true);
+        return ! in_array($before->id, [T_VARIABLE, T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)
+            && ! in_array($before->text, [')', ']', '}'], true);
     }
 
     $keywords = [T_IF, T_ELSEIF, T_WHILE, T_FOR, T_FOREACH, T_SWITCH, T_MATCH, T_CATCH, T_ECHO, T_PRINT, T_RETURN];
@@ -161,10 +152,7 @@ function opensAList(array $tokens, int $open): bool
         T_UNSET,
         T_LIST,
         T_NEW,
-    ], true) || in_array($before->text, [
-        ')',
-        ']',
-    ], true);
+    ], true) || in_array($before->text, [')', ']'], true);
 }
 
 /**

@@ -14,6 +14,6 @@ final readonly class ProfileRunFinished implements AccountEvent, ProfileRunEvent
 {
     public function __construct(
         public string $runId,
-        public ProfileRunStatus $state,
+        public ProfileRunStatus $status,
     ) {}
 }

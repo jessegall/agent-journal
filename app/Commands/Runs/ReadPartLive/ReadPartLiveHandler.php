@@ -56,10 +56,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
             $this->log->error(
                 "The live reader of part run {$command->partRunId} failed: "
                     .$failure::class.": {$failure->getMessage()}",
-                [
-                    'part_run' => $command->partRunId,
-                    'exception' => $failure,
-                ],
+                ['part_run' => $command->partRunId, 'exception' => $failure],
             );
 
             $position->markFailed();

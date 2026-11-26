@@ -12,5 +12,5 @@ use App\Enums\Accounts\SignInStatus;
  */
 final readonly class SignInAttemptEnded implements AccountEvent, SignInAttemptEvent
 {
-    public function __construct(public string $driver, public string $attemptId, public SignInStatus $state) {}
+    public function __construct(public string $driver, public string $attemptId, public SignInStatus $status) {}
 }

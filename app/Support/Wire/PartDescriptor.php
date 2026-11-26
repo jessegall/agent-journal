@@ -29,11 +29,6 @@ final readonly class PartDescriptor
         $fields = array_map(fn (PartField $field) => "{$field->name()}: {$field->typeScript()}", $this->fields);
         $children = $this->type->isContainer() ? ['children: DockNode[]'] : [];
 
-        return '{'.implode('; ', [
-            "type: '{$this->type->value}'",
-            'key: string',
-            ...$fields,
-            ...$children,
-        ]).'}';
+        return '{'.implode('; ', ["type: '{$this->type->value}'", 'key: string', ...$fields, ...$children]).'}';
     }
 }

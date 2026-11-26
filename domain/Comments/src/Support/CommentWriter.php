@@ -16,6 +16,7 @@ use App\Values\TextRange;
 use Domain\Comments\Enums\WholeRecord;
 use Domain\Comments\Exceptions\TargetNotCommentable;
 use Domain\Comments\Models\Comment;
+use Domain\Comments\Models\CommentAnchor;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -54,16 +55,12 @@ final readonly class CommentWriter
             throw SubmissionKeyConflict::for($submissionKey);
         }
 
-        $comment = $subject instanceof TextRange
-            ? Comment::create(
-                $target,
-                $author,
-                $body,
-                $subject->anchorIn(self::textOf($target, $targetIdentity)->textVersion($subject->version)),
-                $submissionKey,
-                $hash,
-            )
-            : Comment::create($target, $author, $body, null, $submissionKey, $hash);
+        $comment = Comment::create($target, $author, $body, $submissionKey, $hash);
+
+        if ($subject instanceof TextRange) {
+            $version = self::textOf($target, $targetIdentity)->textVersion($subject->version);
+            $comment->setRelation('anchor', CommentAnchor::create($comment, $subject->anchorIn($version)));
+        }
 
         return $comment->id;
     }

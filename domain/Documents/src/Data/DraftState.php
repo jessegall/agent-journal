@@ -17,7 +17,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class DraftState extends Data
 {
     public function __construct(
-        public readonly EditingStatus $state,
+        public readonly EditingStatus $status,
         public readonly DraftView|Optional $draft = new Optional(),
         public readonly string|Optional $holder = new Optional(),
         public readonly DraftView|Optional $held = new Optional(),

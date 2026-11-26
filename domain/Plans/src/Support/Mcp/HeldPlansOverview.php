@@ -26,13 +26,13 @@ final readonly class HeldPlansOverview implements OverviewContribution
 
     public function read(): OverviewSection
     {
-        $states = array_values(array_filter(PlanStatus::cases(), fn (PlanStatus $state): bool => ! $state->hasEnded()));
+        $states = array_values(array_filter(PlanStatus::cases(), fn (PlanStatus $status): bool => ! $status->hasEnded()));
 
         $held = $this->plans->assignedToCaller(
             new AssignedPlanFilters(states: $states, page: new NumberedPage(1, 1)),
         )->total;
 
-        $stateNames = array_map(fn (PlanStatus $state): string => $state->value, $states);
+        $stateNames = array_map(fn (PlanStatus $status): string => $status->value, $states);
 
         return OverviewSection::from([
             'title' => 'Plans you hold',

@@ -92,15 +92,13 @@ function windowData(
                     bytes: 9_000_000,
                     isMeasured: true,
                     prerequisites: ['git', 'curl'],
-                    missingProviders: [],
                     isSupported: true,
                 },
                 {
                     name: 'linux-amd64',
                     bytes: 9_000_000,
                     isMeasured: true,
-                    prerequisites: ['git', 'curl'],
-                    missingProviders: ['codex'],
+                    prerequisites: [],
                     isSupported: false,
                 },
             ],
@@ -164,14 +162,14 @@ afterEach(() => {
 });
 
 describe('ConnectProjectWindow', () => {
-    it('shows each supported platform with its size and prerequisites and names a provider not offered yet', () => {
+    it('shows each supported platform with its size and prerequisites and names a platform not offered yet', () => {
         const text = windowWith(true).text();
 
         expect(text).toMatch(
             /darwin-arm64: 9\.0 MB to\s+download and install\.\s+Needs\s+git, curl\./,
         );
         expect(text).toMatch(
-            /linux-amd64 is not offered yet, because it does not\s+run\s+codex\./,
+            /linux-amd64 is not offered yet: the release does not\s+say what it needs installed first\./,
         );
     });
 

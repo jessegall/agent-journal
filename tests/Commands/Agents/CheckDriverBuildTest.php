@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Enums\Agents\SessionProcessStatus;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;
@@ -23,9 +23,25 @@ final class CheckDriverBuildTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'hosts', 'host_processes', 'host_orders', 'agents', 'agent_sessions', 'session_tokens', 'agent_stacks',
-        'hook_calls', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts',
-        'session_processes', 'session_requests', 'inboxes', 'inbox_members', 'links', 'users',
+        'hosts',
+        'host_processes',
+        'host_orders',
+        'agents',
+        'agent_sessions',
+        'session_tokens',
+        'agent_stacks',
+        'hook_calls',
+        'agent_runtimes',
+        'driver_requests',
+        'driver_turns',
+        'accounts',
+        'active_accounts',
+        'session_processes',
+        'session_requests',
+        'inboxes',
+        'inbox_members',
+        'links',
+        'users',
     ];
 
     public function test_only_the_pinned_build_lets_the_start_go_on(): void
@@ -38,7 +54,7 @@ final class CheckDriverBuildTest extends TestCase
             ->enrollHost('Mac', [base_path()]);
         $pinned = $this->journal->openRuntimeOn('Pinned', 'Mac', base_path());
         $other = $this->journal->openRuntimeOn('Other', 'Mac', base_path());
-        $build = $this->journal->service(ClaudeCodeProfile::class)->build();
+        $build = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
 
         $this->journal
             ->asSystem(new CheckDriverBuildCommand($this->probeOf($pinned->sessionId), "{$build} (Claude Code)\n"));
@@ -50,7 +66,12 @@ final class CheckDriverBuildTest extends TestCase
         $this->journal->assertResult(
             [
                 SessionProcessStatus::Starting,
-                ['{host:INSTALLATION}/bin/claude', 'auth', 'status', '--json'],
+                [
+                    '{host:INSTALLATION}/bin/claude',
+                    'auth',
+                    'status',
+                    '--json',
+                ],
                 SessionProcessStatus::Stopped,
                 true,
             ],

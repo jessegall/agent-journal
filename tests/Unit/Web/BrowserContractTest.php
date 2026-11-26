@@ -33,8 +33,8 @@ final class BrowserContractTest extends TestCase
 
     public function test_the_json_carries_the_computed_value_and_not_the_hidden_seed_or_service(): void
     {
-        $page = ShelfPage::from(['shelf' => 'poetry', 'books' => [['title' => 'Odes']], 'state' => 'open']);
+        $page = ShelfPage::from(['shelf' => 'poetry', 'books' => [['title' => 'Odes']], 'status' => 'open']);
 
-        $this->assertSame(['bookCount' => 6, 'books' => [['title' => 'Odes']], 'state' => 'open'], $page->toArray());
+        $this->assertSame(['bookCount' => 6, 'books' => [['title' => 'Odes']], 'status' => 'open'], $page->toArray());
     }
 }

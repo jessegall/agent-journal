@@ -507,7 +507,7 @@ func (commands dispatcher) commandStatus(arguments []string, binding host.Bindin
 // printCommandStatus prints a settled run's frames and answers its exit code, or says why there is none yet.
 func printCommandStatus(status client.CommandStatus, requestKey string, stdout, stderr io.Writer) int {
 	if !status.IsSettled() {
-		fmt.Fprintln(stderr, "journal: "+commandStatusText(status.State, requestKey))
+		fmt.Fprintln(stderr, "journal: "+commandStatusText(status.Status, requestKey))
 		return 1
 	}
 	write := writeFrameTo(stdout, stderr)
@@ -520,7 +520,7 @@ func printCommandStatus(status client.CommandStatus, requestKey string, stdout, 
 			return 1
 		}
 	}
-	fmt.Fprintln(stderr, "journal: request "+requestKey+" ended "+status.State+" with no exit code recorded.")
+	fmt.Fprintln(stderr, "journal: request "+requestKey+" ended "+status.Status+" with no exit code recorded.")
 
 	return 1
 }

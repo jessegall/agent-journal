@@ -26,10 +26,7 @@ final class CommandPatternSet extends Data
 
     public function union(self $other): self
     {
-        return new self([
-            ...$this->patterns,
-            ...$other->patterns,
-        ]);
+        return new self([...$this->patterns, ...$other->patterns]);
     }
 
     /**

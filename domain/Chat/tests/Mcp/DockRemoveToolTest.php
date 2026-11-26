@@ -42,9 +42,6 @@ final class DockRemoveToolTest extends McpToolEntryTestCase
                 'request_key' => 'dock-remove-1',
             ])
             ->reply(UndockSourceCommand::class, DockResult::of(DockOutcome::Removed, $placement))
-            ->expects(UndockSourceCommand::class, [
-                'placementId' => $placement,
-                'type' => 'tasks.task',
-            ]);
+            ->expects(UndockSourceCommand::class, ['placementId' => $placement, 'type' => 'tasks.task']);
     }
 }

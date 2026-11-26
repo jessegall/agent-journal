@@ -35,11 +35,7 @@ final class CreatePlanPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::User)
             ->headers([SelectProject::HEADER => TestProjects::local()->id])
-            ->payload([
-                'title' => 'Release',
-                'brief' => 'Ship version 6.',
-                'type' => 'build',
-            ])
+            ->payload(['title' => 'Release', 'brief' => 'Ship version 6.', 'type' => 'build'])
             ->reply(CreatePlanCommand::class, $plan->id)
             ->expects(CreatePlanCommand::class, [
                 'title' => 'Release',

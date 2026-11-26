@@ -35,7 +35,7 @@ const emit = defineEmits<{ signInAgain: [] }>();
 
 const isLeaving = computed(
     () =>
-        props.account.state === 'removing' || props.account.state === 'removed',
+        props.account.status === 'removing' || props.account.status === 'removed',
 );
 /**
  * While a removed account drains, how many agents still run on it; it takes no new work meanwhile.
@@ -43,7 +43,7 @@ const isLeaving = computed(
 const drainingText = computed(() => {
     const running = props.account.runningCount;
 
-    if (props.account.state !== 'removing' || running === 0) {
+    if (props.account.status !== 'removing' || running === 0) {
         return null;
     }
 

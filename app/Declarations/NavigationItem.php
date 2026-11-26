@@ -153,10 +153,7 @@ final class NavigationItem
             }
         }
 
-        return clone ($this, [
-            'children' => $children,
-            'childrenResolver' => $resolver,
-        ]);
+        return clone ($this, ['children' => $children, 'childrenResolver' => $resolver]);
     }
 
     /**

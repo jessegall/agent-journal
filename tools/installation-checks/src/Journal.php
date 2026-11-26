@@ -35,10 +35,7 @@ final readonly class Journal
         $this->client->get('/login');
         $answer = $this->client->post('/login', [
             'headers' => $this->headers(),
-            'form_params' => [
-                'email' => $email,
-                'password' => $password,
-            ],
+            'form_params' => ['email' => $email, 'password' => $password],
         ]);
         $location = $answer->getHeaderLine('Location');
 
@@ -67,11 +64,7 @@ final readonly class Journal
     public function postKeyed(string $path, array $body, string $key): void
     {
         $answer = $this->client->post($path, [
-            'headers' => [
-                ...$this->headers(),
-                'Accept' => 'application/json',
-                'Idempotency-Key' => $key,
-            ],
+            'headers' => [...$this->headers(), 'Accept' => 'application/json', 'Idempotency-Key' => $key],
             'json' => $body,
         ]);
 

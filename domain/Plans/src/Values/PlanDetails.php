@@ -22,7 +22,7 @@ final readonly class PlanDetails
         public int $number,
         public string $title,
         public PlanType $type,
-        public PlanStatus $state,
+        public PlanStatus $status,
         public int $revision,
         public string $creatorType,
         public string $creatorId,

@@ -28,16 +28,8 @@ final readonly class PlansTasksShow extends PlansPage
             ->summarising($task->text instanceof TaskText ? $task->text->brief : '')
             ->withActions(LayoutPartData::action('open', 'Open task', LayoutActionData::to("/tasks/{$task->number}")))
             ->withFacts(
-                LayoutRowData::from([
-                    'key' => 'task',
-                    'label' => 'Task',
-                    'value' => (string) $task->number,
-                ]),
-                LayoutRowData::from([
-                    'key' => 'state',
-                    'label' => 'State',
-                    'value' => ucfirst($task->state->value),
-                ]),
+                LayoutRowData::from(['key' => 'task', 'label' => 'Task', 'value' => (string) $task->number]),
+                LayoutRowData::from(['key' => 'state', 'label' => 'State', 'value' => ucfirst($task->status->value)]),
             );
 
         return $this->index->of($filters, [$reader->part()]);

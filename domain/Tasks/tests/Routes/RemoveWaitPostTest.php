@@ -33,15 +33,9 @@ final class RemoveWaitPostTest extends GuardedRouteEntryTestCase
         $tasks->waitFor('Ship the dock', 'Review the dock');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'task' => $task->number,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'wait-1',
-            ])
-            ->payload([
-                'prerequisite' => (string) $prerequisite->number,
-            ])
+            ->parameters(['task' => $task->number])
+            ->headers(['Idempotency-Key' => 'wait-1'])
+            ->payload(['prerequisite' => (string) $prerequisite->number])
             ->expects(RemoveTaskWaitCommand::class, [
                 'dependentTaskId' => $task->id,
                 'prerequisiteTaskId' => $prerequisite->id,

@@ -39,16 +39,10 @@ final class UnassignPlanWorkToolTest extends McpToolEntryTestCase
 
         return ToolCall::by($start)
             ->arguments([
-                'root' => [
-                    'type' => 'plans.plan',
-                    'id' => $plan->id,
-                ],
+                'root' => ['type' => 'plans.plan', 'id' => $plan->id],
                 'expected_assignment' => [
                     'id' => (string) Str::ulid(),
-                    'holder' => [
-                        'type' => 'agent',
-                        'id' => $holder->agent->id,
-                    ],
+                    'holder' => ['type' => 'agent', 'id' => $holder->agent->id],
                 ],
                 'request_key' => 'plans-1',
             ])

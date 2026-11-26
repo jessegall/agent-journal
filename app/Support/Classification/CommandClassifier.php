@@ -220,10 +220,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
         return new PartClassification(
             $node->id,
             $part->facts,
-            [
-                ...$part->unresolved,
-                ...$unresolved,
-            ],
+            [...$part->unresolved, ...$unresolved],
             $unresolved === [] ? $part->purpose : CommandType::Unknown,
             $part->program,
             $part->contracts,
@@ -340,22 +337,11 @@ final readonly class CommandClassifier implements CommandClassifierContract
         while ($index < count($words) && str_starts_with((string) $words[$index]->literal(), '-')) {
             $option = (string) $words[$index]->literal();
 
-            if (in_array($option, [
-                '-C',
-                '--git-dir',
-                '--work-tree',
-                '--namespace',
-            ], true)) {
+            if (in_array($option, ['-C', '--git-dir', '--work-tree', '--namespace'], true)) {
                 $index += 2;
             } elseif (in_array(
                 $option,
-                [
-                    '--no-pager',
-                    '--no-optional-locks',
-                    '--bare',
-                    '--literal-pathspecs',
-                    '-P',
-                ],
+                ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'],
                 true,
             )
                 || preg_match('/^--(git-dir|work-tree|namespace)=/', $option) === 1) {
@@ -370,10 +356,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             }
         }
 
-        return $this->rulePart($program, [
-            $words[0],
-            ...array_slice($words, $index),
-        ], $node);
+        return $this->rulePart($program, [$words[0], ...array_slice($words, $index)], $node);
     }
 
     /**
@@ -404,10 +387,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
                     UnresolvedType::UnknownProgram,
                     AgentText::of(
                         'core.shell.composer_callback',
-                        [
-                            'callback' => $line,
-                            'binding' => $script->binding->reference(),
-                        ],
+                        ['callback' => $line, 'binding' => $script->binding->reference()],
                     ),
                 );
 
@@ -481,10 +461,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
         ExecutionContext $context,
     ): PartClassification {
         if (in_array($alias->id, $context->aliases, true)) {
-            $loop = implode(', ', [
-                ...$context->aliases,
-                $alias->id,
-            ]);
+            $loop = implode(', ', [...$context->aliases, $alias->id]);
 
             return $this->unknown(
                 $node,
@@ -549,12 +526,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
             $text === '-delete' => [
                 new ClassFact(CommandClass::Delete, $node, $origin, 'find -delete removes what it matches.'),
             ],
-            in_array($text, [
-                '-fprint',
-                '-fprint0',
-                '-fprintf',
-                '-fls',
-            ], true) => [
+            in_array($text, ['-fprint', '-fprint0', '-fprintf', '-fls'], true) => [
                 new ClassFact(CommandClass::Write, $node, $origin, "find {$text} writes a file."),
             ],
             default => [],
@@ -568,10 +540,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
     {
         $first = strtok($reference, ' ');
 
-        if (in_array($first, [
-            'php',
-            'composer',
-        ], true)) {
+        if (in_array($first, ['php', 'composer'], true)) {
             return $reference;
         }
 
@@ -633,10 +602,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
                     $node,
                     $program,
                     UnresolvedType::UnknownWrapperOption,
-                    AgentText::of('core.shell.wrapper_option', [
-                        'wrapper' => $wrapper->family,
-                        'option' => $text,
-                    ]),
+                    AgentText::of('core.shell.wrapper_option', ['wrapper' => $wrapper->family, 'option' => $text]),
                 );
             }
 
@@ -812,10 +778,7 @@ final readonly class CommandClassifier implements CommandClassifierContract
     private function findChildEnd(array $words, int $from): int
     {
         for ($index = $from; $index < count($words); $index++) {
-            if (in_array($words[$index]->literal(), [
-                ';',
-                '+',
-            ], true)) {
+            if (in_array($words[$index]->literal(), [';', '+'], true)) {
                 return $index;
             }
         }

@@ -46,16 +46,8 @@ final class EditPlanTest extends TestCase
         $this->assertSame(2, $revision);
 
         $this->assertSame(
-            [
-                'First',
-                'Second brief',
-                PlanType::Fix,
-            ],
-            [
-                $this->plan->title,
-                $this->plan->brief,
-                $this->plan->type,
-            ],
+            ['First', 'Second brief', PlanType::Fix],
+            [$this->plan->title, $this->plan->brief, $this->plan->type],
         );
     }
 
@@ -68,13 +60,7 @@ final class EditPlanTest extends TestCase
             PlanRevisionChanged::class,
         );
 
-        $this->assertSame([
-            'Second',
-            2,
-        ], [
-            $this->plan->refresh()->title,
-            $this->plan->revision,
-        ]);
+        $this->assertSame(['Second', 2], [$this->plan->refresh()->title, $this->plan->revision]);
     }
 
     public function test_a_title_past_its_limit_is_refused_naming_the_field(): void

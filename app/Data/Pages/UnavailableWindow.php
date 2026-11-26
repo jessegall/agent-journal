@@ -15,7 +15,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class UnavailableWindow extends Data
 {
-    public function __construct(public readonly WindowStatus $state) {}
+    public function __construct(public readonly WindowStatus $status) {}
 
     public static function make(): self
     {

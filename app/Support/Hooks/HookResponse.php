@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Hooks;
 
-use App\Support\Drivers\DriverReply;
+use App\Agents\Drivers\Hooks\DriverReply;
 use Spatie\LaravelData\Data;
 
 /**

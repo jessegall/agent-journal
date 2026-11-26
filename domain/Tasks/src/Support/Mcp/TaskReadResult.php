@@ -69,10 +69,7 @@ final readonly class TaskReadResult
         }
 
         if (strlen($encoded) <= self::INLINE_TEXT_BYTES) {
-            return ToolResult::ok([
-                ...$summary,
-                ...$text,
-            ]);
+            return ToolResult::ok([...$summary, ...$text]);
         }
 
         $read = new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision);
@@ -113,7 +110,7 @@ final readonly class TaskReadResult
             'task_id' => $task->id,
             'number' => $task->number,
             'title' => $task->title,
-            'state' => $task->state->value,
+            'state' => $task->status->value,
             'revision' => $task->revision,
             'holder' => $task->holder->map(
                 fn (AssignmentHolder $holder) => AssignmentData::ofHolder($holder)->toArray(),

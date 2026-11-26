@@ -38,9 +38,6 @@ final class HostOutputData extends Data
             $this->chunks,
         );
 
-        return max([
-            0,
-            ...$ends,
-        ]);
+        return max([0, ...$ends]);
     }
 }

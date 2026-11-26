@@ -115,22 +115,12 @@ final class ProcessesServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             ProcessPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Execute,
-                AccessType::Test,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute, AccessType::Test],
         ));
 
         $policies->register('Core', new PolicyDefinition(
             ProcessAdministrationPolicy::class,
-            [
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Test,
-            ],
+            [AccessType::Create, AccessType::Edit, AccessType::Test],
         ));
 
         RequiredServices::check($this->app);

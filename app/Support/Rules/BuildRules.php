@@ -57,30 +57,21 @@ final readonly class BuildRules
             $this->build(
                 'core.php.artisan-typescript-transform',
                 ProgramSpellings::php(),
-                [
-                    'artisan',
-                    'typescript:transform',
-                ],
+                ['artisan', 'typescript:transform'],
                 ArgumentGrammar::none(),
                 $build,
             ),
             $this->build(
                 'core.php.artisan-client-manifest',
                 ProgramSpellings::php(),
-                [
-                    'artisan',
-                    'journal:client-manifest',
-                ],
+                ['artisan', 'journal:client-manifest'],
                 ArgumentGrammar::none(),
                 $build,
             ),
             $this->build(
                 'core.php.artisan-wayfinder-generate',
                 ProgramSpellings::php(),
-                [
-                    'artisan',
-                    'wayfinder:generate',
-                ],
+                ['artisan', 'wayfinder:generate'],
                 ArgumentGrammar::options(['--with-form']),
                 $build,
             ),
@@ -120,10 +111,7 @@ final readonly class BuildRules
             $arguments,
             $classes,
             CommandType::Build,
-            in_array($id, [
-                'core.vite.build',
-                'core.vp.build',
-            ], true) ? ToolType::ViteBuild : ToolType::Other,
+            in_array($id, ['core.vite.build', 'core.vp.build'], true) ? ToolType::ViteBuild : ToolType::Other,
         );
     }
 }

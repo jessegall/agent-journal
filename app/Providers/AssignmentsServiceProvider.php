@@ -99,20 +99,12 @@ final class AssignmentsServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             AssignmentPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
 
         $policies->register('Core', new PolicyDefinition(
             AssignmentRecipientPolicy::class,
-            [
-                AccessType::Create,
-                AccessType::Delegate,
-                AccessType::Delete,
-            ],
+            [AccessType::Create, AccessType::Delegate, AccessType::Delete],
         ));
 
         $this->loadCoreRoutes('assignments/assignments.php');

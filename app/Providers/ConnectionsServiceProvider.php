@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Agents\Drivers\Processes\HeadlessDriver;
+use App\Agents\Drivers\Processes\ProbeDriver;
+use App\Agents\Drivers\Processes\ProcessDrivers;
+use App\Agents\Drivers\Processes\TerminalDriver;
+use App\Agents\Drivers\Work\WorkerLease;
 use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Commands\Hosts\SweepHostOrders\SweepHostOrdersCommand;
 use App\Concerns\LoadsCoreRoutes;
@@ -27,11 +32,6 @@ use App\Policies\ConnectionsPolicy;
 use App\Policies\ProjectFilesPolicy;
 use App\Resolvers\AgentDirectory;
 use App\Support\CommandRunEvidence;
-use App\Support\Drivers\ProcessDrivers;
-use App\Support\Drivers\Processes\HeadlessDriver;
-use App\Support\Drivers\Processes\ProbeDriver;
-use App\Support\Drivers\Processes\TerminalDriver;
-use App\Support\Drivers\WorkerLease;
 use App\Support\HostOperatorAccess;
 use App\Support\Hosts\HostChannel;
 use App\Support\JournalCommands;
@@ -96,11 +96,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
     ): void {
         $policies->register('Core', new PolicyDefinition(
             ConnectionsPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
 
         $policies->register('Core', new PolicyDefinition(ProjectFilesPolicy::class, [AccessType::Read]));

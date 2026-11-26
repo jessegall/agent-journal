@@ -34,8 +34,7 @@ final readonly class ScriptApi
 
     public function readProfileLanguage(
     ): ProfileLanguageData {
-        return $this->sender->send(ReadProfileLanguagePayload::from([
-        ]));
+        return $this->sender->send(ReadProfileLanguagePayload::from([]));
     }
 
     /**
@@ -60,16 +59,12 @@ final readonly class ScriptApi
     public function showProfileDraft(
         string $profile,
     ): ProfileDraftData {
-        return $this->sender->send(ShowProfileDraftPayload::from([
-            'profile' => $profile,
-        ]));
+        return $this->sender->send(ShowProfileDraftPayload::from(['profile' => $profile]));
     }
 
     public function showProfileRun(
         string $id,
     ): ProfileRunData {
-        return $this->sender->send(ShowProfileRunPayload::from([
-            'id' => $id,
-        ]));
+        return $this->sender->send(ShowProfileRunPayload::from(['id' => $id]));
     }
 }

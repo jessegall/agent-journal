@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
 use App\Enums\CommandRules\CommandEffect;
 use App\Enums\CommandRules\CommandType;
 use App\Enums\CommandRules\ParseOutcome;
@@ -32,7 +33,6 @@ use App\Support\Inputs\Values\SessionEndDetails;
 use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\Inputs\Values\StopDetails;
 use App\Support\Inputs\Values\ToolResult;
-use App\Support\ToolNames\Enums\ClaudeCodeTool;
 use App\Values\CommandPart;
 use App\Values\ShellCommand;
 

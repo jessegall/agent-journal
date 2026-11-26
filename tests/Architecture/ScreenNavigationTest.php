@@ -25,11 +25,11 @@ final class ScreenNavigationTest extends TestCase
         SendHostKeysCommand::class => [
             'app/Support/KeyScripts/',
             'app/Support/Screens/',
-            'app/Support/Drivers/Processes/TerminalDriver.php',
+            'app/Agents/Drivers/Processes/TerminalDriver.php',
             'app/Support/Hosts/HostChannel.php',
         ],
         ForwardUserKeysCommand::class => [
-            'app/Support/Drivers/Processes/TerminalDriver.php',
+            'app/Agents/Drivers/Processes/TerminalDriver.php',
             'app/Support/Hosts/HostChannel.php',
         ],
     ];

@@ -110,10 +110,7 @@ final readonly class SessionStartCandidates implements SessionStartCandidatesCon
             ->pluck('agent_id')
             ->all();
 
-        return array_values(array_unique([
-            ...$running,
-            ...$starting,
-        ]));
+        return array_values(array_unique([...$running, ...$starting]));
     }
 
     /**

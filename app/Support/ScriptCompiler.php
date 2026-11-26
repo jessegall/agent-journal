@@ -26,11 +26,7 @@ final readonly class ScriptCompiler
             $policy = $this->keywords->trigger($trigger)->policy();
             $owner = $this->keywords->get($trigger->token)->owner;
 
-            $graph->remember('trigger:'.$trigger->token, [
-                $owner,
-                $trigger->implementation,
-                $policy,
-            ]);
+            $graph->remember('trigger:'.$trigger->token, [$owner, $trigger->implementation, $policy]);
 
             $graph->addTerminal($policy->fallthrough);
             $graph->addTerminal($policy->failure);

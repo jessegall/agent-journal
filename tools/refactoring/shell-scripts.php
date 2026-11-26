@@ -262,10 +262,7 @@ final class ShellScript
             $names = [...$names, ...preg_split('/\s+/', trim($read[1])) ?: []];
         }
 
-        return array_values(array_unique(array_diff($names, [
-            'do',
-            'IFS',
-        ])));
+        return array_values(array_unique(array_diff($names, ['do', 'IFS'])));
     }
 
     /**

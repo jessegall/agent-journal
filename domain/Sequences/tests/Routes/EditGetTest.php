@@ -35,8 +35,6 @@ final class EditGetTest extends GuardedRouteEntryTestCase
         ], TestProjects::localOwner()->key()));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'sequence' => $sequenceId,
-            ]);
+            ->parameters(['sequence' => $sequenceId]);
     }
 }

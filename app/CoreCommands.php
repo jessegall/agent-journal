@@ -56,11 +56,7 @@ final class CoreCommands
                 AnnounceUnavailableStart::class,
                 CommandScope::command($start),
             ),
-            [
-                StartAgentCommand::class,
-                OpenAgentRuntimeCommand::class,
-                ContinueStartCommand::class,
-            ],
+            [StartAgentCommand::class, OpenAgentRuntimeCommand::class, ContinueStartCommand::class],
         );
     }
 

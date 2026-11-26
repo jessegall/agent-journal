@@ -51,18 +51,8 @@ final class CommentOnReportTest extends TestCase
         $comment = Comment::query()->findOrFail($commentId);
 
         $this->assertSame(
-            [
-                Report::linkType(),
-                Report::query()->sole()->id,
-                'Looks good.',
-                $this->journal->ownerUser()->id,
-            ],
-            [
-                $comment->target_type,
-                $comment->target_id,
-                $comment->body,
-                $comment->author_id,
-            ],
+            [Report::linkType(), Report::query()->sole()->id, 'Looks good.', $this->journal->ownerUser()->id],
+            [$comment->target_type, $comment->target_id, $comment->body, $comment->author_id],
         );
     }
 

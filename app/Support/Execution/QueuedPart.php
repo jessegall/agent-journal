@@ -108,10 +108,7 @@ final readonly class QueuedPart implements SpawnablePart
     {
         $assigned = array_map($this->text(...), $this->step->assignments);
 
-        return array_diff_key([
-            ...$this->context->environment,
-            ...$assigned,
-        ], array_flip(self::SECRET_VARIABLES));
+        return array_diff_key([...$this->context->environment, ...$assigned], array_flip(self::SECRET_VARIABLES));
     }
 
     private function text(PlanWord $word): string

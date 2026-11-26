@@ -32,13 +32,8 @@ final class CancelPostTest extends GuardedRouteEntryTestCase
         $job = $helpers->jobCalled('Review');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'job_id' => $job->id,
-                'request_key' => 'helper-1',
-            ])
+            ->payload(['job_id' => $job->id, 'request_key' => 'helper-1'])
             ->reply(CancelHelperJobCommand::class, $job->id)
-            ->expects(CancelHelperJobCommand::class, [
-                'jobId' => $job->id,
-            ]);
+            ->expects(CancelHelperJobCommand::class, ['jobId' => $job->id]);
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Hooks\DriverReplies;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookDeadlineExpired;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
-use App\Support\Drivers\DriverReplies;
-use App\Support\Drivers\DriverReply;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;

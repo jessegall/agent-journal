@@ -35,10 +35,7 @@ final class ExecutionPlan extends Data
      */
     public function startsOnlyInBackground(): bool
     {
-        $actions = in_array($this->root->type, [
-            StepType::Sequence,
-            StepType::Group,
-        ], true)
+        $actions = in_array($this->root->type, [StepType::Sequence, StepType::Group], true)
             ? $this->root->children
             : [$this->root];
 

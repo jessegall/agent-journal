@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Hooks;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
+use App\Contracts\Drivers\DriverAdapters;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Files\Files;
 use App\Enums\Agents\StackStatus;
@@ -31,9 +34,6 @@ use App\Models\Sessions\ReportedBypass;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CredentialLookup;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\Contracts\DriverAdapters;
-use App\Support\Drivers\DriverReply;
 use App\Support\HookRetryWindow;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\IsolatedHookSettings;

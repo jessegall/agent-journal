@@ -118,11 +118,7 @@ final class NumberGroup extends JournalModel implements EventSource, ReadableMod
     #[Scope]
     protected function forRecords(Builder $query, string $holderType, string $holderId, string $recordType): void
     {
-        $query->where([
-            'holder_type' => $holderType,
-            'holder_id' => $holderId,
-            'record_type' => $recordType,
-        ]);
+        $query->where(['holder_type' => $holderType, 'holder_id' => $holderId, 'record_type' => $recordType]);
     }
 
     /**

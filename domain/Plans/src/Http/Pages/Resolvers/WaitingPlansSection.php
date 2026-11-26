@@ -46,7 +46,7 @@ final readonly class WaitingPlansSection implements SectionResolver
             ) => LayoutRowData::from([
                 'key' => $card->id,
                 'label' => "plan {$card->number} · {$card->title}",
-                'value' => $card->state->value,
+                'value' => $card->status->value,
                 'detail' => implode(' · ', array_filter([
                     $card->holder instanceof AssignmentData ? "held by {$card->holder->name}" : null,
                     "{$card->finishedTasks} of {$card->totalTasks} tasks",

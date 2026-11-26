@@ -19,7 +19,7 @@ final readonly class ProposalReceipt
     private function __construct(
         public string $proposalId,
         public int $revision,
-        public ProposalStatus $state,
+        public ProposalStatus $status,
         public array $missingFields,
     ) {}
 
@@ -31,7 +31,7 @@ final readonly class ProposalReceipt
         return [
             'proposal_id' => $this->proposalId,
             'revision' => $this->revision,
-            'state' => $this->state->value,
+            'state' => $this->status->value,
             'missing_fields' => $this->missingFields,
         ];
     }

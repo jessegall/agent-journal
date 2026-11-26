@@ -267,10 +267,7 @@ final class DocumentsDomain extends Domain implements
         return [
             new PolicyDefinition(
                 DocumentPolicy::class,
-                [
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Create, AccessType::Edit],
             ),
             new PolicyDefinition(
                 DocumentAdministrationPolicy::class,
@@ -278,17 +275,11 @@ final class DocumentsDomain extends Domain implements
             ),
             new PolicyDefinition(
                 ReportPolicy::class,
-                [
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Create, AccessType::Edit],
             ),
             new PolicyDefinition(
                 UploadPolicy::class,
-                [
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Create, AccessType::Edit],
             ),
         ];
     }

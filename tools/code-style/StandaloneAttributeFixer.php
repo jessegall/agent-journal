@@ -81,10 +81,7 @@ final class StandaloneAttributeFixer implements FixerInterface
                 continue;
             }
 
-            $tokens[$close + 1] = new Token([
-                T_WHITESPACE,
-                "\n".$this->indentationOf($tokens, $index),
-            ]);
+            $tokens[$close + 1] = new Token([T_WHITESPACE, "\n".$this->indentationOf($tokens, $index)]);
         }
     }
 
@@ -105,16 +102,7 @@ final class StandaloneAttributeFixer implements FixerInterface
                 return true;
             }
 
-            if ($token->isGivenKind([
-                T_FUNCTION,
-                T_CONST,
-                T_CASE,
-            ]) || $token->equalsAny([
-                ';',
-                '{',
-                '(',
-                '=',
-            ])) {
+            if ($token->isGivenKind([T_FUNCTION, T_CONST, T_CASE]) || $token->equalsAny([';', '{', '(', '='])) {
                 return false;
             }
         }

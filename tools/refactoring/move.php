@@ -62,13 +62,7 @@ foreach ($requests as [$old, $new]) {
         exit(failed($replace ? "{$new} does not exist to merge {$old} into." : "{$new} exists already at {$to}; merge with --replace."));
     }
 
-    $rows[] = implode(' ', [
-        $old,
-        $new,
-        $from,
-        $to,
-        ...($replace ? ['merge'] : []),
-    ]);
+    $rows[] = implode(' ', [$old, $new, $from, $to, ...($replace ? ['merge'] : [])]);
 }
 
 if ($dryRun) {

@@ -27,7 +27,7 @@ final readonly class TaskDetailsFactory
             'id' => $task->id,
             'number' => $task->number,
             'title' => $task->title,
-            'state' => $task->status,
+            'status' => $task->status,
             'revision' => $task->revision,
             'holder' => $holder,
             'execution' => $execution,

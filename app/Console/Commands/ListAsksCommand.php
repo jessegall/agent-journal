@@ -21,8 +21,6 @@ final class ListAsksCommand extends Command
 
     public function handle(): int
     {
-        return $this->runCall(ListAsksPayload::from([
-            'before' => $this->option('before'),
-        ]));
+        return $this->runCall(ListAsksPayload::from(['before' => $this->option('before')]));
     }
 }

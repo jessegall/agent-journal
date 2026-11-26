@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\Hosts\RunFenced;
+
+use App\Contracts\Bus\CommandHandler;
+use App\Enums\Hosts\HostOrderType;
+use App\Support\Hosts\HostOrderPlacement;
+use App\Values\FencedRun;
+use App\Values\HostOrderSource;
+
+/**
+ * Makes the run_fenced order of the host and answers its id.
+ */
+final readonly class RunFencedHandler implements CommandHandler
+{
+    public function __construct(private HostOrderPlacement $placement) {}
+
+    public function handle(RunFencedCommand $command): string
+    {
+        $payload = [
+            'fence' => $command->fence,
+            'waiting' => $command->waiting,
+            'budget_ms' => $command->budgetMs,
+            'runs' => array_map(fn (FencedRun $run) => $run->payload(), $command->runs),
+        ];
+
+        return $this->placement->forHost(
+            $command->hostId,
+            HostOrderSource::fromJournal(),
+            HostOrderType::RunFenced,
+            $payload,
+        )->id;
+    }
+}

@@ -31,8 +31,6 @@ final class AgentReportsShowPostTest extends GuardedRouteEntryTestCase
         $report = $journal->runAs('Writer', new CreateReportCommand('Trace', 'The cause.', "# Trace\nFound it.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'number' => (string) $report->number,
-            ]);
+            ->payload(['number' => (string) $report->number]);
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Hooks\DriverReply;
 use App\Contracts\Files\Files;
 use App\Enums\Files\Place;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\DriverReply;
 use App\Support\Relay\HookRelay;
 use App\Support\Relay\PreparationState;
 use App\Support\Relay\RelaySettings;
@@ -51,7 +51,10 @@ final class HookPreparationTest extends TestCase
 
     protected function tearDown(): void
     {
-        foreach ([$this->bypassLog, $this->preparationFile()] as $file) {
+        foreach ([
+            $this->bypassLog,
+            $this->preparationFile(),
+        ] as $file) {
             if (is_file($file)) {
                 unlink($file);
             }

@@ -33,15 +33,9 @@ final class AddWaitPostTest extends GuardedRouteEntryTestCase
         $prerequisite = $tasks->createTask('Review the dock');
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'task' => $task->number,
-            ])
-            ->headers([
-                'Idempotency-Key' => 'wait-1',
-            ])
-            ->payload([
-                'prerequisite' => (string) $prerequisite->number,
-            ])
+            ->parameters(['task' => $task->number])
+            ->headers(['Idempotency-Key' => 'wait-1'])
+            ->payload(['prerequisite' => (string) $prerequisite->number])
             ->reply(AddTaskWaitCommand::class, Str::ulid())
             ->expects(AddTaskWaitCommand::class, [
                 'dependentTaskId' => $task->id,

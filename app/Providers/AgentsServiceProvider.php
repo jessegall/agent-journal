@@ -20,7 +20,6 @@ use App\Contracts\Domains\ApiRegistrar as ApiRegistrarContract;
 use App\Contracts\Domains\ApiSender as ApiSenderContract;
 use App\Contracts\Drivers\AttachmentReferences;
 use App\Contracts\Drivers\CallingDriver as CallingDriverContract;
-use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Drivers\DriverConversationResolver as DriverConversationResolverContract;
 use App\Contracts\Drivers\ToolDiscovery as ToolDiscoveryContract;
 use App\Contracts\Files\Files;
@@ -46,7 +45,6 @@ use App\Contracts\Sessions\SessionRequestResolver as SessionRequestResolverContr
 use App\Contracts\Sessions\SessionResolver as SessionResolverContract;
 use App\Contracts\Sessions\SessionStartCandidates as SessionStartCandidatesContract;
 use App\Contracts\Sessions\SessionTokenSource as SessionTokenSourceContract;
-use App\Contracts\Sessions\StartExecutor as StartExecutorContract;
 use App\Contracts\Sessions\StartHeartbeats as StartHeartbeatsContract;
 use App\Contracts\Sessions\StartPreflight as StartPreflightContract;
 use App\Contracts\Sessions\StartReceipts as StartReceiptsContract;
@@ -121,7 +119,6 @@ use App\Support\SessionPolicyReader;
 use App\Support\SessionProvenance;
 use App\Support\SessionTokenSource;
 use App\Support\StartEnvironment;
-use App\Support\StartExecutor;
 use App\Support\StartHeartbeats;
 use App\Support\StartPreflight;
 use App\Support\StartProfiles;
@@ -137,7 +134,6 @@ use App\Values\PolicyDefinition;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 use PhpOption\None;
@@ -186,11 +182,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(RuntimeStopsContract::class, RuntimeStops::class);
         $this->app->bind(NavigationReaderContract::class, NavigationReader::class);
         $this->app->bind(TerminalViewCloserContract::class, TerminalViewCloser::class);
-
-        $this->app->bind(StartExecutorContract::class, fn () => new StartExecutor(
-            $this->app->make(Repository::class)->string('agents.host_start_socket'),
-            $this->app->make(DriverCatalogue::class),
-        ));
 
         $this->app->bind(RuntimeResolverContract::class, RuntimeResolver::class);
         $this->app->bind(SessionResolverContract::class, SessionResolver::class);
@@ -326,23 +317,12 @@ final class AgentsServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Delete,
-                AccessType::Admin,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete, AccessType::Admin],
         ));
 
         $policies->register('Core', new PolicyDefinition(
             AgentMaintenancePolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Execute,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute],
         ));
 
         $policies->register('Core', new PolicyDefinition(AgentTerminalControlPolicy::class, [AccessType::Edit]));

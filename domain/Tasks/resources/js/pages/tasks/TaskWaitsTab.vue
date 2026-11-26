@@ -76,7 +76,7 @@ onMounted(async () => {
 });
 
 function stateText(item: TaskWaitItemData): string {
-    return item.state === undefined ? '' : taskStateLook[item.state].label;
+    return item.status === undefined ? '' : taskStateLook[item.status].label;
 }
 
 function metText(item: TaskWaitItemData): string {

@@ -21,7 +21,7 @@ final readonly class TaskExecution
         public string $actorId,
         public string|null $actorLabel,
         public int $runNumber,
-        public TaskStatus $state,
+        public TaskStatus $status,
         public bool $isRunningNow,
         public Option $focusedBy,
     ) {}

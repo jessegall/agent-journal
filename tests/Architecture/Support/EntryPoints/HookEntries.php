@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
+use App\Contracts\Drivers\DriverAdapters;
 use App\Enums\Hooks\HookEvent;
-use App\Support\Drivers\Contracts\DriverAdapters;
 
 /**
  * Every moment a driver's hooks reach the journal: each native event of each hook protocol that a HookEvent case
@@ -53,7 +53,10 @@ final readonly class HookEntries
 
         foreach ($this->adapters->all() as $adapter) {
             foreach ($adapter->nativeEvents() as $event) {
-                $events[] = [$adapter->hookProtocol(), $event];
+                $events[] = [
+                    $adapter->hookProtocol(),
+                    $event,
+                ];
             }
         }
 

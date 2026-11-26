@@ -37,9 +37,6 @@ final class RecordReading
             return RecordText::from($fields);
         }
 
-        return RecordText::from([
-            ...$fields,
-            ...TextReading::read($body, $selection, $revision),
-        ]);
+        return RecordText::from([...$fields, ...TextReading::read($body, $selection, $revision)]);
     }
 }

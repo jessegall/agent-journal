@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Agents\Drivers\Codex\CodexSignInReader;
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Commands\Hosts\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
 use App\Enums\Agents\SessionProcessStatus;
@@ -14,9 +17,13 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
-use App\Support\Drivers\DriverSupervisor;
+use App\Enums\Hosts\HostRefusal;
+use App\Enums\Projects\ArrangementType;
+use App\Models\Projects\Host;
 use App\Support\Hosts\ProcessFeed;
+use App\Support\PublishedReleases;
 use App\Values\HostOrderSource;
+use Tests\Support\Drivers\AcceptingSignInReader;
 use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
@@ -29,6 +36,53 @@ final class JournalHostProcessesTest extends TestCase
 {
     use RefreshHookDatabase;
     use WithActiveAccount;
+
+    public function test_a_contained_host_is_enrolled_contained(): void
+    {
+        $this->journal->enrollContainedHost('Box', [base_path()]);
+
+        $host = Host::query()->whereKey($this->journal->hostCalled('Box')->hostId)->sole();
+        $this->journal->assertResult(ArrangementType::Contained, $host->arrangement);
+    }
+
+    public function test_a_stop_attempt_orders_the_host_itself_which_answers_or_refuses(): void
+    {
+        $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Writer', 'writing-helper')
+            ->enrollHost('Mac', [base_path()]);
+        $opened = $this->journal->openRuntimeOn('Writer', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $first = $this->journal->openStopAttempt($opened->sessionId, 'stop-1');
+        $second = $this->journal->openStopAttempt($opened->sessionId, 'stop-2');
+        [$answered, $refused] = $this->journal->hostOrdersOn('Mac');
+
+        $passed = [
+            'status' => 'passed',
+            'started_at' => '2026-11-26T10:00:00Z',
+            'ended_at' => '2026-11-26T10:00:01Z',
+            'exit_code' => 0,
+            'signal' => null,
+            'summary' => 'clean',
+            'output' => 'clean',
+            'truncated' => false,
+        ];
+
+        $this->journal->answerHostOrderWith($answered, ['results' => [$passed]])
+            ->refuseHostOrder($refused, HostRefusal::Fenced);
+
+        $this->journal->assertResult(
+            [
+                [
+                    $first->refresh()->fence_order_id,
+                    $second->refresh()->fence_order_id,
+                ],
+                HostOrderStatus::Done,
+                HostOrderStatus::Refused,
+            ],
+            [[
+                $answered->id,
+                $refused->id,
+            ], $answered->refresh()->status, $refused->refresh()->status],
+        );
+    }
 
     public function test_a_process_is_opened_by_its_order_and_moved_by_its_hosts_report(): void
     {
@@ -66,7 +120,10 @@ final class JournalHostProcessesTest extends TestCase
             ->assertProgramStarted(['php', 'artisan', 'drivers:work', $process])
             ->assertResult(
                 [HostOrderStatus::Done, 'ready'],
-                [$open->refresh()->status, $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0]],
+                [
+                    $open->refresh()->status,
+                    $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows[0],
+                ],
             );
     }
 
@@ -182,13 +239,37 @@ final class JournalHostProcessesTest extends TestCase
         );
     }
 
+    public function test_a_driver_profile_is_the_one_the_journal_starts_its_family_by(): void
+    {
+        $this->journal->assertResult(DefaultDrivers::CODEX, $this->journal->driverProfile(DefaultDrivers::CODEX)->family());
+    }
+
+    public function test_a_swapped_driver_part_is_the_one_the_profile_uses(): void
+    {
+        $profile = $this->journal->withDriverPart(CodexSignInReader::class, AcceptingSignInReader::class)
+            ->driverProfile(DefaultDrivers::CODEX);
+
+        $this->journal->assertResult(true, $profile->hasAcceptedSignIn('not signed in', '/accounts/a'));
+    }
+
+    public function test_a_published_release_is_the_journals_current_one(): void
+    {
+        $this->journal->publishRelease('6.1.0');
+
+        $this->journal->assertResult('6.1.0', $this->journal->service(PublishedReleases::class)->current()->version);
+    }
+
     public function test_an_orders_payload_reads_back_as_the_host_receives_it(): void
     {
         $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'pipe', HostProcessType::Pipe);
 
         $payload = $this->journal->payloadOf($this->journal->hostOrdersOf('pipe')[0]);
 
-        $this->journal->assertResult(['pipe', ['sh', '-c', 'cat']], [$payload['type'], $payload['argv']]);
+        $this->journal->assertResult(['pipe', [
+            'sh',
+            '-c',
+            'cat',
+        ]], [$payload['type'], $payload['argv']]);
     }
 
     public function test_what_a_pipe_prints_follows_what_it_printed_before(): void
@@ -199,9 +280,15 @@ final class JournalHostProcessesTest extends TestCase
 
         $process = $this->journal->hostProcessCalled('pipe');
         $chunks = array_map(
-            fn ($entry) => [$entry->chunk?->offset, $entry->chunk?->printed()],
+            fn ($entry) => [
+                $entry->chunk?->offset,
+                $entry->chunk?->printed(),
+            ],
             $this->journal->service(ProcessFeed::class)->after($process->id, ProcessFeed::FIRST_CURSOR, 0),
         );
-        $this->journal->assertResult([[[0, "one\n"], [4, "two\n"]], 8], [$chunks, $process->output_offset]);
+        $this->journal->assertResult([[
+            [0, "one\n"],
+            [4, "two\n"],
+        ], 8], [$chunks, $process->output_offset]);
     }
 }

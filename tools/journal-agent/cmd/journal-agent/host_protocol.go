@@ -53,7 +53,7 @@ func protocolOnly(arguments []string) error {
 		return err
 	}
 	if _, err := startHostProtocol(ctx, journal, enrollment, *stateFolder, hostNamesOf(journal, *installation, *hookCommand), containers,
-		"development", nil); err != nil {
+		"development", hostProtocolOptions{}); err != nil {
 		return err
 	}
 	<-ctx.Done()
@@ -71,10 +71,19 @@ func stopWhenInputEnds(stop func()) {
 
 // startHostProtocol runs host protocol 1: process reports and output kept and sent, orders claimed through the long
 // poll and carried out, the inventory sent once and a heartbeat every 30 s; extra executors carry out the orders only
-// this host takes, such as a relay's project reads. It answers the table of the processes it runs.
+// this host takes, such as a relay's project reads; idle keeps the idle window the claim answers name, for a host that
+// leaves when idle. It answers the table of the processes it runs.
+// hostProtocolOptions are what differs between the hosts that speak protocol 1: the orders a host carries out beside
+// the common ones, the idle window that ends a relay, and the programs a connected host alone may open.
+type hostProtocolOptions struct {
+	Extra   map[string]hostapi.Executor
+	Idle    *hostapi.IdleWindow
+	Allowed *hostapi.AllowedPrograms
+}
+
 func startHostProtocol(ctx context.Context, journal *client.Client, enrollment host.Enrollment, stateFolder string,
-	names map[string]string,
-	containers host.Containers, release string, extra map[string]hostapi.Executor) (*hostapi.ProcessTable, error) {
+	names map[string]string, containers host.Containers, release string, options hostProtocolOptions,
+) (*hostapi.ProcessTable, error) {
 	calls := hostapi.Journal{Client: journal}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
 		return calls.NotifyProcessReport(ctx, report)
@@ -91,12 +100,15 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 	}, time.Now)
 	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
 	table.NameHost(names)
+	if options.Allowed != nil {
+		table.AllowOnly(options.Allowed)
+	}
 	if err := table.Adopt(ctx); err != nil {
 		return nil, err
 	}
 	executors := table.Executors()
 	maps.Copy(executors, hostapi.NewProcessInput(table, outputs, calls.PrivateValue).Executors())
-	maps.Copy(executors, extra)
+	maps.Copy(executors, options.Extra)
 	clock := &hostapi.JournalClock{Host: time.Now}
 	verifier := hostapi.Verifier{Secret: hostapi.OrderSecretOf(enrollment.Secret), Now: clock.Now}
 	dispatcher := hostapi.NewDispatcher(verifier, record, executors, func(order hostapi.Order, answer hostapi.Answer) {
@@ -107,7 +119,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 		}()
 	})
 	relay := hostapi.Relay{Journal: calls, Dispatcher: dispatcher, Record: record, Table: table, Release: release,
-		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock}
+		Heartbeat: hostapi.HeartbeatInterval, RetryAfter: time.Second, Clock: clock, Idle: options.Idle}
 	go reports.Run(ctx.Done())
 	if err := relay.SendInventory(ctx); err != nil {
 		log.Printf("the host's inventory was not sent: %v", err)

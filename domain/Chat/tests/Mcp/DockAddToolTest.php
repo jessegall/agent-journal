@@ -42,15 +42,8 @@ final class DockAddToolTest extends McpToolEntryTestCase
         $task = Task::factory()->create(['title' => 'Ship the dock']);
 
         return ToolCall::by($start)
-            ->arguments([
-                'type' => 'tasks.task',
-                'id' => $task->id,
-                'request_key' => 'dock-add-1',
-            ])
+            ->arguments(['type' => 'tasks.task', 'id' => $task->id, 'request_key' => 'dock-add-1'])
             ->reply(DockSourceCommand::class, DockResult::of(DockOutcome::Added, 'placement-1'))
-            ->expects(DockSourceCommand::class, [
-                'type' => 'tasks.task',
-                'id' => $task->id,
-            ]);
+            ->expects(DockSourceCommand::class, ['type' => 'tasks.task', 'id' => $task->id]);
     }
 }

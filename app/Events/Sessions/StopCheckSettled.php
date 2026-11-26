@@ -15,7 +15,7 @@ final readonly class StopCheckSettled implements SessionEvent, StopCheckEvent
 {
     public function __construct(
         public string $attemptId,
-        public StopCheckStatus $state,
+        public StopCheckStatus $status,
         public string $outcome,
     ) {}
 }

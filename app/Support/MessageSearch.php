@@ -39,11 +39,7 @@ final readonly class MessageSearch implements MessageSearchContract
             admitted: fn () => self::admitted($constraints, $query->reader),
             idColumn: 'id',
             titleColumn: 'body',
-            columns: [
-                'id',
-                'number',
-                'body',
-            ],
+            columns: ['id', 'number', 'body'],
             titleOf: fn (Message $message): string => $message->body,
             hitOf: self::hitOf(...),
             admitsOpen: fn (string $messageId) => $this->access->admitsOpen($query->reader, $messageId),

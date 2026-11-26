@@ -52,17 +52,11 @@ final class LogDueStateTest extends TestCase
 
         $this->logDue()
             ->given(
-                [
-                    ...$uses,
-                    $this->hooks->shell('composer update'),
-                ],
+                [...$uses, $this->hooks->shell('composer update')],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Delegate),
             )
             ->given(
-                [
-                    $this->hooks->toolFinished(),
-                    $this->hooks->shell('composer update'),
-                ],
+                [$this->hooks->toolFinished(), $this->hooks->shell('composer update')],
                 fn (StateObservation $state) => $state->assertStateAnswer(AnswerType::Deny),
             )
             ->given(

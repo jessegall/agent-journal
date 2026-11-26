@@ -202,10 +202,7 @@ final readonly class ScriptParser
             throw self::formError($line, 'quoted text');
         }
 
-        return new TextOperand(strtr(substr($line->operand, 1, -1), [
-            '\\"' => '"',
-            '\\\\' => '\\',
-        ]));
+        return new TextOperand(strtr(substr($line->operand, 1, -1), ['\\"' => '"', '\\\\' => '\\']));
     }
 
     private static function assertNoOperand(ScriptLine $line): void

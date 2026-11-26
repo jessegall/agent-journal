@@ -97,10 +97,7 @@ final class SharingDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyDefinition(SharingPolicy::class, [
-                AccessType::Create,
-                AccessType::Edit,
-            ]),
+            new PolicyDefinition(SharingPolicy::class, [AccessType::Create, AccessType::Edit]),
             new PolicyDefinition(ShareRequestPolicy::class, [AccessType::Create]),
         ];
     }

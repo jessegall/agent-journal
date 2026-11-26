@@ -38,9 +38,6 @@ final class BlockTaskToolTest extends McpToolEntryTestCase
                 'reason' => 'Waits on the dock route.',
                 'request_key' => 'tasks-1',
             ])
-            ->expects(BlockTaskCommand::class, [
-                'taskId' => $task->id,
-                'runNumber' => 1,
-            ]);
+            ->expects(BlockTaskCommand::class, ['taskId' => $task->id, 'runNumber' => 1]);
     }
 }

@@ -45,9 +45,6 @@ final class SendPostTest extends GuardedRouteEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(SendHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(SendHelperCommand::class, [
-                'identityId' => $identity->id,
-                'profileKey' => 'writing-helper',
-            ]);
+            ->expects(SendHelperCommand::class, ['identityId' => $identity->id, 'profileKey' => 'writing-helper']);
     }
 }

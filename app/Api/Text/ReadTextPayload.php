@@ -43,9 +43,6 @@ final class ReadTextPayload extends Data implements ApiPayload
             return TextSelection::from(['section' => $this->section]);
         }
 
-        return TextSelection::from([
-            'firstLine' => $this->firstLine ?? 1,
-            'lastLine' => $this->lastLine,
-        ]);
+        return TextSelection::from(['firstLine' => $this->firstLine ?? 1, 'lastLine' => $this->lastLine]);
     }
 }

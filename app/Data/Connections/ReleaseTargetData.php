@@ -17,14 +17,12 @@ final class ReleaseTargetData extends Data
 {
     /**
      * @param  list<string>  $prerequisites
-     * @param  list<string>  $missingProviders
      */
     public function __construct(
         public readonly string $name,
         public readonly int $bytes,
         public readonly bool $isMeasured,
         public readonly array $prerequisites,
-        public readonly array $missingProviders,
         public readonly bool $isSupported,
     ) {}
 
@@ -35,7 +33,6 @@ final class ReleaseTargetData extends Data
             'bytes' => $target->bytes,
             'isMeasured' => $target->isMeasured,
             'prerequisites' => $target->prerequisites,
-            'missingProviders' => $target->missingProviders(),
             'isSupported' => $target->isSupported(),
         ]);
     }

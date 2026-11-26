@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
@@ -18,7 +19,6 @@ use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Projects\Host;
-use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
 use App\Support\ProposedProfile;
 use App\Support\StartReceipt;

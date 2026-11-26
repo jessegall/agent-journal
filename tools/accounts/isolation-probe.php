@@ -215,13 +215,7 @@ switch ($step) {
         $bridge = [...$docker, 'run', '--rm', ...$limits, '--entrypoint', '/opt/journal/bin/journal-init', $image];
         $printed = (string) shell_exec(implode(' ', array_map(
             'escapeshellarg',
-            [
-                ...$bridge,
-                '--',
-                '/opt/journal/shell/bash',
-                '-c',
-                $line,
-            ],
+            [...$bridge, '--', '/opt/journal/shell/bash', '-c', $line],
         )).' 2>&1');
         echo implode("\n", array_filter(explode("\n", $printed), fn (string $printedLine): bool => $printedLine !== 'journal-init: ready'));
         break;

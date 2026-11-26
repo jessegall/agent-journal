@@ -200,13 +200,7 @@ final class CreateDocumentTest extends TestCase
 
         $document = $this->app->make(DocumentResolver::class)->show(1);
 
-        $this->assertSame([
-            'Plan for May',
-            'What we build',
-        ], [
-            $document->title,
-            $document->abstract,
-        ]);
+        $this->assertSame(['Plan for May', 'What we build'], [$document->title, $document->abstract]);
 
         $this->assertSame([
             'Plan for May',
@@ -265,15 +259,7 @@ final class CreateDocumentTest extends TestCase
             $this->bus()->run(new CreateDocumentCommand('Design', 'What we build', "   \n", TestProjects::local()->id));
             $this->fail('An empty body was accepted.');
         } catch (ContentMissing) {
-            $this->assertSame([
-                0,
-                0,
-                [],
-            ], [
-                Document::query()->count(),
-                DocumentRevision::query()->count(),
-                $announced,
-            ]);
+            $this->assertSame([0, 0, []], [Document::query()->count(), DocumentRevision::query()->count(), $announced]);
         }
     }
 
@@ -348,10 +334,7 @@ final class CreateDocumentTest extends TestCase
         $this->assertSame([null], Document::query()->pluck('project_id')->all());
         $this->journal->actAs('Cy');
 
-        $this->assertEqualsCanonicalizing([
-            $shop,
-            null,
-        ], Document::query()->pluck('project_id')->all());
+        $this->assertEqualsCanonicalizing([$shop, null], Document::query()->pluck('project_id')->all());
     }
 
     public function test_an_agent_cannot_make_a_global_document(): void

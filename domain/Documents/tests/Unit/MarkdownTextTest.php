@@ -68,10 +68,7 @@ final class MarkdownTextTest extends TestCase
 
         TEXT);
 
-        $this->assertSame([
-            '',
-            'Goal',
-        ], array_map(fn ($section) => $section->heading, $text->sections));
+        $this->assertSame(['', 'Goal'], array_map(fn ($section) => $section->heading, $text->sections));
     }
 
     public function test_replacing_a_section_keeps_every_later_section_byte_for_byte(): void

@@ -52,12 +52,6 @@ final class CancelSequenceTest extends TestCase
 
         $run = $this->runs->runCalled(self::RUN);
 
-        $this->assertSame([
-            SequenceRunStatus::Cancelled,
-            1,
-        ], [
-            $run->status,
-            $run->current_step,
-        ]);
+        $this->assertSame([SequenceRunStatus::Cancelled, 1], [$run->status, $run->current_step]);
     }
 }

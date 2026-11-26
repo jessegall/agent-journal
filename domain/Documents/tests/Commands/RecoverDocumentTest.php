@@ -100,27 +100,13 @@ final class RecoverDocumentTest extends TestCase
         $result = $this->bus()->run(new RecoverDocumentCommand($draft->target(), '  Agent gone.  '));
         $close = DocumentClose::query()->sole();
 
-        $this->assertSame([
-            2,
-            true,
-        ], [
-            $result->revisionNumber,
-            $result->isPublished,
-        ]);
+        $this->assertSame([2, true], [$result->revisionNumber, $result->isPublished]);
 
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
 
         $this->assertSame(
-            [
-                CloseCause::Recovery,
-                TestIds::of(1),
-                'Agent gone.',
-            ],
-            [
-                $close->cause,
-                $close->closer_id,
-                $close->reason,
-            ],
+            [CloseCause::Recovery, TestIds::of(1), 'Agent gone.'],
+            [$close->cause, $close->closer_id, $close->reason],
         );
 
         $this->assertSame(1, $this->bus()->run(new OpenDocumentCommand('1'))->version);

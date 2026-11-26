@@ -69,10 +69,7 @@ final readonly class ProjectField
         return [LayoutPartData::field(
             self::NAME,
             self::LABEL,
-            new LayoutFieldData(self::NAME, '', [], $options, [
-                ...$this->labelsOf($listed),
-                ...$labels,
-            ]),
+            new LayoutFieldData(self::NAME, '', [], $options, [...$this->labelsOf($listed), ...$labels]),
             'choice',
         )];
     }

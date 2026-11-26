@@ -16,7 +16,7 @@ final readonly class ShareFact
     public function __construct(
         public string $shareId,
         public string|null $configurationId,
-        public ShareStatus $state,
+        public ShareStatus $status,
         public int $scopeVersion,
         public DateTimeImmutable $occurredAt,
     ) {}

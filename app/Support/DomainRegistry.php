@@ -102,10 +102,7 @@ final readonly class DomainRegistry
     {
         $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->client(), $this->all());
 
-        return ClientDeclarations::check(array_values([
-            ...$coreDeclarations,
-            ...$domainDeclarations,
-        ]));
+        return ClientDeclarations::check(array_values([...$coreDeclarations, ...$domainDeclarations]));
     }
 
     /**
@@ -175,10 +172,7 @@ final readonly class DomainRegistry
             ...array_map(fn (DomainEntry $entry) => $entry->commandRules(), $this->all()),
         );
 
-        return CommandRuleRegistry::from([
-            ...$coreRules,
-            ...$domainRules,
-        ]);
+        return CommandRuleRegistry::from([...$coreRules, ...$domainRules]);
     }
 
     /**
@@ -251,20 +245,14 @@ final readonly class DomainRegistry
         $position = array_search($entry->name, $path, true);
 
         if ($position !== false) {
-            throw DomainCycle::for([
-                ...array_slice($path, $position),
-                $entry->name,
-            ]);
+            throw DomainCycle::for([...array_slice($path, $position), $entry->name]);
         }
 
         foreach ($entry->requires as $requiredClass) {
             self::refuseCycleFrom(
                 $domainsByName,
                 $domainsByName[DomainEntry::nameOf($requiredClass)],
-                [
-                    ...$path,
-                    $entry->name,
-                ],
+                [...$path, $entry->name],
             );
         }
     }

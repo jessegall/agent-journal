@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Hooks;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Enums\Hooks\HookEvent;
 use App\Models\Drivers\HookCall;
-use App\Support\DefaultDrivers;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsHook;

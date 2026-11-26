@@ -20,10 +20,14 @@ final class NamesFollowTheRulesTest extends TestCase
 
     private const string FIXTURE = 'tests/Fixtures/Architecture/Names';
 
+    private static Process|null $wholeScan = null;
+
+    private static Process|null $fixtureScan = null;
+
     #[TimeLimit(seconds: 60, reason: 'It reads every name of the project, PHP, frontend, Go and shell, fresh.')]
     public function test_every_name_follows_the_naming_rules(): void
     {
-        $scan = $this->scan();
+        $scan = self::wholeScan();
 
         $this->assertSame(0, $scan->getExitCode(), $scan->getOutput().$scan->getErrorOutput());
     }
@@ -52,9 +56,10 @@ final class NamesFollowTheRulesTest extends TestCase
     }
 
     #[DataProvider('faults')]
+    #[TimeLimit(seconds: 10, reason: 'The first data set makes the one scan of the fixture, of PHP, frontend, Go and shell, that the others read.')]
     public function test_the_scan_finds_each_kind_of_fault(string $fault): void
     {
-        $scan = $this->scan([self::FIXTURE]);
+        $scan = self::fixtureScan();
         $pattern = '/'.str_replace('%s', '[^)]*', preg_quote($fault, '/')).'/';
 
         $this->assertSame(1, $scan->getExitCode());
@@ -92,7 +97,7 @@ final class NamesFollowTheRulesTest extends TestCase
     #[TimeLimit(seconds: 60, reason: 'It reads every name of the project to learn its words.')]
     public function test_the_learned_words_are_written_for_the_scans_of_part_of_the_code(): void
     {
-        $scan = $this->scan(['--vocabulary']);
+        $scan = self::wholeScan();
         $words = json_decode((string) file_get_contents(base_path('storage/names/vocabulary.json')), true, 4, JSON_THROW_ON_ERROR);
 
         $this->assertSame(0, $scan->getExitCode(), $scan->getErrorOutput());
@@ -116,6 +121,32 @@ final class NamesFollowTheRulesTest extends TestCase
         }
 
         return $index;
+    }
+
+    /**
+     * The one scan of the whole code this process makes; it judges every name and writes the words it learned.
+     */
+    private static function wholeScan(): Process
+    {
+        if (self::$wholeScan === null) {
+            self::$wholeScan = new Process([PHP_BINARY, 'tools/refactoring/name-faults.php'], base_path(), timeout: 300);
+            self::$wholeScan->run();
+        }
+
+        return self::$wholeScan;
+    }
+
+    /**
+     * The one scan of the fixture of faults this process makes, which every kind of fault is looked for in.
+     */
+    private static function fixtureScan(): Process
+    {
+        if (self::$fixtureScan === null) {
+            self::$fixtureScan = new Process([PHP_BINARY, 'tools/refactoring/name-faults.php', self::FIXTURE], base_path());
+            self::$fixtureScan->run();
+        }
+
+        return self::$fixtureScan;
     }
 
     /**

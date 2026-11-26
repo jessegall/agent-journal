@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Support\Connections;
 
 use App\Values\ReleaseManifest;
-use App\Values\ReleaseTarget;
 
 /**
  * The manifest of a release the window may offer to the public: every capability, and one platform with measured
@@ -24,8 +23,10 @@ final class PublicRelease
             'targets' => [[
                 'os' => 'darwin',
                 'arch' => 'arm64',
-                'prerequisites' => ['git', 'curl'],
-                'providers' => ReleaseTarget::REQUIRED_PROVIDERS,
+                'prerequisites' => [
+                    'git',
+                    'curl',
+                ],
                 'artifacts' => [
                     [
                         'name' => 'bin/journal-agent',

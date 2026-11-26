@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\DriverRequestAccepted;
 use App\Models\Drivers\DriverRequest;
-use App\Support\Drivers\HeadlessStarts;
 
 /**
  * Accepted work of a runtime the journal drives itself opens its next turn, when none of it runs.

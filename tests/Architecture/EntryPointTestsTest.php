@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Contracts\Drivers\DriverAdapters;
 use App\Contracts\Processes\ShellCommandParser;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\ClientDeclarations;
 use App\Support\CommandRegistry;
-use App\Support\Drivers\Contracts\DriverAdapters;
 use App\Support\StateCatalog\Contracts\StateTypes;
 use Illuminate\Routing\Router;
 use SimpleXMLElement;
@@ -128,7 +128,10 @@ final class EntryPointTestsTest extends TestCase
 
         foreach (EntryType::cases() as $type) {
             $folders = $type->hasDomainFolder()
-                ? ["tests/{$type->folder()}", "domain/*/tests/{$type->folder()}"]
+                ? [
+                    "tests/{$type->folder()}",
+                    "domain/*/tests/{$type->folder()}",
+                ]
                 : ["tests/{$type->folder()}"];
 
             foreach (array_diff($folders, $listed) as $folder) {

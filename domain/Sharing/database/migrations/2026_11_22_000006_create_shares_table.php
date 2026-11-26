@@ -39,15 +39,9 @@ return new class extends Migration
             $table->timestampTz('last_pruned_at')->nullable();
             $table->timestampsTz();
 
-            $table->unique([
-                'number_group_id',
-                'number',
-            ]);
+            $table->unique(['number_group_id', 'number']);
 
-            $table->index([
-                'status',
-                'expires_at',
-            ]);
+            $table->index(['status', 'expires_at']);
         });
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Support\DefaultDrivers;
+use App\Agents\Drivers\DefaultDrivers;
 use App\Values\ProfileBase;
 use App\Values\ProfileStartPolicy;
 

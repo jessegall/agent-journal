@@ -141,11 +141,7 @@ final class WebServiceProvider extends ServiceProvider
 
         $policies->register(
             'Core',
-            new PolicyDefinition(LayoutPolicy::class, [
-                AccessType::Create,
-                AccessType::Edit,
-                AccessType::Delete,
-            ]),
+            new PolicyDefinition(LayoutPolicy::class, [AccessType::Create, AccessType::Edit, AccessType::Delete]),
         );
 
         $this->renderRefusals($exceptions);
@@ -166,18 +162,11 @@ final class WebServiceProvider extends ServiceProvider
         );
 
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
-        $broadcast->routes(['middleware' => [
-            'web',
-            'auth',
-            'journal.user',
-        ]]);
+        $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
 
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
 
-        $events->listen(JobProcessing::class, [
-            PageChangeBroadcastLog::class,
-            'record',
-        ]);
+        $events->listen(JobProcessing::class, [PageChangeBroadcastLog::class, 'record']);
     }
 
     /**
@@ -273,10 +262,6 @@ final class WebServiceProvider extends ServiceProvider
      */
     private function refusalAnswer(string $code, string $message, array $fields, int $status): JsonResponse
     {
-        return new JsonResponse([
-            'code' => $code,
-            'message' => $message,
-            'fields' => (object) $fields,
-        ], $status);
+        return new JsonResponse(['code' => $code, 'message' => $message, 'fields' => (object) $fields], $status);
     }
 }

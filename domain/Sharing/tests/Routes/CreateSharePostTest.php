@@ -42,16 +42,9 @@ final class CreateSharePostTest extends GuardedRouteEntryTestCase
         $preview = $journal->run(new SaveSharePreviewCommand($root->type, $root->id, [], $configuration->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'reference' => "doc {$document->number}",
-            ])
-            ->headers([
-                'Idempotency-Key' => 'share-1',
-            ])
-            ->payload([
-                'previewId' => $preview->previewId,
-                'previewChecksum' => $preview->checksum,
-            ])
+            ->parameters(['reference' => "doc {$document->number}"])
+            ->headers(['Idempotency-Key' => 'share-1'])
+            ->payload(['previewId' => $preview->previewId, 'previewChecksum' => $preview->checksum])
             ->reply(CreateShareCommand::class, new ShareSummary(
                 strtolower((string) Str::ulid()),
                 1,

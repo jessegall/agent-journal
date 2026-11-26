@@ -30,14 +30,8 @@ final class FinishHelperJobTest extends TestCase
         $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
 
         $this->assertSame(
-            [
-                JobStatus::Finished,
-                'stop-attempt:attempt-1',
-            ],
-            [
-                $finished->status,
-                $finished->stop_evidence_reference,
-            ],
+            [JobStatus::Finished, 'stop-attempt:attempt-1'],
+            [$finished->status, $finished->stop_evidence_reference],
         );
 
         $this->assertNotNull($finished->finished_at);

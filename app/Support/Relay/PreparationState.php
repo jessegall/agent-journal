@@ -71,10 +71,7 @@ final readonly class PreparationState
     {
         $this->files->write(
             $this->file,
-            json_encode([
-                'generation' => $generation,
-                'prepared' => $isPrepared,
-            ], JSON_THROW_ON_ERROR),
+            json_encode(['generation' => $generation, 'prepared' => $isPrepared], JSON_THROW_ON_ERROR),
         );
     }
 }

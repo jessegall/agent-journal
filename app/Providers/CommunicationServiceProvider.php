@@ -116,19 +116,12 @@ final class CommunicationServiceProvider extends ServiceProvider
 
         $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Create,
-                AccessType::Edit,
-            ],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
 
         $policies->register('Core', new PolicyDefinition(
             MessageAdministrationPolicy::class,
-            [
-                AccessType::Read,
-                AccessType::Edit,
-            ],
+            [AccessType::Read, AccessType::Edit],
         ));
 
         $inboxes->register(Inbox::NAMED_PROVIDER, CoreInboxes::class);

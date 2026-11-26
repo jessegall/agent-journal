@@ -55,13 +55,7 @@ final readonly class InstalledVersion implements InstalledVersionContract
      */
     private function checkoutCommit(): string
     {
-        $git = $this->process->newPendingProcess()->run([
-            'git',
-            '-C',
-            base_path(),
-            'rev-parse',
-            'HEAD',
-        ]);
+        $git = $this->process->newPendingProcess()->run(['git', '-C', base_path(), 'rev-parse', 'HEAD']);
 
         if ($git->successful()) {
             return trim($git->output());

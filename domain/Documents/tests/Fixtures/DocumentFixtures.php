@@ -108,16 +108,8 @@ final class DocumentFixtures
         $writer = $this->journal->actorCalled($author);
 
         Assert::assertSame(
-            [
-                $writer->type,
-                $writer->id,
-                $body,
-            ],
-            [
-                $revision->author_type,
-                $revision->author_id,
-                $revision->body,
-            ],
+            [$writer->type, $writer->id, $body],
+            [$revision->author_type, $revision->author_id, $revision->body],
             "Revision {$number} of {$name} was written otherwise.",
         );
 

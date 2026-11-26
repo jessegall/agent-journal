@@ -24,7 +24,7 @@ final readonly class AutoAssignmentView
      */
     public function __construct(
         public bool $isEnabled,
-        public AutoAssignmentStatus $state,
+        public AutoAssignmentStatus $status,
         public int $revision,
         public Option $pool,
         public Option $size,

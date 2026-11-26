@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
 use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
 use App\Contracts\Accounts\AccountUses;
@@ -23,7 +24,6 @@ use App\Models\Drivers\DriverConversation;
 use App\Models\Projects\Host;
 use App\Models\Sessions\SessionRequest;
 use App\Support\AgentSessions;
-use App\Support\DefaultDrivers;
 use App\Support\PolicyOverride;
 use App\Support\ProposedProfile;
 use App\Support\StartReceipt;
@@ -210,7 +210,12 @@ final class StartProfileMainTest extends TestCase
         $record = SessionRequest::query()->where('request_id', $requestId)->sole();
         $account = $this->app->make(AccountUses::class)->accountOf($sessionId, Account::linkType());
 
-        return [$record->family, $record->driver_type, $record->account_chosen, $account->id];
+        return [
+            $record->family,
+            $record->driver_type,
+            $record->account_chosen,
+            $account->id,
+        ];
     }
 
     private static function main(ModelTier $tier, string $preferredDriver): ProposedProfile

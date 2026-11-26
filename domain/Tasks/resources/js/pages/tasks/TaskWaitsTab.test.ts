@@ -14,21 +14,21 @@ const { rememberFollowedWait } = await import('../../openedWaits');
 
 const waits = {
     waitsFor: [
-        { type: 'task', isSatisfied: false, number: '24', title: 'Prepare records', state: 'started' },
+        { type: 'task', isSatisfied: false, number: '24', title: 'Prepare records', status: 'started' },
         { type: 'hidden', isSatisfied: false },
         {
             type: 'task',
             isSatisfied: true,
             number: '25',
             title: 'Check records',
-            state: 'open',
+            status: 'open',
             waivedAt: '2026-11-22T10:00:00+00:00',
             waivedByType: 'user',
             waivedById: 'owner',
             waiveReason: 'Done by hand.',
         },
     ],
-    holdsUp: [{ type: 'task', isSatisfied: false, number: '40', title: 'Publish records', state: 'open' }],
+    holdsUp: [{ type: 'task', isSatisfied: false, number: '40', title: 'Publish records', status: 'open' }],
 } as TaskWaitsData;
 
 describe('TaskWaitsTab', () => {

@@ -14,13 +14,13 @@ use App\Contracts\Refusals\StartRefusal;
 use App\Enums\Agents\ConversationModeType;
 use App\Enums\Drivers\DriverSourceType;
 use App\Enums\Drivers\DriverType;
-use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\ModelSelectionType;
 use App\Enums\Sessions\ResumeRefusal;
 use App\Enums\Sessions\StartDisposition;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StartPreflightRefusal;
 use App\Enums\Sessions\StartReadiness;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Enums\Sessions\StartRefusalType;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\SessionRequestRefused;
@@ -265,7 +265,7 @@ final class SessionRequest extends JournalModel implements EventSource, Readable
      * record keeps the reason as its receipt, and its session stays named.
      */
     public function refuseFor(
-        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal $reason,
+        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|StartRefusalReason $reason,
     ): void {
         $this->disposition = StartDisposition::Refused;
         $this->readiness = StartReadiness::Refused;

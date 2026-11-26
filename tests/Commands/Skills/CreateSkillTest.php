@@ -162,11 +162,15 @@ final class CreateSkillTest extends TestCase
 
         $this->artisan(
             'skill:edit',
-            ['number' => $number, '--expected-revision' => 1, '--body' => <<<'TEXT'
-            ## Notes
-
-            Read the notes twice.
-            TEXT],
+            [
+                'number' => $number,
+                '--expected-revision' => 1,
+                '--body' => <<<'TEXT'
+                ## Notes
+    
+                Read the notes twice.
+                TEXT,
+            ],
         )
             ->expectsOutputToContain('revision 2 saved; publication pending.')
             ->assertSuccessful();
@@ -214,10 +218,14 @@ final class CreateSkillTest extends TestCase
 
         Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);
         preg_match('/^Condition: (.+)$/m', Artisan::output(), $condition);
-        $this->assertEquals(['type' => 'all', 'version' => 1, 'children' => [
-            ['type' => 'drivers', 'version' => 1, 'keys' => ['codex']],
-            ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
-        ]], json_decode($condition[1], true, flags: JSON_THROW_ON_ERROR));
+        $this->assertEquals([
+            'type' => 'all',
+            'version' => 1,
+            'children' => [
+                ['type' => 'drivers', 'version' => 1, 'keys' => ['codex']],
+                ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
+            ],
+        ], json_decode($condition[1], true, flags: JSON_THROW_ON_ERROR));
     }
 
     private function draft(string $text): SkillDraft

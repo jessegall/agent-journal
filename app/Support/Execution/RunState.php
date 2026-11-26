@@ -47,10 +47,7 @@ final class RunState
     public function skipEveryPart(PlanStep $step, string $controllingResult): void
     {
         foreach ($step->flatten() as $part) {
-            if (in_array($part->type, [
-                StepType::Command,
-                StepType::Builtin,
-            ], true)) {
+            if (in_array($part->type, [StepType::Command, StepType::Builtin], true)) {
                 $this->events->skipped($this->queue($part), $controllingResult);
             }
         }

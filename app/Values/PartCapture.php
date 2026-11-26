@@ -11,5 +11,5 @@ use App\Enums\Runs\CaptureStatus;
  */
 final readonly class PartCapture
 {
-    public function __construct(public string $partId, public CaptureStatus $state) {}
+    public function __construct(public string $partId, public CaptureStatus $status) {}
 }

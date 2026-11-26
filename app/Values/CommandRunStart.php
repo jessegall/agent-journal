@@ -16,5 +16,5 @@ final readonly class CommandRunStart
     /**
      * @param  list<ProjectCommandFrame>  $recordedFrames
      */
-    public function __construct(public bool $isNew, public CommandRunStatus $state, public array $recordedFrames) {}
+    public function __construct(public bool $isNew, public CommandRunStatus $status, public array $recordedFrames) {}
 }

@@ -20,7 +20,7 @@ final readonly class HelperReceipt
         public string $jobId,
         public bool $isNewJob,
         public string $profileType,
-        public JobStatus $state,
+        public JobStatus $status,
         public SessionStartDetails $startDetails,
         public OwnerStartReceipt $start,
     ) {}

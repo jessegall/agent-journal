@@ -68,7 +68,7 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
      */
     public static function create(
         string $registrationDigest,
-        GenerationStatus $state,
+        GenerationStatus $status,
         string $catalogueDigest,
         array $definitions,
         string|null $errorReason,
@@ -77,7 +77,7 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
         $skillGeneration->catalogue_digest = $catalogueDigest;
         $skillGeneration->registration_digest = $registrationDigest;
         $skillGeneration->entries = GeneratedSkillData::collect($definitions, DataCollection::class);
-        $skillGeneration->status = $state;
+        $skillGeneration->status = $status;
         $skillGeneration->error_reason = $errorReason;
         $skillGeneration->assertSaved($skillGeneration->save());
 
@@ -128,11 +128,7 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
      */
     private function assertContentUnedited(): void
     {
-        if ($this->isDirty([
-            'entries',
-            'catalogue_digest',
-            'registration_digest',
-        ])) {
+        if ($this->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
             throw SkillGenerationImmutable::for($this->id);
         }
     }
@@ -169,8 +165,8 @@ final class SkillGeneration extends JournalModel implements EventSource, Readabl
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inState(Builder $query, GenerationStatus $state): void
+    protected function inState(Builder $query, GenerationStatus $status): void
     {
-        $query->where('status', $state->value);
+        $query->where('status', $status->value);
     }
 }

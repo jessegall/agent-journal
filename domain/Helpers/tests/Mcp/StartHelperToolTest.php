@@ -38,9 +38,6 @@ final class StartHelperToolTest extends McpToolEntryTestCase
                 'request_key' => 'helper-1',
             ])
             ->reply(StartHelperCommand::class, $helpers->receiptOf('Review'))
-            ->expects(StartHelperCommand::class, [
-                'profileKey' => 'writing-helper',
-                'model' => 'claude-sonnet-5-5',
-            ]);
+            ->expects(StartHelperCommand::class, ['profileKey' => 'writing-helper', 'model' => 'claude-sonnet-5-5']);
     }
 }

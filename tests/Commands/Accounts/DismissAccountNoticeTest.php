@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Accounts\DismissAccountNotice\DismissAccountNoticeCommand;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
@@ -17,7 +18,6 @@ use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Agents\Agent;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;

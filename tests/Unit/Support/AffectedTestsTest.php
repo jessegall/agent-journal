@@ -55,17 +55,15 @@ final class AffectedTestsTest extends TestCase
         $this->assertSame([], $this->affectedBy('config/journal.php')->testsByFile);
     }
 
-    public function test_every_architecture_test_runs_whole_beside_the_nearest_tests_and_outside_their_count(): void
+    public function test_an_affected_run_never_takes_an_architecture_test(): void
     {
         $crowded = $this->affectedBy('app/Crowded.php');
         $unreached = $this->affectedBy('config/journal.php');
-        $architecture = ['tests/Architecture/LayersTest.php' => 'Fixture\Tests\Architecture\LayersTest'];
 
         $this->assertSame(100, $crowded->methodCount());
-        $this->assertSame($architecture, $crowded->wholeTests);
-        $this->assertSame(['tests/CrowdedTest.php', 'tests/Architecture/LayersTest.php'], $crowded->runFiles());
-        $this->assertMatchesRegularExpression($crowded->filter(), 'Fixture\Tests\Architecture\LayersTest::test_names');
-        $this->assertSame(['tests/Architecture/LayersTest.php'], $unreached->runFiles());
+        $this->assertSame(['tests/CrowdedTest.php'], $crowded->runFiles());
+        $this->assertDoesNotMatchRegularExpression($crowded->filter(), 'Fixture\Tests\Architecture\LayersTest::test_names');
+        $this->assertSame([], $unreached->runFiles());
     }
 
     private function affectedBy(string $file): AffectedTestSelection

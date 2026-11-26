@@ -36,28 +36,17 @@ final class ChangeSequencePatchTest extends GuardedRouteEntryTestCase
         ], TestProjects::localOwner()->key()));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'sequence' => $sequenceId,
-            ])
+            ->parameters(['sequence' => $sequenceId])
             ->payload([
                 'name' => 'Release',
                 'version' => 1,
-                'steps' => [
-                    [
-                        'id' => 'build',
-                        'title' => 'Build',
-                        'runs_when' => 'held',
-                        'done_when' => 'green',
-                    ],
-                ],
+                'steps' => [['id' => 'build', 'title' => 'Build', 'runs_when' => 'held', 'done_when' => 'green']],
             ])
             ->expects(ChangeSequenceCommand::class, [
                 'sequenceId' => $sequenceId,
                 'openedVersion' => 1,
                 'name' => 'Release',
-                'steps' => [
-                    new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
-                ],
+                'steps' => [new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green')],
             ]);
     }
 }

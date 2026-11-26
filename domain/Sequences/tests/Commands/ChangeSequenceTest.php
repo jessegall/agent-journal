@@ -45,10 +45,7 @@ final class ChangeSequenceTest extends TestCase
         $run->sequence()->associate($this->sequence)->save();
 
         $this->journal->run(
-            new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [
-                self::step('tests'),
-                self::step('merge'),
-            ]),
+            new ChangeSequenceCommand($this->sequence->id, 1, 'Release', [self::step('tests'), self::step('merge')]),
         );
 
         $this->assertSame(2, $this->sequence->refresh()->version);
@@ -67,13 +64,7 @@ final class ChangeSequenceTest extends TestCase
             SequenceChangedMeanwhile::class,
         );
 
-        $this->assertSame([
-            2,
-            'merge',
-        ], [
-            $this->sequence->refresh()->version,
-            $this->sequence->steps[0]->id,
-        ]);
+        $this->assertSame([2, 'merge'], [$this->sequence->refresh()->version, $this->sequence->steps[0]->id]);
     }
 
     private static function step(string $id): SequenceStep

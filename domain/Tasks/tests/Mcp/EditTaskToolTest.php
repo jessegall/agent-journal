@@ -38,9 +38,6 @@ final class EditTaskToolTest extends McpToolEntryTestCase
                 'request_key' => 'tasks-1',
             ])
             ->reply(EditTaskCommand::class, 2)
-            ->expects(EditTaskCommand::class, [
-                'taskId' => $task->id,
-                'expectedRevision' => 1,
-            ]);
+            ->expects(EditTaskCommand::class, ['taskId' => $task->id, 'expectedRevision' => 1]);
     }
 }

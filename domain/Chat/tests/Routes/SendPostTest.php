@@ -83,9 +83,6 @@ final class SendPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::recorded('chat-send', ['01JPAGEREQUESTINBOX0000000' => $inbox->id])
             ->reply(SendMessageCommand::class, Str::ulid())
-            ->expects(SendMessageCommand::class, [
-                'inboxId' => $inbox->id,
-                'body' => 'Hello',
-            ]);
+            ->expects(SendMessageCommand::class, ['inboxId' => $inbox->id, 'body' => 'Hello']);
     }
 }

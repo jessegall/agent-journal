@@ -59,11 +59,7 @@ final class MemoryDomain extends Domain implements
         return [
             new PolicyDefinition(
                 MemoryPolicy::class,
-                [
-                    AccessType::Read,
-                    AccessType::Create,
-                    AccessType::Edit,
-                ],
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
         ];
     }

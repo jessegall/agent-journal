@@ -36,15 +36,7 @@ final class EditTaskTest extends TestCase
     {
         $revision = $this->journal->run(new EditTaskCommand($this->task->id, 1, brief: 'Second brief'));
 
-        $this->assertSame([
-            2,
-            'First',
-            'Second brief',
-        ], [
-            $revision,
-            $this->task->refresh()->title,
-            $this->task->brief,
-        ]);
+        $this->assertSame([2, 'First', 'Second brief'], [$revision, $this->task->refresh()->title, $this->task->brief]);
     }
 
     public function test_a_stale_revision_is_a_conflict_and_nothing_to_change_is_refused(): void
@@ -62,13 +54,7 @@ final class EditTaskTest extends TestCase
             'title:',
         );
 
-        $this->assertSame([
-            'Second',
-            2,
-        ], [
-            $this->task->refresh()->title,
-            $this->task->revision,
-        ]);
+        $this->assertSame(['Second', 2], [$this->task->refresh()->title, $this->task->revision]);
     }
 
     private function tasks(): TaskFixtures

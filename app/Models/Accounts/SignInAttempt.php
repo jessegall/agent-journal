@@ -181,12 +181,12 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     /**
      * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
      */
-    public function end(SignInStatus $state): void
+    public function end(SignInStatus $status): void
     {
-        $this->status = $state;
-        $this->cleanup_pending = $state !== SignInStatus::Complete;
+        $this->status = $status;
+        $this->cleanup_pending = $status !== SignInStatus::Complete;
         $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $state));
+        $this->raise(new SignInAttemptEnded($this->account_protocol, $this->id, $status));
     }
 
     /**
@@ -302,9 +302,9 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
      * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
      * in again that may have changed is checked before starts use it again.
      */
-    public function finish(SignInStatus $state): void
+    public function finish(SignInStatus $status): void
     {
-        $this->end($state);
+        $this->end($status);
         $this->raise(new SignInAttemptFinished($this->account_protocol, $this->id, $this->account_id));
     }
 
@@ -381,7 +381,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
      * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
      * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
      */
-    public function finishAt(SignInStatus $state, CarbonImmutable $now, string|null $reason = null): SignInStatus
+    public function finishAt(SignInStatus $status, CarbonImmutable $now, string|null $reason = null): SignInStatus
     {
         if (! $this->isLive()) {
             return $this->status;
@@ -394,9 +394,9 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
         }
 
         $this->refusal = $reason;
-        $this->finish($state);
+        $this->finish($status);
 
-        return $state;
+        return $status;
     }
 
     // ----------[ Accessors ]----------
@@ -717,7 +717,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     #[Scope]
     protected function live(Builder $query): void
     {
-        $query->whereIn('status', array_map(fn (SignInStatus $state) => $state->value, SignInStatus::live()));
+        $query->whereIn('status', array_map(fn (SignInStatus $status) => $status->value, SignInStatus::live()));
     }
 
     /**
@@ -728,7 +728,7 @@ final class SignInAttempt extends JournalModel implements EventSource, ReadableM
     #[Scope]
     protected function notLive(Builder $query): void
     {
-        $query->whereNotIn('status', array_map(fn (SignInStatus $state) => $state->value, SignInStatus::live()));
+        $query->whereNotIn('status', array_map(fn (SignInStatus $status) => $status->value, SignInStatus::live()));
     }
 
     /**

@@ -139,10 +139,7 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
     public function onMessageSent(MessageSent $event): void
     {
         if ($event->inboxId === $this->inboxId && ! $this->isOwnAgent($event->sender)) {
-            $this->unreadIds = array_values(array_unique([
-                ...$this->unreadIds,
-                $event->messageId,
-            ]));
+            $this->unreadIds = array_values(array_unique([...$this->unreadIds, $event->messageId]));
         }
     }
 

@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Agents\Drivers\Setup\SignInDriver;
 use App\Contracts\Accounts\AccountFolders;
 use App\Contracts\Accounts\AccountFolderUses as AccountFolderUsesContract;
-use App\Contracts\Accounts\FirstRunSettlement;
 use App\Contracts\Accounts\SignInHost;
 use App\Contracts\Accounts\SignInProtocol;
 use App\Contracts\Files\Files;
 use App\Enums\Accounts\AccountCheckResult;
 use App\Enums\Accounts\SignInOutcome;
 use App\Enums\Files\Place;
-use App\Enums\Projects\ArrangementType;
 use App\Exceptions\SignInAnswerUndelivered;
 use App\Exceptions\SignInChallengeUnreadable;
 use App\Exceptions\SignInSecretUnwritable;
@@ -42,7 +41,7 @@ final readonly class PrivateSignInProcesses
         private Closure $pause,
         private Files $files,
         private AccountFolders $folders,
-        private AccountFolderUsesContract $folderUses = new AccountFolderUses('', ArrangementType::Local),
+        private AccountFolderUsesContract $folderUses,
     ) {}
 
     /**
@@ -63,9 +62,10 @@ final readonly class PrivateSignInProcesses
         }
 
         $protocol = $this->protocols->for($claimed->driver, $claimed->method);
+        $driver = $this->protocols->driverOf($claimed->driver);
 
         $this->makePrivateFolder($claimed->directory);
-        $process = $protocol->begin($claimed->directory);
+        $process = $protocol->begin($driver, $claimed->directory);
         $this->host->notify($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
 
         if (! $this->waitForEnd($protocol, $process, $claimed) || $this->isPastDeadline($claimed)) {
@@ -74,9 +74,9 @@ final readonly class PrivateSignInProcesses
             return true;
         }
 
-        $verification = $protocol->prove($process, $claimed->directory);
+        $verification = $protocol->prove($driver, $process, $claimed->directory);
         $process->stop();
-        $this->settleFirstRun($protocol, $verification, $claimed->directory);
+        $this->settleFirstRun($driver, $verification, $claimed->directory);
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
         $this->host->notify($claimed, $outcome, $verification->identity, $verification->refusal);
 
@@ -110,8 +110,9 @@ final readonly class PrivateSignInProcesses
         }
 
         $protocol = $this->protocols->for($claimed->driver, $claimed->method);
-        $verification = $protocol->verify($claimed->directory);
-        $this->settleFirstRun($protocol, $verification, $claimed->directory);
+        $driver = $this->protocols->driverOf($claimed->driver);
+        $verification = $protocol->verify($driver, $claimed->directory);
+        $this->settleFirstRun($driver, $verification, $claimed->directory);
 
         $accountCheck = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
@@ -165,9 +166,10 @@ final readonly class PrivateSignInProcesses
         }
 
         $protocol = $this->protocols->for($claimed->driver, $claimed->method);
+        $driver = $this->protocols->driverOf($claimed->driver);
 
-        $protocol->signOut($claimed->directory);
-        $verification = $protocol->verify($claimed->directory);
+        $protocol->signOut($driver, $claimed->directory);
+        $verification = $protocol->verify($driver, $claimed->directory);
 
         return $verification->isCertain && ! $verification->isSignedIn;
     }
@@ -300,10 +302,10 @@ final readonly class PrivateSignInProcesses
     /**
      * A folder just proven or found signed in is left past its driver's first-run questions, where the driver has any.
      */
-    private function settleFirstRun(SignInProtocol $protocol, SignInVerification $verification, string $directory): void
+    private function settleFirstRun(SignInDriver $driver, SignInVerification $verification, string $directory): void
     {
-        if ($verification->isSignedIn && $protocol instanceof FirstRunSettlement) {
-            $protocol->settleFirstRun($directory);
+        if ($verification->isSignedIn) {
+            $driver->settleFirstRun($directory);
         }
     }
 }

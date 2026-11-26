@@ -52,7 +52,7 @@ final class HelperReceiptData extends Data
             'isNewIdentity' => $startDetails->isNewIdentity,
             'profileType' => $receipt->profileType,
             'profileRevision' => $startDetails->profileRevision,
-            'state' => $receipt->state->value,
+            'state' => $receipt->status->value,
             'conversationMode' => $startDetails->conversationMode->value,
             'conversationReason' => $startDetails->conversationReason,
             'isIndependent' => $startDetails->isIndependent,

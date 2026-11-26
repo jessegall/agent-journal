@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
 use App\Contracts\Assignments\AssignmentTransaction;
@@ -16,7 +17,6 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
 use App\Support\JournalCommands;
 use App\Values\ProfileKey;
 use Illuminate\Support\Str;
@@ -40,9 +40,23 @@ final class OpenBindingMainRuntimeTest extends TestCase
     use WithActiveAccount;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'binding_runtimes', 'project_bindings',
-        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
-        'users', 'accounts', 'active_accounts', 'inboxes', 'inbox_members',
+        'connection_audits',
+        'project_invitations',
+        'install_attempts',
+        'binding_runtimes',
+        'project_bindings',
+        'project_environments',
+        'projects',
+        'agent_runtimes',
+        'agent_sessions',
+        'agents',
+        'hosts',
+        'settings_records',
+        'users',
+        'accounts',
+        'active_accounts',
+        'inboxes',
+        'inbox_members',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -77,7 +91,10 @@ final class OpenBindingMainRuntimeTest extends TestCase
         $sessionId = AgentSession::query()->sole()->id;
         $settings = json_decode($plan['files'][0]['content'], true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame(
-            ['claude', ['--session-id', $sessionId], 'settings.json', $binding->canonical_root, true],
+            ['claude', [
+                '--session-id',
+                $sessionId,
+            ], 'settings.json', $binding->canonical_root, true],
             [
                 $plan['argv'][0],
                 array_slice($plan['argv'], -2),

@@ -26,10 +26,7 @@ final readonly class MessageSearchAccess extends ReadToolSearchAccess
     {
         $requestKey = Str::ulid()->toString();
 
-        return new OpenAction(self::READ, [
-            self::ID_ARGUMENT => $recordId,
-            self::REQUEST_KEY_ARGUMENT => $requestKey,
-        ]);
+        return new OpenAction(self::READ, [self::ID_ARGUMENT => $recordId, self::REQUEST_KEY_ARGUMENT => $requestKey]);
     }
 
     protected function readName(): string

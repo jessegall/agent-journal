@@ -21,7 +21,7 @@ final class ReadyWindow extends Data
      * @param  array<string, mixed>  $windowFields
      */
     public function __construct(
-        public readonly WindowStatus $state,
+        public readonly WindowStatus $status,
         #[MapName('data')]
         public readonly array $windowFields,
         public readonly DockOfferData|Optional $dockOffer,

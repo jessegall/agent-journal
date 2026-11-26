@@ -21,7 +21,7 @@ final readonly class SettleSampleController
         $outcome = $commands->run(new SettleSampleCommand($call->commandRequest));
 
         return SampleSettled::from([
-            'state' => $outcome->state->value,
+            'state' => $outcome->status->value,
             'runId' => $outcome->runId,
             'unsampledStatuses' => $outcome->unsampledStatuses,
         ]);

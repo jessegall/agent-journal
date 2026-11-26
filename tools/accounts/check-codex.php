@@ -12,8 +12,8 @@ declare(strict_types=1);
  *       [--host=<journal-agent>] [--host-state=<its state folder>]
  */
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\DefaultDrivers;
 
 use function Tools\Accounts\empty_folder;
 use function Tools\Accounts\installed_build;
@@ -64,29 +64,15 @@ $loadsWorkFolderServer = function (string $workingRoot, string $trusted) use ($p
     $codexHome = empty_folder('config-home');
     file_put_contents($codexHome.'/config.toml', "[projects.\"{$trusted}\"]\ntrust_level = \"trusted\"\n");
 
-    $servers = run_program([
-        $program,
-        'mcp',
-        'list',
-    ], $environment($codexHome), $workingRoot)->stdout;
+    $servers = run_program([$program, 'mcp', 'list'], $environment($codexHome), $workingRoot)->stdout;
 
     return str_contains($servers, 'hostile');
 };
 
-$version = run_program([
-    $program,
-    '--version',
-], $environment(empty_folder('version')), $home)->stdout;
+$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)->stdout;
 $installed = installed_build($program, $version);
-$help = run_program([
-    $program,
-    '--help',
-], $environment(empty_folder('help')), $home)->stdout
-    .run_program([
-        $program,
-        'exec',
-        '--help',
-    ], $environment(empty_folder('exec-help')), $home)->stdout;
+$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)->stdout
+    .run_program([$program, 'exec', '--help'], $environment(empty_folder('exec-help')), $home)->stdout;
 $absentFlags = array_filter($compatibility->startFlags, fn (string $flag) => ! str_contains($help, $flag));
 
 $work = (string) realpath(empty_folder('work'));

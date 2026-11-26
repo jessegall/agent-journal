@@ -411,10 +411,7 @@ final class ProcessRun extends JournalModel implements Dockable, EventSource, Pr
      */
     public function composeDockCard(CardContext $context): DockCard
     {
-        $parts = $this->parts->sortBy([
-            'syntax_node',
-            'attempt',
-        ]);
+        $parts = $this->parts->sortBy(['syntax_node', 'attempt']);
 
         $last = $parts->last();
         $title = $last === null ? 'Process run' : "Run of {$last->operation}";

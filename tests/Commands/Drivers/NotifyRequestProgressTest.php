@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
 use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
@@ -19,10 +20,10 @@ use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StartReadiness;
+use App\Enums\Sessions\StartRefusalReason;
 use App\Exceptions\HostReportRefused;
 use App\Models\Accounts\Account;
 use App\Models\Agents\AgentRuntime;
@@ -34,7 +35,6 @@ use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\AgentStatus;
 use App\Support\AgentWakes;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
@@ -194,7 +194,10 @@ final class NotifyRequestProgressTest extends TestCase
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'opus']))->requestId,
         );
 
-        foreach ([$resumed, $cancelled] as $request) {
+        foreach ([
+            $resumed,
+            $cancelled,
+        ] as $request) {
             $this->journal->asSystem(new NotifyRequestProgressCommand(
                 $host->hostId,
                 $request->id,
@@ -245,15 +248,29 @@ final class NotifyRequestProgressTest extends TestCase
 
         $pendingWork = $this->app->make(AgentTexts::class)->render(AgentText::of('core.drivers.pending_work'));
         $this->assertSame(
-            [[$wake->id, true, $pendingWork]],
+            [[
+                $wake->id,
+                true,
+                $pendingWork,
+            ]],
             array_map(
-                fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap, $request->message],
+                fn (ClaimedRequest $request) => [
+                    $request->requestId,
+                    $request->shouldBootstrap,
+                    $request->message,
+                ],
                 $bootstrap,
             ),
         );
         $this->assertSame(
-            [[$opened->firstRequestId, false]],
-            array_map(fn (ClaimedRequest $request) => [$request->requestId, $request->shouldBootstrap], $after),
+            [[
+                $opened->firstRequestId,
+                false,
+            ]],
+            array_map(fn (ClaimedRequest $request) => [
+                $request->requestId,
+                $request->shouldBootstrap,
+            ], $after),
         );
     }
 
@@ -290,7 +307,7 @@ final class NotifyRequestProgressTest extends TestCase
         $this->notifyApplied($host, $wake, 'conversation-2');
 
         $this->assertSame(
-            [StartReadiness::Refused, HostRefusal::IdentityMismatch->value],
+            [StartReadiness::Refused, StartRefusalReason::IdentityMismatch->value],
             [$record->refresh()->readiness, $record->refusal_reason],
         );
         $this->assertSame([], $this->claimedIds($host));
@@ -304,7 +321,7 @@ final class NotifyRequestProgressTest extends TestCase
     {
         [$host, , $wake, $record] = $this->startWithMessage();
         $this->claimedIds($host);
-        $record->refuseFor(HostRefusal::IdentityMismatch);
+        $record->refuseFor(StartRefusalReason::IdentityMismatch);
 
         $this->notifyApplied($host, $wake, self::CONVERSATION);
 
@@ -386,7 +403,12 @@ final class NotifyRequestProgressTest extends TestCase
             InitialWakeSettlement::keyOf($session->id),
         );
 
-        return [$host, $opened, DriverRequest::query()->findOrFail($receipt->requestId), $record];
+        return [
+            $host,
+            $opened,
+            DriverRequest::query()->findOrFail($receipt->requestId),
+            $record,
+        ];
     }
 
     /**

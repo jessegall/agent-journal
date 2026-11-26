@@ -21,9 +21,9 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
         return new self("A publication that is {$from->value} cannot become {$to->value}.");
     }
 
-    public static function notClaimable(PublicationStatus $state): self
+    public static function notClaimable(PublicationStatus $status): self
     {
-        return new self("A publication that is {$state->value} is not waiting for a worker.");
+        return new self("A publication that is {$status->value} is not waiting for a worker.");
     }
 
     public static function collision(string $target, Throwable|null $cause = null): self

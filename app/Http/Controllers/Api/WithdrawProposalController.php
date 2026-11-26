@@ -20,9 +20,6 @@ final readonly class WithdrawProposalController
     {
         $withdrawn = $commands->run(new WithdrawRuleProposalCommand($call->proposal));
 
-        return ProposalStateChanged::from([
-            'proposalId' => $withdrawn,
-            'state' => 'withdrawn',
-        ]);
+        return ProposalStateChanged::from(['proposalId' => $withdrawn, 'state' => 'withdrawn']);
     }
 }

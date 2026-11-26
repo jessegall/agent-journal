@@ -133,8 +133,5 @@ function digestedJson(NodeFinder $finder, ClassMethod $method): array
 function isJsonCall(Node $node): bool
 {
     return $node instanceof FuncCall && $node->name instanceof Node\Name
-        && in_array($node->name->getLast(), [
-            'json_encode',
-            'json_decode',
-        ], true);
+        && in_array($node->name->getLast(), ['json_encode', 'json_decode'], true);
 }

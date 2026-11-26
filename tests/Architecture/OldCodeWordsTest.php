@@ -25,7 +25,7 @@ final class OldCodeWordsTest extends TestCase
     private const array OTHER_PROGRAMS = [
         'app/Mcp/Support/Frame.php' => 'an MCP client that still sends the initialize of an earlier MCP protocol',
         'app/Mcp/Support/RelayFrames.php' => 'the same MCP initialize, relayed',
-        'app/Support/Drivers/CodexSkills.php' => "Codex's own earlier skills folder",
+        'app/Agents/Drivers/Codex/CodexSkills.php' => "Codex's own earlier skills folder",
         'app/Support/Rules/PackageRules.php' => "npm's --legacy-peer-deps flag",
     ];
 

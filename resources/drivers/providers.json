@@ -1,4 +1,0 @@
-[
-    {"name": "claude-code", "executable": "claude", "build": "2.1.323"},
-    {"name": "codex", "executable": "codex", "build": "0.165.0"}
-]

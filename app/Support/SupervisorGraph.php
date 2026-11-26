@@ -40,17 +40,11 @@ final readonly class SupervisorGraph
 
         while (isset($this->routes[$source])) {
             if (isset($path[$source])) {
-                throw SupervisorRouteRefused::cycle($route, [
-                    ...array_keys($path),
-                    $source,
-                ]);
+                throw SupervisorRouteRefused::cycle($route, [...array_keys($path), $source]);
             }
 
             if (count($path) === self::MAX_HOPS) {
-                throw SupervisorRouteRefused::tooDeep($route, [
-                    ...array_keys($path),
-                    $source,
-                ]);
+                throw SupervisorRouteRefused::tooDeep($route, [...array_keys($path), $source]);
             }
 
             $path[$source] = true;

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Processes\ProcessDrivers;
+use App\Agents\Drivers\Setup\DriverProfile;
+use App\Agents\Drivers\Setup\DriverProfiles;
+use App\Agents\Drivers\Work\DriverWork;
+use App\Agents\Drivers\Work\DriverWorkers;
 use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
@@ -21,6 +27,7 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
+use App\Enums\Hosts\HostRefusal;
 use App\Enums\Hosts\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
@@ -28,14 +35,10 @@ use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ClaimedRequests;
 use App\Support\ContainerManifest;
-use App\Support\DefaultDrivers;
-use App\Support\Drivers\DriverWork;
-use App\Support\Drivers\DriverWorkers;
-use App\Support\Drivers\ProcessDrivers;
-use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\Hosts\ProcessFeed;
 use App\Support\MountRules;
 use App\Support\PrivateValues;
+use App\Support\PublishedReleases;
 use App\Support\SecurityOptions;
 use App\Support\SignInChallenges;
 use App\Values\ClaimedRequest;
@@ -51,6 +54,7 @@ use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Process;
 use PHPUnit\Framework\Assert;
+use Tests\Support\Connections\PublicRelease;
 use Tests\Support\Hosts\RealHost;
 use Tests\Support\Hosts\StandInHost;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -116,7 +120,11 @@ trait ArrangesHostProcesses
 
         $this->claimStartOf($hostId, $sessionId);
 
-        $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
+        $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, [
+            'sh',
+            '-c',
+            'cat',
+        ], [], base_path());
         $source = HostOrderSource::fromJournal();
         $runtimeId = AgentRuntime::findForSession($sessionId)?->id;
         $command = new OpenHostProcessCommand($hostId, $runtimeId, $plan, $source, $start->id);
@@ -190,7 +198,10 @@ trait ArrangesHostProcesses
             );
             $source = HostOrderSource::fromJournal();
             $process = $this->asSystem(new OpenHostProcessCommand($runtime->host_id, $runtime->id, $plan, $source));
-            $this->requestWorkers[$runtime->id] = [$process, $this->asSystem(new ClaimHostWorkerCommand($process))];
+            $this->requestWorkers[$runtime->id] = [
+                $process,
+                $this->asSystem(new ClaimHostWorkerCommand($process)),
+            ];
         }
 
         return $this->requestWorkers[$runtime->id];
@@ -217,7 +228,7 @@ trait ArrangesHostProcesses
      */
     public function passBuildProbe(string $name, string $runtimeId): self
     {
-        $build = $this->service(ClaudeCodeProfile::class)->build();
+        $build = $this->driverProfile(DefaultDrivers::CLAUDE_CODE)->build();
         $this->callJournalProcess("{$name}-probe", $runtimeId, HostProcessPurpose::BuildProbe);
         $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "{$build} (Claude Code)\n"));
 
@@ -264,6 +275,16 @@ trait ArrangesHostProcesses
     public function hostOrdersOf(string $name): array
     {
         return HostOrder::findForProcess($this->hostProcessCalled($name)->id);
+    }
+
+    /**
+     * The orders made for the named host itself, for no process of it, oldest first.
+     *
+     * @return list<HostOrder>
+     */
+    public function hostOrdersOn(string $host): array
+    {
+        return HostOrder::findForHostItself($this->hostCalled($host)->hostId);
     }
 
     /**
@@ -317,7 +338,10 @@ trait ArrangesHostProcesses
     {
         $process = $this->hostProcessCalled($name);
         $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'captured' => 1];
-        $body = json_encode(['frames' => [[...$frame, 'unchanged_ms' => [0]]]], JSON_THROW_ON_ERROR);
+        $body = json_encode(['frames' => [[
+            ...$frame,
+            'unchanged_ms' => [0],
+        ]]], JSON_THROW_ON_ERROR);
         $this->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
@@ -329,6 +353,69 @@ trait ArrangesHostProcesses
     public function answerHostOrder(HostOrder $order): self
     {
         $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, '{"status":"done"}'));
+
+        return $this;
+    }
+
+    /**
+     * The order's host answers it as carried out, with the facts it found.
+     *
+     * @param  array<string, mixed>  $facts
+     */
+    public function answerHostOrderWith(HostOrder $order, array $facts): self
+    {
+        $body = json_encode(['status' => 'done', 'facts' => $facts], JSON_THROW_ON_ERROR);
+        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, $body));
+
+        return $this;
+    }
+
+    /**
+     * The profile the journal starts the driver family by.
+     */
+    public function driverProfile(string $family): DriverProfile
+    {
+        return $this->service(DriverProfiles::class)->ofFamily($family);
+    }
+
+    /**
+     * Every driver set up with the part given builds the replacement in its place.
+     *
+     * @param  class-string  $part
+     * @param  class-string  $replacement
+     */
+    public function withDriverPart(string $part, string $replacement): self
+    {
+        $this->app->bind($part, $replacement);
+
+        return $this;
+    }
+
+    /**
+     * The journal publishes the release given as its current one, with a signed manifest.
+     */
+    public function publishRelease(string $version): self
+    {
+        $folder = sys_get_temp_dir().'/published-releases-'.bin2hex(random_bytes(4));
+        mkdir("{$folder}/{$version}", 0755, true);
+        file_put_contents("{$folder}/{$version}/".PublishedReleases::MANIFEST, json_encode(
+            PublicRelease::manifest($version),
+            JSON_THROW_ON_ERROR,
+        ));
+        file_put_contents("{$folder}/{$version}/".PublishedReleases::SIGNATURE, 'signature');
+        config(['files.places.releases' => $folder, 'agents.release' => $version]);
+        $this->app->forgetInstance(PublishedReleases::class);
+
+        return $this;
+    }
+
+    /**
+     * The order's host refuses it for the reason given.
+     */
+    public function refuseHostOrder(HostOrder $order, HostRefusal $refusal): self
+    {
+        $body = json_encode(['status' => 'refused', 'refusal' => $refusal->value], JSON_THROW_ON_ERROR);
+        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, $body));
 
         return $this;
     }

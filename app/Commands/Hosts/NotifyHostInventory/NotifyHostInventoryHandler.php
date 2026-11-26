@@ -38,6 +38,8 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
 
         $now = $this->clock->now();
         $host->recordCapabilities($inventory->capabilities);
+        $host->forgetAllowedImages();
+        $host->recordRelease($inventory->release);
 
         foreach (HostProcess::findLiveOn($host) as $process) {
             $held = $reported[$process->id] ?? null;

@@ -19,11 +19,7 @@ Route::middleware('journal.agent')->prefix('agent')->name('comments.agent.')->gr
     $calls->register(LocateCommentController::class)->name('location');
 });
 
-Route::middleware([
-    'web',
-    'auth',
-    'journal.user',
-])->prefix('comments')->name('comments.')->group(function (): void {
+Route::middleware(['web', 'auth', 'journal.user'])->prefix('comments')->name('comments.')->group(function (): void {
     Route::post('post', PostCommentController::class)->name('post');
     Route::get('list', ListCommentsController::class)->name('list');
     Route::get('location', CommentLocationController::class)->name('location');

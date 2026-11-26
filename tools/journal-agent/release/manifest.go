@@ -39,22 +39,17 @@ func (target Target) Folder() string {
 	return target.OS + "-" + target.Arch
 }
 
-// TargetArtifacts are the files one target installs, each Source a path inside the release folder, what the machine
-// needs before it installs them and the local providers that target runs.
+// TargetArtifacts are the files one target installs, each Source a path inside the release folder, and what the
+// machine needs before it installs them.
 type TargetArtifacts struct {
 	Target
 	Prerequisites []string        `json:"prerequisites"`
-	Providers     []string        `json:"providers"`
 	Artifacts     []host.Artifact `json:"artifacts"`
 }
 
 // Capabilities are what every release built here does for a connected machine; the server offers a public install
 // line only for a release that lists all it requires.
 var Capabilities = []string{"enrollment", "presence", "commands", "child-worktrees"}
-
-// LocalProviders are the local providers a connected machine runs; Codex is left out while its hook calls carry no
-// per-thread capability (journal codex says why), so the server names it withheld.
-var LocalProviders = []string{"claude-code"}
 
 // prerequisitesOf are the programs a target's machine needs before it installs the release.
 func prerequisitesOf(target Target) []string {
@@ -65,12 +60,11 @@ func prerequisitesOf(target Target) []string {
 	return []string{"git", "curl"}
 }
 
-// Manifest is what one release holds: its version, the installation profile it was built from with the providers
-// that arrive apart from it, and the files of each target.
+// Manifest is what one release holds: its version, the installation profile it was built from and the files of each
+// target.
 type Manifest struct {
 	Version      string            `json:"version"`
 	Profile      string            `json:"profile"`
-	Providers    []Provider        `json:"providers"`
 	Capabilities []string          `json:"capabilities"`
 	Targets      []TargetArtifacts `json:"targets"`
 }

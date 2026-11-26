@@ -64,11 +64,7 @@ final readonly class PlanDocking implements DockableProvider
         $phases = Phase::query()
             ->ofPlans($plans->modelKeys())
             ->readAll('the current phase of each docked plan is named by its title')
-            ->get([
-                'plan_id',
-                'number',
-                'title',
-            ]);
+            ->get(['plan_id', 'number', 'title']);
 
         foreach ($phases as $phase) {
             $titles["{$phase->plan_id}:{$phase->number}"] = $phase->title;

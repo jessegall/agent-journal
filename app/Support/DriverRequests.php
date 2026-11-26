@@ -60,10 +60,7 @@ final readonly class DriverRequests
             ->ofAgentRuntime($request->agent_runtime_id)
             ->withOperation($request->operation)
             ->before($request->sequence)
-            ->withAnyProgress([
-                RequestProgress::Accepted,
-                RequestProgress::Staged,
-            ])
+            ->withAnyProgress([RequestProgress::Accepted, RequestProgress::Staged])
             ->lockForUpdate()
             ->get()
             ->each(fn (DriverRequest $earlier) => $earlier->supersede());

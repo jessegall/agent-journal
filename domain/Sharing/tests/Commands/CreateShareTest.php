@@ -196,11 +196,7 @@ final class CreateShareTest extends TestCase
             (string) json_encode($receipt->getAttributes()),
         );
 
-        $this->assertSame([
-            'shareId',
-            'number',
-            'state',
-        ], array_keys(get_object_vars($summary)));
+        $this->assertSame(['shareId', 'number', 'state'], array_keys(get_object_vars($summary)));
     }
 
     public function test_a_repeat_with_the_same_key_returns_the_same_share_and_a_changed_payload_conflicts(): void
@@ -379,10 +375,7 @@ final class CreateShareTest extends TestCase
 
         $this->artisan(
             'share:create',
-            [
-                'preview' => $preview->id,
-                '--minutes' => '60',
-            ],
+            ['preview' => $preview->id, '--minutes' => '60'],
         )->expectsOutputToContain('is pending')->assertExitCode(0);
 
         $share = Share::query()->sole();

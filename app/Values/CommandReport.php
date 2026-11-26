@@ -53,9 +53,6 @@ final readonly class CommandReport
 
     private function with(ReportLineType $type, string $text): self
     {
-        return new self([
-            ...$this->lines,
-            new ReportLine($type, $text),
-        ], $this->status);
+        return new self([...$this->lines, new ReportLine($type, $text)], $this->status);
     }
 }

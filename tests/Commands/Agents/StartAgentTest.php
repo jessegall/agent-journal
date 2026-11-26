@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\RetireAgent\RetireAgentCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
 use App\Contracts\Accounts\ActiveAccountReader;
@@ -12,7 +13,6 @@ use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
 use App\Contracts\Sessions\SessionPolicyReader;
-use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Agents\ConversationModeType;
@@ -52,7 +52,6 @@ use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
-use App\Support\DefaultDrivers;
 use App\Support\HostCapability;
 use App\Support\HostCapabilityQuery;
 use App\Support\StartReceipt;
@@ -143,7 +142,6 @@ final class StartAgentTest extends TestCase
             StartDisposition::Started,
             SessionRequest::query()->where('request_id', $request->requestId)->sole()->disposition,
         );
-        $this->assertSame(['--model', TestSelections::MODEL], $first->driverArguments);
         $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $first->actualModel);
     }
 
@@ -192,10 +190,7 @@ final class StartAgentTest extends TestCase
 
         $receipt = $this->start($request);
 
-        $this->assertSame(
-            [['--model', TestSelections::MODEL], StartReceipt::ACTUAL_MODEL_NOT_REPORTED],
-            [$receipt->driverArguments, $receipt->actualModel],
-        );
+        $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $receipt->actualModel);
     }
 
     public function test_a_start_runs_with_the_chosen_account_and_the_journal_takes_it_to_prove_it(): void
@@ -319,7 +314,6 @@ final class StartAgentTest extends TestCase
     {
         $this->journal->actAsUserId(TestIds::of(1));
         $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
-        $this->mock(StartExecutor::class)->shouldNotReceive('start');
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
             fn (HostCapabilityQuery $query) => new HostCapability(
                 $query,

@@ -60,10 +60,7 @@ final class FollowSequenceStateTest extends TestCase
         $this->following()
             ->given($hooks->stop('turn-1'), fn (StateObservation $state) => $state->assertRefusedWith('Read the brief'))
             ->given(
-                [
-                    new SequenceStepReached(self::RUN, $this->follower(), 2),
-                    $hooks->stop('turn-2'),
-                ],
+                [new SequenceStepReached(self::RUN, $this->follower(), 2), $hooks->stop('turn-2')],
                 fn (StateObservation $state) => $state->assertRefusedWith('Write the code'),
             );
     }

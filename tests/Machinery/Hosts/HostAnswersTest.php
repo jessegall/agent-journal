@@ -25,7 +25,11 @@ final class HostAnswersTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['hosts', 'host_processes', 'host_orders'];
+    private const array TABLES = [
+        'hosts',
+        'host_processes',
+        'host_orders',
+    ];
 
     private const string DONE = '{"status":"done","facts":{"stopped":true}}';
 
@@ -46,9 +50,15 @@ final class HostAnswersTest extends TestCase
         $unanswered = $this->stop();
 
         $this->journal->assertResult(
-            [[HostOrderStatus::Done, ['stopped' => true]], HostOrderStatus::Pending],
+            [[
+                HostOrderStatus::Done,
+                ['stopped' => true],
+            ], HostOrderStatus::Pending],
             [
-                [$answers->await($answered, 1000)->status, $answers->await($answered, 1000)->answer],
+                [
+                    $answers->await($answered, 1000)->status,
+                    $answers->await($answered, 1000)->answer->facts,
+                ],
                 $answers->await($unanswered, 50)->status,
             ],
         );

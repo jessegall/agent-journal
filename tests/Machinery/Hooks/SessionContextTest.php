@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Drivers\RewriteSupport;
 use App\Enums\Hooks\ContextStartType;
 use App\Enums\Hooks\HookEvent;
 use App\Events\Hooks\ContextStarted;
 use App\Support\ContextBudget;
-use App\Support\Drivers\DriverCapabilities;
-use App\Support\Drivers\DriverReplies;
 use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\OperationDeadline;
@@ -74,8 +74,14 @@ final class SessionContextTest extends TestCase
     public function test_a_start_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
     {
         foreach ([
-            ['call-1', ContextStartType::Start],
-            ['call-2', ContextStartType::Clear],
+            [
+                'call-1',
+                ContextStartType::Start,
+            ],
+            [
+                'call-2',
+                ContextStartType::Clear,
+            ],
         ] as [$callId, $source]) {
             $context = $this->start($callId, $source);
 

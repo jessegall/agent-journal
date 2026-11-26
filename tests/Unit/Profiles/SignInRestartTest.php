@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\Contracts\Files\Files;
+use App\Enums\Projects\ArrangementType;
 use App\Jobs\SignInDeadline;
+use App\Support\AccountFolderUses;
+use App\Support\FolderOrderWait;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
 use App\Support\SignInProtocols;
@@ -33,10 +36,11 @@ final class SignInRestartTest extends TestCase
 
         new PrivateSignInProcesses(
             $host,
-            new SignInProtocols($this->app),
+            $this->app->make(SignInProtocols::class),
             static fn () => null,
             $this->app->make(Files::class),
             new LocalAccountFolders($this->app->make(Files::class)),
+            new AccountFolderUses($host, new FolderOrderWait($host, static fn () => null), ArrangementType::Local),
         )->reconcileAtStart();
 
         $this->assertSame([[]], $host->reconciled);

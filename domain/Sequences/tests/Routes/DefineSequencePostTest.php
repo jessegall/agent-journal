@@ -36,21 +36,12 @@ final class DefineSequencePostTest extends GuardedRouteEntryTestCase
             ->headers([SelectProject::HEADER => TestProjects::local()->id])
             ->payload([
                 'name' => 'Release',
-                'steps' => [
-                    [
-                        'id' => 'build',
-                        'title' => 'Build',
-                        'runs_when' => 'held',
-                        'done_when' => 'green',
-                    ],
-                ],
+                'steps' => [['id' => 'build', 'title' => 'Build', 'runs_when' => 'held', 'done_when' => 'green']],
             ])
             ->reply(DefineSequenceCommand::class, Str::ulid())
             ->expects(DefineSequenceCommand::class, [
                 'name' => 'Release',
-                'steps' => [
-                    new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
-                ],
+                'steps' => [new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green')],
             ]);
     }
 }

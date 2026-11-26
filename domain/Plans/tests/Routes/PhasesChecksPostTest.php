@@ -32,9 +32,6 @@ final class PhasesChecksPostTest extends GuardedRouteEntryTestCase
         $phase = $plans->phaseCalled('Design');
 
         return RouteCall::as(Caller::Agent, $start)
-            ->payload([
-                'plan' => $plan->number,
-                'phase' => $phase->number,
-            ]);
+            ->payload(['plan' => $plan->number, 'phase' => $phase->number]);
     }
 }

@@ -121,17 +121,9 @@ final readonly class ReportsShow extends ReportsPage
 
         $parts = [
             LayoutPartData::collection('facts', 'facts', [
-                LayoutRowData::from([
-                    'key' => 'editing',
-                    'label' => 'Editing',
-                    'value' => 'free',
-                ]),
+                LayoutRowData::from(['key' => 'editing', 'label' => 'Editing', 'value' => 'free']),
                 LayoutRowData::from(
-                    [
-                        'key' => 'attention',
-                        'label' => 'Attention',
-                        'value' => $report->attention->value,
-                    ],
+                    ['key' => 'attention', 'label' => 'Attention', 'value' => $report->attention->value],
                 ),
             ]),
         ];

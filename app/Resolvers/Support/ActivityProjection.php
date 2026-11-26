@@ -49,13 +49,13 @@ final readonly class ActivityProjection
         );
     }
 
-    private function lifecycleOf(LifecycleStatus $state): string
+    private function lifecycleOf(LifecycleStatus $status): string
     {
-        if ($state === LifecycleStatus::Draining) {
+        if ($status === LifecycleStatus::Draining) {
             return 'finalizing';
         }
 
-        return $state->value;
+        return $status->value;
     }
 
     private function latestLineOf(OutputChunk $chunk): string

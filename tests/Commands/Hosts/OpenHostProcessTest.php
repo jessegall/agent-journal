@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
+use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessStatus;
@@ -19,7 +20,8 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Opening a process makes its row, ordered and not yet running, and the open order the host claims.
+ * Opening a process makes its row, ordered and not yet running, and the open order the host claims; a process of a
+ * start runs under its session's fence.
  */
 #[TestsCommand(OpenHostProcessCommand::class)]
 final class OpenHostProcessTest extends TestCase
@@ -51,5 +53,17 @@ final class OpenHostProcessTest extends TestCase
             [HostProcessStatus::Ordered, RestartPolicy::OnCrash, HostOrderType::OpenProcess, $plan->payload()],
             [$process->status, $process->restart, $order->type, $this->journal->payloadOf($order)],
         );
+    }
+
+    public function test_a_process_of_a_start_runs_under_its_sessions_fence(): void
+    {
+        $this->journal->owner()->showDriverArrangements()->chooseActiveAccounts()->idleAgent('Fenced')
+            ->enrollHost('Mac', [base_path()]);
+        $opened = $this->journal->openRuntimeOn('Fenced', 'Mac', base_path(), driverType: DriverType::Terminal);
+
+        $this->journal->openHostProcessForStart('Mac', 'terminal', $opened->sessionId);
+
+        $order = $this->journal->hostOrdersOf('terminal')[0];
+        $this->journal->assertResult($opened->sessionId, $this->journal->payloadOf($order)['fence']);
     }
 }

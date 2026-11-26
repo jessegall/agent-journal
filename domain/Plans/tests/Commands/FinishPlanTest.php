@@ -72,11 +72,7 @@ final class FinishPlanTest extends TestCase
 
     public function test_finishing_a_plan_with_an_open_task_is_refused_with_the_count(): void
     {
-        $plan = $this->startedPlan([
-            TaskStatus::Finished,
-            TaskStatus::Open,
-            TaskStatus::Blocked,
-        ]);
+        $plan = $this->startedPlan([TaskStatus::Finished, TaskStatus::Open, TaskStatus::Blocked]);
 
         $this->assertThrows(
             fn () => $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Done.')),
@@ -90,24 +86,13 @@ final class FinishPlanTest extends TestCase
 
     public function test_finishing_a_plan_whose_tasks_are_done_records_the_note_and_the_done_state(): void
     {
-        $plan = $this->startedPlan([
-            TaskStatus::Finished,
-            TaskStatus::Cancelled,
-        ]);
+        $plan = $this->startedPlan([TaskStatus::Finished, TaskStatus::Cancelled]);
 
         $this->bus()->run(new FinishPlanCommand($plan->id, 1, 'Shipped.'));
 
         $this->assertSame(
-            [
-                PlanStatus::Done,
-                'Shipped.',
-                2,
-            ],
-            [
-                $plan->fresh()?->status,
-                $plan->fresh()?->finish_note,
-                $plan->fresh()?->revision,
-            ],
+            [PlanStatus::Done, 'Shipped.', 2],
+            [$plan->fresh()?->status, $plan->fresh()?->finish_note, $plan->fresh()?->revision],
         );
 
         $this->journal->assertEventCount(PlanFinished::class, 1);
@@ -148,7 +133,7 @@ final class FinishPlanTest extends TestCase
      */
     private function startedPlan(array $states): Plan
     {
-        $tasks = array_map(fn (TaskStatus $state) => $this->taskIn($state)->assignmentIdentity(), $states);
+        $tasks = array_map(fn (TaskStatus $status) => $this->taskIn($status)->assignmentIdentity(), $states);
 
         return $this->plans->startedPlan('Release')->phase(
             'Release',
@@ -156,11 +141,11 @@ final class FinishPlanTest extends TestCase
         )->placeTasks('Work', ...$tasks)->planCalled('Release');
     }
 
-    private function taskIn(TaskStatus $state): Task
+    private function taskIn(TaskStatus $status): Task
     {
         $task = Task::factory()->create();
 
-        match ($state) {
+        match ($status) {
             TaskStatus::Started => $task->start(ActorReference::system()),
             TaskStatus::Blocked => $task->block('Waits.'),
             TaskStatus::Finished => $task->finish('Done.'),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Skills\RefreshSkills;
 
+use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Bus\CommandHandler;
 use App\Data\Skills\GeneratedSkillData;
 use App\Enums\Skills\GenerationStatus;
@@ -17,7 +18,6 @@ use App\Resolvers\SkillCatalogue;
 use App\Resolvers\Support\SkillContextResolver;
 use App\Support\CanonicalRenderer;
 use App\Support\ConditionTree;
-use App\Support\Drivers\DriverSkillAdapters;
 use App\Support\SkillPublications;
 use App\Support\SkillRegistry;
 use App\Support\SkillSelection;

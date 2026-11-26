@@ -31,9 +31,6 @@ final class RevisionGetTest extends GuardedRouteEntryTestCase
         $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'document' => $document->number,
-                'revision' => 1,
-            ]);
+            ->parameters(['document' => $document->number, 'revision' => 1]);
     }
 }

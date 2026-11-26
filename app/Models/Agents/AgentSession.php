@@ -359,10 +359,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             ->ofAgents($ids)
             ->running()
             ->oldestFirst()
-            ->get([
-                'agent_id',
-                'driver_key',
-            ])
+            ->get(['agent_id', 'driver_key'])
             ->pluck('driver_key', 'agent_id')
             ->all();
     }
@@ -450,10 +447,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
      */
     public static function findLockedForHeartbeat(string $sessionId): self
     {
-        return self::query()->whereKey($sessionId)->with([
-            'sessionToken',
-            'agent',
-        ])->lockForUpdate()->firstOrFail();
+        return self::query()->whereKey($sessionId)->with(['sessionToken', 'agent'])->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -693,10 +687,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     #[Scope]
     protected function withAgentAndCurrentConversation(Builder $query): void
     {
-        $query->with([
-            'agent',
-            'currentConversation',
-        ]);
+        $query->with(['agent', 'currentConversation']);
     }
 
     /**
@@ -707,10 +698,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     #[Scope]
     protected function withSessionTokenAndAgent(Builder $query): void
     {
-        $query->with([
-            'sessionToken',
-            'agent',
-        ]);
+        $query->with(['sessionToken', 'agent']);
     }
 
     /**

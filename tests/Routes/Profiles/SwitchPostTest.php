@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Drivers\DefaultDrivers;
 use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Enums\Drivers\DriverSwitchStage;
 use App\Enums\Drivers\DriverType;
-use App\Support\DefaultDrivers;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchReceipt;
 use App\Values\DriverSwitchTarget;
@@ -33,9 +33,7 @@ final class SwitchPostTest extends GuardedRouteEntryTestCase
         $accountId = strtolower((string) Str::ulid());
 
         return RouteCall::as(Caller::User)
-            ->parameters([
-                'profile' => 'main-agent',
-            ])
+            ->parameters(['profile' => 'main-agent'])
             ->payload([
                 'requestId' => $requestId,
                 'agentId' => $start->agent->id,

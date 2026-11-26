@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Agents\Drivers\Work\OwnTerminalPlans;
 use App\Attributes\Bus\Dispatches;
 use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
 use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
@@ -14,7 +15,6 @@ use App\Data\Connections\BindingRuntimeRequestData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Sessions\BindingRuntime;
-use App\Support\Drivers\OwnTerminalPlans;
 use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 

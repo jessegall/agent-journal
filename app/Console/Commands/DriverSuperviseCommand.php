@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Support\Drivers\DriverSupervisor;
+use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Support\Hosts\HostWake;
 use Illuminate\Console\Command;
 
