@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CommentOnDocument\CommentOnDocumentCommand;
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.docs.comment, as the generator wrote it.
+ * An agent comments on a document.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.docs.comment')]
 final class AgentDocsCommentPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,9 +28,19 @@ final class AgentDocsCommentPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.docs.comment', [
-            'the payload',
-            'the expected commands',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+
+        return RouteCall::as(Caller::Agent, $start)
+            ->payload([
+                'doc_id' => $document->id,
+                'body' => 'Section two is unclear.',
+                'request_key' => 'documents-1',
+            ])
+            ->reply(CommentOnDocumentCommand::class, Str::ulid())
+            ->expects(CommentOnDocumentCommand::class, [
+                'documentId' => $document->id,
+                'body' => 'Section two is unclear.',
+            ]);
     }
 }

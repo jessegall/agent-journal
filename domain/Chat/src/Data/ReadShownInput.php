@@ -25,7 +25,8 @@ final class ReadShownInput extends Data
         public readonly string $inboxId,
         #[ArrayType, Min(1), Max(100)]
         public readonly array $messageIds,
+        // The agent the chat was chosen by, or none for a chat chosen by its inbox, such as a group chat.
         #[Ulid]
-        public readonly string $agent,
+        public readonly string|null $agent,
     ) {}
 }

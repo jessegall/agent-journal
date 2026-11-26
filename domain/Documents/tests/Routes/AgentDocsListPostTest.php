@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
+use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST documents.agent.docs.list, as the generator wrote it.
+ * An agent lists the documents.
  */
-#[Generated]
 #[TestsRoute('POST', 'documents.agent.docs.list')]
 final class AgentDocsListPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,8 +26,9 @@ final class AgentDocsListPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST documents.agent.docs.list', [
-            'the payload',
-        ]);
+        $start = $journal->owner()->signedStart('Writer');
+        $document = $journal->runAs('Writer', new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+
+        return RouteCall::as(Caller::Agent, $start);
     }
 }

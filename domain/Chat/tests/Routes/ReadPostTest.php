@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
+use App\Commands\Messages\ReadMessage\ReadMessageCommand;
+use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Models\Messages\Message;
+use App\Support\ShownMessage;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST chat.read, as the generator wrote it.
+ * The owner reads an agent's message the chat showed, with the payload the page records.
  */
-#[Generated]
 #[TestsRoute('POST', 'chat.read')]
 final class ReadPostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +29,19 @@ final class ReadPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST chat.read', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request chat-read',
-        ]);
+        $start = $journal->owner()->signedStart('Ada');
+        $chats = $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Ada');
+        $inbox = $chats->pairChatOf('Owner', 'Ada');
+        $messageId = $journal->runAsStart($start, new SendMessageCommand($inbox->id, 'Which port?'));
+        $journal->actAs('Owner');
+
+        return RouteCall::recorded('chat-read', [
+            '01JPAGEREQUESTINBOX0000000' => $inbox->id,
+            '01JPAGEREQUESTMESSAGE00000' => $messageId,
+        ])
+            ->reply(ReadMessageCommand::class, ShownMessage::of(Message::query()->findOrFail($messageId)))
+            ->expects(ReadMessageCommand::class, [
+                'messageId' => $messageId,
+            ]);
     }
 }

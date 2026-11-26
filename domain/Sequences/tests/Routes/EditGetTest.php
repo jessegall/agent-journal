@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Routes;
 
+use Domain\Sequences\Commands\DefineSequence\DefineSequenceCommand;
 use Domain\Sequences\SequencesDomain;
+use Domain\Sequences\Values\SequenceStep;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
+use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET sequences.edit, as the generator wrote it.
+ * The owner opens the step editor of a sequence.
  */
-#[Generated]
 #[TestsRoute('GET', 'sequences.edit')]
 final class EditGetTest extends GuardedRouteEntryTestCase
 {
@@ -27,8 +27,14 @@ final class EditGetTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('GET sequences.edit', [
-            '{sequence}',
-        ]);
+        $journal->owner();
+        $sequenceId = $journal->run(new DefineSequenceCommand('Release', [
+            new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
+        ]));
+
+        return RouteCall::as(Caller::User)
+            ->parameters([
+                'sequence' => $sequenceId,
+            ]);
     }
 }

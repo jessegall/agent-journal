@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
+use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
+use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
 use Domain\Chat\ChatDomain;
+use Domain\Chat\Support\PairChats;
+use Illuminate\Support\Str;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
-use Tests\Support\Entries\Exceptions\EntryTestNeedsArrangement;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of POST chat.leave, as the generator wrote it.
+ * A member leaves a group chat, with the payload the page records.
  */
-#[Generated]
 #[TestsRoute('POST', 'chat.leave')]
 final class LeavePostTest extends GuardedRouteEntryTestCase
 {
@@ -27,10 +28,18 @@ final class LeavePostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
-        throw EntryTestNeedsArrangement::for('POST chat.leave', [
-            'the payload',
-            'the expected commands',
-            'the ids of the recorded page request chat-leave',
-        ]);
+        $journal->owner()->user('Sam');
+        $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
+            $journal->actorCalled('Owner'),
+            $journal->actorCalled('Sam'),
+        ]));
+
+        return RouteCall::recorded('chat-leave', [
+            '01JPAGEREQUESTINBOX0000000' => $group,
+        ])
+            ->expects(LeaveInboxCommand::class, [
+                'inboxId' => $group,
+                'actor' => $journal->actorCalled('Owner'),
+            ]);
     }
 }

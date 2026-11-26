@@ -6,7 +6,6 @@ namespace Domain\Documents\Tests\Routes;
 
 use Domain\Documents\DocumentsDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -14,9 +13,8 @@ use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET documents.library, as the generator wrote it.
+ * The owner opens the library of documents and reports.
  */
-#[Generated]
 #[TestsRoute('GET', 'documents.library')]
 final class LibraryGetTest extends GuardedRouteEntryTestCase
 {

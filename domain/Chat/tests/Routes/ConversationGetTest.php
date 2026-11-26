@@ -6,7 +6,6 @@ namespace Domain\Chat\Tests\Routes;
 
 use Domain\Chat\ChatDomain;
 use Tests\Support\DomainBoot;
-use Tests\Support\Entries\Attributes\Generated;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
@@ -14,9 +13,8 @@ use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
 
 /**
- * The entry test of GET chat.conversation, as the generator wrote it.
+ * The owner opens the chat page.
  */
-#[Generated]
 #[TestsRoute('GET', 'chat.conversation')]
 final class ConversationGetTest extends GuardedRouteEntryTestCase
 {
