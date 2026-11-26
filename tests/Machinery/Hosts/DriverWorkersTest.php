@@ -56,12 +56,15 @@ final class DriverWorkersTest extends TestCase
     {
         $workers = $this->journal->service(DriverWorkers::class);
         $work = $workers->begin($this->journal->hostProcessCalled('shell')->id);
-        [, $snapshot] = $this->journal->hostOrdersOf('shell');
+        [, $snapshot, $stream] = $this->journal->hostOrdersOf('shell');
 
         $this->journal->answerHostOrder($snapshot);
         $workers->step($work, self::WAIT_MS);
 
-        $this->journal->assertResult(['signal' => 'SIGUSR2'], $this->lastOrder()->payload);
+        $this->journal->assertResult(
+            [['frames_per_second' => 4, 'raw' => false], ['signal' => 'SIGUSR2']],
+            [$stream->payload, $this->lastOrder()->payload],
+        );
     }
 
     public function test_a_restart_ends_the_worker_between_steps(): void

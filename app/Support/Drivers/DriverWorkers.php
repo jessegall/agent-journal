@@ -8,6 +8,7 @@ use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use App\Commands\Hosts\RenewHostWorker\RenewHostWorkerCommand;
 use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
+use App\Commands\Hosts\StreamHostProcess\StreamHostProcessCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Hosts\HostProcessType;
@@ -19,6 +20,7 @@ use App\Support\Command;
 use App\Support\CommandRegistry;
 use App\Support\Hosts\HostWake;
 use App\Support\Hosts\ProcessFeed;
+use App\Support\Hosts\StreamRate;
 use App\Values\DriverActions;
 use App\Values\FeedEntry;
 use App\Values\HostOrderSource;
@@ -73,8 +75,12 @@ final readonly class DriverWorkers
         $this->perform($work, $this->resumed($work, $process)->then($this->requestsOf($work)));
 
         if ($process->type === HostProcessType::Terminal) {
-            $snapshot = new SnapshotHostProcessCommand($process->id, HostOrderSource::forWorker($generation));
-            $this->perform($work, DriverActions::of($snapshot));
+            $source = HostOrderSource::forWorker($generation);
+
+            $this->perform($work, DriverActions::of(
+                new SnapshotHostProcessCommand($process->id, $source),
+                new StreamHostProcessCommand($process->id, StreamRate::of(true, 0), false, $source),
+            ));
         }
 
         return $work;
