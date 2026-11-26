@@ -19,6 +19,11 @@ use Spatie\LaravelData\Data;
  */
 abstract class StoredConditionData extends Data implements PropertyMorphableData
 {
+    /**
+     * The property the data is morphed by, as the library hands it to morph() before any data exists.
+     */
+    private const string MORPHED_BY = 'type';
+
     #[PropertyForMorph]
     public string $type;
 
@@ -27,7 +32,7 @@ abstract class StoredConditionData extends Data implements PropertyMorphableData
      */
     public static function morph(array $properties): string
     {
-        return match ($properties['type']) {
+        return match ($properties[self::MORPHED_BY]) {
             Everyone::TYPE => EveryoneConditionData::class,
             AllOf::TYPE, AnyOf::TYPE => ConditionGroupData::class,
             Not::TYPE => NegatedConditionData::class,

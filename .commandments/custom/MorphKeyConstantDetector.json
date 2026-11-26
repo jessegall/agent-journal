@@ -1,0 +1,46 @@
+{
+    "$schema": "commandments:neutral-rule/v2",
+    "engine": "php",
+    "sin": {
+        "description": "A Data morph() reads its properties array by a written string key, which goes stale unseen when the #[PropertyForMorph] property is renamed.",
+        "name": "morph-key-constant",
+        "rule": "Name the key once, in a constant of the class beside the #[PropertyForMorph] property (private const string MORPHED_BY = 'status'), and read $properties[self::MORPHED_BY] (user 26945).",
+        "skill": "morph-key-constant"
+    },
+    "definitions": {
+        "isMorphOfMorphableData": {
+            "args": ["fn"],
+            "expr": [
+                "and",
+                ["is", "$fn", "function"],
+                ["=", "$fn.name", "morph"],
+                ["has", "$fn.modifiers", "static"],
+                [
+                    "proven",
+                    [
+                        "assignable",
+                        ["symbolOf", ["enclosing", "$fn", "type"]],
+                        "Spatie\\LaravelData\\Contracts\\PropertyMorphableData"
+                    ]
+                ]
+            ]
+        }
+    },
+    "find": {
+        "select": "literal",
+        "as": "k",
+        "let": [
+            ["read", ["keyedStoreRead", ["first", ["ancestors", "$k"]]]],
+            ["morph", ["enclosing", "$k", "function"]]
+        ],
+        "having": [
+            "and",
+            ["literalIs", "$k", "string"],
+            ["exists", "$read"],
+            ["within", "$k", ["get", "$read", "key"]],
+            ["isMorphOfMorphableData", "$morph"],
+            ["sameSymbol", ["get", "$read", "store"], ["first", "$morph.parameters"]]
+        ],
+        "emit": "$k"
+    }
+}
