@@ -11,11 +11,11 @@ use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 
 /**
- * Orders the host to type keys into a process's terminal, only while the rows they are meant for and the input generation are as the journal saw them; the order lapses after five seconds. Run by the journal itself (internal, not exported).
+ * Orders the host to type keys into a process's terminal, only while the rows they are meant for and the input generation are as the journal saw them; the order lapses after five seconds. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class SendHostKeysCommand extends Command
 {
     public function __construct(

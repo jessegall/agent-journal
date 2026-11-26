@@ -10,11 +10,11 @@ use App\Support\ClaimedRequests;
 use App\Support\Command;
 
 /**
- * A worker takes the pending requests of the runtime its process runs; a worker that was replaced is refused. Run by the journal itself (internal, not exported).
+ * A worker takes the pending requests of the runtime its process runs; a worker that was replaced is refused. Run by a driver worker (internal, not exported).
  *
  * @extends Command<ClaimedRequests>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class ClaimRuntimeRequestsCommand extends Command
 {
     public function __construct(

@@ -10,13 +10,13 @@ use App\Commands\Hosts\RenewHostWorker\RenewHostWorkerCommand;
 use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Contracts\Bus\JournalCommands;
 use App\Contracts\Time\ServerClock;
-use App\Enums\Accounts\CommandEntry;
 use App\Enums\Hosts\HostProcessType;
 use App\Exceptions\WorkerFenced;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;
+use App\Support\CommandRegistry;
 use App\Support\Hosts\HostWake;
 use App\Support\Hosts\ProcessFeed;
 use App\Values\DriverActions;
@@ -48,6 +48,7 @@ final readonly class DriverWorkers
         private JournalCommands $commands,
         private ServerClock $clock,
         private DriverRestartSignal $restart,
+        private CommandRegistry $registry,
     ) {}
 
     /**
@@ -170,6 +171,6 @@ final readonly class DriverWorkers
      */
     private function run(Command $command): mixed
     {
-        return $this->commands->runAsJournal(CommandEntry::HostControl, self::ENTRY, $command);
+        return $this->commands->runAsJournal($this->registry->entryOf($command::class), self::ENTRY, $command);
     }
 }

@@ -15,6 +15,7 @@ use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
 use App\Events\Connections\HostProcessExited;
 use App\Events\Connections\HostProcessLost;
+use App\Events\Connections\HostProcessOpened;
 use App\Events\Connections\HostProcessRestarted;
 use App\Events\Connections\HostProcessStarted;
 use App\Exceptions\WorkerFenced;
@@ -111,6 +112,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $process->restart = $plan->restart;
         $process->status = HostProcessStatus::Ordered;
         $process->assertSaved($process->save());
+        $process->raise(new HostProcessOpened($process->id, $process->agent_runtime_id));
 
         return $process;
     }
@@ -301,6 +303,18 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     public static function findLiveOn(Host $host): array
     {
         return array_values(self::query()->onHost($host)->live()->lockForUpdate()->get()->all());
+    }
+
+    /**
+     * When the first lease of a driven process ends, so the supervisor looks again then and not before.
+     *
+     * @param  list<HostProcessPurpose>  $purposes
+     */
+    public static function resolveNextLeaseEnd(array $purposes, CarbonImmutable $now): CarbonImmutable|null
+    {
+        $until = self::query()->drivenAt($now)->ofPurposes($purposes)->min('worker_until');
+
+        return $until === null ? null : CarbonImmutable::parse($until);
     }
 
     /**

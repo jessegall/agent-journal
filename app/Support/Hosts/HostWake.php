@@ -64,12 +64,15 @@ final readonly class HostWake
     }
 
     /**
-     * Blocks until the supervisor is woken or the seconds pass.
+     * Blocks until the supervisor is woken or the seconds pass, and answers whether it was woken; 0 waits until it is
+     * woken.
      */
-    public function waitForSupervisor(int $seconds): void
+    public function waitForSupervisor(int $seconds): bool
     {
-        $this->connection()->blpop([self::SUPERVISOR_KEY], $seconds);
+        $woken = $this->connection()->blpop([self::SUPERVISOR_KEY], $seconds);
         $this->connection()->del(self::SUPERVISOR_KEY);
+
+        return $woken !== null && $woken !== [] && $woken !== false;
     }
 
     public static function hostKey(string $hostId): string

@@ -11,10 +11,15 @@ use Illuminate\Process\Factory;
 
 /**
  * Starts a worker for each live process a program driver drives and no worker holds; a worker it started and that
- * still runs is left to its lease.
+ * still runs is left to its lease. It waits for a process to change, or for the first lease that could end.
  */
 final class DriverSupervisor
 {
+    /**
+     * The wait that lasts until a wake comes.
+     */
+    public const int UNTIL_WOKEN = 0;
+
     /**
      * @var array<string, InvokedProcess>
      */
@@ -55,5 +60,17 @@ final class DriverSupervisor
         }
 
         return $started;
+    }
+
+    /**
+     * How long the supervisor may wait for a process to change: until the first lease of a driven process could end,
+     * or for as long as it takes when no worker holds one.
+     */
+    public function secondsUntilNextLeaseEnd(): int
+    {
+        $now = $this->clock->now();
+        $next = HostProcess::resolveNextLeaseEnd($this->drivers->purposes(), $now);
+
+        return $next === null ? self::UNTIL_WOKEN : max(1, (int) ceil($now->diffInSeconds($next)));
     }
 }

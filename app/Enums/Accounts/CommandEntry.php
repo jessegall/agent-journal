@@ -16,4 +16,5 @@ enum CommandEntry: string
     case SkillPublisher = 'skill_publisher';
     case EngineMaintenance = 'engine_maintenance';
     case AccountMaintenance = 'account_maintenance';
+    case DriverWorker = 'driver_worker';
 }

@@ -10,11 +10,11 @@ use App\Support\Command;
 use App\Values\HostOrderSource;
 
 /**
- * Orders the host to send a signal to a process, such as SIGINT to end a turn. Run by the journal itself (internal, not exported).
+ * Orders the host to send a signal to a process, such as SIGINT to end a turn. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class SignalHostProcessCommand extends Command
 {
     public function __construct(

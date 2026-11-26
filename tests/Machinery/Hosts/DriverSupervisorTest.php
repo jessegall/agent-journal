@@ -6,6 +6,7 @@ namespace Tests\Machinery\Hosts;
 
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Support\Drivers\DriverSupervisor;
+use App\Support\Hosts\HostWake;
 use Tests\Support\Drivers\StandInProgramDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
@@ -32,5 +33,20 @@ final class DriverSupervisorTest extends TestCase
         $this->journal
             ->assertProgramStarted(['php', 'artisan', 'drivers:work', $process])
             ->assertResult([$process], $started);
+    }
+
+    public function test_a_new_process_wakes_the_supervisor_which_otherwise_waits_without_a_timer(): void
+    {
+        $this->journal->driveProcessesWith(HostProcessPurpose::Probe, StandInProgramDriver::class);
+        $supervisor = $this->journal->service(DriverSupervisor::class);
+        $wake = $this->journal->service(HostWake::class);
+        $wake->waitForSupervisor(1);
+
+        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+
+        $this->journal->assertResult(
+            [true, DriverSupervisor::UNTIL_WOKEN],
+            [$wake->waitForSupervisor(1), $supervisor->secondsUntilNextLeaseEnd()],
+        );
     }
 }

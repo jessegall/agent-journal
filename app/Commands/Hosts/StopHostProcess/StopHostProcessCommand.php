@@ -10,11 +10,11 @@ use App\Support\Command;
 use App\Values\HostOrderSource;
 
 /**
- * Orders the host to stop a process: it gets the grace time to end, then the force time before it is killed. Run by the journal itself (internal, not exported).
+ * Orders the host to stop a process: it gets the grace time to end, then the force time before it is killed. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class StopHostProcessCommand extends Command
 {
     public function __construct(

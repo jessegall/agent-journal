@@ -10,11 +10,11 @@ use App\Support\Command;
 use App\Values\HostOrderSource;
 
 /**
- * Orders the host to send one full frame of a process's screen now. Run by the journal itself (internal, not exported).
+ * Orders the host to send one full frame of a process's screen now. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class SnapshotHostProcessCommand extends Command
 {
     public function __construct(

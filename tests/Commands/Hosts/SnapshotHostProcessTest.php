@@ -7,6 +7,7 @@ namespace Tests\Commands\Hosts;
 use App\Commands\Hosts\SnapshotHostProcess\SnapshotHostProcessCommand;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostProcessReportType;
+use App\Exceptions\CommandNotRegistered;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
 use App\Values\HostOrderSource;
@@ -66,6 +67,16 @@ final class SnapshotHostProcessTest extends TestCase
         $this->journal->assertRefused(
             HostProtocolRefused::class,
             fn () => $this->journal->asSystem($this->command(HostOrderSource::fromJournal())),
+        );
+    }
+
+    public function test_a_driver_worker_may_run_it_and_a_web_request_may_not(): void
+    {
+        $this->journal->asSystem($this->command(HostOrderSource::fromJournal()));
+
+        $this->journal->assertRefused(
+            CommandNotRegistered::class,
+            fn () => $this->journal->run($this->command(HostOrderSource::fromJournal())),
         );
     }
 

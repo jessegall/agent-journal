@@ -10,11 +10,11 @@ use App\Support\Command;
 use App\Values\HostOrderSource;
 
 /**
- * Orders the host to send a process's screen so many times a second, changed or not; 0 ends the stream. Run by the journal itself (internal, not exported).
+ * Orders the host to send a process's screen so many times a second, changed or not; 0 ends the stream. Run by a driver worker (internal, not exported).
  *
  * @extends Command<string>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class StreamHostProcessCommand extends Command
 {
     public function __construct(

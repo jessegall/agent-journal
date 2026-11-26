@@ -9,11 +9,11 @@ use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 
 /**
- * A worker renews its lease of a process; a worker that was replaced is refused. Run by the journal itself (internal, not exported).
+ * A worker renews its lease of a process; a worker that was replaced is refused. Run by a driver worker (internal, not exported).
  *
  * @extends Command<null>
  */
-#[Entry(CommandEntry::HostControl)]
+#[Entry(CommandEntry::DriverWorker)]
 final readonly class RenewHostWorkerCommand extends Command
 {
     public function __construct(
