@@ -43,9 +43,9 @@ final class ReviewPlanState extends AgentState implements DurableState, UniqueSu
         $this->reviewersOut = new ReviewersOutData();
     }
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->planId;
+        return new RecordIdentity(Plan::linkType(), $this->planId);
     }
 
     public function isFinished(): bool

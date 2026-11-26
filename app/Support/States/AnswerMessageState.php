@@ -9,6 +9,7 @@ use App\Contracts\Work\DurableState;
 use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
+use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
@@ -16,6 +17,7 @@ use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
+use App\Support\RecordIdentity;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Values\AgentText;
 use App\Values\AnswerBudget;
@@ -42,9 +44,9 @@ final class AnswerMessageState extends AgentState implements DurableState, Uniqu
         private readonly AnswerBudget $budget,
     ) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->messageId;
+        return new RecordIdentity(Message::linkType(), $this->messageId);
     }
 
     public function isFinished(): bool

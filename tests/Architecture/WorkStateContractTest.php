@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Contracts\Work\WorkState;
 use App\Support\Reflector;
 use App\Support\Stack\StateTypes;
 use App\Support\StateLoading\RegisteredStateType;
@@ -35,7 +36,7 @@ final class WorkStateContractTest extends TestCase
     }
 
     /**
-     * Whether the state names a work record yet leaves its instruction to the default, which has none.
+     * Whether the state is a work state yet leaves its instruction to the default, which has none.
      *
      * @param  class-string<AgentState>  $class
      */
@@ -43,7 +44,7 @@ final class WorkStateContractTest extends TestCase
     {
         $state = Reflector::of($class);
 
-        return $state->method('workRecordType')->declaringClass()->name() !== AgentState::class
+        return $state->implements(WorkState::class)
             && $state->method('instruction')->declaringClass()->name() === AgentState::class;
     }
 }

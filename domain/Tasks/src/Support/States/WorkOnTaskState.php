@@ -7,11 +7,12 @@ namespace Domain\Tasks\Support\States;
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\DurableState;
-use App\Contracts\Work\UniqueSubjectState;
+use App\Contracts\Work\WorkState;
 use App\Events\Assignments\AssignmentsEnded;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
+use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
@@ -36,7 +37,7 @@ use PhpOption\Some;
  * The task is in the agent's focus while its frame is the live top, and leaves it once the frame stops being live.
  */
 #[StateType(WorkOnTaskStateReference::TYPE_KEY, schemaVersion: 1)]
-final class WorkOnTaskState extends AgentState implements DurableState, UniqueSubjectState
+final class WorkOnTaskState extends AgentState implements DurableState, WorkState
 {
     /**
      * The tool uses after which a log on the task is due.
@@ -67,22 +68,14 @@ final class WorkOnTaskState extends AgentState implements DurableState, UniqueSu
         private readonly int $runNumber,
     ) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->taskId;
+        return new RecordIdentity(Task::linkType(), $this->taskId);
     }
 
     public function isFinished(): bool
     {
         return ! $this->isWorking;
-    }
-
-    /**
-     * @return Option<string>
-     */
-    public function workRecordType(): Option
-    {
-        return new Some(Task::linkType());
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionStarted;
+use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Helpers\Events\HelperJobCancelled;
@@ -16,6 +17,7 @@ use Domain\Helpers\Events\HelperJobFinished;
 use Domain\Helpers\Events\HelperJobHeld;
 use Domain\Helpers\Events\HelperJobLeftUnfinished;
 use Domain\Helpers\Events\HelperJobSteered;
+use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\States\Support\HelperJobStateReference;
 
 /**
@@ -47,9 +49,9 @@ final class HelperJobState extends AgentState implements UniqueSubjectState
         private readonly string $brief,
     ) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->jobId;
+        return new RecordIdentity(HelperJob::linkType(), $this->jobId);
     }
 
     public function isFinished(): bool

@@ -52,6 +52,7 @@ use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\Stacks\SingleState;
 use Tests\Fixtures\Hooks\StopAnswerState;
+use Tests\Fixtures\Hooks\SubjectIds;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestActors;
@@ -621,7 +622,7 @@ final class AgentStackTest extends TestCase
             return new StateReference($typeKey, NoSubject::None);
         }
 
-        return new StateReference($typeKey, new SubjectReference((string) $subjectId, 1));
+        return new StateReference($typeKey, new SubjectReference(SubjectIds::of($subjectId), 1));
     }
 
     private function subjectOf(StateReference $reference): string

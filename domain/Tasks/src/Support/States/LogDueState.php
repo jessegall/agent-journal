@@ -12,10 +12,12 @@ use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
+use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Tasks\Events\TaskEvent;
 use Domain\Tasks\Events\TaskLogged;
+use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -38,9 +40,9 @@ final class LogDueState extends AgentState implements UniqueSubjectState
 
     public function __construct(private readonly string $taskId, private readonly int $number) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->taskId;
+        return new RecordIdentity(Task::linkType(), $this->taskId);
     }
 
     public function isFinished(): bool

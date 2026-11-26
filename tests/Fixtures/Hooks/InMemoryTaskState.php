@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Hooks;
 use App\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
+use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use PhpOption\Option;
@@ -21,9 +22,9 @@ final class InMemoryTaskState extends AgentState implements UniqueSubjectState
 {
     public function __construct(private readonly int $number, private readonly int $runNumber, private readonly InMemoryTasks $tasks) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return (string) $this->number;
+        return new RecordIdentity('tests.task', SubjectIds::of((string) $this->number));
     }
 
     public function isFinished(): bool

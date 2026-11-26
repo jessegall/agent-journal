@@ -7,7 +7,8 @@ namespace Domain\Plans\Support\States;
 use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
 use App\Contracts\Work\DurableState;
-use App\Contracts\Work\UniqueSubjectState;
+use App\Contracts\Work\WorkState;
+use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
@@ -24,7 +25,7 @@ use PhpOption\Some;
  * the newest counts it heard for the plan and shows them in its instruction.
  */
 #[StateType(WorkOnPlanStateReference::TYPE_KEY, schemaVersion: 1)]
-final class WorkOnPlanState extends AgentState implements DurableState, UniqueSubjectState
+final class WorkOnPlanState extends AgentState implements DurableState, WorkState
 {
     private bool $isOpen = true;
 
@@ -38,22 +39,14 @@ final class WorkOnPlanState extends AgentState implements DurableState, UniqueSu
 
     public function __construct(private readonly string $planId) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->planId;
+        return new RecordIdentity(Plan::linkType(), $this->planId);
     }
 
     public function isFinished(): bool
     {
         return ! $this->isOpen;
-    }
-
-    /**
-     * @return Option<string>
-     */
-    public function workRecordType(): Option
-    {
-        return new Some(Plan::linkType());
     }
 
     /**

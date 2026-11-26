@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\WorkStates;
 
+use App\Contracts\Work\WorkState;
+use App\Support\RecordIdentity;
 use App\Support\States\AgentState;
-use PhpOption\Option;
-use PhpOption\Some;
+use Tests\Fixtures\Hooks\SubjectIds;
 
 /**
- * A work state that names its work record but no instruction, which the work state contract check refuses.
+ * A work state with a work record but no instruction, which the work state contract check refuses.
  */
-final class SilentWork extends AgentState
+final class SilentWork extends AgentState implements WorkState
 {
-    /**
-     * @return Option<string>
-     */
-    public function workRecordType(): Option
+    public function stateSubject(): RecordIdentity
     {
-        return new Some('fixture');
+        return new RecordIdentity('tests.work', SubjectIds::of('silent'));
     }
 }

@@ -35,6 +35,7 @@ use Tests\Fixtures\Hooks\InMemoryTasks;
 use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
+use Tests\Fixtures\Hooks\SubjectIds;
 use Tests\Support\DomainBoot;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -236,7 +237,7 @@ final class TransparentFramesTest extends TestCase
 
     private function reference(string $typeKey, string|null $subjectId = null): StateReference
     {
-        $subject = $subjectId === null ? NoSubject::None : new SubjectReference($subjectId, 1);
+        $subject = $subjectId === null ? NoSubject::None : new SubjectReference(SubjectIds::of($subjectId), 1);
 
         return new StateReference($typeKey, $subject);
     }

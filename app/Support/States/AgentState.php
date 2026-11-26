@@ -58,17 +58,6 @@ abstract class AgentState implements HookAnswerer
         return None::create();
     }
 
-    /**
-     * The link type of the record this state's subject is, read as the agent's current work while it is the top live
-     * state that names one; none by default.
-     *
-     * @return Option<string>
-     */
-    public function workRecordType(): Option
-    {
-        return None::create();
-    }
-
     // ----------[ Lifecycle ]----------
 
     /**

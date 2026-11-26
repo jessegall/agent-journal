@@ -95,7 +95,7 @@ final readonly class Frame
             return true;
         }
 
-        return $this->state instanceof UniqueSubjectState && $reference->isAbout($this->state->stateSubject());
+        return $this->state instanceof UniqueSubjectState && $reference->isAbout($this->state->stateSubject()->id);
     }
 
     public function isFinished(): bool

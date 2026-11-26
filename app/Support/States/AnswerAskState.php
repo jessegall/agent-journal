@@ -12,6 +12,8 @@ use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskEvent;
 use App\Events\Asks\AskHopAssigned;
+use App\Models\Asks\AskHop;
+use App\Support\RecordIdentity;
 use App\Support\States\Support\AnswerAskStateReference;
 use App\Values\AgentText;
 use PhpOption\Option;
@@ -31,9 +33,9 @@ final class AnswerAskState extends AgentState implements DurableState, UniqueSub
         private readonly string $hopId
     ) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->hopId;
+        return new RecordIdentity(AskHop::linkType(), $this->hopId);
     }
 
     public function isFinished(): bool

@@ -28,9 +28,9 @@ final class ForegroundInstructionsTest extends TestCase
 
     public function test_a_task_frame_names_its_task_and_run(): void
     {
-        $state = new WorkOnTaskState('task-12', 12, 3);
+        $state = new WorkOnTaskState('01JD8X0G9M3QZ6V4K200000012', 12, 3);
 
-        $this->assertSame(Task::linkType(), $state->workRecordType()->get());
+        $this->assertSame(Task::linkType(), $state->stateSubject()->type);
         $this->assertStringContainsString('12', TestText::words($state->instruction()->get()));
         $this->assertStringContainsString('3', TestText::words($state->instruction()->get()));
     }

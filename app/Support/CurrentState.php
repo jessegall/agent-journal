@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Contracts\Work\CurrentState as CurrentStateContract;
+use App\Contracts\Work\WorkState;
 use App\Models\Agents\AgentStackRow;
 use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
 use App\Support\Stack\Frames\Frame;
 use App\Support\Stack\StackRestorer;
 use App\Values\StackTarget;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * Reads a stack's current state of a type from the top down, without a lock and without writing.
@@ -69,13 +70,11 @@ final readonly class CurrentState implements CurrentStateContract
      */
     private function workRecord(Frame $frame): Option
     {
-        $subject = $frame->reference->subject;
-
-        if (! $frame->isLive() || ! $subject instanceof SubjectReference) {
+        if (! $frame->isLive() || ! $frame->state instanceof WorkState) {
             return None::create();
         }
 
-        return $frame->state->workRecordType()->map(fn (string $type) => new RecordIdentity($type, $subject->id));
+        return new Some($frame->state->stateSubject());
     }
 
     /**

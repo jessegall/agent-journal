@@ -11,6 +11,7 @@ use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
 use App\Events\Messages\MessageSent;
 use App\Models\Agents\Agent;
+use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
@@ -19,6 +20,7 @@ use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
+use App\Support\RecordIdentity;
 use App\Support\References\StateReference;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\States\Support\ReadMessageStateReference;
@@ -55,9 +57,9 @@ final class ReadMessageState extends AgentState implements DurableState, UniqueS
         private readonly AnswerBudget $budget,
     ) {}
 
-    public function stateSubject(): string
+    public function stateSubject(): RecordIdentity
     {
-        return $this->inboxId;
+        return new RecordIdentity(Inbox::linkType(), $this->inboxId);
     }
 
     public function isFinished(): bool
