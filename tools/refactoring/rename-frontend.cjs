@@ -5,6 +5,7 @@
  *
  *   node tools/refactoring/rename-frontend.cjs --list=<file>      lines "<file>:<line> <old name> <new name>"
  *   node tools/refactoring/rename-frontend.cjs ... --dry-run      print the edits, write nothing
+ *   node tools/refactoring/rename-frontend.cjs ... --project=<dir>  the folder whose tsconfig.json is loaded, the checkout's by default
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,8 +14,8 @@ const vue = require('@vue/language-core');
 const { createLanguage } = require('@volar/language-core');
 const { createLanguageServiceHost } = require('@volar/typescript');
 
-const root = path.resolve(__dirname, '..', '..');
 const options = process.argv.slice(2);
+const root = path.resolve(options.find((option) => option.startsWith('--project='))?.slice('--project='.length) ?? path.join(__dirname, '..', '..'));
 const listFile = options.find((option) => option.startsWith('--list='))?.slice('--list='.length);
 const isDryRun = options.includes('--dry-run');
 
