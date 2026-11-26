@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ConfigureShareGateway;
 
-use App\Sharing\Contracts\SharePolicy;
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewaySettings;
+use App\Access\Contracts\SharePolicy;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\GatewayNotSetUp;
@@ -15,7 +13,9 @@ use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareInstallation;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
 use Domain\Sharing\Support\Gateways\GatewaySecrets;
+use Domain\Sharing\Support\Gateways\GatewaySettings;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 
 /**

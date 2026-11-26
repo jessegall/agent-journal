@@ -9,7 +9,7 @@ use App\Hosts\Contracts\HostOrderAnswerEvent;
 use App\Hosts\ProcessFeed;
 
 /**
- * Once a host's answer to an order is committed, the worker of its process hears it on the process's feed.
+ * Once a host's answer to an order is committed, the worker of its process receives it on the process's feed.
  */
 final readonly class WakeWorkerOnOrderAnswer implements Listener
 {

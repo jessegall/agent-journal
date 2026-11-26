@@ -82,6 +82,7 @@ final readonly class ContainerManifest implements JsonSerializable
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
+        SecurityOptions $security,
         StartProfileType $startProfile = StartProfileType::Standard,
     ): self {
         $mount = $rules->workspaceMount($workspace, $use);
@@ -97,7 +98,7 @@ final readonly class ContainerManifest implements JsonSerializable
             [],
             $policy->budgets,
             $rules,
-            SecurityOptions::none(),
+            $security,
             $policy->isAttachable,
             $startProfile,
         );

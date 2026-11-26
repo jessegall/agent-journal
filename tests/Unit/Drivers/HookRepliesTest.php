@@ -9,6 +9,7 @@ use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Values\PlanFile;
+use App\Sessions\Enums\OfflineReplyMode;
 use Tests\TestCase;
 
 /**
@@ -28,7 +29,7 @@ final class HookRepliesTest extends TestCase
         ];
 
         foreach ($adapters as $family => $adapter) {
-            [$replyFile, $keyFile] = $this->app->make(HookReplies::class)->filesFor($adapter);
+            [$replyFile, $keyFile] = $this->app->make(HookReplies::class)->filesFor($adapter, OfflineReplyMode::Refuse);
             $sealed = json_decode($replyFile->content, true, flags: JSON_THROW_ON_ERROR);
             $body = json_decode($sealed['body'], true, flags: JSON_THROW_ON_ERROR);
             $changed = substr_replace($sealed['body'], 'X', 10, 1);
@@ -54,9 +55,23 @@ final class HookRepliesTest extends TestCase
         $replies = $this->app->make(HookReplies::class);
 
         $this->assertNotSame(
-            $replies->filesFor(ClaudeCodeAdapter::class)[1]->content,
-            $replies->filesFor(ClaudeCodeAdapter::class)[1]->content,
+            $replies->filesFor(ClaudeCodeAdapter::class, OfflineReplyMode::Refuse)[1]->content,
+            $replies->filesFor(ClaudeCodeAdapter::class, OfflineReplyMode::Refuse)[1]->content,
         );
+    }
+
+    public function test_a_start_granted_the_neutral_reply_is_answered_neutrally_while_the_journal_is_away(): void
+    {
+        $replies = $this->app->make(HookReplies::class);
+        $awayOf = fn (OfflineReplyMode $mode) => json_decode(json_decode(
+            $replies->filesFor(ClaudeCodeAdapter::class, $mode)[0]->content,
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        )['body'], true, flags: JSON_THROW_ON_ERROR)['replies']['away']['PreToolUse'];
+
+        $denies = fn (OfflineReplyMode $mode) => str_contains($awayOf($mode)['stdout'].$awayOf($mode)['stderr'], 'deny');
+
+        $this->journal->assertResult([false, true], [$denies(OfflineReplyMode::Neutral), $denies(OfflineReplyMode::Refuse)]);
     }
 
     /**

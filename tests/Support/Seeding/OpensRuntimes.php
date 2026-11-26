@@ -159,9 +159,17 @@ trait OpensRuntimes
         return $this;
     }
 
+    /**
+     * The folder a test saves the family's account in: plain letters and digits, as an account folder's name is.
+     */
+    public static function accountFolderOf(string $folder, string $family): string
+    {
+        return "{$folder}/".str_replace('-', '', $family);
+    }
+
     private function chooseAccountOf(string $family, string $label, string $folder): void
     {
-        $account = Account::create($family, AccountLabel::from($label), "{$folder}/{$family}");
+        $account = Account::create($family, AccountLabel::from($label), self::accountFolderOf($folder, $family));
         ActiveAccount::findLockedFor($family)->select($account);
         $this->chosenAccounts[$family] = $account;
     }

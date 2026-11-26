@@ -49,7 +49,7 @@ return [
     /*
     | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its version, its
     | parameters and their rules. The host registers exactly these names and versions
-    | (tools/journal-agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).
+    | (programs/agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).
     */
     /*
      * Where reviewed helper work is merged: the integration branch of this checkout, and the branches no merge

@@ -28,7 +28,7 @@ make_signing_key() {
 publish_release() {
     local built
     built=$(mktemp -d)
-    go -C tools/journal-agent run ./cmd/journal-release --version "$2" --signing-key "$1" --out "$built/$2" --module .
+    go -C programs/agent run ./cmd/journal-release --version "$2" --signing-key "$1" --out "$built/$2" --module .
     docker compose -p agent-journal-6 exec -T app mkdir -p /app/storage/app/releases
     docker compose -p agent-journal-6 cp "$built/$2" "app:/app/storage/app/releases/$2"
     rm -rf "$built"

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Inboxes;
 
 use App\Actors\Contracts\ActorTypes;
+use App\Assignments\Contracts\SharedHolders as SharedHoldersContract;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
-use App\Sharing\Contracts\SharedHolders as SharedHoldersContract;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 

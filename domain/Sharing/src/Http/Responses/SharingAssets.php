@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Responses;
 
-use App\Agents\Relay\Exceptions\FileJsonInvalid;
+use App\Exceptions\FileJsonInvalid;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Values\FilePath;

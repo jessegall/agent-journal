@@ -7,7 +7,7 @@ namespace Domain\Plans\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about plans, their phases and reviews: every event of that subject implements it, so a listener typed on it hears them all.
+ * A fact about plans, their phases and reviews: every event of that subject implements it, so a listener typed on it receives them all.
  */
 interface PlanEvent extends Event
 {

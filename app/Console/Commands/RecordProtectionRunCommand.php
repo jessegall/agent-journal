@@ -12,7 +12,7 @@ use App\Hosts\Commands\RecordProtectionEvidence\RecordProtectionEvidenceCommand;
 use Illuminate\Console\Command;
 
 /**
- * Records the run of a native procedure (tools/accounts/check-claude.php, check-codex.php) that showed boundary items
+ * Records the run of a native procedure (programs/accounts/check-claude.php, check-codex.php) that showed boundary items
  * hold on a contained host, so the host's protection report counts them enforced.
  */
 final class RecordProtectionRunCommand extends Command

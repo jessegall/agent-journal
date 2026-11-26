@@ -93,7 +93,7 @@ The host shim, not the journal, answers a hook when the journal is unreachable, 
 | 422 (a payload the adapter cannot read) | refused | refused |
 | 404, 500, 503 or a malformed answer (the journal's own answer) | refused | refused |
 
-A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <driver>`, which runs `php artisan hooks:relay <driver>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs the bypass of a start granted the neutral reply to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `start_bypasses`. The start must set `JOURNAL_URL`, `JOURNAL_START_TOKEN`, the profile pin, `JOURNAL_OFFLINE_REPLY` with its seal `JOURNAL_OFFLINE_REPLY_SEAL`, and `JOURNAL_BYPASS_LOG` in the driver's environment; a seal the journal did not issue for this start stops the relay.
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. The host's hook adapter (`programs/agent/hookadapter`) asks the journal, and when the journal is away or slow it answers from the start's sealed reply file, which the journal wrote in the driver's own shape (`App\Agents\Drivers\Hooks\HookReplies`); missed pre-tool calls are never replayed as fresh permission.
 
 A driver that exits or is killed without an end hook is handled by `StartHeartbeats`: silence first marks the start possibly lost (`agents.silent_after_seconds`), and a long silence (`agents.timed_out_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
 
@@ -190,8 +190,8 @@ never native evidence.
 
 | Driver | Arrangement | State | Who shows the rest |
 |---|---|---|---|
-| Claude Code 2.1.323 | direct processes: each launch runs its own process on the account directory | prerequisite missing: parallel refresh, Keychain separation and hooks under `--restricted` need a signed-in run | `tools/accounts/check-claude.php` (`docs/accounts/claude-native-evidence.md`) |
-| Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | `tools/accounts/check-codex.php` (`docs/accounts/codex-native-evidence.md`) |
+| Claude Code 2.1.323 | direct processes: each launch runs its own process on the account directory | prerequisite missing: parallel refresh, Keychain separation and hooks under `--restricted` need a signed-in run | `programs/accounts/check-claude.php` (`docs/accounts/claude-native-evidence.md`) |
+| Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | `programs/accounts/check-codex.php` (`docs/accounts/codex-native-evidence.md`) |
 
 The Accounts pages stay available while a state is missing; only account launches are refused.
 
@@ -199,7 +199,7 @@ The Accounts pages stay available while a state is missing; only account launche
 
 A project connected to a server journal runs Claude Code on the owner's own machine (`journal claude`), with the
 same pinned start profile and disabled delegation as above. Its hooks run the sealed native adapter
-(`bin/journal-hook` of the remote-project installation, `tools/journal-agent/hookadapter`), not the PHP relay, and
+(`bin/journal-hook` of the remote-project installation, `programs/agent/hookadapter`), not the PHP relay, and
 its capabilities are registered apart from the contained ones, which stay as they are.
 
 | Capability | Local-project profile |

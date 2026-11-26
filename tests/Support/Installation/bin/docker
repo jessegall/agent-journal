@@ -183,7 +183,7 @@ answer_run() {
         *"--entrypoint stat "*/workspace) echo "10001:10010 2770" ;;
         *"--entrypoint stat "*/home/journal/.account/projects) echo "10001:10001 700" ;;
         *"--entrypoint stat "*) echo "root:root 555" ;;
-        *"--entrypoint /opt/journal/bin/journal-hook "*) cat "$answers/hook-refusal.json" ;;
+        *"--entrypoint /opt/journal/bin/journal-hook "*) echo "the hook reply file is missing" >&2; exit 2 ;;
         *"--entrypoint /opt/journal/bin/journal-mcp "*) cat "$answers/mcp-unreachable.json" ;;
         *"--entrypoint sh "*"command -v "* | *"--entrypoint sh "*"-name artisan"*) exit 1 ;;
     esac

@@ -21,7 +21,6 @@ use App\Agents\HelperRecordFacts;
 use App\Bus\Contracts\Events\FactStaging;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\PruneHookHistoryCommand;
-use App\Console\Commands\RelayHookCommand;
 use App\Contracts\Work\StackTransaction as StackTransactionContract;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Hooks\ContextBudget;
@@ -162,7 +161,7 @@ final class HooksServiceProvider extends ServiceProvider
         $actors->registerStackSessions(Agent::class, ActorStackSessionProvider::class);
         $this->loadCoreRoutes('hooks/hooks.php');
 
-        $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
+        $this->commands([PruneHookHistoryCommand::class]);
 
         $this->callAfterResolving(
             Schedule::class,

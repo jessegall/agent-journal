@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Engine\Enums\RefusalCode;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Records\Exceptions\ShareBudgetExceeded;
 use RuntimeException;
 
 /**

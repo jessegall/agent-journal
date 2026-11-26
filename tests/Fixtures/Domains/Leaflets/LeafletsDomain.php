@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Leaflets;
 
-use App\Sharing\Contracts\ShareRecordContributor;
+use App\Records\Contracts\ShareRecordContributor;
+use App\Records\Values\ShareRecordDefinition;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\ShareRecordDefinition;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 

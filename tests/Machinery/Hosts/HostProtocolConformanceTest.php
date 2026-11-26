@@ -17,14 +17,14 @@ use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
- * The committed vectors of host protocol 1, which the Go host checks too (tools/journal-agent/hostapi/
+ * The committed vectors of host protocol 1, which the Go host checks too (programs/agent/hostapi/
  * conformance_test.go): the journal signs each order to the committed signature over the committed payload text, and
  * reads each committed answer, report and inventory.
  */
 #[TestsMachinery(HostOrderPayload::class)]
 final class HostProtocolConformanceTest extends TestCase
 {
-    private const string VECTORS = __DIR__.'/../../../tools/journal-agent/hostapi/testdata/conformance.json';
+    private const string VECTORS = __DIR__.'/../../../programs/agent/hostapi/testdata/conformance.json';
 
     public function test_the_journal_signs_each_committed_order_to_its_signature(): void
     {

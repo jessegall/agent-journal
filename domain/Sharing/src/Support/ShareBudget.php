@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Contracts\ShareBudget as ShareBudgetContract;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Records\Contracts\ShareBudget as ShareBudgetContract;
+use App\Records\Exceptions\ShareBudgetExceeded;
 use Carbon\CarbonImmutable;
 
 /**

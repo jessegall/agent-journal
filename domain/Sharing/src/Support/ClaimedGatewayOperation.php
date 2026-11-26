@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Sharing\GatewayOperation;
 use Domain\Sharing\Enums\GatewayOperationType;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
 
 /**
  * An operation a supervisor run claimed: whether to open or close, and the run, endpoint version, lease and

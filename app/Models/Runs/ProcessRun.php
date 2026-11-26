@@ -370,7 +370,7 @@ final class ProcessRun extends JournalModel implements EventSource, ProjectOwned
     // ----------[ Transformers ]----------
 
     /**
-     * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
+     * Who receives of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
      * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
      *
      * @return list<ActorReference>

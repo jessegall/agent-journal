@@ -12,7 +12,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Turns a committed change of a scope's receipts into one content-free signal on its user's channel; a scope of an
- * agent has no browser and is told nothing. It hears the fact only after the commit, so a rolled-back change sends
+ * agent has no browser and is told nothing. It receives the fact only after the commit, so a rolled-back change sends
  * nothing.
  */
 final readonly class BroadcastNotificationChanges implements Listener

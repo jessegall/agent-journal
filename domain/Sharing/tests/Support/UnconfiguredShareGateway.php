@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Support;
 
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewayEndpoint;
-use App\Sharing\GatewayHealth;
-use App\Sharing\GatewayOperation;
-use App\Sharing\GatewaySetupCheck;
+use Domain\Sharing\Contracts\ShareGateway;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
+use Domain\Sharing\Support\Gateways\GatewayEndpoint;
+use Domain\Sharing\Support\Gateways\GatewayHealth;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
+use Domain\Sharing\Support\Gateways\GatewaySetupCheck;
 
 /**
  * A gateway that is never ready, for the rule that only a ready gateway becomes the default.

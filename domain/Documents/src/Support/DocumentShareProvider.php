@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Exceptions\RecordUnavailable;
-use App\Sharing\Contracts\ShareBudget;
-use App\Sharing\Contracts\ShareRecordProvider;
+use App\Records\Contracts\ShareBudget;
+use App\Records\Contracts\ShareRecordProvider;
 use App\Skills\Exceptions\ContentTooLarge;
 use App\Support\MarkdownText;
 use App\Support\ReadBuilder;

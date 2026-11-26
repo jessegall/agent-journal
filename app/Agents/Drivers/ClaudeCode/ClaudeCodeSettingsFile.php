@@ -6,7 +6,7 @@ namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Agents\Drivers\Contracts\PlanPart;
 use App\Agents\Drivers\Hooks\HookReplies;
-use App\Agents\Drivers\StartConditions\AccountTerminal;
+use App\Agents\Drivers\StartConditions\HostAccountTerminal;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Agents\Values\HostPath;
@@ -53,10 +53,10 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
     private const string JOURNAL_TOOLS = 'mcp__journal__*';
 
     /**
-     * @param  AccountTerminal  $statusLine  the start whose status line goes to its side socket, as StatusLineSocket
+     * @param  HostAccountTerminal  $statusLine  the start whose status line goes to its side socket, as StatusLineSocket
      * @param  JournalServerAccount  $journalServer  the start that loads the journal's server, as its mcp.json
      */
-    public function __construct(private AccountTerminal $statusLine, private JournalServerAccount $journalServer) {}
+    public function __construct(private HostAccountTerminal $statusLine, private JournalServerAccount $journalServer) {}
 
     /**
      * The settings file of the start.
@@ -67,7 +67,7 @@ final readonly class ClaudeCodeSettingsFile implements PlanPart
     {
         $content = json_encode($this->settings($start), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        return new PlanAddition([new PlanFile(self::NAME, $content)]);
+        return new PlanAddition([PlanFile::template(self::NAME, $content)]);
     }
 
     /**

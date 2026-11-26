@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
+use App\Access\Contracts\SharePolicy;
 use App\Access\Contracts\VisibilityCheck;
 use App\Actors\Contracts\Actor;
-use App\Sharing\Contracts\SharePolicy;
 
 /**
  * Shows the sharing pages and their actions to the current configured owner only.

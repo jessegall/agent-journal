@@ -19,7 +19,7 @@ use App\Reads\Contracts\TextContent;
 use App\Records\Contracts\Commentable;
 use App\Records\Contracts\Numbered;
 use App\Records\Contracts\ReadableModel;
-use App\Sharing\Contracts\Shareable;
+use App\Records\Contracts\Shareable;
 use App\Support\ActorReference;
 use App\Support\MarkdownText;
 use App\Support\ShareRecordCard;

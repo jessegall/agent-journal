@@ -61,6 +61,7 @@ final class ContainerManifestTest extends TestCase
             'journal-start-1',
             MountRules::local(),
             null,
+            SecurityOptions::none(),
         );
 
         $this->assertSame(
@@ -89,6 +90,7 @@ final class ContainerManifestTest extends TestCase
                 'journal-start-1',
                 MountRules::local(),
                 null,
+                SecurityOptions::none(),
             )->mounts[0]->isWritable,
         );
     }
@@ -111,6 +113,7 @@ final class ContainerManifestTest extends TestCase
             'acme-helper-1',
             $setting->mountRules($account, 'main'),
             null,
+            SecurityOptions::none(),
         );
 
         $this->assertEquals(
@@ -118,12 +121,8 @@ final class ContainerManifestTest extends TestCase
                 ManifestMount::volume('acme-workspace-main', '/workspace', false),
                 ManifestMount::daemonBind('/srv/journal/accounts/01b2', '/home/journal/.account', true),
                 ManifestMount::volume('acme-history-helper-1', '/home/journal/.account/projects', true),
-                ManifestMount::daemonBind('/srv/journal/sessions/helper-1', '/tmp/journal-session', false),
-                ManifestMount::daemonBind(
-                    '/srv/journal/sessions/helper-1/managed/managed-settings.json',
-                    '/etc/claude-code/managed-settings.json',
-                    false,
-                ),
+                ManifestMount::planFiles('/tmp/journal-session'),
+                ManifestMount::planFile('managed-settings.json', '/etc/claude-code/managed-settings.json'),
             ],
             $manifest->mounts,
         );
@@ -141,6 +140,7 @@ final class ContainerManifestTest extends TestCase
             'acme-writer-1',
             $setting->mountRules(null, 'main'),
             null,
+            SecurityOptions::none(),
         );
         $wire = json_decode((string) json_encode($manifest), true);
         $workspace = $wire['mounts'][0];
@@ -334,6 +334,7 @@ final class ContainerManifestTest extends TestCase
             'journal-start-1',
             MountRules::local(),
             null,
+            SecurityOptions::none(),
         );
 
         $this->assertSame(
@@ -393,6 +394,7 @@ final class ContainerManifestTest extends TestCase
             'acme-s1',
             $setting->mountRules($account, 'main'),
             null,
+            SecurityOptions::none(),
         );
 
         $this->assertEquals(
@@ -400,12 +402,8 @@ final class ContainerManifestTest extends TestCase
                 ManifestMount::daemonBind('/srv/journal/workspaces/main', '/workspace', true),
                 ManifestMount::daemonBind('/srv/journal/accounts/01a1', '/home/journal/.account', true),
                 ManifestMount::volume('acme-history-session-1', '/home/journal/.account/projects', true),
-                ManifestMount::daemonBind('/srv/journal/sessions/session-1', '/tmp/journal-session', false),
-                ManifestMount::daemonBind(
-                    '/srv/journal/sessions/session-1/managed/managed-settings.json',
-                    '/etc/claude-code/managed-settings.json',
-                    false,
-                ),
+                ManifestMount::planFiles('/tmp/journal-session'),
+                ManifestMount::planFile('managed-settings.json', '/etc/claude-code/managed-settings.json'),
             ],
             $manifestOf($accountA)->mounts,
         );
@@ -458,12 +456,8 @@ final class ContainerManifestTest extends TestCase
         $this->assertEquals(
             [
                 ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true),
-                ManifestMount::daemonBind('/srv/journal/sessions/s1', '/tmp/journal-session', false),
-                ManifestMount::daemonBind(
-                    '/srv/journal/sessions/s1/managed/managed-settings.json',
-                    '/etc/claude-code/managed-settings.json',
-                    false,
-                ),
+                ManifestMount::planFiles('/tmp/journal-session'),
+                ManifestMount::planFile('managed-settings.json', '/etc/claude-code/managed-settings.json'),
             ],
             $contained->sessionMounts('s1', null),
         );
@@ -471,12 +465,8 @@ final class ContainerManifestTest extends TestCase
         $this->assertEquals(
             [
                 ManifestMount::existingVolume('acme-history-s1', '/home/journal/.account/projects', true),
-                ManifestMount::daemonBind('/srv/journal/sessions/s2', '/tmp/journal-session', false),
-                ManifestMount::daemonBind(
-                    '/srv/journal/sessions/s2/managed/managed-settings.json',
-                    '/etc/claude-code/managed-settings.json',
-                    false,
-                ),
+                ManifestMount::planFiles('/tmp/journal-session'),
+                ManifestMount::planFile('managed-settings.json', '/etc/claude-code/managed-settings.json'),
             ],
             $contained->sessionMounts('s2', 's1'),
         );

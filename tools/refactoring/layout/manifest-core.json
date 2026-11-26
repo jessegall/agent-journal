@@ -10908,7 +10908,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "tools/journal-agent/client/project_commands.go"
+            "programs/agent/client/project_commands.go"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
@@ -10948,7 +10948,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "tools/journal-agent/client/project_commands.go"
+            "programs/agent/client/project_commands.go"
         ],
         "ownership_checks": [],
         "detector_dependencies": []
@@ -12522,7 +12522,7 @@
         "phase": 4,
         "batch": "Connections",
         "consumers": [
-            "tools/journal-agent/client/connections.go",
+            "programs/agent/client/connections.go",
             "tools/refactoring/layout/baseline/routes-normal.json"
         ],
         "ownership_checks": [],
@@ -37153,10 +37153,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e69a3788e5af563351d73dcbd08bd435acf5c399",
-        "old_path": "app/Agents/Relay/Exceptions/FileJsonInvalid.php",
-        "old_class": "App\\Agents\\Relay\\Exceptions\\FileJsonInvalid",
-        "final_path": "app/Agents/Relay/Exceptions/FileJsonInvalid.php",
-        "final_class": "App\\Agents\\Relay\\Exceptions\\FileJsonInvalid",
+        "old_path": "app/Exceptions/FileJsonInvalid.php",
+        "old_class": "App\\Exceptions\\FileJsonInvalid",
+        "final_path": "app/Exceptions/FileJsonInvalid.php",
+        "final_class": "App\\Exceptions\\FileJsonInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -38369,10 +38369,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "b85d6349fb7fec03d41c97386f65925092065fbc",
-        "old_path": "app/Sharing/Exceptions/InvalidRecordIdentity.php",
-        "old_class": "App\\Sharing\\Exceptions\\InvalidRecordIdentity",
-        "final_path": "app/Sharing/Exceptions/InvalidRecordIdentity.php",
-        "final_class": "App\\Sharing\\Exceptions\\InvalidRecordIdentity",
+        "old_path": "app/Records/Exceptions/InvalidRecordIdentity.php",
+        "old_class": "App\\Records\\Exceptions\\InvalidRecordIdentity",
+        "final_path": "app/Records/Exceptions/InvalidRecordIdentity.php",
+        "final_class": "App\\Records\\Exceptions\\InvalidRecordIdentity",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -41523,10 +41523,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "20d40e5ace8bd8aa3bfce8d0e8e138078d603531",
-        "old_path": "app/Sharing/Exceptions/ShareBudgetExceeded.php",
-        "old_class": "App\\Sharing\\Exceptions\\ShareBudgetExceeded",
-        "final_path": "app/Sharing/Exceptions/ShareBudgetExceeded.php",
-        "final_class": "App\\Sharing\\Exceptions\\ShareBudgetExceeded",
+        "old_path": "domain/Sharing/src/Exceptions/ShareBudgetExceeded.php",
+        "old_class": "Domain\\Sharing\\Exceptions\\ShareBudgetExceeded",
+        "final_path": "domain/Sharing/src/Exceptions/ShareBudgetExceeded.php",
+        "final_class": "Domain\\Sharing\\Exceptions\\ShareBudgetExceeded",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -41751,10 +41751,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "372a0bab4a007ba978ce3cc96ef56b8399d58f90",
-        "old_path": "app/Sharing/Exceptions/ShareRecordInvalid.php",
-        "old_class": "App\\Sharing\\Exceptions\\ShareRecordInvalid",
-        "final_path": "app/Sharing/Exceptions/ShareRecordInvalid.php",
-        "final_class": "App\\Sharing\\Exceptions\\ShareRecordInvalid",
+        "old_path": "domain/Sharing/src/Exceptions/ShareRecordInvalid.php",
+        "old_class": "Domain\\Sharing\\Exceptions\\ShareRecordInvalid",
+        "final_path": "domain/Sharing/src/Exceptions/ShareRecordInvalid.php",
+        "final_class": "Domain\\Sharing\\Exceptions\\ShareRecordInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -41789,10 +41789,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f079318e6aa2e54bdd12471a825c032ab773ef90",
-        "old_path": "app/Sharing/Exceptions/ShareRelationInvalid.php",
-        "old_class": "App\\Sharing\\Exceptions\\ShareRelationInvalid",
-        "final_path": "app/Sharing/Exceptions/ShareRelationInvalid.php",
-        "final_class": "App\\Sharing\\Exceptions\\ShareRelationInvalid",
+        "old_path": "domain/Sharing/src/Exceptions/ShareRelationInvalid.php",
+        "old_class": "Domain\\Sharing\\Exceptions\\ShareRelationInvalid",
+        "final_path": "domain/Sharing/src/Exceptions/ShareRelationInvalid.php",
+        "final_class": "Domain\\Sharing\\Exceptions\\ShareRelationInvalid",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -41865,10 +41865,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "74f6f2850eafbb1e51b06dcc702490a5bd11d452",
-        "old_path": "app/Sharing/Exceptions/SharingNotAllowed.php",
-        "old_class": "App\\Sharing\\Exceptions\\SharingNotAllowed",
-        "final_path": "app/Sharing/Exceptions/SharingNotAllowed.php",
-        "final_class": "App\\Sharing\\Exceptions\\SharingNotAllowed",
+        "old_path": "app/Access/Exceptions/SharingNotAllowed.php",
+        "old_class": "App\\Access\\Exceptions\\SharingNotAllowed",
+        "final_path": "app/Access/Exceptions/SharingNotAllowed.php",
+        "final_class": "App\\Access\\Exceptions\\SharingNotAllowed",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -44107,10 +44107,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "bcdf7c57aeeb6a6ccdba81d8cc07641f69739b4e",
-        "old_path": "app/Sharing/Exceptions/UnknownShareRecordType.php",
-        "old_class": "App\\Sharing\\Exceptions\\UnknownShareRecordType",
-        "final_path": "app/Sharing/Exceptions/UnknownShareRecordType.php",
-        "final_class": "App\\Sharing\\Exceptions\\UnknownShareRecordType",
+        "old_path": "domain/Sharing/src/Exceptions/UnknownShareRecordType.php",
+        "old_class": "Domain\\Sharing\\Exceptions\\UnknownShareRecordType",
+        "final_path": "domain/Sharing/src/Exceptions/UnknownShareRecordType.php",
+        "final_class": "Domain\\Sharing\\Exceptions\\UnknownShareRecordType",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -44126,10 +44126,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "470d5d53216b089e40db3ef8dfb8529af76fe026",
-        "old_path": "app/Sharing/Exceptions/UnknownShareRelation.php",
-        "old_class": "App\\Sharing\\Exceptions\\UnknownShareRelation",
-        "final_path": "app/Sharing/Exceptions/UnknownShareRelation.php",
-        "final_class": "App\\Sharing\\Exceptions\\UnknownShareRelation",
+        "old_path": "domain/Sharing/src/Exceptions/UnknownShareRelation.php",
+        "old_class": "Domain\\Sharing\\Exceptions\\UnknownShareRelation",
+        "final_path": "domain/Sharing/src/Exceptions/UnknownShareRelation.php",
+        "final_class": "Domain\\Sharing\\Exceptions\\UnknownShareRelation",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79726,10 +79726,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "744b1059a36447df959e07cdb98d37f9629b4799",
-        "old_path": "app/Sharing/GatewayConfiguration.php",
-        "old_class": "App\\Sharing\\GatewayConfiguration",
-        "final_path": "app/Sharing/GatewayConfiguration.php",
-        "final_class": "App\\Sharing\\GatewayConfiguration",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewayConfiguration.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewayConfiguration",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewayConfiguration.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewayConfiguration",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79745,10 +79745,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "485e2e7980355506b65a2006cad70bc68fce55a3",
-        "old_path": "app/Sharing/GatewayEndpoint.php",
-        "old_class": "App\\Sharing\\GatewayEndpoint",
-        "final_path": "app/Sharing/GatewayEndpoint.php",
-        "final_class": "App\\Sharing\\GatewayEndpoint",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewayEndpoint.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewayEndpoint",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewayEndpoint.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewayEndpoint",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79764,10 +79764,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "d6ec1652ddd454ba3456829b2ed59620efc07425",
-        "old_path": "app/Sharing/GatewayHealth.php",
-        "old_class": "App\\Sharing\\GatewayHealth",
-        "final_path": "app/Sharing/GatewayHealth.php",
-        "final_class": "App\\Sharing\\GatewayHealth",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewayHealth.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewayHealth",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewayHealth.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewayHealth",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79783,10 +79783,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "a58ab0adc1f926e59d59c8955e88fd63071bf409",
-        "old_path": "app/Sharing/GatewayOperation.php",
-        "old_class": "App\\Sharing\\GatewayOperation",
-        "final_path": "app/Sharing/GatewayOperation.php",
-        "final_class": "App\\Sharing\\GatewayOperation",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewayOperation.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewayOperation",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewayOperation.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewayOperation",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79821,10 +79821,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "75ecba14266e065812fcb5f98f61bfad5e8fad3f",
-        "old_path": "app/Sharing/GatewaySettings.php",
-        "old_class": "App\\Sharing\\GatewaySettings",
-        "final_path": "app/Sharing/GatewaySettings.php",
-        "final_class": "App\\Sharing\\GatewaySettings",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewaySettings.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewaySettings",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewaySettings.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewaySettings",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -79840,10 +79840,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "f6af1aa48ebeec924ba0fac86af335d61d80e260",
-        "old_path": "app/Sharing/GatewaySetupCheck.php",
-        "old_class": "App\\Sharing\\GatewaySetupCheck",
-        "final_path": "app/Sharing/GatewaySetupCheck.php",
-        "final_class": "App\\Sharing\\GatewaySetupCheck",
+        "old_path": "domain/Sharing/src/Support/Gateways/GatewaySetupCheck.php",
+        "old_class": "Domain\\Sharing\\Support\\Gateways\\GatewaySetupCheck",
+        "final_path": "domain/Sharing/src/Support/Gateways/GatewaySetupCheck.php",
+        "final_class": "Domain\\Sharing\\Support\\Gateways\\GatewaySetupCheck",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89511,10 +89511,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "e2f5beb999b39aa16f595cf2dac12ef022c2317f",
-        "old_path": "app/Support/ShareRecordDefinition.php",
-        "old_class": "App\\Support\\ShareRecordDefinition",
-        "final_path": "app/Support/ShareRecordDefinition.php",
-        "final_class": "App\\Support\\ShareRecordDefinition",
+        "old_path": "app/Records/Values/ShareRecordDefinition.php",
+        "old_class": "App\\Records\\Values\\ShareRecordDefinition",
+        "final_path": "app/Records/Values/ShareRecordDefinition.php",
+        "final_class": "App\\Records\\Values\\ShareRecordDefinition",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89530,10 +89530,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "0dd740566738dbea381c6dd4c9e1311bc10de95a",
-        "old_path": "app/Sharing/ShareRecordRegistry.php",
-        "old_class": "App\\Sharing\\ShareRecordRegistry",
-        "final_path": "app/Sharing/ShareRecordRegistry.php",
-        "final_class": "App\\Sharing\\ShareRecordRegistry",
+        "old_path": "domain/Sharing/src/Support/ShareRecordRegistry.php",
+        "old_class": "Domain\\Sharing\\Support\\ShareRecordRegistry",
+        "final_path": "domain/Sharing/src/Support/ShareRecordRegistry.php",
+        "final_class": "Domain\\Sharing\\Support\\ShareRecordRegistry",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89568,10 +89568,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "87a8cbc7fb912862939b72861253b3f561c1caa9",
-        "old_path": "app/Sharing/ShareRelation.php",
-        "old_class": "App\\Sharing\\ShareRelation",
-        "final_path": "app/Sharing/ShareRelation.php",
-        "final_class": "App\\Sharing\\ShareRelation",
+        "old_path": "app/Records/Values/ShareRelation.php",
+        "old_class": "App\\Records\\Values\\ShareRelation",
+        "final_path": "app/Records/Values/ShareRelation.php",
+        "final_class": "App\\Records\\Values\\ShareRelation",
         "status": "stay",
         "kind": "class",
         "generator": {
@@ -89606,10 +89606,10 @@
     {
         "revision": "bdce732c50505d415f2bec306606553eb3acdbeb",
         "blob": "1e9edbb83dea7c90c5cd7ba21123fe688d915aa7",
-        "old_path": "app/Support/ShareRelationSet.php",
-        "old_class": "App\\Support\\ShareRelationSet",
-        "final_path": "app/Support/ShareRelationSet.php",
-        "final_class": "App\\Support\\ShareRelationSet",
+        "old_path": "app/Records/Values/ShareRelationSet.php",
+        "old_class": "App\\Records\\Values\\ShareRelationSet",
+        "final_path": "app/Records/Values/ShareRelationSet.php",
+        "final_class": "App\\Records\\Values\\ShareRelationSet",
         "status": "stay",
         "kind": "class",
         "generator": {

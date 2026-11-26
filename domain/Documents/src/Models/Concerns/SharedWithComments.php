@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models\Concerns;
 
+use App\Records\Values\ShareRelationSet;
 use App\Support\RecordIdentity;
-use App\Support\ShareRelationSet;
 
 /**
  * For a Documents record that can be shared with its comments, which its provider reads live as owned children.

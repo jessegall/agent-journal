@@ -17,7 +17,7 @@ use Tests\TestCase;
  * the names every entry point reads, and reaches the journal with them: here mcp:relay passes an initialize frame.
  */
 #[TestsAgainstStandIn]
-#[TimeLimit(seconds: 60, reason: 'It runs the real host, the Docker stand-in and a served journal.')]
+#[TimeLimit(seconds: 60, reason: 'It runs the test host, the Docker stand-in and a served journal.')]
 final class StartCredentialsTest extends TestCase
 {
     use CommitsHookRows;
@@ -50,7 +50,7 @@ final class StartCredentialsTest extends TestCase
     public function test_a_process_opened_by_an_order_reaches_the_journal_with_the_start_token(): void
     {
         $this->chooseActiveAccounts();
-        $this->journal->owner()->idleAgent('Relay')->enrollHost('Mac', [base_path()])->runRealHost('Mac');
+        $this->journal->owner()->idleAgent('Relay')->enrollHost('Mac', [base_path()])->runTestHost('Mac');
         $opened = $this->journal->openRuntimeOn('Relay', 'Mac', base_path(), driverType: DriverType::Terminal);
         $answer = tempnam(sys_get_temp_dir(), 'relay-answer-');
         $relay = 'printf "%s\\n" "$0" | php artisan mcp:relay > "$1"';

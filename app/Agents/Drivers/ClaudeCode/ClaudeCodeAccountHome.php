@@ -18,9 +18,10 @@ final readonly class ClaudeCodeAccountHome implements AccountEnvironmentPart
     public const string HOME_FOLDER = 'home';
 
     /**
-     * The part of an account start's PATH outside the protected installation.
+     * The PATH of a start from an installation: its Keychain shim, its programs, then the system's.
      */
-    private const string SYSTEM_PATH = '/usr/bin:/bin:/usr/sbin:/sbin';
+    public const string INSTALLATION_PATH = '{host:INSTALLATION}/journal/programs/accounts/no-keychain:{host:INSTALLATION}/bin:'
+        .'/usr/bin:/bin:/usr/sbin:/sbin';
 
     /**
      * The account's variables, its home and empty folders, and its read files.
@@ -42,20 +43,14 @@ final readonly class ClaudeCodeAccountHome implements AccountEnvironmentPart
     {
         $recipe = $account->recipe;
 
-        $environment = [
+        return $recipe->variablesAfter([
             'HOME={folder:'.self::HOME_FOLDER.'}',
-            'PATH={host:INSTALLATION}/journal/tools/accounts/no-keychain:{host:INSTALLATION}/bin:'.self::SYSTEM_PATH,
+            'PATH='.self::INSTALLATION_PATH,
             ...array_map(
                 fn (string $name) => "{$name}={folder:".self::emptyFolderOf($name).'}',
                 $recipe->emptyFolderVariables,
             ),
-            ...array_map(fn ($setting) => "{$setting->name}={$setting->settingText}", $recipe->environment),
-        ];
-
-        return array_values(array_filter(
-            $environment,
-            fn (string $entry) => ! in_array(strstr($entry, '=', true), $recipe->removedVariables, true),
-        ));
+        ]);
     }
 
     private static function emptyFolderOf(string $variable): string

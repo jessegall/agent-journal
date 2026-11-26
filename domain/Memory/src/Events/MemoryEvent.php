@@ -7,7 +7,7 @@ namespace Domain\Memory\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about memories: every event of that subject implements it, so a listener typed on it hears them all.
+ * A fact about memories: every event of that subject implements it, so a listener typed on it receives them all.
  */
 interface MemoryEvent extends Event
 {

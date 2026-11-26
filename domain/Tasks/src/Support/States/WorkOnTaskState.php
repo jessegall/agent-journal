@@ -31,7 +31,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent working on one run of a task. The run stays open until the state hears the task finished, blocked or
+ * An agent working on one run of a task. The run stays open until the state receives the task finished, blocked or
  * cancelled, a newer run of it claimed, or the claim it holds ended; it keeps the claim it heard as its own, so a late
  * end of an earlier claim never closes a resumed run. A stop is held back while the run is open and held by this agent.
  * The task is in the agent's focus while its frame is the live top, and leaves it once the frame stops being live.

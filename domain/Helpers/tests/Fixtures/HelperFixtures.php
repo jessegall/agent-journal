@@ -59,7 +59,7 @@ final class HelperFixtures
     }
 
     /**
-     * Runs a step of a job's life as the journal does when it hears of the helper's start or stop.
+     * Runs a step of a job's life as the journal does when it receives of the helper's start or stop.
      *
      * @param  Command<mixed>  $command
      */

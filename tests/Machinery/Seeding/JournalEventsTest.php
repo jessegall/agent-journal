@@ -42,7 +42,7 @@ final class JournalEventsTest extends TestCase
 
         $this->journal->run(new UnlinkRecordsCommand($second, $first));
 
-        // The group hears the link's own removal and the batch that announces it after the commit.
+        // The group receives the link's own removal and the batch that announces it after the commit.
         $this->journal->assertEventCount(LinkRemoved::class, 1)->assertEventCount(LinkEvent::class, 2);
         $this->assertSame(0, Link::query()->count());
     }

@@ -1,23 +1,25 @@
 # The agent image: every agent's program runs inside one of these containers. No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when
 # building. bubblewrap and socat let the program sandbox its own tools and reach the host's relays; TOOLCHAIN_PACKAGES
 # names the apt packages of the project toolchains the main agent's workspace needs, none by default.
-ARG BASE=php:8.5-cli-bookworm
+ARG BASE=debian:bookworm-slim
 ARG GO_IMAGE=golang:1.26.4-bookworm
 
-# The protected-account init and the fixed shell executor, built static for the target architecture.
+# The journal's programs of the image (the protected-account init, the shell executor, the relays and the stop check),
+# built static for the target architecture.
 FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS protected-start
 ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
-COPY tools/journal-agent/go.mod tools/journal-agent/go.sum ./
+COPY programs/agent/go.mod programs/agent/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
-COPY tools/journal-agent/ ./
+COPY programs/agent/ ./
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell \
     && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-hook ./cmd/journal-hook \
-    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-mcp ./cmd/journal-mcp
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-mcp ./cmd/journal-mcp \
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-check ./cmd/journal-check
 
 FROM ${BASE}
 
@@ -34,8 +36,7 @@ RUN --mount=type=cache,target=/root/.npm --mount=type=cache,target=/var/cache/ap
 
 # The relays and the protected stop checks. Both relays are standalone programs that ask the journal themselves with
 # the start's grant; the image holds no application console.
-COPY --from=protected-start --chown=root:root /out/journal-hook /out/journal-mcp /opt/journal/bin/
-COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journal-check
+COPY --from=protected-start --chown=root:root /out/journal-hook /out/journal-mcp /out/journal-check /opt/journal/bin/
 COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /out/journal-shell /opt/journal/bin/
 # Claude Code takes a shell only by the name bash: the shell bridge under that name hands every command to the executor.
 COPY --from=protected-start --chown=root:root /out/journal-shell /opt/journal/shell/bash

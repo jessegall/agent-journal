@@ -101,7 +101,6 @@ use App\Events\Sessions\SessionTokenIssued;
 use App\Events\Sessions\SessionTokenRevoked;
 use App\Events\Sessions\SessionTokenRotated;
 use App\Events\Sessions\StartAccepted;
-use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartIdentityBecameUncertain;
 use App\Events\Sessions\StartIdentityBound;
 use App\Events\Sessions\StartIdentityPrepared;
@@ -251,13 +250,6 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Agents/Commands/StartAgent/StartAgentHandler.php',
-        ],
-    ],
-    StartGrantRequested::class => [
-        'role' => EventRole::Request,
-        'migrated' => false,
-        'producers' => [
-            'app/Sessions/StartExtensionRequests.php',
         ],
     ],
     StartSettingsRequested::class => [

@@ -38,7 +38,7 @@ final class DriverWordTest extends TestCase
         'app/Bus/Contracts/CommandClassifier.php',
         'app/Bus/Contracts/CommandRuleProvider.php',
         'app/Processes/Contracts/ProgramClassifier.php',
-        'app/Sharing/Contracts/ShareGateway.php',
+        'domain/Sharing/src/Contracts/ShareGateway.php',
         'app/Profiles/Data/Pages/DeclarationData.php',
         'app/Processes/Data/ExplainedNodeData.php',
         'app/Processes/Data/PartSummaryData.php',
@@ -65,8 +65,8 @@ final class DriverWordTest extends TestCase
         'app/CommandRules/CommandRuleRegistry.php',
         'app/Processes/ExecutableCheck.php',
         'app/Processes/Explanations.php',
-        'app/Sharing/GatewayEndpoint.php',
-        'app/Sharing/GatewaySettings.php',
+        'domain/Sharing/src/Support/Gateways/GatewayEndpoint.php',
+        'domain/Sharing/src/Support/Gateways/GatewaySettings.php',
         'domain/Sharing/src/Support/Gateways/NgrokGateway.php',
         'domain/Sharing/src/Support/Gateways/GatewayChildren.php',
         'domain/Sharing/src/Support/Gateways/GatewayStarts.php',
@@ -131,7 +131,7 @@ final class DriverWordTest extends TestCase
 
     public function test_the_go_host_calls_a_driver_a_driver(): void
     {
-        $found = WordLines::in(WordLines::GO_DRIVER_WORDS, [base_path('tools/journal-agent')]);
+        $found = WordLines::in(WordLines::GO_DRIVER_WORDS, [base_path('programs/agent')]);
 
         $this->assertSame([], $found, self::HOW_TO_FIX_IN_GO);
     }

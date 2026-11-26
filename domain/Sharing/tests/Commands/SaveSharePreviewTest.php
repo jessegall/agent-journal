@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
+use App\Access\Exceptions\SharingNotAllowed;
 use App\Access\Values\OwnerAuthority;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Bus\Contracts\CommandBus;
 use App\Models\Records\Link;
 use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Exceptions\SharingNotAllowed;
-use App\Sharing\GatewaySettings;
-use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Values\ProjectOwner;
@@ -25,10 +23,12 @@ use Domain\Sharing\Exceptions\ShareGatewayUnavailable;
 use Domain\Sharing\Exceptions\SharePreviewRefused;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\SharePreview;
+use Domain\Sharing\Support\Gateways\GatewaySettings;
 use Domain\Sharing\Support\SavedSharePreview;
 use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Support\ShareCandidates;
 use Domain\Sharing\Support\ShareLinkedCandidate;
+use Domain\Sharing\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareScope;
 use Domain\Sharing\Support\ShareSelectedTarget;
 use Domain\Sharing\Tests\Support\RegistersShareDomains;

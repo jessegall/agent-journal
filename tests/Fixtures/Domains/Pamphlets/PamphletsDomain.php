@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
-use App\Sharing\Contracts\ShareGatewayProvider;
-use App\Sharing\Contracts\ShareRecordContributor;
+use App\Records\Contracts\ShareRecordContributor;
+use App\Records\Values\ShareRecordDefinition;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\ShareRecordDefinition;
+use Domain\Sharing\Contracts\ShareGatewayProvider;
 
 final class PamphletsDomain extends Domain implements ShareGatewayProvider, ShareRecordContributor
 {

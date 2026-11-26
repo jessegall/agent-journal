@@ -2,7 +2,7 @@
 /**
  * What a list shows while its first read is pending: placeholder rows with the height and padding of a ListRow, in the
  * selection colour, three by default. The wrapper is aria-busy and one status line carries the label, so a screen
- * reader hears it once. The rows are still under reduced motion.
+ * reader receives it once. The rows are still under reduced motion.
  */
 withDefaults(defineProps<{ rows?: number; label: string; busy?: boolean }>(), { rows: 3, busy: true });
 </script>

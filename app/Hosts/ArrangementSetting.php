@@ -11,6 +11,7 @@ use App\Hosts\Exceptions\InstallationNameMissing;
 use App\Hosts\Exceptions\RunnerArrangementRefused;
 use App\Hosts\Exceptions\WorkspaceSourceMissing;
 use App\Hosts\Exceptions\WorkspaceSourcesInvalid;
+use App\Hosts\Values\ContainerLabels;
 use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
 use App\Projects\Exceptions\HostArrangementRefused;
@@ -80,6 +81,14 @@ final readonly class ArrangementSetting
     public function sessionContainerName(string $sessionId): string
     {
         return "{$this->installationName}-{$sessionId}";
+    }
+
+    /**
+     * The labels of a contained session's container: this installation, the session and its account's folder.
+     */
+    public function labelsFor(string $sessionId, SelectedAccount $account): ContainerLabels
+    {
+        return new ContainerLabels($this->installationName, $sessionId, $account->folder());
     }
 
     /**

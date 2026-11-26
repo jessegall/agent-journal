@@ -62,4 +62,20 @@ final readonly class ManifestMount
     {
         return new self(MountType::DaemonBind, $source, $target, $isWritable);
     }
+
+    /**
+     * One file of the start's plan, read-only, which the host writes beside the session's other plan files.
+     */
+    public static function planFile(string $name, string $target): self
+    {
+        return new self(MountType::PlanFile, $name, $target, false);
+    }
+
+    /**
+     * Every file of the start's plan, read-only, in the one folder that holds them.
+     */
+    public static function planFiles(string $target): self
+    {
+        return new self(MountType::PlanFile, '', $target, false);
+    }
 }

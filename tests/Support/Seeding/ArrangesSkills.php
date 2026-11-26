@@ -7,10 +7,12 @@ namespace Tests\Support\Seeding;
 use App\Agents\Inputs\Values\CompactionDetails;
 use App\Agents\Inputs\Values\SessionStartDetails;
 use App\Contracts\Work\StackTransactionRunner;
+use App\Events\Sessions\SessionOpened;
 use App\Hooks\ContextCollection;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\FinishedToolCalls;
+use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillGeneration;
@@ -64,7 +66,7 @@ trait ArrangesSkills
 
     /**
      * The session's tool call finished with this outcome, announced as the hook route does after its replay check, so
-     * every listener of a finished tool call hears it in the agent's own request.
+     * every listener of a finished tool call receives it in the agent's own request.
      *
      * @param  array<string, mixed>  $arguments
      */
@@ -103,6 +105,17 @@ trait ArrangesSkills
         return $this->app->make(StackTransactionRunner::class)->run(
             fn (): array => $this->app->make(ContextCollection::class)->collectReminders($target, $input),
         );
+    }
+
+    /**
+     * The named agent's session is handed its skills as its start admits them, and is read again.
+     */
+    public function handSkillsTo(string $agent): AgentSession
+    {
+        $session = $this->sessionOf($agent);
+        $this->app->make(AdmitStartSkills::class)->handle(new SessionOpened($session->agent_id, $session->id));
+
+        return AgentSession::findById($session->id);
     }
 
     /**

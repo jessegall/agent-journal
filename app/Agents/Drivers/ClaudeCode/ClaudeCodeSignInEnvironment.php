@@ -12,7 +12,7 @@ use App\Agents\Drivers\Setup\Contracts\SignInEnvironment;
  */
 final readonly class ClaudeCodeSignInEnvironment implements SignInEnvironment
 {
-    private const string NO_KEYCHAIN = 'tools/accounts/no-keychain';
+    private const string NO_KEYCHAIN = 'programs/accounts/no-keychain';
 
     public function __invoke(string $directory): array
     {

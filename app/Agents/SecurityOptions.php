@@ -12,6 +12,8 @@ use App\Agents\Exceptions\ManifestRefused;
  */
 final readonly class SecurityOptions
 {
+    private const string AGENT_SECCOMP_PROFILE = 'seccomp-agent.json';
+
     private function __construct(
         public string|null $seccomp,
         public string|null $apparmor,
@@ -20,6 +22,16 @@ final readonly class SecurityOptions
     public static function none(): self
     {
         return new self(null, null);
+    }
+
+    /**
+     * The profile every agent container runs under, which lets the sandbox of its driver make its namespaces.
+     *
+     * @throws ManifestRefused
+     */
+    public static function agent(string $profilesFolder): self
+    {
+        return self::make("{$profilesFolder}/".self::AGENT_SECCOMP_PROFILE, null, $profilesFolder);
     }
 
     /**

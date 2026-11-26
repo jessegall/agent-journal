@@ -226,7 +226,7 @@ final class WebServiceProvider extends ServiceProvider
         });
 
         // A coded refusal of a read, such as a page cursor that no longer fits, answers with its own status, so a
-        // partial reload hears why its read was refused.
+        // partial reload receives why its read was refused.
         $exceptions->renderable(function (Throwable $refused, Request $request): JsonResponse|Response|null {
             if (! $refused instanceof CodedRefusal || ! $request->hasSession() || $refused instanceof CommandRefusal) {
                 return null;

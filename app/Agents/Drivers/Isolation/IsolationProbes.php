@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Isolation;
 
 use App\Agents\ContainerManifest;
+use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\SecurityOptions;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
@@ -38,8 +39,6 @@ final readonly class IsolationProbes
         'true',
     ];
 
-    private const string SECCOMP_PROFILE = 'seccomp-agent.json';
-
     /**
      * @param  string  $securityProfiles  the folder on the agent host that holds the agent containers' profiles
      */
@@ -64,12 +63,20 @@ final readonly class IsolationProbes
     }
 
     /**
+     * The probe run in a throwaway container of the agent image, as a contained host runs every driver program.
+     *
+     * @throws ManifestRefused
+     */
+    public function inAgentImage(HostProcessPlan $probe): HostProcessPlan
+    {
+        return $probe->inContainer($this->probeContainer());
+    }
+
+    /**
      * @param  list<string>  $argv
      */
     private function planOf(HostProcessPurpose $purpose, array $argv): HostProcessPlan
     {
-        $seccomp = "{$this->securityProfiles}/".self::SECCOMP_PROFILE;
-        $security = SecurityOptions::make($seccomp, null, $this->securityProfiles);
 
         return new HostProcessPlan(
             purpose: $purpose,
@@ -78,7 +85,15 @@ final readonly class IsolationProbes
             argv: $argv,
             environment: [],
             folder: ContainerManifest::WORKDIR,
-            container: ContainerManifest::probe($this->image->reference, $security),
+            container: $this->probeContainer(),
         );
+    }
+
+    /**
+     * @throws ManifestRefused
+     */
+    private function probeContainer(): ContainerManifest
+    {
+        return ContainerManifest::probe($this->image->reference, SecurityOptions::agent($this->securityProfiles));
     }
 }

@@ -16,12 +16,14 @@ final readonly class PlanAddition
     /**
      * @param  list<PlanFile>  $files
      * @param  list<string>  $sideSockets
+     * @param  list<string>  $keptFiles  files a device keeps for its binding between two sessions, such as a sign-in
      */
     public function __construct(
         public array $files = [],
         public array $sideSockets = [],
         public string|null $seatbelt = null,
         public RestartFile|null $restartWhenFile = null,
+        public array $keptFiles = [],
     ) {}
 
     /**
@@ -44,6 +46,7 @@ final readonly class PlanAddition
             [...$this->sideSockets, ...$other->sideSockets],
             $this->seatbelt ?? $other->seatbelt,
             $this->restartWhenFile ?? $other->restartWhenFile,
+            [...$this->keptFiles, ...$other->keptFiles],
         );
     }
 }

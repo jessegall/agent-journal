@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\Values\PlanFile;
 use App\Hosts\Enums\HostProcessType;
+use App\Sessions\Enums\OfflineReplyMode;
+use App\Sessions\Values\SessionContainer;
 
 /**
  * One start of a driver as its profile plans it: the exact conversation it begins or resumes, whether it runs as a
@@ -15,6 +18,9 @@ use App\Hosts\Enums\HostProcessType;
  */
 final readonly class DriverStart
 {
+    /**
+     * @param  list<PlanFile>  $skillFiles  the skills the session was handed, in its driver's skill folder
+     */
     public function __construct(
         public string $sessionId,
         public HostProcessType $type,
@@ -26,6 +32,12 @@ final readonly class DriverStart
         public string|null $hookCommand = null,
         public DriverAccount|null $account = null,
         public ExecutablePlace $executablePlace = ExecutablePlace::Host,
+        public OfflineReplyMode $offlineReply = OfflineReplyMode::Refuse,
+        public array $skillFiles = [],
+        /**
+         * The container a contained session's processes run in; none on a host that runs them itself.
+         */
+        public SessionContainer|null $container = null,
     ) {}
 
     /**
@@ -42,6 +54,11 @@ final readonly class DriverStart
     public function resumed(): self
     {
         return clone ($this, ['isResume' => true]);
+    }
+
+    public function hasSkills(): bool
+    {
+        return $this->skillFiles !== [];
     }
 
     public function isTurn(): bool

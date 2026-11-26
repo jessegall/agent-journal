@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Events\Sessions\SessionOpened;
 use App\Exceptions\SkillSessionHidden;
-use App\Listeners\AdmitStartSkills;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillReadEntry;
 use App\Resolvers\Support\SkillStatusResolver;
@@ -50,7 +48,7 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_session_handed_skills_shows_its_generation_keys_and_skills_unchanged(): void
     {
-        $session = $this->admitted('Writer');
+        $session = $this->journal->handSkillsTo('Writer');
 
         $skills = $this->skillsOf($session);
 
@@ -65,7 +63,7 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_skill_made_after_the_start_is_marked_as_changed(): void
     {
-        $session = $this->admitted('Writer');
+        $session = $this->journal->handSkillsTo('Writer');
         $this->journal->skill('user-review-notes', new SkillDraft(
             'Review notes',
             'Read before reviewing.',
@@ -85,7 +83,7 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_key_read_in_the_session_shows_its_last_read_and_an_unread_key_shows_none(): void
     {
-        $session = $this->admitted('Writer');
+        $session = $this->journal->handSkillsTo('Writer');
         $key = $session->skill_keys[0];
         SkillReadEntry::record($session, $key, ReadEvidence::FullFileRead);
         SkillReadEntry::record($session, $key, ReadEvidence::SkillShow);
@@ -103,7 +101,7 @@ final class SkillStatusTest extends TestCase
 
     public function test_a_key_still_to_read_shows_so_and_a_read_key_does_not(): void
     {
-        $session = $this->admitted('Writer');
+        $session = $this->journal->handSkillsTo('Writer');
         [$first, $second] = $session->skill_keys;
         $this->journal->actAsAgentIds($session->agent_id, $session->id);
         $this->journal->runUnkeyed(new AskSkillReadCommand($session->id, [$first, $second]));
@@ -117,8 +115,8 @@ final class SkillStatusTest extends TestCase
 
     public function test_an_agent_sees_its_own_session_and_no_other(): void
     {
-        $own = $this->admitted('Writer');
-        $other = $this->admitted('Reader');
+        $own = $this->journal->handSkillsTo('Writer');
+        $other = $this->journal->handSkillsTo('Reader');
 
         $this->journal->actAs('Writer');
         $resolver = $this->app->make(SkillStatusResolver::class);
@@ -127,14 +125,6 @@ final class SkillStatusTest extends TestCase
         $this->expectException(SkillSessionHidden::class);
 
         $resolver->skillsOfSession($other->id);
-    }
-
-    private function admitted(string $agent): AgentSession
-    {
-        $session = $this->journal->sessionOf($agent);
-        $this->app->make(AdmitStartSkills::class)->handle(new SessionOpened($session->agent_id, $session->id));
-
-        return AgentSession::findById($session->id);
     }
 
     /**

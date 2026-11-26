@@ -10,11 +10,15 @@ use App\Agents\Drivers\ClaudeCode\ClaudeAccountSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAccountHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeContainerHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeJournalServer;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeptSignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeKeyScripts;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeLayout;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeManagedSettings;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeMcpTimeouts;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeModelAnswer;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeOwnTerminalHome;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodePlatform;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeProtectedShell;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSeatbelt;
@@ -60,11 +64,16 @@ use App\Agents\Drivers\Setup\VersionProbe;
 use App\Agents\Drivers\StartConditions\AccountStart;
 use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
+use App\Agents\Drivers\StartConditions\ContainedStart;
+use App\Agents\Drivers\StartConditions\HostAccountTerminal;
+use App\Agents\Drivers\StartConditions\HostHomeStart;
 use App\Agents\Drivers\StartConditions\JournalServerAccount;
+use App\Agents\Drivers\StartConditions\OwnTerminalStart;
 use App\Agents\Drivers\StartConditions\ProtectedAccount;
 use App\Agents\Drivers\StartConditions\SeatbeltedTurn;
 use App\Agents\Exceptions\ProfileRefused;
 use App\Processes\AnyContext;
+use App\Processes\Negation;
 use App\Support\PrivateAccountProcess;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -146,6 +155,7 @@ final class DriversServiceProvider extends ServiceProvider
         )
             // Codex's sandbox limits writes only, so its tools could read the sign-in a protected container keeps.
             ->refusedWhen(new ProtectedAccount(), fn () => ProfileRefused::notContainable($driver))
+            ->refusedWhen(new OwnTerminalStart(), fn () => ProfileRefused::ownTerminalWithheld($driver))
             ->signInRefusedWhen(
                 new AccountWithoutFolder(),
                 fn () => ProfileRefused::unresolvedSetting('no account to check the sign-in of'),
@@ -216,9 +226,11 @@ final class DriversServiceProvider extends ServiceProvider
             hookAdapter: ClaudeCodeAdapter::class,
         )
             ->environment(
-                ConditionalPart::forAccount(new AccountStart(), ClaudeCodeAccountHome::class),
+                ConditionalPart::forAccount(new Negation(new ContainedStart()), ClaudeCodeAccountHome::class),
+                ConditionalPart::forAccount(new ContainedStart(), ClaudeCodeContainerHome::class),
                 ConditionalPart::for(new AnyContext(), ClaudeCodePlatform::class),
-                ConditionalPart::unless(new AccountStart(), HostHomeAndPath::class),
+                ConditionalPart::for(new HostHomeStart(), HostHomeAndPath::class),
+                ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeOwnTerminalHome::class),
                 ConditionalPart::for(new JournalServerAccount(), ClaudeCodeMcpTimeouts::class),
                 ConditionalPart::forAccount(new AccountStart(), StartReference::class),
                 ConditionalPart::for(new ProtectedAccount(), ClaudeCodeProtectedShell::class),
@@ -227,7 +239,9 @@ final class DriversServiceProvider extends ServiceProvider
                 ConditionalPart::for(new AnyContext(), ClaudeCodeSettingsFile::class),
                 ConditionalPart::forAccount(new JournalServerAccount(), ClaudeCodeJournalServer::class),
                 ConditionalPart::forAccount(new SeatbeltedTurn(), ClaudeCodeSeatbelt::class),
-                ConditionalPart::for(new AccountTerminal(), StatusLineSocket::class),
+                ConditionalPart::for(new HostAccountTerminal(), StatusLineSocket::class),
+                ConditionalPart::for(new ContainedStart(), ClaudeCodeManagedSettings::class),
+                ConditionalPart::for(new OwnTerminalStart(), ClaudeCodeKeptSignIn::class),
                 ConditionalPart::forAccount(new AccountTerminal(), ClaudeCodeTranscriptRestart::class),
             );
     }

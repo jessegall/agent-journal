@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewayEndpoint;
-use App\Sharing\GatewayHealth;
-use App\Sharing\GatewayOperation;
-use App\Sharing\GatewaySetupCheck;
+use Domain\Sharing\Contracts\ShareGateway;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
+use Domain\Sharing\Support\Gateways\GatewayEndpoint;
+use Domain\Sharing\Support\Gateways\GatewayHealth;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
+use Domain\Sharing\Support\Gateways\GatewaySetupCheck;
 
 /**
  * A gateway that is always ready and healthy and opens an endpoint on its configured origin.

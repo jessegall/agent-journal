@@ -13,7 +13,7 @@
     "arguments": [
       "claude",
       "--settings",
-      "/Users/jessegall/projects/agent-journal-6/tools/journal-agent/testdata/recordings/claude-code/2.1.323/turns/terminal-interrupt/settings/settings.json",
+      "/Users/jessegall/projects/agent-journal-6/programs/agent/testdata/recordings/claude-code/2.1.323/turns/terminal-interrupt/settings/settings.json",
       "--setting-sources",
       "",
       "--strict-mcp-config",

@@ -93,17 +93,31 @@ final readonly class StartClaims
     {
         $session = AgentSession::query()->findOrFail($start->session_id);
 
-        return $this->settingsOf($start, $session)->recipeFor($session->selection->driver, $start->transport_profile);
+        return $this->settingsOf($start, $session, $start->directory)
+            ->recipeFor($session->selection->driver, $start->transport_profile);
+    }
+
+    /**
+     * The start's recipe for its container, where the account folder is mounted at the given folder.
+     *
+     * @throws UnstartableDriver
+     */
+    public function containedRecipeOf(SessionProcess $start, string $accountFolder): AccountStartRecipe
+    {
+        $session = AgentSession::query()->findOrFail($start->session_id);
+
+        return $this->settingsOf($start, $session, $accountFolder)
+            ->recipeFor($session->selection->driver, $start->transport_profile);
     }
 
     /**
      * @throws UnstartableDriver
      */
-    private function settingsOf(SessionProcess $start, AgentSession $session): AccountStartSettings
+    private function settingsOf(SessionProcess $start, AgentSession $session, string $directory): AccountStartSettings
     {
         $driver = $session->selection->driver;
         $settings = new AccountStartSettings();
-        $requested = new AccountSettingsRequested($driver, $start->accountIdentity, $start->directory, $settings);
+        $requested = new AccountSettingsRequested($driver, $start->accountIdentity, $directory, $settings);
         $this->extensions->accountSettings($requested);
 
         return $settings;

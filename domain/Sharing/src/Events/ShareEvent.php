@@ -8,6 +8,6 @@ use App\Contracts\Events\Event;
 
 /**
  * A fact about shares and the gateway that serves them: every event of that subject implements it, so a listener typed on
- * it hears them all.
+ * it receives them all.
  */
 interface ShareEvent extends Event {}

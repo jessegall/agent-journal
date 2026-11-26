@@ -106,6 +106,23 @@ final class OpenBindingMainRuntimeTest extends TestCase
         );
     }
 
+    public function test_the_owners_terminal_gets_a_home_of_its_own_and_keeps_its_sign_in_between_sessions(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $plan = $this->start($binding, [])->assertCreated()->json('plan');
+
+        $this->journal->assertResult(
+            [['home', 'account'], ['{folder:account}/.credentials.json'], [], true],
+            [
+                $plan['folders'],
+                $plan['kept_files'],
+                $plan['inherit'],
+                in_array('CLAUDE_CONFIG_DIR={folder:account}', $plan['environment'], true),
+            ],
+        );
+    }
+
     public function test_a_binding_runtime_leaves_the_servers_main_agent_attached_to_main(): void
     {
         $serverMain = $this->journal->idleAgent('Server main', 'main-agent')->agentCalled('Server main');

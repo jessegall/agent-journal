@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Sharing\Contracts\ShareStatusResolver;
 use App\Support\RecordIdentity;
+use Domain\Sharing\Contracts\ShareStatusResolver;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareMember;
 

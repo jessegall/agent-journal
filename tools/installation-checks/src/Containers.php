@@ -103,15 +103,15 @@ final readonly class Containers
      */
     public function executor(string $sessionId, string $line): string
     {
-        return $this->run(['php', 'tools/accounts/isolation-probe.php', 'executor', $sessionId], $line);
+        return $this->run(['php', 'programs/accounts/isolation-probe.php', 'executor', $sessionId], $line);
     }
 
     /**
-     * Runs the trusted probe of tools/accounts against the session and answers what it printed.
+     * Runs the trusted probe of programs/accounts against the session and answers what it printed.
      */
     public function probe(string $step, string $sessionId, string $program): string
     {
-        return $this->run(['php', 'tools/accounts/isolation-probe.php', $step, $sessionId, "--program={$program}"]);
+        return $this->run(['php', 'programs/accounts/isolation-probe.php', $step, $sessionId, "--program={$program}"]);
     }
 
     /**

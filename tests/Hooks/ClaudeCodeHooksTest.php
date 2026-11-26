@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Hooks;
 
-use App\Accounts\ProtectedAccounts;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\CredentialLookup;
 use App\Agents\Drivers\Contracts\DriverAdapters;
@@ -12,13 +11,8 @@ use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\DriverFailure;
 use App\Agents\Drivers\Enums\DriverType;
-use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Storage\RecordedSteps;
 use App\Agents\Enums\StackStatus;
-use App\Agents\Relay\CallbackEnvelope;
-use App\Agents\Relay\HookRelay;
-use App\Agents\Relay\PreparationState;
-use App\Agents\Relay\RelaySettings;
 use App\Api\SignedCall;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Enums\NoSubject;
@@ -26,10 +20,7 @@ use App\Events\Sessions\DriverFailed;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Exceptions\CredentialRejected;
 use App\Exceptions\StoredValueInvalid;
-use App\Files\Contracts\Files;
-use App\Files\Enums\Place;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Exceptions\RetentionTooShort;
 use App\Hooks\HookRetryWindow;
@@ -40,7 +31,6 @@ use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\FailureReceipt;
 use App\Models\Drivers\HookCall;
 use App\Models\Records\Link;
-use App\Models\Sessions\ReportedBypass;
 use App\Sessions\Enums\SessionStatus;
 use App\Sessions\IsolatedHookSettings;
 use App\Sessions\StartedAgent;
@@ -59,29 +49,22 @@ use App\Support\Storage\RecordedAnswer;
 use App\Support\Storage\WalkStep;
 use App\Support\Ticks\TickingTypes;
 use App\Values\AgentText;
-use App\Values\FilePath;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
-use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 use Laravel\Octane\Events\RequestReceived;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\Agents\BackdatesSessions;
-use Tests\Support\Agents\HostContract;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsHook;
@@ -163,30 +146,7 @@ final class ClaudeCodeHooksTest extends TestCase
         'part_runs',
         'process_runs',
         'command_requests',
-        'reported_bypasses',
     ];
-
-    private const string RELAY_STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
-
-    private const string RELAY_SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
-        .'"tool_input":{"command":"git status"}}';
-
-    private const string RELAY_ACCOUNT_READ = '{"session_id":"session-1","hook_event_name":"PreToolUse",'
-        .'"tool_name":"Read",'
-        .'"cwd":"/work","tool_input":{"file_path":"../journal/accounts/a/projects/-work/other.jsonl"}}';
-
-    private const array COMPARED_HEADERS = ['authorization', 'content-type', 'x-journal-'];
-
-    private const array VARYING_HEADERS = [
-        'authorization',
-        'x-journal-call-id',
-        'x-journal-call-issued-at',
-        'x-journal-call-signature',
-    ];
-
-    private string $bypassLog;
-
-    private bool $isJournalDown = false;
 
     protected function setUp(): void
     {
@@ -763,331 +723,6 @@ final class ClaudeCodeHooksTest extends TestCase
         $this->artisan('hooks:prune')
             ->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')
             ->assertSuccessful();
-    }
-
-    public function test_the_relay_carries_a_signed_call_to_the_endpoint_and_prints_its_reply(): void
-    {
-        $this->prepareRelay();
-        $this->forwardToTheEndpoint();
-
-        $reply = $this->relay(self::RELAY_STOP);
-
-        $this->assertSame(['{}', '', 0], [$reply->stdout, $reply->stderr, $reply->exitCode]);
-        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
-    }
-
-    /**
-     * The exchange the Go hook relay (tools/journal-agent/cmd/journal-hook) must hold to: the payload, the start it
-     * runs for, each call as it went to the real endpoint with its answer, and the reply printed.
-     */
-    public function test_the_calls_it_sends_and_the_reply_it_prints_hold_to_the_contract_the_go_relay_shares(): void
-    {
-        $this->prepareRelay();
-        $exchange = ['calls' => [], 'answers' => []];
-        Http::fake(function (Request $request) use (&$exchange) {
-            $answer = $this->forward($request);
-            $response = $answer->wait();
-            $exchange['calls'][] = [
-                'path' => (string) parse_url($request->url(), PHP_URL_PATH),
-                'body' => json_decode($request->body(), true, flags: JSON_THROW_ON_ERROR),
-                'headers' => $this->comparedHeaders($request->headers()),
-            ];
-            $exchange['answers'][] = ['status' => $response->getStatusCode(), 'body' => (string) $response->getBody()];
-
-            return $answer;
-        });
-
-        $reply = $this->relay(self::RELAY_STOP);
-
-        HostContract::of('relays/hook-exchange.json')->assertHolds([
-            'payload' => self::RELAY_STOP,
-            'profile' => $this->start->pin()->key,
-            'profileRevision' => $this->start->pin()->revision,
-            ...$exchange,
-            'printed' => ['stdout' => $reply->stdout, 'stderr' => $reply->stderr, 'exitCode' => $reply->exitCode],
-        ], []);
-    }
-
-    public function test_during_an_outage_the_main_agent_goes_on_and_the_bypass_is_logged(): void
-    {
-        $this->prepareRelay();
-        Http::fake(fn () => throw JournalUnreachable::now());
-
-        $reply = $this->relay(self::RELAY_SHELL);
-
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
-        $this->assertStringContainsString(
-            '"nativeEvent":"PreToolUse","failure":"unreachable"',
-            (string) file_get_contents($this->bypassLog),
-        );
-    }
-
-    public function test_during_an_outage_a_main_agent_is_still_refused_saved_accounts_and_logs_no_bypass(): void
-    {
-        $this->prepareRelay();
-        Http::fake(fn () => throw JournalUnreachable::now());
-
-        $reply = $this->relay(self::RELAY_ACCOUNT_READ);
-
-        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
-        $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_during_an_outage_a_tool_call_the_relay_cannot_read_is_refused(): void
-    {
-        $this->prepareRelay();
-        Http::fake(fn () => throw JournalUnreachable::now());
-
-        $reply = $this->relay(
-            '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Read","tool_input":"unreadable"}',
-        );
-
-        $this->assertEquals(TestText::outages()->protectedRefusal('PreToolUse'), $reply);
-        $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_a_gateway_failure_counts_as_an_outage(): void
-    {
-        $this->prepareRelay();
-        Http::fake(['*' => Http::response('', 502)]);
-
-        $this->assertSame('{}', $this->relay(self::RELAY_STOP)->stdout);
-        $this->assertFileExists($this->bypassLog);
-    }
-
-    /**
-     * @return iterable<string, array{int, string}>
-     */
-    public static function serverAnswers(): iterable
-    {
-        yield 'forbidden' => [403, ''];
-
-        yield 'not found' => [404, ''];
-
-        yield 'unavailable' => [503, ''];
-
-        yield 'a malformed success' => [200, '{"stdout":'];
-    }
-
-    #[DataProvider('serverAnswers')]
-    public function test_a_server_answer_is_passed_on_as_a_refusal_and_never_bypassed(int $status, string $body): void
-    {
-        $this->prepareRelay();
-        Http::fake(['*' => Http::response($body, $status)]);
-
-        $reply = $this->relay(self::RELAY_SHELL);
-
-        $this->assertStringContainsString('"permissionDecision":"deny"', $reply->stdout);
-        $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_a_helper_is_refused_during_an_outage_and_logs_nothing(): void
-    {
-        $this->prepareRelay();
-        Http::fake(fn () => throw JournalUnreachable::now());
-
-        $reply = $this->relay(self::RELAY_SHELL, passesOutages: false);
-
-        $this->assertStringContainsString(TestText::words(AgentText::of('core.drivers.outage')), $reply->stdout);
-        $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_a_refused_credential_is_not_an_outage(): void
-    {
-        $this->prepareRelay();
-        $this->forwardToTheEndpoint();
-
-        $reply = $this->relay(self::RELAY_SHELL, token: 'not-the-start-token');
-
-        $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
-        $this->assertFileDoesNotExist($this->bypassLog);
-    }
-
-    public function test_the_bypasses_are_uploaded_once_the_journal_answers_again(): void
-    {
-        $this->prepareRelay();
-        $this->isJournalDown = true;
-        $this->forwardToTheEndpoint();
-        $this->relay(self::RELAY_SHELL);
-        $this->isJournalDown = false;
-
-        $this->relay(self::RELAY_STOP);
-
-        $this->assertSame(['PreToolUse'], ReportedBypass::query()->pluck('native_event')->all());
-        $this->assertSame($this->start->session->id, ReportedBypass::query()->value('agent_session_id'));
-        $this->assertFileDoesNotExist($this->bypassLog);
-        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
-    }
-
-    public function test_a_lost_reply_is_sent_again_as_the_same_call_and_gets_the_recorded_answer(): void
-    {
-        $this->prepareRelay();
-        $sent = [];
-        Http::fake(function (Request $request) use (&$sent) {
-            $sent[] = [
-                $request->header(SignedCall::ID_HEADER)[0],
-                $request->header(SignedCall::ISSUED_AT_HEADER)[0],
-                hash('sha256', $request->body()),
-            ];
-            $response = $this->forward($request);
-
-            if (count($sent) === 1) {
-                throw new ConnectionException('The reply was lost.');
-            }
-
-            return $response;
-        });
-
-        $reply = $this->relay(self::RELAY_STOP);
-
-        $this->assertCount(2, $sent);
-        $this->assertSame($sent[0], $sent[1]);
-        $this->assertSame(['{}', 0], [$reply->stdout, $reply->exitCode]);
-        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
-        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
-    }
-
-    public function test_a_retry_past_the_deadline_is_not_sent_and_the_deadline_is_never_extended(): void
-    {
-        $this->prepareRelay();
-        $sent = 0;
-        Http::fake(function () use (&$sent) {
-            $sent++;
-            CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(CallbackEnvelope::DEADLINE_SECONDS + 1));
-
-            throw new ConnectionException('The journal did not answer.');
-        });
-
-        $reply = $this->relay(self::RELAY_STOP);
-
-        $this->assertSame(1, $sent);
-        $this->assertEquals(TestText::outages()->for(CallFailure::Unreachable, true, 'Stop'), $reply);
-        $this->assertCount(1, glob($this->bypassLog.'.pending/*.json') ?: []);
-    }
-
-    public function test_two_callbacks_with_the_same_text_get_two_envelopes(): void
-    {
-        $this->prepareRelay();
-        $ids = [];
-        Http::fake(function (Request $request) use (&$ids) {
-            $ids[] = $request->header(SignedCall::ID_HEADER)[0];
-
-            return $this->forward($request);
-        });
-
-        $this->relay(self::RELAY_STOP);
-        $this->relay(self::RELAY_STOP);
-
-        $this->assertCount(2, array_unique($ids));
-        $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
-        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
-    }
-
-    private function relay(string $payload, bool $passesOutages = true, string|null $token = null): DriverReply
-    {
-        $settings = new RelaySettings(
-            'http://journal.test',
-            $token ?? $this->start->token,
-            $this->start->pin(),
-            $passesOutages,
-            $this->bypassLog,
-            accounts: new ProtectedAccounts(['/journal/accounts']),
-        );
-
-        return $this->app->make(HookRelay::class)->relay(DefaultDrivers::CLAUDE_CODE, $payload, $settings);
-    }
-
-    /**
-     * Sends each of the relay's requests through the application's own HTTP kernel, so the relay talks to the real
-     * endpoint.
-     */
-    private function forwardToTheEndpoint(): void
-    {
-        Http::fake(function (Request $request) {
-            if ($this->isJournalDown) {
-                throw JournalUnreachable::now();
-            }
-
-            return $this->forward($request);
-        });
-    }
-
-    private function forward(Request $request): PromiseInterface
-    {
-        $server = [];
-
-        foreach ($request->headers() as $name => $values) {
-            $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
-        }
-
-        $server['CONTENT_TYPE'] = 'application/json';
-        $this->app->forgetScopedInstances();
-
-        $response = $this->call(
-            'POST',
-            (string) parse_url($request->url(), PHP_URL_PATH),
-            server: $server,
-            content: $request->body(),
-        );
-
-        return Http::response((string) $response->getContent(), $response->getStatusCode());
-    }
-
-    /**
-     * The headers both relays must send alike, by lowercase name; the token, signature, time and call id differ on
-     * every call and are written as varies.
-     *
-     * @param  array<string, list<string>>  $headers
-     * @return array<string, string>
-     */
-    private function comparedHeaders(array $headers): array
-    {
-        $compared = [];
-
-        foreach ($headers as $name => $values) {
-            $name = strtolower($name);
-
-            $isCompared = array_any(self::COMPARED_HEADERS, fn (string $start) => str_starts_with($name, $start));
-
-            if ($isCompared) {
-                $compared[$name] = in_array($name, self::VARYING_HEADERS, true) ? 'varies' : $values[0];
-            }
-        }
-
-        ksort($compared);
-
-        return $compared;
-    }
-
-    private function preparationState(): PreparationState
-    {
-        config([Place::HookRuntime->rootSetting() => dirname($this->bypassLog)]);
-
-        return new PreparationState(
-            $this->app->make(Files::class),
-            FilePath::in(Place::HookRuntime, basename($this->bypassLog).'.preparation.json'),
-        );
-    }
-
-    /**
-     * The relay's bypass log in the temporary folder and its first generation prepared; the log and its pending
-     * uploads are removed with the application.
-     */
-    private function prepareRelay(): void
-    {
-        $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
-        $preparation = $this->preparationState();
-        $preparation->openGeneration('generation-1');
-        $preparation->prepare('generation-1');
-        $this->beforeApplicationDestroyed(function (): void {
-            foreach ([$this->bypassLog, $this->bypassLog.'.preparation.json'] as $file) {
-                if (is_file($file)) {
-                    unlink($file);
-                }
-            }
-
-            array_map(unlink(...), glob($this->bypassLog.'.pending/*.json') ?: []);
-        });
     }
 
     public function test_a_stop_waits_for_a_push_another_process_holds_and_then_answers_with_it(): void

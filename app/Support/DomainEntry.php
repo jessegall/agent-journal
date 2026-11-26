@@ -42,13 +42,12 @@ use App\Navigation\Declarations\NavigationItem;
 use App\Navigation\Declarations\SidebarGroup;
 use App\Records\Contracts\LinkRecordProvider;
 use App\Records\Contracts\RecordProvider;
+use App\Records\Contracts\ShareRecordContributor;
 use App\Records\Contracts\StateProvider;
+use App\Records\Values\ShareRecordDefinition;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Contracts\SettingsProvider;
 use App\Settings\EmptySettingsDefinition;
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\Contracts\ShareGatewayProvider;
-use App\Sharing\Contracts\ShareRecordContributor;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillConditionProvider;
 use App\Skills\Contracts\SkillProvider;
@@ -532,18 +531,6 @@ final readonly class DomainEntry
     }
 
     /**
-     * The share gateways this domain adds, by key; none without ShareGatewayProvider.
-     *
-     * @return array<string, class-string<ShareGateway>>
-     */
-    public function shareGateways(): array
-    {
-        return $this->provided(ShareGatewayProvider::class)
-            ->map(fn (ShareGatewayProvider $domain) => $domain->shareGateways())
-            ->getOrElse([]);
-    }
-
-    /**
      * Adds this domain's MCP tools, resources and overview sections to the registration; none without McpToolProvider.
      */
     public function registerMcpToolsIn(McpRegistration $registration): void
@@ -686,14 +673,15 @@ final readonly class DomainEntry
     }
 
     /**
-     * The domain as the capability contract, when it declares that capability.
+     * The domain as the capability contract, when it declares that capability; another domain reads the capabilities
+     * of its own contracts this way.
      *
      * @template TCapability of object
      *
      * @param  class-string<TCapability>  $contract
      * @return Option<TCapability>
      */
-    private function provided(string $contract): Option
+    public function provided(string $contract): Option
     {
         if (Reflector::of($contract)->isInstance($this->domain)) {
             return new Some($this->domain);

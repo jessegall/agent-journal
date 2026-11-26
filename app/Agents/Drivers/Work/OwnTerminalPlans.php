@@ -7,6 +7,8 @@ namespace App\Agents\Drivers\Work;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Hosts\Enums\HostProcessType;
 use App\Models\Agents\AgentRuntime;
+use App\Sessions\SessionOfflineReplies;
+use App\Skills\StartSkillFiles;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
 
@@ -22,7 +24,11 @@ final readonly class OwnTerminalPlans
      */
     private const string HOOK_COMMAND = '{host:HOOK_COMMAND}';
 
-    public function __construct(private DriverProfiles $profiles) {}
+    public function __construct(
+        private DriverProfiles $profiles,
+        private SessionOfflineReplies $offlineReplies,
+        private StartSkillFiles $skills,
+    ) {}
 
     public function of(AgentRuntime $runtime): HostProcessPlan
     {
@@ -32,6 +38,8 @@ final readonly class OwnTerminalPlans
             workFolder: $runtime->canonical_folder,
             hookCommand: self::HOOK_COMMAND,
             executablePlace: $runtime->executablePlace(),
+            offlineReply: $this->offlineReplies->of($runtime->agent_session_id),
+            skillFiles: $this->skills->of($runtime->agent_session_id),
         );
 
         return $this->profiles->of($runtime)->startPlan($start);

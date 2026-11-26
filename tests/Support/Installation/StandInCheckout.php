@@ -54,8 +54,7 @@ final readonly class StandInCheckout
             File::copyDirectory(base_path($folder), $checkout->path($folder));
         }
 
-        $checkout->write('tools/journal-check/main.go', "package main\n");
-        $checkout->write('tools/journal-agent/cmd/journal-agent/main.go', "package main\n");
+        $checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n");
         $checkout->write('docs/accounts/docker-images.json', "{\"images\": []}\n");
         $checkout->write('.gitignore', self::IGNORED);
         $checkout->write('.env', "APP_PORT=54700\n");

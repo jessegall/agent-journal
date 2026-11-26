@@ -26,6 +26,7 @@ use App\Connections\PublishedReleases;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
+use App\Hosts\ArrangementSetting;
 use App\Hosts\ClaimedRequests;
 use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
@@ -47,8 +48,10 @@ use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Models\Projects\Host;
 use App\Models\Sessions\SessionProcess;
 use App\Providers\DriversServiceProvider;
+use App\Support\AgentImage;
 use App\Support\Compatibility\PinnedBuilds;
 use App\Support\MountRules;
 use App\Terminals\PrivateValues;
@@ -67,8 +70,8 @@ use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Process;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Connections\PublicRelease;
-use Tests\Support\Hosts\RealHost;
 use Tests\Support\Hosts\StandInHost;
+use Tests\Support\Hosts\TestHost;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -87,7 +90,7 @@ trait ArrangesHostProcesses
      */
     private array $requestWorkers = [];
 
-    private RealHost|null $realHost = null;
+    private TestHost|null $testHost = null;
 
     /**
      * The named host is ordered to open a native process of the type given, for the runtime given when it runs one;
@@ -481,6 +484,28 @@ trait ArrangesHostProcesses
     }
 
     /**
+     * The journal runs its agents contained, as a contained stand-in host's served journal does: the same arrangement,
+     * installation name, agent image, security profiles and workspace, so the sessions it opens freeze a container
+     * policy.
+     */
+    public function arrangeContainedJournal(): self
+    {
+        $settings = [
+            'agents.arrangement' => 'AGENTS_ARRANGEMENT',
+            'agents.installation_name' => 'AGENTS_INSTALLATION_NAME',
+            'agents.agent_image' => 'AGENT_IMAGE',
+            'agents.security_profiles' => 'AGENTS_SECURITY_PROFILES',
+            'agents.workspaces' => 'AGENTS_WORKSPACES',
+        ];
+        $environment = TestHost::containedEnvironment();
+        $this->app->make(Repository::class)->set(array_map(fn (string $name) => $environment[$name], $settings));
+        $this->app->forgetInstance(ArrangementSetting::class);
+        $this->app->forgetInstance(AgentImage::class);
+
+        return $this;
+    }
+
+    /**
      * A driver family a module adds, registered in the catalogue and started as the existing family it runs like.
      */
     public function setUpDriverFamily(DriverFamily $family, string $runsLike): self
@@ -572,14 +597,15 @@ trait ArrangesHostProcesses
      * and the test application on a port of its own, with the test journal's owner, made here when the test named none.
      * The test commits its rows, so the served application sees them.
      */
-    public function runRealHost(string $host): self
+    public function runTestHost(string $host): self
     {
         $database = (string) $this->app->make(Repository::class)->get('database.connections.pgsql.database');
-        $this->realHost = RealHost::start(
+        $this->testHost = TestHost::start(
             $this->app->make(Factory::class),
             $this->hostCalled($host),
             $database,
             ($this->owner ?? $this->owner()->ownerUser())->email,
+            Host::query()->findOrFail($this->hostCalled($host)->hostId)->arrangement,
         );
 
         return $this;
@@ -602,13 +628,13 @@ trait ArrangesHostProcesses
             [],
             '/workspace',
             ContainerManifest::make(
-                RealHost::IMAGE,
+                TestHost::IMAGE,
                 '10001:10001',
                 true,
                 [],
                 false,
                 "journal-net-{$name}",
-                [MountRules::local()->workspaceMount($this->realHostFolder(), WorkspaceUse::Shared)],
+                [MountRules::local()->workspaceMount($this->testHostFolder(), WorkspaceUse::Shared)],
                 [],
                 ExecutionBudgets::defaults(),
                 MountRules::local(),
@@ -627,14 +653,14 @@ trait ArrangesHostProcesses
      */
     public function openKeyRecorder(string $host, string $name): self
     {
-        $installation = $this->realHostInstallation();
+        $installation = $this->testHostInstallation();
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
             RestartPolicy::Never,
             ["{$installation}/bin/journal-agent", 'standin', 'keys', '--record', "{$installation}/keys-{$name}"],
             [],
-            $this->realHostFolder(),
+            $this->testHostFolder(),
         );
         $this->openPlanned($host, $name, null, $plan);
 
@@ -646,7 +672,7 @@ trait ArrangesHostProcesses
      */
     public function keysRecordedBy(string $name): string
     {
-        $file = "{$this->realHostInstallation()}/keys-{$name}";
+        $file = "{$this->testHostInstallation()}/keys-{$name}";
 
         return is_file($file) ? (string) file_get_contents($file) : '';
     }
@@ -660,7 +686,7 @@ trait ArrangesHostProcesses
     public function openWithStartCredentials(string $host, string $name, string $runtimeId, array $argv): self
     {
         $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
-        $credentials = $runtime->handOverStartCredentials($this->realHostJournalUrl());
+        $credentials = $runtime->handOverStartCredentials($this->testHostJournalUrl());
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,
             HostProcessType::Pipe,
@@ -675,11 +701,11 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The journal the real host reaches goes away for the seconds and comes back, as after a crash of the app.
+     * The journal the test host reaches goes away for the seconds and comes back, as after a crash of the app.
      */
-    public function restartJournalOfRealHost(float $seconds = 1.0): self
+    public function restartJournalOfTestHost(float $seconds = 1.0): self
     {
-        $this->realHost?->restartJournal($seconds);
+        $this->testHost?->restartJournal($seconds);
 
         return $this;
     }
@@ -702,44 +728,56 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The real host, its Docker stand-in and its served journal stop, before the test's rows are emptied; nothing
+     * The test host, its Docker stand-in and its served journal stop, before the test's rows are emptied; nothing
      * happens when none runs.
      */
-    public function stopRealHost(): self
+    public function stopTestHost(): self
     {
-        $this->realHost?->stop();
-        $this->realHost = null;
+        $this->testHost?->stop();
+        $this->testHost = null;
 
         return $this;
     }
 
     /**
-     * The real host's stand-in for Claude Code holds each headless turn after its first lines until it is released.
+     * The running test host stops, and no process of the journal it was served on runs any more, server or worker.
+     */
+    public function assertTestHostStopsWholly(): self
+    {
+        $port = ($this->testHost ?? throw FixtureRefused::noTestHost())->port;
+        $this->stopTestHost();
+        $this->test->assertSame([], TestHost::journalProcessesOn($port));
+
+        return $this;
+    }
+
+    /**
+     * The test host's stand-in for Claude Code holds each headless turn after its first lines until it is released.
      */
     public function holdStandInTurns(): self
     {
-        $this->realHost?->holdTurns();
+        $this->testHost?->holdTurns();
 
         return $this;
     }
 
     public function releaseStandInTurns(): self
     {
-        $this->realHost?->releaseTurns();
+        $this->testHost?->releaseTurns();
 
         return $this;
     }
 
     /**
-     * The driver accounts are chosen in folders of the running real host, so a stand-in started for an account can
+     * The driver accounts are chosen in folders of the running test host, so a stand-in started for an account can
      * write into its account folder, as Claude Code writes a conversation's transcript there.
      */
-    public function chooseActiveAccountsOnRealHost(): self
+    public function chooseActiveAccountsOnTestHost(): self
     {
-        $folder = "{$this->realHostFolder()}/accounts";
+        $folder = "{$this->testHostFolder()}/accounts";
 
         foreach (DefaultDrivers::familyKeys() as $driver) {
-            mkdir("{$folder}/{$driver}", 0o700, true);
+            mkdir(self::accountFolderOf($folder, $driver), 0o700, true);
         }
 
         return $this->chooseActiveAccounts($folder);
@@ -761,10 +799,10 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * The journal proves the runtime's start on the real host: its build probe, then its sign-in probe, run there and
+     * The journal proves the runtime's start on the test host: its build probe, then its sign-in probe, run there and
      * are driven until the process the proven start opens is ordered, which the test then calls by the name.
      */
-    public function proveStartOnRealHost(string $runtimeId, HostProcessPurpose $opens, string $name): self
+    public function proveStartOnTestHost(string $runtimeId, HostProcessPurpose $opens, string $name): self
     {
         $ordered = fn (HostProcessPurpose $purpose) => fn () => HostProcess::query()
             ->where('agent_runtime_id', $runtimeId)
@@ -792,24 +830,36 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * Each start of the real host's Claude Code stand-in on a terminal, by the arguments it was started with.
+     * Each container the test host's stand-in Docker started, oldest first, as it recorded its shape.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function testHostContainers(): array
+    {
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'containers', self::OWNER);
+
+        return $host->startedContainers();
+    }
+
+    /**
+     * Each start of the test host's Claude Code stand-in on a terminal, by the arguments it was started with.
      *
      * @return list<list<string>>
      */
-    public function realHostClaudeStarts(): array
+    public function testHostClaudeStarts(): array
     {
-        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'starts', self::OWNER);
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'starts', self::OWNER);
 
         return $host->claudeStarts();
     }
 
     /**
-     * The owner's sign-ins are made as the real host runs them: this test reads the cache the served journal and its
+     * The owner's sign-ins are made as the test host runs them: this test reads the cache the served journal and its
      * runner share, and makes each attempt's folder under the host's own accounts folder.
      */
-    public function shareSignInsWithRealHost(): self
+    public function shareSignInsWithTestHost(): self
     {
-        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER);
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER);
         $this->app->make(Repository::class)->set([
             'cache.default' => 'file',
             'accounts.root' => $host->accountsFolder(),
@@ -822,17 +872,17 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * One pass of the real host's sign-in runner starts, taking the sign-in that waits for a host.
+     * One pass of the test host's sign-in runner starts, taking the sign-in that waits for a host.
      */
-    public function runSignInsOnRealHost(): self
+    public function runSignInsOnTestHost(): self
     {
-        ($this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER))->startSignIns();
+        ($this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER))->startSignIns();
 
         return $this;
     }
 
     /**
-     * The challenge the real host's runner published for the attempt, waited for until it is there.
+     * The challenge the test host's runner published for the attempt, waited for until it is there.
      */
     public function signInChallengeOf(string $attemptId, int $seconds = 20): SignInChallenge
     {
@@ -848,42 +898,42 @@ trait ArrangesHostProcesses
     }
 
     /**
-     * Waits for the real host's sign-in runner to end its pass, which must end well.
+     * Waits for the test host's sign-in runner to end its pass, which must end well.
      */
-    public function waitForSignInsOnRealHost(): self
+    public function waitForSignInsOnTestHost(): self
     {
-        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'sign-ins', self::OWNER);
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'sign-ins', self::OWNER);
         Assert::assertTrue($host->waitForSignIns(), 'The sign-in runner failed: '.$host->printed());
 
         return $this;
     }
 
     /**
-     * Each start of the real host's Codex stand-in on a terminal, by the arguments it was started with.
+     * Each start of the test host's Codex stand-in on a terminal, by the arguments it was started with.
      *
      * @return list<list<string>>
      */
-    public function realHostCodexStarts(): array
+    public function testHostCodexStarts(): array
     {
-        $host = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'starts', self::OWNER);
+        $host = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'starts', self::OWNER);
 
         return $host->codexStarts();
     }
 
     /**
-     * The protected installation folder the real host runs account starts from.
+     * The protected installation folder the test host runs account starts from.
      */
-    public function realHostInstallation(): string
+    public function testHostInstallation(): string
     {
-        return $this->realHost?->installation() ?? throw FixtureRefused::missingAlias('real host', 'installation', self::OWNER);
+        return $this->testHost?->installation() ?? throw FixtureRefused::missingAlias('test host', 'installation', self::OWNER);
     }
 
     /**
-     * The real host's binary stops and starts again, its containers left running.
+     * The test host's binary stops and starts again, its containers left running.
      */
-    public function restartRealHost(): self
+    public function restartTestHost(): self
     {
-        $this->realHost?->restartHost();
+        $this->testHost?->restartHost();
 
         return $this;
     }
@@ -923,13 +973,13 @@ trait ArrangesHostProcesses
             usleep(100_000);
         }
 
-        Assert::assertSame($status, $this->hostProcessCalled($name)->status, (string) $this->realHost?->printed());
+        Assert::assertSame($status, $this->hostProcessCalled($name)->status, (string) $this->testHost?->printed());
 
         return $this;
     }
 
     /**
-     * What a worker that did not get there saw: the process's last frame, its orders and what the real host printed.
+     * What a worker that did not get there saw: the process's last frame, its orders and what the test host printed.
      */
     private function drivenSoFar(string $name): string
     {
@@ -943,14 +993,14 @@ trait ArrangesHostProcesses
         return "The worker of {$name} did not reach what the test waits for.\n"
             .'Its process is '.$process->status->value.'; the last frame shows: '.implode(' | ', $rows)."\n"
             .'Its orders: '.implode(', ', $orders)."\n"
-            .$this->realHost?->printed();
+            .$this->testHost?->printed();
     }
 
-    private function realHostJournalUrl(): string
+    private function testHostJournalUrl(): string
     {
-        $realHost = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'running', self::OWNER);
+        $testHost = $this->testHost ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
 
-        return $realHost->journalUrl();
+        return $testHost->journalUrl();
     }
 
     private function openPlanned(string $host, string $name, string|null $runtimeId, HostProcessPlan $plan): void
@@ -961,8 +1011,8 @@ trait ArrangesHostProcesses
         );
     }
 
-    private function realHostFolder(): string
+    private function testHostFolder(): string
     {
-        return $this->realHost?->folder ?? throw FixtureRefused::missingAlias('real host', 'running', self::OWNER);
+        return $this->testHost?->folder ?? throw FixtureRefused::missingAlias('test host', 'running', self::OWNER);
     }
 }

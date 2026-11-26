@@ -8,7 +8,7 @@ use App\Contracts\Events\Event;
 
 /**
  * A fact about asks and the hops that carry them: every event of that subject implements it, so a listener typed on it
- * hears them all.
+ * receives them all.
  */
 interface AskEvent extends Event
 {

@@ -10,6 +10,7 @@
     "license": "FSL-1.1-ALv2",
     "require": {
         "php": "^8.6",
+        "ext-posix": "*",
         "brick/math": "^1.0",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/chisel": "^0.1.0",

@@ -9,7 +9,7 @@
   },
   "recorded_at": "2026-11-23T12:58:17.320728+01:00",
   "initial_state": {
-    "working_folder": "/Users/jessegall/projects/agent-journal-6/tools/journal-agent",
+    "working_folder": "/Users/jessegall/projects/agent-journal-6/programs/agent",
     "arguments": [
       "claude"
     ],

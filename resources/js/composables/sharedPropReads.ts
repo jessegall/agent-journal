@@ -43,7 +43,7 @@ export class SharedPropReads {
     }
 
     /**
-     * Joins the read under the key, or starts it when none is in flight; announce hears its outcome only while this
+     * Joins the read under the key, or starts it when none is in flight; announce receives its outcome only while this
      * mount is the one announcing.
      */
     request(key: string, propName: string, mount: number, announce: (outcome: PropReadOutcome) => void): void {

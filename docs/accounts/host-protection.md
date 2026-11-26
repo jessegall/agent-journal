@@ -47,7 +47,7 @@ mechanism, stays refused, and the refusal names each item with its reason.
 On macOS, Claude Code 2.1.323's sandbox (`sandbox.enabled`, a Seatbelt profile for Bash and its children) and its
 permission rules give a mechanism for account secrets, the Keychain, private sockets and protected writes. The host
 adds the rest: it starts each session's program under a Seatbelt profile of its own (`sandbox-exec`,
-`tools/journal-agent/host/session_sandbox.go`), so the program and every tool it starts read and write only their
+`programs/agent/host/session_sandbox.go`), so the program and every tool it starts read and write only their
 own workspace's history in the account folder and see and signal no process outside the session. On Linux outside a
 container the same Claude Code sandbox runs in bubblewrap and needs `bwrap` and `socat` on the host; it adds a PID
 namespace, and nothing tells one session's history from another's.
@@ -97,5 +97,5 @@ Per item, in the agent container (platform `linux-container`, evidence per agent
 | install-writes | Claude Code's sandbox, so unavailable while it does not start; the images are pinned by digest and the container holds no installation folder |
 
 While bubblewrap does not start, the journal's protection report of the host reports every item unavailable
-with that one reason (`tools/journal-agent/host/sandbox_mechanisms.go`); the container's own limits (dropped
+with that one reason (`programs/agent/host/sandbox_mechanisms.go`); the container's own limits (dropped
 capabilities, no-new-privileges, the budgets, the one account mount) hold regardless.

@@ -248,7 +248,6 @@ trait CommittedHookStack
             'agent_sessions',
             'session_policies',
             'session_tokens',
-            'reported_bypasses',
             'command_aliases',
             'driver_conversations',
             'conversation_visits',

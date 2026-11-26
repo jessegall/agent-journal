@@ -18,7 +18,7 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A host's answer is stored on its order with its facts, the process's worker hears of it, and an answer to another
+ * A host's answer is stored on its order with its facts, the process's worker receives of it, and an answer to another
  * host's order is refused.
  */
 #[TestsCommand(NotifyHostOrderCommand::class)]

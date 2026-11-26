@@ -8,6 +8,6 @@ use App\Contracts\Events\Event;
 
 /**
  * A fact about pages and views open in a browser: every event of that subject implements it, so a listener typed on it
- * hears them all.
+ * receives them all.
  */
 interface WebEvent extends Event {}

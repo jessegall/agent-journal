@@ -14,7 +14,7 @@ use App\Stacks\Support\ReadMessageStateReference;
 
 /**
  * Puts the reading state of the inbox on the stack of every agent attached to it but the sender, in the same
- * transaction as the message; a reading state already there hears the message itself. An agent that runs no session
+ * transaction as the message; a reading state already there receives the message itself. An agent that runs no session
  * gets nothing.
  */
 #[InCommandTransaction]

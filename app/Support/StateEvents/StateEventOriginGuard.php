@@ -60,7 +60,7 @@ final readonly class StateEventOriginGuard
     }
 
     /**
-     * Whether the frame that answered settled through that very answer, so it no longer hears facts but still issues
+     * Whether the frame that answered settled through that very answer, so it no longer receives facts but still issues
      * the commands it answered with, such as an ask's frame asking for the next ask as its ask closes.
      */
     private function settledByItsAnswer(AgentStack $stack, StateEventOrigin $origin): bool

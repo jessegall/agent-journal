@@ -16,7 +16,7 @@ use Tests\TestCase;
 /**
  * A Claude start's generated settings allow the journal's own MCP tools by their literal server prefix and no other
  * server, beside every denial; Codex gets no such rule, since its account entry approves the journal. The start's
- * descriptor, flags and timeouts are the Go host's, proven in tools/journal-agent/profiles/claude_account_test.go.
+ * descriptor, flags and timeouts are the Go host's, proven in programs/agent/profiles/claude_account_test.go.
  */
 #[TestsMachinery(IsolatedHookSettings::class)]
 final class ClaudeMcpStartTest extends TestCase

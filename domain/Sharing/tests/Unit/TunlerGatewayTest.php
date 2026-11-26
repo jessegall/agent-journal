@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewayEndpoint;
-use App\Sharing\GatewayOperation;
-use App\Sharing\GatewaySettings;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
+use Domain\Sharing\Support\Gateways\GatewayEndpoint;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
+use Domain\Sharing\Support\Gateways\GatewaySettings;
 use Domain\Sharing\Support\Gateways\TunlerGateway;
 use Domain\Sharing\Support\PublicAddresses;
 use Domain\Sharing\Tests\TestCase;

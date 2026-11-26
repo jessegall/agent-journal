@@ -77,7 +77,7 @@ final readonly class DriverProfile
         $plan = $this->planOf($start);
         $isTerminal = ! $start->isTurn();
         $arguments = $this->container->make($this->setup->arguments);
-        $replies = $this->replies->filesFor($this->setup->hookAdapter);
+        $replies = $this->replies->filesFor($this->setup->hookAdapter, $start->offlineReply);
 
         return new HostProcessPlan(
             purpose: $isTerminal ? HostProcessPurpose::AgentTerminal : HostProcessPurpose::AgentTurn,
@@ -86,9 +86,10 @@ final readonly class DriverProfile
             argv: $this->placed($arguments->build($start), $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
-            files: [...$plan->files, ...$replies],
+            files: [...$plan->files, ...$replies, ...$start->skillFiles],
             folders: $environment->folders,
-            inherit: $environment->inherited,
+            container: $start->container?->manifest,
+            inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             sideSockets: $plan->sideSockets,
             seatbelt: $plan->seatbelt,
             readFiles: $environment->readFiles,
@@ -97,6 +98,8 @@ final readonly class DriverProfile
                 ? []
                 : $this->placed($arguments->build($start->resumed()), $start->executablePlace),
             restartWhenFile: $plan->restartWhenFile,
+            labels: $start->container?->labels,
+            keptFiles: $plan->keptFiles,
         );
     }
 
@@ -128,9 +131,11 @@ final readonly class DriverProfile
             argv: $this->placed($this->setup->headlessTurns->ownerArgv, $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
+            container: $start->container?->manifest,
             folders: $environment->folders,
-            inherit: $environment->inherited,
+            inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             readFiles: $environment->readFiles,
+            labels: $start->container?->labels,
         );
     }
 
@@ -143,7 +148,7 @@ final readonly class DriverProfile
             argv: $this->placed($this->setup->versionProbe->argv, $place),
             environment: [],
             folder: $workFolder,
-            inherit: $this->setup->versionProbe->inherited,
+            inherit: $this->inheritedOn($this->setup->versionProbe->inherited, $place),
         );
     }
 
@@ -171,9 +176,11 @@ final readonly class DriverProfile
             argv: $this->placed($this->setup->signInProbe, $start->executablePlace),
             environment: $environment->variables,
             folder: $start->workFolder,
+            container: $start->container?->manifest,
             folders: $environment->folders,
-            inherit: $environment->inherited,
+            inherit: $this->inheritedOn($environment->inherited, $start->executablePlace),
             readFiles: $environment->readFiles,
+            labels: $start->container?->labels,
         );
     }
 
@@ -294,14 +301,30 @@ final readonly class DriverProfile
     }
 
     /**
-     * The argv with its driver named as the host must open it: a sealed driver by its sealed name.
+     * The host variables a process takes on: none in the agent image, where the host's own would only leak in.
+     *
+     * @param  list<string>  $inherited
+     * @return list<string>
+     */
+    private function inheritedOn(array $inherited, ExecutablePlace $place): array
+    {
+        if ($place === ExecutablePlace::Image) {
+            return [];
+        }
+
+        return $inherited;
+    }
+
+    /**
+     * The argv with its driver named as the host must open it: a sealed driver by its sealed name, any other by the
+     * name it has on the host or in the agent image.
      *
      * @param  list<string>  $argv
      * @return list<string>
      */
     private function placed(array $argv, ExecutablePlace $place): array
     {
-        if ($place === ExecutablePlace::Host) {
+        if ($place !== ExecutablePlace::Sealed) {
             return $argv;
         }
 

@@ -7,7 +7,7 @@ namespace Tests\Unit\Links;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Records\Link;
 use App\Records\Contracts\RecordResolver;
-use App\Sharing\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Support\RecordIdentity;
 use Domain\Documents\DocumentsDomain;
 use Domain\Plans\PlansDomain;

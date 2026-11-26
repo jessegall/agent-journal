@@ -49,7 +49,7 @@ The kernel control holds since the agent daemon runs as a rootful `docker:28-din
 1636). The rootless image had no cgroup driver: rootless Docker enforces budgets only through a systemd user manager,
 so `--cpus`, `--memory` and `--pids-limit` were accepted and discarded. Under Sysbox the daemon owns its cgroup
 namespace and runs the cgroupfs driver, so the budgets every agent container is created with
-(`tools/journal-agent/host/container.go`) hold. On the test server (Ubuntu 26.04, kernel 7.0, Sysbox 0.7.1):
+(`programs/agent/host/container.go`) hold. On the test server (Ubuntu 26.04, kernel 7.0, Sysbox 0.7.1):
 
 ```
 $ docker info --format 'driver={{.CgroupDriver}} cgroup={{.CgroupVersion}}'

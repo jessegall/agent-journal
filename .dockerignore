@@ -13,14 +13,14 @@ storage/**
 public/build
 public/hot
 corpus
-tools/journal-agent/testdata
+programs/agent/testdata
 tools/shell-oracle/bin
 # The saved agent and runner images (build.sh): loaded into the agent daemon, never part of another image.
 images
 # Build and browser-test output, rewritten by every local build or run and never part of an image.
 .build
 .playwright-mcp
-tools/journal-agent/bin
+programs/agent/bin
 # Documents, tests and the tools no image runs are never part of an image, so a push of only those rebuilds nothing.
 # The app reads its MCP contract from docs; docs/accounts, which the image builds write their record into, is mounted
 # from the installation instead (compose.yaml).

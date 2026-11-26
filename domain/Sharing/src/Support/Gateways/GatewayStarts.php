@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support\Gateways;
 
-use App\Sharing\GatewayEndpoint;
-use App\Sharing\GatewayOperation;
 use Closure;
 use Domain\Sharing\Enums\GatewayAddressCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;

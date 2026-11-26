@@ -8,7 +8,7 @@ use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
- * Only the live transport hears page changes: a frontend file that listens for page.changed itself would read the page
+ * Only the live transport receives page changes: a frontend file that listens for page.changed itself would read the page
  * a second way beside the live props, so the scan names its file and line.
  */
 #[TimeLimit(seconds: 15, reason: 'It reads every line of the frontend.')]

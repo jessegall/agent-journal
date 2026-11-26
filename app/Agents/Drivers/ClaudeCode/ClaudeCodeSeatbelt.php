@@ -30,7 +30,7 @@ final readonly class ClaudeCodeSeatbelt implements AccountPlanPart
             ?? throw ProfileRefused::unresolvedSetting('no account folder for the Seatbelt profile');
 
         return new PlanAddition(
-            files: [new PlanFile(self::NAME, $this->profileOf($folder, $start->workFolder))],
+            files: [PlanFile::template(self::NAME, $this->profileOf($folder, $start->workFolder))],
             seatbelt: self::NAME,
         );
     }

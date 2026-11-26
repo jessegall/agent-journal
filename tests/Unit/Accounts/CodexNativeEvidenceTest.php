@@ -84,7 +84,7 @@ final class CodexNativeEvidenceTest extends TestCase
      */
     private function procedureOutput(array $options): string
     {
-        $command = [PHP_BINARY, __DIR__.'/../../../tools/accounts/check-codex.php', '--program='.self::FAKE_PROGRAM];
+        $command = [PHP_BINARY, __DIR__.'/../../../programs/accounts/check-codex.php', '--program='.self::FAKE_PROGRAM];
         $process = proc_open([...$command, ...$options], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
         $this->assertIsResource($process);
         $stdout = (string) stream_get_contents($pipes[1]);

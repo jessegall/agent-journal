@@ -9,7 +9,7 @@ use App\Connections\Exceptions\ReleaseMissing;
 
 /**
  * The files a published journal-agent release holds for each target, read from the manifest journal-release wrote
- * (release.Manifest in tools/journal-agent). Only a file this manifest names is ever served.
+ * (release.Manifest in programs/agent). Only a file this manifest names is ever served.
  */
 final readonly class ReleaseManifest
 {

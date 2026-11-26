@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Agents\Relay\Exceptions\FileJsonInvalid;
+use App\Exceptions\FileJsonInvalid;
 use App\Files\Contracts\Files;
 use App\Hosts\Contracts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Hosts\Data\DockerImageRecordData;

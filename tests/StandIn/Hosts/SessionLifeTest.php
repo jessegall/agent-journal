@@ -30,13 +30,13 @@ use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
- * A session's whole life through host protocol 1, on the real host against the Docker stand-in: it starts, takes a
+ * A session's whole life through host protocol 1, on the test host against the Docker stand-in: it starts, takes a
  * message and answers it, survives its host's restart without a second paste, is healed after a crash and stops with
  * one exit report; a headless turn runs from the journal on the installation's stand-in, and one held across
  * its host's restart finishes with its whole output once.
  */
 #[TestsAgainstStandIn]
-#[TimeLimit(seconds: 60, reason: 'It runs the real host, the Docker stand-in and a served journal.')]
+#[TimeLimit(seconds: 60, reason: 'It runs the test host, the Docker stand-in and a served journal.')]
 final class SessionLifeTest extends TestCase
 {
     use CommitsHookRows;
@@ -89,7 +89,7 @@ final class SessionLifeTest extends TestCase
         [$process, $answered] = $this->startEchoSession();
 
         $work = $this->journal->driveHostProcess('echo', $answered);
-        $this->journal->restartRealHost();
+        $this->journal->restartTestHost();
         $this->journal->driveHostProcess('echo', fn () => $this->ordersOf(HostOrderType::Snapshot) >= 2);
         $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
 
@@ -117,7 +117,7 @@ final class SessionLifeTest extends TestCase
         [$process, $answered] = $this->startEchoSession();
         $work = $this->journal->driveHostProcess('echo', fn () => $this->ordersOf(HostOrderType::WriteKeys) === 1);
 
-        $this->journal->restartJournalOfRealHost();
+        $this->journal->restartJournalOfTestHost();
         $this->journal->driveHostProcess('echo', $answered, $work, HostOrder::CLAIM_SECONDS * 2);
 
         $rows = $this->journal->service(ProcessFeed::class)->latestFrame($process)?->rows ?? [];
@@ -129,7 +129,7 @@ final class SessionLifeTest extends TestCase
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
+            ->runTestHost('Mac')
             ->openEchoContainer('Mac', 'echo', restart: RestartPolicy::OnCrash)
             ->waitForHostProcess('echo', HostProcessStatus::Running);
         $process = $this->journal->hostProcessCalled('echo');
@@ -173,14 +173,14 @@ final class SessionLifeTest extends TestCase
         ));
 
         $this->journal->waitForHostProcess('terminal', HostProcessStatus::Exited);
-        $this->journal->assertResult(1, count($this->journal->realHostClaudeStarts()));
+        $this->journal->assertResult(1, count($this->journal->testHostClaudeStarts()));
     }
 
     public function test_a_claude_code_terminal_lost_with_its_hosts_restart_is_opened_again_resuming_its_conversation(): void
     {
         $runtimeId = $this->openAnsweredTerminal();
 
-        $this->journal->restartRealHost()->waitForHostProcess('terminal', HostProcessStatus::Lost);
+        $this->journal->restartTestHost()->waitForHostProcess('terminal', HostProcessStatus::Lost);
         $this->journal->callJournalProcess('again', $runtimeId, HostProcessPurpose::AgentTerminal)
             ->waitForHostProcess('again', HostProcessStatus::Running);
         $this->journal->driveHostProcess('again', fn () => $this->isComposerShownOn('again'));
@@ -189,7 +189,7 @@ final class SessionLifeTest extends TestCase
             ['--session-id', '--resume'],
             array_map(
                 fn (array $arguments) => in_array('--resume', $arguments, true) ? '--resume' : '--session-id',
-                $this->journal->realHostClaudeStarts(),
+                $this->journal->testHostClaudeStarts(),
             ),
         );
     }
@@ -207,7 +207,7 @@ final class SessionLifeTest extends TestCase
         ));
 
         $this->journal->waitForHostProcess('codex', HostProcessStatus::Exited);
-        $this->journal->assertResult([1, []], [count($this->journal->realHostCodexStarts()), $this->journal->realHostClaudeStarts()]);
+        $this->journal->assertResult([1, []], [count($this->journal->testHostCodexStarts()), $this->journal->testHostClaudeStarts()]);
     }
 
     public function test_a_codex_exec_turn_is_opened_driven_and_finished_with_its_thread_bound(): void
@@ -216,8 +216,8 @@ final class SessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Exec')
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
-            ->chooseActiveAccountsOnRealHost();
+            ->runTestHost('Mac')
+            ->chooseActiveAccountsOnTestHost();
         $opened = $this->journal->openRuntimeOn(
             'Exec',
             'Mac',
@@ -230,7 +230,7 @@ final class SessionLifeTest extends TestCase
         );
 
         $applied = fn () => $this->progressOf($opened->firstRequestId) === RequestProgress::Applied;
-        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
+        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
             ->driveHostProcess('turn', $applied);
 
         $this->journal->assertResult(
@@ -249,7 +249,7 @@ final class SessionLifeTest extends TestCase
         $claude = $this->answerTerminal('Terminal', 'terminal', 'claude-code', '2.1.323', 'claude-opus-5-5', 'done');
         $codex = $this->answerTerminal('Codex', 'codex', 'codex', '0.165.0', 'gpt-5.5', self::CODEX_ANSWER);
 
-        $this->journal->restartRealHost()
+        $this->journal->restartTestHost()
             ->waitForHostProcess('terminal', HostProcessStatus::Lost)
             ->waitForHostProcess('codex', HostProcessStatus::Lost);
         $this->journal->callJournalProcess('again', $claude, HostProcessPurpose::AgentTerminal)
@@ -260,9 +260,9 @@ final class SessionLifeTest extends TestCase
         $this->journal->assertResult(
             [2, 2, true],
             [
-                count($this->journal->realHostClaudeStarts()),
-                count($this->journal->realHostCodexStarts()),
-                in_array('--resume', $this->journal->realHostClaudeStarts()[1], true),
+                count($this->journal->testHostClaudeStarts()),
+                count($this->journal->testHostCodexStarts()),
+                in_array('--resume', $this->journal->testHostClaudeStarts()[1], true),
             ],
         );
     }
@@ -273,13 +273,13 @@ final class SessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Terminal')
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
-            ->chooseActiveAccountsOnRealHost();
+            ->runTestHost('Mac')
+            ->chooseActiveAccountsOnTestHost();
         $opened = $this->journal->openRuntimeOn('Terminal', 'Mac', base_path(), driverType: DriverType::Terminal);
         $healed = fn (int $times) => fn () => $this->journal->hostProcessCalled('terminal')->generation >= $times
-            && count($this->journal->realHostClaudeStarts()) > $times;
+            && count($this->journal->testHostClaudeStarts()) > $times;
 
-        $work = $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
+        $work = $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, 'terminal')
             ->driveHostProcess('terminal', $this->isComposerShown(...));
         $this->typeTaken('crash', $work, $healed(1));
         $this->journal->driveHostProcess('terminal', $healed(1), $work);
@@ -299,7 +299,7 @@ final class SessionLifeTest extends TestCase
             ['--session-id', '--session-id', '--resume'],
             array_map(
                 fn (array $arguments) => in_array('--resume', $arguments, true) ? '--resume' : '--session-id',
-                $this->journal->realHostClaudeStarts(),
+                $this->journal->testHostClaudeStarts(),
             ),
         );
     }
@@ -317,7 +317,7 @@ final class SessionLifeTest extends TestCase
         $this->journal
             ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
+            ->runTestHost('Mac')
             ->openKeyRecorder('Mac', 'keys')
             ->waitForHostProcess('keys', HostProcessStatus::Running);
         $shows = fn (string $text) => fn () => str_contains(implode("\n", $this->journal->hostProcessRows('keys')), $text);
@@ -339,7 +339,7 @@ final class SessionLifeTest extends TestCase
     {
         $opened = $this->openHeadlessTurn('Run: ls.');
 
-        $this->journal->restartRealHost()->releaseStandInTurns();
+        $this->journal->restartTestHost()->releaseStandInTurns();
         $applied = fn () => $this->progressOf($opened->firstRequestId) === RequestProgress::Applied;
         $this->journal->driveHostProcess('turn', $applied);
 
@@ -356,7 +356,7 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * A headless Claude agent on the real host with its stand-in, its first message held in its first turn after the
+     * A headless Claude agent on the test host with its stand-in, its first message held in its first turn after the
      * turn's first lines: the journal proved the build and the sign-in through their probes and opened the turn.
      */
     private function openHeadlessTurn(string $message): OpenedRuntime
@@ -366,18 +366,18 @@ final class SessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Driven')
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
+            ->runTestHost('Mac')
             ->holdStandInTurns();
         $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), firstMessage: $message);
 
-        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
+        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTurn, 'turn')
             ->driveHostProcess('turn', fn () => $this->journal->hostProcessCalled('turn')->output_offset > 0);
 
         return $opened;
     }
 
     /**
-     * A Claude Code terminal on the real host, its start proven by the journal and its first message answered.
+     * A Claude Code terminal on the test host, its start proven by the journal and its first message answered.
      */
     private function openAnsweredTerminal(): string
     {
@@ -387,7 +387,7 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * The real host runs for a Claude Code and a Codex agent, with an account of each in the host's own folders.
+     * The test host runs for a Claude Code and a Codex agent, with an account of each in the host's own folders.
      */
     private function arrangeTerminalHost(): void
     {
@@ -396,8 +396,8 @@ final class SessionLifeTest extends TestCase
             ->idleAgent('Terminal')
             ->idleAgent('Codex')
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac')
-            ->chooseActiveAccountsOnRealHost();
+            ->runTestHost('Mac')
+            ->chooseActiveAccountsOnTestHost();
     }
 
     /**
@@ -427,7 +427,7 @@ final class SessionLifeTest extends TestCase
         );
         $answered = fn () => in_array($answer, array_map(trim(...), $this->journal->hostProcessRows($name)), true);
 
-        $this->journal->proveStartOnRealHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, $name)
+        $this->journal->proveStartOnTestHost($opened->runtimeId, HostProcessPurpose::AgentTerminal, $name)
             ->driveHostProcess($name, $answered, seconds: 20);
 
         return $opened->runtimeId;
@@ -499,7 +499,7 @@ final class SessionLifeTest extends TestCase
     }
 
     /**
-     * The echo program runs on the real host for a runtime whose first message is hello; the closure answers whether
+     * The echo program runs on the test host for a runtime whose first message is hello; the closure answers whether
      * its reply shows.
      *
      * @return array{string, Closure(): bool}
@@ -513,7 +513,7 @@ final class SessionLifeTest extends TestCase
             ->showDriverArrangements()
             ->idleAgent('Echo')
             ->enrollHost('Mac', [base_path()])
-            ->runRealHost('Mac');
+            ->runTestHost('Mac');
         $opened = $this->journal->openRuntimeOn(
             'Echo',
             'Mac',

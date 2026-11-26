@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\RequestShare;
 
 use App\Records\Contracts\RecordResolver;
-use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
@@ -16,6 +15,7 @@ use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareInstallation;
 use Domain\Sharing\Support\ShareProposal;
 use Domain\Sharing\Support\ShareProposalStatus;
+use Domain\Sharing\Support\ShareRecordRegistry;
 
 /**
  * Checks the root is a shareable type the agent may read now, then, under the installation lock, counts the open

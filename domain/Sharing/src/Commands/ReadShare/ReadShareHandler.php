@@ -6,12 +6,9 @@ namespace Domain\Sharing\Commands\ReadShare;
 
 use App\Bus\RunningCommand;
 use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Contracts\ShareBudget as ShareBudgetContract;
-use App\Sharing\Enums\ShareRelationType;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Exceptions\UnknownShareRelation;
-use App\Sharing\ShareRecordRegistry;
+use App\Records\Contracts\ShareBudget as ShareBudgetContract;
+use App\Records\Enums\ShareRelationType;
+use App\Records\Exceptions\ShareBudgetExceeded;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
@@ -21,6 +18,8 @@ use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\ShareReadNested;
 use Domain\Sharing\Exceptions\ShareReadRefused;
+use Domain\Sharing\Exceptions\UnknownShareRecordType;
+use Domain\Sharing\Exceptions\UnknownShareRelation;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareMember;
@@ -32,6 +31,7 @@ use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\SharedPage;
 use Domain\Sharing\Support\SharedPageItem;
 use Domain\Sharing\Support\ShareReadPath;
+use Domain\Sharing\Support\ShareRecordRegistry;
 
 /**
  * Reads one shared page inside the bus transaction: the share row locked for reading, its authority and every step

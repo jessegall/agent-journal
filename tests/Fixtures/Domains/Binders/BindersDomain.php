@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Binders;
 
-use App\Sharing\Contracts\ShareRecordContributor;
+use App\Records\Contracts\ShareRecordContributor;
+use App\Records\Values\ShareRecordDefinition;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Support\ShareRecordDefinition;
 
 final class BindersDomain extends Domain implements ShareRecordContributor
 {

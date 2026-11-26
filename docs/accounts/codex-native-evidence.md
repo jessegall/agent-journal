@@ -1,6 +1,6 @@
 # Codex native evidence: the private procedure
 
-`tools/accounts/check-codex.php` checks, on the protected host, what the account-free capture
+`programs/accounts/check-codex.php` checks, on the protected host, what the account-free capture
 ([codex-integration.md](codex-integration.md)) could not, for Codex 0.165.0 under its chosen arrangement: one
 `codex app-server` per account owns the sign-in and refresh, each launch a thread on it, the working root an empty
 trusted journal folder. It is the source of every Codex item doc 17 marks native shown; until it passes an item, that
@@ -19,7 +19,7 @@ prerequisite, never proof that a capability is unsupported.
 ## Running it
 
 ```
-php tools/accounts/check-codex.php --accounts-root=<journal accounts folder> \
+php programs/accounts/check-codex.php --accounts-root=<journal accounts folder> \
     --account-a=<account directory> --account-b=<account directory>
 ```
 

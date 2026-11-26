@@ -33,6 +33,7 @@ use Laravel\Fortify\Features;
 use PDO;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\Bus\RefusingCommandBus;
+use Tests\Support\DomainLoadGuard;
 use Tests\Support\Exceptions\BusUsedInUnitTest;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\Exceptions\HttpUsedInUnitTest;
@@ -131,7 +132,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * The alarm stops before the cleanup, so a slow test still empties the rows it committed, and so does a real host
+     * The alarm stops before the cleanup, so a slow test still empties the rows it committed, and so does a test host
      * the test ran, so nothing writes while the rows are emptied; the morph map is static and outlives the
      * application, so a test's fixture types leave with it.
      */
@@ -141,7 +142,7 @@ abstract class TestCase extends BaseTestCase
             TestAlarm::disarm();
         }
 
-        $this->journal->stopRealHost();
+        $this->journal->stopTestHost();
 
         Relation::morphMap($this->applicationMorphMap, false);
 
@@ -162,11 +163,13 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * The application with only the domains this test case boots: none for a core test, so no domain hears or answers
-     * core's events; a domain's test case boots that domain and the domains it requires.
+     * The application with only the domains this test case boots: none for a core test, so no domain receives or answers
+     * core's events; a domain's test case boots that domain and the domains it requires. A class of any other domain
+     * refuses to load.
      */
     public function createApplication(): Application
     {
+        DomainLoadGuard::boot(static::bootedDomains());
         $booted = implode(',', static::bootedDomains());
         $_SERVER[DomainRegistry::BOOTED_DOMAINS] = $booted;
         putenv(DomainRegistry::BOOTED_DOMAINS.'='.$booted);

@@ -5,7 +5,7 @@
             "HOME={folder}",
             "CLAUDE_CONFIG_DIR={folder}",
             "CODEX_HOME=",
-            "PATH_FIRST={base}/tools/accounts/no-keychain"
+            "PATH_FIRST={base}/programs/accounts/no-keychain"
         ]
     },
     "claude status": {
@@ -14,7 +14,7 @@
             "HOME={folder}",
             "CLAUDE_CONFIG_DIR={folder}",
             "CODEX_HOME=",
-            "PATH_FIRST={base}/tools/accounts/no-keychain"
+            "PATH_FIRST={base}/programs/accounts/no-keychain"
         ],
         "answer": {
             "isReadable": true,
@@ -30,7 +30,7 @@
             "HOME={folder}",
             "CLAUDE_CONFIG_DIR={folder}",
             "CODEX_HOME=",
-            "PATH_FIRST={base}/tools/accounts/no-keychain"
+            "PATH_FIRST={base}/programs/accounts/no-keychain"
         ],
         "answer": null
     },

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Access\Contracts\PolicyCatalogue;
+use App\Access\Contracts\SharePolicy;
+use App\Access\NoSharePolicy;
 use App\Access\RecordPolicyMappings;
 use App\Bootstrap\Contracts\Domains\DomainAvailability as DomainAvailabilityContract;
 use App\Bootstrap\DomainAvailability;
@@ -21,11 +23,6 @@ use App\Search\SearchDiagnostics;
 use App\Settings\CoreSettings;
 use App\Settings\EmptySettingsDefinition;
 use App\Settings\SettingRegistry;
-use App\Sharing\Contracts\SharePolicy;
-use App\Sharing\Contracts\ShareStatusResolver;
-use App\Sharing\NoSharePolicy;
-use App\Sharing\NothingShared;
-use App\Sharing\ShareRecordRegistry;
 use App\Skills\ConditionRegistry;
 use App\Skills\CoreSkills;
 use App\Skills\SkillRegistry;
@@ -54,8 +51,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->booting(fn () => $this->registerDomainProviders($registry));
         $this->keepMigrationsOfUnbootedDomains($registry);
-        $this->app->singleton(ShareRecordRegistry::class);
-        $this->app->bindIf(ShareStatusResolver::class, NothingShared::class);
         $this->app->bindIf(SharePolicy::class, NoSharePolicy::class);
 
         $this->app->singleton(
@@ -120,7 +115,6 @@ class DomainServiceProvider extends ServiceProvider
     public function boot(
         DomainRegistry $registry,
         PolicyCatalogue $policies,
-        ShareRecordRegistry $shareRecords,
     ): void {
         foreach ($registry->all() as $entry) {
             foreach ($entry->policies() as $policy) {
@@ -140,18 +134,9 @@ class DomainServiceProvider extends ServiceProvider
             $this->app->forgetScopedInstances();
         });
 
-        // A domain's boot puts its models in the morph map, which its share records name by link type.
         foreach ($registry->all() as $entry) {
             $entry->boot($this->app);
         }
-
-        foreach ($registry->all() as $entry) {
-            foreach ($entry->shareRecords() as $registration) {
-                $shareRecords->register($registration);
-            }
-        }
-
-        $this->app->booted(fn () => $shareRecords->checkRelations());
     }
 
     /**

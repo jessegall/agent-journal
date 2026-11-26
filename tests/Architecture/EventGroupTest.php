@@ -26,7 +26,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Every event extends the one base event of its domain, or of its subject in Core, and smaller groups are interfaces
- * events join, so a listener typed on a base or a group hears every event of it and no list of events is kept.
+ * events join, so a listener typed on a base or a group receives every event of it and no list of events is kept.
  */
 #[TimeLimit(seconds: 20, reason: 'It reads every event and contract folder of the project.')]
 final class EventGroupTest extends TestCase

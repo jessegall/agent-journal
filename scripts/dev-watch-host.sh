@@ -20,22 +20,22 @@ read_architecture() {
 
 # The agent image's own programs are built too: the local host mounts them over the image's copies.
 build_binaries() {
-    (cd tools/journal-agent &&
+    (cd programs/agent &&
         env CGO_ENABLED=0 GOOS=linux GOARCH="$1" go build -o "../../$2/journal-agent.next" ./cmd/journal-agent)
     mv "$2/journal-agent.next" "$2/journal-agent"
     mkdir -p .build/dev/protected
-    (cd tools/journal-agent &&
+    (cd programs/agent &&
         env CGO_ENABLED=0 GOOS=linux GOARCH="$1" go build -o ../../.build/dev/protected/ \
-            ./cmd/journal-init ./cmd/journal-exec ./cmd/journal-shell ./cmd/journal-hook ./cmd/journal-mcp)
+            ./cmd/journal-init ./cmd/journal-exec ./cmd/journal-shell ./cmd/journal-hook ./cmd/journal-mcp ./cmd/journal-check)
     touch "$3"
 }
 
 watch_changes() {
     local changed
-    echo "Watching the Go files of tools/journal-agent."
+    echo "Watching the Go files of programs/agent."
     while :; do
         sleep 1
-        changed=$(find tools/journal-agent -name '*.go' -newer "$3" | head -n 1)
+        changed=$(find programs/agent -name '*.go' -newer "$3" | head -n 1)
         [ -n "$changed" ] || continue
         echo "Changed: $changed"
         rebuild "$@"

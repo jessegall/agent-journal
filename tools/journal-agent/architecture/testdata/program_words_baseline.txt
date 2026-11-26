@@ -1,5 +1,0 @@
-cmd/journal/disconnect.go
-cmd/journal/main.go
-host/session_files.go
-localsession/session.go
-localsession/sign_in.go

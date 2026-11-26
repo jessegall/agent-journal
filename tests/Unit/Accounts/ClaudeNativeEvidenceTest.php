@@ -100,7 +100,7 @@ final class ClaudeNativeEvidenceTest extends TestCase
      */
     private function procedureOutput(array $options, int $expectedExit = 0): string
     {
-        $command = [PHP_BINARY, __DIR__.'/../../../tools/accounts/check-claude.php', '--program='.self::FAKE_PROGRAM];
+        $command = [PHP_BINARY, __DIR__.'/../../../programs/accounts/check-claude.php', '--program='.self::FAKE_PROGRAM];
         $process = proc_open([...$command, ...$options], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
         $this->assertIsResource($process);
         $stdout = (string) stream_get_contents($pipes[1]);

@@ -7,7 +7,7 @@ namespace Domain\Documents\Contracts;
 use App\Contracts\Events\Event;
 
 /**
- * A change to a text upload: every event of it implements this, so a listener typed on it hears them all.
+ * A change to a text upload: every event of it implements this, so a listener typed on it receives them all.
  */
 interface TextUploadEvent extends Event
 {

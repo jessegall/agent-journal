@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Support;
 
-use App\Sharing\ShareRecordRegistry;
 use App\Support\Domain;
 use App\Support\DomainEntry;
+use Domain\Sharing\Contracts\ShareGatewayProvider;
 use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Support\ShareRecordRegistry;
 
 /**
  * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
@@ -25,7 +26,11 @@ trait RegistersShareDomains
             $this->app->make(ShareRecordRegistry::class)->register($registration);
         }
 
-        foreach ($entry->shareGateways() as $key => $gatewayClass) {
+        $gateways = $entry->provided(ShareGatewayProvider::class)
+            ->map(fn (ShareGatewayProvider $domain) => $domain->shareGateways())
+            ->getOrElse([]);
+
+        foreach ($gateways as $key => $gatewayClass) {
             $this->app->make(ShareGatewayRegistry::class)->register($key, $gatewayClass);
         }
     }

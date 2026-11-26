@@ -28,7 +28,7 @@ final class DriverStateFilesTest extends TestCase
         // The settings that keep file tools from reading the account's own files name them to refuse them.
         'app/Agents/Drivers/ClaudeCode/ClaudeAccountProtection.php',
         // The evidence script proves a trusted folder's own settings load, so no work folder is ever trusted.
-        'tools/accounts/check-codex.php',
+        'programs/accounts/check-codex.php',
     ];
 
     public function test_only_the_first_run_step_and_the_folder_settings_name_a_drivers_own_state(): void

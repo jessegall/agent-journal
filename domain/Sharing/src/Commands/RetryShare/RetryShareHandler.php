@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RetryShare;
 
-use App\Sharing\Contracts\SharePolicy;
+use App\Access\Contracts\SharePolicy;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;

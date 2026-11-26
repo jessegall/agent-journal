@@ -70,7 +70,7 @@ function applyGoRenames(array $names, array $options): int
         return 0;
     }
 
-    $module = 'tools/journal-agent/';
+    $module = 'programs/agent/';
     $lines = [];
 
     foreach ($names as $declared) {

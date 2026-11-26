@@ -70,7 +70,7 @@ final class LocalHostTest extends TestCase
     public function test_a_change_to_the_host_program_builds_only_the_runner_image(): void
     {
         $this->setUpLocalHost();
-        $this->checkout->write('tools/journal-agent/cmd/journal-agent/main.go', "package main\n\nfunc main() {}\n");
+        $this->checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n\nfunc main() {}\n");
 
         $this->setUpLocalHost();
 

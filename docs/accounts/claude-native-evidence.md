@@ -1,6 +1,6 @@
 # Claude Code native evidence: the private procedure
 
-`tools/accounts/check-claude.php` checks, on the protected host, what the account-free capture
+`programs/accounts/check-claude.php` checks, on the protected host, what the account-free capture
 ([claude-integration.md](claude-integration.md)) could not: what Claude Code 2.1.323 does with real accounts. It is
 the source of every Claude item that doc 17 marks native shown; until it passes an item, that item stays prerequisite
 missing and the journal refuses what depends on it.
@@ -19,7 +19,7 @@ missing and the journal refuses what depends on it.
 ## Running it
 
 ```
-php tools/accounts/check-claude.php --accounts-root=<journal accounts folder> \
+php programs/accounts/check-claude.php --accounts-root=<journal accounts folder> \
     --account-a=<account directory> --account-b=<account directory> [--allow-requests]
 ```
 

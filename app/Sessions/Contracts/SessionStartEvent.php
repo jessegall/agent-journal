@@ -8,7 +8,7 @@ use App\Contracts\Events\Event;
 use App\Support\RecordIdentity;
 
 /**
- * A change to a session start: every event of it implements this, so a listener typed on it hears them all.
+ * A change to a session start: every event of it implements this, so a listener typed on it receives them all.
  */
 interface SessionStartEvent extends Event
 {

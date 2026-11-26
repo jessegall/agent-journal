@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web;
 
+use App\Access\Contracts\SharePolicy;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentUserResolver;
 use App\Actors\CurrentUser;
@@ -19,7 +20,6 @@ use App\Projects\Data\ProjectData;
 use App\Projects\Enums\ProjectSelectionType;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\CoreSettings;
-use App\Sharing\Contracts\SharePolicy;
 use App\Support\ActorReference;
 use App\Values\DriverFamily;
 use App\Values\InboxMemberAuthority;

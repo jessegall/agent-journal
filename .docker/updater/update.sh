@@ -164,7 +164,7 @@ pin_agent_image() {
 }
 
 read_agent_source_state() {
-    git -C "$mirror" rev-parse "$newest:.docker/helper" "$newest:tools/journal-agent" "$newest:tools/journal-check"
+    git -C "$mirror" rev-parse "$newest:.docker/helper" "$newest:programs/agent"
 }
 
 # Builds one image for this server and writes its id into .env under the setting named.
@@ -227,7 +227,7 @@ publish_release() {
 
 # A release is built again only when the host program's sources changed, or none was published yet.
 release_needed() {
-    [ -z "$(read_setting JOURNAL_RELEASE)" ] || ! has_installed_commit || changed_files | grep -q '^tools/journal-agent/'
+    [ -z "$(read_setting JOURNAL_RELEASE)" ] || ! has_installed_commit || changed_files | grep -q '^programs/agent/'
 }
 
 # Builds the release in a Go container from a clone of the commit: build_release <project> <clone> <version> <key>
@@ -237,7 +237,7 @@ build_release() {
         -v "$1_releases:/releases" \
         -v journal-release-go-cache:/root/.cache \
         -v journal-release-go-modules:/go/pkg/mod \
-        -w "$2/tools/journal-agent" golang:1.26.4-bookworm \
+        -w "$2/programs/agent" golang:1.26.4-bookworm \
         sh "$2/.docker/updater/build-release.sh" "$3" "$4"
 }
 

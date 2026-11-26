@@ -33,6 +33,8 @@ final readonly class ClaudeCodeArguments extends ArgumentBuilder
 
     public const string MCP_CONFIG = '{folder:files}/mcp.json';
 
+    public const string SKILLS = '{folder:files}/'.ClaudeCodeSkills::FOLDER;
+
     protected function arguments(): array
     {
         return [
@@ -49,6 +51,9 @@ final readonly class ClaudeCodeArguments extends ArgumentBuilder
                 ...ClaudeCodeTools::DELEGATION,
             ]),
             Argument::for(new JournalServerAccount(), ['--mcp-config', self::MCP_CONFIG]),
+            Argument::option(['--plugin-dir', '{value}'], fn (DriverStart $start) => $start->hasSkills()
+                ? self::SKILLS
+                : null),
             Argument::option(['--model', '{value}'], fn (DriverStart $start) => $start->model),
             Argument::for(new ResumedStart(), fn (DriverStart $start) => [
                 '--resume',

@@ -10,7 +10,7 @@ import TreeItem from '@/components/kit/TreeItem.vue';
  * A project's files as a tree: folders open and close by their chevron and by Right and Left, the arrow keys walk the
  * rows and Enter on a file opens it as a window. An empty project says it is empty, and a read that failed says so and
  * offers Retry, so the two never look alike. The window is told what the project holds; it reads nothing itself. A
- * folder the window already opened starts open, the window hears every change of the open folders, and an open folder
+ * folder the window already opened starts open, the window receives every change of the open folders, and an open folder
  * whose entries are still being read, or could not be, says so under its row.
  */
 export type ProjectEntry = {

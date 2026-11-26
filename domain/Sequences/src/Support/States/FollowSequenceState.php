@@ -20,7 +20,7 @@ use PhpOption\Some;
 
 /**
  * An agent following a sequence run, one step at a time. The state keeps the run's steps and the step it is on, moves
- * on when it hears the next step reached, and ends when it hears the run ended; a stop waits on the step in hand.
+ * on when it receives the next step reached, and ends when it receives the run ended; a stop waits on the step in hand.
  */
 #[StateType(FollowSequenceStateReference::class, schemaVersion: 1)]
 final class FollowSequenceState extends AgentState implements DurableState

@@ -18,7 +18,7 @@ use Tests\Fixtures\Agents\TestStart;
 
 /**
  * Asks the ready state about a stop of the started agent and reads its answer the way the stack gathers it: a delegate
- * lets the stop through. The state hears each settled stop attempt, as the bottom of the agent's stack does.
+ * lets the stop through. The state receives each settled stop attempt, as the bottom of the agent's stack does.
  */
 trait AsksTheStopGate
 {

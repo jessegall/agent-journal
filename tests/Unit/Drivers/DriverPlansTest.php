@@ -6,12 +6,20 @@ namespace Tests\Unit\Drivers;
 
 use App\Accounts\AccountStartRecipe;
 use App\Accounts\StartSetting;
+use App\Agents\ContainerManifest;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
+use App\Agents\Drivers\ClaudeCode\ClaudeCodeArguments;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\SecurityOptions;
 use App\Agents\Values\JournalServer;
+use App\Agents\Values\PlanFile;
+use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Values\ContainerLabels;
 use App\Sessions\Enums\TransportProfileType;
+use App\Sessions\Values\SessionContainer;
+use App\Support\MountRules;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
@@ -48,6 +56,61 @@ final class DriverPlansTest extends TestCase
         }
 
         $this->journal->assertResult($this->recorded($plans), $plans);
+    }
+
+    public function test_a_start_handed_skills_writes_them_and_claude_code_loads_their_folder(): void
+    {
+        $skill = new PlanFile('journal-skills/skills/review/SKILL.md', 'Read the diff.');
+        $codexSkill = new PlanFile('skills/review/SKILL.md', 'Read the diff.');
+        $planOf = fn (string $family, PlanFile $file) => $this->journal->driverProfile($family)->startPlan(
+            new DriverStart(self::SESSION, HostProcessType::Terminal, '/work', skillFiles: [$file]),
+        );
+        $claude = $planOf(DefaultDrivers::CLAUDE_CODE, $skill);
+        $codex = $planOf(DefaultDrivers::CODEX, $codexSkill);
+
+        $this->journal->assertResult(
+            [true, true, true, false],
+            [
+                in_array($skill, $claude->files, false),
+                in_array($codexSkill, $codex->files, false),
+                in_array(ClaudeCodeArguments::SKILLS, $claude->argv, true),
+                in_array('--plugin-dir', $codex->argv, true),
+            ],
+        );
+    }
+
+    public function test_a_contained_start_opens_in_its_container_with_nothing_of_the_host(): void
+    {
+        $manifest = ContainerManifest::probe('registry.example/agent@sha256:'.str_repeat('a', 64), SecurityOptions::none());
+        $labels = new ContainerLabels('acme', 's1', '01a1');
+        $server = new JournalServer('/opt/journal/bin/journal-mcp');
+        $account = new DriverAccount($this->recipe(DefaultDrivers::CLAUDE_CODE, TransportProfileType::Mcp), 'start-1', $server);
+        $start = new DriverStart(
+            self::SESSION,
+            HostProcessType::Terminal,
+            '/workspace',
+            hookCommand: '/opt/journal/bin/journal-hook',
+            account: $account,
+            executablePlace: ExecutablePlace::Image,
+            container: new SessionContainer($manifest, $labels),
+        );
+
+        $plan = $this->journal->driverProfile(DefaultDrivers::CLAUDE_CODE)->startPlan($start);
+        $payload = json_decode((string) json_encode($plan->payload()), true);
+
+        $this->journal->assertResult(
+            [HostOrderType::OpenContainer, ['installation' => 'acme', 'session' => 's1', 'account' => '01a1'], [], true, []],
+            [
+                $plan->orderType(),
+                $payload['labels'],
+                $plan->inherit,
+                in_array(MountRules::MANAGED_SETTINGS_FILE, array_map(fn (PlanFile $file) => $file->name, $plan->files), true),
+                array_values(array_filter(
+                    [...$plan->argv, ...$plan->environment, ...array_map(fn (PlanFile $file) => $file->content, $plan->files)],
+                    fn (string $text) => str_contains($text, '{host:') || str_contains($text, 'sockets'),
+                )),
+            ],
+        );
     }
 
     /**

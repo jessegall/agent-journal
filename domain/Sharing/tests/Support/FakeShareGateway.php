@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Support;
 
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewayEndpoint;
-use App\Sharing\GatewayHealth;
-use App\Sharing\GatewayOperation;
-use App\Sharing\GatewaySettings;
-use App\Sharing\GatewaySetupCheck;
+use Domain\Sharing\Contracts\ShareGateway;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
+use Domain\Sharing\Support\Gateways\GatewayEndpoint;
+use Domain\Sharing\Support\Gateways\GatewayHealth;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
+use Domain\Sharing\Support\Gateways\GatewaySettings;
+use Domain\Sharing\Support\Gateways\GatewaySetupCheck;
 
 /**
  * A gateway for sharing lifecycle tests: it opens on its configuration's public origin with no process, remembers

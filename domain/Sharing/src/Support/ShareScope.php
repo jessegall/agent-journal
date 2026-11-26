@@ -8,16 +8,15 @@ use App\Exceptions\RecordUnavailable;
 use App\Models\Records\Link;
 use App\Projects\CurrentProject;
 use App\Reads\ReadMeter;
-use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\ShareRecordRegistry;
+use App\Records\Contracts\ShareRecordProvider;
+use App\Records\Exceptions\ShareBudgetExceeded;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
 use App\Values\ProjectSelection;
 use Domain\Sharing\Exceptions\ShareScopeTooLarge;
+use Domain\Sharing\Exceptions\UnknownShareRecordType;
 
 /**
  * Finds what a share of a root could include, for the owner's preview: the root's card from its own provider, then

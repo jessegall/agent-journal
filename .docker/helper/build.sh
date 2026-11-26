@@ -101,9 +101,12 @@ check_folders() {
         -c '%u:%g %a' /home/journal/.account/projects | grep -qx '10001:10001 700'
 }
 
+# A hook call the image's adapter can answer neither from the journal nor from a sealed reply file is refused: exit 2.
 check_hook_refusal() {
-    run_in_image -i --read-only --network=none /opt/journal/bin/journal-hook claude-code \
-        < .docker/helper/checks/prompt-hook.json | grep -q '"decision":"block"'
+    local status=0
+    run_in_image -i --read-only --network=none /opt/journal/bin/journal-hook claude-code /tmp/hook-replies.json \
+        < .docker/helper/checks/prompt-hook.json > /dev/null 2>&1 || status=$?
+    [ "$status" -eq 2 ]
 }
 
 # The MCP relay runs as the session's user on a read-only root and answers a frame it cannot pass on with a refusal.

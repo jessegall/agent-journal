@@ -12,7 +12,7 @@ use App\Support\Reflector;
 /**
  * Judges how events form groups: each implements the one base event of its domain, or of its subject in Core; every
  * group interface has events and declares what they all carry; events whose names share a stem share a group; a
- * listener hears only what its type names.
+ * listener receives only what its type names.
  */
 final readonly class EventGroups
 {
@@ -149,7 +149,7 @@ final readonly class EventGroups
     }
 
     /**
-     * A listener wired to an event its type does not name hears it through a list kept by hand.
+     * A listener wired to an event its type does not name receives it through a list kept by hand.
      *
      * @param  array<string, list<string>>  $wiring  each event with its listeners written as Class@method
      * @return list<string>

@@ -18,7 +18,7 @@ interface HelperRecordFacts
     public function assigned(RecordIdentity $subject, string $agentId): void;
 
     /**
-     * The helper sent on the record finished its job; every running stack with a state listening for it hears it.
+     * The helper sent on the record finished its job; every running stack with a state listening for it receives it.
      */
     public function finished(RecordIdentity $subject, string $agentId): void;
 }

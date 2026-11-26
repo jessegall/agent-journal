@@ -11,6 +11,7 @@ use App\Hosts\Enums\HostOrderType;
 use App\Hosts\Enums\HostProcessPurpose;
 use App\Hosts\Enums\HostProcessType;
 use App\Hosts\Enums\RestartPolicy;
+use App\Hosts\Values\ContainerLabels;
 use App\Terminals\Screens\ShieldRule;
 
 /**
@@ -33,6 +34,7 @@ final readonly class HostProcessPlan
      * @param  list<string>  $readFiles
      * @param  list<ShieldRule>  $shieldRules
      * @param  list<string>  $restartArgv
+     * @param  list<string>  $keptFiles
      */
     public function __construct(
         public HostProcessPurpose $purpose,
@@ -70,6 +72,15 @@ final readonly class HostProcessPlan
          * process of no session.
          */
         public string|null $fence = null,
+        /**
+         * The labels the container carries on the agent daemon, so the host finds it again; none outside a container.
+         */
+        public ContainerLabels|null $labels = null,
+        /**
+         * The files a device keeps for its binding between two sessions, such as the program's sign-in, each named
+         * as the process sees it.
+         */
+        public array $keptFiles = [],
     ) {}
 
     /**
@@ -78,6 +89,14 @@ final readonly class HostProcessPlan
     public function withFence(string $sessionId): self
     {
         return new self(...[...get_object_vars($this), 'fence' => $sessionId]);
+    }
+
+    /**
+     * The same plan run in the container, in its working folder.
+     */
+    public function inContainer(ContainerManifest $container): self
+    {
+        return new self(...[...get_object_vars($this), 'container' => $container, 'folder' => $container->workdir]);
     }
 
     /**
@@ -127,6 +146,8 @@ final readonly class HostProcessPlan
             'restart_argv' => $this->restartArgv,
             'restart_when_file' => $this->restartWhenFile,
             'fence' => $this->fence,
+            'labels' => $this->labels,
+            'kept_files' => $this->keptFiles,
         ];
     }
 }

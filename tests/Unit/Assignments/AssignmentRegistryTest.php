@@ -16,7 +16,7 @@ use App\Exceptions\UnknownLinkType;
 use App\Links\LinkTypeRegistry;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Sharing\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Support\Registry\AssignmentRegistry;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;

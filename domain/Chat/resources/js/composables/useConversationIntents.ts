@@ -64,7 +64,7 @@ function createOwner(draftKey: string) {
   const refusals = reactive(new Map<string, string>());
 
   /**
-   * What a screen reader hears next about the sends: Sending, Sent, or why one was refused, once each.
+   * What a screen reader receives next about the sends: Sending, Sent, or why one was refused, once each.
    */
   const announcement = ref("");
   // Set once the chat is lost: every late answer of a request sent before is ignored, and nothing is sent again.

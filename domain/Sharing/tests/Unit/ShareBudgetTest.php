@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Unit;
 
 use App\Reads\Contracts\ReadMeter as ReadMeterContract;
-use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Records\Exceptions\ShareBudgetExceeded;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Support\ShareBudget;
 use Domain\Sharing\Tests\TestCase;

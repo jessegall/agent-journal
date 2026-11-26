@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Access\Contracts\JournalAdmission;
+use App\Access\Contracts\SharePolicy;
+use App\Access\Exceptions\SharingNotAllowed;
 use App\Actors\Contracts\Actor;
 use App\Messages\Contracts\AdmittedRecipients;
-use App\Sharing\Contracts\SharePolicy;
-use App\Sharing\Exceptions\SharingNotAllowed;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
+use Domain\Sharing\Exceptions\UnknownShareRecordType;
 use Domain\Sharing\Models\Share;
 
 /**

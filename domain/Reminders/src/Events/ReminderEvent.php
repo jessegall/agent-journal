@@ -7,7 +7,7 @@ namespace Domain\Reminders\Events;
 use App\Contracts\Events\Event;
 
 /**
- * A fact about reminders: every event of that subject implements it, so a listener typed on it hears them all.
+ * A fact about reminders: every event of that subject implements it, so a listener typed on it receives them all.
  */
 interface ReminderEvent extends Event
 {

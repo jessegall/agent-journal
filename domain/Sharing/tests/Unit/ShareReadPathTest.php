@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Sharing\Exceptions\UnknownShareRelation;
-use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
 use Domain\Sharing\Exceptions\ShareReadRefused;
+use Domain\Sharing\Exceptions\UnknownShareRelation;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;
 use Domain\Sharing\Support\ShareReadPath;
+use Domain\Sharing\Support\ShareRecordRegistry;
 use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;

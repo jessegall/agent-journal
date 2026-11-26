@@ -62,7 +62,7 @@ final readonly class CodexHomeFiles implements PlanPart
         $config = "[features]\n{$features}\n";
 
         if ($start->hookCommand === null) {
-            return new PlanAddition([new PlanFile('config.toml', $config)]);
+            return new PlanAddition([PlanFile::template('config.toml', $config)]);
         }
 
         $command = RelayedHookCommand::for($start->hookCommand, self::HOOK_NAME)->text;
@@ -70,8 +70,8 @@ final readonly class CodexHomeFiles implements PlanPart
         $hookFile = CodexHome::FILES_FOLDER.'/hooks.json';
 
         return new PlanAddition([
-            new PlanFile('hooks.json', self::encode(['hooks' => $this->hooks($command)])),
-            new PlanFile('config.toml', $config.self::trustTables($hookFile, $command)),
+            PlanFile::template('hooks.json', self::encode(['hooks' => $this->hooks($command)])),
+            PlanFile::template('config.toml', $config.self::trustTables($hookFile, $command)),
         ]);
     }
 

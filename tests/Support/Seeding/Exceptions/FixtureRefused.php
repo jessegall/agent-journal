@@ -22,6 +22,11 @@ final class FixtureRefused extends LogicException
         return new self(FixtureRefusalType::NoOwner, 'The journal has no owner: call owner() first.');
     }
 
+    public static function noTestHost(): self
+    {
+        return new self(FixtureRefusalType::NoTestHost, 'No host runs for real: call runTestHost() first.');
+    }
+
     public static function secondOwner(): self
     {
         return new self(

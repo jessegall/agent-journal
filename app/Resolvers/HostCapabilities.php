@@ -6,8 +6,8 @@ namespace App\Resolvers;
 
 use App\Accounts\Enums\AccountModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Relay\Exceptions\FileJsonInvalid;
 use App\Exceptions\CapabilityMatrixInvalid;
+use App\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileUnreadable;
 use App\Files\Contracts\Files;

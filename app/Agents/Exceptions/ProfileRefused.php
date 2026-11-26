@@ -36,6 +36,15 @@ final class ProfileRefused extends RuntimeException
      * A driver whose sandbox does not keep its tools from its sign-in is refused on a protected account, whose
      * container would hand them that sign-in.
      */
+    /**
+     * A driver that cannot run on its owner's own terminal yet, as the build pinned gives its hooks no session of
+     * their own there.
+     */
+    public static function ownTerminalWithheld(string $driver): self
+    {
+        return new self("{$driver} does not start on its owner's terminal yet: its pinned build gives a hook call no session of its own");
+    }
+
     public static function notContainable(string $driver): self
     {
         return new self("{$driver}'s sandbox does not keep its tools from its sign-in: it is not started in a container");

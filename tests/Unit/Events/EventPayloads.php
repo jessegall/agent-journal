@@ -34,7 +34,6 @@ use App\Events\Sessions\SessionOpened;
 use App\Events\Sessions\SessionStartCancelled;
 use App\Events\Sessions\SessionStartEnded;
 use App\Events\Sessions\StartAccepted;
-use App\Events\Sessions\StartGrantRequested;
 use App\Events\Sessions\StartRefusedWithoutAccount;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Events\Settings\SettingsChanged;
@@ -513,7 +512,6 @@ final class EventPayloads
             AccountSettingsRequested::class => 'request',
             AccountUseChanged::class => 'projection',
             SessionStartEnded::class => 'projection',
-            StartGrantRequested::class => 'request',
             StartSettingsRequested::class => 'request',
             ContextStarted::class => 'request',
             StateTypesRequested::class => 'request',

@@ -51,7 +51,7 @@ final readonly class ClaudeCodeJournalServer implements AccountPlanPart
             'timeout' => self::JOURNAL_TIMEOUT_MS,
         ]]];
 
-        return new PlanAddition([new PlanFile(self::NAME, json_encode(
+        return new PlanAddition([PlanFile::template(self::NAME, json_encode(
             $descriptor,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ))]);

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Storage;
 
 use App\Assignments\Contracts\AssignmentQuery as AssignmentQueryContract;
+use App\Assignments\Contracts\SharedHolders;
 use App\Models\Records\AssignmentRecord;
-use App\Sharing\Contracts\SharedHolders;
 use App\Support\AssigneeIdentity;
 use Illuminate\Contracts\Database\Query\Builder;
 

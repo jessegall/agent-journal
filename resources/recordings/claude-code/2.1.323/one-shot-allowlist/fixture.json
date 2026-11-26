@@ -13,7 +13,7 @@
     "arguments": [
       "claude",
       "--settings",
-      "/Users/jessegall/projects/agent-journal-6/tools/journal-agent/testdata/recordings/claude-code/2.1.323/one-shot-allowlist/settings/settings.json",
+      "/Users/jessegall/projects/agent-journal-6/programs/agent/testdata/recordings/claude-code/2.1.323/one-shot-allowlist/settings/settings.json",
       "--setting-sources",
       "",
       "--strict-mcp-config",
@@ -35,7 +35,7 @@
       "--output-format",
       "stream-json",
       "--verbose",
-      "In tools/journal-agent: run ls, read README.md and tell me its first heading. Then try to run: curl -sI https://example.com, and say whether it was allowed."
+      "In programs/agent: run ls, read README.md and tell me its first heading. Then try to run: curl -sI https://example.com, and say whether it was allowed."
     ],
     "environment_names": [
       "AGENT_JOURNAL_ACTIVE",

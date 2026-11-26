@@ -18,7 +18,7 @@ owner, `owner@journal.local` and `password`).
 ## protected-session
 
 Tasks 1772 and 1773: a protected headless session on the cheapest model (Haiku for Claude Code, Luna for Codex) is
-started through the same request the Start dialog sends, and `tools/accounts/isolation-probe.php` sets a marker and a
+started through the same request the Start dialog sends, and `programs/accounts/isolation-probe.php` sets a marker and a
 canary in its container. Every item is a chat message to the session, judged by the tool results in its transcript:
 
 1. the workspace marker reads, through Bash and through the native Read tool;

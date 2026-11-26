@@ -6,7 +6,6 @@ namespace Domain\Documents\Http\Pages\Resolvers;
 
 use App\Navigation\Contracts\PageResolver;
 use App\Records\Contracts\RecordResolver;
-use App\Sharing\Contracts\ShareStatusResolver;
 use App\Support\Layout\RecordLayoutData;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
@@ -17,6 +16,7 @@ use Domain\Documents\Http\Pages\Reports\ReportsShow;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordPageReads;
+use Domain\Sharing\Contracts\ShareStatusResolver;
 
 /**
  * A report for its page: the report, and only for the tab the window chose its comments and whether it is shared

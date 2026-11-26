@@ -14,7 +14,7 @@ use App\Declarations\Page;
 use App\Navigation\Contracts\PageProvider;
 use App\Navigation\Enums\Icon;
 use App\Records\Contracts\TypeProvider;
-use App\Sharing\Enums\ShareRelationType;
+use App\Records\Enums\ShareRelationType;
 use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;

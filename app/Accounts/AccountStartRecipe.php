@@ -35,4 +35,20 @@ final readonly class AccountStartRecipe
         public TransportProfileType $transportProfile,
         public array $readFiles,
     ) {}
+
+    /**
+     * The start's variables, each NAME=value: the given ones, then the recipe's own, without any the recipe removes.
+     *
+     * @param  list<string>  $variables
+     * @return list<string>
+     */
+    public function variablesAfter(array $variables): array
+    {
+        $all = [...$variables, ...array_map(fn (StartSetting $setting) => "{$setting->name}={$setting->settingText}", $this->environment)];
+
+        return array_values(array_filter(
+            $all,
+            fn (string $entry) => ! in_array(strstr($entry, '=', true), $this->removedVariables, true),
+        ));
+    }
 }

@@ -1,0 +1,21 @@
+# What no comment may say, one rule to a line: its kind, a tab, a pattern matched case-blind on whole words, a tab,
+# then why; a pattern starting with ^ matches only at the start of a sentence. comment-faults.php refuses a comment
+# that holds one, and the words of forbidden-words.txt (all but verb: lines) too. A pattern is added only when it can
+# mean nothing but history or narration: a comment says what its code is for, in the present tense.
+history	previously	a comment says what the code is, not what it was
+history	formerly	a comment says what the code is, not what it was
+history	was renamed	the name is the name; its history is in git
+history	the old code	version 6 holds nothing old (rule 87): name what is there
+history	the old version	version 6 holds nothing old (rule 87): name what is there
+history	the old way	version 6 holds nothing old (rule 87): name what is there
+history	the former version	version 6 holds nothing old (rule 87): name what is there
+history	before this change	a comment describes the code, not a change to it
+history	kept for now	version 6 keeps nothing for later (rule 87)
+history	until the cutover	version 6 keeps nothing for later (rule 87)
+narration	^First,	a comment says what the code is for, not its steps one by one
+narration	^Then we	a comment says what the code is for, not its steps one by one
+narration	^Next we	a comment says what the code is for, not its steps one by one
+narration	^Finally,	a comment says what the code is for, not its steps one by one
+narration	loops over	the loop shows that it loops: say what it is for
+narration	iterates over	the loop shows that it loops: say what it is for
+narration	step by step	a comment says what the code is for, not its mechanics

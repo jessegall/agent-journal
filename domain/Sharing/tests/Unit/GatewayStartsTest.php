@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Sharing\GatewayConfiguration;
-use App\Sharing\GatewayOperation;
 use Domain\Sharing\Enums\GatewayAddressCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Domain\Sharing\Support\Gateways\GatewayChildren;
+use Domain\Sharing\Support\Gateways\GatewayConfiguration;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
 use Domain\Sharing\Support\Gateways\GatewayStarts;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;

@@ -12,7 +12,7 @@ use Tests\Fixtures\Domains\Counting\Events\SubjectSeen;
 use Tests\Support\TestText;
 
 /**
- * A test state that counts the facts of its subject it hears, keeps the agent from stopping until it heard as many as
+ * A test state that counts the facts of its subject it receives, keeps the agent from stopping until it heard as many as
  * its limit, and is finished then.
  */
 #[StateType(CountFactsStateReference::class, schemaVersion: 1)]

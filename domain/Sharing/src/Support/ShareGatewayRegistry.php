@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Reflection\Contracts\ReflectorFactory;
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\GatewayHealth;
-use App\Sharing\GatewayOperation;
-use App\Sharing\GatewaySetupCheck;
+use Domain\Sharing\Contracts\ShareGateway;
 use Domain\Sharing\Exceptions\ShareGatewayInvalid;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
 use Domain\Sharing\Models\ShareGatewayEndpoint;
+use Domain\Sharing\Support\Gateways\GatewayHealth;
+use Domain\Sharing\Support\Gateways\GatewayOperation;
+use Domain\Sharing\Support\Gateways\GatewaySetupCheck;
 use Illuminate\Contracts\Container\Container;
 
 /**

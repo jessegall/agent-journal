@@ -8,7 +8,9 @@ use App\Accounts\Enums\CommandEntry;
 use App\Agents\Commands\OpenAccountOwner\OpenAccountOwnerCommand;
 use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
 use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
+use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Values\JournalServer;
 use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\DriverUnknown;
@@ -18,8 +20,12 @@ use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Profiles\StartProfilePin;
 use App\Sessions\AgentClientSettings;
+use App\Sessions\SessionContainers;
+use App\Sessions\SessionOfflineReplies;
 use App\Sessions\SessionTokens;
 use App\Sessions\StartClaims;
+use App\Skills\StartSkillFiles;
+use App\Support\MountRules;
 use App\Values\DriverAccount;
 use App\Values\DriverRegistration;
 use App\Values\DriverStart;
@@ -39,6 +45,13 @@ final readonly class HeadlessStarts
 
     private const string HOOK_COMMAND = '{host:HOOK_COMMAND}';
 
+    /**
+     * The hook adapter and the MCP relay of the agent image a contained start runs in.
+     */
+    private const string IMAGE_HOOK_COMMAND = '/opt/journal/bin/journal-hook';
+
+    private const string IMAGE_MCP_RELAY = '/opt/journal/bin/journal-mcp';
+
     private const string JOURNAL_URL = '{host:JOURNAL_URL}';
 
     /**
@@ -52,6 +65,9 @@ final readonly class HeadlessStarts
         private JournalCommands $commands,
         private SessionTokens $tokens,
         private AccountOwners $owners,
+        private SessionOfflineReplies $offlineReplies,
+        private StartSkillFiles $skills,
+        private SessionContainers $containers,
     ) {}
 
     /**
@@ -134,6 +150,12 @@ final readonly class HeadlessStarts
         string|null $model = null,
         string|null $effort = null,
     ): DriverStart {
+        $place = $runtime->executablePlace();
+
+        if ($place === ExecutablePlace::Image) {
+            return $this->containedStartOf($runtime, $start, $prompt, $model, $effort);
+        }
+
         $server = new JournalServer(self::INSTALLED_PHP, self::INSTALLED_MCP_RELAY);
         $account = new DriverAccount($this->starts->recipeOf($start), $runtime->id, $server, folder: $start->directory);
 
@@ -148,6 +170,39 @@ final readonly class HeadlessStarts
             hookCommand: self::HOOK_COMMAND,
             account: $account,
             executablePlace: $runtime->executablePlace(),
+            offlineReply: $this->offlineReplies->of($start->session_id),
+            skillFiles: $this->skills->of($start->session_id),
+        );
+    }
+
+    /**
+     * The start in its own container of the agent image: the account folder as the container mounts it, the image's
+     * hook adapter and MCP relay, and no folder of the host.
+     */
+    private function containedStartOf(
+        AgentRuntime $runtime,
+        SessionProcess $start,
+        string|null $prompt,
+        string|null $model,
+        string|null $effort,
+    ): DriverStart {
+        $recipe = $this->starts->containedRecipeOf($start, MountRules::ACCOUNT_TARGET);
+        $account = new DriverAccount($recipe, $runtime->id, new JournalServer(self::IMAGE_MCP_RELAY));
+
+        return new DriverStart(
+            sessionId: (string) $runtime->conversation_id,
+            type: HostProcessType::Pipe,
+            workFolder: ContainerManifest::WORKDIR,
+            prompt: $prompt,
+            isResume: $this->isResume($runtime),
+            model: $model ?? $runtime->requested_model,
+            effort: $effort ?? $runtime->requested_effort,
+            hookCommand: self::IMAGE_HOOK_COMMAND,
+            account: $account,
+            executablePlace: ExecutablePlace::Image,
+            offlineReply: $this->offlineReplies->of($start->session_id),
+            skillFiles: $this->skills->of($start->session_id),
+            container: $this->containers->of($runtime, $start),
         );
     }
 

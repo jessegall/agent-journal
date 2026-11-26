@@ -11,7 +11,7 @@ use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Models\Agents\Agent;
-use App\Sharing\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentReference;

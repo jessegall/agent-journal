@@ -13,6 +13,7 @@ use App\Agents\Drivers\Work\DriverSupervisor;
 use App\Agents\Enums\SessionProcessStatus;
 use App\Agents\Values\ProviderKey;
 use App\Connections\PublishedReleases;
+use App\Hosts\ArrangementSetting;
 use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
 use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
 use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
@@ -27,10 +28,12 @@ use App\Hosts\ProcessFeed;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use App\Projects\Enums\ArrangementType;
+use App\Support\AgentImage;
 use App\Values\DriverFamily;
 use App\Values\HostOrderSource;
 use Tests\Support\Drivers\AcceptingSignInReader;
 use Tests\Support\Drivers\StandInProcessDriver;
+use Tests\Support\Hosts\TestHost;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -76,6 +79,21 @@ final class JournalHostProcessesTest extends TestCase
         $this->journal->assertResult(
             'Spare account',
             $this->journal->chosenAccounts()[DefaultDrivers::CODEX]->label,
+        );
+    }
+
+    public function test_a_contained_journal_freezes_its_sessions_into_the_agent_image(): void
+    {
+        $this->journal->arrangeContainedJournal();
+        $arrangement = $this->app->make(ArrangementSetting::class);
+
+        $this->journal->assertResult(
+            [true, TestHost::IMAGE, TestHost::INSTALLATION_NAME.'-s1'],
+            [
+                $arrangement->arrangement->isContained(),
+                $this->app->make(AgentImage::class)->reference,
+                $arrangement->sessionContainerName('s1'),
+            ],
         );
     }
 

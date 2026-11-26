@@ -1,13 +1,13 @@
 FROM node:24-bookworm-slim AS node
 
-# journal-agent, the protected agent host, built from tools/journal-agent for the runner image. The modules are
+# journal-agent, the protected agent host, built from programs/agent for the runner image. The modules are
 # downloaded from go.mod and go.sum alone, and both Go caches live in BuildKit cache mounts, so a code change compiles
 # only the packages it touched.
 FROM golang:1.26.4-bookworm AS agent-host
 WORKDIR /src
-COPY tools/journal-agent/go.mod tools/journal-agent/go.sum ./
+COPY programs/agent/go.mod programs/agent/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
-COPY tools/journal-agent/ ./
+COPY programs/agent/ ./
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -o /out/journal-agent ./cmd/journal-agent
 
 # Tunler for the share service, built from one pinned commit whose source archive must match its checksum; see
@@ -43,7 +43,7 @@ FROM dunglas/frankenphp:1-php8.6 AS php
 
 RUN install-php-extensions pcntl pdo_pgsql intl zip bcmath opcache mbstring
 
-# git for the journal-check executable and its tests, which build temporary repositories
+# git for the tests that build temporary repositories
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends git
 

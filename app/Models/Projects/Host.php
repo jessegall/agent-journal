@@ -295,12 +295,17 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * Where this host runs a driver's executable from: a connected relay opens only the sealed copies its installer made.
+     * Where this host runs a driver's executable from: a connected relay opens only the sealed copies its installer made,
+     * and a contained host runs it from the agent image.
      */
     public function executablePlace(): ExecutablePlace
     {
         if ($this->isConnectedFolderRelay()) {
             return ExecutablePlace::Sealed;
+        }
+
+        if ($this->arrangement->isContained()) {
+            return ExecutablePlace::Image;
         }
 
         return ExecutablePlace::Host;

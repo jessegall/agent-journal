@@ -15,7 +15,7 @@ below.
 1. Write a manifest of every artifact: each one's installed name, its source file and its SHA-256, and whether it is
    executable. It holds `bin/claude` (2.1.323), `bin/codex` (0.165.0), `bin/journal-agent`, `bin/php` and the
    journal's PHP application with its dependencies under `journal/` (the hook relay and
-   `journal/tools/accounts/prepare-codex.php`).
+   `journal/programs/accounts/prepare-codex.php`).
 2. `journal-agent install --manifest <file> --into <absolute folder>` copies every artifact into a staging folder,
    checks each digest, seals the copy read-only and publishes it with one rename. A digest that differs installs
    nothing; an existing folder is never replaced. Install into a folder no other user can write into, outside every
@@ -85,7 +85,7 @@ the account's Codex owner and every execution on it; an account the host cannot 
 
 ## The native evidence
 
-`php tools/accounts/check-claude.php` and `check-codex.php`, run on the host against journal accounts with
+`php programs/accounts/check-claude.php` and `check-codex.php`, run on the host against journal accounts with
 `--host=<installed journal-agent> --host-state=<state folder>`, print one item per check, each pass, missing or
 fail, with the task that consumes it. An item stays missing until its procedure has run on this host for the pinned
 build; Codex's sandbox limits writes only, so its read items have no mechanism

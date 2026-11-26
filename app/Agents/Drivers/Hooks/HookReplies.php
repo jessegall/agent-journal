@@ -8,6 +8,7 @@ use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Values\PlanFile;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\HookEvent;
+use App\Sessions\Enums\OfflineReplyMode;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -34,15 +35,16 @@ final readonly class HookReplies
     public function __construct(private OutageReply $replies) {}
 
     /**
-     * The reply file and its key, as two files of the start's plan.
+     * The reply file and its key, as two files of the start's plan; while the journal is away the file answers as the
+     * start's offline reply mode says.
      *
      * @param  class-string<DriverAdapter>  $adapter
      * @return list<PlanFile>
      */
-    public function filesFor(string $adapter): array
+    public function filesFor(string $adapter, OfflineReplyMode $offlineReply): array
     {
         $key = Str::random(self::KEY_LENGTH);
-        $body = json_encode($this->bodyOf($adapter), JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $body = json_encode($this->bodyOf($adapter, $offlineReply), JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $sealed = ['body' => $body, 'seal' => self::sealOf($body, $key)];
 
         return [
@@ -63,7 +65,7 @@ final readonly class HookReplies
      * @param  class-string<DriverAdapter>  $adapter
      * @return array<string, mixed>
      */
-    private function bodyOf(string $adapter): array
+    private function bodyOf(string $adapter, OfflineReplyMode $offlineReply): array
     {
         $events = $adapter::nativeEvents();
         $toolEvents = array_intersect($events, [HookEvent::PreToolUse->value, HookEvent::PostToolUse->value]);
@@ -79,7 +81,7 @@ final readonly class HookReplies
             'replies' => [
                 'away' => $this->eachOf($events, fn (string $event) => $this->replies->for(
                     CallFailure::Unreachable,
-                    false,
+                    $offlineReply->passesOutages(),
                     $event,
                 )),
                 'unprepared' => $this->eachOf($events, $this->replies->preparationPending(...)),

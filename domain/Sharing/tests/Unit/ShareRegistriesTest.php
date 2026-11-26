@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Sharing\Enums\ShareRelationType;
-use App\Sharing\Exceptions\InvalidRecordIdentity;
-use App\Sharing\Exceptions\ShareRecordInvalid;
-use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Exceptions\UnknownShareRelation;
-use App\Sharing\ShareRecordRegistry;
-use App\Support\ShareRecordDefinition;
+use App\Records\Enums\ShareRelationType;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Records\Values\ShareRecordDefinition;
 use Domain\Sharing\Exceptions\ShareGatewayInvalid;
+use Domain\Sharing\Exceptions\ShareRecordInvalid;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
+use Domain\Sharing\Exceptions\UnknownShareRecordType;
+use Domain\Sharing\Exceptions\UnknownShareRelation;
 use Domain\Sharing\Support\ShareGatewayRegistry;
+use Domain\Sharing\Support\ShareRecordRegistry;
 use Domain\Sharing\Tests\Support\RegistersShareDomains;
 use Domain\Sharing\Tests\TestCase;
 use Tests\Fixtures\Domains\Flyers\FlyersDomain;

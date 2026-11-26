@@ -24,25 +24,24 @@ final readonly class MountRules
     private const string ACCOUNTS_ROOT = '/srv/journal/accounts';
 
     /**
-     * The session folder and the file in it that hold the managed settings a contained Claude Code reads.
+     * The plan file that holds the managed settings a contained Claude Code reads.
      */
-    public const string MANAGED_SETTINGS_FOLDER = 'managed';
-
     public const string MANAGED_SETTINGS_FILE = 'managed-settings.json';
 
     private const int MOST_CONTAINED_MOUNTS = 5;
 
-    private const string ACCOUNT_TARGET = '/home/journal/.account';
+    /**
+     * Where a contained session finds its account's own folder.
+     */
+    public const string ACCOUNT_TARGET = '/home/journal/.account';
 
     private const string PROJECTS_TARGET = self::ACCOUNT_TARGET.'/projects';
 
-    private const string SESSIONS_ROOT = '/srv/journal/sessions';
-
     /**
-     * Where a contained session finds the files the journal hands its start, such as its skills, read-only; under
-     * /tmp, the one folder outside the workspace its driver's file tools may read.
+     * Where a contained session finds its plan's files, such as its skills, read-only; under /tmp, the one folder
+     * outside the workspace its driver's file tools may read. The host's own name is PlanFileFolder.
      */
-    private const string SESSION_TARGET = '/tmp/journal-session';
+    public const string SESSION_TARGET = '/tmp/journal-session';
 
     /**
      * Where Claude Code reads the managed settings no session may change.
@@ -156,9 +155,8 @@ final readonly class MountRules
 
     /**
      * The mounts a contained session has beside its workspace: its own history volume over the account's projects
-     * folder, so sessions on one account never read each other's conversations, and its own files from the host, such
-     * as its skills, read-only, with the managed settings among them mounted where Claude Code reads them. A session that resumes a conversation mounts the history of the session that held it,
-     * which must still exist. A local session has none; its sandbox profile hides the other sessions' history.
+     * folder, which a resumed conversation takes from the session that held it, and its plan's files read-only, with
+     * the managed settings where Claude Code reads them. A local session has none.
      *
      * @return list<ManifestMount>
      */
@@ -168,14 +166,8 @@ final readonly class MountRules
             return [];
         }
 
-        $folder = self::SESSIONS_ROOT.'/'.$sessionId;
-        $files = ManifestMount::daemonBind($folder, self::SESSION_TARGET, false);
-
-        $settings = ManifestMount::daemonBind(
-            $folder.'/'.self::MANAGED_SETTINGS_FOLDER.'/'.self::MANAGED_SETTINGS_FILE,
-            self::MANAGED_SETTINGS_TARGET,
-            false,
-        );
+        $files = ManifestMount::planFiles(self::SESSION_TARGET);
+        $settings = ManifestMount::planFile(self::MANAGED_SETTINGS_FILE, self::MANAGED_SETTINGS_TARGET);
 
         if ($resumedSessionId !== null) {
             $history = "{$this->installationName}-history-{$resumedSessionId}";
@@ -261,6 +253,8 @@ final readonly class MountRules
             MountType::Volume => str_starts_with($mount->source, $this->installationName.'-')
                 && strpbrk($mount->source, "/,\n") === false,
             MountType::DaemonBind => $this->isDaemonFolder($mount->source),
+            MountType::PlanFile => ! $mount->isWritable
+                && ($mount->source === '' || ($mount->source === basename($mount->source) && ! str_starts_with($mount->source, '.'))),
             MountType::Bind => false,
         };
 

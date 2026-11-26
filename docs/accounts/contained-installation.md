@@ -15,11 +15,11 @@ Sysbox.
 
 In development, code changes reach the running services without an image build. PHP reloads through Octane's watcher
 and the frontend through Vite. For the Go host, `sh scripts/dev-watch-host.sh` builds `journal-agent` on the machine
-with Go's caches whenever a file under `tools/journal-agent` changes, and restarts the host and the sign-in service,
+with Go's caches whenever a file under `programs/agent` changes, and restarts the host and the sign-in service,
 which the development override points at that binary. The same watcher builds the agent image's own programs
-(journal-init, journal-exec, the shell bridge, journal-hook and journal-mcp) into `.build/dev/protected`, and the local
+(journal-init, journal-exec, the shell bridge, journal-hook, journal-mcp and journal-check) into `.build/dev/protected`, and the local
 host mounts them read-only over the image's copies in every session container it starts, so the next protected start
-runs the change. Only a change to `.docker/helper` or `tools/journal-check` rebuilds the agent image, and
+runs the change. Only a change to `.docker/helper` rebuilds the agent image, and
 `sh scripts/local-host.sh` does that by itself; the cached layers keep it quick. A production host is never given
 the folder and runs the verified image alone. Every build ends with
 `.docker/helper/prune.sh`, which removes untagged images and build cache older than a week or past 10 GB, and keeps

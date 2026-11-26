@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RevokeShare;
 
-use App\Sharing\Contracts\SharePolicy;
+use App\Access\Contracts\SharePolicy;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Support\ShareEndings;

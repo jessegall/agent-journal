@@ -65,6 +65,15 @@ final class JournalSkillsTest extends TestCase
         $this->journal->assertSkillsHanded($session, $generation, ['journal']);
     }
 
+    public function test_an_agents_session_is_handed_the_ready_generation(): void
+    {
+        $this->journal->refreshSkills()->actAs('Owner');
+
+        $session = $this->journal->handSkillsTo('Writer');
+
+        $this->assertSame(SkillGeneration::findLatestReady()?->id, $session->skill_generation_id);
+    }
+
     public function test_a_created_process_run_is_given_back_and_still_found_by_its_name(): void
     {
         $run = $this->journal->actAs('Writer')->createProcessRun('Read', 'cat composer.json');

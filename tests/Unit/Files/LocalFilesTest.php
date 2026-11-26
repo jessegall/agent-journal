@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Agents\Relay\Exceptions\FileJsonInvalid;
+use App\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileReadReentered;
 use App\Exceptions\FileUnreadable;

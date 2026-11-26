@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Commands\OpenHeadlessStart;
 
 use App\Accounts\Enums\CommandEntry;
+use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\Drivers\Isolation\IsolationProbes;
 use App\Agents\Drivers\Setup\DriverProfiles;
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Bus\Contracts\CommandHandler;
@@ -29,6 +31,7 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
         private StartClaims $claims,
         private DriverProfiles $profiles,
         private JournalCommands $commands,
+        private IsolationProbes $probes,
     ) {}
 
     public function handle(OpenHeadlessStartCommand $command): string|null
@@ -58,7 +61,13 @@ final readonly class OpenHeadlessStartHandler implements CommandHandler
 
         // A resume continues the conversation the owner chose; any other start begins one of its own.
         $runtime->chooseConversation($claimed->conversationTarget ?? (string) Str::uuid());
-        $probe = $this->profiles->of($runtime)->versionProbe($runtime->canonical_folder, $runtime->executablePlace());
+        $place = $runtime->executablePlace();
+        $probe = $this->profiles->of($runtime)->versionProbe($runtime->canonical_folder, $place);
+
+        if ($place === ExecutablePlace::Image) {
+            $probe = $this->probes->inAgentImage($probe);
+        }
+
         $source = HostOrderSource::fromJournal();
         $open = new OpenHostProcessCommand($runtime->host_id, $runtime->id, $probe, $source, $start->id);
 

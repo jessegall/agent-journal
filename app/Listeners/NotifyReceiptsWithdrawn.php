@@ -18,7 +18,7 @@ final readonly class NotifyReceiptsWithdrawn implements Listener
 
     /**
      * Signals the recipient's own view channel; only a signed-in browser joins one, so a recipient without a view
-     * hears nothing.
+     * receives nothing.
      */
     public function handle(NotificationsWithdrawn $fact): void
     {

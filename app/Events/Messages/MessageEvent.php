@@ -8,6 +8,6 @@ use App\Contracts\Events\Event;
 
 /**
  * A fact about messages, inboxes and notifications: every event of that subject implements it, so a listener typed on it
- * hears them all.
+ * receives them all.
  */
 interface MessageEvent extends Event {}
