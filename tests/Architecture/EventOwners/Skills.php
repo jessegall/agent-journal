@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
 use App\Events\Skills\SkillRead;
 use App\Events\Skills\SkillsChanged;
@@ -35,12 +34,5 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillGenerationRetired('generation'),
-    ],
-    SkillContextEpochAdvanced::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillContextEpoch::advance',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillContextEpochAdvanced('epoch'),
     ],
 ];

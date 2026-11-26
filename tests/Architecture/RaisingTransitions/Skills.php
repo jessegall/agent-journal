@@ -11,5 +11,4 @@ return [
     'Skill::retireBy',
     'SkillGeneration::retire',
     'SkillReadEntry::record',
-    'SkillContextEpoch::advance',
 ];

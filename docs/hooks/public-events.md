@@ -139,7 +139,7 @@ at ten deliveries. Distinct sequential dispatches can run independently.
   projection after the commit; `CloseEndedSessionDraft`, link invalidation (`InvalidateRemovedLinkMembers`) and
   process activity (`ReadOutputLive`, `RefreshRunActivity`) are transaction listeners inside the transaction. Their work
   cannot depend on a live frame or an admitted stack target.
-- Keep `SupplyMemories`, `SupplyHookContext` and `RemindRequiredSkills` as context-boundary contributors. They
+- Keep `SupplyMemories`, `SupplyHookContext` and `NoticeSkillsChanged` as context-boundary contributors. They
   cover the session's boundary and add directly to that reply. A reminder meant only for the live frame responsible
   for particular work is a candidate for a state method on a later fact, with its text delivered at the next hook.
 - Existing production listeners stay registered. The task and sequence stop guards, communication and skill

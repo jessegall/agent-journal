@@ -105,8 +105,6 @@ return [
         'phase_timing' => 'Plan {plan} phase {phase} still has {tasks}; tests and checks run at the end of the phase.',
     ],
     'skills' => [
-        'read_required' => 'Read the required skill {skill} whole before work it covers: php artisan skill:show '
-            .'{skill}',
         'changed' => 'Your skills changed to {skills}: {driver} loads skills only when a session starts, so start a '
             .'new session to use them; until then read one with php artisan skill:show <key>',
         'not_chosen' => 'Your skills could not be chosen for this start: {problem}',
