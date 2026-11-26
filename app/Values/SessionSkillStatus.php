@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Models\Skills\SkillReadEntry;
 use JsonSerializable;
 
 /**
  * One skill as one session has it, each stage on its own: the stored revision, the generated digest, whether it is
- * selected now and why not, the delivered generation, whether the agent read that text in this context, and whether
- * its driver needs a new session to load it. A file that exists is never counted as read.
+ * selected now and why not, the generation the start handed it in, whether it changed since that start, the last time
+ * the agent read it whole, and whether its reading state still waits for it. A file that exists is never counted as read.
  */
 final readonly class SessionSkillStatus implements JsonSerializable
 {
@@ -19,22 +20,30 @@ final readonly class SessionSkillStatus implements JsonSerializable
         public string|null $generatedDigest,
         public bool $isSelected,
         public string $selectionReason,
-        public string|null $deliveredGeneration,
-        public string $deliveryState,
-        public bool $isLoaded,
-        public bool $needsNewSession,
+        public string|null $handedGeneration,
+        public bool $hasChanged,
+        public SkillReadEntry|null $lastRead,
+        public bool $isStillToRead,
     ) {}
 
     /**
-     * Where its delivery stands, with the generation it came in when it was delivered.
+     * Whether the start handed the session this skill, and in which generation.
      */
-    public function deliveryText(): string
+    public function handedText(): string
     {
-        if ($this->deliveredGeneration === null) {
-            return $this->deliveryState;
+        return $this->handedGeneration === null ? 'not handed' : "handed in {$this->handedGeneration}";
+    }
+
+    /**
+     * When and how the agent last read it whole, or that it did not.
+     */
+    public function lastReadText(): string
+    {
+        if ($this->lastRead === null) {
+            return 'not read';
         }
 
-        return "{$this->deliveryState} in {$this->deliveredGeneration}";
+        return "{$this->lastRead->evidence->value} at {$this->lastRead->read_at->toIso8601String()}";
     }
 
     /**
@@ -48,10 +57,11 @@ final readonly class SessionSkillStatus implements JsonSerializable
             'generated_digest' => $this->generatedDigest,
             'selected' => $this->isSelected,
             'selection_reason' => $this->selectionReason,
-            'delivered_generation' => $this->deliveredGeneration,
-            'delivery_state' => $this->deliveryState,
-            'loaded' => $this->isLoaded,
-            'needs_new_session' => $this->needsNewSession,
+            'handed_generation' => $this->handedGeneration,
+            'changed_since_start' => $this->hasChanged,
+            'last_read_evidence' => $this->lastRead?->evidence->value,
+            'last_read_at' => $this->lastRead?->read_at->toIso8601String(),
+            'still_to_read' => $this->isStillToRead,
         ];
     }
 }

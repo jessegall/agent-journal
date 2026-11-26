@@ -61,7 +61,7 @@ use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Skills\PublishesSkills;
+use Tests\Support\Skills\RefreshesSkills;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -74,7 +74,7 @@ final class OpenAgentRuntimeTest extends TestCase
     use CommitsHookRows;
     use HasContainerSupport;
     use OpensLedgerRuntimes;
-    use PublishesSkills;
+    use RefreshesSkills;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -93,7 +93,6 @@ final class OpenAgentRuntimeTest extends TestCase
         'links',
         'command_receipts',
         'session_policies',
-        'skill_publications',
         'skill_generations',
         'profile_revisions',
         'profiles',

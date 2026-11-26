@@ -47,7 +47,6 @@ final class CreateSkillTest extends TestCase
     private const string NO_SECTIONS = 'has 0 sections';
 
     private const array TABLES = [
-        'skill_publications',
         'skill_generations',
         'skill_requests',
         'skill_revisions',

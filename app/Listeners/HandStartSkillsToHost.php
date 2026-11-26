@@ -7,49 +7,40 @@ namespace App\Listeners;
 use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\StartGrantRequested;
-use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
-use App\Models\Skills\SkillPublication;
+use App\Models\Skills\SkillGeneration;
 use App\Sessions\StartFile;
 use App\Sessions\StartFolder;
-use App\Skills\Enums\PublicationStatus;
-use App\Skills\PublicationFiles;
-use App\Skills\SkillTargets;
-use App\Values\DriverKey;
+use App\Skills\SessionSkillFiles;
 
 /**
- * Hands the host a session's delivered skill set with its grant: the files to write in the start's settings folder
- * and the arguments that point the driver at them, and records the generation it spawns with. A set that is not
- * delivered refuses the grant, so nothing spawns without it.
+ * Hands the host the skills its session was handed with its grant: the files to write in the start's settings folder
+ * and the arguments that point the driver at them, built from the generation the session holds. A session handed no
+ * generation hands nothing.
  */
 final readonly class HandStartSkillsToHost implements Listener
 {
     public function __construct(
         private DriverSkillAdapters $adapters,
-        private SkillTargets $targets,
     ) {}
 
     public function handle(StartGrantRequested $event): void
     {
-        $publication = SkillPublication::findLatestOfSession($event->sessionId);
+        $session = AgentSession::findById($event->sessionId);
 
-        if ($publication === null) {
+        if ($session->skill_generation_id === null) {
             return;
         }
 
-        if ($publication->status !== PublicationStatus::Delivered) {
-            throw StartRefused::skillsNotReady($event->sessionId, $publication->error ?? $publication->status->value);
-        }
-
-        $delivery = $this->adapters->for(DriverKey::from($publication->skill_protocol))->delivery();
-        $files = PublicationFiles::of($publication, $this->targets, $this->adapters)->files;
+        $driver = $this->adapters->forSession($session);
+        $delivery = $driver->delivery();
+        $generation = SkillGeneration::findById($session->skill_generation_id);
+        $files = SessionSkillFiles::of($session, $generation, $driver)->files;
 
         $event->additions->addFolder(new StartFolder(
             $delivery->folder,
             array_map(fn (string $path) => new StartFile($path, $files[$path]), array_keys($files)),
             $delivery->folderArguments,
         ));
-
-        AgentSession::findById($event->sessionId)->recordSkillGeneration($publication->generation_id);
     }
 }

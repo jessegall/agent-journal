@@ -18,7 +18,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class ProvenSkillReadTest extends TestCase
 {
-    private const string FILE = '/host/runtimes/01jd8x0g9m3qz6v4k2t7r5w1ce/journal-skills/skills/journal-plans/SKILL.md';
+    private const string RUNTIME = '01jd8x0g9m3qz6v4k2t7r5w1ce';
+
+    private const string FILE = '/host/runtimes/'.self::RUNTIME.'/journal-skills/skills/journal-plans/SKILL.md';
+
+    private const string CODEX_FILE = '/host/runtimes/'.self::RUNTIME.'/skills/journal-plans/SKILL.md';
 
     /**
      * @return iterable<string, array{ToolResult, ReadEvidence}>
@@ -33,6 +37,16 @@ final class ProvenSkillReadTest extends TestCase
         yield 'whole read' => [self::call('Read', ['file_path' => self::FILE]), ReadEvidence::FullFileRead];
 
         yield 'shell cat' => [self::call('Bash', ['command' => 'cat '.self::FILE]), ReadEvidence::FullFileRead];
+
+        yield 'a Codex shell cat' => [
+            self::call('Bash', ['command' => 'cat "'.self::CODEX_FILE.'"']),
+            ReadEvidence::FullFileRead,
+        ];
+
+        yield 'skill show' => [
+            self::call('Bash', ['command' => 'php artisan skill:show journal-plans']),
+            ReadEvidence::SkillShow,
+        ];
     }
 
     /**
@@ -46,6 +60,24 @@ final class ProvenSkillReadTest extends TestCase
 
         yield 'another file' => [self::call('Read', ['file_path' => '/work/README.md'])];
 
+        yield 'another runtimes file' => [
+            self::call('Read', ['file_path' => '/host/runtimes/other-runtime/skills/journal-plans/SKILL.md']),
+        ];
+
+        yield 'a dotted path' => [
+            self::call('Read', ['file_path' => '/host/runtimes/'.self::RUNTIME.'/../x/skills/journal-plans/SKILL.md']),
+        ];
+
+        yield 'head of the file' => [self::call('Bash', ['command' => 'head -5 '.self::FILE])];
+
+        yield 'sed of the file' => [self::call('Bash', ['command' => "sed -n '1,9p' ".self::FILE])];
+
+        yield 'skill show with more after it' => [
+            self::call('Bash', ['command' => 'php artisan skill:show journal-plans && ls']),
+        ];
+
+        yield 'another plugin skill' => [self::call('Skill', ['skill' => 'other-plugin:journal-plans'])];
+
         yield 'a failed read' => [
             new ToolResult('Read', ToolOutcome::Failed, new DriverToolInput(['file_path' => self::FILE])),
         ];
@@ -54,7 +86,7 @@ final class ProvenSkillReadTest extends TestCase
     #[DataProvider('proofs')]
     public function test_a_whole_read_proves_the_skill_with_its_evidence(ToolResult $call, ReadEvidence $evidence): void
     {
-        $read = ProvenSkillRead::of($call);
+        $read = ProvenSkillRead::of($call, self::RUNTIME);
 
         $this->assertNotNull($read);
         $this->assertSame('journal-plans', $read->skillKey);
@@ -64,7 +96,7 @@ final class ProvenSkillReadTest extends TestCase
     #[DataProvider('nonProofs')]
     public function test_anything_else_proves_nothing(ToolResult $call): void
     {
-        $this->assertNull(ProvenSkillRead::of($call));
+        $this->assertNull(ProvenSkillRead::of($call, self::RUNTIME));
     }
 
     /**

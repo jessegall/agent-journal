@@ -37,7 +37,7 @@ final class LocalFilesListTest extends TestCase
         file_put_contents("{$this->folder}/app/Tasks/Console/Close.php", 'x');
         file_put_contents("{$this->folder}/app/Tasks/Task.php", 'x');
         file_put_contents("{$this->folder}/app/readme.md", 'x');
-        config(['files.places.project' => $this->folder, 'files.places.host-skills' => null]);
+        config(['files.places.project' => $this->folder, 'files.places.releases' => null]);
         $this->files = $this->app->make(Files::class);
     }
 
@@ -97,9 +97,9 @@ final class LocalFilesListTest extends TestCase
     public function test_free_space_is_reported_for_a_place_and_refused_for_one_without_a_root(): void
     {
         $this->assertGreaterThan(0, $this->files->freeSpace(Place::Project));
-        $this->expectExceptionObject(PlaceUnavailable::for(Place::HostSkills));
+        $this->expectExceptionObject(PlaceUnavailable::for(Place::Releases));
 
-        $this->files->freeSpace(Place::HostSkills);
+        $this->files->freeSpace(Place::Releases);
     }
 
     private function path(string $relative): FilePath

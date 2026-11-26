@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Events\Skills\SessionSkillsIntended;
-use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
-use App\Events\Skills\SkillPublicationClaimed;
-use App\Events\Skills\SkillPublicationMoved;
-use App\Events\Skills\SkillPublicationProgressed;
+use App\Events\Skills\SkillRead;
+use App\Events\Skills\SkillReadAsked;
 use App\Events\Skills\SkillsChanged;
-use App\Skills\Enums\PublicationStatus;
+use App\Skills\Enums\ReadEvidence;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -18,21 +15,6 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
-    SessionSkillsIntended::class => [
-        'role' => EventRole::CommandFact,
-        'migrated' => false,
-        'producers' => [
-            'app/Listeners/AdmitStartSkills.php',
-            'app/Listeners/RefreshSessionSkills.php',
-        ],
-    ],
-    SkillPublicationMoved::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::raiseMoved',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillPublicationMoved('publication', 'session', PublicationStatus::Delivered),
-    ],
     SkillsChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => ['Skill::makeCurrent', 'Skill::retireBy'],
@@ -40,19 +22,19 @@ return [
         'producers' => [],
         'sample' => fn () => new SkillsChanged('skill', 2),
     ],
-    SkillPublicationClaimed::class => [
+    SkillRead::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::claim',
+        'owner' => 'SkillReadEntry::record',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new SkillPublicationClaimed('publication', 1),
+        'sample' => fn () => new SkillRead('session', 'journal', ReadEvidence::SkillShow),
     ],
-    SkillPublicationProgressed::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::recordProgress',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillPublicationProgressed('publication', 3),
+    SkillReadAsked::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'app/Skills/SkillReadAsks.php',
+        ],
     ],
     SkillGenerationRetired::class => [
         'role' => EventRole::RowFact,
@@ -60,12 +42,5 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new SkillGenerationRetired('generation'),
-    ],
-    SkillContextEpochAdvanced::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SkillContextEpoch::advance',
-        'migrated' => true,
-        'producers' => [],
-        'sample' => fn () => new SkillContextEpochAdvanced('epoch'),
     ],
 ];

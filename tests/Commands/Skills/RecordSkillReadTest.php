@@ -5,287 +5,202 @@ declare(strict_types=1);
 namespace Tests\Commands\Skills;
 
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
-use App\Bus\Contracts\CommandBus;
-use App\Events\Hooks\ContextStarted;
-use App\Events\Hooks\ToolCallFinished;
 use App\Events\Sessions\SessionOpened;
-use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\ReminderContribution;
 use App\Listeners\AdmitStartSkills;
-use App\Listeners\AdvanceSkillContext;
-use App\Listeners\RecordProvenSkillReads;
-use App\Listeners\RefreshSessionSkills;
-use App\Listeners\RemindRequiredSkills;
-use App\Models\Agents\Agent;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
-use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
-use App\Models\Skills\SkillReceipt;
-use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
-use App\Resolvers\Support\SkillStatusResolver;
-use App\Sessions\Enums\SessionStatus;
+use App\Models\Skills\SkillReadEntry;
 use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 use App\Skills\Enums\ReadEvidence;
-use App\Skills\SkillPublishingService;
-use App\Support\DomainRegistry;
-use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\ToolResult;
-use App\Values\ProfileBase;
-use App\Values\SessionSkillStatus;
-use App\Values\StackTarget;
-use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Support\Agents\HasContainerSupport;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Skills\AdmitsMainAgentSkills;
-use Tests\Support\Skills\FinishesToolCalls;
-use Tests\Support\Skills\MakesUserGuideSkill;
-use Tests\Support\Skills\PublishesSkills;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A proven whole read of a delivered skill leaves one receipt with the delivered digest; a listing leaves none; after
- * a compaction the skill reads as unread.
+ * A proven whole read of a skill the session was handed writes one row with its evidence, for each real way an agent
+ * reads one on either driver; a read of a skill it was not handed, a partial read, a failed call and a file outside
+ * its own runtime prove nothing.
  */
 #[TestsCommand(RecordSkillReadCommand::class)]
 final class RecordSkillReadTest extends TestCase
 {
-    use AdmitsMainAgentSkills;
     use CommitsHookRows;
-    use FinishesToolCalls;
-    use HasContainerSupport;
-    use MakesUserGuideSkill;
-    use PublishesSkills;
 
     private const array TABLES = [
-        'skill_receipts',
-        'skill_context_epochs',
-        'skill_publications',
+        'skill_reads',
         'skill_generations',
         'command_receipts',
-        'profile_revisions',
-        'profiles',
         'agents',
         'agent_sessions',
-        'skill_requests',
-        'skill_revisions',
-        'skills',
     ];
 
-    private const string REMINDER = 'Read the required skill user-guide';
+    private const string STATE_FOLDER = '/Users/someone/.journal-agent';
+
+    private AgentSession $session;
+
+    private string $key;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->journal->installProfiles();
+        $this->journal->owner()->agent('Writer');
+        $this->journal->refreshSkills();
+        $session = $this->journal->sessionOf('Writer');
+        $this->app->make(AdmitStartSkills::class)->handle(new SessionOpened($session->agent_id, $session->id));
+        $this->session = AgentSession::findById($session->id);
+        $this->key = $this->session->skill_keys[0];
+    }
+
+    public function test_the_claude_skill_tool_records_one_row_with_its_evidence(): void
+    {
+        $this->read('Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.":{$this->key}"]);
+
+        $this->assertReadOnce(ReadEvidence::ClaudeSkillTool);
+    }
+
+    public function test_a_whole_read_of_the_skill_file_records_a_row_on_claude_code(): void
+    {
+        $this->read('Read', ['file_path' => $this->claudeFile($this->runtimeId())]);
+
+        $this->assertReadOnce(ReadEvidence::FullFileRead);
+    }
+
+    public function test_a_cat_of_the_skill_file_records_a_row_on_both_drivers(): void
+    {
+        $this->read('Bash', ['command' => 'cat '.$this->claudeFile($this->runtimeId())]);
+        $this->read('Bash', ['command' => 'cat "'.$this->codexFile($this->runtimeId()).'"']);
+
+        $this->assertCount(2, SkillReadEntry::findLatestOfSession($this->session->id, 10));
+    }
+
+    public function test_skill_show_of_the_key_records_a_row(): void
+    {
+        $this->read('Bash', ['command' => "php artisan skill:show {$this->key}"]);
+
+        $this->assertReadOnce(ReadEvidence::SkillShow);
+    }
+
+    public function test_a_second_read_is_a_second_row(): void
+    {
+        $this->read('Bash', ['command' => "php artisan skill:show {$this->key}"]);
+        $this->read('Bash', ['command' => "php artisan skill:show {$this->key}"]);
+
+        $this->assertCount(2, SkillReadEntry::findLatestOfSession($this->session->id, 10));
+    }
+
+    public function test_a_skill_the_session_was_not_handed_records_nothing(): void
+    {
+        $this->read('Bash', ['command' => 'php artisan skill:show no-such-skill']);
+        $this->read('Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':no-such-skill']);
+
+        $this->assertSame([], SkillReadEntry::findLatestOfSession($this->session->id, 10));
     }
 
     /**
-     * Every installed domain, since the skills this test names come from them.
+     * @return iterable<string, array{string, array<string, mixed>}>
      */
-    protected static function bootedDomains(): array
+    public static function falseReads(): iterable
     {
-        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
-    }
+        yield 'another plugin skill call' => ['Skill', ['skill' => 'other-plugin:KEY']];
 
-    public function test_a_skill_tool_read_records_one_receipt_with_the_delivered_digest(): void
-    {
-        $session = $this->startedMainAgent();
-        $digest = $this->deliveredDigest($session, 'journal-plans');
+        yield 'a partial read' => ['Read', ['file_path' => 'CLAUDE_FILE', 'limit' => 10]];
 
-        $this->finished($session, 'Skill', ['skill' => 'journal-session-skills:journal-plans']);
-        $this->finished($session, 'Skill', ['skill' => 'journal-session-skills:journal-plans']);
+        yield 'a read from an offset' => ['Read', ['file_path' => 'CLAUDE_FILE', 'offset' => 5]];
 
-        $receipts = SkillReceipt::query()->where('session_id', $session->id)->get();
-        $this->assertCount(1, $receipts);
-        $this->assertSame('journal-plans', $receipts[0]->skill_key);
-        $this->assertSame($digest, $receipts[0]->content_digest);
-        $this->assertSame(ReadEvidence::ClaudeSkillTool, $receipts[0]->evidence);
-        $this->assertTrue(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
-    }
+        yield 'head of the file' => ['Bash', ['command' => 'head -5 CLAUDE_FILE']];
 
-    public function test_a_directory_listing_records_none(): void
-    {
-        $session = $this->startedMainAgent();
+        yield 'sed of the file' => ['Bash', ['command' => "sed -n '1,20p' CLAUDE_FILE"]];
 
-        $this->finished($session, 'Bash', ['command' => "ls {$this->root}/targets"]);
+        yield 'a listing' => ['Bash', ['command' => 'ls RUNTIME_FOLDER']];
 
-        $this->assertSame(0, SkillReceipt::query()->where('session_id', $session->id)->count());
-    }
+        yield 'another runtimes file' => ['Read', ['file_path' => 'OTHER_RUNTIME_FILE']];
 
-    public function test_after_a_compaction_the_skill_reads_as_unread(): void
-    {
-        $session = $this->startedMainAgent();
-        $digest = $this->deliveredDigest($session, 'journal-plans');
-        $this->finished($session, 'Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':journal-plans']);
-        $this->assertTrue(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
+        yield 'a dotted path back into the runtime' => ['Read', ['file_path' => 'DOTTED_FILE']];
 
-        $this->app->make(AdvanceSkillContext::class)->handle(new ContextStarted(
-            new StackTarget($session->agent_id, $session->id),
-            'hook-compact',
-            ContextStartType::Compact,
-            $this->app->make(ReminderContribution::class),
-        ));
+        yield 'a file outside every runtime' => ['Read', ['file_path' => '/work/project/skills/KEY/SKILL.md']];
 
-        $this->assertFalse(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
-    }
+        yield 'skill show with more after it' => ['Bash', ['command' => 'php artisan skill:show KEY; echo done']];
 
-    public function test_an_edited_required_skill_is_asked_for_again_and_reading_it_clears_the_reminder(): void
-    {
-        $session = $this->startedReviewer();
-
-        $this->assertReminded($this->boundary($session));
-
-        $this->finished($session, 'Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']);
-        $this->assertNotReminded($this->boundary($session));
-
-        $this->app->make(SkillPublishingService::class)->refresh();
-        $this->assertNotReminded($this->boundary($session));
-
-        $this->artisan('skill:edit', [
-            'number' => 'user-guide',
-            '--expected-revision' => 1,
-            '--body' => <<<'TEXT'
-            # Guide
-
-            Second text.
-
-            TEXT,
-        ])->assertSuccessful();
-        $this->assertReminded($this->boundary($session));
-    }
-
-    public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
-    {
-        $session = $this->startedMainAgent();
-
-        $guide = $this->guideOf($session);
-        $this->assertTrue($guide->isSelected);
-        $this->assertSame(1, $guide->storedRevision);
-        $this->assertSame('delivered', $guide->deliveryState);
-        $this->assertFalse($guide->isLoaded);
-        $firstDigest = $guide->generatedDigest;
-
-        $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
-            new StackTarget($session->agent_id, $session->id),
-            new ToolResult(
-                'Skill',
-                ToolOutcome::Succeeded,
-                new DriverToolInput(['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']),
-            ),
-        ));
-        $this->assertTrue($this->guideOf($session)->isLoaded);
-
-        $this->artisan('skill:edit', [
-            'number' => 'user-guide',
-            '--expected-revision' => 1,
-            '--body' => <<<'TEXT'
-            # Guide
-
-            Second text.
-
-            TEXT,
-        ])->assertSuccessful();
-        $this->boundary($session);
-
-        $edited = $this->guideOf($session);
-        $this->assertTrue($edited->isSelected);
-        $this->assertSame(2, $edited->storedRevision);
-        $this->assertNotSame($firstDigest, $edited->generatedDigest);
-        $this->assertFalse($edited->isLoaded);
-        $this->assertTrue($edited->needsNewSession);
-
-        $this->artisan('skill:status', ['--session' => $session->id])
-            ->expectsOutputToContain('user-guide')
-            ->assertSuccessful();
-    }
-
-    private function deliveredDigest(AgentSession $session, string $key): string
-    {
-        $publication = SkillPublication::findLatestOfSession($session->id);
-        $this->assertNotNull($publication);
-        $entry = SkillGeneration::findForPublication($publication)->entry($key);
-        $this->assertNotNull($entry);
-
-        return $entry->digest;
+        yield 'a disguised path' => ['Bash', ['command' => 'cat "$(echo CLAUDE_FILE)"']];
     }
 
     /**
-     * @param  list<string>  $reminders
+     * @param  array<string, mixed>  $arguments
      */
-    private function assertNotReminded(array $reminders): void
+    #[DataProvider('falseReads')]
+    public function test_a_false_read_records_nothing(string $tool, array $arguments): void
     {
-        $this->assertStringNotContainsString(self::REMINDER, implode("\n", $reminders));
+        $this->read($tool, $this->filled($arguments));
+
+        $this->assertSame([], SkillReadEntry::findLatestOfSession($this->session->id, 10));
     }
 
-    /**
-     * A boundary is a hook call of its own: a new request scope that refreshes the session's set, then reminds.
-     *
-     * @return list<string>
-     */
-    private function boundary(AgentSession $session): array
+    public function test_a_failed_call_records_nothing(): void
     {
-        $this->app->forgetScopedInstances();
-        $reminders = $this->app->make(ReminderContribution::class);
-        $event = new ContextStarted(
-            new StackTarget($session->agent_id, $session->id),
-            'hook-'.bin2hex(random_bytes(4)),
-            ContextStartType::Resume,
-            $reminders,
-        );
-        $this->app->make(RefreshSessionSkills::class)->handle($event);
-        $this->app->make(RemindRequiredSkills::class)->handle($event);
-
-        return $reminders->all();
-    }
-
-    private function startedReviewer(): AgentSession
-    {
-        $this->journal->actAsUserId(TestIds::of(7));
-        $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of(
-            TestProposals::profile(
-                'journal-reviewer',
-                ProfileBase::readOnlyHelper(),
-                'Review.',
-                requiredSkills: ['user-guide'],
-            ),
-        )));
-        $agent = Agent::create('Reviewer', 'read-only-helper', $this->localProject());
-        $session = new AgentSession()->forceFill([
-            ...TestSelections::sessionColumns(),
-            'profile_key' => 'journal-reviewer',
-            'profile_revision' => 1,
-        ]);
-        $session->agent_id = $agent->id;
-        $session->status = SessionStatus::Active;
-        $session->save();
-        $this->app->make(AdmitStartSkills::class)->handle(
-            new SessionOpened($agent->id, $session->id),
+        $this->journal->finishToolCall(
+            $this->session,
+            'Bash',
+            ['command' => "php artisan skill:show {$this->key}"],
+            ToolOutcome::Failed,
         );
 
-        return $session;
+        $this->assertSame([], SkillReadEntry::findLatestOfSession($this->session->id, 10));
     }
 
     /**
-     * @param  list<string>  $reminders
+     * @param  array<string, mixed>  $arguments
      */
-    private function assertReminded(array $reminders): void
+    private function read(string $tool, array $arguments): void
     {
-        $this->assertStringContainsString(self::REMINDER, implode("\n", $reminders));
+        $this->journal->finishToolCall($this->session, $tool, $arguments);
     }
 
-    private function guideOf(AgentSession $session): SessionSkillStatus
+    private function assertReadOnce(ReadEvidence $evidence): void
     {
-        $this->app->forgetScopedInstances();
-        $this->journal->actAsUserId(TestIds::of(7));
-        $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
-        $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
-        $this->assertCount(1, $guide);
+        $entries = SkillReadEntry::findLatestOfSession($this->session->id, 10);
 
-        return $guide[0];
+        $this->assertCount(1, $entries);
+        $this->assertSame($this->key, $entries[0]->skill_key);
+        $this->assertSame($evidence, $entries[0]->evidence);
+        $this->assertSame($this->session->agent_id, $entries[0]->agent_id);
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function filled(array $arguments): array
+    {
+        $runtime = $this->runtimeId();
+        $replacements = [
+            'CLAUDE_FILE' => $this->claudeFile($runtime),
+            'OTHER_RUNTIME_FILE' => $this->claudeFile('01jd8x0g9m3qz6v4k2t7r5w1zz'),
+            'DOTTED_FILE' => $this->codexFile($runtime).'/../SKILL.md',
+            'RUNTIME_FOLDER' => self::STATE_FOLDER."/runtimes/{$runtime}",
+            'KEY' => $this->key,
+        ];
+
+        return array_map(
+            fn (mixed $argument) => is_string($argument) ? strtr($argument, $replacements) : $argument,
+            $arguments,
+        );
+    }
+
+    private function runtimeId(): string
+    {
+        return AgentRuntime::findForSession($this->session->id)?->id ?? $this->fail('The session has no runtime.');
+    }
+
+    private function claudeFile(string $runtimeId): string
+    {
+        return self::STATE_FOLDER."/runtimes/{$runtimeId}/journal-skills/skills/{$this->key}/SKILL.md";
+    }
+
+    private function codexFile(string $runtimeId): string
+    {
+        return self::STATE_FOLDER."/runtimes/{$runtimeId}/skills/{$this->key}/SKILL.md";
     }
 }

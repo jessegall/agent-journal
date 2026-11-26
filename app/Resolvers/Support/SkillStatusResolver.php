@@ -6,32 +6,31 @@ namespace App\Resolvers\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\AgentInspection;
-use App\Agents\Drivers\Skills\DriverSkillAdapters;
 use App\Exceptions\SkillSessionHidden;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
-use App\Models\Skills\SkillReceipt;
+use App\Models\Skills\SkillReadEntry;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Enums\PublicationStatus;
-use App\Skills\Enums\SkillReload;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\SkillSelection;
+use App\Skills\Values\HandedSkillsReport;
 use App\Skills\Values\SkillEntry;
-use App\Values\DriverKey;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\Support\ReadSkillStateReference;
+use App\Support\Inspection\Contracts\StackInspectionQuery;
 use App\Values\SessionSkillStatus;
 use App\Values\SkillStatus;
 
 /**
- * Reads where skill delivery stands for the acting actor: a user sees every session, an agent only its own, so no
- * agent ever sees another session's target.
+ * Reads what skills the acting actor's sessions were handed: a user sees every session, an agent only its own.
  */
 final readonly class SkillStatusResolver
 {
     private const int MOST_SESSIONS = 200;
+
+    private const int MOST_READS = 200;
 
     public function __construct(
         private CurrentActor $actors,
@@ -39,7 +38,7 @@ final readonly class SkillStatusResolver
         private SkillResolver $skills,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
-        private DriverSkillAdapters $adapters,
+        private StackInspectionQuery $stacks,
     ) {}
 
     /**
@@ -47,58 +46,84 @@ final readonly class SkillStatusResolver
      *
      * @return list<SessionSkillStatus>
      *
-     * @throws SkillSessionHidden for a session the actor may not see or that has no publication
+     * @throws SkillSessionHidden for a session the actor may not see
      */
     public function skillsOfSession(string $sessionId): array
     {
-        $this->visiblePublicationsOf($sessionId);
-        $session = AgentSession::findById($sessionId);
+        $session = $this->visibleSession($sessionId);
         $skillEntries = $this->skills->all();
         $selection = $this->selectionOf($session, $skillEntries);
-        $delivered = SkillPublication::findLatestDeliveredOfSession($sessionId);
-        $started = SkillPublication::findFirstOfSession($sessionId);
-        $generation = SkillGeneration::findLatestReady();
-        $driver = DriverKey::from($started->skill_protocol);
 
-        $reloadsAtNewSession = $this->adapters->supports($driver)
-            && $this->adapters->for($driver)->reloadMode() === SkillReload::NewSession;
+        $handedGeneration = $session->skill_generation_id === null
+            ? null
+            : SkillGeneration::findById($session->skill_generation_id);
+
+        $latest = SkillGeneration::findLatestReady();
+        $lastReads = $this->lastReadsOf($session);
+        $waitingKeys = $this->waitingSkillsOf($session);
 
         return array_map(function (SkillEntry $entry) use (
-            $sessionId,
+            $session,
             $selection,
-            $delivered,
-            $started,
-            $generation,
-            $reloadsAtNewSession,
+            $handedGeneration,
+            $latest,
+            $lastReads,
+            $waitingKeys,
         ) {
             $key = $entry->key->key;
             $selected = in_array($key, $selection['selected'], true);
+            $handedDigest = $session->hasSkill($key) ? $handedGeneration?->entry($key)?->digest : null;
 
-            $deliveredEntry = $delivered !== null && in_array($key, $delivered->skill_keys, true)
-                ? SkillGeneration::findForPublication($delivered)->entry($key)
-                : null;
-
-            $startedEntry = in_array(
-                $key,
-                $started->skill_keys,
-                true,
-            ) ? SkillGeneration::findForPublication($started)->entry($key) : null;
-
-            $startedDigest = $startedEntry === null ? null : $startedEntry->digest;
-            $currentDigest = $deliveredEntry === null ? null : $deliveredEntry->digest;
+            $changed = $selected !== ($handedDigest !== null)
+                || ($handedDigest !== null && $handedDigest !== $entry->rendered->digest);
 
             return new SessionSkillStatus(
                 $key,
                 $entry->revision,
-                $generation?->entry($key)?->digest,
+                $latest?->entry($key)?->digest,
                 $selected,
                 $selected ? 'selected' : $selection['reasons'][$key] ?? 'not-selected',
-                $deliveredEntry === null ? null : $delivered->generation_id,
-                $deliveredEntry === null ? 'not-delivered' : PublicationStatus::Delivered->value,
-                $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry->digest),
-                $reloadsAtNewSession && $selected && ($startedDigest === null || $startedDigest !== $currentDigest),
+                $handedDigest === null ? null : $session->skill_generation_id,
+                $changed,
+                $lastReads[$key] ?? null,
+                in_array($key, $waitingKeys, true),
             );
         }, $skillEntries);
+    }
+
+    /**
+     * The skills the reading state of the session's stack still waits for, as its frame saves them.
+     *
+     * @return list<string>
+     */
+    private function waitingSkillsOf(AgentSession $session): array
+    {
+        $typeKey = StateReferenceKeys::of(ReadSkillStateReference::class);
+        $waiting = [];
+
+        foreach ($this->stacks->forTarget($session->target)->frames as $frame) {
+            if ($frame->typeKey === $typeKey) {
+                $waiting = [...$waiting, ...$frame->textList('skillKeys')];
+            }
+        }
+
+        return $waiting;
+    }
+
+    /**
+     * The session's newest read of each skill, by key.
+     *
+     * @return array<string, SkillReadEntry>
+     */
+    private function lastReadsOf(AgentSession $session): array
+    {
+        $lastReads = [];
+
+        foreach (SkillReadEntry::findLatestOfSession($session->id, self::MOST_READS) as $read) {
+            $lastReads[$read->skill_key] ??= $read;
+        }
+
+        return $lastReads;
     }
 
     /**
@@ -135,62 +160,53 @@ final readonly class SkillStatusResolver
 
     public function status(): SkillStatus
     {
-        return $this->statusOf($this->visiblePublications());
+        return $this->statusOf($this->visibleSessions());
     }
 
     /**
      * The status of one session the actor may see.
      *
-     * @throws SkillSessionHidden for a session the actor may not see or that has no publication, naming nothing
+     * @throws SkillSessionHidden for a session the actor may not see, naming nothing
      */
     public function statusOfSession(string $sessionId): SkillStatus
     {
-        return $this->statusOf($this->visiblePublicationsOf($sessionId));
+        return $this->statusOf([$this->visibleSession($sessionId)]);
     }
 
     /**
-     * @return non-empty-list<SkillPublication>
-     *
-     * @throws SkillSessionHidden for a session the actor may not see or that has no publication
+     * @throws SkillSessionHidden for a session the actor may not see
      */
-    private function visiblePublicationsOf(string $sessionId): array
+    private function visibleSession(string $sessionId): AgentSession
     {
-        $publications = array_values(array_filter(
-            $this->visiblePublications(),
-            fn (SkillPublication $publication) => $publication->session_id === $sessionId,
-        ));
-
-        if ($publications === []) {
-            throw SkillSessionHidden::create();
+        foreach ($this->visibleSessions() as $session) {
+            if ($session->id === $sessionId) {
+                return $session;
+            }
         }
 
-        return $publications;
+        throw SkillSessionHidden::create();
     }
 
     /**
-     * @param  list<SkillPublication>  $publications
+     * @param  list<AgentSession>  $sessions
      */
-    private function statusOf(array $publications): SkillStatus
+    private function statusOf(array $sessions): SkillStatus
     {
         return new SkillStatus(
             SkillGeneration::findLatest()?->report,
-            array_map(fn (SkillPublication $publication) => $publication->report, $publications),
+            array_map(fn (AgentSession $session) => HandedSkillsReport::of($session), $sessions),
         );
     }
 
     /**
-     * @return list<SkillPublication>
+     * @return list<AgentSession>
      */
-    private function visiblePublications(): array
+    private function visibleSessions(): array
     {
-        $actor = $this->actors->actor();
-
         if ($this->inspection->seesEveryAgent()) {
-            return SkillPublication::findLatestOfEverySession(self::MOST_SESSIONS);
+            return AgentSession::findNewestSessions(self::MOST_SESSIONS);
         }
 
-        $sessionIds = AgentSession::resolveIdsOfAgent($actor->actorId(), self::MOST_SESSIONS);
-
-        return SkillPublication::findLatestOfSessions($sessionIds, self::MOST_SESSIONS);
+        return AgentSession::findNewestSessionsOfAgent($this->actors->actor()->actorId(), self::MOST_SESSIONS);
     }
 }

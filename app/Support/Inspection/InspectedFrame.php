@@ -7,13 +7,17 @@ namespace App\Support\Inspection;
 use App\Engine\Enums\FrameLiveness;
 use App\Stacks\Frames\Frame;
 use App\Stacks\References\SubjectReference;
+use App\Stacks\StateLoading\StateValues;
 use Spatie\LaravelData\Data;
 
 /**
- * One frame as the inspector shows it; a frame about no subject shows a null subject.
+ * One frame as the inspector shows it, with the values its state saves; a frame about no subject shows a null subject.
  */
 final class InspectedFrame extends Data
 {
+    /**
+     * @param  array<string, mixed>  $values
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $typeKey,
@@ -21,6 +25,7 @@ final class InspectedFrame extends Data
         public readonly bool $isBottom,
         public readonly FrameLiveness $liveness,
         public readonly bool $isEffectiveTop,
+        public readonly array $values,
     ) {}
 
     /**
@@ -37,6 +42,20 @@ final class InspectedFrame extends Data
             $frame->isBottom(),
             FrameLiveness::of($frame),
             $frame->id === $effectiveTop->id,
+            StateValues::of($frame->state),
         );
+    }
+
+    /**
+     * The saved list of text of this name, such as the skills a reading state still waits for; none when it saves no
+     * such list.
+     *
+     * @return list<string>
+     */
+    public function textList(string $name): array
+    {
+        $list = $this->values[$name] ?? [];
+
+        return is_array($list) ? array_values(array_filter($list, is_string(...))) : [];
     }
 }

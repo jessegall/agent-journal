@@ -25,11 +25,13 @@ use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Sessions\SessionRequest;
 use App\Models\Sessions\SessionToken;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
 use App\Records\Contracts\ReadableModel;
 use App\Sessions\Enums\ModelSelectionType;
 use App\Sessions\Enums\SessionStatus;
+use App\Skills\Values\StartProfile;
 use App\Support\RecordIdentity;
 use App\Values\AccessPolicy;
 use App\Values\AccountUse;
@@ -62,6 +64,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $profile_revision
  * @property string $start_request_id
  * @property string|null $skill_generation_id
+ * @property list<string>|null $skill_keys
  * @property string|null $current_conversation_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
@@ -90,6 +93,8 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
 
     /**
      * @return array<string, string>
+     *
+     * @column skill_keys list<string>|null
      */
     protected function casts(): array
     {
@@ -102,6 +107,7 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
             'requested_model_type' => ModelSelectionType::class,
             'driver_source' => DriverSourceType::class,
             'profile_revision' => 'integer',
+            'skill_keys' => 'array',
         ];
     }
 
@@ -129,13 +135,16 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * Records the skill generation the session's driver was spawned with.
+     * Records the skill generation the session's driver was spawned with and the keys the start handed it.
+     *
+     * @param  list<string>  $keys
      */
-    public function recordSkillGeneration(string $generationId): void
+    public function recordSkills(SkillGeneration $generation, array $keys): void
     {
-        $this->skill_generation_id = $generationId;
+        $this->skill_generation_id = $generation->id;
+        $this->skill_keys = $keys;
         $this->saveAndAssert();
-        $this->raise(new AgentSessionSkillsGenerated($this->id, $generationId));
+        $this->raise(new AgentSessionSkillsGenerated($this->id, $generation->id, $keys));
     }
 
     public function enterConversation(DriverConversation $conversation): void
@@ -205,6 +214,14 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         return $this->status->isRunning();
     }
 
+    /**
+     * Whether the start handed this skill key to the session.
+     */
+    public function hasSkill(string $key): bool
+    {
+        return in_array($key, $this->skill_keys ?? [], true);
+    }
+
     // ----------[ Transformers ]----------
 
     /**
@@ -239,6 +256,16 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
         }
 
         return WorkspaceUse::OwnCheckout;
+    }
+
+    /**
+     * The skill keys the profile requires that the start handed to the session, in the profile's order.
+     *
+     * @return list<string>
+     */
+    public function requiredSkillKeys(StartProfile $profile): array
+    {
+        return array_values(array_filter($profile->requiredSkills(), $this->hasSkill(...)));
     }
 
     // ----------[ Accessors ]----------
@@ -389,19 +416,23 @@ final class AgentSession extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * The sessions that may still act, oldest first, for trusted Core maintenance such as a skill refresh.
+     * The newest sessions of every agent, for a user's status.
      *
      * @return list<self>
      */
-    public static function findRunningForMaintenance(int $limit): array
+    public static function findNewestSessions(int $limit): array
     {
-        $running = self::query()
-            ->running()
-            ->oldestFirst()
-            ->readExactly($limit)
-            ->get();
+        return array_values(self::query()->newestFirst()->readExactly($limit)->get()->all());
+    }
 
-        return array_values($running->all());
+    /**
+     * The agent's own newest sessions, for the agent's status.
+     *
+     * @return list<self>
+     */
+    public static function findNewestSessionsOfAgent(string $agentId, int $limit): array
+    {
+        return array_values(self::query()->ofAgents([$agentId])->newestFirst()->readExactly($limit)->get()->all());
     }
 
     /**

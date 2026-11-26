@@ -4,20 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Agents\Inputs\Values\CompactionDetails;
+use App\Agents\Inputs\Values\SessionStartDetails;
+use App\Contracts\Work\StackTransactionRunner;
+use App\Hooks\ContextCollection;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Enums\ToolOutcome;
+use App\Hooks\FinishedToolCalls;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\Skill;
-use App\Models\Skills\SkillPublication;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillRevision;
 use App\Skills\Commands\CreateSkill\CreateSkillCommand;
-use App\Skills\Enums\PublicationStatus;
-use App\Skills\SkillPublishingService;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\Values\SkillDraft;
+use App\Support\Inputs\ContextCompacted;
+use App\Support\Inputs\SessionStarted;
+use App\Support\Inputs\ToolFinished;
+use App\Support\Inputs\Values\DriverToolInput;
+use App\Support\Inputs\Values\HookIdentity;
+use App\Support\Inputs\Values\ToolResult;
 use App\Values\SkillKey;
+use App\Values\StackTarget;
 use PHPUnit\Framework\Assert;
 
 /**
- * The journal's skills as a test needs them: made through the skill command and delivered by the journal's own
- * publisher to the skill targets the test bound, a folder of its own.
+ * The journal's skills as a test needs them: made through the skill command and built into a generation through the
+ * refresh command.
  */
 trait ArrangesSkills
 {
@@ -39,43 +52,70 @@ trait ArrangesSkills
     }
 
     /**
-     * Builds the skills afresh and delivers every open publication, as the journal's publisher does on its run.
+     * Builds the skills afresh into one generation, as skill:refresh does.
      */
-    public function publishSkills(): self
+    public function refreshSkills(): self
     {
-        $publisher = $this->app->make(SkillPublishingService::class);
-        $publisher->refresh();
-        $publisher->publishOpen('test publisher');
+        $this->app->forgetScopedInstances();
+        $this->throughEntry(new RefreshSkillsCommand());
 
         return $this;
     }
 
     /**
-     * The newest publication of the skills to the session's target.
+     * The session's tool call finished with this outcome, announced as the hook route does after its replay check, so
+     * every listener of a finished tool call hears it in the agent's own request.
+     *
+     * @param  array<string, mixed>  $arguments
      */
-    private function publicationOf(AgentSession $session): SkillPublication
-    {
-        return SkillPublication::query()
-            ->withoutGlobalScopes()
-            ->where('session_id', $session->id)
-            ->latest('created_at')
-            ->firstOrFail();
+    public function finishToolCall(
+        AgentSession $session,
+        string $tool,
+        array $arguments,
+        ToolOutcome $outcome = ToolOutcome::Succeeded,
+    ): self {
+        $this->actAsAgentIds($session->agent_id, $session->id);
+        $input = new ToolFinished(
+            new HookIdentity($session->agent_id, $session->id, 'hook-'.bin2hex(random_bytes(4)), hash('sha256', $tool)),
+            new ToolResult($tool, $outcome, new DriverToolInput($arguments)),
+        );
+        $this->app->make(FinishedToolCalls::class)->announce(new StackTarget($session->agent_id, $session->id), $input);
+
+        return $this;
     }
 
-    public function assertSkillPublished(string $key, AgentSession $session): self
+    /**
+     * The session's context starts again in the agent's own hook request, as its driver's start, clear, resume or
+     * compaction hook does; answers the reminders the listeners of that boundary added.
+     *
+     * @return list<string>
+     */
+    public function startContext(AgentSession $session, ContextStartType $type): array
     {
-        $publication = $this->publicationOf($session);
+        $this->actAsAgentIds($session->agent_id, $session->id);
+        $hookId = 'hook-'.bin2hex(random_bytes(4));
+        $identity = new HookIdentity($session->agent_id, $session->id, $hookId, hash('sha256', $type->value));
+        $input = $type === ContextStartType::Compact
+            ? new ContextCompacted($identity, new CompactionDetails('compaction-'.bin2hex(random_bytes(4))))
+            : new SessionStarted($identity, new SessionStartDetails('vendor-session', $type, null));
+        $target = new StackTarget($session->agent_id, $session->id);
 
-        Assert::assertSame(
-            PublicationStatus::Delivered,
-            $publication->status,
-            "The skills of {$session->id} were not delivered.",
+        return $this->app->make(StackTransactionRunner::class)->run(
+            fn (): array => $this->app->make(ContextCollection::class)->collectReminders($target, $input),
         );
-        Assert::assertContains(
-            $key,
-            $publication->skill_keys,
-            "The publication of {$session->id} does not hold {$key}.",
-        );
+    }
+
+    /**
+     * The session row, read again, holds this generation id and exactly these skill keys.
+     *
+     * @param  list<string>  $keys
+     */
+    public function assertSkillsHanded(AgentSession $session, SkillGeneration $generation, array $keys): self
+    {
+        $stored = AgentSession::findById($session->id);
+
+        Assert::assertSame($generation->id, $stored->skill_generation_id, "{$session->id} holds another generation.");
+        Assert::assertSame($keys, $stored->skill_keys, "{$session->id} was handed other skills.");
 
         return $this;
     }

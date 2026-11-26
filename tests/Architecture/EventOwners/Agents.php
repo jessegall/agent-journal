@@ -633,10 +633,10 @@ return [
     ],
     AgentSessionSkillsGenerated::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'AgentSession::recordSkillGeneration',
+        'owner' => 'AgentSession::recordSkills',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new AgentSessionSkillsGenerated('session', 'generation'),
+        'sample' => fn () => new AgentSessionSkillsGenerated('session', 'generation', ['skill']),
     ],
     AgentSessionConversationEntered::class => [
         'role' => EventRole::RowFact,

@@ -8,13 +8,11 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
 use App\Sessions\Enums\SessionStatus;
 use App\Skills\Commands\CreateSkill\CreateSkillCommand;
 use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\CoreSkills;
 use App\Skills\Enums\GenerationStatus;
-use App\Skills\Enums\PublicationStatus;
 use App\Skills\SkillRegistry;
 use App\Skills\SkillTables;
 use App\Skills\Values\RefreshResult;
@@ -27,26 +25,21 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Skills\HasSkillTargets;
-use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * A refresh renders the catalogue as one immutable generation, reuses it when nothing changed, keeps the last good one
- * when a shipped skill is broken, and asks for a publication for each running session whose selection changed.
+ * when a shipped skill is broken, and changes no session.
  */
 #[TestsCommand(RefreshSkillsCommand::class)]
 final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;
-    use HasSkillTargets;
-    use IntendsSkillPublications;
 
     private const string INVALID_SKILL = "Guide's skill journal-guide is invalid";
 
     private const array TABLES = [
-        'skill_publications',
         'skill_generations',
         'skill_requests',
         'skill_revisions',
@@ -66,19 +59,15 @@ final class RefreshSkillsTest extends TestCase
         $this->journal->installProfiles();
     }
 
-    public function test_two_refreshes_without_changes_leave_one_generation_and_no_new_publications(): void
+    public function test_two_refreshes_without_changes_leave_one_generation(): void
     {
-        $this->start();
-
         $first = $this->refresh();
         $second = $this->refresh();
 
         $this->assertFalse($first->isReused);
-        $this->assertSame(1, $first->publications);
         $this->assertTrue($second->isReused);
-        $this->assertSame(0, $second->publications);
+        $this->assertSame($first->generationId, $second->generationId);
         $this->assertSame(1, SkillGeneration::query()->count());
-        $this->assertSame(1, SkillPublication::query()->count());
     }
 
     public function test_a_broken_shipped_skill_fails_its_generation_by_owner_and_key_and_the_last_stays_ready(): void
@@ -102,11 +91,11 @@ final class RefreshSkillsTest extends TestCase
         $this->assertSame($ready->generationId, SkillGeneration::findLatestReady()?->id);
     }
 
-    public function test_a_stored_edit_leads_to_a_pending_publication_for_a_running_session(): void
+    public function test_a_stored_edit_stores_one_more_generation_and_changes_no_session_row(): void
     {
         $session = $this->start();
         $this->refresh();
-        SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
+        $before = AgentSession::findById($session->id)->getAttributes();
 
         $this->journal->actAsUserId(TestIds::of(7));
         $this->app->make(CommandBus::class)->run(
@@ -117,13 +106,8 @@ final class RefreshSkillsTest extends TestCase
             ),
         );
 
-        $pending = SkillPublication::query()->where('session_id', $session->id)->where(
-            'status',
-            PublicationStatus::Pending->value,
-        )->firstOrFail();
         $this->assertSame(2, SkillGeneration::query()->count());
-        $this->assertSame(SkillGeneration::findLatestReady()?->id, $pending->generation_id);
-        $this->assertStringEndsWith("/targets/{$session->id}/claude-code", $pending->target);
+        $this->assertSame($before, AgentSession::findById($session->id)->getAttributes());
     }
 
     public function test_only_the_system_refreshes(): void
@@ -147,6 +131,12 @@ final class RefreshSkillsTest extends TestCase
             ->assertFailed();
 
         $this->assertSame(0, SkillGeneration::query()->count());
+    }
+
+    public function test_the_command_prints_only_the_generation(): void
+    {
+        $this->artisan('skill:refresh')->expectsOutputToContain(' is ready.')->assertSuccessful();
+        $this->artisan('skill:refresh')->expectsOutputToContain(' is unchanged.')->assertSuccessful();
     }
 
     private function refresh(): RefreshResult

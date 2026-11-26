@@ -13,7 +13,6 @@ enum Place: string
     case Accounts = 'accounts';
     case SharingSecrets = 'sharing-secrets';
     case SharingTunnels = 'sharing-tunnels';
-    case HostSkills = 'host-skills';
     case Temporary = 'temporary';
     case ProcessOutput = 'process-output';
     case HookRuntime = 'hook-runtime';
@@ -33,7 +32,7 @@ enum Place: string
     {
         return match ($this) {
             self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HookRuntime => true,
-            self::Project, self::HostSkills, self::Temporary, self::ProcessOutput, self::Releases => false,
+            self::Project, self::Temporary, self::ProcessOutput, self::Releases => false,
         };
     }
 
@@ -58,7 +57,7 @@ enum Place: string
                 'node_modules',
                 'storage/app/private',
             ],
-            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::Temporary,
             self::ProcessOutput, self::HookRuntime, self::Releases => [],
         };
     }
@@ -73,8 +72,7 @@ enum Place: string
             self::SharingSecrets => 'sharing.secrets_dir',
             self::SharingTunnels => 'sharing.tunnels_dir',
             self::ProcessOutput => 'filesystems.disks.process-output.root',
-            self::Project, self::HostSkills, self::Temporary, self::HookRuntime,
-            self::Releases => "files.places.{$this->value}",
+            self::Project, self::Temporary, self::HookRuntime, self::Releases => "files.places.{$this->value}",
         };
     }
 }

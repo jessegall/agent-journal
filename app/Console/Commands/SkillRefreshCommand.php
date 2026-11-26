@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Console\Concerns\PrintsPublicationOutcomes;
-use App\Skills\SkillPublishingService;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 use App\Skills\SkillTables;
 use Illuminate\Console\Command;
 
 /**
- * The host's start-up and update step, as the journal itself: checks and renders the catalogue as one generation, then
- * publishes every publication that waits.
+ * The host's start-up and update step, as the journal itself: checks and renders the catalogue as one generation.
  */
 final class SkillRefreshCommand extends Command
 {
-    use PrintsPublicationOutcomes;
-
     protected $signature = 'skill:refresh';
 
-    protected $description = 'Check and render every skill, then publish the waiting skill sets';
+    protected $description = 'Check and render every skill as one generation';
 
-    public function handle(SkillTables $tables, SkillPublishingService $publishing): int
+    public function handle(SkillTables $tables, JournalCommands $dispatchers): int
     {
         if (! $tables->exist()) {
             $this->error('The skills tables do not exist yet: run php artisan migrate first. Nothing was changed.');
@@ -29,11 +27,10 @@ final class SkillRefreshCommand extends Command
             return self::FAILURE;
         }
 
-        $refresh = $publishing->refresh();
+        $refresh = $dispatchers->runAsJournal(CommandEntry::SkillRefresh, 'skill refresh', new RefreshSkillsCommand());
 
         if ($refresh->hasFailed) {
             $this->error("The skills could not be generated, the previous generation stays in use: {$refresh->reason}");
-            $this->printOutcomes($publishing->publishOpen($this->holder()));
 
             return self::FAILURE;
         }
@@ -42,6 +39,6 @@ final class SkillRefreshCommand extends Command
             ? "Generation {$refresh->generationId} is unchanged."
             : "Generation {$refresh->generationId} is ready.");
 
-        return $this->printOutcomes($publishing->publishOpen($this->holder()));
+        return self::SUCCESS;
     }
 }

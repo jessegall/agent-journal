@@ -71,7 +71,7 @@ final class FilePathTest extends TestCase
         $this->assertSame(0o700, Place::SharingSecrets->folderMode());
         $this->assertSame(0o755, Place::Temporary->folderMode());
         $this->assertSame(
-            [Place::Project, Place::HostSkills, Place::Temporary, Place::ProcessOutput, Place::Releases],
+            [Place::Project, Place::Temporary, Place::ProcessOutput, Place::Releases],
             Place::notPrivate(),
         );
     }

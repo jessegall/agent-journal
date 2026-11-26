@@ -48,11 +48,10 @@ skills. Every write is a new revision; a retry with the same request id returns 
 
 ## Generated files and who owns them
 
-- `skill:refresh` checks and renders the whole catalogue as one immutable generation (reused when nothing changed) and
-  records a pending publication for each running session whose selection changed.
-- Staged sets live in the journal container under `storage/app/skills/generations/<generation>/<publication>/`, a
-  checked copy with a `manifest.json` of identities and hashes. The journal owns them; `skill:prune` removes only files
-  it staged whose bytes still match, never by a name prefix.
+- `skill:refresh` checks and renders the whole catalogue as one immutable generation, reused when nothing changed.
+  It changes no session.
+- A start records the generation and the keys it was handed on its session row; the grant builds its files from that
+  generation, so the same session always gets byte-identical files.
 - The programs run on the host, so the start grant carries the delivered files and the host writes them into the
   runtime's own settings folder before it spawns the program: `journal-skills/` passed with `--plugin-dir` for Claude
   Code, `skills/` inside the isolated `CODEX_HOME` for Codex. Nothing is written into an account folder or a checkout.

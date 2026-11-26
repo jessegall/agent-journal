@@ -55,12 +55,12 @@ final class FilesServiceTest extends TestCase
         $folder = $this->placeInTemporaryFolder(Place::Temporary);
         file_put_contents("{$folder}/a.txt", 'a');
         file_put_contents("{$folder}/blocker", '');
-        config(['files.places.host-skills' => "{$folder}/blocker/skills"]);
+        config(['files.places.releases' => "{$folder}/blocker/skills"]);
         $files = $this->app->make(FilesContract::class);
 
         $this->assertSame('a', $files->read(FilePath::in(Place::Temporary, 'a.txt')));
-        $this->expectExceptionObject(PlaceUnavailable::for(Place::HostSkills));
+        $this->expectExceptionObject(PlaceUnavailable::for(Place::Releases));
 
-        $files->read(FilePath::in(Place::HostSkills, 'skill.md'));
+        $files->read(FilePath::in(Place::Releases, 'skill.md'));
     }
 }

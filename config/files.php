@@ -10,8 +10,6 @@ return [
      */
     'places' => [
         'project' => base_path(),
-        // The protected folder of each session's delivered skills; SkillTargets takes its root from here.
-        'host-skills' => storage_path('app/skills'),
         'temporary' => sys_get_temp_dir(),
         // The agent host's runtime folder of one start, set by the hook relay from the folder of its bypass log.
         'hook-runtime' => null,

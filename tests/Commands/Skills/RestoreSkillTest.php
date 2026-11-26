@@ -28,7 +28,6 @@ final class RestoreSkillTest extends TestCase
     use CommitsHookRows;
 
     private const array TABLES = [
-        'skill_publications',
         'skill_generations',
         'skill_requests',
         'skill_revisions',

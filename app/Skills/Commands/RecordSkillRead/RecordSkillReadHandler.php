@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace App\Skills\Commands\RecordSkillRead;
 
 use App\Bus\Contracts\CommandHandler;
-use App\Skills\SkillReads;
+use App\Models\Agents\AgentSession;
+use App\Models\Skills\SkillReadEntry;
 
 final readonly class RecordSkillReadHandler implements CommandHandler
 {
-    public function __construct(
-        private SkillReads $reads,
-    ) {}
-
     public function handle(RecordSkillReadCommand $command): bool
     {
-        return $this->reads->record($command->sessionId, $command->skillKey, $command->evidence);
+        $session = AgentSession::findById($command->sessionId);
+
+        if (! $session->hasSkill($command->skillKey)) {
+            return false;
+        }
+
+        SkillReadEntry::record($session, $command->skillKey, $command->evidence);
+
+        return true;
     }
 }

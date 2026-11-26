@@ -7,7 +7,6 @@ namespace Tests\Machinery\Hooks;
 use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Enums\DriverType;
 use App\Agents\Enums\ConversationModeType;
-use App\Engine\Enums\NoSubject;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Sessions\SessionRequest;
@@ -42,8 +41,8 @@ use Tests\TestCase;
 
 /**
  * A session that resumes an agent's conversation opens its stack with the durable frames of the agent's last
- * closed stack: owed work carries over, a session-only frame stays behind, a new conversation starts
- * bottom-only, and a frame nothing registers refuses the start.
+ * closed stack: owed work carries over, a new conversation starts bottom-only, and a frame nothing registers
+ * refuses the start.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and empties the hook tables.')]
 #[TestsMachinery(AgentSessions::class)]
@@ -59,9 +58,9 @@ final class ContinueStackTest extends TestCase
         return DomainBoot::withRequirements(TasksDomain::class);
     }
 
-    public function test_a_resumed_session_carries_owed_work_and_leaves_session_only_frames(): void
+    public function test_a_resumed_session_carries_owed_work(): void
     {
-        $old = $this->closedStackWith(['tasks.work', 'core.skills.await']);
+        $old = $this->closedStackWith(['tasks.work']);
 
         $continued = $this->nextSession($old, ConversationModeType::Resume);
 
@@ -97,9 +96,7 @@ final class ContinueStackTest extends TestCase
         $frames = [$row->frames->all()[0]];
 
         foreach ($typeKeys as $position => $typeKey) {
-            $subject = $typeKey === 'core.skills.await'
-                ? NoSubject::None
-                : new SubjectReference(Task::factory()->create(['title' => 'Owed work'])->id, 1);
+            $subject = new SubjectReference(Task::factory()->create(['title' => 'Owed work'])->id, 1);
             $frames[] = new FrameRecord(
                 "frame-{$position}",
                 new StateReference($typeKey, $subject),
