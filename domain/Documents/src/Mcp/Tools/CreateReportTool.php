@@ -49,7 +49,7 @@ final class CreateReportTool extends JournalWriteTool
             $arguments->text('title'),
             $arguments->text('abstract'),
             $arguments->optionalText('body'),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
             $this->sources($arguments),
             $arguments->optionalUlid('upload_id'),
         );
@@ -61,5 +61,13 @@ final class CreateReportTool extends JournalWriteTool
             'report_id' => $createdReport->number,
             'record_id' => $createdReport->id,
         ]);
+    }
+
+    /**
+     * The calling agent's project, which the report belongs to.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

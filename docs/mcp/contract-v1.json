@@ -330,6 +330,24 @@
                 },
                 "title": "Capabilities Read Tool"
             },
+            "closing_words_deliver": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "closing_words_deliver",
+                "outputSchema": null,
+                "title": "Closing Words Deliver Tool"
+            },
             "command_requests_prove": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -1216,8 +1234,7 @@
                         "state": {
                             "enum": [
                                 "current",
-                                "superseded",
-                                "retired"
+                                "superseded"
                             ],
                             "type": "string"
                         }
@@ -1273,6 +1290,78 @@
                 "name": "messages_react",
                 "outputSchema": null,
                 "title": "Message Reaction Tool"
+            },
+            "messages_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read",
+                "outputSchema": null,
+                "title": "Message Read Tool"
+            },
+            "messages_read_unread": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read_unread",
+                "outputSchema": null,
+                "title": "Message Read Unread Tool"
+            },
+            "messages_send": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "target_message_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_send",
+                "outputSchema": null,
+                "title": "Message Send Tool"
             },
             "navigation_answer": {
                 "inputSchema": {
@@ -1484,6 +1573,10 @@
                             "minimum": 0,
                             "type": "integer"
                         },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
                         "run": {
                             "maxLength": 26,
                             "type": "string"
@@ -1500,7 +1593,8 @@
                     "required": [
                         "run",
                         "part",
-                        "stream"
+                        "stream",
+                        "request_key"
                     ],
                     "type": "object"
                 },
@@ -2117,6 +2211,82 @@
                 "name": "plans_unassign_work",
                 "outputSchema": null,
                 "title": "Unassign Plan Work Tool"
+            },
+            "questions_ask": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "options": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "target_id": {
+                            "type": "string"
+                        },
+                        "target_type": {
+                            "enum": [
+                                "agent",
+                                "user"
+                            ],
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "open",
+                                "choice"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "target_type",
+                        "target_id",
+                        "text",
+                        "type",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "questions_ask",
+                "outputSchema": null,
+                "title": "Question Ask Tool"
+            },
+            "questions_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "question_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "question_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "questions_read",
+                "outputSchema": null,
+                "title": "Question Read Tool"
             },
             "reminders_create": {
                 "inputSchema": {
@@ -3242,6 +3412,10 @@
                             "minimum": 0,
                             "type": "integer"
                         },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
                         "run": {
                             "maxLength": 26,
                             "type": "string"
@@ -3258,7 +3432,8 @@
                     "required": [
                         "run",
                         "part",
-                        "stream"
+                        "stream",
+                        "request_key"
                     ],
                     "type": "object"
                 },
@@ -3866,6 +4041,24 @@
                     "type": "object"
                 },
                 "title": "Capabilities Read Tool"
+            },
+            "closing_words_deliver": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "closing_words_deliver",
+                "outputSchema": null,
+                "title": "Closing Words Deliver Tool"
             },
             "command_requests_prove": {
                 "inputSchema": {
@@ -4552,6 +4745,78 @@
                 "outputSchema": null,
                 "title": "Message Reaction Tool"
             },
+            "messages_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read",
+                "outputSchema": null,
+                "title": "Message Read Tool"
+            },
+            "messages_read_unread": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read_unread",
+                "outputSchema": null,
+                "title": "Message Read Unread Tool"
+            },
+            "messages_send": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "target_message_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_send",
+                "outputSchema": null,
+                "title": "Message Send Tool"
+            },
             "operations_read": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -4614,6 +4879,10 @@
                             "minimum": 0,
                             "type": "integer"
                         },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
                         "run": {
                             "maxLength": 26,
                             "type": "string"
@@ -4630,7 +4899,8 @@
                     "required": [
                         "run",
                         "part",
-                        "stream"
+                        "stream",
+                        "request_key"
                     ],
                     "type": "object"
                 },
@@ -4708,6 +4978,82 @@
                 "name": "plans_read",
                 "outputSchema": null,
                 "title": "Plan Read Tool"
+            },
+            "questions_ask": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "inbox_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "options": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "target_id": {
+                            "type": "string"
+                        },
+                        "target_type": {
+                            "enum": [
+                                "agent",
+                                "user"
+                            ],
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "open",
+                                "choice"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "inbox_id",
+                        "target_type",
+                        "target_id",
+                        "text",
+                        "type",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "questions_ask",
+                "outputSchema": null,
+                "title": "Question Ask Tool"
+            },
+            "questions_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "question_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "question_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "questions_read",
+                "outputSchema": null,
+                "title": "Question Read Tool"
             },
             "reminders_create": {
                 "inputSchema": {

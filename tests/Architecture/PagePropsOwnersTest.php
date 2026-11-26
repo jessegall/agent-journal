@@ -17,6 +17,7 @@ use App\Support\Web\PageProps;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tests\Fixtures\PagePropsOwners\SharingAnUnownedProp;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * Every prop the Inertia middleware shares has an owner: Inertia's own, a field of the app context, a declared page's
@@ -24,6 +25,8 @@ use Tests\Fixtures\PagePropsOwners\SharingAnUnownedProp;
  */
 final class PagePropsOwnersTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string HOW_TO_FIX
         = 'Share it as a field of AppContextData, a declared page prop or a loader, never straight from share().';
 

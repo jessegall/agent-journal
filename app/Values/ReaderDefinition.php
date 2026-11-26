@@ -44,6 +44,22 @@ final class ReaderDefinition extends Data
     }
 
     /**
+     * The count fields may be left out or empty: a reader that only counts failures names none.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function rules(): array
+    {
+        return [
+            'count_fields' => [
+                'sometimes',
+                'array',
+            ],
+            'count_fields.*' => ['string'],
+        ];
+    }
+
+    /**
      * The first rule that accounts for a line, in the order the definition lists them.
      */
     public function ruleFor(string $line): RecordRule|null

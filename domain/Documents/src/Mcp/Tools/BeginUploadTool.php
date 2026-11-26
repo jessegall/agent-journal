@@ -45,12 +45,20 @@ final class BeginUploadTool extends JournalWriteTool
             $arguments->enum('type', UploadType::class),
             $arguments->positiveInteger('bytes', BeginUploadCommand::MAX_BYTES),
             $arguments->text('digest'),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
         );
     }
 
     protected function present(mixed $uploadId): ToolResult
     {
         return ToolResult::ok(['upload_id' => $uploadId]);
+    }
+
+    /**
+     * The calling agent's project, where the upload's document will belong.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

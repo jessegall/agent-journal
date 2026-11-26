@@ -313,8 +313,14 @@ final class DockSourceTest extends TestCase
 
         $this->assertSame(
             [
-                ['unavailable', ''],
-                ['shown', self::TASK_TITLE],
+                [
+                    'unavailable',
+                    '',
+                ],
+                [
+                    'shown',
+                    self::TASK_TITLE,
+                ],
             ],
             array_map(fn (array $placement) => [
                 $placement['state'],

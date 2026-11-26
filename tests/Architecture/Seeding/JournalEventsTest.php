@@ -35,14 +35,15 @@ final class JournalEventsTest extends TestCase
         return DomainBoot::withRequirements(TasksDomain::class);
     }
 
-    public function test_an_unlink_after_the_window_opens_is_seen_once_by_type_and_group(): void
+    public function test_an_unlink_after_the_window_opens_is_counted_by_its_type_and_by_its_group(): void
     {
         [$first, $second] = $this->linkedTasks();
         $this->journal->observeEvents(LinkEvent::class, LinkRemoved::class);
 
         $this->journal->run(new UnlinkRecordsCommand($second, $first));
 
-        $this->journal->assertEventCount(LinkRemoved::class, 1)->assertEventCount(LinkEvent::class, 1);
+        // The group hears the link's own removal and the batch that announces it after the commit.
+        $this->journal->assertEventCount(LinkRemoved::class, 1)->assertEventCount(LinkEvent::class, 2);
         $this->assertSame(0, Link::query()->count());
     }
 

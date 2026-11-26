@@ -100,9 +100,7 @@ final class PruneShareAuditTest extends TestCase
 
     private function prune(): AuditPruning
     {
-        $this->app->forgetScopedInstances();
-
-        return $this->journal->throughEntry(new PruneShareAuditCommand());
+        return $this->journal->asSystem(new PruneShareAuditCommand());
     }
 
     /**

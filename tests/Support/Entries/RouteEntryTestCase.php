@@ -53,7 +53,7 @@ abstract class RouteEntryTestCase extends TestCase
 
         $response = $this->send($call, $call->caller);
 
-        $this->assertLessThan(400, $response->status(), (string) $response->getContent());
+        $this->assertLessThan(400, $response->getStatusCode(), (string) $response->getContent());
         $this->journal->assertDispatchedOnlyDeclared(
             DeclaredCommands::ofRoute($this->route()),
             (string) $this->route()->getControllerClass(),
@@ -78,6 +78,10 @@ abstract class RouteEntryTestCase extends TestCase
 
         if ($call->caller === Caller::Agent) {
             $this->journal->heartbeatOf($this->startOf($call));
+        }
+
+        if ($call->caller === Caller::SharedHost || $call->caller === Caller::RelayHost) {
+            $this->journal->markHostAnswered($this->hostOf($call));
         }
 
         return $call;

@@ -6,6 +6,7 @@ namespace Tests\Support\Seeding;
 
 use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
+use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentSession;
 use App\Support\AgentRuntimes;
@@ -74,6 +75,17 @@ trait OpensRuntimes
     public function enrolledHost(): EnrolledHost
     {
         return $this->asSystem(new EnrollHostCommand('test host '.Str::random(6), [base_path()]));
+    }
+
+    /**
+     * The journal answered one of the host's calls just now, as it does for a live host, so its next answer is not one
+     * the journal records again.
+     */
+    public function markHostAnswered(EnrolledHost $host): self
+    {
+        $this->asSystem(new RecordHostCallAnsweredCommand($host->hostId, '/host/heartbeat', []));
+
+        return $this;
     }
 
     public function hostCalled(string $name): EnrolledHost

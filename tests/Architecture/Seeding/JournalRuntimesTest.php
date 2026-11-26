@@ -7,6 +7,7 @@ namespace Tests\Architecture\Seeding;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
+use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -81,5 +82,15 @@ final class JournalRuntimesTest extends TestCase
 
         $this->assertNotSame($first->hostId, $second->hostId);
         $this->assertSame(2, Host::query()->whereKey([$first->hostId, $second->hostId])->count());
+    }
+
+    public function test_a_host_marked_answered_was_answered_just_now(): void
+    {
+        $host = $this->journal->enrolledHost();
+        $this->journal->markHostAnswered($host);
+
+        $this->assertFalse(
+            Host::query()->findOrFail($host->hostId)->hasAnswerToRecord('/host/claim', [], CarbonImmutable::now()),
+        );
     }
 }

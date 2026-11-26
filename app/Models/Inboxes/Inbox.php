@@ -175,7 +175,7 @@ final class Inbox extends JournalModel implements Assignee, EventSource, Labeled
     // ----------[ Answers ]----------
 
     /**
-     * The actor this inbox is the personal inbox of; none for a chat or any other inbox.
+     * The actor this inbox is the personal inbox of; none for a shared or any other inbox.
      *
      * @return Option<ActorReference>
      */

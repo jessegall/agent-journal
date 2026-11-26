@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
@@ -22,7 +21,23 @@ final class CreateGroupInput extends Data
     public function __construct(
         #[Regex('/\\S/'), Max(120)]
         public readonly string $title,
-        #[ArrayType, Max(99)]
         public readonly array $userIds,
     ) {}
+
+    /**
+     * The users may be none: the owner starts a group alone and adds people later.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function rules(): array
+    {
+        return [
+            'userIds' => [
+                'present',
+                'array',
+                'max:99',
+            ],
+            'userIds.*' => ['string'],
+        ];
+    }
 }

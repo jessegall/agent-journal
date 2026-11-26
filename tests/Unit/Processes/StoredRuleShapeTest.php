@@ -23,7 +23,7 @@ final class StoredRuleShapeTest extends TestCase
 
     private const string RULE_DIGEST = '627b545e94cfaa9c371d43ddcffa01846243c4a6e1a8167807b94d5fae4a13e5';
 
-    private const string CONTRACT_DIGEST = 'aba6af7c7fd2bec5ef2ace0c95de257fa5f7861908dd4e1ee996a623936e32e7';
+    private const string CONTRACT_DIGEST = 'f1fe2a9b4ccef52df1ba969be6c3cc506fb8400fcc4cf9a962622c9a48e47cce';
 
     private const string REPLACING_DIGEST = '79ee205952956ad6ce52252d98264e8ce119a71a84350bbaec53685312351e84';
 

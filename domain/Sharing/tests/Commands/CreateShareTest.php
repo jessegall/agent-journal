@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RequestKeyConflict;
@@ -18,7 +17,6 @@ use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
 use App\Support\ShareRecordRegistry;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
@@ -361,25 +359,14 @@ final class CreateShareTest extends TestCase
     {
         $this->owner = $this->journal->ownerUser();
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
-
-        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        $this->journal->asOwner(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
         TEXT, TestProjects::local()->id));
 
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->app->make(CurrentActorSetter::class)->clear();
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
-
-        $this->app->make(CommandBus::class)->run(
+        $this->journal->asOwner(
             new SaveSharePreviewCommand(
                 $this->document->shareIdentity()->type,
                 $this->document->id,
@@ -389,7 +376,6 @@ final class CreateShareTest extends TestCase
         );
 
         $preview = SharePreview::query()->sole();
-        $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->artisan(
             'share:create',

@@ -40,7 +40,7 @@ final readonly class LoaderTypes
     }
 
     /**
-     * Each loader's descriptor: its export name, such as chatRows for chat.rows, its key, prop and types.
+     * Each loader's descriptor: its export name, such as planRows for plans.rows, its key, prop and types.
      *
      * @return list<array{name: string, key: string, prop: string, input: string, answer: string}>
      */

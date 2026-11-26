@@ -46,7 +46,7 @@ final class CreateDocumentTool extends JournalWriteTool
             $arguments->text('title'),
             $arguments->text('abstract'),
             $arguments->optionalText('body'),
-            $this->destination->ownerFor(None::create())->key(),
+            $this->ownerKey(),
             $this->sources($arguments),
             $arguments->optionalUlid('upload_id'),
         );
@@ -59,5 +59,13 @@ final class CreateDocumentTool extends JournalWriteTool
             'document_id' => $document->id,
             'revision' => $document->revision,
         ]);
+    }
+
+    /**
+     * The key of the calling agent's project, which the document belongs to.
+     */
+    private function ownerKey(): string
+    {
+        return $this->destination->ownerFor(None::create())->key();
     }
 }

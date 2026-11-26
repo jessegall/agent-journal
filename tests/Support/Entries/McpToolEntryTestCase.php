@@ -40,7 +40,7 @@ abstract class McpToolEntryTestCase extends TestCase
 
         $response = $this->journal->mcpTool($call->start, $this->toolName(), $call->arguments);
 
-        $this->assertSame(200, $response->status(), (string) $response->getContent());
+        $this->assertSame(200, $response->getStatusCode(), (string) $response->getContent());
         $this->assertFalse($response->json('result.isError'), (string) $response->getContent());
 
         $this->journal->assertDispatchedOnlyDeclared(DeclaredCommands::ofTool($this->tool()), $this->tool())

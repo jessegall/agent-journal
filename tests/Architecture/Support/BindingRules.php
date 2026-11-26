@@ -28,6 +28,11 @@ use Tests\Support\ScanCache\ScanCache;
  */
 final readonly class BindingRules
 {
+    /**
+     * The owner of a name no area or package of the journal holds, such as a framework's.
+     */
+    private const string NO_OWNER = 'no owner';
+
     private const array BINDING_METHODS = ['bind', 'bindIf', 'scoped', 'scopedIf', 'singleton', 'singletonIf'];
 
     private const array SINGLETON_METHODS = ['singleton', 'singletonIf'];
@@ -112,7 +117,9 @@ final readonly class BindingRules
             ];
         }
 
+        // A framework's own contract, such as Fortify's LogoutResponse, is filled by the owner that uses it.
         if ($abstractOwner !== $userOwner
+            && $abstractOwner !== self::NO_OWNER
             && ! ($abstractOwner === 'Core' && $this->isCoreExport($definition->abstract))) {
             return [
                 $definition->violation(
@@ -342,7 +349,7 @@ final readonly class BindingRules
 
     private function ownerNameOfClass(string $name): string
     {
-        return array_find($this->owners, fn (PublicOwner $owner) => $owner->ownsName($name))->name ?? 'no owner';
+        return array_find($this->owners, fn (PublicOwner $owner) => $owner->ownsName($name))->name ?? self::NO_OWNER;
     }
 
     private static function namespaceOf(string $file): string

@@ -107,7 +107,8 @@ trait SinksCommands
         foreach ($expected as $position => $command) {
             Assert::assertTrue(
                 $sunk[$position]->matches($command->command, $command->arguments),
-                "{$command->command} was sent with other arguments.",
+                "{$command->command} was sent with other arguments: "
+                    .$sunk[$position]->describe(array_keys($command->arguments)),
             );
         }
 

@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use App\Support\RequestKey;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
@@ -90,19 +87,13 @@ final class ApproveShareRequestTest extends TestCase
 
         $this->owner = $this->journal->owner()->ownerUser();
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
-
-        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        $this->journal->asOwner(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT, TestProjects::local()->id));
 
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
-        $this->app->make(CurrentActorSetter::class)->clear();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->start = $this->journal->signedStart('Test agent');
     }

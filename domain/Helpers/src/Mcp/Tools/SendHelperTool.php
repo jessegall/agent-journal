@@ -52,12 +52,20 @@ final class SendHelperTool extends JournalWriteTool
             $arguments->text('model'),
             $arguments->optionalText('driver_key'),
             $this->work($arguments),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
         );
     }
 
     protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok(HelperReceiptData::from($commandResult)->toArray());
+    }
+
+    /**
+     * The calling agent's project, which the helper works in.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

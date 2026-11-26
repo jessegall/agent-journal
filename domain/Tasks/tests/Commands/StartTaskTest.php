@@ -16,14 +16,6 @@ use App\Support\PoolMembers;
 use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Plans\Events\PlanCancelled;
-use Domain\Plans\Events\PlanFinished;
-use Domain\Plans\Events\PlanProgressChanged;
-use Domain\Plans\Events\PlanStarted;
-use Domain\Plans\Listeners\CountPhaseTaskStates;
-use Domain\Plans\Models\Plan;
-use Domain\Plans\PlansDomain;
-use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\FinishTask\FinishTaskCommand;
@@ -54,7 +46,6 @@ use Tests\Fixtures\Tasks\FailsAfterPush;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\Settings\SwitchesDomainsOff;
 
 /**
  * An agent starts a task: it opens the task's first run, claimed by the agent, and a retry under the same key gets
@@ -64,7 +55,6 @@ use Tests\Support\Settings\SwitchesDomainsOff;
 final class StartTaskTest extends TestCase
 {
     use CommitsHookRows;
-    use SwitchesDomainsOff;
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
@@ -85,9 +75,6 @@ final class StartTaskTest extends TestCase
         'task_history',
         'task_waits',
         'task_wait_history',
-        'plans',
-        'phases',
-        'phase_tasks',
         'session_tokens',
         'hook_calls',
         'links',
@@ -265,59 +252,6 @@ final class StartTaskTest extends TestCase
         $this->assertSame($task->id, $started()[1]->taskId);
     }
 
-    public function test_the_plan_holding_the_task_at_its_start_is_the_one_told_after_the_commit(): void
-    {
-        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
-
-        $this->session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-
-        $plan = Plan::factory()->create();
-        $task = $this->tasks()->createTask('task');
-        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
-        $progress = $this->heard(PlanProgressChanged::class);
-
-        $this->start($task);
-
-        $this->assertSame([$plan->id], array_map(fn (PlanProgressChanged $changed) => $changed->planId, $progress()));
-    }
-
-    public function test_a_task_in_no_phase_tells_no_plan(): void
-    {
-        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
-
-        $this->session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-
-        $progress = $this->heard(PlanProgressChanged::class);
-
-        $this->start($this->tasks()->createTask('Loose'));
-
-        $this->assertSame([], $progress());
-    }
-
-    public function test_with_plans_switched_off_the_start_works_and_tells_no_plan(): void
-    {
-        $agent = $this->journal->idleAgent('Worker', 'main-agent')->agentCalled('Worker');
-
-        $this->session = $this->app->make(StartSessions::class)
-            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-
-        $plan = Plan::factory()->create();
-        $task = $this->tasks()->createTask('task');
-        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
-        $this->switchDomainOff('plans');
-        $progress = $this->heard(PlanProgressChanged::class);
-
-        $this->start($task);
-
-        $this->assertSame(TaskStatus::Started, $task->refresh()->status);
-        $this->assertSame([], $progress());
-    }
-
     public function test_a_start_onto_a_closed_stack_rolls_the_start_back(): void
     {
         $task = $this->tasks->taskCalled('Owned work');
@@ -352,7 +286,6 @@ final class StartTaskTest extends TestCase
 
         $this->app->instance(ListenerRegistry::class, new ListenerRegistry([
             TaskStarted::class => [
-                CountPhaseTaskStates::class.'@handle',
                 PushTaskState::class.'@handle',
                 FailsAfterPush::class.'@handle',
             ],
@@ -398,11 +331,11 @@ final class StartTaskTest extends TestCase
      */
     protected static function bootedDomains(): array
     {
-        return DomainBoot::withRequirements(PlansDomain::class, TasksDomain::class);
+        return DomainBoot::withRequirements(TasksDomain::class);
     }
 
     /**
-     * The facts of Tasks and Plans the commands send from now on, in the order they reach their listeners.
+     * The facts of Tasks the commands send from now on, in the order they reach their listeners.
      *
      * @return Closure(): list<object>
      */
@@ -415,9 +348,6 @@ final class StartTaskTest extends TestCase
             TaskFinished::class,
             TaskBlocked::class,
             TaskCancelled::class,
-            PlanStarted::class,
-            PlanFinished::class,
-            PlanCancelled::class,
         ];
 
         foreach ($events as $event) {
@@ -429,11 +359,6 @@ final class StartTaskTest extends TestCase
         return function () use (&$sent): array {
             return $sent;
         };
-    }
-
-    private function planStructure(): PlanStructure
-    {
-        return $this->app->make(PlanStructure::class);
     }
 
     private function start(Task $task): void

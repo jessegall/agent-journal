@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\Link;
 use App\Support\Access\AccessSettings;
-use App\Support\ActorReference;
 use App\Support\GatewaySettings;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;
@@ -83,16 +79,14 @@ final class ReadShareTest extends TestCase
         parent::setUp();
 
         $this->journal->owner();
-        $this->app->make(CurrentActorSetter::class)->set(ActorReference::of($this->journal->ownerUser()), new OwnerAuthority('test'));
 
-        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
+        $this->journal->asOwner(new CreateDocumentCommand('Design', 'What we build', <<<'TEXT'
         # Goal
         Ship it.
 
         TEXT, TestProjects::local()->id));
 
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->app->make(CurrentActorSetter::class)->clear();
 
         $this->plan = Plan::factory()->create([
             'title' => 'Version 6',
@@ -203,16 +197,13 @@ final class ReadShareTest extends TestCase
 
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorReference::of($this->journal->ownerUser()), new OwnerAuthority('test'));
-
-        $this->app->make(CommandBus::class)->run(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
+        $this->journal->asOwner(new CreateDocumentCommand('Notes', 'What we learned', <<<'TEXT'
         # Notes
         Keep it.
 
         TEXT, TestProjects::local()->id));
 
         $sibling = Document::query()->where('number', 2)->sole();
-        $this->app->make(CurrentActorSetter::class)->clear();
         Link::createForModels($this->plan, $sibling);
         $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
         $share = Share::query()->sole();

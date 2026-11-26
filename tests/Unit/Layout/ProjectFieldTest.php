@@ -26,7 +26,7 @@ final class ProjectFieldTest extends TestCase
 
         $this->assertSame(ProjectField::NAME, $field->name);
         $this->assertSame(['p1', 'p2', 'p3'], $field->options);
-        $this->assertSame(['Shop', 'Web (web-a)', 'Web (web-b)'], $field->optionLabels);
+        $this->assertSame(['Shop', 'Web · web-a', 'Web · web-b'], $field->optionLabels);
     }
 
     public function test_a_record_that_may_be_global_offers_global_after_the_projects(): void

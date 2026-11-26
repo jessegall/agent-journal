@@ -55,6 +55,24 @@ final readonly class SunkCommand
     }
 
     /**
+     * The sent values of the named properties, written out for a failure message.
+     *
+     * @param  list<string>  $properties
+     */
+    public function describe(array $properties): string
+    {
+        $sent = [];
+
+        foreach ($properties as $property) {
+            $sent[$property] = Reflector::of($this->command)->hasProperty($property)
+                ? $this->command->{$property}
+                : '(no such property)';
+        }
+
+        return print_r($sent, true);
+    }
+
+    /**
      * A scalar or array is the same only when identical; a value object is the same when its fields are equal.
      */
     private static function isSameValue(mixed $sent, mixed $expected): bool

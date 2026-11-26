@@ -107,7 +107,7 @@ final readonly class AppContext
     }
 
     /**
-     * No one signed in is a guest; a signed-in user is an inbox member when its sign-in gave it the chat-only
+     * No one signed in is a guest; a signed-in user is an inbox member when its sign-in gave it the inbox-only
      * authority, and the owner otherwise.
      *
      * @param  Option<CurrentUser>  $user

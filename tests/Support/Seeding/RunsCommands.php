@@ -106,7 +106,7 @@ trait RunsCommands
 
     /**
      * The same as throughEntry() on a request of its own: the scoped instances are forgotten before and after it, so
-     * neither the last request nor the next one shares its actor.
+     * neither the last request nor the next one shares its actor, and the actor the journal had in place comes back.
      *
      * @template TResult
      *
@@ -121,6 +121,7 @@ trait RunsCommands
             return $this->throughEntry($command);
         } finally {
             $this->app->forgetScopedInstances();
+            $this->requests->reselect();
         }
     }
 
