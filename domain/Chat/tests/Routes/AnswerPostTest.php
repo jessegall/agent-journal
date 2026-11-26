@@ -30,12 +30,14 @@ final class AnswerPostTest extends GuardedRouteEntryTestCase
     {
         $journal->owner()->signedStart('Planner');
         $chats = $journal->fixtures(ChatFixtures::class)->pairChatBetween('Owner', 'Planner');
+
         $question = $journal->fixtures(QuestionFixtures::class)->createQuestion(
             'Database',
             $chats->pairChatOf('Owner', 'Planner'),
             'Planner',
             'Owner',
         );
+
         $journal->actAs('Owner');
 
         return RouteCall::as(Caller::User)

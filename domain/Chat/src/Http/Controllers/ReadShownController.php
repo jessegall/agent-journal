@@ -27,6 +27,7 @@ final readonly class ReadShownController
         $query = $input->agent === null
             ? ConversationRequest::queryForInbox($input->inboxId)
             : ConversationRequest::queryFor($input->agent);
+
         $home = $redirect->getUrlGenerator()->route('home', $query, false);
 
         // The page that showed the messages, Home or Chat's own, is shown again.

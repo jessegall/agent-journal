@@ -28,6 +28,7 @@ final class RemovePostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Builder');
+
         $memory = $journal->fixtures(MemoryFixtures::class)
             ->createMemory('Rule', 'Builder', 'Run the phase tests once.');
 

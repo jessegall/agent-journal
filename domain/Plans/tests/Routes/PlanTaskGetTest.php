@@ -28,6 +28,7 @@ final class PlanTaskGetTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $task = $journal->owner()->fixtures(TaskFixtures::class)->createTask('Ship the dock');
+
         $plans = $journal->fixtures(PlanFixtures::class)
             ->plan('Release')
             ->phaseWithTask('Release', 'Working', $task->assignmentIdentity());

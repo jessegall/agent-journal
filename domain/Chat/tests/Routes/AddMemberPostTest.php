@@ -30,9 +30,11 @@ final class AddMemberPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()->user('Cy');
+
         $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
             $journal->actorCalled('Owner'),
         ]));
+
         $candidate = $journal->userCalled('Cy');
 
         return RouteCall::recorded('chat-add-member', [

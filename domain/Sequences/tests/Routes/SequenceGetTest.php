@@ -28,6 +28,7 @@ final class SequenceGetTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
+
         $sequenceId = $journal->run(new DefineSequenceCommand('Release', [
             new SequenceStep(id: 'build', title: 'Build', runsWhen: 'held', doneWhen: 'green'),
         ]));

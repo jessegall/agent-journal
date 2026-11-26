@@ -27,6 +27,7 @@ final class RunGetTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner();
+
         $run = $journal->fixtures(SequenceFixtures::class)->createRun('Release', [
             'Build',
             'Ship',

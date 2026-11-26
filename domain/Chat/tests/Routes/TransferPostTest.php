@@ -31,10 +31,12 @@ final class TransferPostTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $journal->owner()->user('Sam');
+
         $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
             $journal->actorCalled('Owner'),
             $journal->actorCalled('Sam'),
         ]));
+
         $member = $journal->userCalled('Sam');
 
         return RouteCall::as(Caller::User)

@@ -29,10 +29,12 @@ final class ApprovePatchTest extends GuardedRouteEntryTestCase
     protected function arrange(TestJournal $journal): RouteCall
     {
         $start = $journal->owner()->signedStart('Planner');
+
         $ruleId = $journal->runAsStart(
             $start,
             new ProposeRuleCommand('No phase waits on the user.', 'Agents keep forgetting it.'),
         );
+
         $journal->actAs('Owner');
 
         return RouteCall::as(Caller::User)
