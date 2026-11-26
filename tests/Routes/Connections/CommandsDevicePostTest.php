@@ -6,7 +6,9 @@ namespace Tests\Routes\Connections;
 
 use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Models\Access\User;
 use App\Models\Projects\DeviceGrant;
+use App\Support\Access\AccessSettings;
 use App\Support\EnrolledHost;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
@@ -29,9 +31,40 @@ final class CommandsDevicePostTest extends RouteEntryTestCase
 
     private const string NONCE = 'nonce-0123456789abcdef';
 
+    private const string SESSION_USE_REFUSAL = 'runs in a provider session';
+
+    private const string REVOKED_REFUSAL = 'can no longer use the journal';
+
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
+    }
+
+    public function test_a_grant_serves_only_the_overview_of_its_own_binding(): void
+    {
+        $call = $this->arrangedCall();
+        $grant = (string) $call->signer;
+        $other = (string) Str::ulid();
+
+        $this->assertStringContainsString(
+            self::SESSION_USE_REFUSAL,
+            (string) $this->deviceCommand($grant, $call->payload['binding'], ['overview', 'now'])->assertForbidden()->json('message'),
+        );
+        $this->assertStringContainsString(
+            $other,
+            (string) $this->deviceCommand($grant, $other, ['overview'])->assertForbidden()->json('message'),
+        );
+    }
+
+    public function test_a_grant_whose_approver_the_journal_no_longer_admits_is_refused(): void
+    {
+        $call = $this->arrangedCall();
+        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
+
+        $this->assertStringContainsString(
+            self::REVOKED_REFUSAL,
+            (string) $this->send($call, $call->caller)->assertForbidden()->json('message'),
+        );
     }
 
     public function test_a_revoked_grant_is_refused(): void
@@ -86,5 +119,20 @@ final class CommandsDevicePostTest extends RouteEntryTestCase
     private function relay(string $target, array $body): TestResponse
     {
         return $this->signedRelayCall($this->relayCredential(self::NONCE), $target, $body, (string) Str::uuid());
+    }
+
+    /**
+     * A device command under the grant for the binding, with these words.
+     *
+     * @param  list<string>  $argv
+     */
+    private function deviceCommand(string $grant, string $binding, array $argv): TestResponse
+    {
+        return $this->send(RouteCall::as(Caller::DeviceGrant, $grant)->payload([
+            'request_key' => 'request-'.Str::random(6),
+            'binding' => $binding,
+            'argv' => $argv,
+            'stdin' => null,
+        ]), Caller::DeviceGrant);
     }
 }

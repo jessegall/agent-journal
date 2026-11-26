@@ -17,6 +17,7 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
 use App\Values\BindingFolder;
+use App\Values\BindingOutcome;
 use App\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -34,8 +35,6 @@ final class RevokeProjectBindingTest extends TestCase
 {
     use CommitsHookRows;
     use ConnectsProjects;
-
-    private const string ALREADY_REVOKED = 'Already revoked';
 
     private const array TABLES = [
         'command_receipts',
@@ -62,19 +61,16 @@ final class RevokeProjectBindingTest extends TestCase
             'nonce-aaaaaaaaaaaaaaaa',
         )->assertCreated()->json('bindingId');
 
-        $first = $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$binding}")
-            ->assertOk();
+        $first = $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
         $this->travel(5)->seconds();
-        $second = $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$binding}")
-            ->assertOk();
+        $second = $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
 
         $revoked = ProjectBinding::query()->findOrFail($binding);
-        $this->assertSame('Revoked', $first->json('result'));
-        $this->assertSame(self::ALREADY_REVOKED, $second->json('result'));
-        $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
-        $this->assertSame($revoked->revokedAtText, $second->json('revokedAt'));
+        $this->assertSame(
+            [BindingOutcome::REVOKED, BindingOutcome::ALREADY_REVOKED],
+            [$first->result, $second->result],
+        );
+        $this->assertSame([$revoked->revokedAtText, $revoked->revokedAtText], [$first->revokedAt, $second->revokedAt]);
         $this->assertSame(2, $revoked->authority_generation);
         $this->assertCount(1, array_filter(
             ConnectionAudit::findNewest(10),
@@ -89,9 +85,7 @@ final class RevokeProjectBindingTest extends TestCase
 
         $this->relayClaim()->assertOk();
 
-        $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$binding}")
-            ->assertOk();
+        $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
 
         $this->relayClaim()->assertUnauthorized();
         $this->assertSame(1, ProjectBinding::query()->count());
@@ -121,9 +115,7 @@ final class RevokeProjectBindingTest extends TestCase
         );
         $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
 
-        $this->actingAs($this->owner)
-            ->deleteJson("/project-connections/bindings/{$first->id}")
-            ->assertOk();
+        $this->journal->asOwner(new RevokeProjectBindingCommand($first->id));
 
         $this->relayClaim('nonce-aaaaaaaaaaaaaaaa')->assertUnauthorized();
         $revoked = ProjectBinding::query()->findOrFail($first->id);
@@ -140,7 +132,7 @@ final class RevokeProjectBindingTest extends TestCase
         preg_match('#/install/([A-Za-z0-9_-]+) #', (string) $line['installLine'], $match);
         $binding = $this->redeemLine($match[1], 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
-        $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
+        $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
 
         $audits = array_reverse(ConnectionAudit::findNewest(10));
 

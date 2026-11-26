@@ -85,8 +85,6 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Assignments/AssignRecordTest.php',
         'tests/Commands/Layouts/SaveLayoutTest.php',
         'tests/Commands/Messages/SendMessageTest.php',
-        'tests/Commands/Projects/ApproveDeviceGrantTest.php',
-        'tests/Commands/Projects/RevokeProjectBindingTest.php',
     ];
 
     /**

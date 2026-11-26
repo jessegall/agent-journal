@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Tests\Commands\Projects;
 
 use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
 use App\Enums\Connections\ConnectionAuditType;
-use App\Models\Access\User;
+use App\Enums\Projects\DeviceGrantStatus;
+use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\ProjectBinding;
-use App\Support\Access\AccessSettings;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\DomainBoot;
@@ -54,10 +54,6 @@ final class ApproveDeviceGrantTest extends TestCase
     /**
      * The domains this test uses beside core.
      */
-    private const string SESSION_USE_REFUSAL = 'runs in a provider session';
-
-    private const string REVOKED_REFUSAL = 'can no longer use the journal';
-
     protected static function bootedDomains(): array
     {
         return DomainBoot::withRequirements(TasksDomain::class);
@@ -75,9 +71,7 @@ final class ApproveDeviceGrantTest extends TestCase
         $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
 
         $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
-        $this->actingAs($this->owner)
-            ->post("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertRedirect();
+        $this->journal->asOwner(new ApproveDeviceGrantCommand((string) $start->json('userCode')));
         $grant = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
 
         $this->assertNotEmpty($grant->json('grant'));
@@ -87,57 +81,27 @@ final class ApproveDeviceGrantTest extends TestCase
         );
     }
 
-    public function test_the_approval_window_reads_the_committed_state_of_the_request(): void
+    public function test_an_approval_moves_the_request_on_and_a_second_is_refused(): void
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
-        $window = "/connections/devices/{$start->json('userCode')}";
+        $approval = new ApproveDeviceGrantCommand((string) $start->json('userCode'));
+        $this->assertSame(DeviceGrantStatus::Pending, DeviceGrant::query()->sole()->status);
 
-        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.state', 'pending')
-            ->where('page.data.journalOrigin', 'https://journal.example.com')
-            ->where('page.data.isBindingRevoked', false));
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->journal->asOwner($approval);
 
-        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.state', 'approved'));
-        $this->actingAs($this->owner)
-            ->postJson("/project-connections/devices/{$start->json('userCode')}/approve")
-            ->assertNotFound();
-    }
-
-    public function test_an_approved_grant_authenticates_its_approver_for_its_own_binding_only(): void
-    {
-        $binding = $this->connected();
-        $grant = $this->approvedGrant($binding);
-
-        $command = $this->deviceCommand($grant, $binding)->assertForbidden();
-        $this->assertStringContainsString(self::SESSION_USE_REFUSAL, (string) $command->json('message'));
-
-        $other = (string) Str::ulid();
-        $refusal = $this->deviceCommand($grant, $other)->assertForbidden();
-        $this->assertStringContainsString($other, (string) $refusal->json('message'));
-    }
-
-    public function test_a_grant_whose_approver_the_journal_no_longer_admits_is_refused(): void
-    {
-        $binding = $this->connected();
-        $grant = $this->approvedGrant($binding);
-
-        $this->app->instance(AccessSettings::class, new AccessSettings(User::factory()->create()->id));
-
-        $refusal = $this->deviceCommand($grant, $binding)->assertForbidden();
-        $this->assertStringContainsString(self::REVOKED_REFUSAL, (string) $refusal->json('message'));
+        $this->assertSame(DeviceGrantStatus::Approved, DeviceGrant::query()->sole()->status);
+        $this->journal->assertRefused(DeviceGrantRefused::class, fn () => $this->journal->asOwner($approval));
     }
 
     public function test_the_support_record_of_an_install_approval_and_revoke_names_ids_and_holds_no_secret(): void
     {
         $binding = $this->connected();
         $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->journal->asOwner(new ApproveDeviceGrantCommand((string) $start->json('userCode')));
         $deviceCode = (string) $start->json('deviceCode');
         $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $deviceCode])->json('grant');
-        $this->actingAs($this->owner)->deleteJson("/project-connections/bindings/{$binding}")->assertOk();
+        $this->journal->asOwner(new RevokeProjectBindingCommand($binding));
 
         $audits = array_reverse(ConnectionAudit::findNewestOfBindings([$binding]));
         $project = ProjectBinding::query()->findOrFail($binding)->project_id;
@@ -183,28 +147,5 @@ final class ApproveDeviceGrantTest extends TestCase
             $body,
             (string) Str::uuid(),
         );
-    }
-
-    private function deviceCommand(string $grant, string $binding): TestResponse
-    {
-        $this->app['auth']->forgetGuards();
-
-        return $this->postJson('https://localhost/api/project-commands/device', [
-            'request_key' => 'request-1',
-            'binding' => $binding,
-            'argv' => ['overview', 'now'],
-            'stdin' => '',
-        ], ['Authorization' => "Bearer {$grant}"]);
-    }
-
-    private function approvedGrant(string $binding): string
-    {
-        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
-        $this->actingAs($this->owner)->post("/project-connections/devices/{$start->json('userCode')}/approve");
-
-        return (string) $this->relay(
-            '/api/device-grants/poll',
-            ['deviceCode' => $start->json('deviceCode')],
-        )->json('grant');
     }
 }
