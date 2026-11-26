@@ -60,6 +60,7 @@ use Spatie\LaravelData\DataCollection;
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $last_answered_at
  * @property CarbonImmutable|null $failing_since
+ * @property CarbonImmutable|null $last_heartbeat_at
  * @property string|null $last_failure
  * @property DataCollection<int, FailedHostCallData>|null $reported_failures
  * @property string|null $failing_route
@@ -98,6 +99,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'revoked_at' => 'immutable_datetime',
             'last_answered_at' => 'immutable_datetime',
             'failing_since' => 'immutable_datetime',
+            'last_heartbeat_at' => 'immutable_datetime',
             'reported_failures' => DataCollection::class.':'.FailedHostCallData::class,
         ];
     }
@@ -184,6 +186,15 @@ final class Host extends JournalModel implements EventSource, ReadableModel
 
         $this->assertSaved($this->save());
         $this->raise(new HostBrowserInputAdvertised($this->id));
+    }
+
+    /**
+     * The host's protocol 1 heartbeat arrived.
+     */
+    public function recordHeartbeat(CarbonImmutable $at): void
+    {
+        $this->last_heartbeat_at = $at;
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -512,6 +523,16 @@ final class Host extends JournalModel implements EventSource, ReadableModel
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
+    /**
+     * The hosts whose heartbeat went silent before the moment and that show no failure yet.
+     *
+     * @return list<self>
+     */
+    public static function findSilentSince(CarbonImmutable $since): array
+    {
+        return array_values(self::query()->unrevoked()->silentSince($since)->lockForUpdate()->get()->all());
+    }
+
     public static function findForSecret(string $secret): self
     {
         $host = self::query()->withSecret($secret)->firstOr(HostCredentialRejected::throwing()->unknown());
@@ -690,5 +711,16 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             ->orWhere(fn (Builder $quiet) => $quiet
                 ->where('arrangement', ArrangementType::Contained)
                 ->where('last_answered_at', '<', $quietSince)));
+    }
+
+    /**
+     * The hosts whose heartbeat went silent before the moment and that show no failure yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function silentSince(Builder $query, CarbonImmutable $since): void
+    {
+        $query->where('last_heartbeat_at', '<', $since)->whereNull('failing_since');
     }
 }

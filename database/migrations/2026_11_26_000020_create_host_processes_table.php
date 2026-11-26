@@ -33,6 +33,8 @@ return new class extends Migration
             $table->unsignedBigInteger('worker_generation')->default(0);
             $table->timestampTz('worker_until')->nullable();
             $table->ulid('open_order_id')->nullable();
+            // How many heartbeats in a row left the process out after its open order was answered.
+            $table->unsignedSmallInteger('missed_heartbeats')->default(0);
             $table->timestampTz('started_at')->nullable();
             $table->timestampTz('ended_at')->nullable();
             $table->timestampsTz();

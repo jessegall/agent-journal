@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $worker_generation
  * @property CarbonImmutable|null $worker_until
  * @property string|null $open_order_id
+ * @property int $missed_heartbeats
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $created_at
@@ -66,6 +67,11 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     /**
      * How long a worker holds a process after its last renewal; it renews well inside it.
      */
+    /**
+     * How many heartbeats in a row may leave a process out before it is lost.
+     */
+    public const int HEARTBEATS_MISSED_LIMIT = 2;
+
     public const int WORKER_LEASE_SECONDS = 10;
 
     /**
@@ -182,6 +188,32 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * A heartbeat named the process: it runs as far as the host knows.
+     */
+    public function seeInHeartbeat(): void
+    {
+        if ($this->missed_heartbeats === 0) {
+            return;
+        }
+
+        $this->missed_heartbeats = 0;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * A heartbeat built after its open order was answered left the process out; the second in a row loses it.
+     */
+    public function missInHeartbeat(CarbonImmutable $at): void
+    {
+        $this->missed_heartbeats++;
+        $this->assertSaved($this->save());
+
+        if ($this->missed_heartbeats >= self::HEARTBEATS_MISSED_LIMIT) {
+            $this->lose('two heartbeats of its host in a row left it out', $at);
+        }
+    }
+
+    /**
      * A new worker takes the process over: its number is raised, so the worker before it is refused from now on.
      */
     public function claimWorker(CarbonImmutable $now): int
@@ -233,6 +265,15 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
 
     // ----------[ Predicates ]----------
 
+    /**
+     * Whether the host had answered the order that opened the process when it built a report through that order: a
+     * process opened after it is not missing from the report, only newer than it.
+     */
+    public function isOpenedBy(string|null $answeredThrough): bool
+    {
+        return $this->open_order_id !== null && $answeredThrough !== null && $this->open_order_id <= $answeredThrough;
+    }
+
     public function isLive(): bool
     {
         return $this->status->isLive();
@@ -251,6 +292,16 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The host's live processes, locked, as a report of the host's walks them.
+     *
+     * @return list<self>
+     */
+    public static function findLiveOn(Host $host): array
+    {
+        return array_values(self::query()->onHost($host)->live()->lockForUpdate()->get()->all());
+    }
 
     /**
      * The process, locked until the transaction ends, so its orders are numbered and its worker checked one at a time.

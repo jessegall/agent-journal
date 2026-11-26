@@ -199,6 +199,23 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
+     * The input orders the host claimed and did not answer, locked: after a restart none of them may land.
+     *
+     * @return list<self>
+     */
+    public static function findClaimedInputsOf(Host $host): array
+    {
+        $orders = self::query()
+            ->forHost($host)
+            ->where('status', HostOrderStatus::Claimed)
+            ->whereIn('type', HostOrderType::inputs())
+            ->lockForUpdate()
+            ->get();
+
+        return array_values($orders->all());
+    }
+
+    /**
      * The order made under the key before, so a repeated step makes no second one.
      */
     public static function findWithKey(string $idempotencyKey): self|null

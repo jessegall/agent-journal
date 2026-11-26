@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostChannel;
@@ -17,6 +18,7 @@ use App\Contracts\Projects\HeldFileVersions;
 use App\Contracts\Projects\ProjectDestination as ProjectDestinationContract;
 use App\Contracts\Projects\ProjectDirectory as ProjectDirectoryContract;
 use App\Contracts\Records\RecordProviderRegistration;
+use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\AccessType;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ConnectionsPolicy;
@@ -93,11 +95,18 @@ final class ConnectionsServiceProvider extends ServiceProvider
 
         $this->loadCoreRoutes('connections/connections.php');
 
-        $this->callAfterResolving(
-            Schedule::class,
-            fn (Schedule $schedule) => $schedule
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule
                 ->call(fn (ProjectReadRetentionService $pruning) => $pruning->prune(CarbonImmutable::now()))
-                ->everyMinute(),
-        );
+                ->everyMinute();
+
+            $schedule
+                ->call(fn (JournalCommands $commands) => $commands->runAsJournal(
+                    CommandEntry::HostControl,
+                    'silent host check',
+                    new MarkSilentHostsCommand(),
+                ))
+                ->everyThirtySeconds();
+        });
     }
 }

@@ -34,6 +34,8 @@ return new class extends Migration
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampTz('last_answered_at')->nullable();
             $table->timestampTz('failing_since')->nullable();
+            // When the host's last protocol 1 heartbeat arrived.
+            $table->timestampTz('last_heartbeat_at')->nullable();
             $table->text('last_failure')->nullable();
             $table->jsonb('reported_failures')->nullable();
             $table->string('failing_route')->nullable();

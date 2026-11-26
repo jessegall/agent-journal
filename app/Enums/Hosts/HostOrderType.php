@@ -36,6 +36,14 @@ enum HostOrderType: string
     /**
      * Whether the order writes into a process, so a host restart while it was claimed may have half carried it out.
      */
+    /**
+     * @return list<self>
+     */
+    public static function inputs(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $type) => $type->isInput()));
+    }
+
     public function isInput(): bool
     {
         return match ($this) {

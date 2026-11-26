@@ -33,6 +33,8 @@ use App\Http\Controllers\Hooks\Host\PendingStopChecksController;
 use App\Http\Controllers\Hooks\Host\StopConditionResultsController;
 use App\Http\Controllers\Hosts\AnswerOrderController;
 use App\Http\Controllers\Hosts\ClaimOrdersController;
+use App\Http\Controllers\Hosts\HeartbeatController;
+use App\Http\Controllers\Hosts\InventoryController;
 use App\Http\Controllers\Hosts\ProcessOutputController;
 use App\Http\Controllers\Hosts\ProcessReportController;
 use App\Http\Middleware\Agents\LimitUsageReport;
@@ -83,4 +85,6 @@ Route::prefix('host')->middleware('journal.host:'.HostRouteRole::Shared->value)-
     Route::post('/orders/{order}', AnswerOrderController::class)->name('orders.answer');
     Route::post('/processes/{process}/output', ProcessOutputController::class)->name('processes.output');
     Route::post('/processes/{process}', ProcessReportController::class)->name('processes.report');
+    Route::post('/inventory', InventoryController::class)->name('inventory');
+    Route::post('/heartbeat', HeartbeatController::class)->name('heartbeat');
 });
