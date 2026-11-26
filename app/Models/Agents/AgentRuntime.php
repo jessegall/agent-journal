@@ -28,6 +28,7 @@ use App\Events\Sessions\AgentRuntimeStartGrantHeld;
 use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
+use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Support\JournalModel;
 use App\Support\RuntimeStatuses;
@@ -454,6 +455,14 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * @return HasMany<HostProcess, $this>
+     */
+    public function hostProcesses(): HasMany
+    {
+        return $this->hasMany(HostProcess::class);
+    }
+
+    /**
      * @return HasMany<DriverRequest, $this>
      */
     public function requests(): HasMany
@@ -775,5 +784,16 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     protected function withAcceptedRequest(Builder $query): void
     {
         $query->whereHas('requests', fn (Builder $requests) => $requests->where('progress', RequestProgress::Accepted));
+    }
+
+    /**
+     * The runtimes no live worker drives: a worker claims its own runtime's requests, so the host's claim leaves them.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withoutDrivingWorker(Builder $query, CarbonImmutable $now): void
+    {
+        $query->whereDoesntHave('hostProcesses', fn (Builder $processes) => $processes->drivenAt($now));
     }
 }

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
+use App\Contracts\Drivers\ProgramDriver;
 use App\Data\Hosts\HostProcessReportData;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
@@ -13,8 +16,11 @@ use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Support\Drivers\ProgramDrivers;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\Process;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**
@@ -87,5 +93,60 @@ trait ArrangesHostProcesses
     public function hostOrdersOf(string $name): array
     {
         return HostOrder::findForProcess($this->hostProcessCalled($name)->id);
+    }
+
+    /**
+     * Processes of the purpose are driven by the program driver given, as a domain that drives them registers it.
+     *
+     * @param  class-string<ProgramDriver>  $driver
+     */
+    public function driveProcessesWith(HostProcessPurpose $purpose, string $driver): self
+    {
+        $this->app->instance(ProgramDrivers::class, $this->app->make(ProgramDrivers::class)->with($purpose, $driver));
+
+        return $this;
+    }
+
+    /**
+     * The named process's host sends a frame whose first row reads as given.
+     */
+    public function printOnHostProcess(string $name, string $firstRow): self
+    {
+        $process = $this->hostProcessCalled($name);
+        $frame = ['rows' => [$firstRow], 'cursor_row' => 0, 'cursor_column' => 0, 'columns' => 80, 'captured' => 1];
+        $body = json_encode(['frames' => [[...$frame, 'unchanged_ms' => [0]]]], JSON_THROW_ON_ERROR);
+        $this->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
+
+        return $this;
+    }
+
+    /**
+     * The order's host answers it as carried out.
+     */
+    public function answerHostOrder(HostOrder $order): self
+    {
+        $this->asSystem(new NotifyHostOrderCommand($order->host_id, $order->id, '{"status":"done"}'));
+
+        return $this;
+    }
+
+    /**
+     * Programs the journal starts run as fakes that end at once, so a test reads what was started.
+     */
+    public function fakeStartedPrograms(): self
+    {
+        Process::fake();
+
+        return $this;
+    }
+
+    /**
+     * @param  list<string>  $command
+     */
+    public function assertProgramStarted(array $command): self
+    {
+        Process::assertRan(fn (PendingProcess $process) => $process->command === $command);
+
+        return $this;
     }
 }

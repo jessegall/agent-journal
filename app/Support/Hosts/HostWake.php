@@ -23,6 +23,8 @@ final readonly class HostWake
      */
     public const int RUNTIME_WAKE_LIMIT = 64;
 
+    private const string SUPERVISOR_KEY = 'drivers:supervise:wake';
+
     public function __construct(private RedisFactory $redis) {}
 
     public function wakeHost(string $hostId): void
@@ -50,6 +52,24 @@ final readonly class HostWake
         $key = self::runtimeKey($runtimeId);
         $this->connection()->xadd($key, '*', ['wake' => 'request'], self::RUNTIME_WAKE_LIMIT, true);
         $this->connection()->expire($key, ProcessFeed::TTL_SECONDS);
+    }
+
+    /**
+     * Wakes the worker supervisor: a process was made, changed or ended.
+     */
+    public function wakeSupervisor(): void
+    {
+        $this->connection()->rpush(self::SUPERVISOR_KEY, '1');
+        $this->connection()->expire(self::SUPERVISOR_KEY, self::WAKE_SECONDS);
+    }
+
+    /**
+     * Blocks until the supervisor is woken or the seconds pass.
+     */
+    public function waitForSupervisor(int $seconds): void
+    {
+        $this->connection()->blpop([self::SUPERVISOR_KEY], $seconds);
+        $this->connection()->del(self::SUPERVISOR_KEY);
     }
 
     public static function hostKey(string $hostId): string

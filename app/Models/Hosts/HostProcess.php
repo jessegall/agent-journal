@@ -277,7 +277,38 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     #[Scope]
     protected function needingWorker(Builder $query, CarbonImmutable $now): void
     {
-        $query->whereIn('status', [HostProcessStatus::Ordered, HostProcessStatus::Running])
-            ->where(fn (Builder $free) => $free->whereNull('worker_until')->orWhere('worker_until', '<', $now));
+        $query->live()->where(
+            fn (Builder $free) => $free->whereNull('worker_until')->orWhere('worker_until', '<', $now),
+        );
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<HostProcessPurpose>  $purposes
+     */
+    #[Scope]
+    protected function ofPurposes(Builder $query, array $purposes): void
+    {
+        $query->whereIn('purpose', $purposes);
+    }
+
+    /**
+     * The live processes a worker holds the lease of now.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function drivenAt(Builder $query, CarbonImmutable $now): void
+    {
+        $query->live()->where('worker_until', '>=', $now);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function live(Builder $query): void
+    {
+        $query->whereIn('status', [HostProcessStatus::Ordered, HostProcessStatus::Running]);
     }
 }

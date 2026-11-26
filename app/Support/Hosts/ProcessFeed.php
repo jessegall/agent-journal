@@ -104,6 +104,16 @@ final readonly class ProcessFeed
         return $entries;
     }
 
+    /**
+     * The cursor of the stream's newest entry, so a reader that starts now reads only what comes after.
+     */
+    public function lastCursor(string $stream): string
+    {
+        $newest = $this->connection()->xrevrange($stream, '+', '-', 1);
+
+        return is_array($newest) && $newest !== [] ? (string) array_key_first($newest) : self::FIRST_CURSOR;
+    }
+
     public static function streamKey(string $processId): string
     {
         return "host:process:{$processId}";
