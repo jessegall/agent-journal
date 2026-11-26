@@ -84,6 +84,7 @@ func openOrder(t *testing.T, processID, restart, image string) Order {
 			Network:        "journal-net-" + processID,
 			IsAttachable:   true,
 			Budgets:        host.ContainerBudgets{CPUCores: 1, MemoryBytes: 1 << 30, Processes: 64, OpenFiles: 256},
+			Mounts:         []host.ContainerMount{{Type: host.MountBind, Source: t.TempDir(), Target: "/workspace"}},
 		},
 		Name:   "journal-process-" + processID,
 		Labels: host.StartLabels{Installation: "test", Session: processID},

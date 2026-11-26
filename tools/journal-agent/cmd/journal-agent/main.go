@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"journal-agent/hostapi"
+	"maps"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -76,8 +77,9 @@ func main() {
 		"enroll": enroll, "serve": serve, "attach": attach, "protection": protection,
 		"install": install, "installation": installation, "status-line": statusLine,
 		"protection-probe": protectionProbe, "connect": connect,
-		"install-release": installRelease, "relay": relay,
+		"install-release": installRelease, "relay": relay, "protocol": protocolOnly,
 	}
+	maps.Copy(hostCommands, developmentCommands)
 	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {
 		if err := hostCommands[os.Args[1]](os.Args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, "journal-agent:", err)

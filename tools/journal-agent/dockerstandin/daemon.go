@@ -78,6 +78,31 @@ type refusal struct {
 // Start starts a stand-in daemon that lives as long as the test, holding the agent image under the reference given.
 func Start(t testing.TB, images ...string) *Daemon {
 	t.Helper()
+	daemon := newDaemon(images)
+	daemon.server = httptest.NewServer(http.HandlerFunc(daemon.serve))
+	t.Cleanup(daemon.stop)
+
+	return daemon
+}
+
+// Serve starts a stand-in daemon on the listener, such as a Unix socket a host binary is pointed at, outside a Go
+// test; Stop ends it.
+func Serve(listener net.Listener, images ...string) *Daemon {
+	daemon := newDaemon(images)
+	daemon.server = httptest.NewUnstartedServer(http.HandlerFunc(daemon.serve))
+	_ = daemon.server.Listener.Close()
+	daemon.server.Listener = listener
+	daemon.server.Start()
+
+	return daemon
+}
+
+// Stop ends every container and the daemon.
+func (daemon *Daemon) Stop() {
+	daemon.stop()
+}
+
+func newDaemon(images []string) *Daemon {
 	daemon := &Daemon{
 		CgroupDriver: "cgroupfs",
 		Images:       map[string]Image{},
@@ -88,15 +113,17 @@ func Start(t testing.TB, images ...string) *Daemon {
 	for _, reference := range images {
 		daemon.Images[reference] = Image{ID: reference}
 	}
-	daemon.server = httptest.NewServer(http.HandlerFunc(daemon.serve))
-	t.Cleanup(daemon.stop)
 
 	return daemon
 }
 
 // Host is where the daemon listens, as a Docker client takes it.
 func (daemon *Daemon) Host() string {
-	return "tcp://" + daemon.server.Listener.Addr().String()
+	address := daemon.server.Listener.Addr()
+	if address.Network() == "unix" {
+		return "unix://" + address.String()
+	}
+	return "tcp://" + address.String()
 }
 
 // Refuse makes the next matching requests fail with the status and the daemon's words: the method, and a part of the

@@ -11,17 +11,26 @@ use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
 use App\Contracts\Drivers\ProgramDriver;
 use App\Contracts\Hosts\HostChannel;
 use App\Data\Hosts\HostProcessReportData;
+use App\Enums\Agents\WorkspaceUse;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
+use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Support\ContainerManifest;
 use App\Support\Drivers\ProgramDrivers;
+use App\Support\MountRules;
+use App\Support\SecurityOptions;
+use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
+use PHPUnit\Framework\Assert;
+use Tests\Support\Hosts\RealHost;
 use Tests\Support\Hosts\StandInHost;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
@@ -35,6 +44,8 @@ trait ArrangesHostProcesses
      * @var array<string, string>
      */
     private array $hostProcesses = [];
+
+    private RealHost|null $realHost = null;
 
     /**
      * The named host is ordered to open a native process of the type given, for the runtime given when it runs one;
@@ -168,5 +179,71 @@ trait ArrangesHostProcesses
     public function standInHost(): StandInHost
     {
         return $this->app->make(HostChannel::class);
+    }
+
+    /**
+     * The named host runs for real: the host binary built from the checkout, against the Docker stand-in it carries
+     * and the test application on a port of its own. The test commits its rows, so the served application sees them.
+     */
+    public function runRealHost(string $host): self
+    {
+        $this->realHost = RealHost::start($this->app->make(Factory::class), $this->hostCalled($host));
+
+        return $this;
+    }
+
+    /**
+     * Opens a container of the stand-in's echo program on the named host, which must run for real.
+     */
+    public function openEchoContainer(string $host, string $name): self
+    {
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Terminal,
+            RestartPolicy::Never,
+            ['echo-program'],
+            [],
+            '/workspace',
+            ContainerManifest::make(
+                RealHost::IMAGE,
+                '10001:10001',
+                true,
+                [],
+                false,
+                "journal-net-{$name}",
+                [MountRules::local()->workspaceMount($this->realHostFolder(), WorkspaceUse::Shared)],
+                [],
+                ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
+                true,
+            ),
+        );
+        $this->hostProcesses[$name] = $this->asSystem(
+            new OpenHostProcessCommand($this->hostCalled($host)->hostId, null, $plan, HostOrderSource::fromJournal()),
+        );
+
+        return $this;
+    }
+
+    /**
+     * Waits up to the seconds for the named process to reach the status, as its host reports it.
+     */
+    public function waitForHostProcess(string $name, HostProcessStatus $status, int $seconds = 10): self
+    {
+        $deadline = microtime(true) + $seconds;
+
+        while ($this->hostProcessCalled($name)->status !== $status && microtime(true) < $deadline) {
+            usleep(100_000);
+        }
+
+        Assert::assertSame($status, $this->hostProcessCalled($name)->status);
+
+        return $this;
+    }
+
+    private function realHostFolder(): string
+    {
+        return $this->realHost?->folder ?? throw FixtureRefused::missingAlias('real host', 'running', self::OWNER);
     }
 }
