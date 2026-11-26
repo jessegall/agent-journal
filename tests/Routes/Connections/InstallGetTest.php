@@ -25,6 +25,21 @@ final class InstallGetTest extends RouteEntryTestCase
     private const string UNUSABLE_LINE = 'journal: this install line cannot be used. '
         ."Copy a new one from the journal.\n";
 
+    public function test_the_script_holds_its_ticket_and_downloads_again_without_spending_the_line(): void
+    {
+        $invitation = $this->issueLine('the-ticket');
+
+        foreach ([1, 2] as $download) {
+            $this->assertStringContainsString(
+                'the-ticket',
+                (string) $this->journal->route('GET', 'connections.install', ['ticket' => 'the-ticket'])->assertOk()->getContent(),
+                "download {$download}",
+            );
+        }
+
+        $this->assertNull($invitation->refresh()->spent_at);
+    }
+
     public function test_a_revoked_line_answers_the_generic_failure(): void
     {
         $invitation = $this->issueLine('the-ticket');

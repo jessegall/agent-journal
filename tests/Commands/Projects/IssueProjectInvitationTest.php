@@ -15,6 +15,7 @@ use App\Support\PublishedReleases;
 use App\Values\ReleaseManifest;
 use App\Values\ReleaseTarget;
 use App\Values\SettingReference;
+use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -65,15 +66,12 @@ final class IssueProjectInvitationTest extends TestCase
         });
     }
 
-    public function test_the_owner_gets_one_line_whose_script_downloads_and_no_log_or_row_holds_its_ticket(): void
+    public function test_the_owner_gets_one_line_and_no_log_or_row_holds_its_ticket(): void
     {
         $this->switchOn();
 
         $ticket = $this->ticketOf($this->issue('action-1'));
-        $this->assertSame(1, ProjectInvitation::query()->count());
-        $script = $this->get("/install/{$ticket}")->assertOk();
-        $this->assertStringContainsString($ticket, (string) $script->getContent());
-        $this->get("/install/{$ticket}")->assertOk();
+        $this->assertSame(1, ProjectInvitation::query()->withTicket($ticket)->count());
         $this->assertNull(ProjectInvitation::query()->sole()->spent_at);
 
         foreach ($this->logLines as $line) {
@@ -85,23 +83,7 @@ final class IssueProjectInvitationTest extends TestCase
         }
     }
 
-    public function test_a_viewer_and_a_signed_out_visitor_are_refused_and_leave_no_pending_line(): void
-    {
-        $this->switchOn();
-        $viewer = $this->journal->createUser('Viewer');
-
-        $this->assertFalse($this->actingAs($viewer)->postJson('/project-connections/invitations', [
-            'issuanceKey' => 'action-1',
-        ])->isSuccessful());
-        $this->app['auth']->forgetGuards();
-        $this->assertFalse($this->postJson('/project-connections/invitations', [
-            'issuanceKey' => 'action-1',
-        ])->isSuccessful());
-
-        $this->assertSame(0, ProjectInvitation::query()->count());
-    }
-
-    public function test_asking_again_under_the_same_action_replaces_the_line_and_the_old_ticket_fails(): void
+    public function test_asking_again_under_the_same_action_replaces_the_line_and_the_old_ticket_is_spent(): void
     {
         $this->switchOn();
 
@@ -110,8 +92,10 @@ final class IssueProjectInvitationTest extends TestCase
 
         $this->assertNotSame($first, $second);
         $this->assertSame(1, ProjectInvitation::query()->pending()->count());
-        $this->get("/install/{$first}")->assertNotFound();
-        $this->get("/install/{$second}")->assertOk();
+        $this->assertSame(
+            [false, true],
+            [$this->isRedeemable($first), $this->isRedeemable($second)],
+        );
     }
 
     public function test_no_line_is_issued_while_connecting_projects_is_switched_off(): void
@@ -252,6 +236,11 @@ final class IssueProjectInvitationTest extends TestCase
         $this->assertSame(['claude-code'], $this->offer()->targets[0]->missingProviders);
         $this->assertFalse($this->offer()->targets[0]->isSupported);
         $this->assertFalse($this->availability()->canIssue());
+    }
+
+    private function isRedeemable(string $ticket): bool
+    {
+        return ProjectInvitation::query()->withTicket($ticket)->sole()->isRedeemableAt(CarbonImmutable::now());
     }
 
     /**

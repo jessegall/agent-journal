@@ -86,8 +86,6 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Layouts/SaveLayoutTest.php',
         'tests/Commands/Messages/SendMessageTest.php',
         'tests/Commands/Projects/ApproveDeviceGrantTest.php',
-        'tests/Commands/Projects/AssignBindingEnvironmentTest.php',
-        'tests/Commands/Projects/IssueProjectInvitationTest.php',
         'tests/Commands/Projects/RevokeProjectBindingTest.php',
     ];
 
