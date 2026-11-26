@@ -105,6 +105,10 @@ return [
         'phase_timing' => 'Plan {plan} phase {phase} still has {tasks}; tests and checks run at the end of the phase.',
     ],
     'skills' => [
+        'read' => 'Read these skills whole within {left} tool uses: {skills}. Read each one with php artisan skill:show '
+            .'<skill>',
+        'read_now' => 'Your tool uses are spent: read {skills} now, each with php artisan skill:show <skill>; changes '
+            .'wait until you do',
         'changed' => 'Your skills changed to {skills}: {driver} loads skills only when a session starts, so start a '
             .'new session to use them; until then read one with php artisan skill:show <key>',
         'not_chosen' => 'Your skills could not be chosen for this start: {problem}',
