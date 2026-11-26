@@ -48,7 +48,7 @@ return [
     'MenuEntry::provenOn',
     'MenuEntry::markStaleOn',
     'AgentSession::useSelection',
-    'AgentSession::recordSkillGeneration',
+    'AgentSession::recordSkills',
     'AgentSession::enterConversation',
     'AgentSession::keepDriverLabel',
     'AgentSession::endAt',

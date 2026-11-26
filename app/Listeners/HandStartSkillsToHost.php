@@ -9,6 +9,7 @@ use App\Contracts\Events\Listener;
 use App\Events\Sessions\StartGrantRequested;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
+use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Sessions\StartFile;
 use App\Sessions\StartFolder;
@@ -50,6 +51,9 @@ final readonly class HandStartSkillsToHost implements Listener
             $delivery->folderArguments,
         ));
 
-        AgentSession::findById($event->sessionId)->recordSkillGeneration($publication->generation_id);
+        AgentSession::findById($event->sessionId)->recordSkills(
+            SkillGeneration::findById($publication->generation_id),
+            $publication->skill_keys,
+        );
     }
 }
