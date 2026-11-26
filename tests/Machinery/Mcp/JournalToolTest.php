@@ -8,6 +8,7 @@ use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
 use App\Data\Layouts\LayoutShape;
 use App\Exceptions\ApiFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
+use App\Mcp\Support\McpCatalogue;
 use App\Models\Records\Layout;
 use App\Support\AgentContext;
 use App\Support\SignedCall;
@@ -17,6 +18,7 @@ use Tests\Commands\Layouts\SaveLayoutTest;
 use Tests\Fixtures\Mcp\FixtureReadTool;
 use Tests\Fixtures\Mcp\FixtureServer;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
@@ -24,6 +26,7 @@ use Tests\TestCase;
  * the byte budget of a result. A read tool only reads: a command it sends is refused naming the tool, and a write it
  * makes to the database itself fails there.
  */
+#[TestsMachinery(McpCatalogue::class)]
 final class JournalToolTest extends TestCase
 {
     use CommitsHookRows;

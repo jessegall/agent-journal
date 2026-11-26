@@ -7,6 +7,7 @@ namespace Tests\Machinery\Web;
 use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Events\Web\PageChanged;
+use App\Listeners\BroadcastPageChange;
 use App\Models\Accounts\Account;
 use App\Support\DefaultDrivers;
 use App\Values\AccountLabel;
@@ -22,12 +23,14 @@ use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\WatchesPageChanges;
 use Tests\TestCase;
 
 /**
  * A committed change that a page shows becomes one page change for the users LoginTest allows; nothing else does.
  */
+#[TestsMachinery(BroadcastPageChange::class)]
 final class PageChangeTest extends TestCase
 {
     use CommitsHookRows;

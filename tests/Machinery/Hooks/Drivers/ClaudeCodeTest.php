@@ -22,10 +22,12 @@ use App\Values\StackTarget;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\ChecksProgramAdapter;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
+#[TestsMachinery(ClaudeCodeAdapter::class)]
 final class ClaudeCodeTest extends TestCase
 {
     use ChecksProgramAdapter;

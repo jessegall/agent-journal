@@ -19,6 +19,7 @@ use App\Values\StopCheckReference;
 use App\Values\StopConditionResultReport;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -28,6 +29,8 @@ use Tests\TestCase;
  * for the policy, generation and conditions it was asked under; and old raw output is pruned while summaries stay.
  */
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
+#[TestsMachinery(StopEvidence::class)]
+#[TestsMachinery(PruneHookHistory::class)]
 final class StopCheckTest extends TestCase
 {
     use RefreshHookDatabase;

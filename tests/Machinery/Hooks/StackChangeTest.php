@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Stacks\FinishableState;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -40,6 +41,7 @@ use Tests\TestCase;
  * Pushes, pops and restores keep each frame's entry time, drop finished frames only where they are exposed, and refuse
  * a stack deeper than its limit.
  */
+#[TestsMachinery(AgentStacks::class)]
 final class StackChangeTest extends TestCase
 {
     use CommitsHookRows;

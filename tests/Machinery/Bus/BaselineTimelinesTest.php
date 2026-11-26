@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -56,6 +57,7 @@ use Tests\TestCase;
  * listeners. An event's entry follows the writes of its synchronous listeners, which run before the recorder.
  */
 #[TimeLimit(seconds: 20, reason: 'Each flow commits through the bus and empties its tables around each test.')]
+#[TestsMachinery(JournalCommands::class)]
 final class BaselineTimelinesTest extends TestCase
 {
     use CommitsHookRows;

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hooks;
 
 use App\Enums\Engine\NoSubject;
+use App\Support\AgentStacks;
 use App\Support\References\StateReference;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsMachinery(AgentStacks::class)]
 final class StackInspectionTest extends TestCase
 {
     use CommittedHookStack;

@@ -32,6 +32,7 @@ use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
 use Tests\Support\InstallsCommandModules;
@@ -42,6 +43,7 @@ use Tests\TestCase;
  * it ticks, an answer that came first sends none and takes the frame off the stack in the same command, and a quiet
  * agent whose beats come through the heartbeat source stays present.
  */
+#[TestsMachinery(EngineAccess::class)]
 final class DueWorkOnTickTest extends TestCase
 {
     use BuildsTickingStacks;

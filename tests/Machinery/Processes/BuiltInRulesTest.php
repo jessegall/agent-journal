@@ -13,6 +13,7 @@ use App\Enums\Processes\ShellDialect;
 use App\Support\Explanations;
 use App\Values\ReaderReference;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -20,6 +21,7 @@ use Tests\TestCase;
 /**
  * Core's built-in rules classify the common command families as they are declared.
  */
+#[TestsMachinery(Explanations::class)]
 final class BuiltInRulesTest extends TestCase
 {
     use ClassifiesLines;

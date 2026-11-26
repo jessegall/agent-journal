@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Mcp;
 
+use App\Mcp\Servers\JournalServer;
 use Illuminate\Support\Facades\Route;
 use Laravel\Mcp\Server\Registrar;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * The journal's MCP server on its signed route: who may reach it, what it advertises, and which messages it refuses
  * before the package reads them.
  */
+#[TestsMachinery(JournalServer::class)]
 final class McpRouteTest extends TestCase
 {
     use CommitsHookRows;

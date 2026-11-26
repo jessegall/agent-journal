@@ -35,6 +35,7 @@ use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -45,6 +46,7 @@ use Tests\TestCase;
  * bottom-only, and a frame nothing registers refuses the start.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts test agent sessions and empties the hook tables.')]
+#[TestsMachinery(AgentSessions::class)]
 final class ContinueStackTest extends TestCase
 {
     use RefreshHookDatabase;

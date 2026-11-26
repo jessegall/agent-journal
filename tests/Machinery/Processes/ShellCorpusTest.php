@@ -12,6 +12,7 @@ use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use App\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ShellCorpusCase;
 use Tests\Support\Processes\ShellCorpusManifest;
 use Tests\Support\RefreshHookDatabase;
@@ -22,6 +23,7 @@ use Tests\TestCase;
  * Every case of the portable shell corpus goes through the container's TreeParser and must read as its frozen
  * expectation says: the outcome, and for a complete line the span of every command it runs. The fixture's files must match the manifest's hashes, so an expectation cannot change unnoticed.
  */
+#[TestsMachinery(TreeParser::class)]
 final class ShellCorpusTest extends TestCase
 {
     use RefreshHookDatabase;

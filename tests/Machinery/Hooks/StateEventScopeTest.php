@@ -17,11 +17,13 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
+#[TestsMachinery(StateEventScope::class)]
 final class StateEventScopeTest extends TestCase
 {
     use RefreshHookDatabase;

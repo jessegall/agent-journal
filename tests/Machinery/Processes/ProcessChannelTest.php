@@ -16,6 +16,7 @@ use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * process:run fetches its admission once and reports every part over the signed event channel; repeats change
  * nothing and a lost connection is made up from the host's spool.
  */
+#[TestsMachinery(ExecutionPlanner::class)]
 final class ProcessChannelTest extends TestCase
 {
     use RefreshHookDatabase;

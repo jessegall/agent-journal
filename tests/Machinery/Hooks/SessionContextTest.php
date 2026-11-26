@@ -24,6 +24,7 @@ use Domain\Rules\Tests\Fixtures\RuleFixtures;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * Every start, clear and resume brings the same context a compaction does: the domains' reminders, within the
  * budget with the required ones kept; a replay brings the recorded reply and runs no listener.
  */
+#[TestsMachinery(ContextBudget::class)]
 final class SessionContextTest extends TestCase
 {
     use CommittedHookStack;

@@ -11,12 +11,14 @@ use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Log;
 use Mockery;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\MessagingTestCase;
 
 /**
  * An operator reads in the log that a sent message's fact reached the broadcast with its audience, and how long the
  * queued page change waited before the queue broadcast it; the log never holds the message's text.
  */
+#[TestsMachinery(PageChangeBroadcastLog::class)]
 final class PageChangeLogTest extends MessagingTestCase
 {
     /**

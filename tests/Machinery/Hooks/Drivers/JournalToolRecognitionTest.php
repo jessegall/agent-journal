@@ -17,6 +17,7 @@ use App\Support\Drivers\HookPayload;
 use App\Support\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * the stack, before and after the call; a tool of another server, a name the journal does not offer and a resource of
  * another server or address stay refused.
  */
+#[TestsMachinery(JournalToolCall::class)]
 final class JournalToolRecognitionTest extends TestCase
 {
     use ChecksProgramFixtures;

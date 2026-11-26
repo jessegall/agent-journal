@@ -25,10 +25,12 @@ use Tests\Fixtures\Domains\Tasks\States\TaskWatchDomain;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchLog;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsMachinery(ActorAttention::class)]
 final class TaskWatchDeliveryTest extends TestCase
 {
     /**

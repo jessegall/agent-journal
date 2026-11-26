@@ -11,6 +11,7 @@ use App\Values\Admission;
 use App\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ use Tests\TestCase;
  * The shell admission starts nothing while the runner's host capability is off; with it on, each demonstration
  * process:run executes runs with a record, an own exit and full output per part.
  */
+#[TestsMachinery(ShellAdmission::class)]
 final class RunnerCapabilityTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -25,6 +25,7 @@ use Tests\Architecture\Support\EntryPoints\NamedEntry;
 use Tests\Architecture\Support\EntryPoints\PageRecordings;
 use Tests\Architecture\Support\EntryPoints\RouteEntries;
 use Tests\Architecture\Support\EntryPoints\StateEntries;
+use Tests\Architecture\Support\MachineryTests;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -104,6 +105,11 @@ final class EntryPointTestsTest extends TestCase
     public function test_every_test_class_is_of_a_kind(): void
     {
         $this->assertSame([], $this->attributes()->ofNoKind());
+    }
+
+    public function test_every_machinery_test_names_the_engine_class_it_proves(): void
+    {
+        $this->assertSame([], new MachineryTests(base_path())->faults());
     }
 
     public function test_every_entry_has_a_test_naming_it(): void

@@ -17,12 +17,14 @@ use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 
 /**
  * A command of a domain that is not available is refused after Core's first steps and before its handler or any of
  * its middleware is built; middleware of an unavailable domain is left out of other owners' commands unbuilt.
  */
+#[TestsMachinery(DomainAvailability::class)]
 final class DomainDisabledCommandsTest extends CommandBusTestCase
 {
     private const string HANDLER_BUILT = 'The handler of a switched-off domain was built.';

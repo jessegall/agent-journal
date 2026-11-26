@@ -8,12 +8,14 @@ use App\Data\Processes\ExplanationData;
 use App\Enums\CommandRules\AnalysisLimit;
 use App\Enums\Processes\ShellDialect;
 use App\Support\Explanations;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Explaining a line shows its tree from the bound syntax and never runs, opens or expands anything.
  */
+#[TestsMachinery(Explanations::class)]
 final class ExplanationsTest extends TestCase
 {
     use RefreshHookDatabase;

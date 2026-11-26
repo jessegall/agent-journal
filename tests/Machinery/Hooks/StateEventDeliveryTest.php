@@ -14,6 +14,7 @@ use App\Models\Agents\PendingAgentMessage;
 use App\Support\ActorReference;
 use App\Support\AgentStacks;
 use App\Support\AttentionOrigin;
+use App\Support\Delivery\StateEventBridge;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;
 use App\Support\OperationDeadline;
@@ -38,12 +39,14 @@ use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Fixtures\Modules\Notes\Support\NoteEffects;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\RegistersNoteStates;
 use Tests\Support\TestStartAuthority;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
+#[TestsMachinery(StateEventBridge::class)]
 final class StateEventDeliveryTest extends TestCase
 {
     /**

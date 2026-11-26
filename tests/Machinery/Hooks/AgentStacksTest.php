@@ -49,12 +49,14 @@ use Tests\Fixtures\Hooks\InMemoryTaskState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 use Throwable;
 
+#[TestsMachinery(AgentStacks::class)]
 final class AgentStacksTest extends TestCase
 {
     use CommitsHookRows;

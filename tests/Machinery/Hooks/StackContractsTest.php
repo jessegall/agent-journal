@@ -10,6 +10,7 @@ use App\Contracts\Work\UserStack as UserStackContract;
 use App\Support\AgentStacks;
 use App\Support\StackTransaction;
 use App\Support\UserStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -17,6 +18,7 @@ use Tests\TestCase;
 /**
  * Domains reach the stack through three narrow contracts; each names the private Core class that does the work.
  */
+#[TestsMachinery(StackTransactionRunner::class)]
 final class StackContractsTest extends TestCase
 {
     use RefreshHookDatabase;

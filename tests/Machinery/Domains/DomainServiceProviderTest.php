@@ -28,9 +28,11 @@ use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
+#[TestsMachinery(DomainServiceProvider::class)]
 final class DomainServiceProviderTest extends TestCase
 {
     use RefreshHookDatabase;

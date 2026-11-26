@@ -10,12 +10,14 @@ use App\Support\EngineSettings;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * One engine process owns the installation: a rival session waits while the lock is held and gets it once it is
  * released, and a terminated engine session loses the lock and never reconnects.
  */
+#[TestsMachinery(AdvisoryEngineLock::class)]
 final class AdvisoryEngineLockTest extends TestCase
 {
     use CommitsHookRows;

@@ -14,11 +14,13 @@ use Domain\Rules\RulesDomain;
 use Domain\Sharing\SharingDomain;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 
 /**
  * Core's own commands: a module uses them without declaring Core, every one but Core's private
  * runtime commands is exported, and a scope owned by Core covers exactly them.
  */
+#[TestsMachinery(CoreCommands::class)]
 final class CoreCommandsTest extends CommandBusTestCase
 {
     private const string EVERY_CLASS = "Every class of a Core Commands folder is one of Core's commands.";

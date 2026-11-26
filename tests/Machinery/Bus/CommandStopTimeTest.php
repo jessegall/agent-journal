@@ -19,6 +19,7 @@ use Illuminate\Database\QueryException;
 use PDOException;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
@@ -26,6 +27,7 @@ use Tests\TestCase;
  * as its statement limit, never a fresh budget; once the stop has passed it is refused with the deadline refusal;
  * and the stops and limits outside it hold again afterwards.
  */
+#[TestsMachinery(CommandStops::class)]
 final class CommandStopTimeTest extends TestCase
 {
     use CommitsHookRows;

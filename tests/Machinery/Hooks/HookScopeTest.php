@@ -21,11 +21,13 @@ use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
+#[TestsMachinery(FrameRecords::class)]
 final class HookScopeTest extends TestCase
 {
     use RefreshHookDatabase;

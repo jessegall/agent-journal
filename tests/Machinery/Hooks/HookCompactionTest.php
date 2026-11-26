@@ -24,10 +24,12 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
+#[TestsMachinery(ContextCompacted::class)]
 final class HookCompactionTest extends TestCase
 {
     use CommittedHookStack;

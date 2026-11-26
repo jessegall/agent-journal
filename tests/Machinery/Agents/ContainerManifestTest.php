@@ -22,6 +22,7 @@ use App\Values\ExecutionBudgets;
 use App\Values\ExecutionPolicy;
 use App\Values\SelectedAccount;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * A writing helper's container gets exactly the listed controls; anything more is refused by name, and a required
  * container start is admitted only on a proven host, with a verified image and room left, before anything is kept.
  */
+#[TestsMachinery(ContainerManifest::class)]
 final class ContainerManifestTest extends TestCase
 {
     use RefreshHookDatabase;

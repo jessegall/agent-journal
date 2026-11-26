@@ -24,12 +24,14 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * A user pushes a state onto a running agent's stack without an agent context; the agent stays the target.
  */
+#[TestsMachinery(StackTransaction::class)]
 final class UserStacksTest extends TestCase
 {
     use CommitsHookRows;

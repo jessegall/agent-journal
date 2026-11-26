@@ -19,6 +19,7 @@ use App\Values\PartEnd;
 use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
@@ -29,6 +30,7 @@ use Tests\TestCase;
  * Every byte a part writes is stored from byte zero on the private process-output disk, and the manifest tells a
  * complete capture from a gap.
  */
+#[TestsMachinery(OutputRecorder::class)]
 final class OutputCaptureTest extends TestCase
 {
     use RefreshHookDatabase;

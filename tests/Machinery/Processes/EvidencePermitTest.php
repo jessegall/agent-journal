@@ -13,6 +13,7 @@ use App\Support\ActorReference;
 use App\Support\EvidenceRuns;
 use App\Values\PermitLimits;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -21,6 +22,7 @@ use Tests\TestCase;
 /**
  * A project owner's one-use permit runs its exact command line once as an evidence-only run.
  */
+#[TestsMachinery(EvidenceRuns::class)]
 final class EvidencePermitTest extends TestCase
 {
     use RefreshHookDatabase;

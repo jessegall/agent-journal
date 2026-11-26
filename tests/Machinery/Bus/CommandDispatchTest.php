@@ -14,12 +14,14 @@ use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 
 /**
  * Dispatching on the command bus: every registered command reaches its handler and its result comes
  * back unchanged, an unregistered command is refused before anything runs, and nesting stops at eight levels.
  */
+#[TestsMachinery(LaravelCommandBus::class)]
 final class CommandDispatchTest extends CommandBusTestCase
 {
     private const string DRAWN_CARD = 'card from red';

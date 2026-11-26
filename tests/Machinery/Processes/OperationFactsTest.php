@@ -13,6 +13,7 @@ use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -20,6 +21,7 @@ use Tests\TestCase;
  * The parser's classification gives every segment of a shell line an operation an access policy can decide: the
  * access it needs, the resources it touches and the rule that named it; anything it cannot place is unknown.
  */
+#[TestsMachinery(ShellOperations::class)]
 final class OperationFactsTest extends TestCase
 {
     use RefreshHookDatabase;

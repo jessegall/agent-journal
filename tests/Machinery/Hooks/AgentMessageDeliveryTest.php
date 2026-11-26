@@ -25,6 +25,7 @@ use App\Support\PendingWorkSources;
 use App\Support\References\StateReference;
 use Tests\Fixtures\Hooks\MessageState;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -32,6 +33,7 @@ use Tests\TestCase;
  * A state's message line on a real hook walk: a stop that leaves the agent idle keeps the message and wakes the agent, its
  * next hook hands the message over, and a busy agent gets it in the reply like any context.
  */
+#[TestsMachinery(PendingWorkSources::class)]
 final class AgentMessageDeliveryTest extends TestCase
 {
     use CommittedHookStack;

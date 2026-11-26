@@ -10,6 +10,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * While Plans is switched off its pages and actions answer 404, its section on Chat's page and its navigation with
  * their counts are left out before their readers run, and other domains' pages are unchanged.
  */
+#[TestsMachinery(DomainRegistry::class)]
 final class DomainSwitchPagesTest extends TestCase
 {
     use RefreshHookDatabase;

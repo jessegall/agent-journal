@@ -38,6 +38,7 @@ use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewState;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -46,6 +47,7 @@ use Tests\TestCase;
  * The Reviews fixture's state follows its review group: pushed while the group is on, declined and later removed
  * while it is off, read through the reader of the request running now, and never quietly off on a failed read.
  */
+#[TestsMachinery(AgentStacks::class)]
 final class ConditionalStatePushTest extends TestCase
 {
     use CommitsHookRows;

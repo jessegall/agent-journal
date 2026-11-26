@@ -67,6 +67,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 use Tests\Support\TestProjects;
 
@@ -75,6 +76,7 @@ use Tests\Support\TestProjects;
  * a replacement the handler sees, a refusal that writes nothing, and every break of the middleware contract refused
  * by name.
  */
+#[TestsMachinery(CommandFrame::class)]
 final class ModuleMiddlewareTest extends CommandBusTestCase
 {
     private const string TRIMMED_TEXT = 'Trim me';

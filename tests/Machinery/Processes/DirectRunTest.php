@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
+use App\Console\Commands\RunProcessCommand;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -13,6 +15,7 @@ use Tests\TestCase;
  * A line an agent runs directly goes through the same admission as a hook: a refusal starts nothing and names its
  * request, an admitted line runs supervised and answers its output number and results.
  */
+#[TestsMachinery(RunProcessCommand::class)]
 final class DirectRunTest extends TestCase
 {
     use RefreshHookDatabase;

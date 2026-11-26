@@ -8,6 +8,7 @@ use App\Enums\Agents\AccessType;
 use App\Mcp\Support\McpInstructions;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * A started agent's start context tells it once to use the journal MCP tools, and lists only the CLI and web
  * flowsOutsideMcp its role has.
  */
+#[TestsMachinery(McpInstructions::class)]
 final class McpInstructionsTest extends TestCase
 {
     use CommittedHookStack;

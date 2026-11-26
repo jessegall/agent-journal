@@ -14,12 +14,14 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * Home: the chat with a chosen agent beside the plans slice, and the composer's send.
  */
+#[TestsMachinery(StartSessions::class)]
 final class HomePageTest extends TestCase
 {
     use CommitsHookRows;

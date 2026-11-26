@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Tests\Machinery\Web;
 
 use App\Support\UserChannel;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Only the signed-in owner joins their own private channel; a guessed id or another account gets nothing.
  */
+#[TestsMachinery(UserChannel::class)]
 final class UserChannelTest extends TestCase
 {
     use RefreshHookDatabase;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Api\Hooks\AgentStateMachine;
 use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
 use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
 use App\Contracts\Drivers\DriverCatalogue;
@@ -37,6 +38,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\AsksTheStopGate;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -48,6 +50,7 @@ use Tests\TestCase;
  * stops the runtime and tells the owner while the workspace stays.
  */
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
+#[TestsMachinery(AgentStateMachine::class)]
 final class HelperCompletionTest extends TestCase
 {
     use AsksTheStopGate;

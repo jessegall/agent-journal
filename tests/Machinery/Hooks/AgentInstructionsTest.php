@@ -17,6 +17,7 @@ use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * Each time an agent's context starts it is told how it works with the journal, then its own profile's instructions,
  * so a chat message costs it only the message.
  */
+#[TestsMachinery(RemindAgentInstructions::class)]
 final class AgentInstructionsTest extends TestCase
 {
     use RefreshHookDatabase;

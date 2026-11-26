@@ -15,6 +15,7 @@ use App\Values\FilePath;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -25,6 +26,7 @@ use Tests\TestCase;
  * during an outage, a session start the journal answers prepares its generation, and an answer for an older
  * generation prepares nothing.
  */
+#[TestsMachinery(HookRelay::class)]
 final class HookPreparationTest extends TestCase
 {
     use RefreshHookDatabase;

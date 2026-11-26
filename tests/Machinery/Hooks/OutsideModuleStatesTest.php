@@ -9,6 +9,7 @@ use App\Support\DomainEntry;
 use App\Support\References\StateReference;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
@@ -16,6 +17,7 @@ use Tests\TestCase;
  * plugs it
  * into the core without the core naming it.
  */
+#[TestsMachinery(DomainEntry::class)]
 final class OutsideModuleStatesTest extends TestCase
 {
     use CommittedHookStack;

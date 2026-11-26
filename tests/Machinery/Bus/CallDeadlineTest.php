@@ -15,12 +15,14 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * An MCP call's deadline is the earlier of 15 seconds from entry and 19 seconds after its signed issue time; a call
  * past it is refused before anything runs, and the transaction's lock wait comes from what is left.
  */
+#[TestsMachinery(OperationDeadline::class)]
 final class CallDeadlineTest extends TestCase
 {
     use CommitsHookRows;

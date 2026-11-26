@@ -28,6 +28,7 @@ use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\Ticks\ScriptedOccurrenceGuard;
 use Tests\Fixtures\Hooks\Ticks\TickState;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RunsAsEngine;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
@@ -36,6 +37,7 @@ use Tests\TestCase;
  * A stack records whether it holds a frame of a ticking type every time its frames are saved, and the engine reads
  * only active, flagged stacks whose session still runs.
  */
+#[TestsMachinery(EngineStacks::class)]
 final class TickingStackFlagTest extends TestCase
 {
     use CommitsHookRows;

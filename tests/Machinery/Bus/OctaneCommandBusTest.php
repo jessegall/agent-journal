@@ -9,12 +9,14 @@ use App\Exceptions\CommandRefused;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 
 /**
  * The bus under Octane: each request on one booted app gets its own bus with its own actor, also
  * after a request that ended in an exception.
  */
+#[TestsMachinery(CommandBus::class)]
 final class OctaneCommandBusTest extends CommandBusTestCase
 {
     public function test_each_request_gets_its_own_bus_with_its_own_actor(): void

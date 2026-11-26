@@ -24,6 +24,7 @@ use App\Values\StackTarget;
 use Closure;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
@@ -31,6 +32,8 @@ use Tests\TestCase;
  * The hook keeps each runtime's delivered skills its own: another runtime's settings folder is neither read nor
  * written, the agent's own delivered SKILL.md is never written, and a refusal names no path or runtime.
  */
+#[TestsMachinery(ClaudeCodeAdapter::class)]
+#[TestsMachinery(CodexAdapter::class)]
 final class DeliveredSkillsGuardTest extends TestCase
 {
     use CommittedHookStack;

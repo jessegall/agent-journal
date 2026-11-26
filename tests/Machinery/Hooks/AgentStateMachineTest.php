@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Api\Hooks\AgentStateMachine;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookDeadlineExpired;
@@ -19,8 +20,10 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
+#[TestsMachinery(AgentStateMachine::class)]
 final class AgentStateMachineTest extends TestCase
 {
     use CommittedHookStack;

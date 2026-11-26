@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
+use App\Contracts\Bus\CommandClassifier;
 use App\Enums\CommandRules\CommandClass;
 use App\Enums\CommandRules\UnresolvedType;
 use Domain\Documents\DocumentsDomain;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -16,6 +18,7 @@ use Tests\TestCase;
 /**
  * A journal command is classified by the exact route it calls, and only this installation's journal is trusted.
  */
+#[TestsMachinery(CommandClassifier::class)]
 final class JournalRoutesTest extends TestCase
 {
     use ClassifiesLines;

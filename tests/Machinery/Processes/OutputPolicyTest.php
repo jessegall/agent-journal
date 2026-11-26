@@ -10,6 +10,7 @@ use App\Support\Admission\OutputPolicy;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use App\Values\OutputVerdict;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * A check or build whose output would be hidden starts nothing, and the refusal names what is lost and the command to
  * run instead.
  */
+#[TestsMachinery(OutputPolicy::class)]
 final class OutputPolicyTest extends TestCase
 {
     use RefreshHookDatabase;

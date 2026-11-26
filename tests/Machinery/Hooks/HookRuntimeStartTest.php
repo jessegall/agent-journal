@@ -24,10 +24,12 @@ use App\Support\StackTransaction;
 use App\Support\States\AgentState;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
+#[TestsMachinery(StartTransaction::class)]
 final class HookRuntimeStartTest extends TestCase
 {
     use RefreshHookDatabase;

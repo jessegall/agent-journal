@@ -36,9 +36,11 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
+#[TestsMachinery(AgentStateMachine::class)]
 final class HookStartTest extends TestCase
 {
     use CommitsHookRows;

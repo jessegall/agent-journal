@@ -23,6 +23,7 @@ use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * A session start maps the session's saved outputs for its running start: the session reads its own transcripts and
  * large outputs across clears and resumes, never a sibling's or a fork parent's, and nothing once its start ended.
  */
+#[TestsMachinery(SessionOutputAccess::class)]
 final class SessionOutputGrantsTest extends TestCase
 {
     use RefreshHookDatabase;

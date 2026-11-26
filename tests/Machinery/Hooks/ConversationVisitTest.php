@@ -23,6 +23,7 @@ use App\Values\StartRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * Every session start records the native conversation the journal session entered, in order and once per event,
  * and a conversation bound to another context is refused.
  */
+#[TestsMachinery(ConversationVisits::class)]
 final class ConversationVisitTest extends TestCase
 {
     use RefreshHookDatabase;

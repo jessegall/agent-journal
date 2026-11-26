@@ -22,8 +22,10 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Machinery\Bus\CommandBusTestCase;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestIds;
 
+#[TestsMachinery(McpCatalogue::class)]
 final class WriteToolTest extends CommandBusTestCase
 {
     private const string QUOTA_REFUSAL = 'The note quota is full.';

@@ -12,12 +12,14 @@ use App\Support\PackageScripts;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * A composer or npm script is classified by what its body runs, never by its name.
  */
+#[TestsMachinery(PackageScripts::class)]
 final class PackageScriptsTest extends TestCase
 {
     use RefreshHookDatabase;

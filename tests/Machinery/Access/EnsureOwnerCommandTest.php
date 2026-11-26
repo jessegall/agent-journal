@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Access;
 
+use App\Console\Commands\EnsureOwnerCommand;
 use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use Illuminate\Support\Facades\Hash;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;
 
 /**
  * The owner account named by the installation's settings exists with their password after every install,
  * so its login stays the same across resets; without both settings no account is made.
  */
+#[TestsMachinery(EnsureOwnerCommand::class)]
 final class EnsureOwnerCommandTest extends TestCase
 {
     use CommitsHookRows;

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Contracts\RaisingRow;
 use Tests\Fixtures\Contracts\RowRenamed;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -24,6 +25,7 @@ use Tests\TestCase;
  * A bridged fact raised inside a stack sibling's admission keeps that sibling's audience until it is released after
  * the single commit; a fact raised with no admission has none, and a rollback reaches no listener.
  */
+#[TestsMachinery(StateEventBridge::class)]
 final class StateBridgeReleaseTest extends TestCase
 {
     use CommitsHookRows;

@@ -11,6 +11,7 @@ use App\Exceptions\NumberLimitReached;
 use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\GlobalGroup;
 use App\Models\Records\NumberGroup;
+use App\Support\LockingNumberAllocator;
 use App\Support\OperationDeadline;
 use App\Support\OutsideCommandAllowance;
 use Domain\Rules\RulesDomain;
@@ -24,6 +25,7 @@ use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -35,6 +37,7 @@ use Tests\TestCase;
  * the bus's lock timeout, and the cap refuses instead of wrapping. Every command commits for real.
  */
 #[TimeLimit(seconds: 5, reason: 'It waits out a lock held on a second PostgreSQL connection.')]
+#[TestsMachinery(LockingNumberAllocator::class)]
 final class NumberAllocationTest extends TestCase
 {
     use CommitsHookRows;

@@ -9,6 +9,7 @@ use App\Listeners\SupplyHookSettings;
 use App\Support\DefaultDrivers;
 use App\Support\Drivers\Adapters\ClaudeCodeAdapter;
 use App\Support\IsolatedHookSettings;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * server, beside every denial; Codex gets no such rule, since its account entry approves the journal. The start's
  * descriptor, flags and timeouts are the Go host's, proven in tools/journal-agent/profiles/claude_account_test.go.
  */
+#[TestsMachinery(IsolatedHookSettings::class)]
 final class ClaudeMcpStartTest extends TestCase
 {
     use RefreshHookDatabase;

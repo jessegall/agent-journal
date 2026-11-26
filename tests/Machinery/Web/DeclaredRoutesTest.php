@@ -23,6 +23,7 @@ use Tests\Fixtures\ClientDeclarations\Library\AddBook;
 use Tests\Fixtures\ClientDeclarations\Library\BooksResolver;
 use Tests\Fixtures\ClientDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\ClientDeclarations\Library\NobodySees;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * Web registers every declared page and action under its domain's prefix, behind sign-in and the visibility checks of
  * the page or section that owns it, and answers a hidden page exactly as a missing one.
  */
+#[TestsMachinery(ClientDeclarations::class)]
 final class DeclaredRoutesTest extends TestCase
 {
     use RefreshHookDatabase;

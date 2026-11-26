@@ -29,6 +29,7 @@ use App\Values\StopConditions;
 use Closure;
 use Tests\Fixtures\Hooks\CountedAdmission;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\TestText;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -39,6 +40,7 @@ use Tests\TestCase;
  * the stack from before the walk.
  */
 #[TimeLimit(seconds: 5, reason: 'Each test runs Core\'s real admission, which classifies the line by stored rules.')]
+#[TestsMachinery(ShellAdmission::class)]
 final class MandatoryAdmissionTest extends TestCase
 {
     use CommittedHookStack;

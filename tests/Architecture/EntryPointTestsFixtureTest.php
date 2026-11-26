@@ -11,6 +11,7 @@ use Tests\Architecture\Support\EntryPoints\EntryTestFindings;
 use Tests\Architecture\Support\EntryPoints\EntryType;
 use Tests\Architecture\Support\EntryPoints\LoaderEntries;
 use Tests\Architecture\Support\EntryPoints\NamedEntry;
+use Tests\Architecture\Support\MachineryTests;
 use Tests\Fixtures\EntryPointTests\TestedRead;
 use Tests\Fixtures\EntryPointTests\UntestedRead;
 
@@ -86,6 +87,19 @@ final class EntryPointTestsFixtureTest extends TestCase
             ['tests/Loose/LooseTest.php is a test of no kind: move what only it proves, then delete it.'],
             $attributes->ofNoKind(),
         );
+    }
+
+    public function test_a_machinery_test_naming_nothing_a_missing_class_or_an_entry_is_listed(): void
+    {
+        $tests = new MachineryTests(base_path('tests/Fixtures/EntryPointTests/Machinery'));
+
+        $this->assertEqualsCanonicalizing([
+            'tests/Machinery/CommandSubjectTest.php names App\\Commands\\Agents\\StartAgent\\StartAgentCommand, a command: '
+                ."its proofs belong in that entry's test.",
+            'tests/Machinery/MissingSubjectTest.php names App\\Support\\NoSuchEngine, which does not exist: name the '
+                .'engine class it proves.',
+            'tests/Machinery/UnnamedTest.php names no engine class: add #[TestsMachinery(...)] with the class it proves.',
+        ], $tests->faults());
     }
 
     public function test_an_entry_two_test_classes_name_is_listed_with_both_files(): void

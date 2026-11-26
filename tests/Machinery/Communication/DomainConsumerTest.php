@@ -10,12 +10,14 @@ use App\Support\RequestKey;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Reviews\Messaging\ReviewRequests;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\MessagingTestCase;
 
 /**
  * A domain other than Chat asks for an answer and reads it back through Core's exported messaging API alone, and
  * receives the message it sent.
  */
+#[TestsMachinery(RequestKey::class)]
 final class DomainConsumerTest extends MessagingTestCase
 {
     private const string REVIEW_QUESTION = 'Review this?';

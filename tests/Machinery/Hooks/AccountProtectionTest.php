@@ -21,6 +21,7 @@ use App\Values\SessionOutputPaths;
 use App\Values\StackTarget;
 use Closure;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ use Tests\TestCase;
  * the per-start settings deny them natively and the journal refuses every read inside the accounts folder that is
  * not the session's own granted output, whatever alias the path takes.
  */
+#[TestsMachinery(ClaudeAccountProtection::class)]
 final class AccountProtectionTest extends TestCase
 {
     use RefreshHookDatabase;

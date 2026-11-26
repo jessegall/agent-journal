@@ -26,10 +26,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\ChecksProgramAdapter;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestText;
 use Tests\TestCase;
 
+#[TestsMachinery(CodexAdapter::class)]
 final class CodexTest extends TestCase
 {
     use ChecksProgramAdapter;

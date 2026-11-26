@@ -7,9 +7,11 @@ namespace Tests\Machinery\Access;
 use App\Models\Access\User;
 use App\Support\Access\AccessSettings;
 use Illuminate\Support\Facades\Route;
+use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
+#[TestsMachinery(AccessSettings::class)]
 final class LoginTest extends TestCase
 {
     use RefreshHookDatabase;
