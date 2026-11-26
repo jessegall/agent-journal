@@ -128,6 +128,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         }
 
         $this->assertOpen();
+        $this->forgetTypedBytes();
         $this->status = HostOrderStatus::Done;
         $this->answer = $answer->facts;
         $this->answered_at = $at;
@@ -143,6 +144,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public function refuse(HostRefusal $refusal, array $facts, CarbonImmutable $at): void
     {
         $this->assertOpen();
+        $this->forgetTypedBytes();
         $this->status = HostOrderStatus::Refused;
         $this->refusal = $refusal;
         $this->answer = $facts;
@@ -157,6 +159,17 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public function expire(CarbonImmutable $at): void
     {
         $this->refuse(HostRefusal::Expired, [], $at);
+    }
+
+    /**
+     * An input order's bytes are needed only until the host answers it: then they are erased, so typed keys are kept
+     * no longer than they travel.
+     */
+    private function forgetTypedBytes(): void
+    {
+        if ($this->type->isInput()) {
+            $this->payload = [];
+        }
     }
 
     // ----------[ Predicates ]----------
@@ -186,6 +199,51 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public static function findLocked(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * The open orders whose expiry passed, locked so a claim beside this sweep skips them.
+     *
+     * @return list<self>
+     */
+    public static function findExpiredAt(CarbonImmutable $now, int $limit): array
+    {
+        $orders = self::query()
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
+            ->where('expires_at', '<=', $now)
+            ->lock('for update skip locked')
+            ->readExactly($limit)
+            ->get();
+
+        return array_values($orders->all());
+    }
+
+    /**
+     * The open orders of a process, locked.
+     *
+     * @return list<self>
+     */
+    public static function findOpenOf(string $processId): array
+    {
+        $orders = self::query()
+            ->where('host_process_id', $processId)
+            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
+            ->lockForUpdate()
+            ->get();
+
+        return array_values($orders->all());
+    }
+
+    /**
+     * Deletes the orders answered before the moment and answers how many: an answered order is kept only as long as a
+     * worker may still read it.
+     */
+    public static function pruneAnsweredBefore(CarbonImmutable $before): int
+    {
+        return self::query()
+            ->whereIn('status', [HostOrderStatus::Done, HostOrderStatus::Refused])
+            ->where('answered_at', '<', $before)
+            ->delete();
     }
 
     /**
@@ -282,7 +340,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     #[Scope]
     protected function takeableAt(Builder $query, CarbonImmutable $now): void
     {
-        $inputTypes = array_values(array_filter(HostOrderType::cases(), fn (HostOrderType $type) => $type->isInput()));
+        $inputTypes = HostOrderType::inputs();
 
         $query->where('expires_at', '>', $now)->where(
             fn (Builder $takeable) => $takeable->where('status', HostOrderStatus::Pending)->orWhere(

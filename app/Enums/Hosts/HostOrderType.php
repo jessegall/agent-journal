@@ -44,6 +44,14 @@ enum HostOrderType: string
         return array_values(array_filter(self::cases(), fn (self $type) => $type->isInput()));
     }
 
+    /**
+     * Whether the order ends its process, so a process that ended still lets its host answer it.
+     */
+    public function endsProcess(): bool
+    {
+        return $this === self::Stop || $this === self::Remove;
+    }
+
     public function isInput(): bool
     {
         return match ($this) {

@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Data\Hosts\HostProcessReportData;
+use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
+use App\Enums\Hosts\HostRefusal;
 use App\Events\Connections\HostProcessStarted;
 use App\Exceptions\HostProtocolRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
+use App\Values\HostOrderSource;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;
@@ -55,6 +59,21 @@ final class NotifyHostProcessTest extends TestCase
         $this->journal->assertResult(
             [$generation + 1, false],
             [$healed, AgentSession::query()->whereKey($opened->sessionId)->sole()->isActive()],
+        );
+    }
+
+    public function test_an_exited_process_refuses_its_open_orders_but_its_stop(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->openHostProcess('Mac', 'shell');
+        $process = $this->journal->hostProcessCalled('shell')->id;
+        $this->journal->asSystem(new StopHostProcessCommand($process, 1000, 1000, HostOrderSource::fromJournal()));
+
+        $this->journal->reportHostProcess('shell', HostProcessReportType::Exited, 0);
+
+        [$open, $stop] = $this->journal->hostOrdersOf('shell');
+        $this->journal->assertResult(
+            [HostOrderStatus::Refused, HostRefusal::NotRunning, HostOrderStatus::Pending],
+            [$open->status, $open->refusal, $stop->status],
         );
     }
 

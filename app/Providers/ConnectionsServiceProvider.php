@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
+use App\Commands\Hosts\SweepHostOrders\SweepHostOrdersCommand;
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
 use App\Contracts\Hosts\HostChannel;
@@ -105,6 +106,14 @@ final class ConnectionsServiceProvider extends ServiceProvider
                     CommandEntry::HostControl,
                     'silent host check',
                     new MarkSilentHostsCommand(),
+                ))
+                ->everyThirtySeconds();
+
+            $schedule
+                ->call(fn (JournalCommands $commands) => $commands->runAsJournal(
+                    CommandEntry::HostControl,
+                    'host order sweep',
+                    new SweepHostOrdersCommand(),
                 ))
                 ->everyThirtySeconds();
         });

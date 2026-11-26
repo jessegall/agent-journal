@@ -51,6 +51,18 @@ final class ProcessFeedTest extends TestCase
         $this->assertCount(2, $feed->read([ProcessFeed::streamKey($process) => '0', HostWake::runtimeKey($runtime) => '0'], 50));
     }
 
+    public function test_large_entries_shorten_how_many_the_stream_keeps(): void
+    {
+        $this->journal->assertResult(
+            [ProcessFeed::ENTRY_LIMIT, 16, 1],
+            [
+                ProcessFeed::entriesKeptBeside('small'),
+                ProcessFeed::entriesKeptBeside(str_repeat('a', 256 * 1024)),
+                ProcessFeed::entriesKeptBeside(str_repeat('a', ProcessFeed::BYTE_LIMIT * 2)),
+            ],
+        );
+    }
+
     private function output(string $firstRow): HostOutputData
     {
         return HostOutputData::from(['frames' => [[

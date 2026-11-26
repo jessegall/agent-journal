@@ -24,6 +24,11 @@ final readonly class ProcessFeed
     public const int ENTRY_LIMIT = 256;
 
     /**
+     * About the most bytes a process's stream keeps: a large entry shortens how many are kept.
+     */
+    public const int BYTE_LIMIT = 4 * 1024 * 1024;
+
+    /**
      * The cursor of a stream read from its start.
      */
     public const string FIRST_CURSOR = '0';
@@ -36,13 +41,13 @@ final readonly class ProcessFeed
 
         foreach ($output->frames as $frame) {
             $encoded = (string) json_encode($frame->toArray(), JSON_THROW_ON_ERROR);
-            $this->connection()->xadd($key, '*', ['frame' => $encoded], self::ENTRY_LIMIT, true);
+            $this->connection()->xadd($key, '*', ['frame' => $encoded], self::entriesKeptBeside($encoded), true);
             $this->connection()->setex(self::latestKey($processId), self::TTL_SECONDS, $encoded);
         }
 
         foreach ($output->chunks as $chunk) {
             $encoded = (string) json_encode($chunk->toArray(), JSON_THROW_ON_ERROR);
-            $this->connection()->xadd($key, '*', ['chunk' => $encoded], self::ENTRY_LIMIT, true);
+            $this->connection()->xadd($key, '*', ['chunk' => $encoded], self::entriesKeptBeside($encoded), true);
         }
 
         $this->connection()->expire($key, self::TTL_SECONDS);
@@ -112,6 +117,14 @@ final readonly class ProcessFeed
         $newest = $this->connection()->xrevrange($stream, '+', '-', 1);
 
         return is_array($newest) && $newest !== [] ? (string) array_key_first($newest) : self::FIRST_CURSOR;
+    }
+
+    /**
+     * How many entries the stream keeps once an entry this large is added, so it stays near BYTE_LIMIT.
+     */
+    public static function entriesKeptBeside(string $encoded): int
+    {
+        return max(1, min(self::ENTRY_LIMIT, intdiv(self::BYTE_LIMIT, max(1, strlen($encoded)))));
     }
 
     public static function streamKey(string $processId): string
