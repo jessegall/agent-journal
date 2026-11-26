@@ -19,7 +19,6 @@ use App\Listeners\RemindRequiredSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
 use App\Resolvers\Support\SkillStatusResolver;
@@ -133,7 +132,7 @@ final class RecordSkillReadTest extends TestCase
         $this->assertFalse(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
     }
 
-    public function test_an_edited_required_skill_is_asked_for_again_and_reading_it_clears_the_reminder(): void
+    public function test_a_required_skill_is_asked_for_until_read_and_an_edit_after_the_start_asks_nothing_more(): void
     {
         $session = $this->startedReviewer();
 
@@ -155,7 +154,7 @@ final class RecordSkillReadTest extends TestCase
 
             TEXT,
         ])->assertSuccessful();
-        $this->assertReminded($this->boundary($session));
+        $this->assertNotReminded($this->boundary($session));
     }
 
     public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
@@ -205,9 +204,9 @@ final class RecordSkillReadTest extends TestCase
 
     private function deliveredDigest(AgentSession $session, string $key): string
     {
-        $publication = SkillPublication::findLatestOfSession($session->id);
-        $this->assertNotNull($publication);
-        $entry = SkillGeneration::findForPublication($publication)->entry($key);
+        $generationId = AgentSession::findById($session->id)->skill_generation_id;
+        $this->assertNotNull($generationId);
+        $entry = SkillGeneration::findById($generationId)->entry($key);
         $this->assertNotNull($entry);
 
         return $entry->digest;

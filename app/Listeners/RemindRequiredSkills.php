@@ -8,14 +8,12 @@ use App\Contracts\Events\Listener;
 use App\Events\Hooks\ContextStarted;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
-use App\Skills\Enums\PublicationStatus;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Values\AgentText;
 
 /**
- * At every boundary, asks the agent to read each required skill of its profile whose delivered text it has not read
+ * At every boundary, asks the agent to read each required skill of its profile whose handed text it has not read
  * whole in this context: a changed text is due again, an unchanged one read before is not, and a skill that stopped
  * applying is no longer asked for. A clear or compaction starts a context in which nothing is read yet.
  */
@@ -28,19 +26,19 @@ final readonly class RemindRequiredSkills implements Listener
     public function handle(ContextStarted $event): void
     {
         $session = AgentSession::findById($event->target->sessionId);
-        $publication = SkillPublication::findLatestOfSession($session->id);
+        $generationId = $session->skill_generation_id;
 
-        if ($publication === null || $publication->status !== PublicationStatus::Delivered) {
+        if ($generationId === null) {
             return;
         }
 
-        $generation = SkillGeneration::findForPublication($publication);
+        $generation = SkillGeneration::findById($generationId);
         $freshContext = $event->type->isFreshContext();
 
         $profile = $this->contexts->forSession($session)->profile;
 
         foreach ($profile->requiredSkills() as $key) {
-            $entry = in_array($key, $publication->skill_keys, true) ? $generation->entry($key) : null;
+            $entry = $session->hasSkill($key) ? $generation->entry($key) : null;
 
             if ($entry === null || (! $freshContext && SkillReceipt::hasRead($session->id, $key, $entry->digest))) {
                 continue;

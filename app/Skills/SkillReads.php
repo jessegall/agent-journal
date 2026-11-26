@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Skills;
 
+use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillContextEpoch;
 use App\Models\Skills\SkillGeneration;
-use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
-use App\Skills\Enums\PublicationStatus;
 use App\Skills\Enums\ReadEvidence;
 
 /**
- * Turns proven evidence of a whole read into a receipt for the text the session was delivered; a skill outside its
- * delivered set, or a session with nothing delivered, records nothing.
+ * Turns proven evidence of a whole read into a receipt for the text the session was handed; a skill outside its
+ * handed set, or a session handed nothing, records nothing.
  */
 final readonly class SkillReads
 {
@@ -22,14 +21,11 @@ final readonly class SkillReads
      */
     public function record(string $sessionId, string $skillKey, ReadEvidence $evidence): bool
     {
-        $publication = SkillPublication::findLatestOfSession($sessionId);
+        $session = AgentSession::findById($sessionId);
+        $generationId = $session->skill_generation_id;
 
-        if ($publication === null || $publication->status !== PublicationStatus::Delivered) {
-            return false;
-        }
-
-        $entry = in_array($skillKey, $publication->skill_keys, true)
-            ? SkillGeneration::findForPublication($publication)->entry($skillKey)
+        $entry = $generationId !== null && $session->hasSkill($skillKey)
+            ? SkillGeneration::findById($generationId)->entry($skillKey)
             : null;
 
         if ($entry === null) {
