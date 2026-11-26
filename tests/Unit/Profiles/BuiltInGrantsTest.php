@@ -1,0 +1,212 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Profiles;
+
+use App\Contracts\Authorization\PolicyCatalogue;
+use App\Support\BuiltInAuthorizations;
+use App\Support\DomainRegistry;
+use App\Values\ProfileBase;
+use Tests\TestCase;
+
+/**
+ * Every built-in base is granted exactly the policy accesses reviewed here, in this order: a change
+ * to how a policy or an access type restricts its grants that gives a profile one more or one fewer fails here.
+ */
+final class BuiltInGrantsTest extends TestCase
+{
+    /**
+     * Every installed domain, since the built-in grants name their policies.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainRegistry::installedClasses(dirname(__DIR__, 3));
+    }
+
+    /**
+     * The reviewed grants of each base, as policy and access.
+     */
+    private const array GRANTS = [
+        'main-agent' => [
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'read'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'edit'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'edit'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'read'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'create'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\DocumentPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\DocumentPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\DockPlacementPolicy', 'edit'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'read'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'edit'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'read'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'edit'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'read'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'create'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'edit'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'create'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'edit'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'delegate'],
+            ['App\\Policies\\SkillPolicy', 'read'],
+            ['App\\Policies\\ProfileDraftPolicy', 'edit'],
+            ['App\\Policies\\SupervisorPolicy', 'edit'],
+            ['App\\Policies\\AskPolicy', 'edit'],
+            ['App\\Policies\\AgentPolicy', 'read'],
+            ['App\\Policies\\AgentPolicy', 'create'],
+            ['App\\Policies\\AgentPolicy', 'edit'],
+            ['App\\Policies\\AgentPolicy', 'delete'],
+            ['App\\Policies\\AssignmentPolicy', 'read'],
+            ['App\\Policies\\AssignmentPolicy', 'create'],
+            ['App\\Policies\\AssignmentPolicy', 'edit'],
+            ['App\\Policies\\AssignmentRecipientPolicy', 'create'],
+            ['App\\Policies\\AssignmentRecipientPolicy', 'delegate'],
+            ['App\\Policies\\AssignmentRecipientPolicy', 'delete'],
+            ['App\\Policies\\RecordLinkPolicy', 'create'],
+            ['App\\Policies\\RecordLinkPolicy', 'edit'],
+            ['Domain\\Sharing\\Policies\\ShareRequestPolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'read'],
+            ['App\\Policies\\MessagePolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'edit'],
+            ['Domain\\Comments\\Policies\\CommentPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'read'],
+            ['App\\Policies\\ProcessPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'edit'],
+            ['App\\Policies\\ProcessPolicy', 'execute'],
+            ['App\\Policies\\ProcessPolicy', 'test'],
+        ],
+        'writing-helper' => [
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'read'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'edit'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'edit'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'read'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'create'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\DocumentPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\DocumentPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\DockPlacementPolicy', 'edit'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'read'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'edit'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'read'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'edit'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'read'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'create'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'edit'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'create'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'edit'],
+            ['App\\Policies\\SkillPolicy', 'read'],
+            ['App\\Policies\\ProfileDraftPolicy', 'edit'],
+            ['App\\Policies\\AskPolicy', 'edit'],
+            ['App\\Policies\\AgentPolicy', 'read'],
+            ['App\\Policies\\AgentPolicy', 'create'],
+            ['App\\Policies\\AgentPolicy', 'edit'],
+            ['App\\Policies\\AssignmentPolicy', 'read'],
+            ['App\\Policies\\AssignmentPolicy', 'create'],
+            ['App\\Policies\\AssignmentPolicy', 'edit'],
+            ['App\\Policies\\AssignmentRecipientPolicy', 'create'],
+            ['App\\Policies\\RecordLinkPolicy', 'create'],
+            ['App\\Policies\\RecordLinkPolicy', 'edit'],
+            ['Domain\\Sharing\\Policies\\ShareRequestPolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'read'],
+            ['App\\Policies\\MessagePolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'edit'],
+            ['Domain\\Comments\\Policies\\CommentPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'read'],
+            ['App\\Policies\\ProcessPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'edit'],
+            ['App\\Policies\\ProcessPolicy', 'execute'],
+            ['App\\Policies\\ProcessPolicy', 'test'],
+        ],
+        'read-only-helper' => [
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'read'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskPolicy', 'edit'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'create'],
+            ['Domain\\Tasks\\Policies\\TaskRunPolicy', 'edit'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'read'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'create'],
+            ['Domain\\Plans\\Policies\\PlanPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\ReportPolicy', 'edit'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'create'],
+            ['Domain\\Documents\\Policies\\UploadPolicy', 'edit'],
+            ['Domain\\Chat\\Policies\\MessagePinPolicy', 'edit'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'read'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'create'],
+            ['Domain\\Memory\\Policies\\MemoryPolicy', 'edit'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'read'],
+            ['Domain\\Rules\\Policies\\RulePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\SequencePolicy', 'edit'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'read'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'create'],
+            ['Domain\\Sequences\\Policies\\StoredSequencePolicy', 'edit'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'read'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'create'],
+            ['Domain\\Reminders\\Policies\\ReminderPolicy', 'edit'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'create'],
+            ['Domain\\Helpers\\Policies\\HelperPolicy', 'edit'],
+            ['App\\Policies\\SkillPolicy', 'read'],
+            ['App\\Policies\\ProfileDraftPolicy', 'edit'],
+            ['App\\Policies\\AskPolicy', 'edit'],
+            ['App\\Policies\\AgentPolicy', 'read'],
+            ['App\\Policies\\AgentPolicy', 'create'],
+            ['App\\Policies\\AgentPolicy', 'edit'],
+            ['App\\Policies\\AssignmentPolicy', 'read'],
+            ['App\\Policies\\AssignmentPolicy', 'create'],
+            ['App\\Policies\\AssignmentPolicy', 'edit'],
+            ['App\\Policies\\AssignmentRecipientPolicy', 'create'],
+            ['App\\Policies\\RecordLinkPolicy', 'create'],
+            ['App\\Policies\\RecordLinkPolicy', 'edit'],
+            ['Domain\\Sharing\\Policies\\ShareRequestPolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'read'],
+            ['App\\Policies\\MessagePolicy', 'create'],
+            ['App\\Policies\\MessagePolicy', 'edit'],
+            ['Domain\\Comments\\Policies\\CommentPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'read'],
+            ['App\\Policies\\ProcessPolicy', 'create'],
+            ['App\\Policies\\ProcessPolicy', 'edit'],
+            ['App\\Policies\\ProcessPolicy', 'execute'],
+        ],
+    ];
+
+    public function test_each_built_in_base_is_granted_exactly_its_reviewed_accesses(): void
+    {
+        $definitions = $this->app->make(PolicyCatalogue::class)->definitions();
+
+        foreach (ProfileBase::all() as $base) {
+            $grants = array_map(
+                fn (array $grant) => [$grant['policy'], $grant['access']],
+                BuiltInAuthorizations::for($base, $definitions)->toArray()['grants'],
+            );
+
+            $this->assertEqualsCanonicalizing(self::GRANTS[$base->key], $grants, $base->key);
+        }
+    }
+}

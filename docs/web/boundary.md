@@ -33,7 +33,7 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 - `App\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
 - `App\Support\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
-- `tests/Feature/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
+- `tests/Unit/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
 - Pages use property hooks, so composer requires PHP 8.4 or later and CI runs PHP 8.5, as the image does.
 
 ## Plans: states, types and order (task 101)
