@@ -16,6 +16,7 @@ use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;
 use Tests\Support\Seeding\TestJournal;
+use Tests\Support\TestProjects;
 
 /**
  * The owner asks an agent for feedback on a document in their pair chat.
@@ -30,8 +31,23 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
 
     protected function arrange(TestJournal $journal): RouteCall
     {
+        return $this->askFeedback($journal, [], 'doc 1');
+    }
+
+    public function test_feedback_on_lines_names_the_lines_in_the_message(): void
+    {
+        $this->assertReachedAndDispatchesItsCommands(
+            $this->askFeedback($this->journal, ['first_line' => 2, 'last_line' => 3], 'lines 2-3 of doc 1'),
+        );
+    }
+
+    /**
+     * @param  array<string, int>  $lines
+     */
+    private function askFeedback(TestJournal $journal, array $lines, string $subject): RouteCall
+    {
         $journal->owner();
-        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText."));
+        $document = $journal->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $journal->idleAgent('Reviewer');
         $inboxId = strtolower((string) Str::ulid());
 
@@ -41,6 +57,7 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
             ])
             ->payload([
                 'agent' => $journal->agentCalled('Reviewer')->id,
+                ...$lines,
             ])
             ->reply(OpenInboxCommand::class, $inboxId)
             ->reply(SendMessageCommand::class, Str::ulid())
@@ -49,6 +66,7 @@ final class AskFeedbackPostTest extends GuardedRouteEntryTestCase
             ])
             ->expects(SendMessageCommand::class, [
                 'inboxId' => $inboxId,
+                'body' => "Please give me feedback on {$subject}.",
             ]);
     }
 }

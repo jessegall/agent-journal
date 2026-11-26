@@ -27,6 +27,8 @@ use App\Exceptions\AccountContainerUnsupported;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ContainerUnavailable;
 use App\Exceptions\GrantNotWithheld;
+use App\Exceptions\ProfilePolicyRefused;
+use App\Exceptions\ProfileProposalRefused;
 use App\Exceptions\SupervisorRouteInvalid;
 use App\Exceptions\SupervisorRouteRefused;
 use App\Models\Access\User;
@@ -47,11 +49,13 @@ use App\Values\ActivatedProfile;
 use App\Values\AskTypeKey;
 use App\Values\DraftExpectations;
 use App\Values\ExecutionBudgets;
+use App\Values\Operation;
 use App\Values\ProfileActivation;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;
 use App\Values\ProfileStartPolicy;
+use App\Values\ResourceRequest;
 use App\Values\ScriptSource;
 use App\Values\StartPolicy;
 use App\Values\StartProfileAuthority;
@@ -71,6 +75,7 @@ use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;
 use Tests\Support\TestProjects;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -98,6 +103,21 @@ final class ActivateProfilesTest extends TestCase
     ];
 
     private const string PROFILE = 'container-writer';
+
+    private const string REQUIRED_CONTAINER = 'required container';
+
+    private const array WORKER = [
+        'base' => 'writing-helper',
+        'tier' => 3,
+        'container' => 'required',
+        'allow_operations' => [
+            [
+                'name' => 'shell:journal-check.cleanup',
+                'resources' => [['type' => 'path', 'target' => '/workspace/.scratch']],
+            ],
+            ['name' => 'shell:git.push'],
+        ],
+    ];
 
     private const array ROUTE_PROFILE = ['base' => 'writing-helper', 'tier' => 2];
 
@@ -416,6 +436,76 @@ final class ActivateProfilesTest extends TestCase
     /**
      * @param  list<string>|null  $allowlist
      */
+    public function test_a_removed_class_blocks_while_an_exact_grant_passes_and_a_denial_wins(): void
+    {
+        $this->activateAsCurrentActor([
+            'revision' => 1,
+            'base_overrides' => [
+                'writing-helper' => ['remove_paths' => ['delete:.'], 'deny_operations' => ['shell:git.push']],
+            ],
+            'profiles' => ['journal-worker' => self::WORKER],
+        ]);
+
+        $start = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('journal-worker'))->start;
+        $access = $start->access;
+
+        $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete))->isAllowed);
+        $this->assertTrue($access->decide(
+            self::operation('shell:journal-check.cleanup', AccessType::Delete, '/workspace/.scratch'),
+        )->isAllowed);
+        $push = self::operation('shell:git.push', AccessType::Execute);
+
+        $this->assertFalse($access->decide($push)->isAllowed);
+        $this->assertSame(PolicyOriginType::Profile, $start->provenance->originOf('access'));
+    }
+
+    public function test_a_reader_widened_into_workspace_edits_is_refused_and_nothing_is_activated(): void
+    {
+        $proposal = [
+            'profiles' => [
+                'journal-researcher' => ['base' => 'read-only-helper', 'tier' => 3],
+                'journal-editor' => [
+                    'base' => 'read-only-helper',
+                    'tier' => 3,
+                    'allow_paths' => ['edit:.'],
+                ],
+            ],
+        ];
+
+        $this->assertThrows(fn () => $this->activateAsCurrentActor($proposal), ProfilePolicyRefused::class, 'writing_helper');
+        $this->assertFalse($this->app->make(ProfileResolver::class)->has(ProfileKey::from('journal-researcher')));
+    }
+
+    public function test_unknown_operations_and_unsupported_fields_are_refused(): void
+    {
+        $this->assertThrows(fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [
+            ...self::WORKER,
+            'allow_operations' => [['name' => 'shell:rm.everything']],
+        ]]]), ProfilePolicyRefused::class, 'shell:rm.everything');
+        $this->assertThrows(
+            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [...self::WORKER, 'instances' => 'many']]]),
+            ProfileProposalRefused::class,
+            'instances',
+        );
+        $this->assertThrows(
+            fn () => $this->activateAsCurrentActor(['profiles' => ['journal-worker' => [...self::WORKER, 'container' => 'host']]]),
+            ProfilePolicyRefused::class,
+            self::REQUIRED_CONTAINER,
+        );
+    }
+
+    public function test_an_agent_cannot_activate(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorReference::forAgent(TestIds::of(9)),
+            TestStartAuthority::forAgent(TestIds::of(9)),
+        );
+
+        $this->expectException(ActorNotAllowed::class);
+
+        $this->activateAsCurrentActor(['profiles' => ['journal-worker' => self::WORKER]]);
+    }
+
     private function reviewer(string $instructions, array|null $allowlist): ProposedProfile
     {
         return TestProposals::profile(
@@ -563,5 +653,23 @@ final class ActivateProfilesTest extends TestCase
         $proposal = TestProposals::of(TestProposals::profile($key, $type));
 
         return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand($proposal));
+    }
+
+    /**
+     * @param  array<string, mixed>  $configuration
+     */
+    private function activateAsCurrentActor(array $configuration): ProfileActivation
+    {
+        return $this->app->make(CommandBus::class)->run(
+            new ActivateProfilesCommand(ProfileProposal::fromConfiguration($configuration)),
+        );
+    }
+
+    private static function operation(
+        string $name,
+        AccessType $access,
+        string $target = '/workspace/file.txt',
+    ): Operation {
+        return new Operation('shell', $name, [$access], [ResourceRequest::path($target)], [], 1);
     }
 }

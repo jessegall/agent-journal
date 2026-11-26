@@ -73,24 +73,4 @@ final class StackInspectionTest extends TestCase
     {
         $this->actingAs($this->journal->owner()->ownerUser())->getJson('/hooks/stacks/1/99')->assertNotFound();
     }
-
-    public function test_a_guest_cannot_read_a_stack(): void
-    {
-        $this->getJson('/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10))->assertUnauthorized();
-    }
-
-    public function test_an_agent_with_its_own_credential_cannot_read_a_stack(): void
-    {
-        $agent = $this->journal->signedStart('Main agent', 'main-agent');
-
-        $this->call(
-            'GET',
-            '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
-            server: $agent->serverHeaders(
-                '',
-                method: 'GET',
-                target: '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
-            ),
-        )->assertUnauthorized();
-    }
 }

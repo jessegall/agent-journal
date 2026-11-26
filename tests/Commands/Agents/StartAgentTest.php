@@ -11,6 +11,7 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Drivers\DriverCatalogue;
 use App\Contracts\Hosts\DockerImageVerifier;
 use App\Contracts\Hosts\HostCapabilities;
+use App\Contracts\Sessions\SessionPolicyReader;
 use App\Contracts\Sessions\StartExecutor;
 use App\Contracts\Sessions\StartHeartbeats;
 use App\Contracts\Time\ServerClock;
@@ -32,6 +33,7 @@ use App\Exceptions\AgentBusy;
 use App\Exceptions\CapacityUnavailable;
 use App\Exceptions\ContainerUnavailable;
 use App\Exceptions\HostUnavailable;
+use App\Exceptions\SessionPolicyFrozen;
 use App\Exceptions\StartPreviewStale;
 use App\Exceptions\StartRefused;
 use App\Models\Accounts\Account;
@@ -44,6 +46,7 @@ use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Sessions\CapacityReservation;
+use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
 use App\Resolvers\Support\PendingStartSecrets;
@@ -422,6 +425,28 @@ final class StartAgentTest extends TestCase
      * A new connected project of that name with one ready binding, in /Users/owner/shop, whose relay declares what
      * the enrolled host declares.
      */
+    public function test_a_start_freezes_its_policy_with_its_session(): void
+    {
+        $request = $this->request();
+
+        $receipt = $this->start($request);
+
+        $frozen = $this->app->make(SessionPolicyReader::class)->policyFor($receipt->sessionId);
+        $this->assertSame(1, SessionPolicy::query()->where('session_id', $receipt->sessionId)->count());
+        $this->assertSame($request->policy->digest(), $frozen->digest());
+    }
+
+    public function test_a_frozen_policy_cannot_change(): void
+    {
+        $receipt = $this->start($this->request());
+        $row = SessionPolicy::query()->where('session_id', $receipt->sessionId)->sole();
+
+        $this->expectException(SessionPolicyFrozen::class);
+
+        $row->profile_key = 'writing-helper';
+        $row->save();
+    }
+
     private function servingBindingOf(string $name): ProjectBinding
     {
         $project = $this->journal->project($name)->projectCalled($name);

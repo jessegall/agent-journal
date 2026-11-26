@@ -9,13 +9,17 @@ use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Sessions\ProfileResolver;
 use App\Enums\Profiles\ModelTier;
+use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Exceptions\ProfileMissing;
 use App\Exceptions\ProfileRetired;
 use App\Models\Profiles\Profile;
+use App\Models\Profiles\ProfileRevisionHold;
+use App\Support\ProfileProposal;
 use App\Support\ProposedProfile;
 use App\Values\ProfileActivation;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
+use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
@@ -33,7 +37,7 @@ final class RevokeProfilesTest extends TestCase
     use CommitsHookRows;
     use HasContainerSupport;
 
-    private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
+    private const array TABLES = ['profile_revisions', 'profiles', 'profile_revision_holds', 'command_receipts'];
 
     protected function setUp(): void
     {
@@ -76,6 +80,22 @@ final class RevokeProfilesTest extends TestCase
     /**
      * @param  list<string>|null  $allowlist
      */
+    public function test_revocation_retains_the_fence_of_the_revision_and_tells_subscribers(): void
+    {
+        Event::fake([ProfileRevisionRevoked::class]);
+        $this->activateConfiguration(['profiles' => ['journal-worker' => ['base' => 'writing-helper', 'tier' => 3, 'container' => 'required']]]);
+        $revision = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('journal-worker'));
+
+        $this->app->make(CommandBus::class)->run(new RevokeProfilesCommand([ProfileKey::from('journal-worker')]));
+
+        Event::assertDispatched(
+            ProfileRevisionRevoked::class,
+            fn (ProfileRevisionRevoked $event) => $event->revision === $revision->revision
+                && ProfileRevisionHold::query()->where('profile_key', $event->key->key)
+                    ->where('profile_revision', $event->revision)->whereNull('reconciled_at')->exists(),
+        );
+    }
+
     private function reviewer(string $instructions, array|null $allowlist): ProposedProfile
     {
         return TestProposals::profile(
@@ -90,5 +110,15 @@ final class RevokeProfilesTest extends TestCase
     private function activate(ProposedProfile $profile): ProfileActivation
     {
         return $this->app->make(CommandBus::class)->run(new ActivateProfilesCommand(TestProposals::of($profile)));
+    }
+
+    /**
+     * @param  array<string, mixed>  $configuration
+     */
+    private function activateConfiguration(array $configuration): ProfileActivation
+    {
+        return $this->app->make(CommandBus::class)->run(
+            new ActivateProfilesCommand(ProfileProposal::fromConfiguration($configuration)),
+        );
     }
 }

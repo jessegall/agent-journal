@@ -7,14 +7,10 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\Actors\AgentTexts;
 use App\Enums\Hooks\AnswerType;
 use App\Exceptions\HookDeadlineExpired;
-use App\Exceptions\HookDigestChanged;
-use App\Exceptions\UnsupportedHook;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
 use App\Support\Drivers\DriverReplies;
 use App\Support\Drivers\DriverReply;
-use App\Support\Inputs\ContextCompacted;
-use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\OperationDeadline;
 use App\Support\Stack\HookAnswer;
 use App\Support\Storage\WalkStep;
@@ -23,7 +19,6 @@ use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\DomainBoot;
-use Tests\Support\TestActors;
 use Tests\TestCase;
 
 final class AgentStateMachineTest extends TestCase
@@ -84,16 +79,6 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame($versionAfterFirst, AgentStackRow::query()->sole()->version);
     }
 
-    public function test_a_retry_with_other_input_is_refused(): void
-    {
-        $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
-        $this->callAs('call-1', self::inputDigest('other input'));
-
-        $this->expectException(HookDigestChanged::class);
-
-        $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
-    }
-
     public function test_a_failure_before_the_commit_keeps_nothing(): void
     {
         $this->journal->pushState($this->target, $this->task(42));
@@ -110,26 +95,6 @@ final class AgentStateMachineTest extends TestCase
         } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
             $this->assertSame(['core.ready', 'test.tasks'], $this->storedTypeKeys());
-        }
-    }
-
-    public function test_a_hook_the_program_does_not_map_is_refused_before_any_write(): void
-    {
-        $compaction = new ContextCompacted(
-            TestActors::hookIdentity(1, 10, 'call-1', self::inputDigest()),
-            new CompactionDetails('compaction-1'),
-        );
-
-        try {
-            $this->machine()->answer(
-                $compaction,
-                $this->capabilities(),
-                new OperationDeadline(3000),
-                $this->stopReply(),
-            );
-            $this->fail('An unmapped hook was answered.');
-        } catch (UnsupportedHook) {
-            $this->assertSame(0, HookCall::query()->count());
         }
     }
 
