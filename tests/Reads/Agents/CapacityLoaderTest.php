@@ -10,6 +10,7 @@ use App\Http\Loaders\Agents\CapacityLoader;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
 #[TestsRead(CapacityLoader::class)]
 final class CapacityLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string MODE = 'required_container';
 
     public function test_the_answer_says_whether_it_fits_or_what_it_lacks(): void

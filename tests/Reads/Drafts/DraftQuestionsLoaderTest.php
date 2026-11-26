@@ -11,6 +11,7 @@ use App\Http\Loaders\Drafts\DraftQuestionsLoader;
 use App\Support\DraftProducers;
 use Tests\Fixtures\ClientDeclarations\StubDraftProducer;
 use Tests\Support\Entries\Attributes\TestsRead;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
 #[TestsRead(DraftQuestionsLoader::class)]
 final class DraftQuestionsLoaderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_producers_questions_are_its_answer(): void
     {
         $this->app->make(DraftProducers::class)->register('note', StubDraftProducer::class);

@@ -195,9 +195,8 @@ final class BeginSignInTest extends TestCase
         $this->start('tab-1', 'oauth')->assertStatus(303);
 
         $stranger = User::factory()->create();
-        $props = $this->receiptCall('tab-1', $stranger)->viewData('page')['props'];
 
-        $this->assertNotSame('started', $props[self::RECEIPT_PROP]['value']['status'] ?? null);
+        $this->receiptCall('tab-1', $stranger)->assertForbidden();
     }
 
     private function begin(string $requestKey): SignInStarted
