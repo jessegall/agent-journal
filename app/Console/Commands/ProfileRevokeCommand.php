@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Support\ConsoleOwner;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
+use App\Profiles\Commands\RevokeProfiles\RevokeProfilesCommand;
 use App\Values\ProfileKey;
 use Illuminate\Console\Command;
 

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Assignments;
 
-use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
-use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
-use App\Contracts\Assignments\AutoAssignmentResolver;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\AutoAssignmentPoolUnknown;
-use App\Exceptions\InvalidRecordIds;
+use App\Assignments\AutoAssignmentChange;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Exceptions\AutoAssignmentPoolUnknown;
+use App\Assignments\Exceptions\InvalidRecordIds;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Support\ActorReference;
-use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;

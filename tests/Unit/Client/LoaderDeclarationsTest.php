@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Client;
 
-use App\Declarations\DomainClient;
-use App\Declarations\Loader;
 use App\Exceptions\ClientKeyRepeated;
-use App\Exceptions\ClientResolverInvalid;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Navigation\Exceptions\ClientResolverInvalid;
 use App\Support\ClientDeclarations;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\ClientDeclarations\Library\BorrowedAnswerLoader;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Access\DisableUser\DisableUserCommand as DisableUser;
-use App\Contracts\Bus\OwnerCommands;
+use App\Access\Commands\DisableUser\DisableUserCommand as DisableUser;
+use App\Bus\Contracts\OwnerCommands;
 use App\Models\Access\User;
 use Illuminate\Console\Command;
 

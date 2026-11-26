@@ -38,7 +38,7 @@ final class CommandBypassTest extends TestCase
     /**
      * The one place that may call Laravel's dispatcher directly.
      */
-    private const string BUS = 'app/Support/LaravelCommandBus.php';
+    private const string BUS = 'app/Bus/LaravelCommandBus.php';
 
     public function test_nothing_reaches_laravels_dispatcher_around_the_command_bus(): void
     {

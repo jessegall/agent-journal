@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\Actors\Actor;
+use App\Actors\Contracts\Actor;
+use App\Bootstrap\Exceptions\InvalidExports;
+use App\Bootstrap\ExportBuilder;
+use App\Bootstrap\ExportValidator;
 use App\Contracts\Events\Event;
 use App\Exceptions\AmbiguousDomainRoot;
-use App\Exceptions\InvalidExports;
 use App\Support\DomainRegistry;
-use App\Support\ExportBuilder;
 use App\Support\Exports as DeclaredExports;
-use App\Support\ExportValidator;
 use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
 use Domain\Tasks\Events\TaskFinished;
 use Domain\Tasks\Exceptions\TaskMissing;

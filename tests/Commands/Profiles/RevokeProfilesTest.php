@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\Profiles\RevokeProfiles\RevokeProfilesCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\Profiles\ModelTier;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Accounts\ProfileRevisionRevoked;
 use App\Exceptions\ProfileMissing;
-use App\Exceptions\ProfileRetired;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevisionHold;
-use App\Support\ProfileProposal;
-use App\Support\ProposedProfile;
-use App\Values\ProfileActivation;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\RevokeProfiles\RevokeProfilesCommand;
+use App\Profiles\Enums\ModelTier;
+use App\Profiles\ProfileProposal;
+use App\Profiles\ProposedProfile;
+use App\Profiles\Values\ProfileActivation;
+use App\Sessions\Contracts\ProfileResolver;
+use App\Sessions\Exceptions\ProfileRetired;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use Illuminate\Support\Facades\Event;

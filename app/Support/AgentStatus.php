@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Sessions\SessionActivityStatus;
+use App\Sessions\Enums\SessionActivityStatus;
 
 /**
  * One agent's status as the bar, the picker, the conversation and the session dialog all show it, decided from its evidence

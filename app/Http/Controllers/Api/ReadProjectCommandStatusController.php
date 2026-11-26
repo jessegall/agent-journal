@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Connections\ProjectCommandStatus;
-use App\Api\Connections\ReadProjectCommandStatusPayload;
-use App\Enums\Connections\CommandRunStatus;
+use App\Connections\Api\ProjectCommandStatus;
+use App\Connections\Api\ReadProjectCommandStatusPayload;
+use App\Connections\Enums\CommandRunStatus;
 use App\Exceptions\VerbNotServed;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
+use App\Projects\CommandRunEvidence;
 use App\Support\AgentContext;
-use App\Support\CommandRunEvidence;
 
 /**
  * Answers where the calling agent's own run of the request id on its own binding stands, settled by what can be

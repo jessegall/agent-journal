@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand as InstallInboxes;
-use App\Contracts\Bus\JournalCommands;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand as InstallInboxes;
 use Illuminate\Console\Command;
 
 final class InstallInboxesCommand extends Command

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Projects;
 
-use App\Contracts\Projects\AgentProjects;
+use App\Projects\Contracts\AgentProjects;
 
 /**
  * The agent projects of the journal, keeping the id of each agent whose project the selection was pinned to.

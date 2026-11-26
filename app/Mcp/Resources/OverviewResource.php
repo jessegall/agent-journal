@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
-use App\Contracts\Authorization\ReadGrant;
+use App\Access\Contracts\ReadGrant;
 use App\Mcp\Support\OverviewResolver;
 use App\Values\ReadRequest;
 use Laravel\Mcp\Request;

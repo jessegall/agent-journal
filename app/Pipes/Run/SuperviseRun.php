@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Pipes\Run;
 
 use App\Pipelines\SuperviseRunPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PlannedRun;
 use App\Support\Execution\StepOutcome;
-use App\Support\PipelineAdapter;
 use App\Support\Run\ChannelRunEnded;
 use App\Support\Run\RunChannel;
 

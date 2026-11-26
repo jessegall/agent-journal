@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\StopProcessRun\StopProcessRunCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Runs\LifecycleStatus;
-use App\Exceptions\StopRefused;
-use App\Values\PartKey;
+use App\Bus\Contracts\CommandBus;
+use App\Processes\Commands\StopProcessRun\StopProcessRunCommand;
+use App\Processes\Enums\LifecycleStatus;
+use App\Processes\Exceptions\StopRefused;
+use App\Processes\Values\PartKey;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

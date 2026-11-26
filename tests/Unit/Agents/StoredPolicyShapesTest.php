@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Enums\Agents\AccessType;
-use App\Enums\Agents\ExecutionModeType;
+use App\Agents\Enums\AccessType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Profiles\Values\HostAccess;
+use App\Sessions\Values\ExecutionPolicy;
+use App\Sessions\Values\ProcessGrants;
+use App\Sessions\Values\StopConditions;
 use App\Values\AccessPolicy;
 use App\Values\ExecutionBudgets;
-use App\Values\ExecutionPolicy;
-use App\Values\HostAccess;
 use App\Values\OperationGrant;
-use App\Values\ProcessGrants;
 use App\Values\ResourceRequest;
 use App\Values\StopCondition;
-use App\Values\StopConditions;
 use Tests\TestCase;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Web;
 
-use App\Contracts\Files\Files;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Declarations\DomainClient;
-use App\Declarations\Loader;
 use App\Declarations\Page;
-use App\Enums\Navigation\Icon;
+use App\Files\Contracts\Files;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Navigation\Enums\Icon;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\ClientDeclarations;
 use App\Support\ClientManifest;
 use App\Support\DomainEntry;

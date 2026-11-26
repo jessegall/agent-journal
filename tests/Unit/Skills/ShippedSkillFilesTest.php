@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Skills\Skill;
-use App\Support\CanonicalRenderer;
-use App\Support\MarkdownParts;
-use App\Support\Shipped\AccessSkill;
-use App\Support\Shipped\JournalSkill;
-use App\Support\Shipped\ProfilesSkill;
-use App\Support\Shipped\ShellSkill;
-use App\Support\Shipped\SkillsSkill;
+use App\Skills\CanonicalRenderer;
+use App\Skills\Contracts\Skill;
+use App\Skills\MarkdownParts;
+use App\Skills\Shipped\AccessSkill;
+use App\Skills\Shipped\JournalSkill;
+use App\Skills\Shipped\ProfilesSkill;
+use App\Skills\Shipped\ShellSkill;
+use App\Skills\Shipped\SkillsSkill;
 use App\Values\SkillOwner;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\Skills\ChatSkill;

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
-use App\Commands\Navigation\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
-use App\Enums\Navigation\NavigationStatus;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Agents\Drivers\Enums\RequestOutcome;
+use App\Agents\Drivers\Enums\RequestProgress;
+use App\Engine\EngineListenerSet;
+use App\Engine\EngineTickedDelivery;
+use App\Engine\Ticks\ElapsedTime;
 use App\Events\Engine\EngineTicked;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Support\EngineListenerSet;
-use App\Support\EngineTickedDelivery;
-use App\Support\ExpireNavigationRequestsOnTick;
-use App\Support\Ticks\ElapsedTime;
+use App\Navigation\Commands\ExpireNavigationRequests\ExpireNavigationRequestsCommand;
+use App\Navigation\Enums\NavigationStatus;
+use App\Navigation\ExpireNavigationRequestsOnTick;
 use Carbon\CarbonImmutable;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;

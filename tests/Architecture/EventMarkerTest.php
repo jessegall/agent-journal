@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use App\Contracts\Events\Event;
 use App\Contracts\Events\Listener;
 use App\Support\Reflector;

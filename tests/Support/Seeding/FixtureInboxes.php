@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Messages\MessageSender;
+use App\Actors\ActorProvisioning;
+use App\Inboxes\InboxReceiver;
+use App\Messages\Contracts\MessageSender;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ActorProvisioning;
 use App\Support\ActorReference;
-use App\Support\InboxReceiver;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Foundation\Application;
 

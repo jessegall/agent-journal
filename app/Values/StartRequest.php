@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Drivers\DriverCapability;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Sessions\StartOriginType;
+use App\Agents\Drivers\Enums\DriverCapability;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Sessions\Enums\StartOriginType;
+use App\Sessions\Values\ExecutionPolicy;
+use App\Sessions\Values\StartPolicy;
 use App\Support\RecordIdentity;
 
 /**

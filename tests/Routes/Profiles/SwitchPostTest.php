@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
-use App\Enums\Drivers\DriverSwitchStage;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverSwitchStage;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Values\DriverSwitchReceipt;
 use App\Values\ChosenAccount;
-use App\Values\DriverSwitchReceipt;
 use App\Values\DriverSwitchTarget;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;

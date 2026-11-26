@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Capabilities;
 
-use App\Contracts\Drivers\DriverCapabilities;
-use App\Enums\Drivers\DriverCapability;
+use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Enums\DriverCapability;
 use App\Values\BoundTarget;
 use App\Values\OperationSupport;
 use App\Values\SupportSnapshot;

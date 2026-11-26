@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Agents\Commands\RecheckDriverSwitch\RecheckDriverSwitchCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Agents\RecheckDriverSwitch\RecheckDriverSwitchCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Drivers\DriverSwitchStage;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverSwitchStage;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverSwitch;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
-use App\Support\StartSessions;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;
-use App\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
-use App\Enums\Hooks\ToolOutcome;
-use App\Enums\Skills\ReadEvidence;
+use App\Hooks\Enums\ToolOutcome;
+use App\Skills\Enums\ReadEvidence;
 use App\Support\Inputs\Values\ToolResult;
 
 /**

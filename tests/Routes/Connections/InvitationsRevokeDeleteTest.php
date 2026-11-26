@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RevokeProjectInvitation\RevokeProjectInvitationCommand;
+use App\Projects\Commands\RevokeProjectInvitation\RevokeProjectInvitationCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

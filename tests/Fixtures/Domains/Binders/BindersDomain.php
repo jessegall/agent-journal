@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Binders;
 
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Sharing\ShareRecordContributor;
 use App\Support\ShareRecordDefinition;
 
 final class BindersDomain extends Domain implements ShareRecordContributor
@@ -32,23 +32,23 @@ final class BindersDomain extends Domain implements ShareRecordContributor
         return [
             new ShareRecordDefinition('binders.binder', Binder::class, BinderShareProvider::class, []),
             new ShareRecordDefinition(
-'binders.sheet',
- BinderPage::class,
- BinderShareProvider::class,
- ['share-linked-record'],
-),
+                'binders.sheet',
+                BinderPage::class,
+                BinderShareProvider::class,
+                ['share-linked-record'],
+            ),
             new ShareRecordDefinition(
-'binders.card',
- BinderPage::class,
- BinderShareProvider::class,
- ['share-linked-record'],
-),
+                'binders.card',
+                BinderPage::class,
+                BinderShareProvider::class,
+                ['share-linked-record'],
+            ),
             new ShareRecordDefinition(
-'binders.tab',
- BinderPage::class,
- BinderShareProvider::class,
- ['share-linked-record'],
-),
+                'binders.tab',
+                BinderPage::class,
+                BinderShareProvider::class,
+                ['share-linked-record'],
+            ),
             new ShareRecordDefinition('binders.memo', BinderPage::class, BinderShareProvider::class, []),
         ];
     }

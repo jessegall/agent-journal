@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
-use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\RefusalRecovery;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use App\Values\RecoveryCall;
 use Domain\Tasks\Models\Task;
 use RuntimeException;

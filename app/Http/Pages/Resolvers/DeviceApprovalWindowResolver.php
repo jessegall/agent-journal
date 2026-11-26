@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Connections\DeviceApprovalData;
-use App\Enums\Connections\BindingReadiness;
+use App\Connections\Data\DeviceApprovalData;
+use App\Connections\Enums\BindingReadiness;
+use App\Connections\ServerOrigin;
 use App\Exceptions\PrivateRecordMissing;
 use App\Http\Requests\Connections\DeviceApprovalPageRequest;
 use App\Models\Projects\DeviceGrant;
-use App\Support\ServerOrigin;
+use App\Navigation\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

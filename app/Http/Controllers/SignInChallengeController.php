@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Accounts\SignInChallenges;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\SignInChallenges;
 use Illuminate\Http\JsonResponse;
 
 /**

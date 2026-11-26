@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Support\ActorReference;
 use Domain\Helpers\Values\HelperWork;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
-use App\Enums\Navigation\NavigationStatus;
+use App\Bus\Contracts\CommandRefusal;
+use App\Navigation\Enums\NavigationStatus;
 use RuntimeException;
 
 /**

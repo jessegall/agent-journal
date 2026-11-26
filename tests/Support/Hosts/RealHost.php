@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
-use App\Support\EnrolledHost;
+use App\Hosts\EnrolledHost;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;

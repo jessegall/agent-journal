@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Asks;
 
-use App\Contracts\Asks\AskHopEvent;
+use App\Asks\Contracts\AskHopEvent;
 
 /**
  * One step of an ask kept what came of asking its holder to look.

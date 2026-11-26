@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Bus\CallerReceipts as CallerReceiptsContract;
+use App\Bus\Contracts\CallerReceipts as CallerReceiptsContract;
+use App\Bus\Values\ReceiptAnswer;
+use App\CommandRules\ReceiptCallers;
 use App\Models\CommandRules\CommandReceipt;
-use App\Values\ReceiptAnswer;
 
 /**
  * The current caller's receipts from the command receipts table, read as the bus receipts the command.

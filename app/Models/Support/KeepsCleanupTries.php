@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Enums\Accounts\CleanupProblem;
-use App\Values\CleanupProgress;
+use App\Accounts\Enums\CleanupProblem;
+use App\Accounts\Values\CleanupProgress;
 
 /**
  * A row whose folder a host cleans in tries: it keeps the proof that the driver's store is gone, counts the tries

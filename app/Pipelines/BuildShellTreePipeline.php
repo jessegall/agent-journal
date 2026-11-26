@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
 use App\Pipes\FinishTree;
 use App\Pipes\StartAnalysis;
+use App\Processes\Grammar\Pipelines\ReadSourcePipeline;
 use App\Support\Lines\ShellLine;
 use App\Values\ShellTree;
 

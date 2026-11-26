@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
+use App\Accounts\Contracts\AccountUses;
+use App\Accounts\Data\AccountListData;
+use App\Accounts\Data\AccountRowData;
+use App\Accounts\Data\AccountUsageData;
+use App\Accounts\Data\DriverMethodsData;
+use App\Accounts\SignInProtocols;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Accounts\AccountUses;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Accounts\AccountListData;
-use App\Data\Accounts\AccountRowData;
-use App\Data\Accounts\AccountUsageData;
-use App\Data\Accounts\DriverMethodsData;
 use App\Http\Pages\Accounts\AccountsIndex;
 use App\Http\Requests\Profiles\AccountsPageRequest;
 use App\Models\Accounts\Account;
@@ -19,8 +19,8 @@ use App\Models\Accounts\AccountUsageTokens;
 use App\Models\Accounts\AccountUsageWindow;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Accounts\SignInAttempt;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\SignInProtocols;
 use Carbon\CarbonImmutable;
 
 /**

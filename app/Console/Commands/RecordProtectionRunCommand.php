@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Hosts\RecordProtectionEvidence\RecordProtectionEvidenceCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Drivers\BoundaryItem;
-use App\Enums\Drivers\IsolationPlatform;
-use App\Support\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Drivers\Enums\BoundaryItem;
+use App\Agents\Drivers\Enums\IsolationPlatform;
+use App\Bus\JournalCommands;
+use App\Hosts\Commands\RecordProtectionEvidence\RecordProtectionEvidenceCommand;
 use Illuminate\Console\Command;
 
 /**

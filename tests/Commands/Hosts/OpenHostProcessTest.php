@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessStatus;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\RestartPolicy;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Commands\OpenHostProcess\OpenHostProcessCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Values\HostOrderSource;

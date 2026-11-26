@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Inboxes\InboxParticipationEnding;
-use App\Contracts\Time\ServerClock;
+use App\Inboxes\Contracts\InboxParticipationEnding;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;
+use App\Time\Contracts\ServerClock;
 
 /**
  * An actor that may no longer take part in chats leaves every chat it is attached to.

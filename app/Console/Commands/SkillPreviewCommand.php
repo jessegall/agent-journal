@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Skills\SkillResolver;
-use App\Data\Skills\SkillAgentSelection;
-use App\Exceptions\SkillAgentHidden;
-use App\Exceptions\SkillConditionInvalid;
-use App\Exceptions\SkillConflict;
-use App\Exceptions\SkillContextUnavailable;
-use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillKeyInvalid;
-use App\Exceptions\SkillMissing;
-use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\SkillSourceInvalid;
 use App\Models\Agents\Agent;
-use App\Support\SkillAuthoringService;
-use App\Support\SkillPreview;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Data\SkillAgentSelection;
+use App\Skills\Exceptions\SkillAgentHidden;
+use App\Skills\Exceptions\SkillConditionInvalid;
+use App\Skills\Exceptions\SkillConflict;
+use App\Skills\Exceptions\SkillContextUnavailable;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Exceptions\SkillMissing;
+use App\Skills\Exceptions\SkillSelectionConflict;
+use App\Skills\SkillAuthoringService;
+use App\Skills\SkillPreview;
 use App\Values\SkillKey;
 use Illuminate\Console\Command;
 

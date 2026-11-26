@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes\Validation;
 
-use App\Support\OneLineRule;
+use App\Text\OneLineRule;
 use Attribute;
 use Spatie\LaravelData\Attributes\Validation\CustomValidationAttribute;
 use Spatie\LaravelData\Support\Validation\ValidationPath;

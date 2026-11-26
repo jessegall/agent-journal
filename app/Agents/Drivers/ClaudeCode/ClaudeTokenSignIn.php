@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Enums\Accounts\SignInMethod;
+use App\Accounts\Enums\SignInMethod;
 use App\Values\SignInCard;
 
 /**

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Files\Files;
-use App\Enums\Projects\ArrangementType;
+use App\Accounts\AccountFolderUses;
+use App\Accounts\FolderOrderWait;
+use App\Accounts\SignInProtocols;
+use App\Files\Contracts\Files;
 use App\Jobs\SignInDeadline;
-use App\Support\AccountFolderUses;
-use App\Support\FolderOrderWait;
+use App\Projects\Enums\ArrangementType;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
-use App\Support\SignInProtocols;
 use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\TimeLimits\TimeLimit;

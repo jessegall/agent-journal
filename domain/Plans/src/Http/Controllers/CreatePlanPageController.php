@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\ProjectDestination;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Projects\Contracts\ProjectDestination;
 use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Http\Requests\CreatePlanRequest;
 use Domain\Plans\Models\Plan;

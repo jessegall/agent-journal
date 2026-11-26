@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Sessions\RuntimeResolver;
-use App\Data\Processes\RecoveryRefusalPartData;
-use App\Data\Processes\RuntimeEntryData;
-use App\Data\Processes\RuntimeStatus;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\RecoveryRefusalPartData;
+use App\Processes\Data\RuntimeEntryData;
+use App\Processes\Data\RuntimeStatus;
+use App\Sessions\Contracts\RuntimeResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutNativeData;

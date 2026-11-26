@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Contracts\TaskAssignmentResolver as TaskAssignmentResolverContract;
 use Domain\Tasks\Enums\TaskStatus;

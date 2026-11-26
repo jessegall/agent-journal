@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Providers;
 
-use App\Contracts\Sharing\SharePolicy;
-use App\Contracts\Sharing\ShareStatusResolver;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareStatusResolver;
 use App\Support\DomainRegistry;
 use App\Support\FolderClasses;
 use Domain\Sharing\Support\Gateways\NgrokGateway;

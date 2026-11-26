@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills\Writing;
 
-use App\Enums\Accounts\CommandEntry;
-use App\Support\JournalCommands;
-use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
-use App\Contracts\Skills\SkillConditionEvaluator;
-use App\Values\ConditionResult;
-use App\Values\SkillContext;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Records\Commands\InstallNumbers\InstallNumbersCommand;
+use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Values\ConditionResult;
+use App\Skills\Values\SkillContext;
 use Spatie\LaravelData\Data;
 
 /**

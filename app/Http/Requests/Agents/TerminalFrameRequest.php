@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Support\HeldFrame;
+use App\Terminals\HeldFrame;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

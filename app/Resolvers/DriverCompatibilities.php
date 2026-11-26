@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Drivers\DriverCompatibilities as DriverCompatibilitiesContract;
-use App\Enums\Drivers\DriverEvidence;
-use App\Enums\Projects\ArrangementType;
+use App\Agents\Drivers\Contracts\DriverCompatibilities as DriverCompatibilitiesContract;
+use App\Agents\Drivers\Enums\DriverEvidence;
+use App\Hosts\ArrangementSetting;
 use App\Models\Projects\Host;
-use App\Support\ArrangementSetting;
+use App\Profiles\StartProfiles;
+use App\Projects\Enums\ArrangementType;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\StartProfiles;
 use App\Values\ProtectionReport;
 
 /**

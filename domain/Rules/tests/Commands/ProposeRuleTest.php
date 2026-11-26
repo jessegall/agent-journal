@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Commands;
 
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Models\Agents\Agent;
 use Domain\Rules\Commands\ProposeRule\ProposeRuleCommand;
 use Domain\Rules\Enums\RuleStatus;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ReadShare;
 
-use App\Contracts\Reads\ReadMeter;
-use App\Contracts\Sharing\ShareBudget as ShareBudgetContract;
-use App\Enums\Sharing\ShareRelationType;
-use App\Exceptions\ShareBudgetExceeded;
-use App\Exceptions\UnknownShareRecordType;
-use App\Exceptions\UnknownShareRelation;
+use App\Bus\RunningCommand;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Contracts\ShareBudget as ShareBudgetContract;
+use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\Exceptions\UnknownShareRelation;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Support\RunningCommand;
 use App\Support\ShareContentRead;
-use App\Support\ShareRecordRegistry;
 use App\Support\ShareRelationRead;
 use App\Support\ShareTargetRead;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Actors;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Sessions\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use Illuminate\Http\Response;
 
 /**

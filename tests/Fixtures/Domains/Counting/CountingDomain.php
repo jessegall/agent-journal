@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Counting;
 
 use App\Concerns\HasStates;
-use App\Contracts\Records\StateProvider;
+use App\Records\Contracts\StateProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Domains\Counting\States\CountFactsState;

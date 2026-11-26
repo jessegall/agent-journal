@@ -7,7 +7,7 @@ namespace Domain\Plans\Api;
 use App\Attributes\Api\Endpoint;
 use App\Attributes\Api\PresentList;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
+use App\Processes\Enums\ApiEffect;
 use App\Support\NumberedPage;
 use Domain\Plans\Data\AssignedPlanListData;
 use Spatie\LaravelData\Attributes\MapName;

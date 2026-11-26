@@ -6,8 +6,8 @@ namespace Tests\Unit\Profiles;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\SignInDriver;
-use App\Support\SignInEgress;
-use App\Values\SecretHandover;
+use App\Agents\SignInEgress;
+use App\Agents\Values\SecretHandover;
 use Tests\TestCase;
 
 /**

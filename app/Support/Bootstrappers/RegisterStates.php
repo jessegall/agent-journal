@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\Domains\DomainAvailability;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Events\Hooks\StateTypesRequested;
+use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\DomainEntry;
 use App\Support\DomainRegistry;
-use App\Support\StateLoading\RegisteredStateType;
 use Illuminate\Container\Container as ContainerInstance;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;

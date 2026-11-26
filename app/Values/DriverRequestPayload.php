@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Drivers\MessagePart;
-use App\Data\Messages\MessageTextData;
+use App\Agents\Drivers\Contracts\MessagePart;
+use App\Messages\Data\MessageTextData;
 
 /**
  * What a driver request carries beside its operation: the message to deliver, the model or effort to switch to, or

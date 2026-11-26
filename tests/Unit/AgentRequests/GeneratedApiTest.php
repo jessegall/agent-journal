@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\Support\ApiGroups;
+use App\Api\ApiGroups;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -55,7 +55,7 @@ final class GeneratedApiTest extends TestCase
 
         try {
             $this->artisan('journal:api', ['--check' => true])
-                ->expectsOutputToContain('app/Support/JournalClient.php differs')
+                ->expectsOutputToContain('app/Api/JournalClient.php differs')
                 ->assertFailed();
         } finally {
             file_put_contents($path, $original);

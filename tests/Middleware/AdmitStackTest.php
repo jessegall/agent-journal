@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\AdmitStack;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandRefused;
-use App\Exceptions\StackLockTimedOut;
-use App\Support\Admission\StackAdmission;
+use App\Access\Exceptions\StackLockTimedOut;
+use App\Access\StackAdmission;
+use App\Bus\CommandMiddleware\AdmitStack;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
 use App\Support\OperationDeadline;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Sharing\ShareGateway;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\Command;
+use App\Bus\JournalCommands;
 use App\Exceptions\SupervisorInsideTransaction;
-use App\Support\GatewayEndpoint;
-use App\Support\GatewayOperation;
-use App\Support\JournalCommands;
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\GatewayEndpoint;
+use App\Sharing\GatewayOperation;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ExpireShares\ExpireSharesCommand;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;

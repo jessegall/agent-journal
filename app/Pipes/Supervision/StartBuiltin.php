@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
-use App\Enums\CommandRules\BuiltinCommand;
-use App\Exceptions\SupervisorRefused;
-use App\Support\Execution\BuiltinCall;
-use App\Support\Execution\QueuedPart;
+use App\Bus\Contracts\Pipe;
+use App\CommandRules\Enums\BuiltinCommand;
+use App\CommandRules\Execution\BuiltinCall;
+use App\Processes\Exceptions\SupervisorRefused;
+use App\Processes\Execution\QueuedPart;
 
 /**
  * Starts a builtin inside the supervisor itself: recorded as started on this machine, with its name and arguments.

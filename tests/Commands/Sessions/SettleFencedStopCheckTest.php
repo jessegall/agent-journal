@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Sessions\SettleFencedStopCheck\SettleFencedStopCheckCommand;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostRefusal;
-use App\Enums\Sessions\StopCheckStatus;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostRefusal;
 use App\Models\Sessions\StopCheck;
 use App\Models\Sessions\StopConditionResult;
+use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
+use App\Sessions\Enums\StopCheckStatus;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

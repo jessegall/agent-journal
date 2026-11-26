@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
+use App\Navigation\Layout\LayoutMenuData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

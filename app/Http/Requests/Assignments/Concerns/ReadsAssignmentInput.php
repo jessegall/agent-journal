@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments\Concerns;
 
-use App\Contracts\Actors\ActorTypes;
+use App\Actors\Contracts\ActorTypes;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\RecordIdentity;

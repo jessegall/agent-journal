@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
-use App\Contracts\Accounts\StartAccounts;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Navigation\SlotSections;
-use App\Contracts\Sessions\AgentDirectory;
-use App\Data\Accounts\EligibleAccountsData;
+use App\Accounts\Contracts\StartAccounts;
+use App\Accounts\Data\EligibleAccountsData;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Exceptions\InboxUnavailable;
 use App\Exceptions\PrivateRecordMissing;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
+use App\Navigation\Contracts\PageResolver;
+use App\Navigation\Contracts\SlotSections;
+use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;

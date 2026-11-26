@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Authorization\OwnerPolicy;
+use App\Access\Contracts\OwnerPolicy;
 use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;

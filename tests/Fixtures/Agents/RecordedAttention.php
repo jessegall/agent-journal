@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Contracts\Actors\ActorAttention;
+use App\Actors\AttentionOrigin;
+use App\Actors\AttentionOutcome;
+use App\Actors\Contracts\ActorAttention;
 use App\Support\ActorReference;
-use App\Support\AttentionOrigin;
-use App\Support\AttentionOutcome;
 
 /**
  * Keeps every attention request instead of waking a runtime: who was asked, and the wake key of the origin.

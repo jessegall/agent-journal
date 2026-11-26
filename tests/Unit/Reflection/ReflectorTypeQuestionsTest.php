@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Exceptions\QuestionNotNegatable;
-use App\Support\CatalogueReflectorFactory;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Exceptions\QuestionNotNegatable;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Labelled;

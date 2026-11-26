@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\Assignments\AssignedWorkProvider;
-use App\Enums\Assignments\AssignmentPurpose;
-use App\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\AutoAssignerDefinition;
+use App\Assignments\Contracts\AssignedWorkProvider;
+use App\Assignments\Enums\AssignmentPurpose;
+use App\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\PoolDefinition;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\AutoAssignmentDeclarationRefused;
 use App\Support\AssigneeIdentity;
-use App\Support\AutoAssignerDefinition;
 use App\Support\Bootstrappers\RegisterAssignables;
 use App\Support\Domain;
 use App\Support\DomainEntry;
-use App\Support\PoolDefinition;
 use App\Support\Registry\AssignmentRegistry;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\Errands\ErrandAssignables;

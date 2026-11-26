@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Support;
 
+use App\Sharing\ShareRecordRegistry;
 use App\Support\Domain;
 use App\Support\DomainEntry;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Support\ShareGatewayRegistry;
 
 /**

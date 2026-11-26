@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Hosts\Values\HostContext;
 use App\Models\Projects\ProjectBinding;
-use App\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**

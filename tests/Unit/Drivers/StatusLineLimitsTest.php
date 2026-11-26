@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\Enums\UsageWindowSlot;
 use App\Agents\Drivers\ClaudeCode\StatusLineLimits;
-use App\Enums\Accounts\UsageWindowSlot;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;

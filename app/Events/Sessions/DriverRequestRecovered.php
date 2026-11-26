@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\DriverRequestEvent;
-use App\Enums\Drivers\RecoveryAction;
+use App\Agents\Drivers\Contracts\DriverRequestEvent;
+use App\Agents\Drivers\Enums\RecoveryAction;
 use App\Support\ActorReference;
 
 /**

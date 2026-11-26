@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\RestartPolicy;
-use App\Support\ContainerManifest;
-use App\Support\Screens\ShieldRule;
+use App\Agents\ContainerManifest;
+use App\Agents\Values\PlanFile;
+use App\Agents\Values\RestartFile;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
+use App\Terminals\Screens\ShieldRule;
 
 /**
  * How a host is to open one process: what it is for, terminal or pipes, whether it is healed, its argv and

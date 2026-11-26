@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\Bus\CommandMiddleware as CommandMiddlewareContract;
+use App\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
+use App\Stacks\AgentState;
 use App\Support\Command;
 use App\Support\Reflector;
-use App\Support\States\AgentState;
 use Illuminate\Console\Command as ArtisanCommand;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;

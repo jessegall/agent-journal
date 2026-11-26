@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Support\ShownMessage;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\ShownMessage;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

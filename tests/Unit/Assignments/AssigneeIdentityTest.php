@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Assignments\Assignee;
+use App\Actors\Contracts\Actor;
+use App\Assignments\Contracts\Assignee;
 use App\Support\Reflector;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;

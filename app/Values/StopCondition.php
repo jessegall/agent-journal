@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
+use App\Hosts\Values\FencedRun;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

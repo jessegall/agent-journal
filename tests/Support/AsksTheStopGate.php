@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\Hooks\AnswerType;
+use App\Agents\Inputs\Values\StopDetails;
 use App\Events\Sessions\StopCheckSettled;
-use App\Support\Decisions\ContextLine;
-use App\Support\Decisions\MessageLine;
+use App\Hooks\Enums\AnswerType;
+use App\Stacks\Decisions\ContextLine;
+use App\Stacks\Decisions\MessageLine;
+use App\Stacks\ReadyState;
+use App\Stacks\StateAnswer;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Inputs\Values\StopDetails;
-use App\Support\Stack\StateAnswer;
-use App\Support\States\ReadyState;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestStart;
 

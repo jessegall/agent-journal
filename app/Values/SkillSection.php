@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Reads\MarkdownParts;
+use App\Reads\Contracts\MarkdownParts;
+use App\Reads\Values\MarkdownPart;
 use Spatie\LaravelData\Data;
 
 /**

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
+use App\Bus\Contracts\CommandHandler;
 
 final class DrawCardHandler implements CommandHandler
 {

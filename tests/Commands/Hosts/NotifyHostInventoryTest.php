@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
-use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Enums\Hosts\HostProcessStatus;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\HostRefusal;
+use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;

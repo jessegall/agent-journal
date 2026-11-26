@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\ProfileResolver;
-use App\Contracts\Sessions\ProfileSelections as ProfileSelectionsContract;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Sessions\Contracts\ProfileResolver;
+use App\Sessions\Contracts\ProfileSelections as ProfileSelectionsContract;
+use App\Sessions\Values\ProfileDefaults;
+use App\Sessions\Values\ProfileSelection;
 use App\Values\ModelSelection;
-use App\Values\ProfileDefaults;
 use App\Values\ProfileKey;
-use App\Values\ProfileSelection;
 use App\Values\SelectedDriver;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
-use App\Values\InstallTicket;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Projects\Values\InstallTicket;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

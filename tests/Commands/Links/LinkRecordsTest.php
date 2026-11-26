@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Links;
 
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Api\SignedCall;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RecordUnavailable;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Records\Link;
+use App\Records\Contracts\RecordResolver;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\RecordIdentity;
-use App\Support\SignedCall;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;

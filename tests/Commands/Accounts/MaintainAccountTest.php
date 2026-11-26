@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\MaintainAccount\MaintainAccountCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Accounts\SignInMethod;
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\AccountMaintenance;
+use App\Accounts\Commands\MaintainAccount\MaintainAccountCommand;
+use App\Accounts\Enums\SignInMethod;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
-use App\Support\AccountMaintenance;
 use App\Support\ActorReference;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

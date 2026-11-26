@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Support\StateEvents;
 
 use App\Contracts\Events\Event;
-use App\Declarations\StateMethods;
 use App\Models\Agents\AgentStackRow;
+use App\Stacks\Declarations\StateMethods;
+use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\StateCatalog\Contracts\StateTypes;
-use App\Support\StateLoading\RegisteredStateType;
 use App\Values\StackTarget;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Enums\Skills\ConditionOutcome;
+use App\Agents\Values\ProviderKey;
 use App\Exceptions\SkillKeyInvalid;
-use App\Support\Conditions\Conditions;
+use App\Reads\Values\MarkdownPart;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Enums\ConditionOutcome;
+use App\Skills\Values\SkillContext;
+use App\Skills\Values\StartProfile;
 use App\Values\DriverKey;
-use App\Values\MarkdownPart;
-use App\Values\ProviderKey;
-use App\Values\SkillContext;
 use App\Values\SkillKey;
 use App\Values\SkillSection;
-use App\Values\StartProfile;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;

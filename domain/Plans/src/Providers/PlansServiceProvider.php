@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Time\VerificationTiming;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Values\ReadEntitlement;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Support\FolderClasses;
-use App\Support\Sources\Contracts\DockRegistration;
-use App\Values\ReadEntitlement;
+use App\Time\Contracts\VerificationTiming;
 use Domain\Plans\Contracts\PlanDetailsResolver as PlanDetailsResolverContract;
 use Domain\Plans\Contracts\PlanResolver as PlanResolverContract;
 use Domain\Plans\Exceptions\PlanMissing;

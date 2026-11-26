@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Contracts;
 
-use App\Contracts\Bus\CommandFacts;
+use App\Bus\Contracts\CommandFacts;
 
 /**
  * A transaction listener that stages a public occurrence it has no row to raise on.

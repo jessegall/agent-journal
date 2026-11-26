@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Keywords;
 
-use App\Contracts\Scripts\ScriptStatement;
-use App\Enums\CommandRules\SyntaxForm;
-use App\Support\CompileContext;
-use App\Values\FlowShape;
-use App\Values\Instruction;
-use App\Values\ParsedStatement;
-use App\Values\RunContext;
+use App\CommandRules\Enums\SyntaxForm;
+use App\Scripts\CompileContext;
+use App\Scripts\Contracts\ScriptStatement;
+use App\Scripts\Values\FlowShape;
+use App\Scripts\Values\Instruction;
+use App\Scripts\Values\ParsedStatement;
+use App\Scripts\Values\RunContext;
 use App\Values\ScriptKeywordDefinition;
 use App\Values\StepOutcome;
 

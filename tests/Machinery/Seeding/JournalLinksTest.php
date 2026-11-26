@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;

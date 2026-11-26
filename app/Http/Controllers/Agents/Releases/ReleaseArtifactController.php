@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Releases;
 
-use App\Support\PublishedReleases;
-use App\Values\ReleaseArtifact;
+use App\Connections\PublishedReleases;
+use App\Connections\Values\ReleaseArtifact;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**

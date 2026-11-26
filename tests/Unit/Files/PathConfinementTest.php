@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
 use App\Exceptions\FileMissing;
-use App\Exceptions\FolderClosed;
-use App\Exceptions\LinkLeavesPlace;
-use App\Exceptions\LinkLoop;
-use App\Support\PathConfinement;
+use App\Files\Enums\Place;
+use App\Files\PathConfinement;
+use App\Navigation\Exceptions\FolderClosed;
+use App\Navigation\Exceptions\LinkLeavesPlace;
+use App\Navigation\Exceptions\LinkLoop;
 use App\Values\FilePath;
 use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;

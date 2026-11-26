@@ -61,7 +61,7 @@ the registry in the `module` scope.
 
 ## Shipped readers
 
-Core ships proven readers for the tools it knows (`app/Support/Rules/ShippedReaders.php`), each bound to the
+Core ships proven readers for the tools it knows (`app/CommandRules/Rules/ShippedReaders.php`), each bound to the
 version its samples came from (`app/Processes/Rules/Proofs/<tool>/<version>`). `process:install-shipped-readers`
 approves them, as the owner, for every tool whose installed version in `composer.lock` or `package-lock.json`
 matches; a tool at another version stays `reader-required`.

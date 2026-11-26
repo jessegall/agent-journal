@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers\Support;
 
-use App\Exceptions\CrossOwnerReadRefused;
+use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Support\ActorReference;
 use App\Support\NumberedPage;
 use App\Values\StackTarget;

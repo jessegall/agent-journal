@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
+use App\Notifications\Commands\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

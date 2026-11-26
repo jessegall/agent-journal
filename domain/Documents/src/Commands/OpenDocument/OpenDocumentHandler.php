@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\OpenDocument;
 
-use App\Contracts\Sessions\SessionProvenance;
+use App\Sessions\Contracts\SessionProvenance;
 use App\Support\RecordReference;
 use Domain\Documents\Commands\Support\DocumentCommandHandler;
 use Domain\Documents\Exceptions\DraftHeld;

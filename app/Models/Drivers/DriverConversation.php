@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Agents\Drivers\Exceptions\ResumeRefused;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Sessions\ResumeRefusal;
-use App\Exceptions\ResumeRefused;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use App\Sessions\Enums\ResumeRefusal;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;

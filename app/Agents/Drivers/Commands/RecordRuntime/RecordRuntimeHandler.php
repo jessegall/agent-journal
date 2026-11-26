@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Drivers\Commands\RecordRuntime;
+
+use App\Agents\DriverRequests;
+use App\Bus\Contracts\CommandHandler;
+use App\Values\DriverReceipt;
+use App\Values\DriverRequestPayload;
+
+final readonly class RecordRuntimeHandler implements CommandHandler
+{
+    public function __construct(private DriverRequests $requests) {}
+
+    public function handle(RecordRuntimeCommand $command): DriverReceipt
+    {
+        $driverEnvelope = DriverRequestPayload::nothing();
+
+        return $this->requests->append(
+            $command->target(),
+            $command->operation(),
+            $command->idempotencyKey,
+            $driverEnvelope,
+        )
+            ->receipt;
+    }
+}

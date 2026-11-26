@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Data\Messages\MessageView;
+use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\MessageMissing;
+use App\Messages\Data\MessageView;
+use App\Messages\ShownMessage;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
-use App\Support\ShownMessage;
 
 /**
  * A message the current actor may pin: one stored in the inbox named, which the actor is attached to.

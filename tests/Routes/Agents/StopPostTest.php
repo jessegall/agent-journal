@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Agents\StopAgent\StopAgentCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\ExpectedTiming;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Commands\StopAgent\StopAgentCommand;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\ExpectedTiming;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Values\DriverReceipt;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;

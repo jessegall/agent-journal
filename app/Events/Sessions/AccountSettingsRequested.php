@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Asks\AnsweredAtOnce;
-use App\Support\AccountStartSettings;
+use App\Accounts\AccountStartSettings;
+use App\Asks\Contracts\AnsweredAtOnce;
 use App\Support\RecordIdentity;
 
 /**

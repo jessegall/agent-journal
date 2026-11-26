@@ -108,7 +108,7 @@ final readonly class ModelWriteScan implements FileScan
      */
     private const array WRITING_SERVICES = [
         'Illuminate\Contracts\Events\Dispatcher', 'Illuminate\Events\Dispatcher', 'Illuminate\Contracts\Bus\Dispatcher',
-        'Illuminate\Bus\Dispatcher', 'App\Contracts\Bus\CommandBus', 'Illuminate\Contracts\Queue\Queue',
+        'Illuminate\Bus\Dispatcher', 'App\Bus\Contracts\CommandBus', 'Illuminate\Contracts\Queue\Queue',
         'Illuminate\Database\DatabaseManager', 'Illuminate\Database\ConnectionInterface',
         'Illuminate\Contracts\Filesystem\Filesystem', 'Illuminate\Filesystem\Filesystem', 'events', 'db', 'bus',
         'queue', 'files', 'filesystem',

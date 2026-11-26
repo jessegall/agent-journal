@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 use Domain\Plans\Contracts\PlanReviewEvent;
 use Domain\Plans\Enums\PlanReviewStatus;
 

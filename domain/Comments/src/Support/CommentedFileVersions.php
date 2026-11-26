@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Support;
 
-use App\Contracts\Projects\HeldFileVersions;
 use App\Models\Projects\ProjectFile;
+use App\Projects\Contracts\HeldFileVersions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 

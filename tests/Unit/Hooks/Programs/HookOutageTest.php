@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
-use App\Enums\Hooks\CallFailure;
+use App\Hooks\Enums\CallFailure;
 use App\Values\AgentText;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\TestText;

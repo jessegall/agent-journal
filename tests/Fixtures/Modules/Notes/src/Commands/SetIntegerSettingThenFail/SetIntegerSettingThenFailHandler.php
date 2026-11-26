@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandHandler;
-use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
-use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail\SetIntegerSettingThenFailCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandHandler;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 
 final class SetIntegerSettingThenFailHandler implements CommandHandler

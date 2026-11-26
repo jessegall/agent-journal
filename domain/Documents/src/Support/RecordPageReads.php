@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Reads\TextResolver;
+use App\Reads\Contracts\TextResolver;
 use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use Domain\Comments\Contracts\CommentResolver;

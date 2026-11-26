@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostProcessEndEvent;
+use App\Hosts\Contracts\HostProcessEndEvent;
 
 /**
  * The host no longer holds the process, as its inventory or two heartbeats in a row say.

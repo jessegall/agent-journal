@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
-use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
-use App\Enums\Drivers\DriverType;
-use App\Support\EnrolledHost;
+use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use RuntimeException;
 
 final class GrantNotRegistered extends RuntimeException

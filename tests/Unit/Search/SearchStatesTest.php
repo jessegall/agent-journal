@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\Search\SearchSurface;
-use App\Exceptions\SearchHandleRefused;
-use App\Exceptions\SearchRestartRequired;
-use App\Exceptions\SearchStateFull;
+use App\Search\Enums\SearchSurface;
+use App\Search\Exceptions\SearchHandleRefused;
+use App\Search\Exceptions\SearchRestartRequired;
+use App\Search\Exceptions\SearchStateFull;
+use App\Search\SearchStates;
+use App\Search\Values\SearchOwner;
 use App\Support\ActorReference;
-use App\Support\SearchStates;
-use App\Values\SearchOwner;
 use Tests\TestCase;
 
 /**

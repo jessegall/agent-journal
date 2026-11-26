@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Authorization\OperationResolver as OperationResolverContract;
-use App\Exceptions\OperationUnavailable;
+use App\Access\Contracts\OperationResolver as OperationResolverContract;
+use App\Access\Exceptions\OperationUnavailable;
 use App\Models\CommandRules\CommandReceipt;
 use App\Support\Operation;
 

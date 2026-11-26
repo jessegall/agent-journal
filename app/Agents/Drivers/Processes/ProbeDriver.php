@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Processes;
 
-use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
-use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
-use App\Commands\Hosts\JudgeIsolationProbe\JudgeIsolationProbeCommand;
-use App\Contracts\Drivers\ProcessDriver;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
+use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Drivers\Contracts\ProcessDriver;
+use App\Hosts\Commands\JudgeIsolationProbe\JudgeIsolationProbeCommand;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;

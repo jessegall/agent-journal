@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Enums\Hooks\ToolOutcome;
-use App\Enums\Skills\ReadEvidence;
+use App\Hooks\Enums\ToolOutcome;
+use App\Skills\Enums\ReadEvidence;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Values\ProvenSkillRead;

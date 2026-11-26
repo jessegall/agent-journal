@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\AssignRecordPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Assignments\AssignmentResultData;
+use App\Assignments\Api\AssignRecordPayload;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Data\AssignmentResultData;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 
 /**
  * Assigns a record and answers what changed.

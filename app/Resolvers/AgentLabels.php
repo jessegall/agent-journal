@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\ActorLabelProvider;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Sessions\AgentResolver;
+use App\Actors\Contracts\ActorLabelProvider;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\AgentInspection;
+use App\Agents\AgentLabel;
 use App\Models\Agents\Agent;
-use App\Support\AgentInspection;
-use App\Support\AgentLabel;
+use App\Sessions\Contracts\AgentResolver;
 
 /**
  * Reads agent labels for the actor of this request: the user sees every agent, an agent only itself. Without an actor

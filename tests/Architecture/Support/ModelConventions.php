@@ -6,8 +6,8 @@ namespace Tests\Architecture\Support;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Support\ReflectedProperty;
+use App\Records\Contracts\ReadableModel;
+use App\Reflection\ReflectedProperty;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;

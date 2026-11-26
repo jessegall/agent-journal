@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Time\Sleeper;
+use App\Time\Contracts\Sleeper;
 use Illuminate\Database\DatabaseManager;
 
 /**

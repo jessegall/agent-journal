@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Processes\RunRowData;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\RunRowData;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;

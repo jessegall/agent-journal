@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Accounts\SignInStatus;
-use App\Enums\Profiles\ProfileRunStatus;
+use App\Accounts\Enums\SignInStatus;
 use App\Events\Accounts\AccountCheckRequested;
 use App\Events\Accounts\AccountCleaned;
 use App\Events\Accounts\AccountCleanupReleased;
@@ -42,6 +41,7 @@ use App\Events\Accounts\SignInAttemptGenerationSet;
 use App\Events\Accounts\SignInAttemptHandedToUser;
 use App\Events\Accounts\SignInAttemptReleased;
 use App\Events\Accounts\SignInAttemptStarted;
+use App\Profiles\Enums\ProfileRunStatus;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -55,7 +55,7 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Accounts/PublishSignInChallenge/PublishSignInChallengeHandler.php',
+            'app/Accounts/Commands/PublishSignInChallenge/PublishSignInChallengeHandler.php',
             'app/Listeners/NotifyAccountsPage.php',
         ],
     ],
@@ -145,7 +145,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Profiles/RevokeProfiles/RevokeProfilesHandler.php',
+            'app/Profiles/Commands/RevokeProfiles/RevokeProfilesHandler.php',
         ],
     ],
     SignInAttemptCleanupRetried::class => [

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Models;
 
-use App\Concerns\Linkable;
-use App\Contracts\Records\Numbered;
-use App\Concerns\HasNumber;
-use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
+use App\Records\Contracts\Numbered;
+use App\Records\Contracts\ReadableModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -46,5 +46,4 @@ final class LedgerEntry extends Model implements Numbered, ReadableModel
     {
         return self::query()->create(['ledger_id' => $ledgerId, 'text' => $text]);
     }
-
 }

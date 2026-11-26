@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostOrderAnswerEvent;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Contracts\HostOrderAnswerEvent;
+use App\Hosts\Enums\HostOrderType;
 
 /**
  * The host carried out the order.

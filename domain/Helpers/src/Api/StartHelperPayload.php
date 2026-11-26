@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Api;
 
+use App\Agents\Drivers\Enums\DriverType;
 use App\Attributes\Api\Endpoint;
 use App\Attributes\Api\PresentList;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
 use App\Support\CallKey;
 use App\Support\Transformers\CallKeyTransformer;
 use Domain\Helpers\Data\HelperReceiptData;

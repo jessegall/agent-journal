@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Accounts\Contracts\SignInProtocol;
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\SignInDriver;
-use App\Contracts\Accounts\SignInProtocol;
-use App\Contracts\Files\Files;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
-use App\Exceptions\FileExists;
-use App\Exceptions\FileUnwritable;
-use App\Exceptions\SignInSecretUnwritable;
+use App\Agents\Exceptions\FileExists;
+use App\Agents\Exceptions\FileUnwritable;
+use App\Agents\Exceptions\SignInSecretUnwritable;
+use App\Agents\Values\SecretHandover;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
 use App\Support\PrivateAccountProcess;
 use App\Values\FilePath;
-use App\Values\SecretHandover;
 use App\Values\SignInChallenge;
 use App\Values\SignInHosts;
 use App\Values\SignInIdentity;

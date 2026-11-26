@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\CurrentActor;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Inboxes\Commands\HandOverInbox\HandOverInboxCommand;
 use App\Support\ActorReference;
 use Domain\Chat\Data\ParticipantInput;
 use Domain\Chat\Support\PairChats;

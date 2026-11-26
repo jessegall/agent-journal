@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\RequestKey;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\RequestKey;
 use App\Support\RecordIdentity;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 

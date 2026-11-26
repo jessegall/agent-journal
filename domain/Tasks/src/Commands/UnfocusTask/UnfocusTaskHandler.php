@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\UnfocusTask;
 
-use App\Contracts\Work\AgentFocuses;
+use App\Stacks\Contracts\Work\AgentFocuses;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 

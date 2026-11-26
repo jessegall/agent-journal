@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Processes\PartSummaryData;
-use App\Declarations\VerificationContract;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\OutputRequirement;
+use App\Access\Values\ClassFact;
+use App\Access\Values\ShellNode;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\OutputRequirement;
+use App\Processes\Data\PartSummaryData;
+use App\Processes\Declarations\VerificationContract;
+use App\Processes\Values\ProgramIdentity;
 
 /**
  * What one executable part of a tree may do: its class facts, what could not be placed, and its workflow purpose.

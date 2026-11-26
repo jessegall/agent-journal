@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\States;
 
-use App\Enums\Hooks\AnswerType;
-use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SkillPublicationMoved;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Skills\SkillPublication;
-use App\Support\States\AwaitSkillsState;
-use App\Support\States\Support\AwaitSkillsStateReference;
+use App\Skills\Enums\PublicationStatus;
+use App\Stacks\AwaitSkillsState;
+use App\Stacks\Support\AwaitSkillsStateReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;

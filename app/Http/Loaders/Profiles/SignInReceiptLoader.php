@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Profiles;
 
-use App\Data\Accounts\SignInReceiptData;
-use App\Data\Profiles\SignInReceiptInput;
+use App\Accounts\Data\SignInReceiptData;
+use App\Profiles\Data\SignInReceiptInput;
 use App\Support\SignInReceipts;
 
 /**

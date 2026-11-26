@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\Inboxes;
 
+use App\Actors\Contracts\StoredActor;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
-use App\Contracts\Actors\StoredActor;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Messages\MessageParticipant;
-use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxJoined;
 use App\Events\Inboxes\InboxLeft;
+use App\Messages\Contracts\MessageParticipant;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
-use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestStatus;
-use App\Exceptions\ReaderDefinitionInvalid;
-use App\Exceptions\ReaderProposalRefused;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\CommandRules\Commands\ProposeReader\ProposeReaderCommand;
+use App\CommandRules\Enums\RequestHoldReason;
+use App\CommandRules\Enums\RequestStatus;
+use App\CommandRules\Exceptions\ReaderDefinitionInvalid;
+use App\CommandRules\Exceptions\ReaderProposalRefused;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\Runs\ReaderRevision;

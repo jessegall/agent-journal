@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\States\Support;
 
-use App\Support\Decisions\StateReferenceFactory;
-use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
+use App\Stacks\Decisions\StateReferenceFactory;
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
 use Domain\Tasks\Models\Task;
 
 /**

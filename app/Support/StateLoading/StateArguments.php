@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading;
 
+use App\Stacks\StateLoading\RegisteredStateType;
+use App\Stacks\StateLoading\StateValues;
 use App\Support\DeclaredType;
 
 /**

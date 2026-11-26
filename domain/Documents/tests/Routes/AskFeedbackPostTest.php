@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Routes;
 
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use Domain\Chat\Support\PairChats;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\DocumentsDomain;

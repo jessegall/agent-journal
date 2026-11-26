@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
-use App\Contracts\Sessions\SessionRequestResolver;
-use App\Support\SessionRequestDetails;
+use App\Sessions\Contracts\SessionRequestResolver;
+use App\Sessions\SessionRequestDetails;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;

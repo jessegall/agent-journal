@@ -6,8 +6,8 @@ namespace Domain\Documents\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Sessions\SessionProvenance;
 use App\Events\Sessions\SessionClosed;
+use App\Sessions\Contracts\SessionProvenance;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\DraftCloseService;
 

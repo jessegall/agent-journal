@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\CloseTerminalView\CloseTerminalViewCommand;
-use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\TerminalView;
-use App\Support\WatchedRuntimes;
+use App\Terminals\Commands\CloseTerminalView\CloseTerminalViewCommand;
+use App\Terminals\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Terminals\WatchedRuntimes;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsCommand;

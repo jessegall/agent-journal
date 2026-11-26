@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Drivers\DriverConversationResolver as DriverConversationResolverContract;
+use App\Agents\DriverConversationSummary;
+use App\Agents\Drivers\Contracts\DriverConversationResolver as DriverConversationResolverContract;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
-use App\Support\DriverConversationSummary;
 
 /**
  * Reads an agent's native conversations with the model and time of each one's last visit, in two bounded reads.

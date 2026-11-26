@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Data;
 
-use App\Data\Pages\SlotSectionData;
+use App\Navigation\Data\Pages\SlotSectionData;
 use App\Support\AssignmentData;
 use Domain\Comments\Data\CommentList;
 use Domain\Tasks\Enums\TaskStatus;

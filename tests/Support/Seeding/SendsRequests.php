@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\AgentClientSettings;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Api\SignedCall;
+use App\Hosts\EnrolledHost;
+use App\Sessions\AgentClientSettings;
 use App\Support\AgentContext;
-use App\Support\EnrolledHost;
-use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;

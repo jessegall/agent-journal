@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\RunInOrderPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\PipelineAdapter;
 
 /**
  * Runs a subshell's steps in order; what they change in the shell context stays inside it.

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Notifications\NotificationTargets;
-use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Sessions\SessionProvenance;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Values\ReadEntitlement;
+use App\Agents\Drivers\Contracts\AttachmentReferences;
+use App\Agents\Enums\AccessType;
+use App\Docking\Sources\Contracts\DockRegistration;
+use App\Notifications\Contracts\NotificationTargets;
+use App\Sessions\Contracts\CurrentSession;
+use App\Sessions\Contracts\SessionProvenance;
 use App\Support\FolderClasses;
-use App\Support\Sources\Contracts\DockRegistration;
-use App\Values\ReadEntitlement;
 use Domain\Documents\Contracts\Attachments\AttachmentReader as AttachmentReaderContract;
 use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;
 use Domain\Documents\Contracts\Documents\DocumentResolver as DocumentResolverContract;

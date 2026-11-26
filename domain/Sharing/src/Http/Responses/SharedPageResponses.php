@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Responses;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use App\Support\MarkdownText;
 use Domain\Sharing\Exceptions\ShareReadLimited;
 use Domain\Sharing\Support\SharedPage;

@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Accounts\Commands\CheckAccount;
+
+use App\Accounts\AccountNotices;
+use App\Accounts\Enums\AccountNoticeReason;
+use App\Bus\Contracts\CommandHandler;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
+use Carbon\CarbonImmutable;
+
+/**
+ * Applies a host's account check under the driver's selection lock and then the account's, only in the generation
+ * it was made in: a definite sign-out makes the account need a new sign-in, takes it off as the driver's choice so
+ * no new start uses it, and tells the owner. Starts already running keep running until they end on their own.
+ */
+final readonly class CheckAccountHandler implements CommandHandler
+{
+    public function __construct(private AccountNotices $notices) {}
+
+    public function handle(CheckAccountCommand $command): void
+    {
+        $driver = Account::resolveDriverForJournal($command->accountId);
+        $selection = ActiveAccount::findLockedForJournal($driver);
+        $account = Account::findLockedForJournal($command->accountId);
+
+        if (! $account->applyCheck($command->generation, $command->accountCheck, CarbonImmutable::now())) {
+            return;
+        }
+
+        $selection->clearIfChosen($account);
+        $this->notices->record($account->account_protocol, AccountNoticeReason::NeedsSignIn);
+    }
+}

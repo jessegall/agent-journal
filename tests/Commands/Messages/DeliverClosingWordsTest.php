@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Messages;
 
-use App\Commands\Messages\DeliverClosingWords\DeliverClosingWordsCommand;
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Exceptions\ClosingWordsRefused;
+use App\Messages\Commands\DeliverClosingWords\DeliverClosingWordsCommand;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\Exceptions\ClosingWordsRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverTurn;
 use App\Models\Messages\Message;

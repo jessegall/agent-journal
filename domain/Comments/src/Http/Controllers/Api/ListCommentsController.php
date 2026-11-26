@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Api;
 
-use App\Contracts\Records\RecordResolver;
+use App\Reads\Values\PageSize;
+use App\Records\Contracts\RecordResolver;
 use App\Support\IdListPage;
 use App\Support\RecordReference;
-use App\Values\PageSize;
 use Domain\Comments\Api\ListCommentsPayload;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\CommentList;

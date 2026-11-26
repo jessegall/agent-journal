@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Docking;
 
-use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureStatus;
+use App\Docking\Cards\ConsoleOutput;
 use App\Exceptions\DockCardInvalid;
-use App\Support\Cards\ConsoleOutput;
+use App\Processes\Enums\ConsoleStream;
+use App\Processes\Enums\DisclosureStatus;
 use App\Support\Cards\Contracts\DockPart;
 use App\Support\Cards\CountedProgress;
 use App\Support\Cards\Disclosure;

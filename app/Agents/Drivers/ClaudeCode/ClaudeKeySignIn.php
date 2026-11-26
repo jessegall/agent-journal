@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
+use App\Accounts\Enums\SignInMethod;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
 use App\Values\SignInCard;
 use stdClass;

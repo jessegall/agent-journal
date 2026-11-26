@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Hosts\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
-use App\Enums\Hosts\HostOrderStatus;
+use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
+use App\Hosts\Enums\HostOrderStatus;
 use App\Values\HostFolderAnswer;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

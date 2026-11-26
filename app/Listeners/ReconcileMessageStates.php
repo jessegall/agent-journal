@@ -6,13 +6,13 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStacks;
 use App\Events\Sessions\SessionOpened;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Support\AnswerMessageStateReference;
+use App\Stacks\Support\ReadMessageStateReference;
 use App\Support\ActorReference;
-use App\Support\States\Support\AnswerMessageStateReference;
-use App\Support\States\Support\ReadMessageStateReference;
 
 /**
  * A session that opens finds its agent's messages again: each inbox with unread messages since the agent joined gets

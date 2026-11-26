@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\CancelHelperJob;
 
-use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\CancelSessionStart\CancelSessionStartCommand;
+use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperJob;

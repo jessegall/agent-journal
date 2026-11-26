@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
-use App\Support\EnrolledHost;
-use App\Values\PresenceReceipt;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\RecordBindingPresence\RecordBindingPresenceCommand;
+use App\Projects\Values\PresenceReceipt;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

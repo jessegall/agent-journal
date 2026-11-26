@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Links;
 
-use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
+use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Support\RecordIdentity;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;

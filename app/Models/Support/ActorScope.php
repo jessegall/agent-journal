@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

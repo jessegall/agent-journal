@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Projects\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

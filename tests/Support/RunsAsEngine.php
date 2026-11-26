@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\Accounts\CommandEntry;
-use App\Support\CommandEntrance;
-use App\Support\EngineAccess;
-use App\Support\EnginePass;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\CommandEntrance;
+use App\Engine\EngineAccess;
+use App\Engine\EnginePass;
 use App\Support\StackTransaction;
 use App\Values\StackTarget;
 use Closure;

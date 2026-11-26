@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\OperandType;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\OperandType;
+use App\CommandRules\Values\ProgramSpellings;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\OptionGrammar;
-use App\Values\ProgramSpellings;
 
 /**
  * Programs that change files: cp reads and writes, mv also deletes its source, mkdir,

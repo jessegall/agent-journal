@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Machinery;
 
 use App\Models\Agents\AgentSession;
-use App\Support\StartSessions;
+use App\Sessions\StartSessions;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\CountPhaseTaskStates;
 use Domain\Plans\Models\Plan;

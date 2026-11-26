@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\CommandLines;
 
-use App\Contracts\CommandLines\Condition;
-use App\Exceptions\CommandLineEmpty;
-use App\Support\CommandLines\AnyContext;
-use App\Support\CommandLines\Argument;
-use App\Support\CommandLines\ArgumentBuilder;
+use App\Processes\AnyContext;
+use App\Processes\Argument;
+use App\Processes\ArgumentBuilder;
+use App\Processes\Contracts\Condition;
+use App\Processes\Exceptions\CommandLineEmpty;
 use stdClass;
 use Tests\TestCase;
 

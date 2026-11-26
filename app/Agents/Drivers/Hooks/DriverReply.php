@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Enums\Hooks\AnswerType;
 use App\Exceptions\DriverReplyMalformed;
+use App\Hooks\Enums\AnswerType;
 use App\Support\Storage\RecordedAnswer;
 use JsonException;
 use JsonSerializable;

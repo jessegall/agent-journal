@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Assignments;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Records\AssignmentRecord;
-use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;

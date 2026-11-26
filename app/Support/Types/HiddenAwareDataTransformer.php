@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Support\SourceNodeAttributes;
+use App\Reflection\SourceNodeAttributes;
 use Spatie\LaravelData\Attributes\Hidden as DataHidden;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

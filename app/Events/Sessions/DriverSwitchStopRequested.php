@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\DriverSwitchEvent;
+use App\Agents\Drivers\Contracts\DriverSwitchEvent;
 
 /**
  * A driver switch began to stop the session it replaces.

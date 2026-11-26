@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\ConfigureAutoAssignmentPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
-use App\Data\Assignments\AutoAssignmentChangeData;
+use App\Assignments\Api\ConfigureAutoAssignmentPayload;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Assignments\Data\AutoAssignmentChangeData;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Records\Contracts\RecordResolver;
 
 /**
  * Configures an auto-assignment and answers its revision.

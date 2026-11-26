@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Isolation;
 
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\RestartPolicy;
+use App\Agents\ContainerManifest;
+use App\Agents\SecurityOptions;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
 use App\Support\AgentImage;
-use App\Support\ContainerManifest;
-use App\Support\SecurityOptions;
 use App\Values\HostProcessPlan;
 
 /**

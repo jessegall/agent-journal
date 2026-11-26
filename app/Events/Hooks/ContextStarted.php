@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events\Hooks;
 
-use App\Contracts\Asks\AnsweredAtOnce;
-use App\Contracts\Work\ReminderContribution;
-use App\Enums\Hooks\ContextStartType;
+use App\Asks\Contracts\AnsweredAtOnce;
+use App\Hooks\Contracts\Work\ReminderContribution;
+use App\Hooks\Enums\ContextStartType;
 use App\Values\StackTarget;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Web\ProtectedViews as ProtectedViewsContract;
 use App\Events\Web\ProtectedViewInvalidated;
+use App\Web\Contracts\ProtectedViews as ProtectedViewsContract;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

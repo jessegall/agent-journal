@@ -6,11 +6,11 @@ namespace Domain\Comments\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Records\TextAnchorType;
 use App\Exceptions\IncompleteTextAnchor;
 use App\Models\Support\JournalModel;
-use App\Values\ReadOrder;
+use App\Records\Contracts\ReadableModel;
+use App\Records\Enums\TextAnchorType;
+use App\Records\Values\ReadOrder;
 use App\Values\TextAnchor;
 use Domain\Comments\Exceptions\CommentAnchorCorrupt;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

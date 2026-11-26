@@ -6,10 +6,10 @@ namespace App\Models\Records;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Records\ClaimBasis;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use App\Records\Enums\ClaimBasis;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use Carbon\CarbonImmutable;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Asks;
 
-use App\Contracts\Asks\AskHopEvent;
+use App\Asks\Contracts\AskHopEvent;
 use App\Support\ActorReference;
 
 /**

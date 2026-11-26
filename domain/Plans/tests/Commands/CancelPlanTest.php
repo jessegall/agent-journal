@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandInputInvalid;
+use App\Access\AccessSettings;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;

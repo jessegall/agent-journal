@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Enums\Processes\ShellDialect;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\PipelineRunner;
+use App\Bus\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Pipelines\Support\PipelineRunner;
+use App\Processes\Enums\ShellDialect;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\Syntax\TreeParser;
 use App\Values\ShellTree;
 use Illuminate\Container\Container;

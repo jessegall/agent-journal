@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

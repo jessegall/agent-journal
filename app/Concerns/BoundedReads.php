@@ -6,9 +6,9 @@ namespace App\Concerns;
 
 use App\Exceptions\LazyLoadRefused;
 use App\Exceptions\ModelReadAllRefused;
+use App\Reads\ReadMeter;
+use App\Records\Values\ReadOrder;
 use App\Support\ReadBuilder;
-use App\Support\ReadMeter;
-use App\Values\ReadOrder;
 use Illuminate\Container\Container;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 

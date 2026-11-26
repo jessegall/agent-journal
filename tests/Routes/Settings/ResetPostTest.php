@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Settings;
 
-use App\Commands\Settings\ResetSetting\ResetSettingCommand;
-use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Enums\Settings\SettingsOutcome;
-use App\Values\SettingReference;
-use App\Values\SettingsChange;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Values\SettingReference;
+use App\Settings\Values\SettingsChange;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

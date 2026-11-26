@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use App\Exceptions\TraitInterfaceMissing;
+use App\Bootstrap\Exceptions\TraitInterfaceMissing;
+use App\Bootstrap\TraitRequirements;
 use App\Support\DomainEntry;
-use App\Support\TraitRequirements;
 use Tests\Fixtures\Domains\Stateless\StatelessDomain;
 use Tests\Fixtures\TraitRequirements\PoliteGreeter;
 use Tests\Fixtures\TraitRequirements\RudeGreeter;

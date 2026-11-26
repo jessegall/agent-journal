@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers;
 
-use App\Contracts\Records\RecordResolver;
+use App\Records\Contracts\RecordResolver;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Http\Requests\CommentLocationRequest;
 use Illuminate\Http\JsonResponse;

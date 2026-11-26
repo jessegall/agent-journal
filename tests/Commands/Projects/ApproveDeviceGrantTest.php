@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
-use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
-use App\Enums\Connections\ConnectionAuditType;
-use App\Enums\Projects\DeviceGrantStatus;
-use App\Exceptions\DeviceGrantRefused;
+use App\Connections\Enums\ConnectionAuditType;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\ProjectBinding;
+use App\Projects\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Projects\Commands\RevokeProjectBinding\RevokeProjectBindingCommand;
+use App\Projects\Enums\DeviceGrantStatus;
+use App\Projects\Exceptions\DeviceGrantRefused;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

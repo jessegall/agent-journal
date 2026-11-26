@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pages;
 
-use App\Api\Scripts\SaveProfileDraftPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Responses\PageActionAnswers;
-use App\Support\Readers\ProfileDraftReader;
+use App\Processes\Readers\ProfileDraftReader;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Scripts\Api\SaveProfileDraftPayload;
 use Illuminate\Http\RedirectResponse;
 
 /**

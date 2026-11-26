@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks\Drivers;
 
+use App\Agents\Contracts\Domains\JournalToolNames;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\Contracts\DriverAdapter;
 use App\Agents\Drivers\Hooks\HookPayload;
 use App\Agents\Drivers\Hooks\JournalToolCall;
 use App\Agents\Drivers\Hooks\JudgedCall;
-use App\Contracts\Domains\JournalToolNames;
-use App\Contracts\Drivers\DriverAdapter;
 use App\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\DomainRegistry;

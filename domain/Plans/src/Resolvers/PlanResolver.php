@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Assignments\AssignmentResolver;
-use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Work\CurrentState;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Contracts\AssignmentResolver;
+use App\Assignments\Contracts\AssignmentTransaction;
+use App\Stacks\Contracts\Work\CurrentState;
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
 use App\Support\AssigneeIdentity;
 use App\Support\NumberedPage;
-use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
 use Domain\Plans\Contracts\PlanResolver as PlanResolverContract;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;

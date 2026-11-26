@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use App\Models\Agents\Agent;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
@@ -12,6 +11,7 @@ use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
+use App\Projects\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;

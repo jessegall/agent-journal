@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Models\Presence\UserPresence;
+use App\Sessions\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

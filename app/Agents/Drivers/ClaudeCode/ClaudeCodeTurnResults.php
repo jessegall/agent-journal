@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Contracts\Drivers\TurnResult;
-use App\Contracts\Drivers\TurnResults;
+use App\Agents\Drivers\Contracts\TurnResult;
+use App\Agents\Drivers\Contracts\TurnResults;
 
 /**
  * Reads what one headless Claude Code turn prints.

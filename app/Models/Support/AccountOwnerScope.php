@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Enums\AccessType;
 use App\Models\Accounts\Account;
 use App\Policies\AccountPolicy;
 use Closure;

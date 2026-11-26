@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Assignments;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Exceptions\CrossProjectEdge;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
-use App\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;

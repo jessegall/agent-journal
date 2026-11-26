@@ -6,8 +6,8 @@ namespace Domain\Helpers\Models;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;

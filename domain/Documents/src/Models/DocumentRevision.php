@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use App\Actors\Contracts\Actor;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
-use App\Contracts\Actors\Actor;
-use App\Contracts\Records\Numbered;
-use App\Contracts\Records\ReadableModel;
 use App\Exceptions\TextVersionUnavailable;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\Numbered;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;

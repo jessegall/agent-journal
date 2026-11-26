@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support\EntryPoints;
 
 use App\Http\Controllers\Web\PageController;
 use App\Support\ClientDeclarations;
-use App\Support\Web\DeclaredRouteKey;
+use App\Web\DeclaredRouteKey;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Str;

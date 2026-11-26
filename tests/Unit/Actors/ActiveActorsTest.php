@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actors;
 
-use App\Exceptions\ActiveActorCounterRepeated;
-use App\Support\ActiveActorRegistration;
+use App\Actors\ActiveActorRegistration;
+use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use Tests\Fixtures\Actors\FailingAgentCounter;
 use Tests\Fixtures\Actors\FakeAgentCounter;
 use Tests\TestCase;

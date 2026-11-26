@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\EmptySelection;
-use App\Enums\CommandRules\FramingType;
-use App\Enums\CommandRules\OutputEncoding;
-use App\Enums\CommandRules\StreamUse;
-use App\Enums\CommandRules\SummaryRule;
-use App\Enums\Processes\OutputStream;
-use App\Enums\Records\RecordRole;
-use App\Enums\Runs\ClaimedOutcome;
-use App\Enums\Runs\ProblemCode;
-use App\Support\DeclarativeReader;
-use App\Values\EmptyRunPolicy;
+use App\CommandRules\Enums\EmptySelection;
+use App\CommandRules\Enums\FramingType;
+use App\CommandRules\Enums\OutputEncoding;
+use App\CommandRules\Enums\StreamUse;
+use App\CommandRules\Enums\SummaryRule;
+use App\CommandRules\Values\EmptyRunPolicy;
+use App\CommandRules\Values\RecordRule;
+use App\Processes\DeclarativeReader;
+use App\Processes\Enums\ClaimedOutcome;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\ProblemCode;
+use App\Processes\Values\OutputFrame;
+use App\Processes\Values\ReaderAssessment;
+use App\Processes\Values\ReaderCheckpoint;
+use App\Records\Enums\RecordRole;
 use App\Values\OutputContract;
-use App\Values\OutputFrame;
 use App\Values\PartEnd;
-use App\Values\ReaderAssessment;
-use App\Values\ReaderCheckpoint;
 use App\Values\ReaderDefinition;
-use App\Values\RecordRule;
 use Tests\TestCase;
 
 /**

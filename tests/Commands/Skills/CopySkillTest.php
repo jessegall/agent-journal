@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\CopySkill\CopySkillCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Skills\SkillResolver;
+use App\Access\AccessSettings;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
-use App\Support\Access\AccessSettings;
+use App\Skills\Commands\CopySkill\CopySkillCommand;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Values\SkillRevisionResult;
 use App\Support\DomainRegistry;
-use App\Values\OwnerAuthority;
 use App\Values\SkillKey;
-use App\Values\SkillRevisionResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestActors;

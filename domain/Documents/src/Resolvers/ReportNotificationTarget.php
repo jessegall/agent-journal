@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Navigation\DeclaredPages;
-use App\Contracts\Notifications\NotificationTargetResolver;
-use App\Data\Notifications\NotificationLink;
+use App\Actors\Contracts\ActorLabels;
+use App\Navigation\Contracts\DeclaredPages;
+use App\Notifications\Contracts\NotificationTargetResolver;
+use App\Notifications\Data\NotificationLink;
 use App\Support\ActorReference;
 use App\Values\ProjectSelection;
 use Domain\Documents\Models\Report;

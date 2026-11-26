@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\StateLoading;
 
-use App\Exceptions\StateValuesRefused;
-use App\Support\StateLoading\RegisteredStateType;
+use App\Stacks\Exceptions\StateValuesRefused;
+use App\Stacks\StateLoading\RegisteredStateType;
+use App\Stacks\StateLoading\StateValues;
 use App\Support\StateLoading\StateBuilder;
-use App\Support\StateLoading\StateValues;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Hooks\StateLoading\KeptValuesState;
 use Tests\Fixtures\Web\Types\ShelfStatus;

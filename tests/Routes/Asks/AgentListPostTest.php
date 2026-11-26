@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Asks;
 
-use App\Support\ProfileProposal;
+use App\Profiles\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsRoute;

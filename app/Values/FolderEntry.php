@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Files\EntryType;
+use App\Files\Enums\EntryType;
+use App\Files\Values\Fingerprint;
 
 /**
  * One entry of a listed folder: its path, what it is, and its fingerprint, so a caller need not stat it again. A

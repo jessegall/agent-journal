@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Declarations\DomainClient;
+use App\Navigation\Declarations\DomainClient;
 use App\Pages\ConnectionsPages;
 use App\Pages\ProcessPages;
 use App\Pages\ProfilesPages;

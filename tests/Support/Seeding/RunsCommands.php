@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\JournalCommands as JournalCommandsContract;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\ActorStore;
+use App\Accounts\Enums\CommandEntry;
+use App\Actors\ActorStore;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\JournalCommands as JournalCommandsContract;
+use App\Bus\JournalCommands;
+use App\Bus\RequestKey;
 use App\Support\CommandRegistry;
-use App\Support\JournalCommands;
-use App\Support\RequestKey;
 use Closure;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;

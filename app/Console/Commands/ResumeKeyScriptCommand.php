@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand as ResumeKeyScript;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
+use App\Terminals\Commands\ResumeKeyScript\ResumeKeyScriptCommand as ResumeKeyScript;
 use Illuminate\Console\Command;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support\Links;
 
-use App\Concerns\ProvidesModelRecords;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Records\RecordProvider;
+use App\Actors\Contracts\CurrentActor;
 use App\Data\Pages\RecordCard;
+use App\Links\Concerns\ProvidesModelRecords;
+use App\Records\Contracts\RecordProvider;
 use App\Support\ReadBuilder;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Exceptions\AssignmentGroupTooLarge;
+use App\Assignments\AssignmentGroup;
+use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\RecordUnavailable;
-use App\Support\AssignmentGroup;
 use App\Support\RecordIdentity;
 use App\Values\RecoveryCall;
 use Domain\Plans\Models\Phase;

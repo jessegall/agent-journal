@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\RecordUnavailable;
 use App\Exceptions\SubmissionKeyConflict;
+use App\Records\Contracts\RecordResolver;
 use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;

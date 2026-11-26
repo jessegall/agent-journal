@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Commands;
 
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Contracts\Files\Files;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\JournalRouteType;
+use App\Files\Contracts\Files;
 use App\Values\CommandReport;
 use Domain\Documents\Api\DocumentApi;
 use Domain\Documents\Console\Concerns\ReadsRecordBody;

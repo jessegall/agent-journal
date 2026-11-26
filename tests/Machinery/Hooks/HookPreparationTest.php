@@ -6,11 +6,11 @@ namespace Tests\Machinery\Hooks;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\DriverReply;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
-use App\Support\Relay\HookRelay;
-use App\Support\Relay\PreparationState;
-use App\Support\Relay\RelaySettings;
+use App\Agents\Relay\HookRelay;
+use App\Agents\Relay\PreparationState;
+use App\Agents\Relay\RelaySettings;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;

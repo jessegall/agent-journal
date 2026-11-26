@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Enums\Assignments\AssignmentOutcomeType;
-use App\Exceptions\AssignmentGroupTooLarge;
+use App\Assignments\AssignmentGroup;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\AssignmentSet;
+use App\Assignments\Enums\AssignmentOutcomeType;
+use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Exceptions\InvalidAssignmentPage;
-use App\Exceptions\InvalidRecordIdentity;
 use App\Models\Agents\Agent;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
-use App\Support\AssignmentGroup;
-use App\Support\AssignmentOutcome;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
-use App\Support\AssignmentSet;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use PHPUnit\Framework\Attributes\DataProvider;

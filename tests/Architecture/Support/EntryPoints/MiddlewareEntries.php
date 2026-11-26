@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\Support\CommandFrame;
+use App\Bus\CommandFrame;
+use App\Bus\RegisteredMiddleware;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
-use App\Support\RegisteredMiddleware;
 
 /**
  * Every middleware a command passes: the frame's own, read from CommandFrame, and each module middleware the booted

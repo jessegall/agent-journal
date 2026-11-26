@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
+use App\Agents\SignInEgress;
+use App\Agents\Values\SecretHandover;
+use App\Agents\Values\SignInFolder;
+use App\Agents\Values\SignInReport;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Support\PrivateAccountProcess;
-use App\Support\SignInEgress;
 use App\Values\FilePath;
-use App\Values\SecretHandover;
-use App\Values\SignInFolder;
-use App\Values\SignInReport;
 use Illuminate\Contracts\Container\Container;
 
 /**

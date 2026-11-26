@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
+use App\Docking\Exceptions\DockDefinitionInvalid;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\DestinationGate;
+use App\Docking\Sources\Contracts\DockableProvider;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Exceptions\DockCardInvalid;
-use App\Exceptions\DockDefinitionInvalid;
 use App\Exceptions\PartMapInvalid;
 use App\Models\Inboxes\Inbox;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
-use App\Support\Sources\Contracts\CardContext;
-use App\Support\Sources\Contracts\DestinationGate;
-use App\Support\Sources\Contracts\DockableProvider;
-use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Wire\Contracts\CardEncoder;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\Data\DockPageData;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Navigation\DeclaredPages;
-use App\Contracts\Notifications\NotificationTargetResolver;
-use App\Data\Notifications\NotificationLink;
+use App\Actors\Contracts\CurrentActor;
 use App\Models\Inboxes\InboxMember;
+use App\Navigation\Contracts\DeclaredPages;
+use App\Notifications\Contracts\NotificationTargetResolver;
+use App\Notifications\Data\NotificationLink;
 use App\Values\ProjectSelection;
 use Domain\Questions\Contracts\QuestionSummaryReader;
 use Domain\Questions\Values\QuestionSummary;

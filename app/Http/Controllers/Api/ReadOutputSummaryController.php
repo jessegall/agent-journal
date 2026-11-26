@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\OutputSummary;
-use App\Api\Processes\ReadOutputSummaryPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\Bus\Attributes\Dispatches;
+use App\CommandRules\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use App\Models\Runs\ProcessRun;
-use App\Support\OutputSummaries;
+use App\Processes\Api\OutputSummary;
+use App\Processes\Api\ReadOutputSummaryPayload;
+use App\Processes\OutputSummaries;
 
 /**
  * Answers a run's output summary and records the read.

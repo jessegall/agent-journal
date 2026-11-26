@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Delivery;
 
+use App\Access\StateEvents\StateEventDispatch;
+use App\Access\StateEvents\StateEventScope;
+use App\Bus\Contracts\Events\FactStaging;
 use App\Contracts\Events\Event;
-use App\Contracts\Events\FactStaging;
-use App\Support\StateEvents\StateEventDispatch;
-use App\Support\StateEvents\StateEventScope;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 

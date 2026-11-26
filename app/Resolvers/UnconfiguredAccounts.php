@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Accounts\ActiveAccountReader;
-use App\Enums\Sessions\StartUnavailableReason;
-use App\Exceptions\AccountUnavailable;
+use App\Accounts\Contracts\ActiveAccountReader;
+use App\Accounts\Exceptions\AccountUnavailable;
+use App\Sessions\Enums\StartUnavailableReason;
 use App\Values\SelectedAccount;
 
 /**

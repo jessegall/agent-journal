@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
-use App\Exceptions\DockSourceUnavailable;
-use App\Support\Cards\ComposedCard;
-use App\Support\Sources\Contracts\CardContext;
+use App\Docking\Cards\ComposedCard;
+use App\Docking\Exceptions\DockSourceUnavailable;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\DockableProvider;
 use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
 use App\Values\ProjectOwner;
 use Tests\Fixtures\Modules\Notes\Models\Note;

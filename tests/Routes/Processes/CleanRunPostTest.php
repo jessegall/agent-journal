@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
-use App\Values\CleanPreview;
+use App\Processes\Commands\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Processes\Values\CleanPreview;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

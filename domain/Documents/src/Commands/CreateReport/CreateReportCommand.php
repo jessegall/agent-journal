@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\CreateReport;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Validation\OneLine;
-use App\Contracts\Projects\ProjectCommand;
-use App\Enums\Agents\AccessType;
+use App\Projects\Contracts\ProjectCommand;
 use App\Support\Command;
 use App\Support\RecordIdentity;
 use App\Values\ProjectOwner;

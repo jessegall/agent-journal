@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Processes\ShellDialect;
-use App\Support\Admission\OutputPolicy;
+use App\Access\OutputPolicy;
+use App\Access\Values\OutputVerdict;
+use App\Bus\Contracts\CommandClassifier;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
-use App\Values\OutputVerdict;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

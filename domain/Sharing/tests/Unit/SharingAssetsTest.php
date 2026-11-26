@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Http\Responses\SharingAssets;

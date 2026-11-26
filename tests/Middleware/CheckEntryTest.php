@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\CheckEntry;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Accounts\CommandEntry;
-use App\Exceptions\CommandNotRegistered;
+use App\Accounts\Enums\CommandEntry;
+use App\Actors\ActorStore;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\SystemActor;
+use App\Bus\CommandEntrance;
+use App\Bus\CommandMiddleware\CheckEntry;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandNotRegistered;
+use App\Engine\EngineAccess;
 use App\Support\ActorReference;
-use App\Support\ActorStore;
-use App\Support\CommandEntrance;
-use App\Support\EngineAccess;
-use App\Support\SystemActor;
 use App\Values\TrustedEntryAuthority;
 use Closure;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;

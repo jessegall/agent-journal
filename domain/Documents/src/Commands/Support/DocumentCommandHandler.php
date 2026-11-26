@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\Support;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;

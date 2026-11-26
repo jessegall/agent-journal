@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Searching\Logs;
 
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
-use App\Values\SearchBatch;
-use App\Values\RefreshCandidates;
-use App\Values\SearchQuery;
 use Tests\Fixtures\Search\ClosedSearchAccess;
 
 /**

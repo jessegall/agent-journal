@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\OperandType;
-use App\Enums\CommandRules\ToolType;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\OperandType;
+use App\CommandRules\Enums\ToolType;
+use App\CommandRules\Values\ProgramSpellings;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
 use App\Values\OptionGrammar;
-use App\Values\ProgramSpellings;
 
 /**
  * The reviewed rules of the developer tools the shell corpus still left unknown: the GitHub CLI, Docker,

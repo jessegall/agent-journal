@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\States;
 
-use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Contracts\Work\DurableState;
-use App\Contracts\Work\UniqueSubjectState;
 use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperFinishedOnRecord;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
+use App\Stacks\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Data\ReviewersOutData;
 use Domain\Plans\Events\PlanEvent;

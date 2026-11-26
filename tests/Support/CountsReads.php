@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Reads\ReadMeter;
-use App\Values\ReadCounts;
+use App\Reads\Contracts\ReadMeter;
+use App\Reads\Values\ReadCounts;
 
 /**
  * Reads the queries and models a call ran and loaded.

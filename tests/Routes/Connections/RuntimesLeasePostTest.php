@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
-use App\Support\EnrolledHost;
-use App\Values\RuntimeLease;
+use App\Agents\Commands\RenewRuntimeLease\RenewRuntimeLeaseCommand;
+use App\Agents\Values\RuntimeLease;
+use App\Hosts\EnrolledHost;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;

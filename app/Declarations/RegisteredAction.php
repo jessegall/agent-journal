@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Navigation\Declarations\DomainClient;
+use App\Web\Declarations\RegisteredPage;
+use App\Web\Declarations\RegisteredSection;
+
 /**
  * A checked action route of an installed domain: its route name and URI, and the page or section whose visibility
  * guards it, taken from where it was declared.

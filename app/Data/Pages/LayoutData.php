@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
-use App\Data\Layouts\LayoutShape;
+use App\Terminals\Data\LayoutShape;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

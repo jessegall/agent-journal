@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\CommandRunStatus;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostRefusal;
-use App\Enums\Projects\ProjectReadFailure;
+use App\Connections\Enums\BindingReadiness;
+use App\Connections\Enums\CommandRunStatus;
 use App\Events\Connections\BindingRuntimeRecorded;
 use App\Events\Connections\DeviceGrantApproved;
 use App\Events\Connections\DeviceGrantIssued;
@@ -59,6 +56,9 @@ use App\Events\Connections\ProjectReadAnsweredWithText;
 use App\Events\Connections\ProjectReadClaimed;
 use App\Events\Connections\ProjectReadFailed;
 use App\Events\Connections\WorkspaceReadAnswered;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostRefusal;
+use App\Projects\Enums\ProjectReadFailure;
 use Tests\Architecture\Support\EventRole;
 
 /**

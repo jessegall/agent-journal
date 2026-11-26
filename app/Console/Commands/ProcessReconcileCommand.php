@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Runs\ReconcileLostRuns\ReconcileLostRunsCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Processes\Commands\ReconcileLostRuns\ReconcileLostRunsCommand;
 use Illuminate\Console\Command;
 
 /**

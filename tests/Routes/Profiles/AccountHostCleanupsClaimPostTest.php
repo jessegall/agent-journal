@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\ClaimCleanup\ClaimCleanupCommand;
+use App\Accounts\Commands\ClaimCleanup\ClaimCleanupCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

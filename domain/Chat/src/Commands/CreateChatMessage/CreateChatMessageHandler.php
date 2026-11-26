@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\CreateChatMessage;
 
-use App\Contracts\Records\AuthoredModel;
-use App\Contracts\Time\ServerClock;
+use App\Records\Contracts\AuthoredModel;
+use App\Time\Contracts\ServerClock;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Exceptions\ChatSourceRefused;
 use Domain\Chat\Models\ChatMessage;

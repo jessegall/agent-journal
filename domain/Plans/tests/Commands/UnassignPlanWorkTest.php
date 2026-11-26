@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Access\User;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Plans\Commands\AssignPlanWork\AssignPlanWorkCommand;
 use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;
 use Domain\Plans\Models\Phase;

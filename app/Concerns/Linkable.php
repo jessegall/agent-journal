@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
+use App\Links\LinkAccess;
 use App\Models\Records\Link;
-use App\Support\LinkAccess;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
+use App\Api\Exceptions\CallKeyExpired;
+use App\Api\RefusalExceptions;
 use App\Contracts\Refusals\ApiRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use App\Exceptions\ApiRefused;
-use App\Exceptions\CallKeyExpired;
 use App\Exceptions\StateBlocked;
 use App\Support\CallKey;
-use App\Support\RefusalExceptions;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
+use App\Accounts\Commands\ReconcileSignIns\ReconcileSignInsCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

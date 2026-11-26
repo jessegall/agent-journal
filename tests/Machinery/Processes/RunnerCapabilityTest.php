@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Contracts\Admission\ShellAdmission;
-use App\Enums\Processes\ShellDialect;
+use App\Access\Contracts\ShellAdmission;
+use App\Access\Values\Admission;
 use App\Models\Runs\PartRun;
-use App\Values\Admission;
+use App\Processes\Enums\ShellDialect;
 use App\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;

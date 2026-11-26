@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
+use App\Bootstrap\Exceptions\DomainNotFound;
 use App\Exceptions\DomainCycle;
 use App\Exceptions\DomainListedTwice;
-use App\Exceptions\DomainNotFound;
 use App\Exceptions\DomainRequiresItself;
 use App\Exceptions\NotADomain;
 use App\Exceptions\RequiredDomainMissing;

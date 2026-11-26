@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\AccessType;
-use App\Enums\Profiles\CommandDirectory;
-use App\Enums\Profiles\ScriptOperandType;
-use App\Exceptions\ProfileDraftRefused;
+use App\Agents\Enums\AccessType;
+use App\Profiles\Enums\CommandDirectory;
+use App\Profiles\Enums\ScriptOperandType;
+use App\Profiles\Exceptions\ProfileDraftRefused;
 
 final class NamedCommand extends ScriptOperand
 {

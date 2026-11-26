@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actors;
 
-use App\Contracts\Actors\ActorProviderRegistration;
-use App\Exceptions\ActorProviderRepeated;
-use App\Support\SystemActor;
-use App\Support\SystemActors;
+use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Exceptions\ActorProviderRepeated;
+use App\Actors\SystemActor;
+use App\Actors\SystemActors;
 use Tests\TestCase;
 
 /**

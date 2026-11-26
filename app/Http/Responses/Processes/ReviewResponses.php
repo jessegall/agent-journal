@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Processes;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandRefusal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

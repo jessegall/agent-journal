@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
+use App\Bus\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Commands\RecoverDraft\RecoverDraftCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

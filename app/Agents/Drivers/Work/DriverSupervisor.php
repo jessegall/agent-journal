@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Work;
 
 use App\Agents\Drivers\Processes\ProcessDrivers;
-use App\Contracts\Time\ServerClock;
 use App\Models\Hosts\HostProcess;
+use App\Time\Contracts\ServerClock;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 

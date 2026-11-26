@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ActorNotAllowed;
-use App\Exceptions\KeyScriptRefused;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Support\ActorReference;
+use App\Terminals\Commands\RunKeyScript\RunKeyScriptCommand;
+use App\Terminals\Exceptions\KeyScriptRefused;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

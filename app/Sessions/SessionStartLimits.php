@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Sessions;
+
+use App\Agents\DriverRequests;
+use App\Models\Agents\AgentRuntime;
+use App\Models\Agents\AgentSession;
+use App\Models\Profiles\ProfileRevisionHold;
+use App\Models\Sessions\SessionPolicy;
+use App\Time\Contracts\ServerClock;
+
+/**
+ * Stops the starts that may no longer run through the host's durable stop requests: a start past its wall limit,
+ * and every session started from a revoked profile revision. A stopped start ends as any other, so its job is left
+ * unfinished with a notice, never completed.
+ */
+final readonly class SessionStartLimits
+{
+    /**
+     * The most sessions one pass stops for each limit.
+     */
+    private const int PASS_LIMIT = 50;
+
+    public function __construct(
+        private DriverRequests $requests,
+        private ServerClock $clock,
+    ) {}
+
+    /**
+     * Stops each start that outran the wall budget frozen with its start: six hours unless its profile set another.
+     */
+    public function stopOverdue(): void
+    {
+        $now = $this->clock->now();
+        $starts = AgentSession::findRunningStarts(self::PASS_LIMIT);
+        $deadlines = SessionPolicy::resolveWallDeadlinesOf($starts);
+
+        foreach ($starts as $session) {
+            if (array_key_exists($session->id, $deadlines) && $deadlines[$session->id]->isBefore($now)) {
+                $this->stop($session, "wall-limit:{$session->id}");
+            }
+        }
+    }
+
+    /**
+     * Stops what each pending fence still runs and marks the fence reconciled once nothing of its revision runs.
+     */
+    public function enforceFences(): void
+    {
+        foreach (ProfileRevisionHold::findPending(self::PASS_LIMIT) as $fence) {
+            $sessions = AgentSession::findRunningFromRevision(
+                $fence->profile_key,
+                $fence->profile_revision,
+                self::PASS_LIMIT,
+            );
+
+            foreach ($sessions as $session) {
+                $this->stop($session, "fence:{$fence->id}:{$session->id}");
+            }
+
+            if ($sessions === []) {
+                $fence->markReconciledAt($this->clock->now());
+            }
+        }
+    }
+
+    private function stop(AgentSession $session, string $idempotencyKey): void
+    {
+        if (AgentRuntime::isRunningForSession($session->id)) {
+            $this->requests->stop($session->target, $idempotencyKey);
+        }
+    }
+}

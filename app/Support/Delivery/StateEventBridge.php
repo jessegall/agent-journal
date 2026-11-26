@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Delivery;
 
+use App\Access\StateEvents\StateEventDispatch;
+use App\Access\StateEvents\StateEventScope;
 use App\Contracts\Events\Event;
-use App\Support\StateEvents\StateEventDispatch;
-use App\Support\StateEvents\StateEventScope;
 
 /**
  * The dispatcher entry point for an event that registered states can observe.

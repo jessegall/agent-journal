@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode\Enums;
 
-use App\Enums\Agents\AccessType;
-use App\Enums\Files\FileOperation;
-use App\Enums\Profiles\ResourceType;
+use App\Agents\Enums\AccessType;
 use App\Exceptions\UnsupportedHook;
+use App\Files\Enums\FileOperation;
+use App\Profiles\Enums\ResourceType;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Values\Operation;
 use App\Values\ResourceRequest;

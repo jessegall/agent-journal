@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\States;
 
-use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Contracts\Work\UniqueSubjectState;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\UniqueSubjectState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
 use App\Support\RecordIdentity;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Tasks\Events\TaskEvent;
 use Domain\Tasks\Events\TaskLogged;

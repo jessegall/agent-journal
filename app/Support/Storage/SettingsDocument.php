@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
+use App\Settings\Storage\EncodedSetting;
+use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedValue;
 use JsonSerializable;
 use PhpOption\Option;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Layouts;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\SignInAttemptEvent;
+use App\Accounts\Contracts\SignInAttemptEvent;
 
 /**
  * A sign-in attempt kept the fingerprint of the identity it signed in as.

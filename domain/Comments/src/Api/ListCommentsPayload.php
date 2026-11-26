@@ -6,7 +6,7 @@ namespace Domain\Comments\Api;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
+use App\Processes\Enums\ApiEffect;
 use App\Support\IdListPage;
 use Domain\Comments\Data\CommentList;
 use Spatie\LaravelData\Attributes\MapName;

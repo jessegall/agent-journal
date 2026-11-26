@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Api\EndpointDeclarations;
+use App\Api\Exceptions\EndpointDeclarationInvalid;
 use App\Exceptions\CallKeyInvalid;
-use App\Exceptions\EndpointDeclarationInvalid;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
 use App\Support\CallKey;
-use App\Support\EndpointDeclarations;
 use Tests\Fixtures\AgentRequests\Invalid\ReadWithReceiptPayload;
 use Tests\Fixtures\AgentRequests\Invalid\WriteWithoutReceiptPayload;
 use Tests\Fixtures\AgentRequests\NoteAnswer;

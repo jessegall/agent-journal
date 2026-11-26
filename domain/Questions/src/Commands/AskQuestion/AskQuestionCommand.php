@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\AskQuestion;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RetainedActorRequestKey;
-use App\Contracts\Projects\ProjectCommand;
-use App\Enums\Agents\AccessType;
 use App\Policies\MessagePolicy;
+use App\Projects\Contracts\ProjectCommand;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Values\ProjectOwner;

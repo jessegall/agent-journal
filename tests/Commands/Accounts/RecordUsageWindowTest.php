@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\RecordUsageWindow\RecordUsageWindowCommand;
-use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Accounts\UsageWindowSlot;
-use App\Enums\Agents\SessionProcessStatus;
+use App\Accounts\Commands\RecordUsageWindow\RecordUsageWindowCommand;
+use App\Accounts\Enums\AccountProcessRole;
+use App\Accounts\Enums\UsageWindowSlot;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Agents\Values\UsageSource;
+use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageWindow;
-use App\Support\EnrolledHost;
 use App\Values\ReportedStart;
-use App\Values\UsageSource;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;

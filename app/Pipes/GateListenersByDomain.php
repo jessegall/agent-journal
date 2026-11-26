@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
-use App\Contracts\Events\ListenerFailureLog;
-use App\Exceptions\InvalidListener;
-use App\Support\AvailableListener;
-use App\Support\IsolatedListener;
-use App\Support\ListenerDeclarations;
-use App\Support\ListenerRegistry;
+use App\Bus\AvailableListener;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\IsolatedListener;
+use App\Bus\ListenerDeclarations;
+use App\Bus\ListenerRegistry;
+use App\Sessions\Contracts\Events\ListenerFailureLog;
 use App\Support\Reflector;
 
 /**

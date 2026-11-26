@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
-use App\Exceptions\FilePathInvalid;
+use App\Files\Enums\Place;
+use App\Navigation\Exceptions\FilePathInvalid;
 use App\Values\FilePath;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

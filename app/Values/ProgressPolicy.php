@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\ProgressType;
-use App\Exceptions\VerificationContractInvalid;
+use App\CommandRules\Enums\ProgressType;
+use App\CommandRules\Exceptions\VerificationContractInvalid;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

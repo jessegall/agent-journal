@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Support\OutputRecorder;
+use App\Processes\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 
 /**

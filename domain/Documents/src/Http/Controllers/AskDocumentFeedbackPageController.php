@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Sessions\AgentDirectory;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\Agent;
+use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use Domain\Chat\Contracts\PairChats;
 use Domain\Documents\Http\Requests\DocumentFeedbackRequest;

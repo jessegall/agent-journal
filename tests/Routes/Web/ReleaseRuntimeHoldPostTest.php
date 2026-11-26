@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
-use App\Enums\Drivers\HoldReason;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\PartRunEvent;
+use App\Processes\Contracts\PartRunEvent;
 
 /**
  * A part of a run finished draining its output.

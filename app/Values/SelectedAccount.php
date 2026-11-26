@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Exceptions\AccountFolderInvalid;
+use App\Hosts\Exceptions\AccountFolderInvalid;
 use App\Support\RecordIdentity;
 
 /**

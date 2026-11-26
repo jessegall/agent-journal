@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Authorization\VisibilityCheck;
-use App\Contracts\Navigation\PageOption;
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Navigation\PresentsLayout;
-use App\Enums\Navigation\Icon;
-use App\Enums\Web\PageDestination;
-use App\Enums\Web\PageSkeleton;
-use App\Enums\Web\WindowPlace;
-use App\Exceptions\InvalidPageDeclaration;
+use App\Access\Contracts\VisibilityCheck;
+use App\Navigation\Contracts\PageOption;
+use App\Navigation\Contracts\PageResolver;
+use App\Navigation\Contracts\PresentsLayout;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Navigation\Enums\Icon;
 use App\Support\Reflector;
+use App\Text\Declarations\ResolverDataClass;
+use App\Web\Declarations\Slot;
+use App\Web\Enums\PageDestination;
+use App\Web\Enums\PageSkeleton;
+use App\Web\Enums\WindowPlace;
+use App\Web\Exceptions\InvalidPageDeclaration;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 

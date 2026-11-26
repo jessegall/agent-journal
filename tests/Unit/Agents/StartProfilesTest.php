@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\Drivers\StartProfileType;
-use App\Enums\Projects\CapabilityStatusType;
+use App\Agents\Drivers\Enums\StartProfileType;
+use App\Hosts\ArrangementSetting;
+use App\Hosts\Contracts\HostCapabilities;
+use App\Hosts\HostCapability;
+use App\Hosts\HostCapabilityQuery;
 use App\Models\Accounts\Account;
-use App\Support\ArrangementSetting;
-use App\Support\HostCapability;
-use App\Support\HostCapabilityQuery;
+use App\Profiles\StartProfiles;
+use App\Projects\Enums\CapabilityStatusType;
 use App\Support\RecordIdentity;
-use App\Support\StartProfiles;
 use App\Values\SelectedAccount;
 use Tests\TestCase;
 

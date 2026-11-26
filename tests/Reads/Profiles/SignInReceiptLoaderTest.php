@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Profiles;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
-use App\Data\Accounts\SignInReceiptData;
-use App\Data\Profiles\SignInReceiptInput;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInReceiptStatus;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Commands\CancelSignIn\CancelSignInCommand;
+use App\Accounts\Data\SignInReceiptData;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Enums\SignInReceiptStatus;
 use App\Http\Loaders\Profiles\SignInReceiptLoader;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
+use App\Profiles\Data\SignInReceiptInput;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\CommitsHookRows;

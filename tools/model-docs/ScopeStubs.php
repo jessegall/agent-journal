@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tools\ModelDocs;
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
 use App\Support\Reflector;
-use App\Values\Depth;
 use App\Values\FilePath;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Providers;
 
-use App\Contracts\Domains\JournalToolNames;
+use App\Agents\Contracts\Domains\JournalToolNames;
+use App\CommandRules\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
+use App\CommandRules\Mcp\Contracts\McpCall as McpCallContract;
 use App\Mcp\Console\ContractSnapshotCommand;
 use App\Mcp\Console\RelayCommand;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
-use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
-use App\Mcp\Contracts\McpCall as McpCallContract;
 use App\Mcp\Contracts\NumberedPages as NumberedPagesContract;
 use App\Mcp\Contracts\TextFields as TextFieldsContract;
 use App\Mcp\Models\RetainedPage;

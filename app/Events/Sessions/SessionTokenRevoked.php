@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\SessionTokenEvent;
+use App\Sessions\Contracts\SessionTokenEvent;
 
 /**
  * A start token was revoked.

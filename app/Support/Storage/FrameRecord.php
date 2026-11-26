@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Support\References\StateReference;
+use App\Stacks\References\StateReference;
 use Carbon\CarbonImmutable;
 
 /**

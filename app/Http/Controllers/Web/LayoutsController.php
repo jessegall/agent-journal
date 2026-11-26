@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Layouts\ChangeLayout\ChangeLayoutCommand;
-use App\Commands\Layouts\DeleteLayout\DeleteLayoutCommand;
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Web\LayoutRequest;
 use App\Models\Records\Layout;
+use App\Terminals\Commands\ChangeLayout\ChangeLayoutCommand;
+use App\Terminals\Commands\DeleteLayout\DeleteLayoutCommand;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

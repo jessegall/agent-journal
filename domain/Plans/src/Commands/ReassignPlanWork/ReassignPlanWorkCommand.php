@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\ReassignPlanWork;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RepeatableRead;
 use App\Attributes\Commands\RetainedActorRequestKey;
-use App\Enums\Agents\AccessType;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
-use App\Exceptions\FileOutsidePlaces;
-use App\Exceptions\FolderClosed;
 use App\Exceptions\PlaceUnavailable;
-use App\Support\PlaceRoots;
+use App\Files\Enums\Place;
+use App\Files\PlaceRoots;
+use App\Navigation\Exceptions\FileOutsidePlaces;
+use App\Navigation\Exceptions\FolderClosed;
 use App\Values\FilePath;
 use Tests\TestCase;
 

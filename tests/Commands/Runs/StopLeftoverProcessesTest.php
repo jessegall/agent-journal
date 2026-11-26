@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\StopLeftoverProcesses\StopLeftoverProcessesCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Values\PartKey;
+use App\Bus\Contracts\CommandBus;
+use App\Processes\Commands\StopLeftoverProcesses\StopLeftoverProcessesCommand;
+use App\Processes\Values\PartKey;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

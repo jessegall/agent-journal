@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\ApiSignatureInvalid;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\PresenceWindow;
+use App\Agents\AgentContextFactory;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\CredentialRejected;
+use App\Hosts\Exceptions\ApiSignatureInvalid;
 use App\Support\AgentContext;
-use App\Support\AgentContextFactory;
-use App\Support\PresenceWindow;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Container\Container;

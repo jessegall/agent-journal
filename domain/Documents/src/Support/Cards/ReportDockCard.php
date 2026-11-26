@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support\Cards;
 
-use App\Enums\Web\Emphasis;
+use App\Docking\Cards\DestinationArgument;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Sources\Contracts\CardContext;
 use App\Support\Cards\Button;
-use App\Support\Cards\DestinationArgument;
 use App\Support\Cards\DockCard;
-use App\Support\Cards\DockDestination;
 use App\Support\Cards\Stack;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Support\Sources\Contracts\CardContext;
+use App\Web\Enums\Emphasis;
 use Domain\Documents\Models\Report;
 
 /**

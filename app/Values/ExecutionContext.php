@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Processes\ShellDialect;
+use App\Processes\Enums\ShellDialect;
 
 /**
  * Where a command would run, as far as classification may trust it: the dialect, the working folder, the trusted

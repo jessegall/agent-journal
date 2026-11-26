@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Commands\Hosts\UpgradeHost\UpgradeHostCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Enums\Hosts\HostRefusal;
-use App\Exceptions\HostUpgradeRefused;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Enums\HostRefusal;
+use App\Hosts\Exceptions\HostUpgradeRefused;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

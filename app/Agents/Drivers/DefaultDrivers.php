@@ -8,15 +8,15 @@ use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Agents\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Agents\Drivers\Capabilities\HeadlessCapabilities;
 use App\Agents\Drivers\Capabilities\TerminalCapabilities;
-use App\Contracts\Drivers\DriverCapabilities;
-use App\Enums\Drivers\DriverCapability;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\MarkTone;
-use App\Enums\Drivers\SignInCodeDirection;
+use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Enums\DriverCapability;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Enums\MarkTone;
+use App\Agents\Drivers\Enums\SignInCodeDirection;
+use App\Agents\Values\ProviderKey;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;
-use App\Values\ProviderKey;
 
 /**
  * The four drivers every journal ships: Claude Code and Codex, each in a terminal and headless.

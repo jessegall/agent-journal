@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\AccountNoticeEvent;
-use App\Contracts\Accounts\ShownOnAccounts;
+use App\Accounts\Contracts\AccountNoticeEvent;
+use App\Accounts\Contracts\ShownOnAccounts;
 
 /**
  * A notice on the driver's accounts was recorded, or counted again.

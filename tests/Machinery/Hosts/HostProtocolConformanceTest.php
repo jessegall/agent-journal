@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Data\Hosts\HostAnswerData;
-use App\Data\Hosts\HostInventoryData;
-use App\Data\Hosts\HostProcessReportData;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostRefusal;
+use App\Hosts\Data\HostAnswerData;
+use App\Hosts\Data\HostInventoryData;
+use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostRefusal;
+use App\Hosts\HostOrderPayload;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
-use App\Support\Hosts\HostOrderPayload;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Agents\StatusActionType;
-use App\Enums\Drivers\HoldReason;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Agents\Enums\StatusActionType;
 
 /**
  * What the bar says of a hold on the agent's driver: its words, the decision it waits on and where that decision is

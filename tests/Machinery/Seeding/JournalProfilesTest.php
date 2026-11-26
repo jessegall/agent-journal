@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Exceptions\SettingsDocumentInvalid;
 use App\Models\Records\SettingsRecord;
-use App\Support\CoreSettings;
-use App\Support\SettingRegistry;
+use App\Settings\CoreSettings;
+use App\Settings\Exceptions\SettingsDocumentInvalid;
+use App\Settings\SettingRegistry;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;

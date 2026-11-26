@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Projects\HostRouteRole;
 use App\Http\Controllers\Agents\Host\ProjectReadReportController;
 use App\Http\Controllers\Agents\Host\WorkspaceReadController;
 use App\Http\Controllers\Hosts\AnswerOrderController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\Hosts\InventoryController;
 use App\Http\Controllers\Hosts\PrivateValueController;
 use App\Http\Controllers\Hosts\ProcessOutputController;
 use App\Http\Controllers\Hosts\ProcessReportController;
+use App\Projects\Enums\HostRouteRole;
 use Illuminate\Support\Facades\Route;
 
 // The work routes enrolled hosts speak with protocol 1 and a connected project's relay with protocol 2, scoped to its

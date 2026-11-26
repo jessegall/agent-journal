@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Enums\Accounts\SignInMethod;
-use App\Values\SignInStarted;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Values\SignInStarted;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
-use App\Commands\Agents\OpenJournalTerminal\OpenJournalTerminalCommand;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\RestartPolicy;
+use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
-use App\Support\OpenedRuntime;
-use App\Support\RuntimeScreen;
-use App\Support\ScreenRegistration;
+use App\Sessions\OpenedRuntime;
+use App\Terminals\RuntimeScreen;
+use App\Terminals\ScreenRegistration;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;

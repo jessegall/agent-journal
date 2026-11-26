@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Assignments\ReassignRecord\ReassignRecordCommand;
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Assignments\AssignmentResultData;
+use App\Assignments\Commands\ReassignRecord\ReassignRecordCommand;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Data\AssignmentResultData;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Assignments\ReassignRecordRequest;
 use Illuminate\Http\JsonResponse;
 

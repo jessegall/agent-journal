@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\Sessions\CertifyPassedStops\CertifyPassedStopsCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\EngineListener;
 use App\Events\Engine\EngineTicked;
+use App\Sessions\Commands\CertifyPassedStops\CertifyPassedStopsCommand;
 
 /**
  * Certifies passed stops whose agent never stopped again, on every engine pass; the sweep is bounded.

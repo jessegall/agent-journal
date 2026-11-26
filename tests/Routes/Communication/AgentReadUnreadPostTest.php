@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
-use App\Support\ShownMessages;
+use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
+use App\Messages\ShownMessages;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

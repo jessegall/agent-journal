@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Skills\SkillResolver;
-use App\Exceptions\SkillConflict;
-use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillSourceInvalid;
-use App\Values\SkillEntry;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Exceptions\SkillConflict;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Values\SkillEntry;
 use Illuminate\Console\Command;
 
 /**

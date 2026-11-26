@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Assignments\AssignmentQuery;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\StackAlreadyClosed;
+use App\Agents\Exceptions\StackAlreadyClosed;
+use App\Assignments\Contracts\AssignmentQuery;
+use App\Assignments\PoolMembers;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\ListenerRegistry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
-use App\Support\ListenerRegistry;
-use App\Support\PoolMembers;
-use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;

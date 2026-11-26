@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\WriteHostInput\WriteHostInputCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Enums\Hosts\HostProcessType;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\WriteHostInput\WriteHostInputCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Enums\HostProcessType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Policies;
 
-use App\Contracts\Authorization\Policy;
-use App\Contracts\Authorization\RestrictedPolicy;
-use App\Enums\Agents\AccessType;
-use App\Enums\Profiles\ProfileAudience;
+use App\Access\Contracts\Policy;
+use App\Access\Contracts\RestrictedPolicy;
+use App\Agents\Enums\AccessType;
+use App\Profiles\Enums\ProfileAudience;
 use Domain\Rules\Models\Rule;
 
 /**

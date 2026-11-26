@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
-use App\Support\EnrolledHost;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;

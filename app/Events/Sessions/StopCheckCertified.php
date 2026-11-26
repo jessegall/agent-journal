@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\StopCheckEvent;
+use App\Sessions\Contracts\StopCheckEvent;
 
 /**
  * A stop attempt was certified.

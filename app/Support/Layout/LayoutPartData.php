@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Enums\Layouts\LayoutTag;
+use App\Connections\Layout\LayoutBodyData;
 use App\Exceptions\LayoutRefused;
+use App\Navigation\Layout\LayoutMenuData;
+use App\Terminals\Enums\LayoutTag;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

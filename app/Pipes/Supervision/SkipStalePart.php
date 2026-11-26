@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
-use App\Enums\Runs\ExitStatus;
-use App\Support\Execution\QueuedPart;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Enums\ExitStatus;
+use App\Processes\Execution\QueuedPart;
 use App\Support\Execution\StepOutcome;
 
 /**

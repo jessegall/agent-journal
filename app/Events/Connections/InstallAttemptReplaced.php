@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\InstallAttemptEvent;
+use App\Connections\Contracts\InstallAttemptEvent;
 use DateTimeImmutable;
 
 /**

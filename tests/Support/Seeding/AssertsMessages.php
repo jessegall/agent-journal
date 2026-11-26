@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Data\Notifications\NotificationTarget;
-use App\Enums\Notifications\NotificationSourceType;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
-use App\Resolvers\RunNotificationTarget;
+use App\Notifications\Data\NotificationTarget;
+use App\Notifications\Enums\NotificationSourceType;
+use App\Notifications\NotificationDelivery;
+use App\Notifications\NotificationScopes;
+use App\Processes\Resolvers\RunNotificationTarget;
 use App\Support\ActorReference;
-use App\Support\NotificationDelivery;
-use App\Support\NotificationScopes;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 

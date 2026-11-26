@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands\OpenDocument;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Documents\Policies\DocumentPolicy;
 use Domain\Documents\Values\DraftReference;

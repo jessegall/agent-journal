@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\LogCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\CommandMiddleware\LogCommand;
+use App\Bus\Contracts\CommandBus;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;

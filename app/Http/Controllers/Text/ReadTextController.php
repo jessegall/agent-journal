@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Text;
 
-use App\Contracts\Reads\TextResolver;
-use App\Contracts\Records\RecordResolver;
 use App\Http\Requests\Text\ReadTextRequest;
+use App\Reads\Contracts\TextResolver;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 
 /**

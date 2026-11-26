@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
-use App\Contracts\CommandLines\Condition;
-use App\Exceptions\ProfileRefused;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Processes\Contracts\Condition;
 use App\Values\DriverStart;
 use Closure;
 

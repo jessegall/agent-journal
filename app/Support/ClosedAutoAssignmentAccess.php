@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Assignments\AutoAssignmentAccess;
-use App\Exceptions\AutoAssignmentDenied;
+use App\Actors\Contracts\Actor;
+use App\Assignments\Contracts\AutoAssignmentAccess;
+use App\Assignments\Exceptions\AutoAssignmentDenied;
 
 /**
  * The policy while nothing else is bound: nobody may read or change an auto-assignment.

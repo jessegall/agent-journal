@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\AgentInspection;
 use App\Agents\Drivers\Skills\DriverSkillAdapters;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Skills\SkillResolver;
-use App\Enums\Skills\PublicationStatus;
-use App\Enums\Skills\SkillReload;
-use App\Exceptions\SkillContextUnavailable;
-use App\Exceptions\SkillSelectionConflict;
 use App\Exceptions\SkillSessionHidden;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
-use App\Support\AgentInspection;
-use App\Support\SkillSelection;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Enums\PublicationStatus;
+use App\Skills\Enums\SkillReload;
+use App\Skills\Exceptions\SkillContextUnavailable;
+use App\Skills\Exceptions\SkillSelectionConflict;
+use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\SkillSelection;
+use App\Skills\Values\SkillEntry;
 use App\Values\DriverKey;
 use App\Values\SessionSkillStatus;
-use App\Values\SkillEntry;
 use App\Values\SkillStatus;
 
 /**

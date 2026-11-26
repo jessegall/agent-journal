@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Projects\ArrangementType;
-use App\Support\AccountFolderUses;
-use App\Support\FolderOrderWait;
+use App\Accounts\AccountFolderUses;
+use App\Accounts\FolderOrderWait;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Projects\Enums\ArrangementType;
 use App\Values\HostFolderAnswer;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\TestCase;

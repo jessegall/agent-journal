@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Engine;
 
-use App\Support\EngineAccess;
+use App\Engine\EngineAccess;
 
 /**
  * Which of the named maintenance scopes the engine access allows right now.

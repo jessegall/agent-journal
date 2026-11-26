@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Sessions\ProfileResolver;
 use App\Events\Sessions\StartGrantRequested;
 use App\Models\Agents\AgentSession;
+use App\Sessions\Contracts\ProfileResolver;
 use App\Values\ProfileKey;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Contracts\Drafts\DraftResolver;

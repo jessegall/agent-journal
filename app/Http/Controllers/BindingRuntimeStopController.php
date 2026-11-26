@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Values\HostContext;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
+use App\Projects\Commands\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use Illuminate\Http\Response;
 
 /**

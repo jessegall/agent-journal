@@ -99,7 +99,7 @@ final class BoundaryCheckerTest extends TestCase
             new NameUse(
                 $this->fixtureFolder().'/Plans/UsesAllowed.php',
                 3,
-                'App\Contracts\Actors\Actor',
+                'App\Actors\Contracts\Actor',
                 NameType::Type,
             ),
             new NameUse(
@@ -163,7 +163,7 @@ final class BoundaryCheckerTest extends TestCase
         $uses = [
             new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameType::Import),
             new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Import),
-            new NameUse("{$base}/config/auth.php", 6, 'App\Support\AgentStacks', NameType::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Stacks\AgentStacks', NameType::Import),
         ];
 
         $this->assertSame(

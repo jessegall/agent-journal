@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Bus;
 
-use App\Contracts\Refusals\RefusalMapper;
+use App\Bus\Contracts\Refusals\RefusalMapper;
 use RuntimeException;
 use Tests\TestCase;
 

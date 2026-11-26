@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AssignmentResolver;
-use App\Contracts\Time\VerificationTiming;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Contracts\AssignmentResolver;
 use App\Contracts\Work\ActorStackSessions;
 use App\Support\AssigneeIdentity;
 use App\Support\IdListPage;
-use App\Values\TimingVerdict;
+use App\Time\Contracts\VerificationTiming;
+use App\Time\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanStatus;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;

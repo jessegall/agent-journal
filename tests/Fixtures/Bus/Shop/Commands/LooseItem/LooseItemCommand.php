@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\LooseItem;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Contracts\Bus\Command;
-use App\Enums\Agents\AccessType;
+use App\Bus\Contracts\Command;
 use App\Exceptions\CommandDispatcherMissing;
 use App\Support\ActorReference;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;

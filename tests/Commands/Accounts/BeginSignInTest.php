@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Data\Accounts\SignInAttemptData;
-use App\Enums\Accounts\SignInMethod;
-use App\Exceptions\RequestKeyConflict;
-use App\Exceptions\SignInMethodMissing;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Data\SignInAttemptData;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Exceptions\SignInMethodMissing;
+use App\Accounts\Values\SignInStarted;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
-use App\Values\SignInStarted;
+use App\Skills\Exceptions\RequestKeyConflict;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

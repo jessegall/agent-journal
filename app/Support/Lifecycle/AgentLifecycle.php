@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Lifecycle;
 
-use App\Exceptions\AgentNotAvailable;
 use App\Models\Agents\Agent;
+use App\Sessions\Exceptions\AgentNotAvailable;
 
 /**
  * The one lock on an agent's row that orders its life: work given to it and starts take the shared lock, which

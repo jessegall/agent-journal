@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Assignments\AssigneeResolver as AssigneeResolverContract;
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Contracts\Assignments\AssignmentResolver;
+use App\Assignments\AssignmentSet;
+use App\Assignments\Contracts\AssigneeResolver as AssigneeResolverContract;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Contracts\AssignmentResolver;
 use App\Support\AssigneeIdentity;
 use App\Support\AssigneeList;
 use App\Support\AssigneeName;
 use App\Support\Assignment;
 use App\Support\AssignmentHolder;
 use App\Support\AssignmentHolders;
-use App\Support\AssignmentSet;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Messages\DeliverClosingWords\DeliverClosingWordsCommand;
 use App\Mcp\Tools\ClosingWordsDeliverTool;
+use App\Messages\Commands\DeliverClosingWords\DeliverClosingWordsCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

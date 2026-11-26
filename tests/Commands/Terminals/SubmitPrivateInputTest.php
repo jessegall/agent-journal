@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
-use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Exceptions\PrivateValueRefused;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
-use App\Support\PrivateValues;
-use App\Values\PrivateSubmission;
+use App\Terminals\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Terminals\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Terminals\Exceptions\PrivateValueRefused;
+use App\Terminals\PrivateValues;
+use App\Terminals\Values\PrivateSubmission;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

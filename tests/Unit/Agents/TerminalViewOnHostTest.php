@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Support\EndTerminalViewsOnTick;
-use App\Support\EngineListenerSet;
+use App\Engine\EngineListenerSet;
+use App\Terminals\EndTerminalViewsOnTick;
 use Tests\Support\Engine\RunsEnginePasses;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\TimeLimits\TimeLimit;

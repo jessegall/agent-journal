@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Sessions\AgentDirectory;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
+use App\Sessions\Contracts\AgentDirectory;
 use Domain\Chat\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

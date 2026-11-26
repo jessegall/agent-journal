@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\Skills;
 
-use App\Contracts\Skills\Skill;
-use App\Contracts\Skills\SkillCondition;
-use App\Support\Conditions\Conditions;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Values\SkillSections;
 use App\Values\ProfileBase;
-use App\Values\SkillSections;
 
 /**
  * The Plans domain's skill: what a plan is and how its work is held.

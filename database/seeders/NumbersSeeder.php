@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Support\OutsideCommandAllowance;
+use App\Bus\OutsideCommandAllowance;
 use Illuminate\Database\Seeder;
 
 /**

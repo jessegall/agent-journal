@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\Decisions;
 
-use App\Contracts\Asks\Answer;
-use App\Enums\Hooks\AnswerType;
+use App\Asks\Contracts\Answer;
 use App\Exceptions\NoRefusalReason;
 use App\Exceptions\NoReplacementLine;
-use App\Support\Decisions\Contracts\AnswerPart;
+use App\Hooks\Enums\AnswerType;
+use App\Stacks\Decisions\Contracts\AnswerPart;
+use App\Stacks\StateAnswer;
 use App\Support\Decisions\Enums\SimpleAnswer;
-use App\Support\Stack\StateAnswer;
 use App\Values\AgentText;
 
 /**

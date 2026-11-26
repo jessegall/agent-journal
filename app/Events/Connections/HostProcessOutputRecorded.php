@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostProcessEvent;
+use App\Hosts\Contracts\HostProcessEvent;
 
 /**
  * The host sent the pipe process's standard output through the offset.

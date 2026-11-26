@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Contracts\Bus\PipelineRunner;
-use App\Enums\CommandRules\NodeType;
-use App\Enums\Processes\ShellDialect;
+use App\Access\Values\ShellNode;
+use App\Bus\Contracts\PipelineRunner;
+use App\CommandRules\Enums\NodeType;
 use App\Exceptions\ShellGrammarStopped;
 use App\Pipelines\BuildShellTreePipeline;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Grammar\Values\SourceRange;
+use App\Processes\Grammar\Values\TreeDiagnostic;
 use App\Support\Lines\ShellLine;
-use App\Values\ShellNode;
 use App\Values\ShellTree;
-use App\Values\SourceRange;
-use App\Values\TreeDiagnostic;
 
 /**
  * Core's shell syntax: runs the line through the shell analysis pipeline. Invalid syntax or a limit keeps only a

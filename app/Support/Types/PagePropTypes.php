@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\Navigation\PresentsLayout;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Declarations\RegisteredPage;
-use App\Enums\Web\PageDestination;
+use App\Navigation\Contracts\PresentsLayout;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\ClientDeclarations;
+use App\Web\Declarations\RegisteredPage;
+use App\Web\Enums\PageDestination;
 use Illuminate\Support\Str;
 
 /**

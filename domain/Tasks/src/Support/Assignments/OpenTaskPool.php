@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Support\PoolMembers;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\PoolMembers;
 
 /**
  * Every task, without listing them: the assigner picks the open ones nobody holds.

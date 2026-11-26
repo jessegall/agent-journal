@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Listeners;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Models\Inboxes\Inbox;
 use Domain\Chat\Commands\CreateChatMessage\CreateChatMessageCommand;

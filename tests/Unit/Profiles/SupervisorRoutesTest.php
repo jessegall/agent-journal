@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Enums\Asks\OwnerRouteType;
+use App\Access\Contracts\JournalAdmission;
+use App\Asks\Enums\OwnerRouteType;
+use App\Asks\SupervisorOwner;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\SupervisorOwner;
 use Tests\TestCase;
 
 final class SupervisorRoutesTest extends TestCase

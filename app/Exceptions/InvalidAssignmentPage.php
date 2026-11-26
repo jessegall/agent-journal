@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 final class InvalidAssignmentPage extends InvalidArgumentException implements CommandRefusal

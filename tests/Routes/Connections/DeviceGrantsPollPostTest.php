@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
-use App\Support\EnrolledHost;
-use App\Values\DevicePollOutcome;
-use App\Values\InstallTicket;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Projects\Values\DevicePollOutcome;
+use App\Projects\Values\InstallTicket;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

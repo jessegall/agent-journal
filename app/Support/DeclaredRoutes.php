@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Declarations\DomainClient;
 use App\Exceptions\ClientPrefixUnavailable;
 use App\Http\Controllers\Web\PageController;
-use App\Support\Web\DeclaredRouteKey;
+use App\Navigation\Declarations\DomainClient;
 use App\Values\FolderEntry;
+use App\Web\DeclaredRouteKey;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\RouteCollectionInterface;
 use Illuminate\Routing\Router;

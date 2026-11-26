@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Support\States;
 
-use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Contracts\Work\DurableState;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Sequences\Contracts\SequenceRunEvent;
 use Domain\Sequences\Events\SequenceEnded;

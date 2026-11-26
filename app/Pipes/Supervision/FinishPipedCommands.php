@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Execution\SpawnedPart;
+use App\Processes\Execution\StepStatus;
 use App\Support\Execution\PumpedCommands;
-use App\Support\Execution\SpawnedPart;
 use App\Support\Execution\StepOutcome;
-use App\Support\Execution\StepStatus;
 
 /**
  * Ends every command of a pipeline and gives the step the pipeline's status: the last command's, or with pipefail the

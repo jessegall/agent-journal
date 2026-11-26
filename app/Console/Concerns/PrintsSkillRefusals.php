@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Concerns;
 
-use App\Contracts\Bus\CommandRefusal;
-use App\Exceptions\ContentMissing;
-use App\Exceptions\ContentTooLarge;
-use App\Exceptions\MarkdownInvalid;
-use App\Exceptions\SkillConditionInvalid;
-use App\Exceptions\SkillDeclarationInvalid;
+use App\Bus\Contracts\CommandRefusal;
 use App\Exceptions\SkillKeyInvalid;
-use App\Exceptions\SkillMissing;
 use App\Exceptions\SkillPreviewRefused;
 use App\Exceptions\UserActorRequired;
+use App\Skills\Exceptions\ContentMissing;
+use App\Skills\Exceptions\ContentTooLarge;
+use App\Skills\Exceptions\MarkdownInvalid;
+use App\Skills\Exceptions\SkillConditionInvalid;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Exceptions\SkillMissing;
 use Closure;
 use Illuminate\Console\Command;
 

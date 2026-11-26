@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Mcp;
 
-use App\Contracts\Actors\CurrentActorSetter;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Api\SignedCall;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Support\Continuation;
@@ -12,8 +14,6 @@ use App\Mcp\Support\Continuations;
 use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
 use App\Support\AgentContext;
-use App\Support\SignedCall;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Request;
 use Tests\TestCase;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Actors\AttentionOrigin;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsRowSets;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
-use App\Support\AttentionOrigin;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

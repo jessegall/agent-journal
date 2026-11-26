@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Numbers;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandRefused;
+use App\Access\Exceptions\StackLockTimedOut;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
+use App\Bus\OutsideCommandAllowance;
 use App\Exceptions\NumberChanged;
-use App\Exceptions\NumberLimitReached;
-use App\Exceptions\StackLockTimedOut;
 use App\Models\Records\GlobalGroup;
 use App\Models\Records\NumberGroup;
-use App\Support\LockingNumberAllocator;
+use App\Numbers\LockingNumberAllocator;
+use App\Records\Exceptions\NumberLimitReached;
 use App\Support\OperationDeadline;
-use App\Support\OutsideCommandAllowance;
 use Domain\Rules\RulesDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

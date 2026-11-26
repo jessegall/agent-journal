@@ -31,7 +31,7 @@ type StartGrant struct {
 	ProfileRevision int
 }
 
-// ProjectCommand mirrors App\Api\Connections\RunProjectCommandPayload: one journal verb as typed, run once per key.
+// ProjectCommand mirrors App\Connections\Api\RunProjectCommandPayload: one journal verb as typed, run once per key.
 type ProjectCommand struct {
 	RequestKey string   `json:"request_key"`
 	Binding    string   `json:"binding"`
@@ -77,7 +77,7 @@ func RunProjectCommand(
 	return readFrames(transport, request, write)
 }
 
-// CommandStatus mirrors App\Api\Connections\ProjectCommandStatus: where a request id's run stands and, once it
+// CommandStatus mirrors App\Connections\Api\ProjectCommandStatus: where a request id's run stands and, once it
 // settled with an outcome, the frames it recorded, ending with its exit frame.
 type CommandStatus struct {
 	Status string         `json:"status"`

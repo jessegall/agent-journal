@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Console\Commands;
 
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Enums\CommandRules\JournalRouteType;
 use Domain\Tasks\Api\ListAssignedTasksPayload;
 use Domain\Tasks\Api\TaskApi;
 use Domain\Tasks\Data\AssignedTaskCardData;

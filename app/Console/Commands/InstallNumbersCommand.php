@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Records\InstallNumbers\InstallNumbersCommand as InstallNumbers;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Records\Commands\InstallNumbers\InstallNumbersCommand as InstallNumbers;
 use Illuminate\Console\Command;
 
 final class InstallNumbersCommand extends Command

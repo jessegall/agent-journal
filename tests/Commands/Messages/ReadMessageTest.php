@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Messages;
 
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Exceptions\InboxUnavailable;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
 use App\Models\Messages\MessageReadEntry;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Tests\Commands;
 
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Exceptions\RecordUnavailable;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;

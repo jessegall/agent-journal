@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Enums\BoundaryItem;
+use App\Agents\Drivers\Enums\IsolationPlatform;
 use App\Agents\Drivers\Isolation\IsolationMechanisms;
-use App\Enums\Drivers\BoundaryItem;
-use App\Enums\Drivers\IsolationPlatform;
-use App\Values\BoundaryMechanisms;
+use App\Agents\Values\BoundaryMechanisms;
 use App\Values\SandboxVerdict;
 use Tests\TestCase;
 

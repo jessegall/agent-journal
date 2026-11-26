@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Processes\OutputStream;
-use App\Values\PartKey;
+use App\Bus\Contracts\CommandBus;
+use App\Processes\Commands\RecordRunChunk\RecordRunChunkCommand;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Values\PartKey;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

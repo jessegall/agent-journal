@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Data\Assignments\RecordHolderData;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Data\RecordHolderData;
 use App\Http\Requests\Assignments\ShowAssignmentRequest;
 use Illuminate\Http\JsonResponse;
 

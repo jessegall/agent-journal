@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Support\Str;

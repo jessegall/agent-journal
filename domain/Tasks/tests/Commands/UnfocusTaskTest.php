@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Work\AgentFocuses;
+use App\Stacks\Contracts\Work\AgentFocuses;
 use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;

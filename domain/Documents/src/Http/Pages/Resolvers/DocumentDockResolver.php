@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
+use App\Navigation\Contracts\SectionResolver;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Enums\AttentionStatus;
 use Domain\Documents\Models\Document;

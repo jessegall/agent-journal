@@ -6,10 +6,10 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Time\ServerClock;
 use App\Events\Connections\HostProcessRestarted;
+use App\Hosts\HostRuntimes;
 use App\Models\Hosts\HostProcess;
-use App\Support\HostRuntimes;
+use App\Time\Contracts\ServerClock;
 
 /**
  * A healed agent process starts its runtime's next process generation, so reports of the crashed one are refused.

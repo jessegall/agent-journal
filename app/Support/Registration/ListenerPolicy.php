@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support\Registration;
 
-use App\Contracts\Bus\PipelineRunner;
+use App\Bus\Contracts\PipelineRunner;
+use App\Bus\ListenerDeclarations;
+use App\Bus\ListenerOwnership;
+use App\Bus\ListenerRegistry;
 use App\Pipes\CheckListenerPairs;
 use App\Pipes\ExpandGroupListeners;
 use App\Pipes\GateListenersByDomain;
 use App\Pipes\SeparateTransactionListeners;
-use App\Support\ListenerDeclarations;
-use App\Support\ListenerOwnership;
-use App\Support\ListenerRegistry;
 
 /**
  * Runs the steps for discovering, checking and registering event listeners: the dispatcher's ordinary ones and the

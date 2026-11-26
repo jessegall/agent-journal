@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Drivers\DriverCall;
+use App\Agents\Drivers\Contracts\DriverCall;
 use Closure;
 
 /**

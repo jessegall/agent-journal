@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Accounts\UsageWindowSlot;
+use App\Accounts\Enums\UsageWindowSlot;
+use App\Agents\Values\UsageSource;
 use Carbon\CarbonImmutable;
 
 /**

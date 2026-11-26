@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Agents;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use App\Mcp\Support\McpInstructions;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;

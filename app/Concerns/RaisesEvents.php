@@ -6,8 +6,8 @@ namespace App\Concerns;
 
 use App\Contracts\Events\Event;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Reads\RowCapture;
 use App\Exceptions\RowWriteRefused;
+use App\Reads\Contracts\RowCapture;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 

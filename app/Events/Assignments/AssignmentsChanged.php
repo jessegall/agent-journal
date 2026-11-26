@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Events\Assignments;
 
-use App\Contracts\Navigation\ClientUpdate;
-use App\Enums\Assignments\AssignmentReason;
+use App\Assignments\AssignmentChange;
+use App\Assignments\Enums\AssignmentReason;
+use App\Navigation\Contracts\ClientUpdate;
 use App\Support\ActorReference;
-use App\Support\AssignmentChange;
 use DateTimeImmutable;
 
 /**

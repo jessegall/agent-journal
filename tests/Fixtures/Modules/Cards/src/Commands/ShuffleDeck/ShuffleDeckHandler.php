@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
+use App\Bus\Contracts\CommandHandler;
 
 final class ShuffleDeckHandler implements CommandHandler
 {

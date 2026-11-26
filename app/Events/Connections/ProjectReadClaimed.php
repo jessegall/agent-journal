@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectReadEvent;
+use App\Connections\Contracts\ProjectReadEvent;
 
 /**
  * A host claimed a project read to answer it.

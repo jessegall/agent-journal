@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Exceptions\ProfileDraftRefused;
+use App\Profiles\Exceptions\ProfileDraftRefused;
 use Spatie\LaravelData\Data;
 
 final class ScriptSource extends Data

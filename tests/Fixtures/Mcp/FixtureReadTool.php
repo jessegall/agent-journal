@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Mcp;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Layouts\LayoutShape;
+use App\Bus\Contracts\CommandBus;
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Database\ConnectionInterface;
 use Laravel\Mcp\Server\Attributes\Description;

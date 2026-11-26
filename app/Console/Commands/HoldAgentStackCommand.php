@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Agents\HoldAgentStack\HoldAgentStackCommand as HoldAgentStack;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\HoldAgentStack\HoldAgentStackCommand as HoldAgentStack;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use App\Values\StackTarget;
 use Illuminate\Console\Command;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
-use App\Declarations\StateMethod;
-use App\Enums\Engine\StackMoment;
-use App\Support\References\StateReference;
-use App\Support\Stack\FrameMoment;
-use App\Support\Stack\SelectedStateMethod;
+use App\Engine\Enums\StackMoment;
+use App\Stacks\Declarations\StateMethod;
+use App\Stacks\FrameMoment;
+use App\Stacks\References\StateReference;
+use App\Stacks\SelectedStateMethod;
 use App\Support\Storage\FrameRecord;
 
 /**

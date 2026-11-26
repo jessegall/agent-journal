@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Shelf;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Navigation\PageResolver;
+use App\Actors\Contracts\CurrentActor;
+use App\Navigation\Contracts\PageResolver;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 
 /**

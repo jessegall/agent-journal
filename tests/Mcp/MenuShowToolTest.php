@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Enums\Navigation\NavigationCompletion;
+use App\Agents\Drivers\Values\MenuStep;
 use App\Mcp\Tools\MenuShowTool;
 use App\Models\Drivers\MenuEntry;
+use App\Navigation\Enums\NavigationCompletion;
 use App\Support\ActorReference;
-use App\Values\MenuStep;
 use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

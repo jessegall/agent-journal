@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Listeners;
 
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
 use App\Events\Inboxes\InboxLeft;
 use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;
 

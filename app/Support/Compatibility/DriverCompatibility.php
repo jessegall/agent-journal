@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Compatibility;
 
+use App\Accounts\Enums\AuthenticationArrangement;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Enums\Accounts\AuthenticationArrangement;
-use App\Enums\Drivers\DriverEvidence;
+use App\Agents\Drivers\Enums\DriverEvidence;
 use App\Exceptions\DriverFamilyUnknown;
 use App\Support\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Support\Compatibility\Exceptions\DriverUnstartableInContainer;

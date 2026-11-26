@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Agents\AgentAction;
-use App\Enums\Agents\AgentPresence;
-use App\Enums\Drivers\DriverSwitchStage;
-use App\Enums\Drivers\HoldReason;
+use App\Agents\Drivers\Enums\DriverSwitchStage;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Agents\Enums\AgentAction;
+use App\Agents\Enums\AgentPresence;
+use App\Agents\ResumableConversation;
 use App\Exceptions\SessionOutdated;
+use App\Sessions\SessionStartOutcome;
 
 /**
  * An agent Home can show, live or idle: its name, whether it is retired, its live session with its process generation and the switch that last

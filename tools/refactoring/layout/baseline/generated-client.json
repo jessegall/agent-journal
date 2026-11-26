@@ -165,7 +165,7 @@
             "__construct"
         ]
     },
-    "app/Support/JournalClient.php": {
+    "app/Api/JournalClient.php": {
         "hash": "5a77044605dfe45dd0b865ab44309a3a9daf762f712071c93208c298fe122695",
         "methods": [
             "__construct"

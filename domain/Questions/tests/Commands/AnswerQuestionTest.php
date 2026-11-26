@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Tests\Commands;
 
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use Domain\Questions\Commands\AnswerQuestion\AnswerQuestionCommand;
 use Domain\Questions\Enums\QuestionType;
 use Domain\Questions\Exceptions\QuestionRefused;

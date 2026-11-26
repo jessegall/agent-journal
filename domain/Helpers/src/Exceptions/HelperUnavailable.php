@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use App\Exceptions\Concerns\ThrowsLater;
 use RuntimeException;
 

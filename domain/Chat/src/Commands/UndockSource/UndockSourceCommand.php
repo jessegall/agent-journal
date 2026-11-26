@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\UndockSource;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\RetainedActorRequestKey;
-use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Chat\Policies\DockPlacementPolicy;
 use Domain\Chat\Values\DockResult;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Enums\Drivers\DriverFailure;
-use App\Enums\Hooks\ContextStartType;
-use App\Enums\Hooks\HookEvent;
-use App\Enums\Hooks\ToolOutcome;
-use App\Enums\Sessions\SessionEndReason;
-use App\Exceptions\UnreadablePayload;
+use App\Agents\Drivers\Enums\DriverFailure;
+use App\Agents\Exceptions\UnreadablePayload;
+use App\Agents\Inputs\Values\SessionStartDetails;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Enums\HookEvent;
+use App\Hooks\Enums\ToolOutcome;
+use App\Sessions\Enums\SessionEndReason;
 use App\Support\Inputs\ProtectedFileRead;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\SessionStartDetails;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;

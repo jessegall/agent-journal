@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Mcp;
 
-use App\Enums\CommandRules\ReadView;
+use App\CommandRules\Enums\ReadView;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\TextFields;
 use App\Mcp\Data\ToolResult;

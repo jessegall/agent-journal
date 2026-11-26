@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Enums\CommandRules\AnalysisLimit;
-use App\Enums\CommandRules\ParseOutcome;
-use App\Support\Syntax\LexedLine;
+use App\CommandRules\Enums\AnalysisLimit;
+use App\CommandRules\Enums\ParseOutcome;
+use App\Processes\Grammar\Syntax\LexedLine;
+use App\Processes\Grammar\Values\TreeDiagnostic;
 use App\Values\AgentText;
-use App\Values\TreeDiagnostic;
 use RuntimeException;
 
 /**

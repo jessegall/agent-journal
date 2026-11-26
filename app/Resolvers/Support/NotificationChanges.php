@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Data\Notifications\NotificationChangeItem;
-use App\Data\Notifications\NotificationChangePage;
-use App\Enums\Notifications\NotificationMutationType;
-use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationChange;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
+use App\Notifications\Data\NotificationChangeItem;
+use App\Notifications\Data\NotificationChangePage;
+use App\Notifications\Enums\NotificationMutationType;
+use App\Notifications\Exceptions\NotificationCursorInvalid;
+use App\Notifications\NotificationChangeCursor;
+use App\Notifications\NotificationScopes;
 use App\Support\ActorReference;
-use App\Support\NotificationChangeCursor;
-use App\Support\NotificationScopes;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 

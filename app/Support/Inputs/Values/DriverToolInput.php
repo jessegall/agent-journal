@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs\Values;
 
-use App\Exceptions\UnreadablePayload;
+use App\Agents\Exceptions\UnreadablePayload;
 
 /**
  * The tool arguments a driver sent, kept whole so a rewrite changes only the command.

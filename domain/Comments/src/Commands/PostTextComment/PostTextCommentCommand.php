@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Commands\PostTextComment;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;

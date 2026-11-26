@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Skills\DriverSkillAdapters;
+use App\Agents\StartDriver;
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Events\Listener;
-use App\Contracts\Skills\SkillResolver;
 use App\Events\Sessions\SessionOpened;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Exceptions\StartRefused;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
-use App\Resolvers\Support\SkillContextResolver;
-use App\Support\SkillPublications;
-use App\Support\SkillSelection;
-use App\Support\SkillTargets;
-use App\Support\StartDriver;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\SkillPublications;
+use App\Skills\SkillSelection;
+use App\Skills\SkillTargets;
 use App\Values\DriverKey;
 
 /**

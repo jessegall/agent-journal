@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
-use App\Enums\Accounts\SignInMethod;
-use App\Values\SignInFolder;
-use App\Values\SignInReport;
+use App\Agents\Values\SignInFolder;
+use App\Agents\Values\SignInReport;
 
 /**
  * Reads `codex login status`: signed in when it names a sign-in for a folder that keeps its own; the method is told by

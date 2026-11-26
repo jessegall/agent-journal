@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Connections\BindingReadiness;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Connections\Enums\BindingReadiness;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
-use App\Support\JournalCommands;
+use App\Projects\Commands\RecordBindingPresence\RecordBindingPresenceCommand;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

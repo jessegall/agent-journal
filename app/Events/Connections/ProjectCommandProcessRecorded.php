@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectCommandEvent;
+use App\Connections\Contracts\ProjectCommandEvent;
 
 /**
  * A project command run's process started under its process id.

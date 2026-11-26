@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp\Tools;
 
-use App\Enums\CommandRules\ReadView;
+use App\CommandRules\Enums\ReadView;
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use App\Values\ReadRequest;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

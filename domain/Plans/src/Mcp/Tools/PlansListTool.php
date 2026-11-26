@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp\Tools;
 
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Enums\PlanStatus;

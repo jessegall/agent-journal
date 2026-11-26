@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Exceptions\ActorNotAllowed;
-use App\Exceptions\CommandInputInvalid;
 use App\Support\ActiveEventUnits;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;

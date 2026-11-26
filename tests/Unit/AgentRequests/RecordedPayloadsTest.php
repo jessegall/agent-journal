@@ -6,7 +6,7 @@ namespace Tests\Unit\AgentRequests;
 
 use App\Exceptions\StateBlocked;
 use App\Pipelines\RunSignedCallPipeline;
-use App\Support\PipelineRunner;
+use App\Pipelines\Support\PipelineRunner;
 use App\Values\CommandReport;
 use App\Values\PendingPayload;
 use Tests\Fixtures\AgentRequests\NoteAnswer;

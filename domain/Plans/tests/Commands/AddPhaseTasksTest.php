@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\CrossProjectEdge;
 use App\Values\ProjectOwner;
 use Domain\Plans\Commands\AddPhaseTasks\AddPhaseTasksCommand;

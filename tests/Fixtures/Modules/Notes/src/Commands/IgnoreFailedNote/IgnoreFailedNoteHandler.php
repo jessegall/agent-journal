@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandRefused;
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandHandler;
+use App\Bus\Exceptions\CommandRefused;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 
 final class IgnoreFailedNoteHandler implements CommandHandler

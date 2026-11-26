@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Enums\Sessions\TransportProfileType;
+use App\Sessions\Enums\TransportProfileType;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Drivers\AccountConfigurationWrite;
 use App\Support\Drivers\CodexFolderTrust;

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\AccessType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Profiles\ModelTier;
-use App\Enums\Sessions\OfflineReplyMode;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\AccessType;
+use App\Agents\Enums\ExecutionModeType;
 use App\Exceptions\BuiltInProfileMissing;
+use App\Profiles\Enums\ModelTier;
+use App\Profiles\Values\HostAccess;
+use App\Sessions\Enums\OfflineReplyMode;
+use App\Sessions\Values\ProcessGrants;
 
 /**
  * The built-in profile a profile starts from, as data: its access defaults, where it runs, its first stop conditions,

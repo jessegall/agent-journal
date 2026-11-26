@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Engine;
 
-use App\Support\EnginePass;
+use App\Engine\EnginePass;
 
 /**
  * Runs work inside one engine pass, with the fresh scope a pass of the ticker gives it.

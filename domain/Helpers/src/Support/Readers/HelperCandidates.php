@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Contracts\Sessions\SessionStartCandidates;
-use App\Enums\Sessions\StartCandidateRank;
-use App\Support\RankedStartCandidate;
-use App\Support\StartCandidateFacts;
-use App\Support\StartCandidateQuery;
-use App\Support\StartProfileKey;
+use App\Profiles\StartProfileKey;
+use App\Sessions\Contracts\SessionStartCandidates;
+use App\Sessions\Enums\StartCandidateRank;
+use App\Sessions\RankedStartCandidate;
+use App\Sessions\StartCandidateFacts;
+use App\Sessions\StartCandidateQuery;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobStatus;
 use Domain\Helpers\Models\HelperIdentity;

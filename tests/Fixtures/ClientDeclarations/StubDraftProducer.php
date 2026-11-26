@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations;
 
-use App\Contracts\Navigation\DraftProducer;
 use App\Data\Pages\DraftedRecordData;
-use App\Data\Messages\DraftQuestionData;
+use App\Messages\Data\DraftQuestionData;
+use App\Navigation\Contracts\DraftProducer;
 
 /**
  * A draft producer with three questions that drafts a title from the first answer.

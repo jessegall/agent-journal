@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\States;
 
-use App\Enums\Hooks\AnswerType;
+use App\Hooks\Enums\AnswerType;
 use App\Support\ActorReference;
 use App\Support\Inputs\StopRequested;
 use Domain\Sequences\Enums\SequenceRunStatus;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Support\ReflectedProperty;
+use App\Reflection\ReflectedProperty;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Reflection\Parcel;

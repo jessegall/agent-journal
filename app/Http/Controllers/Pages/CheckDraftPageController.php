@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Pages;
 
-use App\Api\Scripts\CheckProfileScriptPayload;
 use App\Http\Responses\PageActionAnswers;
 use App\Models\Profiles\ProfileDraft;
-use App\Support\Readers\ProfileDraftReader;
+use App\Processes\Readers\ProfileDraftReader;
+use App\Scripts\Api\CheckProfileScriptPayload;
 use App\Values\ProfileKey;
 use Illuminate\Http\RedirectResponse;
 

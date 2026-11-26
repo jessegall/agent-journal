@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Contracts\Documents;
 
 use App\Data\Pages\RecordCard;
-use App\Exceptions\SectionMissing;
 use App\Support\TextSelection;
+use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationList;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Projects;
 
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Projects\ProjectDestination as ProjectDestinationContract;
-use App\Exceptions\ProjectNotChosen;
-use App\Support\Projects\ProjectDestination;
+use App\Projects\Contracts\CurrentProject;
+use App\Projects\Contracts\ProjectDestination as ProjectDestinationContract;
+use App\Projects\Exceptions\ProjectNotChosen;
+use App\Projects\ProjectDestination;
 use App\Values\ProjectOwner;
 use App\Values\ProjectSelection;
 use PhpOption\None;

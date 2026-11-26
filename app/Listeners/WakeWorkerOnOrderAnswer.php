@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostOrderAnswerEvent;
-use App\Support\Hosts\ProcessFeed;
+use App\Hosts\Contracts\HostOrderAnswerEvent;
+use App\Hosts\ProcessFeed;
 
 /**
  * Once a host's answer to an order is committed, the worker of its process hears it on the process's feed.

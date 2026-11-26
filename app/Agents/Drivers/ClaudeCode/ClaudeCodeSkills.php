@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Skills\DriverSkills;
-use App\Enums\Skills\SkillReload;
+use App\Skills\Contracts\DriverSkills;
+use App\Skills\Enums\SkillReload;
 use App\Values\SkillDelivery;
 use App\Values\SkillKey;
 

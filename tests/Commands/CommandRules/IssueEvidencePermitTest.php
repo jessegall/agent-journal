@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\IssueEvidencePermit\IssueEvidencePermitCommand;
-use App\Exceptions\EvidencePermitRefused;
+use App\CommandRules\Commands\IssueEvidencePermit\IssueEvidencePermitCommand;
+use App\CommandRules\Exceptions\EvidencePermitRefused;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Support\ActorReference;

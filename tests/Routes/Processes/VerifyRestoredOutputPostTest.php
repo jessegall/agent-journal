@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
-use App\Values\RestoredCaptures;
+use App\Processes\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
+use App\Processes\Values\RestoredCaptures;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\AccountCleanupEvent;
-use App\Contracts\Accounts\ShownOnAccounts;
+use App\Accounts\Contracts\AccountCleanupEvent;
+use App\Accounts\Contracts\ShownOnAccounts;
 
 /**
  * The owner asked a saved account's failed cleanup to run again.

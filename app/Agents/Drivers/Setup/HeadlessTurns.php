@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
-use App\Contracts\Drivers\TurnResults;
-use App\Exceptions\DriverSetupInvalid;
+use App\Agents\Drivers\Contracts\TurnResults;
+use App\Agents\Exceptions\DriverSetupInvalid;
 
 /**
  * How a driver runs its headless turns: each in a process of its own whose output a turn result reads, or all of an

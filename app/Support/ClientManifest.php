@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files\Files;
-use App\Declarations\RegisteredPage;
 use App\Exceptions\ClientManifestInvalid;
+use App\Files\Contracts\Files;
 use App\Support\Types\LoaderTypes;
 use App\Support\Types\PagePropTypes;
 use App\Values\FilePath;
+use App\Web\Declarations\RegisteredPage;
 use Illuminate\Contracts\View\Factory;
 use Throwable;
 

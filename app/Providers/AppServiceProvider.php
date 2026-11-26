@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Bootstrap\TraitRequirements;
 use App\Exceptions\ModelMissing;
 use App\Exceptions\RecordUnavailable;
-use App\Support\MorphAliases;
-use App\Support\TraitRequirements;
+use App\Links\MorphAliases;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;

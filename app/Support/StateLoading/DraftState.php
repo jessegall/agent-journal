@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
+use App\Stacks\StateLoading\RegisteredStateType;
 
 /**
  * A state the container just made, with the data properties its constructor did not take still to fill in.

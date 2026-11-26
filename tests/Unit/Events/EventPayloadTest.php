@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Events;
 
-use App\Contracts\Asks\AnsweredAtOnce;
+use App\Asks\Contracts\AnsweredAtOnce;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;

@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Models\Skills\SkillRevision;
-use App\Support\SkillAuthoringService;
+use App\Skills\SkillAuthoringService;
 use App\Values\SkillSection;
 use Illuminate\Console\Command;
 

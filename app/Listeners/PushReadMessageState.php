@@ -6,11 +6,11 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStacks;
 use App\Events\Messages\MessageSent;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;
-use App\Support\States\Support\ReadMessageStateReference;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Support\ReadMessageStateReference;
 
 /**
  * Puts the reading state of the inbox on the stack of every agent attached to it but the sender, in the same

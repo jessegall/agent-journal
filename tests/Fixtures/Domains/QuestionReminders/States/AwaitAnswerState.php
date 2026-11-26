@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
-use App\Attributes\States\StateType;
-use App\Attributes\States\Ticks;
 use App\Contracts\Work\TickableState;
-use App\Support\States\AgentState;
+use App\Engine\Ticks\TickContext;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Attributes\Ticks;
 use App\Support\Ticks\TickCommands;
-use App\Support\Ticks\TickContext;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
 use Tests\Fixtures\Domains\QuestionReminders\Events\QuestionAnswered;
 

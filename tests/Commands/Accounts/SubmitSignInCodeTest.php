@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Enums\SignInStatus;
+use App\Accounts\Exceptions\SignInAnswerRefused;
+use App\Accounts\SignInChallenges;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
-use App\Exceptions\SignInAnswerRefused;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\SignInCodeInvalid;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
-use App\Support\SignInChallenges;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;

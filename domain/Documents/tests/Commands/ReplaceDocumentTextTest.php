@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\SectionMissing;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\TextMatchInvalid;
+use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;

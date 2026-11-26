@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\AnalysisLimit;
-use App\Enums\CommandRules\ParseOutcome;
-use App\Enums\CommandRules\RedirectType;
-use App\Enums\CommandRules\TokenType;
-use App\Enums\CommandRules\WordSegmentType;
-use App\Enums\Processes\ShellDialect;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\PipelineRunner;
-use App\Support\Syntax\LexedLine;
-use App\Support\Syntax\LexerScan;
-use App\Support\Syntax\ShellLexer;
-use App\Support\Syntax\Token;
+use App\CommandRules\Enums\AnalysisLimit;
+use App\CommandRules\Enums\ParseOutcome;
+use App\CommandRules\Enums\RedirectType;
+use App\CommandRules\Enums\TokenType;
+use App\CommandRules\Enums\WordSegmentType;
+use App\Pipelines\Support\PipelineRunner;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Grammar\Syntax\LexedLine;
+use App\Processes\Grammar\Syntax\LexerScan;
+use App\Processes\Grammar\Syntax\ShellLexer;
+use App\Processes\Grammar\Syntax\Token;
+use App\Reflection\CatalogueReflectorFactory;
 use Tests\TestCase;
 
 /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Inspection;
 
-use App\Enums\Engine\FrameLiveness;
-use App\Support\References\SubjectReference;
-use App\Support\Stack\Frames\Frame;
+use App\Engine\Enums\FrameLiveness;
+use App\Stacks\Frames\Frame;
+use App\Stacks\References\SubjectReference;
 use Spatie\LaravelData\Data;
 
 /**

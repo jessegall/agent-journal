@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Commands;
 
-use App\Exceptions\CommandAdmissionRefused;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleDenied;

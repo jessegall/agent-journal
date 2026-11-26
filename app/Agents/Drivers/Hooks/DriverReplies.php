@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Enums\Drivers\DriverPermission;
-use App\Enums\Drivers\DriverStopDecision;
-use App\Enums\Drivers\RewriteSupport;
-use App\Enums\Hooks\AnswerType;
-use App\Enums\Hooks\HookEvent;
-use App\Exceptions\InvalidObservationAnswer;
-use App\Exceptions\InvalidShellAnswer;
-use App\Exceptions\InvalidStopAnswer;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Drivers\Enums\DriverPermission;
+use App\Agents\Drivers\Enums\DriverStopDecision;
+use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Exceptions\InvalidObservationAnswer;
+use App\Agents\Exceptions\InvalidShellAnswer;
+use App\Agents\Exceptions\InvalidStopAnswer;
+use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\HookEvent;
+use App\Stacks\HookAnswer;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Stack\HookAnswer;
 use App\Values\AgentText;
 
 /**

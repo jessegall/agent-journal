@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Search\RecordSearch;
-use App\Contracts\Search\SearchSources;
-use App\Enums\Search\SearchSurface;
+use App\Hosts\Contracts\ServedEnvironment;
 use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
+use App\Projects\Contracts\CurrentProject;
+use App\Search\Contracts\RecordSearch;
+use App\Search\Contracts\SearchSources;
+use App\Search\Enums\SearchSurface;
+use App\Search\Values\DeclaredSearchable;
+use App\Search\Values\EmittedHit;
+use App\Search\Values\ScopeResolution;
+use App\Search\Values\SearchAnswer;
+use App\Search\Values\SearchOwner;
+use App\Search\Values\SearchReader;
+use App\Search\Values\SearchRequest;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
-use App\Values\DeclaredSearchable;
-use App\Values\EmittedHit;
-use App\Values\ScopeResolution;
-use App\Values\SearchAnswer;
-use App\Values\SearchOwner;
-use App\Values\SearchReader;
-use App\Values\SearchRequest;
 
 /**
  * The search tool over the sources the domains declare: words with an optional scope and limit, a continuation, or

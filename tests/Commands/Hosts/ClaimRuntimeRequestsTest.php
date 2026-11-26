@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
-use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
+use App\Hosts\Commands\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\WithActiveAccount;

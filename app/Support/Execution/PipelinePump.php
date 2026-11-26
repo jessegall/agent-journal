@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Contracts\Processes\StopSignal;
-use App\Enums\Processes\OutputStream;
+use App\Processes\Contracts\StopSignal;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Execution\SpawnedProcess;
 
 /**
  * Moves bytes between the concurrent commands of a pipeline: each stage's output is

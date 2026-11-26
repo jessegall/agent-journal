@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\Connections\HostOrderMade;
-use App\Support\Hosts\HostWake;
+use App\Hosts\HostWake;
 
 /**
  * Wakes the host's long poll once a new order for it is committed, so the host claims it at once.

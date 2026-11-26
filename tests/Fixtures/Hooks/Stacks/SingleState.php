@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Stacks;
 
-use App\Contracts\Work\UniqueState;
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\Work\UniqueState;
 
 /**
  * A test state of which the stack keeps one frame, whatever subject it is pushed for.

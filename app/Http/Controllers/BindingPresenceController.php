@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\RecordBindingPresence\RecordBindingPresenceCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Connections\PresenceReportData;
-use App\Values\HostContext;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Connections\Data\PresenceReportData;
+use App\Hosts\Values\HostContext;
+use App\Projects\Commands\RecordBindingPresence\RecordBindingPresenceCommand;
 use Illuminate\Http\JsonResponse;
 
 /**

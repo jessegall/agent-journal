@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

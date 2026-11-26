@@ -4,41 +4,39 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use Tests\Fixtures\Modules\Notes\Commands\AuditNote\AuditNoteCommand;
-use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
-use App\Enums\Agents\AccessType;
-use App\Contracts\Authorization\PolicyProvider;
-use App\Values\PolicyDefinition;
-use App\Contracts\Bus\CommandMiddlewareProvider;
-use App\Contracts\Bus\CommandProvider;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Assignments\Contracts\AssignableContributor;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
+use App\Bus\Contracts\CommandRuleProvider;
+use App\Bus\MiddlewareDeclaration;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Values\ProgramSpellings;
 use App\Concerns\HasAssignables;
 use App\Concerns\HasLinkRecords;
 use App\Concerns\HasStates;
-use App\Contracts\Assignments\AssignableContributor;
-use App\Contracts\Records\LinkRecordProvider;
-use App\Contracts\Records\StateProvider;
+use App\Declarations\Page;
+use App\Navigation\Contracts\NavigationProvider;
+use App\Navigation\Contracts\PageProvider;
+use App\Navigation\Contracts\SectionProvider;
+use App\Navigation\Declarations\NavigationItem;
+use App\Navigation\Enums\Icon;
+use App\Profiles\Enums\SlotContextType;
+use App\Records\Contracts\LinkRecordProvider;
+use App\Records\Contracts\StateProvider;
+use App\Skills\Contracts\SkillConditionProvider;
+use App\Skills\Contracts\SkillProvider;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Bus\CommandRuleProvider;
-use App\Enums\CommandRules\CommandClass;
+use App\Text\Declarations\Section;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
-use App\Values\ProgramSpellings;
-use App\Contracts\Skills\SkillConditionProvider;
-use App\Contracts\Skills\SkillProvider;
-use App\Values\SkillConditionDefinition;
-use App\Contracts\Navigation\NavigationProvider;
-use App\Contracts\Navigation\PageProvider;
-use App\Contracts\Navigation\SectionProvider;
-use App\Declarations\NavigationItem;
-use App\Declarations\Page;
-use App\Declarations\Section;
-use App\Declarations\Slot;
-use App\Enums\Navigation\Icon;
-use App\Enums\Profiles\SlotContextType;
+use App\Web\Declarations\Slot;
 use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
@@ -46,6 +44,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditNotes;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditRules;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordWriteNote;
+use Tests\Fixtures\Modules\Notes\Commands\AuditNote\AuditNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
@@ -64,6 +63,7 @@ use Tests\Fixtures\Modules\Notes\Commands\SystemNote\SystemNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote\UserNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
+use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
@@ -87,8 +87,8 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 final class NotesDomain extends Domain implements
     AssignableContributor,
     CommandMiddlewareProvider,
-    CommandRuleProvider,
     CommandProvider,
+    CommandRuleProvider,
     LinkRecordProvider,
     NavigationProvider,
     PageProvider,

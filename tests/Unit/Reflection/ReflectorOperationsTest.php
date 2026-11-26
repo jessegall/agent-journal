@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Support\ReflectedEnumCase;
+use App\Reflection\ReflectedEnumCase;
 use App\Support\Reflector;
 use ArrayObject;
 use PHPUnit\Framework\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;

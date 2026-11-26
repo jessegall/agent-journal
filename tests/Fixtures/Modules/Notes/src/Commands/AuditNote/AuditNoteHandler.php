@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\AuditNote;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;

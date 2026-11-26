@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Api;
 
-use App\Contracts\Domains\ApiSender;
+use App\Api\Contracts\Domains\ApiSender;
 use App\Support\CallKey;
 use Domain\Chat\Data\DockAnswerData;
 use Domain\Chat\Data\DockListData;

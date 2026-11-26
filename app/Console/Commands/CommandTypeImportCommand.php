@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Processes\ImportProposalsPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Contracts\Files\Files;
-use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\FileMissing;
+use App\Files\Contracts\Files;
+use App\Processes\Api\ImportProposalsPayload;
 use Illuminate\Console\Command;
 
 /**

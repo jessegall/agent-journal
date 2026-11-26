@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Parts;
 
-use App\Contracts\Drivers\AccountEnvironmentPart;
+use App\Agents\Drivers\Contracts\AccountEnvironmentPart;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\EnvironmentAddition;

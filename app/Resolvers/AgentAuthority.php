@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Authorization\AgentAuthority as AgentAuthorityContract;
-use App\Contracts\Authorization\TargetAuthorizer;
-use App\Enums\Agents\AccessType;
-use App\Exceptions\AgentNotAvailable;
+use App\Access\Contracts\AgentAuthority as AgentAuthorityContract;
+use App\Access\Contracts\TargetAuthorizer;
+use App\Agents\Enums\AccessType;
 use App\Exceptions\AssignmentDenied;
 use App\Models\Agents\Agent;
 use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentRecipientPolicy;
+use App\Sessions\Exceptions\AgentNotAvailable;
 use App\Support\ActorReference;
 use App\Support\Lifecycle\AgentLifecycle;
 

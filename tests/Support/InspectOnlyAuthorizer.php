@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use App\Policies\AgentTerminalControlPolicy;
 

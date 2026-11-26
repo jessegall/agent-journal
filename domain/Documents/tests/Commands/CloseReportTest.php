@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Actors\IdentityLinks;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\IdentityLinks;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ActorNotAllowed;
 use App\Support\RecordIdentity;
 use Domain\Comments\Models\Comment;

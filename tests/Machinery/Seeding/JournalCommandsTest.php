@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Agents\CreateAgent\CreateAgentCommand;
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Contracts\Actors\CurrentActor;
-use App\Data\Layouts\LayoutShape;
-use App\Enums\Accounts\CommandEntry;
-use App\Exceptions\CommandInputInvalid;
+use App\Accounts\Enums\CommandEntry;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Bus\Exceptions\CommandInputInvalid;
+use App\Bus\RequestKey;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Inboxes\Inbox;
 use App\Models\Records\Layout;
-use App\Support\RequestKey;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use LogicException;
 use PHPUnit\Framework\AssertionFailedError;
 use RuntimeException;

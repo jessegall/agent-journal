@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
-use App\Mcp\Tools\CommandRequestProveTool;
+use App\CommandRules\Commands\ProveReader\ProveReaderCommand;
+use App\CommandRules\Mcp\Tools\CommandRequestProveTool;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

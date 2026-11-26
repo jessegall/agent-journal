@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Shell;
 
-use App\Data\Notifications\NotificationPageInput;
 use App\Http\Loaders\Shell\NotificationsLoader;
+use App\Notifications\Data\NotificationPageInput;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

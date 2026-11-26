@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Enums\Sharing\ShareRelationType;
-use App\Exceptions\InvalidRecordIdentity;
-use App\Exceptions\ShareRecordInvalid;
-use App\Exceptions\UnknownShareRecordType;
-use App\Exceptions\UnknownShareRelation;
+use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
+use App\Sharing\Exceptions\ShareRecordInvalid;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\Exceptions\UnknownShareRelation;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\ShareRecordDefinition;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Exceptions\ShareGatewayInvalid;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Support\ShareGatewayRegistry;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand as CancelKeyScript;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
+use App\Terminals\Commands\CancelKeyScript\CancelKeyScriptCommand as CancelKeyScript;
 use Illuminate\Console\Command;
 
 /**

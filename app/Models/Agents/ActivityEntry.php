@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Agents\Enums\ActivityLevel;
+use App\Agents\Enums\ActivityType;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Projects\ProjectOwned;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Agents\ActivityLevel;
-use App\Enums\Agents\ActivityType;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
+use App\Projects\Contracts\ProjectOwned;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;

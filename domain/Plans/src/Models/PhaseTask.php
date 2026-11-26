@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Concerns\BoundedReads;
-use App\Concerns\CountsPivotLoads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\HasUlidKey;
-use App\Values\ReadOrder;
+use App\Records\Concerns\CountsPivotLoads;
+use App\Records\Contracts\ReadableModel;
+use App\Records\Values\ReadOrder;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;

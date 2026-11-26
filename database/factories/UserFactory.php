@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Inboxes\Commands\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorReference;
-use App\Support\JournalCommands;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

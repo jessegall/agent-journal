@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
-use App\Contracts\Actors\ActorTypes;
+use App\Actors\Contracts\ActorTypes;
+use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
 use Illuminate\Foundation\Http\FormRequest;
 

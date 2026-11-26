@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Drivers\DriverAdapters;
-use App\Contracts\Processes\ShellCommandParser;
+use App\Agents\Drivers\Contracts\DriverAdapters;
 use App\Mcp\Support\McpCatalogue;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Support\ClientDeclarations;
 use App\Support\CommandRegistry;
 use App\Support\StateCatalog\Contracts\StateTypes;

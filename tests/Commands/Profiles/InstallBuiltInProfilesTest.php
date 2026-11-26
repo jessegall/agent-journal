@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Profiles;
 
-use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use App\Models\Profiles\Profile;
+use App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

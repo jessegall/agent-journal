@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Records\Link;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
-use App\Support\ShareRecordRegistry;
 use App\Values\ProjectOwner;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;

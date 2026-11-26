@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Web;
 
+use App\Accounts\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Accounts\Values\AccountLabel;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Web\PageChanged;
 use App\Listeners\BroadcastPageChange;
 use App\Models\Accounts\Account;
-use App\Values\AccountLabel;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\Models\Plan;

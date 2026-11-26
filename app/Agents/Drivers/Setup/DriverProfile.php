@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Accounts\Contracts\AccountSettingsFiller;
+use App\Accounts\Contracts\SignInProtocol;
+use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
+use App\Agents\Drivers\Contracts\TurnResult;
+use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Hooks\HookReplies;
-use App\Contracts\Accounts\AccountSettingsFiller;
-use App\Contracts\Accounts\SignInProtocol;
-use App\Contracts\Drivers\DriverAdapter;
-use App\Contracts\Drivers\PinnedBuilds;
-use App\Contracts\Drivers\TurnResult;
-use App\Contracts\Files\Files;
-use App\Contracts\Skills\DriverSkills;
-use App\Enums\Drivers\ExecutablePlace;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\RestartPolicy;
-use App\Exceptions\BuildNotPinned;
-use App\Exceptions\ProfileRefused;
-use App\Support\KeyScripts\KeyScript;
-use App\Support\Screens\ScreenLayout;
-use App\Support\SignInEgress;
+use App\Agents\Exceptions\BuildNotPinned;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Agents\SignInEgress;
+use App\Agents\Values\SignInFolder;
+use App\Agents\Values\SignInReport;
+use App\Files\Contracts\Files;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
+use App\Skills\Contracts\DriverSkills;
+use App\Terminals\KeyScripts\KeyScript;
+use App\Terminals\Screens\ScreenLayout;
 use App\Values\DriverStart;
 use App\Values\EnvironmentAddition;
 use App\Values\HostProcessPlan;
 use App\Values\PlanAddition;
-use App\Values\SignInFolder;
-use App\Values\SignInReport;
 use Illuminate\Contracts\Container\Container;
 
 /**

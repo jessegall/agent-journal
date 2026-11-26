@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models\Access;
 
+use App\Access\Concerns\GrantedInEnvironment;
 use App\Concerns\BoundedReads;
-use App\Concerns\GrantedInEnvironment;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Messages\InboxPermission;
 use App\Events\Access\EnvironmentUserGrantRevoked;
+use App\Messages\Enums\InboxPermission;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

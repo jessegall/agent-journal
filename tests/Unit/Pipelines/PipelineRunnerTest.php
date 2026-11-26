@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Pipelines;
 
-use App\Exceptions\StepOutOfOrder;
-use App\Support\BuiltSteps;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\PipelineRunner;
+use App\Pipelines\Exceptions\StepOutOfOrder;
+use App\Pipelines\Support\BuiltSteps;
+use App\Pipelines\Support\PipelineRunner;
+use App\Reflection\CatalogueReflectorFactory;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Pipelines\Counted;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\ProfileKeyInvalid;
-use App\Support\StableKey;
+use App\Text\StableKey;
 
 /**
  * The stable name of a profile, such as journal-reviewer: lowercase ASCII words joined by single hyphens, 1 to 64

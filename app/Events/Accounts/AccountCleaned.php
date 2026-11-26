@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\ShownOnAccounts;
+use App\Accounts\Contracts\ShownOnAccounts;
 
 /**
  * A saved account's cleanup moved on in its generation.

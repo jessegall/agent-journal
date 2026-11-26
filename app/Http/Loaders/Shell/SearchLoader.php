@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Shell;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Records\RecordResolver;
-use App\Contracts\Search\RecordSearch;
-use App\Contracts\Search\SearchSources;
+use App\Actors\Contracts\CurrentActor;
 use App\Data\Palette\PaletteHitData;
 use App\Data\Palette\PaletteSearchData;
 use App\Data\Palette\SearchInput;
-use App\Enums\Search\SearchSurface;
-use App\Exceptions\SearchWordsInvalid;
+use App\Hosts\Contracts\ServedEnvironment;
 use App\Mcp\Support\DeclaredSearch;
-use App\Values\DeclaredSearchable;
-use App\Values\EmittedHit;
-use App\Values\SearchAnswer;
-use App\Values\SearchOwner;
-use App\Values\SearchReader;
-use App\Values\SearchRequest;
-use App\Values\SearchWords;
+use App\Projects\Contracts\CurrentProject;
+use App\Records\Contracts\RecordResolver;
+use App\Search\Contracts\RecordSearch;
+use App\Search\Contracts\SearchSources;
+use App\Search\Enums\SearchSurface;
+use App\Search\Exceptions\SearchWordsInvalid;
+use App\Search\Values\DeclaredSearchable;
+use App\Search\Values\EmittedHit;
+use App\Search\Values\SearchAnswer;
+use App\Search\Values\SearchOwner;
+use App\Search\Values\SearchReader;
+use App\Search\Values\SearchRequest;
+use App\Search\Values\SearchWords;
 use Illuminate\Contracts\Session\Session;
 
 /**

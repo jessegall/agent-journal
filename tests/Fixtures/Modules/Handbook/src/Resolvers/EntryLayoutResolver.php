@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Handbook\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Connections\Layout\LayoutBodyData;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
-use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\PublicationPage;

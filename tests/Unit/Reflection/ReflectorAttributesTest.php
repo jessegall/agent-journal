@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Exceptions\AttributeBuiltRecursively;
-use App\Exceptions\AttributeMissing;
+use App\Reflection\Exceptions\AttributeBuiltRecursively;
+use App\Reflection\Exceptions\AttributeMissing;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;

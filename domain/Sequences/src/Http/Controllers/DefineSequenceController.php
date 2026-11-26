@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\ProjectDestination;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Projects\Contracts\ProjectDestination;
 use Domain\Sequences\Commands\DefineSequence\DefineSequenceCommand;
 use Domain\Sequences\Http\Requests\SaveSequenceRequest;
 use Illuminate\Http\RedirectResponse;

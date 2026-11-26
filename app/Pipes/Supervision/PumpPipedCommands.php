@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
-use App\Enums\Processes\OutputStream;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Execution\SpawnedPart;
 use App\Support\Execution\PipedCommands;
 use App\Support\Execution\PipelinePump;
 use App\Support\Execution\PumpedCommands;
-use App\Support\Execution\SpawnedPart;
 use App\Support\Execution\StepOutcome;
 
 /**

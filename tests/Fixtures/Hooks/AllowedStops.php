@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Stacks\Contracts\StopConditionGate;
+use App\Stacks\Values\SettledStopChecks;
+use App\Stacks\Values\StopAnswer;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\States\Contracts\StopConditionGate;
-use App\Values\SettledStopChecks;
-use App\Values\StopAnswer;
 
 /**
  * A stop gate for a session with no stop conditions: every stop is allowed.

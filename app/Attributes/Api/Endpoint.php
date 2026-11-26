@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Attributes\Api;
 
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
 use Attribute;
 use Spatie\LaravelData\Data;
 use Throwable;

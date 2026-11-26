@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Enums\Files\PlaceExemption;
+use App\Files\Enums\PlaceExemption;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -20,17 +20,17 @@ final readonly class DirectFileAccess
      * The Files area's code that touches the disk, behind the Files contract.
      */
     public const array FILES_AREA = [
-        'app/Enums/Files/EntryType.php',
+        'app/Files/Enums/EntryType.php',
         'app/Providers/FilesServiceProvider.php',
-        'app/Support/ClosedFolders.php',
+        'app/Files/ClosedFolders.php',
         'app/Support/CodeFiles.php',
-        'app/Support/FileContents.php',
-        'app/Support/FileWriter.php',
-        'app/Support/FolderWalker.php',
+        'app/Files/FileContents.php',
+        'app/Files/FileWriter.php',
+        'app/Files/FolderWalker.php',
         'app/Support/Files.php',
-        'app/Support/PathConfinement.php',
-        'app/Support/PlaceRoots.php',
-        'app/Values/Fingerprint.php',
+        'app/Files/PathConfinement.php',
+        'app/Files/PlaceRoots.php',
+        'app/Files/Values/Fingerprint.php',
     ];
 
     /**
@@ -149,7 +149,7 @@ final readonly class DirectFileAccess
         $waiting = count($sites) - $exempt;
 
         return <<<TEXT
-        # The direct file access sites outside the Files area: {$waiting} still waiting to move to App\\Contracts\\Files\\Files,
+        # The direct file access sites outside the Files area: {$waiting} still waiting to move to App\\Files\\Contracts\\Files,
         # and {$exempt} exempt. One line per file and form, without line numbers. A task that moves a site removes its own
         # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
         # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled.

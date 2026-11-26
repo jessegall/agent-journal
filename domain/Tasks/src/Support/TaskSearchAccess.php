@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
+use App\Search\Values\OpenAction;
+use App\Search\Values\RecordLocation;
 use App\Support\ReadToolSearchAccess;
-use App\Values\OpenAction;
-use App\Values\RecordLocation;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 
 /**

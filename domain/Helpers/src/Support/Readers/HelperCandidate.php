@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Enums\Sessions\StartCandidateRank;
+use App\Sessions\Enums\StartCandidateRank;
 use Domain\Helpers\Models\HelperIdentity;
 
 /**

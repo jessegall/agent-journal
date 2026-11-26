@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 
 /**
  * One operation as a trusted adapter or owner declares it: where it comes from, its stable name, every access it

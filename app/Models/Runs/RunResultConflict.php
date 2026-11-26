@@ -6,9 +6,9 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Runs\RunLogicalResult;
 use App\Models\Support\JournalModel;
+use App\Processes\Enums\RunLogicalResult;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 

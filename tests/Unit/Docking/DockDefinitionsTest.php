@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Docking;
 
-use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\RecordCard;
-use App\Exceptions\DockDefinitionInvalid;
+use App\Docking\DockRegistration;
+use App\Docking\Exceptions\DockDefinitionInvalid;
+use App\Docking\LinkCardDockable;
+use App\Docking\LinkCardDockableProvider;
+use App\Docking\Sources\Contracts\DockRegistration as DockRegistrationContract;
 use App\Models\Messages\Message;
+use App\Records\Contracts\RecordResolver;
 use App\Support\ActorReference;
-use App\Support\Docking\LinkCardDockable;
-use App\Support\Docking\LinkCardDockableProvider;
-use App\Support\DockRegistration;
-use App\Support\Sources\Contracts\DockRegistration as DockRegistrationContract;
 use Tests\Fixtures\Docking\FixtureDockable;
 use Tests\Fixtures\Docking\FixtureDockableProvider;
 use Tests\Fixtures\Docking\OpenGate;

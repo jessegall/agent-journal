@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Pipes\Supervision\LeaveRefusedBackground;
 use App\Pipes\Supervision\QueuePart;
 use App\Pipes\Supervision\SpawnPart;
 use App\Pipes\Supervision\TakeBackgroundCommand;
 use App\Pipes\Supervision\TrackBackgroundPart;
+use App\Processes\Execution\SpawnedPart;
+use App\Processes\Execution\SpawnRefused;
 use App\Support\Execution\PendingStep;
-use App\Support\Execution\SpawnedPart;
-use App\Support\Execution\SpawnRefused;
 use App\Support\Execution\StepOutcome;
-use App\Support\Step;
 
 /**
  * Starts a background step's command and goes on at once; the run waits for it when it ends.

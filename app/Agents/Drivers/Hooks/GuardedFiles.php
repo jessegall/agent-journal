@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Authorization\FileAccessPolicy;
-use App\Contracts\Drivers\DriverCall;
-use App\Enums\Files\FileAccess;
+use App\Access\Contracts\FileAccessPolicy;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Drivers\Contracts\DriverCall;
+use App\Agents\Values\CommandPart;
+use App\Files\Enums\FileAccess;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Values\AgentText;
-use App\Values\CommandPart;
 use App\Values\ShellCommand;
 use Closure;
 use PhpOption\None;

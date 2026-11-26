@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\Layouts\LayoutTag;
-use App\Support\Layout\LayoutBodyData;
+use App\Connections\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\PublicationPage;
 use App\Support\Layout\PublicationTab;
+use App\Terminals\Enums\LayoutTag;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 use Tests\TestCase;
 

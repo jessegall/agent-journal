@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Exceptions\ClientResolverInvalid;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Exceptions\ClientResolverInvalid;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;

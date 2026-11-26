@@ -6,10 +6,10 @@ namespace App\Models\Profiles;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Terminals\StepStatus;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use App\Terminals\Enums\StepStatus;
 use App\Values\StepOutcome;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

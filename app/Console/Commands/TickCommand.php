@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Support\EngineLoop;
+use App\Engine\EngineLoop;
 use Illuminate\Console\Command;
 
 /**

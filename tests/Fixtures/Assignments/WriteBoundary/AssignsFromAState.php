@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Assignments\WriteBoundary;
 
-use App\Contracts\Assignments\AssignmentWriter;
-use App\Support\States\AgentState;
+use App\Assignments\Contracts\AssignmentWriter;
+use App\Stacks\AgentState;
 
 /**
  * A state that holds an assignment writer, which the assignment write check refuses.

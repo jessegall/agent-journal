@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use App\Asks\Exceptions\SupervisorRouteRefused;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Exceptions\SupervisorRouteRefused;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\AskTypeKey;
 use App\Values\SupervisorTarget;

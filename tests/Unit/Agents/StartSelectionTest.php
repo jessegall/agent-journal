@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Drivers\DriverSourceType;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Profiles\ModelTier;
-use App\Enums\Sessions\ModelSelectionType;
-use App\Enums\Sessions\StartRefusalType;
+use App\Agents\Drivers\Enums\DriverSourceType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Exceptions\DefaultUnavailable;
 use App\Exceptions\DriverRequired;
 use App\Exceptions\DriverUnsupported;
 use App\Exceptions\ModelRequired;
+use App\Profiles\Enums\ModelTier;
+use App\Sessions\Enums\ModelSelectionType;
+use App\Sessions\Enums\StartRefusalType;
+use App\Sessions\Values\ProfileDefaults;
 use App\Values\ModelSelection;
-use App\Values\ProfileDefaults;
 use App\Values\SelectedDriver;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;

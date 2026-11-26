@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\OpenHeadlessStart\OpenHeadlessStartCommand;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Agents\Commands\OpenHeadlessStart\OpenHeadlessStartCommand;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use Tests\Support\CommitsHookRows;

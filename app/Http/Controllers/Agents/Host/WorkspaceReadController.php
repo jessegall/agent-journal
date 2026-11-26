@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
 use App\Models\Projects\WorkspaceRead;
-use App\Values\HostContext;
+use App\Projects\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

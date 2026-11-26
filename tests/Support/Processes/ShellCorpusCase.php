@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Enums\Processes\ShellDialect;
+use App\Processes\Enums\ShellDialect;
 use Spatie\LaravelData\Data;
 
 /**

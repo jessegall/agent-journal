@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Contracts\Authorization\Policy;
+use App\Access\Contracts\Policy;
 use App\Models\Records\Link;
 
 /**

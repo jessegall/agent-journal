@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\RecordRefusalReceipt;
-use App\Contracts\Authorization\OperationResolver;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReceiptStatus;
-use App\Exceptions\CommandRefused;
-use App\Exceptions\NestedCommandFailureIgnored;
-use App\Exceptions\OperationUnavailable;
-use App\Exceptions\RefusalReplayed;
-use App\Support\RequestKey;
+use App\Access\Contracts\OperationResolver;
+use App\Access\Exceptions\OperationUnavailable;
+use App\Bus\CommandMiddleware\RecordRefusalReceipt;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
+use App\Bus\Exceptions\NestedCommandFailureIgnored;
+use App\Bus\RequestKey;
+use App\CommandRules\Enums\ReceiptStatus;
+use App\CommandRules\Exceptions\RefusalReplayed;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote\IgnoreFailedNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;

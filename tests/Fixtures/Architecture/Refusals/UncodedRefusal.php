@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Architecture\Refusals;
 
 use App\Concerns\RendersRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use RuntimeException;
 
 /**

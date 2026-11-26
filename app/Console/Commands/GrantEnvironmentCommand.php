@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
-use App\Commands\Access\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
-use App\Contracts\Bus\OwnerCommands;
-use App\Enums\Messages\InboxPermission;
+use App\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
+use App\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
+use App\Bus\Contracts\OwnerCommands;
+use App\Messages\Enums\InboxPermission;
 use App\Models\Access\User;
 use Illuminate\Console\Command;
 

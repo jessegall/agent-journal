@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
-use App\Enums\Drivers\HoldReason;
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;

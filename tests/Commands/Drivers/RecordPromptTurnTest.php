@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Drivers\RecordPromptTurn\RecordPromptTurnCommand;
+use App\Agents\Drivers\Commands\RecordPromptTurn\RecordPromptTurnCommand;
+use App\Bus\OutsideCommandAllowance;
 use App\Models\Drivers\DriverTurn;
-use App\Support\OutsideCommandAllowance;
 use Illuminate\Support\Str;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;

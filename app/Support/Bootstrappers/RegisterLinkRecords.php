@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Bootstrappers;
 
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Contracts\Records\RecordProviderRegistration;
+use App\Records\Contracts\RecordProviderRegistration;
 use App\Support\DomainEntry;
 
 /**

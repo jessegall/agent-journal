@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
-use App\Commands\Hosts\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
-use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Support\HostLinkAlarms;
+use App\Hosts\Commands\MarkSilentHosts\MarkSilentHostsCommand;
+use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\HostLinkAlarms;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

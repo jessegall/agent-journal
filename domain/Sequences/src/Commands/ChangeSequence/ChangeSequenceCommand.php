@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Commands\ChangeSequence;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Sequences\Policies\StoredSequencePolicy;
 use Domain\Sequences\Values\SequenceStep;

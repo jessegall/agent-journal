@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Sources\Contracts;
 
 use App\Attributes\Listeners\TransactionListenerConsent;
+use App\Processes\Sources\Contracts\DockSourceFact;
 
 /**
  * A fact an owner raises when a dockable source is deleted for good; every placement of it is removed in the

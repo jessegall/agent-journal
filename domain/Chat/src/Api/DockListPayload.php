@@ -6,7 +6,7 @@ namespace Domain\Chat\Api;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
+use App\Processes\Enums\ApiEffect;
 use Domain\Chat\Data\DockListData;
 use Domain\Chat\Support\DockProjection;
 use Spatie\LaravelData\Attributes\Validation\Max;

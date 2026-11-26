@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Support\Inputs;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Drivers\NativeTurnRecords;
+use App\Agents\Drivers\Contracts\NativeTurnRecords;
+use App\Agents\Inputs\Values\CompactionDetails;
+use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
-use App\Contracts\Sessions\ConversationVisits;
-use App\Enums\Hooks\AnswerType;
-use App\Enums\Hooks\ContextStartType;
-use App\Support\Decisions\Contracts\AnswerPart;
-use App\Support\Inputs\Contracts\HookHandler;
+use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\ContextStartType;
+use App\Sessions\Contracts\ConversationVisits;
+use App\Stacks\Decisions\Contracts\AnswerPart;
+use App\Stacks\Inputs\Contracts\HookHandler;
+use App\Stacks\References\StateReference;
 use App\Support\Inputs\Contracts\HookInput;
-use App\Support\Inputs\Values\CompactionDetails;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\References\StateReference;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 use PhpOption\Some;

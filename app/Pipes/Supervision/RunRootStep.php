@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\ActiveRun;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\RunEnded;
 use App\Support\Execution\StepOutcome;
-use App\Support\PipelineAdapter;
 
 /**
  * Runs the plan's root step through the step pipeline.

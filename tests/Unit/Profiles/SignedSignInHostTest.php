@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Enums\Projects\ArrangementType;
-use App\Support\SignedCall;
-use App\Support\SignInHost;
+use App\Accounts\SignInHost;
+use App\Api\SignedCall;
+use App\Projects\Enums\ArrangementType;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;

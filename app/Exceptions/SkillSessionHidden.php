@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use RuntimeException;
 
 /**

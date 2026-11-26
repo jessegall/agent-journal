@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Profiles\ScriptOperandType;
+use App\Profiles\Enums\ScriptOperandType;
 
 /**
  * A condition an instruction tests: a member of a script object, maybe negated.

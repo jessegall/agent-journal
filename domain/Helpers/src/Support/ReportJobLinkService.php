@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support;
 
+use App\Sessions\SessionRequestDetails;
 use App\Support\ActorReference;
-use App\Support\SessionRequestDetails;
 use Domain\Helpers\Enums\ReportJobDiscrepancyReason;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;

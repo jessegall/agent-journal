@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsPublicationOutcomes;
-use App\Support\SkillPublishingService;
-use App\Support\SkillTables;
+use App\Skills\SkillPublishingService;
+use App\Skills\SkillTables;
 use Illuminate\Console\Command;
 
 /**

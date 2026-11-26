@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\RecordReceipt;
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Contracts\Authorization\OperationResolver;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReceiptStatus;
-use App\Exceptions\RequestKeyConflict;
-use App\Exceptions\RequestKeyExpired;
-use App\Exceptions\RequestKeyMissing;
+use App\Access\Contracts\OperationResolver;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Bus\CommandMiddleware\RecordReceipt;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\RequestKeyMissing;
+use App\Bus\RequestKey;
+use App\CommandRules\Enums\ReceiptStatus;
+use App\CommandRules\Exceptions\RequestKeyExpired;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\AssignmentRecord;
+use App\Skills\Exceptions\RequestKeyConflict;
 use App\Support\AssigneeIdentity;
-use App\Support\RequestKey;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
+use App\Access\Values\ClassFact;
 use App\Attributes\Rules\OutsideThePlaces;
-use App\Contracts\Processes\ProgramClassifier as ProgramClassifierContract;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\UnresolvedType;
-use App\Enums\Files\PlaceExemption;
-use App\Support\JournalRoutes;
+use App\Bus\JournalRoutes;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\UnresolvedType;
+use App\Files\Enums\PlaceExemption;
+use App\Processes\Contracts\ProgramClassifier as ProgramClassifierContract;
+use App\Processes\Values\ProgramIdentity;
+use App\Processes\Values\RuleOrigin;
 use App\Values\AgentText;
-use App\Values\ClassFact;
 use App\Values\ExecutionContext;
 use App\Values\PartClassification;
-use App\Values\ProgramIdentity;
-use App\Values\RuleOrigin;
 use App\Values\UnresolvedFact;
 use App\Values\Word;
 

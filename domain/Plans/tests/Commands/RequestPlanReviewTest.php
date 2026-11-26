@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
 use App\Support\ActorReference;
 use Closure;
 use Domain\Plans\Commands\CancelPlan\CancelPlanCommand;

@@ -16,9 +16,9 @@ node_modules, and this project's rule for pages.
   typed descriptors generated into `resources/js/generated/loaders.ts`. The call is a same-page partial reload whose
   `X-Journal-Loader` header names the loader; `App\Http\Responses\LoaderProps` answers it under `load_<key>` or
   `loaderFailure` (ok, invalid or unavailable).
-- What every page receives is the typed app context: `App\Data\Web\AppContextData`, built by
-  `App\Support\Web\AppContext` with `ContextLazy` fields and read with `useAppContext()` from `@kit/appContext`.
-- Pages stay current through Inertia live props: `App\Support\Web\LiveProps` marks a page's props live on the
+- What every page receives is the typed app context: `App\Web\Data\AppContextData`, built by
+  `App\Web\AppContext` with `ContextLazy` fields and read with `useAppContext()` from `@kit/appContext`.
+- Pages stay current through Inertia live props: `App\Web\LiveProps` marks a page's props live on the
   viewer's `journal.user` channel, `resources/js/framework/liveTransport.ts` carries them over the tab's one
   connection, and `composables/usePageChanges.ts` takes over each live reload as an async read that never cancels a
   form or a navigation.

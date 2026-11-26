@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 use App\Contracts\Events\Event;
-use App\Support\Decisions\Contracts\AnswerPart;
+use App\Stacks\AgentState;
+use App\Stacks\Decisions\Contracts\AnswerPart;
+use App\Stacks\References\StateReference;
 use App\Support\Inputs\StopRequested;
-use App\Support\References\StateReference;
-use App\Support\States\AgentState;
 
 /**
  * A test state that answers a stop with what it was given: nothing, a decision, a line, or several to yield.

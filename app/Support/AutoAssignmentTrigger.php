@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Commands\Assignments\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
-use App\Commands\Assignments\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
-use App\Contracts\Admission\MaintenanceAdmission;
-use App\Contracts\Assignments\AssignedWorkResolver;
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Contracts\Assignments\AutoAssignmentResolver;
-use App\Contracts\Assignments\AutoAssignmentTrigger as AutoAssignmentTriggerContract;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandStops;
-use App\Contracts\Processes\StopTime;
-use App\Contracts\Processes\StopTimes;
+use App\Access\Contracts\MaintenanceAdmission;
+use App\Assignments\AssignmentRoom;
+use App\Assignments\AutoAssignmentAvailability;
+use App\Assignments\AutoAssignmentBudget;
+use App\Assignments\AutoAssignmentRun;
+use App\Assignments\Commands\AssignRecordForMaintenance\AssignRecordForMaintenanceCommand;
+use App\Assignments\Commands\ClaimAutoAssignment\ClaimAutoAssignmentCommand;
+use App\Assignments\Contracts\AssignedWorkResolver;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Contracts\AutoAssignmentTrigger as AutoAssignmentTriggerContract;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandStops;
+use App\Processes\Contracts\StopTime;
+use App\Processes\Contracts\StopTimes;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

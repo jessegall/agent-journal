@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Settings;
 
-use App\Commands\Settings\DisableSettingGroup\DisableSettingGroupCommand;
-use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Enums\Settings\SettingsOutcome;
-use App\Values\GroupReference;
-use App\Values\SettingsChange;
+use App\Settings\Commands\DisableSettingGroup\DisableSettingGroupCommand;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Values\GroupReference;
+use App\Settings\Values\SettingsChange;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

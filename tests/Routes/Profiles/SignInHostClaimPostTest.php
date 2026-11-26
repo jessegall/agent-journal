@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
+use App\Accounts\Commands\ClaimSignIn\ClaimSignInCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

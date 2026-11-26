@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Enums\Agents\AccessType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Profiles\AccessRuleType;
+use App\Agents\Enums\AccessType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Exceptions\UnknownAccessType;
 use App\Exceptions\ExecutionBudgetInvalid;
-use App\Exceptions\ExecutionPolicyInvalid;
-use App\Exceptions\StopConditionsInvalid;
-use App\Exceptions\UnknownAccessType;
+use App\Profiles\Enums\AccessRuleType;
+use App\Sessions\Exceptions\ExecutionPolicyInvalid;
+use App\Sessions\Exceptions\StopConditionsInvalid;
+use App\Sessions\Values\ExecutionPolicy;
+use App\Sessions\Values\ProcessGrants;
+use App\Sessions\Values\StopConditions;
 use App\Values\AccessPolicy;
 use App\Values\ExecutionBudgets;
-use App\Values\ExecutionPolicy;
 use App\Values\Operation;
 use App\Values\OperationGrant;
-use App\Values\ProcessGrants;
 use App\Values\ProfileBase;
 use App\Values\ResourceRequest;
 use App\Values\StopCondition;
-use App\Values\StopConditions;
 use Tests\TestCase;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Access;
 
-use App\Contracts\Actors\CurrentUserResolver;
+use App\Actors\Contracts\CurrentUserResolver;
 use App\Models\Access\User;
 use Tests\TestCase;
 

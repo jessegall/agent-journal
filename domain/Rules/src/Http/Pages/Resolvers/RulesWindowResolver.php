@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Enums\Settings\ActionMethod;
+use App\Navigation\Contracts\PageResolver;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutFieldData;

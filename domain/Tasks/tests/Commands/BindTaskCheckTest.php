@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\JournalCommands;
-use App\Contracts\Bus\ResultReceipts;
-use App\Contracts\Processes\ProcessRunResolver;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Runs\AssessmentOutcome;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\JournalCommands;
+use App\Bus\Contracts\ResultReceipts;
 use App\Exceptions\ProcessRunOfAnotherActor;
 use App\Models\Access\User;
+use App\Processes\Contracts\ProcessRunResolver;
+use App\Processes\Enums\AssessmentOutcome;
 use App\Support\ActorReference;
 use App\Values\PublishedResult;
 use Carbon\CarbonImmutable;

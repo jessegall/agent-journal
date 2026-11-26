@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Records\AuthoredModel;
+use App\Records\Contracts\AuthoredModel;
 use App\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Architecture\Support\DomainFiles;

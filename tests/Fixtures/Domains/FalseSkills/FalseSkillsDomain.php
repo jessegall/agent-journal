@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\FalseSkills;
 
+use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Skills\SkillProvider;
 
 /**
  * A fixture domain that declares a class of its own that is no skill.

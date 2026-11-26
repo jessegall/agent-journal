@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills\Guide;
 
-use App\Support\Conditions\Conditions;
-use App\Contracts\Skills\Skill;
-use App\Contracts\Skills\SkillCondition;
-use App\Values\MarkdownPart;
+use App\Reads\Values\MarkdownPart;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Values\SkillSections;
 use App\Values\SkillSection;
-use App\Values\SkillSections;
 
 /**
  * The guide fixture skill under another class name, with the same key and text.

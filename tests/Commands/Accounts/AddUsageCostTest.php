@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Accounts\Commands\AddUsageCost\AddUsageCostCommand;
+use App\Accounts\Enums\AccountProcessRole;
+use App\Accounts\Exceptions\AccountMissing;
+use App\Accounts\Exceptions\UsageCostConflict;
+use App\Accounts\Values\AccountLabel;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Accounts\AddUsageCost\AddUsageCostCommand;
-use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Agents\SessionProcessStatus;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Events\Accounts\AccountsChanged;
 use App\Events\Accounts\AccountUsageChanged;
-use App\Exceptions\AccountMissing;
-use App\Exceptions\SessionProcessUnknown;
-use App\Exceptions\UsageCostConflict;
+use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageCost;
-use App\Support\EnrolledHost;
-use App\Values\AccountLabel;
+use App\Sessions\Exceptions\SessionProcessUnknown;
 use App\Values\ReportedStart;
 use App\Values\UsageCost;
 use App\Values\UsdAmount;

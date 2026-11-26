@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Policies;
 
-use App\Contracts\Authorization\Policy;
+use App\Access\Contracts\Policy;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 
 /**

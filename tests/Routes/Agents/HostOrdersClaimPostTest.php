@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
-use App\Values\HostOrderClaim;
+use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\Values\HostOrderClaim;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

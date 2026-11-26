@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Capabilities;
 
-use App\Enums\Drivers\RewriteSupport;
+use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Exceptions\UnsupportedHook;
+use App\Stacks\AgentStack;
+use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\HookAnswer;
 use App\Values\AgentText;
 
 /**

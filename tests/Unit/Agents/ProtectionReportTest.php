@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Enums\Drivers\BoundaryItem;
-use App\Enums\Drivers\IsolationPlatform;
-use App\Values\BoundaryMechanism;
-use App\Values\BoundaryMechanisms;
-use App\Values\ProtectedItem;
-use App\Values\ProtectionEvidence;
+use App\Agents\Drivers\Enums\BoundaryItem;
+use App\Agents\Drivers\Enums\IsolationPlatform;
+use App\Agents\Values\BoundaryMechanism;
+use App\Agents\Values\BoundaryMechanisms;
+use App\Profiles\Values\ProtectedItem;
+use App\Projects\Values\ProtectionEvidence;
 use App\Values\ProtectionReport;
 use PHPUnit\Framework\TestCase;
 

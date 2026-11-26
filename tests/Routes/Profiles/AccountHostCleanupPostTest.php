@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\CleanAccount\CleanAccountCommand;
-use App\Values\CleanupProgress;
+use App\Accounts\Commands\CleanAccount\CleanAccountCommand;
+use App\Accounts\Values\CleanupProgress;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

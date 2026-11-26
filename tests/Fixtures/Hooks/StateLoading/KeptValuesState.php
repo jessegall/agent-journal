@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateLoading;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 use Tests\Fixtures\Hooks\Counting\CountedValues;
 use Tests\Fixtures\Hooks\Stacks\FinishedSubjects;
 use Tests\Fixtures\Web\Types\ShelfStatus;

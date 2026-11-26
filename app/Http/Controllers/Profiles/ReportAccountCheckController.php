@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Accounts\Commands\CheckAccount\CheckAccountCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
 use App\Http\Requests\Profiles\AccountCheckRequest;
-use App\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

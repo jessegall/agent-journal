@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * What a session's header shows may have changed: its host reported what the driver does, how a request went, that

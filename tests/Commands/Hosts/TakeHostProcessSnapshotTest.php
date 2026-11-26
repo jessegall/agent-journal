@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Exceptions\CommandNotRegistered;
+use App\Bus\Exceptions\CommandNotRegistered;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\TakeHostProcessSnapshot\TakeHostProcessSnapshotCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessReportType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Hosts\ProjectFiles;
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Connections\ProjectEntryData;
-use App\Data\Connections\ProjectTreeEntryData;
-use App\Data\Connections\ProjectWindowData;
-use App\Enums\Connections\BindingReadiness;
-use App\Enums\Projects\ProjectReadStatus;
-use App\Enums\Projects\ProjectWindowStatus;
+use App\Connections\Data\ProjectEntryData;
+use App\Connections\Data\ProjectTreeEntryData;
+use App\Connections\Data\ProjectWindowData;
+use App\Connections\Enums\BindingReadiness;
+use App\Hosts\Contracts\ProjectFiles;
+use App\Hosts\Contracts\ServedEnvironment;
 use App\Http\Requests\Connections\ProjectWindowRequest;
 use App\Models\Projects\ProjectBinding;
+use App\Navigation\Contracts\PageResolver;
+use App\Projects\Enums\ProjectReadStatus;
+use App\Projects\Enums\ProjectWindowStatus;
 use App\Values\ProjectFileAnswers;
 use Carbon\CarbonImmutable;
 

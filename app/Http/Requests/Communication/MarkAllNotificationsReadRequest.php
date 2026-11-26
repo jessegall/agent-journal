@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
+use App\Notifications\Commands\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class MarkAllNotificationsReadRequest extends FormRequest

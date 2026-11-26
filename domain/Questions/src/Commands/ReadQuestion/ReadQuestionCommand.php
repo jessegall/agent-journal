@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\ReadQuestion;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Policies\MessagePolicy;
 use App\Support\Command;
 use Domain\Questions\Support\ShownQuestion;

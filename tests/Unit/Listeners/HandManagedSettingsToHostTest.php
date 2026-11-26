@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Listeners;
 
-use App\Contracts\Files\Files;
 use App\Events\Sessions\StartGrantRequested;
+use App\Files\Contracts\Files;
+use App\Hosts\ArrangementSetting;
 use App\Listeners\HandManagedSettingsToHost;
-use App\Support\ArrangementSetting;
-use App\Support\StartAdditions;
+use App\Sessions\StartAdditions;
 use Tests\TestCase;
 
 /**

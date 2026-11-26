@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Terminals\CancelPrivateEntry\CancelPrivateEntryCommand;
-use App\Commands\Terminals\CancelTerminalTake\CancelTerminalTakeCommand;
-use App\Commands\Terminals\CheckTerminalScreen\CheckTerminalScreenCommand;
-use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
-use App\Commands\Terminals\OpenPrivateEntry\OpenPrivateEntryCommand;
-use App\Commands\Terminals\ReleaseTerminalControl\ReleaseTerminalControlCommand;
-use App\Commands\Terminals\RenewTerminalControl\RenewTerminalControlCommand;
-use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
-use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Enums\Terminals\TerminalDraftChoice;
-use App\Enums\Terminals\TerminalInputType;
-use App\Enums\Terminals\TerminalNamedKey;
-use App\Support\TerminalInput;
-use App\Values\PrivateSubmission;
+use App\Terminals\Commands\CancelPrivateEntry\CancelPrivateEntryCommand;
+use App\Terminals\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
+use App\Terminals\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
+use App\Terminals\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Terminals\Commands\OpenPrivateEntry\OpenPrivateEntryCommand;
+use App\Terminals\Commands\ReleaseTerminalControl\ReleaseTerminalControlCommand;
+use App\Terminals\Commands\RenewTerminalControl\RenewTerminalControlCommand;
+use App\Terminals\Commands\SendTerminalInput\SendTerminalInputCommand;
+use App\Terminals\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Terminals\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Terminals\Enums\TerminalDraftChoice;
+use App\Terminals\Enums\TerminalInputType;
+use App\Terminals\Enums\TerminalNamedKey;
+use App\Terminals\TerminalInput;
+use App\Terminals\Values\PrivateSubmission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

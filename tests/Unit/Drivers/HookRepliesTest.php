@@ -8,7 +8,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Hooks\HookReplies;
-use App\Values\PlanFile;
+use App\Agents\Values\PlanFile;
 use Tests\TestCase;
 
 /**

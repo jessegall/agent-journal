@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Contracts\Scripts\ScriptKeywordProvider;
-use App\Contracts\Scripts\ScriptObjectProvider;
+use App\Scripts\Contracts\ScriptKeywordProvider;
+use App\Scripts\Contracts\ScriptObjectProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 

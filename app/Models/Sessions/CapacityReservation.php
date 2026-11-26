@@ -6,13 +6,13 @@ namespace App\Models\Sessions;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Sessions\CapacityResource;
-use App\Enums\Sessions\ReservationStatus;
-use App\Exceptions\CapacityUnavailable;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
+use App\Sessions\Enums\CapacityResource;
+use App\Sessions\Enums\ReservationStatus;
+use App\Sessions\Exceptions\CapacityUnavailable;
+use App\Sessions\Values\HostCapacity;
 use App\Values\ExecutionBudgets;
-use App\Values\HostCapacity;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

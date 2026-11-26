@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
 use App\Exceptions\FileReadReentered;
-use App\Exceptions\FolderClosed;
 use App\Exceptions\FolderMissing;
 use App\Exceptions\PlaceUnavailable;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
+use App\Navigation\Exceptions\FolderClosed;
 use App\Support\Files;
 use App\Support\Reflector;
-use App\Values\Depth;
 use App\Values\FilePath;
 use App\Values\FolderEntry;
 use Illuminate\Filesystem\Filesystem;

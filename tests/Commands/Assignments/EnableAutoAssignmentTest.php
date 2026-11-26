@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Assignments;
 
-use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
-use App\Contracts\Assignments\AutoAssignmentResolver;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\AutoAssignmentDenied;
+use App\Assignments\AutoAssignmentChange;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Exceptions\AutoAssignmentDenied;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Support\ActorReference;
-use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentFact;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;

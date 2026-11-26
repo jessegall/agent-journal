@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartSignInRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

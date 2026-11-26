@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Drivers\DriverCall;
-use App\Enums\Hooks\HookEvent;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Drivers\Contracts\DriverCall;
+use App\Hooks\Enums\HookEvent;
+use App\Stacks\HookAnswer;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\Inputs\Values\ToolResult;
-use App\Support\Stack\HookAnswer;
 use Closure;
 
 /**

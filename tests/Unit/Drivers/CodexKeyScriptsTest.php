@@ -6,15 +6,15 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
-use App\Data\Hosts\HostFrameData;
-use App\Enums\Screens\KeyMoveType;
-use App\Support\KeyScripts\KeyMove;
-use App\Support\KeyScripts\KeyScriptCatalogue;
-use App\Support\KeyScripts\KeyScriptRun;
-use App\Support\KeyScripts\KeyScriptRunner;
-use App\Support\Screens\ScreenClassifier;
-use App\Support\Screens\ScreenHolds;
-use App\Support\Screens\ScreenLayout;
+use App\Hosts\Data\HostFrameData;
+use App\Terminals\KeyScripts\KeyMove;
+use App\Terminals\KeyScripts\KeyScriptCatalogue;
+use App\Terminals\KeyScripts\KeyScriptRun;
+use App\Terminals\KeyScripts\KeyScriptRunner;
+use App\Terminals\Screens\Enums\KeyMoveType;
+use App\Terminals\Screens\ScreenClassifier;
+use App\Terminals\Screens\ScreenHolds;
+use App\Terminals\Screens\ScreenLayout;
 use App\Values\HostOrderSource;
 use Tests\TestCase;
 

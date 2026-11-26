@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Contracts\Reflection\TypeReflections;
-use App\Support\CatalogueReflectorFactory;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Contracts\TypeReflections;
 use Illuminate\Support\ServiceProvider;
 
 /**

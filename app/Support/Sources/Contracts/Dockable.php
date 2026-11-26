@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Sources\Contracts;
 
+use App\Docking\Sources\Contracts\CardContext;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Sources\DockDefinition;

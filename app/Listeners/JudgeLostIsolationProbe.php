@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Hosts\JudgeIsolationProbe\JudgeIsolationProbeCommand;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Hosts\HostProcessPurpose;
 use App\Events\Connections\HostProcessLost;
+use App\Hosts\Commands\JudgeIsolationProbe\JudgeIsolationProbeCommand;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 
 /**

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
-use App\Enums\Engine\MiddlewareStage;
-use App\Support\CommandDeclarations;
+use App\Bus\CommandDeclarations;
+use App\Bus\Contracts\Pipe;
+use App\Bus\DeclaredCommand;
+use App\Bus\PropertyRules;
+use App\Bus\RegisteredCommand;
+use App\Bus\RegisteredMiddleware;
+use App\Engine\Enums\MiddlewareStage;
 use App\Support\CommandRegistry;
-use App\Support\DeclaredCommand;
-use App\Support\PropertyRules;
-use App\Support\RegisteredCommand;
-use App\Support\RegisteredMiddleware;
 
 /**
  * Registers every checked command with its handler, owner, attributes, property rules and the middleware it passes,

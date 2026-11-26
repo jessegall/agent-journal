@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Messages;
 
-use App\Contracts\Notifications\NotificationsMarkAllEvent;
+use App\Notifications\Contracts\NotificationsMarkAllEvent;
 
 /**
  * Marking every notification read finished.

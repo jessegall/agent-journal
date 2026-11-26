@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Fixtures;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Processes\RunClaims;
+use App\Actors\Contracts\Actor;
+use App\Processes\Contracts\RunClaims;
 use Domain\Tasks\Commands\AddTaskWait\AddTaskWaitCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Commands\WaiveTaskWait\WaiveTaskWaitCommand;

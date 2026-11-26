@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Accounts\Commands\RenameAccount\RenameAccountCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\RenameAccountRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

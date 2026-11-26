@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Concerns\ComparesTypeAndId;
-use App\Exceptions\InvalidRecordIdentity;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Data;
 

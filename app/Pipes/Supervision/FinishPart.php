@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
 use App\Support\Execution\DrainedPart;
 use App\Support\Execution\StepOutcome;
 

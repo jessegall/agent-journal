@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Enums\Sessions\CapacityResource;
-use App\Enums\Sessions\ResumeRefusal;
-use App\Enums\Sessions\StartPreflightRefusal;
-use App\Enums\Sessions\StartRefusalReason;
-use App\Enums\Sessions\StartRefusalType;
-use App\Enums\Sessions\StartRemedyType;
-use App\Exceptions\CapacityUnavailable;
+use App\Sessions\Enums\CapacityResource;
+use App\Sessions\Enums\ResumeRefusal;
+use App\Sessions\Enums\StartPreflightRefusal;
+use App\Sessions\Enums\StartRefusalReason;
+use App\Sessions\Enums\StartRefusalType;
+use App\Sessions\Enums\StartRemedyType;
+use App\Sessions\Exceptions\CapacityUnavailable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

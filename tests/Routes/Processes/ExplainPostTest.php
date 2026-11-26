@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

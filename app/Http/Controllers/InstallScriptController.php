@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\InvitationUnusable;
+use App\Connections\InstallLineAvailability;
+use App\Connections\InstallScript;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\InstallLineAvailability;
-use App\Support\InstallScript;
+use App\Projects\Exceptions\InvitationUnusable;
 use Illuminate\Http\Response;
 
 /**

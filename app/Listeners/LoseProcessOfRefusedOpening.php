@@ -6,9 +6,9 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Time\ServerClock;
 use App\Events\Connections\HostOrderRefused;
 use App\Models\Hosts\HostProcess;
+use App\Time\Contracts\ServerClock;
 
 /**
  * A process still waiting to be opened whose open order the host refused, or that expired unclaimed, never ran: it is

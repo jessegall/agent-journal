@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Processes\ReviewLimit;
+use App\Processes\Enums\ReviewLimit;
 
 /**
  * A command's shape: its program and subcommand with every value replaced by a typed slot, the only form of a command

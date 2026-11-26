@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\StateCatalog\Registration\Contracts;
 
-use App\Exceptions\StateTypeRepeated;
-use App\Exceptions\StateTypesFrozen;
-use App\Support\StateLoading\RegisteredStateType;
+use App\Stacks\Exceptions\StateTypeRepeated;
+use App\Stacks\Exceptions\StateTypesFrozen;
+use App\Stacks\StateLoading\RegisteredStateType;
 
 /**
  * Where a domain registers its own state types, while the state types are built once per worker.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Settings\SettingsCatalogue;
-use App\Exceptions\SettingsOwnerUnknown;
+use App\Settings\Contracts\SettingsCatalogue;
+use App\Settings\Exceptions\SettingsOwnerUnknown;
 use App\Support\DomainRegistry;
 use Tests\Support\CountsReads;
 use Tests\Support\Settings\UsesReviewsSettings;

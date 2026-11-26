@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Agents\CancelSessionStart\CancelSessionStartCommand;
+use App\Agents\Commands\CancelSessionStart\CancelSessionStartCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

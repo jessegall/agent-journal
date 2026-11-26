@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Sessions\RecordStopConditionResults\RecordStopConditionResultsCommand;
-use App\Enums\Hooks\AnswerType;
-use App\Enums\Sessions\StopCheckStatus;
-use App\Enums\Sessions\StopConditionResultType;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\StopCheck;
+use App\Sessions\Commands\RecordStopConditionResults\RecordStopConditionResultsCommand;
+use App\Sessions\Enums\StopCheckStatus;
+use App\Sessions\Enums\StopConditionResultType;
+use App\Sessions\Values\StartPolicy;
+use App\Sessions\Values\StopConditions;
 use App\Values\AgentText;
-use App\Values\StartPolicy;
 use App\Values\StopCondition;
 use App\Values\StopConditionResultReport;
-use App\Values\StopConditions;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AsksTheStopGate;
 use Tests\Support\Entries\Attributes\TestsCommand;

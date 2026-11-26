@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Sessions\SessionTokenSource;
-use App\Support\OfflineReplySeal;
-use App\Support\Relay\HookRelay;
-use App\Support\Relay\RelaySettings;
-use App\Support\StartEnvironment;
+use App\Agents\Relay\HookRelay;
+use App\Agents\Relay\RelaySettings;
+use App\Sessions\Contracts\SessionTokenSource;
+use App\Sessions\OfflineReplySeal;
+use App\Sessions\StartEnvironment;
 use Illuminate\Console\Command;
 
 /**

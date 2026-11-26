@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Inboxes\InboxMemberPolicies;
-use App\Contracts\Inboxes\InboxMemberRoutes;
-use App\Contracts\Inboxes\InboxParticipationEnding;
-use App\Contracts\Inboxes\InboxRegistration;
-use App\Contracts\Notifications\NotificationTargets;
-use App\Support\CoreInboxes;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Values\ReadEntitlement;
+use App\Docking\Sources\Contracts\DockedSources;
+use App\Docking\Sources\Contracts\DockOffers;
+use App\Inboxes\Contracts\InboxMemberPolicies;
+use App\Inboxes\Contracts\InboxMemberRoutes;
+use App\Inboxes\Contracts\InboxParticipationEnding;
+use App\Inboxes\Contracts\InboxRegistration;
+use App\Inboxes\CoreInboxes;
+use App\Notifications\Contracts\NotificationTargets;
 use App\Support\FolderClasses;
-use App\Support\Sources\Contracts\DockedSources;
-use App\Support\Sources\Contracts\DockOffers;
-use App\Values\ReadEntitlement;
 use Domain\Chat\Contracts\PairChats as PairChatsContract;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\QuestionNotificationTarget;

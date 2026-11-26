@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\OutputRequirement;
-use App\Enums\CommandRules\UnresolvedType;
+use App\Access\Values\ClassFact;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\OutputRequirement;
+use App\CommandRules\Enums\UnresolvedType;
+use App\Processes\Values\RuleOrigin;
+use App\Processes\Values\SyntaxOrigin;
 use App\Values\AgentText;
-use App\Values\ClassFact;
 use App\Values\Classification;
 use App\Values\CommandClassSet;
 use App\Values\PartClassification;
-use App\Values\RuleOrigin;
-use App\Values\SyntaxOrigin;
 use App\Values\UnresolvedFact;
 use Tests\Support\Processes\ParsesBashLines;
 use Tests\TestCase;

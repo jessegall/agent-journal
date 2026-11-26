@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Api\ApiDeclaration;
+use App\Api\Exceptions\EndpointDeclarationInvalid;
 use App\Contracts\Domains\ApiRegistrar as ApiRegistrarContract;
-use App\Exceptions\EndpointDeclarationInvalid;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 

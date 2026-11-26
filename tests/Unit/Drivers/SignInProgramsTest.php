@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Values\SecretHandover;
-use App\Values\SignInReport;
+use App\Agents\Values\SecretHandover;
+use App\Agents\Values\SignInReport;
 use Tests\TestCase;
 
 /**

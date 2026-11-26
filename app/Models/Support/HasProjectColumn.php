@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Contracts\Projects\ProjectOwned;
 use App\Exceptions\CrossProjectEdge;
 use App\Models\Projects\Project;
+use App\Projects\Contracts\ProjectOwned;
 use App\Values\ProjectOwner;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;

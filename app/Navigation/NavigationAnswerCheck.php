@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Navigation;
+
+use App\Access\Contracts\JournalAdmission;
+use App\Actors\Contracts\CurrentActor;
+use App\Exceptions\NavigationRaiseRefused;
+use App\Inboxes\Contracts\MainInbox;
+use App\Models\Drivers\NavigationRequest;
+use App\Navigation\Exceptions\NavigationAnswerRefused;
+use App\Support\ActorReference;
+
+/**
+ * What every command of the main agent on a navigation request checks first: the request, locked; that the caller
+ * answers it, as main's occupant or the owner; and that it read the newest row version.
+ */
+final readonly class NavigationAnswerCheck
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private JournalAdmission $admission,
+        private MainInbox $main,
+    ) {}
+
+    /**
+     * The request, locked for the caller who answers it.
+     *
+     * @throws NavigationRaiseRefused
+     * @throws NavigationAnswerRefused
+     */
+    public function lockedForHandler(string $navigationId): NavigationRequest
+    {
+        $navigation = NavigationRequest::query()
+            ->acrossActors()
+            ->whereKey($navigationId)
+            ->lockForUpdate()
+            ->firstOr(NavigationRaiseRefused::throwing()->unknownRequest($navigationId));
+
+        $this->checkHandler($navigation);
+
+        return $navigation;
+    }
+
+    /**
+     * Refuses a caller who neither sits at main nor owns the journal.
+     *
+     * @throws NavigationAnswerRefused
+     */
+    public function checkHandler(NavigationRequest $navigation): void
+    {
+        $actor = $this->actors->actor();
+        $owner = $this->admission->owner();
+        $seated = $this->main->occupant()->map(fn (ActorReference $occupant) => $occupant->isSameAs($actor));
+
+        if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {
+            throw NavigationAnswerRefused::ofAnotherActor($navigation->id);
+        }
+    }
+
+    /**
+     * @throws NavigationAnswerRefused
+     */
+    public function assertCurrentVersion(NavigationRequest $navigation, int $expectedRowVersion): void
+    {
+        if (! $navigation->isAtRowVersion($expectedRowVersion)) {
+            throw NavigationAnswerRefused::staleVersion(
+                $navigation->id,
+                $expectedRowVersion,
+                $navigation->row_version,
+                $navigation->screen->generation,
+            );
+        }
+    }
+}

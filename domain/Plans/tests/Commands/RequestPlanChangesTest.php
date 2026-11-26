@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use Domain\Plans\Commands\RequestPlanChanges\RequestPlanChangesCommand;
 use Domain\Plans\Commands\RequestPlanReview\RequestPlanReviewCommand;
 use Domain\Plans\Enums\PlanReviewStatus;

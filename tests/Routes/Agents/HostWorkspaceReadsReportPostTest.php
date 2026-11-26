@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
+use App\Projects\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceReadReference;
 use Tests\Support\Entries\Attributes\TestsRoute;

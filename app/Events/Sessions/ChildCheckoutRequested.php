@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Asks\AnsweredAtOnce;
-use App\Support\ChildCheckoutSlot;
+use App\Asks\Contracts\AnsweredAtOnce;
+use App\Sessions\ChildCheckoutSlot;
 
 /**
  * A host claims the start of a child: the area that knows the child's project issues its claim and fills in the

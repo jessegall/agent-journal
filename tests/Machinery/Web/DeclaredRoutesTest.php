@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Web;
 
+use App\Access\AccessSettings;
 use App\Declarations\ActionRoute;
 use App\Declarations\Page;
-use App\Declarations\Section;
-use App\Declarations\Slot;
-use App\Enums\Navigation\Icon;
-use App\Enums\Profiles\SlotContextType;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
+use App\Navigation\Enums\Icon;
+use App\Profiles\Enums\SlotContextType;
 use App\Support\ClientDeclarations;
 use App\Support\DeclaredRoutes;
 use App\Support\DomainEntry;
+use App\Text\Declarations\Section;
+use App\Web\Declarations\Slot;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\ClientDeclarations\Desk\DeskDomain;
 use Tests\Fixtures\ClientDeclarations\Desk\NotesResolver;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\Processes\ShellDialect;
-use App\Support\PackageScripts;
+use App\Bus\Contracts\CommandClassifier;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\PackageScripts;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;

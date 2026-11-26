@@ -6,7 +6,7 @@ namespace Domain\Tasks\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStacks;
+use App\Stacks\Contracts\Work\AgentStacks;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\Support\States\Support\WorkOnTaskStateReference;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Bus;
 
-use App\Contracts\Bus\CommandEnd;
-use App\Contracts\Bus\RequestKey;
-use App\Support\CommandCall;
+use App\Bus\CommandCall;
+use App\Bus\CommandSubjects;
+use App\Bus\Contracts\CommandEnd;
+use App\Bus\Contracts\RequestKey;
 use App\Support\CommandRegistry;
-use App\Support\CommandSubjects;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
 use Closure;

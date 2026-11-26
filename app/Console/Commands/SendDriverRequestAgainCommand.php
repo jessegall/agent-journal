@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand as SendDriverRequestAgain;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Drivers\Commands\SendDriverRequestAgain\SendDriverRequestAgainCommand as SendDriverRequestAgain;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

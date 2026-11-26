@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Binders;
 
+use App\Sharing\Contracts\Shareable;
 use App\Support\RecordIdentity;
-use App\Contracts\Sharing\Shareable;
 use App\Support\ShareRelationSet;
 
 final class Binder implements Shareable

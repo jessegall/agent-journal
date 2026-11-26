@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Sessions\StartDisposition;
-use App\Enums\Sessions\StartReadiness;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\DriverSwitch;
 use App\Models\Sessions\SessionProcess;
+use App\Sessions\Enums\StartDisposition;
+use App\Sessions\Enums\StartReadiness;
+use App\Sessions\SessionStartOutcome;
 use Carbon\CarbonImmutable;
 
 /**

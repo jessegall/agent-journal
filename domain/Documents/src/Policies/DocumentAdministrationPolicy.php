@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Policies;
 
-use App\Contracts\Authorization\OwnerPolicy;
+use App\Access\Contracts\OwnerPolicy;
 use Domain\Documents\Models\Document;
 
 /**

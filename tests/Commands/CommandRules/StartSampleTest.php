@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Commands\CommandRules\StartSample\StartSampleCommand;
-use App\Enums\CommandRules\RequestHoldReason;
-use App\Exceptions\SampleRefused;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\CommandRules\Commands\StartSample\StartSampleCommand;
+use App\CommandRules\Enums\RequestHoldReason;
+use App\CommandRules\Exceptions\SampleRefused;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;

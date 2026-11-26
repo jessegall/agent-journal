@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Drivers;
 
-use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\Drivers\DriverEvidence;
+use App\Agents\Drivers\Contracts\DriverCompatibilities;
+use App\Agents\Drivers\Enums\DriverEvidence;
 use App\Support\Compatibility\DriverCompatibility;
 
 /**

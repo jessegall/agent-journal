@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\CommandRules;
 
+use App\CommandRules\Values\ProposedRule;
+use App\CommandRules\Values\RuleExample;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
-use App\Values\ProposedRule;
-use App\Values\RuleExample;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

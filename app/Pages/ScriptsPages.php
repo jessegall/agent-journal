@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\Navigation\PageProvider;
-use App\Contracts\Records\TypeProvider;
-use App\Data\Flows\FlowEdgeData;
-use App\Data\Flows\FlowGraphData;
-use App\Data\Flows\FlowNodeData;
-use App\Data\Profiles\ProfileDraftData;
-use App\Data\Profiles\ProfileLanguageData;
-use App\Data\Profiles\ProfileRunData;
-use App\Data\Profiles\ProfileScriptPageData;
-use App\Data\Profiles\ProfileStepData;
-use App\Data\Profiles\ScriptKeywordData;
-use App\Data\Profiles\ScriptObjectData;
+use App\Accounts\AccountOwnerCheck;
+use App\CommandRules\Enums\SyntaxForm;
 use App\Declarations\ActionRoute;
-use App\Declarations\DomainClient;
 use App\Declarations\Page;
-use App\Enums\CommandRules\SyntaxForm;
-use App\Enums\Navigation\Icon;
-use App\Enums\Profiles\DiagnosticCode;
-use App\Enums\Profiles\FlowNodeType;
-use App\Enums\Profiles\KeywordCategory;
-use App\Enums\Profiles\ProfileRunStatus;
-use App\Enums\Profiles\ScriptEffect;
-use App\Enums\Terminals\StepStatus;
 use App\Http\Controllers\Pages\CheckDraftPageController;
 use App\Http\Controllers\Pages\SaveDraftPageController;
 use App\Http\Pages\Resolvers\ProfileScriptWindowResolver;
-use App\Support\AccountOwnerCheck;
+use App\Navigation\Contracts\PageProvider;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Enums\Icon;
+use App\Profiles\Data\Flows\FlowEdgeData;
+use App\Profiles\Data\Flows\FlowGraphData;
+use App\Profiles\Data\Flows\FlowNodeData;
+use App\Profiles\Data\ProfileDraftData;
+use App\Profiles\Data\ProfileLanguageData;
+use App\Profiles\Data\ProfileRunData;
+use App\Profiles\Data\ProfileScriptPageData;
+use App\Profiles\Data\ProfileStepData;
+use App\Profiles\Data\ScriptKeywordData;
+use App\Profiles\Data\ScriptObjectData;
+use App\Profiles\Enums\DiagnosticCode;
+use App\Profiles\Enums\FlowNodeType;
+use App\Profiles\Enums\KeywordCategory;
+use App\Profiles\Enums\ProfileRunStatus;
+use App\Profiles\Enums\ScriptEffect;
+use App\Records\Contracts\TypeProvider;
+use App\Terminals\Enums\StepStatus;
 
 /**
  * The pages Core's Scripts declares, for the owner alone, under /scripts: the script editor of one profile.

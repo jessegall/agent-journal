@@ -121,7 +121,7 @@
         "fence": null
     },
     "claude-code terminal on no account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code terminal on no account with everything start": {
@@ -209,7 +209,7 @@
         "fence": null
     },
     "claude-code terminal on no account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code terminal on no account resumed start": {
@@ -295,7 +295,7 @@
         "fence": null
     },
     "claude-code terminal on no account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code terminal on no account resumed with everything start": {
@@ -383,7 +383,7 @@
         "fence": null
     },
     "claude-code terminal on no account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code pipe on no account start": {
@@ -464,7 +464,7 @@
         "fence": null
     },
     "claude-code pipe on no account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code pipe on no account with everything start": {
@@ -547,7 +547,7 @@
         "fence": null
     },
     "claude-code pipe on no account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code pipe on no account resumed start": {
@@ -628,7 +628,7 @@
         "fence": null
     },
     "claude-code pipe on no account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code pipe on no account resumed with everything start": {
@@ -711,7 +711,7 @@
         "fence": null
     },
     "claude-code pipe on no account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "claude-code terminal on an MCP account start": {
@@ -5760,7 +5760,7 @@
         "fence": null
     },
     "codex terminal on no account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on no account with everything start": {
@@ -5832,7 +5832,7 @@
         "fence": null
     },
     "codex terminal on no account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on no account resumed start": {
@@ -5898,7 +5898,7 @@
         "fence": null
     },
     "codex terminal on no account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on no account resumed with everything start": {
@@ -5972,7 +5972,7 @@
         "fence": null
     },
     "codex terminal on no account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on no account start": {
@@ -6036,7 +6036,7 @@
         "fence": null
     },
     "codex pipe on no account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on no account with everything start": {
@@ -6108,7 +6108,7 @@
         "fence": null
     },
     "codex pipe on no account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on no account resumed start": {
@@ -6172,7 +6172,7 @@
         "fence": null
     },
     "codex pipe on no account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on no account resumed with everything start": {
@@ -6244,7 +6244,7 @@
         "fence": null
     },
     "codex pipe on no account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on an MCP account start": {
@@ -6304,7 +6304,7 @@
         "fence": null
     },
     "codex terminal on an MCP account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on an MCP account with everything start": {
@@ -6368,7 +6368,7 @@
         "fence": null
     },
     "codex terminal on an MCP account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on an MCP account resumed start": {
@@ -6430,7 +6430,7 @@
         "fence": null
     },
     "codex terminal on an MCP account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on an MCP account resumed with everything start": {
@@ -6496,7 +6496,7 @@
         "fence": null
     },
     "codex terminal on an MCP account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on an MCP account start": {
@@ -6556,7 +6556,7 @@
         "fence": null
     },
     "codex pipe on an MCP account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on an MCP account with everything start": {
@@ -6620,7 +6620,7 @@
         "fence": null
     },
     "codex pipe on an MCP account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on an MCP account resumed start": {
@@ -6680,7 +6680,7 @@
         "fence": null
     },
     "codex pipe on an MCP account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on an MCP account resumed with everything start": {
@@ -6744,7 +6744,7 @@
         "fence": null
     },
     "codex pipe on an MCP account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a CLI account start": {
@@ -6804,7 +6804,7 @@
         "fence": null
     },
     "codex terminal on a CLI account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a CLI account with everything start": {
@@ -6868,7 +6868,7 @@
         "fence": null
     },
     "codex terminal on a CLI account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a CLI account resumed start": {
@@ -6930,7 +6930,7 @@
         "fence": null
     },
     "codex terminal on a CLI account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a CLI account resumed with everything start": {
@@ -6996,7 +6996,7 @@
         "fence": null
     },
     "codex terminal on a CLI account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on a CLI account start": {
@@ -7056,7 +7056,7 @@
         "fence": null
     },
     "codex pipe on a CLI account sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on a CLI account with everything start": {
@@ -7120,7 +7120,7 @@
         "fence": null
     },
     "codex pipe on a CLI account with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on a CLI account resumed start": {
@@ -7180,7 +7180,7 @@
         "fence": null
     },
     "codex pipe on a CLI account resumed sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex pipe on a CLI account resumed with everything start": {
@@ -7244,11 +7244,11 @@
         "fence": null
     },
     "codex pipe on a CLI account resumed with everything sign-in probe": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "the start has an unresolved setting: no account to check the sign-in of"
     },
     "codex terminal on a protected account start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex terminal on a protected account sign-in probe": {
@@ -7284,7 +7284,7 @@
         "fence": null
     },
     "codex terminal on a protected account with everything start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex terminal on a protected account with everything sign-in probe": {
@@ -7320,7 +7320,7 @@
         "fence": null
     },
     "codex terminal on a protected account resumed start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex terminal on a protected account resumed sign-in probe": {
@@ -7356,7 +7356,7 @@
         "fence": null
     },
     "codex terminal on a protected account resumed with everything start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex terminal on a protected account resumed with everything sign-in probe": {
@@ -7392,7 +7392,7 @@
         "fence": null
     },
     "codex pipe on a protected account start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex pipe on a protected account sign-in probe": {
@@ -7428,7 +7428,7 @@
         "fence": null
     },
     "codex pipe on a protected account with everything start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex pipe on a protected account with everything sign-in probe": {
@@ -7464,7 +7464,7 @@
         "fence": null
     },
     "codex pipe on a protected account resumed start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex pipe on a protected account resumed sign-in probe": {
@@ -7500,7 +7500,7 @@
         "fence": null
     },
     "codex pipe on a protected account resumed with everything start": {
-        "refused": "App\\Exceptions\\ProfileRefused",
+        "refused": "App\\Agents\\Exceptions\\ProfileRefused",
         "message": "codex's sandbox does not keep its tools from its sign-in: it is not started in a container"
     },
     "codex pipe on a protected account resumed with everything sign-in probe": {

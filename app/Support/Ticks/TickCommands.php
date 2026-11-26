@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Ticks;
 
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 use App\Exceptions\TooManyTickCommands;
 
 /**

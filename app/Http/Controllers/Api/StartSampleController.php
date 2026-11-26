@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\SampleStarted;
-use App\Api\Processes\StartSamplePayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\StartSample\StartSampleCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\CommandRules\Commands\StartSample\StartSampleCommand;
+use App\Processes\Api\SampleStarted;
+use App\Processes\Api\StartSamplePayload;
 
 /**
  * Starts a sample run and answers its run.

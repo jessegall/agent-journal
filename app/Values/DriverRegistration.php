@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Drivers\DriverCapabilities;
-use App\Enums\Drivers\DriverCapability;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Contracts\DriverCapabilities;
+use App\Agents\Drivers\Enums\DriverCapability;
+use App\Agents\Drivers\Enums\DriverType;
 
 /**
  * One registered driver: its opaque key, the family and driver type it is chosen by, the label the user reads, the protocols it

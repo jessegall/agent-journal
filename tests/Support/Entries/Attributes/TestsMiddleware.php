@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries\Attributes;
 
-use App\Contracts\Bus\CommandMiddleware;
+use App\Bus\Contracts\CommandMiddleware;
 use Attribute;
 use Tests\Support\Entries\Contracts\NamesEntry;
 

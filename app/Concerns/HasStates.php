@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Attributes\Rules\RequiresInterface;
+use App\Bootstrap\Attributes\Rules\RequiresInterface;
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Contracts\Records\StateProvider;
+use App\Records\Contracts\StateProvider;
 use App\Support\Bootstrappers\RegisterStates;
 
 /**

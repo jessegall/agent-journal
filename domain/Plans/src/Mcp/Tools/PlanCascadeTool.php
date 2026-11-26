@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp\Tools;
 
-use App\Contracts\Actors\ActorTypes;
-use App\Contracts\Bus\RequestKey;
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Actors\Contracts\ActorTypes;
+use App\Assignments\Enums\AssignmentOutcomeType;
+use App\Bus\Contracts\RequestKey;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;

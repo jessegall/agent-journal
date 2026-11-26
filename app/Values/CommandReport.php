@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Engine\ReportLineType;
+use App\Engine\Enums\ReportLineType;
 use Illuminate\Console\Command;
 
 /**

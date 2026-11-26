@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Contracts\Navigation\PresentsLayout;
 use App\Exceptions\LayoutRefused;
+use App\Navigation\Contracts\PresentsLayout;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

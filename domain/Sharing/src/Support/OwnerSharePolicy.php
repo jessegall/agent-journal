@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Messages\AdmittedRecipients;
-use App\Contracts\Sharing\SharePolicy;
-use App\Exceptions\SharingNotAllowed;
-use App\Exceptions\UnknownShareRecordType;
+use App\Access\Contracts\JournalAdmission;
+use App\Actors\Contracts\Actor;
+use App\Messages\Contracts\AdmittedRecipients;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Exceptions\SharingNotAllowed;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Models\Share;
 
 /**

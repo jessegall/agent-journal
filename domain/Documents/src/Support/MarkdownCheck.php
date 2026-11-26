@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Exceptions\MarkdownInvalid;
+use App\Skills\Exceptions\MarkdownInvalid;
 use App\Support\MarkdownText;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 

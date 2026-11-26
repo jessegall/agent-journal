@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Support\GatewayConfiguration;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
+use App\Sharing\GatewayConfiguration;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Commands\ClaimGatewayOperation\ClaimGatewayOperationCommand;
 use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;

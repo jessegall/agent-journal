@@ -16,7 +16,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/LinkRemoval.php',
+            'app/Links/LinkRemoval.php',
         ],
     ],
     LinkRemoved::class => [

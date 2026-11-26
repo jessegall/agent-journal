@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A task check got its result: the process run's receipt and outcome were bound to it. Raised only once the binding

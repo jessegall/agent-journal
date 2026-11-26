@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\ShowAutoAssignmentPayload;
-use App\Contracts\Assignments\AutoAssignmentResolver;
-use App\Data\Assignments\AutoAssignmentStatusData;
+use App\Assignments\Api\ShowAutoAssignmentPayload;
+use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Data\AutoAssignmentStatusData;
 
 /**
  * Answers an auto-assignment's state.

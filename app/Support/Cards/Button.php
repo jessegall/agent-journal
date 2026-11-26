@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\Runs\PartType;
-use App\Enums\Web\Emphasis;
+use App\Docking\Cards\DockDestination;
+use App\Processes\Enums\PartType;
 use App\Support\Cards\Contracts\DockPart;
+use App\Web\Enums\Emphasis;
 
 /**
  * A button that opens a page its owner declared; the page checks the viewer's access again as it opens.

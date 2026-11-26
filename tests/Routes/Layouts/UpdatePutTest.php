@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Layouts;
 
-use App\Commands\Layouts\ChangeLayout\ChangeLayoutCommand;
-use App\Data\Layouts\LayoutShape;
 use App\Models\Records\Layout;
+use App\Terminals\Commands\ChangeLayout\ChangeLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Domains\JournalToolNames;
-use App\Contracts\Reflection\ReflectorFactory;
+use App\Agents\Contracts\Domains\JournalToolNames;
+use App\Bus\Attributes\Dispatches;
+use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;
@@ -16,8 +16,8 @@ use App\Mcp\Exceptions\McpResourceUriTaken;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
-use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\CommandRegistry;
 use Illuminate\Contracts\Container\Container;
 use Laravel\Mcp\Server\Attributes\Name;

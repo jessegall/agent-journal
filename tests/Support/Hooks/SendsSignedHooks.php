@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hooks;
 
-use App\Contracts\Actors\CurrentActorSetter;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Api\SignedCall;
+use App\Stacks\StartStacks;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
-use App\Support\SignedCall;
 use App\Support\StackTransaction;
-use App\Support\StartStacks;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;
 use Closure;

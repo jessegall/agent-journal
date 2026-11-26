@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Values\ScriptParameter;
 use App\Values\ScriptProgress;
 use Tests\Support\Agents\OpensLedgerRuntimes;

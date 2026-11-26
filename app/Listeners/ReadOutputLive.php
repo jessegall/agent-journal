@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Commands\Runs\ReadPartLive\ReadPartLiveCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Models\Runs\PartRun;
-use App\Support\PartAssessments;
+use App\Processes\Commands\ReadPartLive\ReadPartLiveCommand;
+use App\Processes\PartAssessments;
 
 /**
  * A committed chunk of a check's part is read at once by the part's approved reader; a part with no approved pair is

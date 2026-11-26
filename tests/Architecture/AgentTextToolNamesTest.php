@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Domains\JournalToolNames;
-use App\Mcp\Tools\CommandRequestProveTool;
-use App\Mcp\Tools\CommandRequestSampleTool;
-use App\Mcp\Tools\CommandRequestShowTool;
-use App\Mcp\Tools\CommandTypeProposeTool;
-use App\Mcp\Tools\OutputsReadTool;
+use App\Access\Mcp\Tools\OutputsReadTool;
+use App\Agents\Contracts\Domains\JournalToolNames;
+use App\CommandRules\Mcp\Tools\CommandRequestProveTool;
+use App\CommandRules\Mcp\Tools\CommandRequestSampleTool;
+use App\CommandRules\Mcp\Tools\CommandRequestShowTool;
+use App\CommandRules\Mcp\Tools\CommandTypeProposeTool;
 use Domain\Helpers\Mcp\Tools\ContinueHelperTool;
 use Domain\Helpers\Mcp\Tools\SendHelperTool;
 use Tests\Architecture\Support\DomainFiles;
@@ -27,8 +27,8 @@ final class AgentTextToolNamesTest extends TestCase
      * The files that write for the user at a terminal, where a command line is the right thing to show.
      */
     private const array FOR_THE_USER = [
-        'app/Values/DeviceOverview.php',
-        'app/Api/Connections/RunProjectCommandPayload.php',
+        'app/Connections/Values/DeviceOverview.php',
+        'app/Connections/Api/RunProjectCommandPayload.php',
     ];
 
     public function test_no_agent_text_names_a_journal_command_line(): void

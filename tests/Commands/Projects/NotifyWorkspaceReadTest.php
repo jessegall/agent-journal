@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
-use App\Commands\Terminals\RecordScriptStepResult\RecordScriptStepResultCommand;
-use App\Enums\Terminals\StepStatus;
 use App\Models\Profiles\ProfileRun;
+use App\Projects\Commands\NotifyWorkspaceRead\NotifyWorkspaceReadCommand;
+use App\Scripts\ObjectReader;
+use App\Scripts\Values\ProfileRevisionReference;
+use App\Scripts\Values\ScriptContext;
 use App\Support\ActorReference;
-use App\Support\ObjectReader;
+use App\Terminals\Commands\RecordScriptStepResult\RecordScriptStepResultCommand;
+use App\Terminals\Enums\StepStatus;
 use App\Values\CommitObservation;
 use App\Values\ProfileKey;
-use App\Values\ProfileRevisionReference;
-use App\Values\ScriptContext;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
 use Tests\Support\Entries\Attributes\TestsCommand;

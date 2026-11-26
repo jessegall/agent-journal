@@ -14,8 +14,9 @@ require_once __DIR__.'/name-word-splitting.php';
 /**
  * The folders whose classes are actions, named with their verb first: steps, pipelines, commands, listeners and jobs.
  * A console command is named subject first, as it is typed (ReportMakeCommand for report make).
+ * What only helps the actions of such a folder sits in its Support subfolder and is named as a noun.
  */
-const ACTION_FOLDERS = '#/(Pipes|Pipelines|(?<!Console/)Commands|Listeners|Jobs)/#';
+const ACTION_FOLDERS = '#/(Pipes|Pipelines|(?<!Console/)Commands|Listeners|Jobs)/(?!(?:[^/]+/)?Support/)#';
 
 /**
  * The words that open a yes-or-no question.

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Assignments;
 
-use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
+use App\Assignments\AutoAssignmentChange;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Support\ActorReference;
-use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;

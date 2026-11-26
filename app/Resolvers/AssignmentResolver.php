@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Contracts\Assignments\AssignmentResolver as AssignmentResolverContract;
-use App\Contracts\Sharing\SharedHolders;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\AssignmentSet;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Contracts\AssignmentResolver as AssignmentResolverContract;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Exceptions\InvalidAssignmentPage;
 use App\Models\Records\AssignmentRecord;
+use App\Records\RecordIds;
+use App\Sharing\Contracts\SharedHolders;
 use App\Support\AssigneeIdentity;
-use App\Support\AssignmentSet;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
-use App\Support\RecordIds;
 use Illuminate\Database\Eloquent\Builder;
 use Psr\Log\LoggerInterface;
 

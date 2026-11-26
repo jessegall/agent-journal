@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Palette;
 
-use App\Values\DeclaredSearchable;
+use App\Search\Values\DeclaredSearchable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

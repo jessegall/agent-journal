@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\BadSettings;
 
+use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Contracts\SettingsProvider;
+use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\StringSetting;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Settings\SettingsProvider;
-use App\Contracts\Settings\SettingsDefinition;
-use App\Declarations\SettingGroup;
-use App\Declarations\StringSetting;
 use Tests\Fixtures\Settings\SettingsList;
 
 final class BadSettingsDomain extends Domain implements SettingsProvider
@@ -32,7 +32,7 @@ final class BadSettingsDomain extends Domain implements SettingsProvider
     public function settings(): SettingsDefinition
     {
         return new SettingsList(
-[SettingGroup::make('desk', 'Desk', [StringSetting::make('Greeting', 'Greeting', 'Welcome')])],
-);
+            [SettingGroup::make('desk', 'Desk', [StringSetting::make('Greeting', 'Greeting', 'Welcome')])],
+        );
     }
 }

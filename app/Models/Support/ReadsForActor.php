@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Contracts\Actors\ActorVisibility;
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
+use App\Actors\Contracts\CurrentActor;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Links;
 
-use App\Contracts\Records\RecordResolver;
-use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\UnknownLinkType;
 use App\Models\Records\Link;
+use App\Records\Contracts\RecordResolver;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
 use App\Support\RecordIdentity;
 use Domain\Documents\DocumentsDomain;
 use Domain\Plans\PlansDomain;

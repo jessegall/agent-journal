@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Sessions\SessionStartCandidates as SessionStartCandidatesContract;
-use App\Enums\Sessions\StartCandidateRank;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\ConversationVisit;
 use App\Models\Drivers\DriverConversation;
 use App\Models\Sessions\SessionProcess;
-use App\Support\RankedStartCandidate;
-use App\Support\StartCandidateFacts;
-use App\Support\StartCandidateQuery;
+use App\Sessions\Contracts\SessionStartCandidates as SessionStartCandidatesContract;
+use App\Sessions\Enums\StartCandidateRank;
+use App\Sessions\RankedStartCandidate;
+use App\Sessions\StartCandidateFacts;
+use App\Sessions\StartCandidateQuery;
 
 /**
  * Ranks an owner's helpers from Agents' own records: the agent row, its running sessions and unresolved starts, and

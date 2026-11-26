@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use App\Models\Agents\Agent;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Hooks\TestFailure;

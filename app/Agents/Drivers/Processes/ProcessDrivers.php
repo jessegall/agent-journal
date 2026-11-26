@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Processes;
 
-use App\Contracts\Drivers\ProcessDriver;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Exceptions\ProcessDriverMissing;
+use App\Agents\Drivers\Contracts\ProcessDriver;
+use App\Agents\Exceptions\ProcessDriverMissing;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 use Illuminate\Contracts\Container\Container;
 

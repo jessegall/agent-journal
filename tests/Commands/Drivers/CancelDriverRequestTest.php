@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
-use App\Commands\Agents\ChangeAgentModel\ChangeAgentModelCommand;
-use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Drivers\CancelDriverRequest\CancelDriverRequestCommand;
-use App\Enums\Drivers\RecoveryAction;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
+use App\Agents\Commands\ChangeAgentModel\ChangeAgentModelCommand;
+use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
+use App\Agents\Drivers\Commands\CancelDriverRequest\CancelDriverRequestCommand;
+use App\Agents\Drivers\Enums\RecoveryAction;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Events\Sessions\DriverRequestRecovered;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Support\OpenedRuntime;
+use App\Sessions\OpenedRuntime;
 use App\Values\DriverReceipt;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Agents\OpensLedgerRuntimes;

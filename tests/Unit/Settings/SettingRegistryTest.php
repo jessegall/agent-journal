@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Declarations\SettingGroup;
-use App\Declarations\StringSetting;
-use App\Declarations\ToggleGroup;
-use App\Exceptions\SettingDeclarationInvalid;
-use App\Exceptions\SettingHandleUnknown;
-use App\Support\CoreSettings;
-use App\Support\SettingRegistry;
+use App\Settings\CoreSettings;
+use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\StringSetting;
+use App\Settings\Declarations\ToggleGroup;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\SettingRegistry;
 use Tests\Fixtures\Domains\Library\LibrarySettings;
 use Tests\Fixtures\Settings\SettingsList;
 use Tests\TestCase;

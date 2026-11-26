@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Drivers;
 
-use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
-use App\Commands\Hosts\SignalHostProcess\SignalHostProcessCommand;
-use App\Contracts\Drivers\ProcessDriver;
+use App\Agents\Drivers\Contracts\ProcessDriver;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Commands\SignalHostProcess\SignalHostProcessCommand;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;

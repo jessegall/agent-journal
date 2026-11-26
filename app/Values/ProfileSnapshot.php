@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Access\Contracts\Policy;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Contracts\Authorization\Policy;
-use App\Contracts\Bus\Command;
-use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\Agents\AccessType;
-use App\Enums\Profiles\InstancePolicy;
-use App\Enums\Profiles\ModelTier;
+use App\Bus\Contracts\Command;
+use App\Profiles\Data\ProfileAuthorization;
+use App\Profiles\Enums\InstancePolicy;
+use App\Profiles\Enums\ModelTier;
+use App\Sessions\Values\ProcessGrants;
 use Spatie\LaravelData\Data;
 
 /**

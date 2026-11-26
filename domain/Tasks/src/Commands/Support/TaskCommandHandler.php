@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\Support;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Domain\Tasks\Exceptions\TaskRunOfAnotherActor;
 use Domain\Tasks\Models\Task;
 

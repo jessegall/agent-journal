@@ -6,7 +6,7 @@ namespace Domain\Sharing\Api;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
+use App\Processes\Enums\ApiEffect;
 use Spatie\LaravelData\Data;
 
 /**

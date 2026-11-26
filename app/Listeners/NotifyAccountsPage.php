@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Accounts\ShownOnAccounts;
+use App\Accounts\Contracts\ShownOnAccounts;
 use App\Contracts\Events\Listener;
 use App\Events\Accounts\AccountsChanged;
 use Illuminate\Contracts\Events\Dispatcher;

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Values\PlanStep;
+use App\Processes\Execution\RunState;
+use App\Processes\Values\PlanStep;
 
 /**
  * The steps of an && or || list after the first, still to run or skip: a && b runs b only when a succeeded, a || b

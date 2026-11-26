@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Web;
 
-use App\Support\UserChannel;
+use App\Web\UserChannel;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

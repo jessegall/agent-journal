@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Pipes\Supervision\EndConditional;
 use App\Pipes\Supervision\RunFirstConditional;
 use App\Pipes\Supervision\RunNextConditional;
@@ -12,7 +13,6 @@ use App\Pipes\Supervision\SkipNextConditional;
 use App\Support\Execution\ConditionalSteps;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\Step;
 
 /**
  * Runs an && or || list: a && b runs b only when a succeeded, a || b only when it failed; a step that does not run is

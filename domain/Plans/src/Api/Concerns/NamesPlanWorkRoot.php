@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Api\Concerns;
 
-use App\Contracts\Records\RecordResolver;
-use App\Exceptions\InvalidRecordReference;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
+use App\Web\Exceptions\InvalidRecordReference;
 use Domain\Plans\Models\Phase;
 use Illuminate\Support\Str;
 

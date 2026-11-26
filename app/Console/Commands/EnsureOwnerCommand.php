@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
-use App\Contracts\Bus\JournalCommands;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
+use App\Inboxes\Commands\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use Illuminate\Config\Repository;

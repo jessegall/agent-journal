@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote\OpenTransactionNoteCommand;
 
 final class OpenTransactionNoteHandler implements CommandHandler
 {
@@ -16,7 +15,7 @@ final class OpenTransactionNoteHandler implements CommandHandler
     {
         // Opens its own transaction, which the bus refuses: the sample of story 75.
         return (int) $this->database->transaction(
-fn () => $this->database->table('module_command_rows')->insertGetId(['text' => $command->text]),
-);
+            fn () => $this->database->table('module_command_rows')->insertGetId(['text' => $command->text]),
+        );
     }
 }

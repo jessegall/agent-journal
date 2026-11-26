@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Data\Processes\ExplainedNodeData;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\OutputRequirement;
-use App\Enums\CommandRules\UnresolvedType;
-use App\Enums\Processes\ShellDialect;
-use App\Support\Explanations;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\OutputRequirement;
+use App\CommandRules\Enums\UnresolvedType;
+use App\Processes\Data\ExplainedNodeData;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Explanations;
 use App\Values\ReaderReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Entries\Attributes\TestsMachinery;

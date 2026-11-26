@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Data\Messages\MessageView;
+use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\MessageMissing;
+use App\Messages\Data\MessageView;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Support\PinnableMessages;
 

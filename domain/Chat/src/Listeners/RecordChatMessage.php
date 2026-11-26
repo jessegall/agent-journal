@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\Messages\MessageSent;
 use App\Models\Messages\Message;

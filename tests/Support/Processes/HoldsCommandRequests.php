@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Declarations\RuleDeclaration;
-use App\Values\RuleExample;
+use App\CommandRules\Declarations\RuleDeclaration;
+use App\CommandRules\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Seeding\TestJournal;

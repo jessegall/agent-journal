@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
-use App\Commands\Hosts\SweepHostOrders\SweepHostOrdersCommand;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostRefusal;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Commands\SweepHostOrders\SweepHostOrdersCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostRefusal;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Carbon\CarbonImmutable;

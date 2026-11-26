@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Agents\ExecutionModeType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Sessions\Values\ExecutionPolicy;
 use App\Values\ExecutionBudgets;
-use App\Values\ExecutionPolicy;
 use App\Values\ModelSelection;
 use App\Values\PinnedDriver;
 use App\Values\SelectedDriver;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Assignments\AssignmentQuery;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Contracts\AssignmentQuery;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Contracts\TaskListResolver as TaskListResolverContract;
 use Domain\Tasks\Enums\TaskHolderFilter;

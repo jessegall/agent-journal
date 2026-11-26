@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Agents\NotifyRunning\NotifyRunningCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\NotifyRunning\NotifyRunningCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\Connections\HostProcessStarted;
 use App\Models\Hosts\HostProcess;

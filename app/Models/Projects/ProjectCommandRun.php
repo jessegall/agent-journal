@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models\Projects;
 
-use App\Api\Connections\ProjectCommandFrame;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
+use App\Connections\Api\ProjectCommandFrame;
+use App\Connections\Enums\CommandRunStatus;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Connections\CommandRunStatus;
 use App\Events\Connections\ProjectCommandCancellationRequested;
 use App\Events\Connections\ProjectCommandCancelled;
 use App\Events\Connections\ProjectCommandFinished;
 use App\Events\Connections\ProjectCommandProcessRecorded;
 use App\Events\Connections\ProjectCommandReconciled;
 use App\Models\Support\JournalModel;
-use App\Support\CommandRunEvidence;
+use App\Projects\CommandRunEvidence;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

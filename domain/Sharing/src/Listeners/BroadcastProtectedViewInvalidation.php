@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Sharing\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Messages\AdmittedRecipients;
-use App\Contracts\Web\ProtectedViews;
+use App\Messages\Contracts\AdmittedRecipients;
+use App\Web\Contracts\ProtectedViews;
 use Domain\Sharing\Events\ShareRevoked;
 
 /**

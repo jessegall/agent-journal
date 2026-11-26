@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Scripts\Values\Instruction;
+use App\Scripts\Values\ScriptHandler;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 

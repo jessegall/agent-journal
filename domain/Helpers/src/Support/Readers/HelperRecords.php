@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\Readers;
 
-use App\Contracts\Sessions\StartReceipts;
-use App\Exceptions\SessionRequestMissing;
+use App\Sessions\Contracts\StartReceipts;
+use App\Sessions\Exceptions\SessionRequestMissing;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;

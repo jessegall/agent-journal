@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Web;
 
 use App\Declarations\Page;
-use App\Enums\Navigation\Icon;
+use App\Navigation\Enums\Icon;
 use App\Support\ClientDeclarations;
 use App\Support\DomainEntry;
 use InvalidArgumentException;

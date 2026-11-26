@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 
-use App\Contracts\Time\ServerClock;
-use App\Contracts\Bus\CommandHandler;
-use App\Support\EngineStacks;
-use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;
+use App\Bus\Contracts\CommandHandler;
+use App\Stacks\EngineStacks;
+use App\Time\Contracts\ServerClock;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
 /**

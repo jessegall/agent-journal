@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Support\References\StateReference;
-use App\Support\Stack\Contracts\StateFactory;
-use App\Support\Stack\Frames\Frame;
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\StateFactory;
+use App\Stacks\Frames\Frame;
+use App\Stacks\References\StateReference;
 use Carbon\CarbonImmutable;
 use Closure;
 

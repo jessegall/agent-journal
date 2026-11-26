@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Api\ApiDeclaration;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
-use App\Support\ApiDeclaration;
+use App\Processes\Enums\ApiEffect;
 use App\Support\DeclaredType;
 use App\Support\Reflector;
 use PhpOption\Option;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents\Exceptions;
 
-use App\Enums\Engine\StateEventStage;
+use App\Engine\Enums\StateEventStage;
 use RuntimeException;
 use Throwable;
 

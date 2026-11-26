@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Contracts\Processes\ShellCommandParser;
-use App\Exceptions\ProcessesServiceMissing;
-use App\Support\RequiredServices;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Exceptions\ProcessesServiceMissing;
+use App\Processes\RequiredServices;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 

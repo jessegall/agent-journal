@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostProcessEvent;
+use App\Hosts\Contracts\HostProcessEvent;
 
 /**
  * The host started the process, under the identity and generation it gave.

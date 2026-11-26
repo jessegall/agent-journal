@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\CommandRules\Commands\ApproveRuleProposal\ApproveRuleProposalCommand;
+use App\CommandRules\Values\ApprovalReceipt;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleRevision;
-use App\Values\ApprovalReceipt;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

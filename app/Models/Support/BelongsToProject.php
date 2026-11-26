@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Contracts\Projects\CurrentProject;
+use App\Projects\Contracts\CurrentProject;
 use App\Values\ProjectSelection;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;

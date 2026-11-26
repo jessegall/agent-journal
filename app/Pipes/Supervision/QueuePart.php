@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Execution\QueuedPart;
 use App\Support\Execution\PendingPart;
-use App\Support\Execution\QueuedPart;
 
 /**
  * Queues a part under the next attempt of its syntax node, with no standard input of its own.

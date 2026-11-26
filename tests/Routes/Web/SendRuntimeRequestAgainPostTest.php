@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Drivers\SendDriverRequestAgain\SendDriverRequestAgainCommand;
+use App\Agents\Drivers\Commands\SendDriverRequestAgain\SendDriverRequestAgainCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

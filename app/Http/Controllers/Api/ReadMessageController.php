@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Communication\ReadMessagePayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Messages\MessageView;
+use App\Api\Api\Communication\ReadMessagePayload;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\Data\MessageView;
 
 /**
  * Reads one message and records the read.

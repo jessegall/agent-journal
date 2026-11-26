@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\CloseTerminalView\CloseTerminalViewCommand;
+use App\Terminals\Commands\CloseTerminalView\CloseTerminalViewCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

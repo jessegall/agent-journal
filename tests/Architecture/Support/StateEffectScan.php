@@ -19,7 +19,7 @@ use Tests\Support\ScanCache\FileScan;
  */
 final readonly class StateEffectScan implements FileScan
 {
-    public const string STATE = 'App\\Support\\States\\AgentState';
+    public const string STATE = 'App\\Stacks\\AgentState';
 
     /**
      * Method names that run, write, send or start, on any receiver.

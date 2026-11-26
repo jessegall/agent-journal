@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\DriverCapability;
+use App\Agents\Drivers\Enums\DriverCapability;
 
 /**
  * The registration a start runs on, with the catalogue revision it was chosen from; a start record keeps both.

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\CheckTerminalScreen\CheckTerminalScreenCommand;
-use App\Enums\Drivers\DriverOperation;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\CheckTerminalScreen\CheckTerminalScreenCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;

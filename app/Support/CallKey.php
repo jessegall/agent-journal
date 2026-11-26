@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Bus\RequestKey;
 use App\Exceptions\CallKeyInvalid;
 use Illuminate\Support\Str;
 

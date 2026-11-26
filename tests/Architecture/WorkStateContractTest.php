@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Work\WorkState;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\Work\WorkState;
+use App\Stacks\StateLoading\RegisteredStateType;
+use App\Stacks\StateTypes;
 use App\Support\Reflector;
-use App\Support\Stack\StateTypes;
-use App\Support\StateLoading\RegisteredStateType;
-use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\WorkStates\GatesToolsOnly;
 use Tests\Fixtures\Hooks\WorkStates\SilentWork;
 

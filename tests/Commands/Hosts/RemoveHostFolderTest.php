@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\RemoveHostFolder\RemoveHostFolderCommand;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Commands\RemoveHostFolder\RemoveHostFolderCommand;
+use App\Hosts\Enums\HostOrderType;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

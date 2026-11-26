@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Support;
 
 use App\Models\Sessions\SessionPolicy;
+use App\Sessions\Values\StartPolicy;
 use App\Values\AccessPolicy;
 use App\Values\OperationGrant;
 use App\Values\ResourceRequest;
-use App\Values\StartPolicy;
 use Tests\Fixtures\Agents\TestStart;
 
 /**

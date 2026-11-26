@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Providers;
 
-use App\Contracts\Projects\FileComments;
-use App\Contracts\Projects\HeldFileVersions;
+use App\Projects\Contracts\FileComments;
+use App\Projects\Contracts\HeldFileVersions;
 use App\Support\FolderClasses;
 use Domain\Comments\Contracts\CommentResolver as CommentResolverContract;
 use Domain\Comments\Contracts\PublicCommentResolver as PublicCommentResolverContract;

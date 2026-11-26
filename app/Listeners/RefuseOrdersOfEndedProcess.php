@@ -6,10 +6,10 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostProcessEndEvent;
-use App\Contracts\Time\ServerClock;
-use App\Enums\Hosts\HostRefusal;
+use App\Hosts\Contracts\HostProcessEndEvent;
+use App\Hosts\Enums\HostRefusal;
 use App\Models\Hosts\HostOrder;
+use App\Time\Contracts\ServerClock;
 
 /**
  * A process that exited or was lost runs none of its open orders: each is refused as not running, but for the stop

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
-use App\Enums\Agents\AccessType;
-use App\Contracts\Authorization\PolicyProvider;
-use App\Values\PolicyDefinition;
-use App\Contracts\Bus\CommandProvider;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger\OpenLedgerCommand;

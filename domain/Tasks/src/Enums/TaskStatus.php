@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Enums;
 
-use App\Enums\Runs\Tone;
-use App\Support\Cards\StateLabel;
+use App\Processes\Cards\StateLabel;
+use App\Processes\Enums\Tone;
 
 /**
  * Where a task stands: open until an agent starts it, then started, blocked, finished or cancelled.

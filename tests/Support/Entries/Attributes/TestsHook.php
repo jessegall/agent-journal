@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries\Attributes;
 
-use App\Enums\Hooks\HookEvent;
+use App\Hooks\Enums\HookEvent;
 use Attribute;
 use Tests\Support\Entries\Contracts\NamesEntry;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Accounts\AccountFolders;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
-use App\Values\Depth;
+use App\Accounts\Contracts\AccountFolders;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
 
 /**
  * The sign-in service makes and removes its account folders itself, on the protected host where it runs as the

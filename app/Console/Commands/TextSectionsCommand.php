@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Text\ListTextSectionsPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Enums\CommandRules\JournalRouteType;
+use App\Text\Api\ListTextSectionsPayload;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Read)]

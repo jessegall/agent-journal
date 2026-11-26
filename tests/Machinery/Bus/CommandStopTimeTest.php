@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Bus;
 
-use App\CommandMiddleware\RunInTransaction;
-use App\Contracts\Processes\StopTime as StopTimeContract;
-use App\Exceptions\StackLockTimedOut;
-use App\Support\CommandCall;
-use App\Support\CommandStops;
-use App\Support\MonotonicClock;
+use App\Access\Exceptions\StackLockTimedOut;
+use App\Bus\CommandCall;
+use App\Bus\CommandMiddleware\RunInTransaction;
+use App\Bus\CommandStops;
+use App\Processes\Contracts\StopTime as StopTimeContract;
 use App\Support\OperationDeadline;
 use App\Support\Reflector;
-use App\Support\StopTime;
+use App\Time\MonotonicClock;
+use App\Time\StopTime;
 use Exception;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;

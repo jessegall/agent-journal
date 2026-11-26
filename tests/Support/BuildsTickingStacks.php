@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\Engine\NoSubject;
+use App\Engine\Enums\NoSubject;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentStackRow;
-use App\Support\AgentSessions;
-use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
-use App\Support\Stack\StateTypes;
+use App\Sessions\AgentSessions;
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
+use App\Stacks\StateTypes;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;

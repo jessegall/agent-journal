@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Agents\ContinueStart\ContinueStartCommand;
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

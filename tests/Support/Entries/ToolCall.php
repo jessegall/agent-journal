@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Bus\ExpectedCommand;

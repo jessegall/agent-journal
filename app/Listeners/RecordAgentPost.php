@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Activity\ActivityLog;
+use App\Agents\Activity\Contracts\ActivityLog;
+use App\Agents\Enums\ActivityType;
 use App\Contracts\Events\Listener;
-use App\Enums\Agents\ActivityType;
 use App\Events\Messages\MessageSent;
 use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;

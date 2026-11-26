@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Profiles\ScriptDiagnostic;
+use App\Profiles\Data\ScriptDiagnostic;
+use App\Scripts\Values\ScriptRange;
 
 final readonly class ScriptCheck
 {

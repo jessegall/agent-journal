@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Settings;
 
-use App\Enums\Settings\SettingTarget;
+use App\Settings\Enums\SettingTarget;
 
 /**
  * The one fact a settings command that changed something raises, after its transaction committed: whose settings,

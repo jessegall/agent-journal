@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Policies;
 
-use App\Contracts\Authorization\WorkspacePolicy;
+use App\Access\Contracts\WorkspacePolicy;
 use Domain\Chat\Models\DockPlacement;
 
 /**

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
-use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Connections\ReleaseOfferData;
-use App\Enums\Projects\InstallLineHold;
+use App\Bus\Contracts\CommandBus;
+use App\Connections\Data\ReleaseOfferData;
+use App\Connections\InstallLineAvailability;
+use App\Connections\PublishedReleases;
+use App\Connections\Values\ReleaseManifest;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\InstallLineAvailability;
-use App\Support\PublishedReleases;
-use App\Values\ReleaseManifest;
-use App\Values\SettingReference;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Projects\Enums\InstallLineHold;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\DB;

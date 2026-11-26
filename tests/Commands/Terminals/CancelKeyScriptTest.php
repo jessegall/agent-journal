@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
-use App\Enums\Navigation\NavigationStatus;
+use App\Navigation\Enums\NavigationStatus;
+use App\Terminals\Commands\CancelKeyScript\CancelKeyScriptCommand;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Engine\RunsEnginePasses;

@@ -6,7 +6,7 @@ namespace Domain\Helpers\Api;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
+use App\Processes\Enums\ApiEffect;
 use Domain\Helpers\Data\HelperNoticeListData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ConfigureShareGateway;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Attributes\Commands\RequiresRequestKey;
-use App\Enums\Agents\AccessType;
+use App\Bus\Attributes\Commands\RequiresRequestKey;
+use App\Sharing\GatewayConfiguration;
 use App\Support\Command;
-use App\Support\GatewayConfiguration;
 use Domain\Sharing\Policies\SharingPolicy;
 
 /**

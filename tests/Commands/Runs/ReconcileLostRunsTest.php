@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\ReconcileLostRuns\ReconcileLostRunsCommand;
-use App\Contracts\Admission\ShellAdmission;
-use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\CaptureStatus;
-use App\Enums\Runs\LifecycleStatus;
-use App\Enums\Runs\PartEndType;
+use App\Access\Contracts\ShellAdmission;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ResultReceipt;
+use App\Processes\Commands\ReconcileLostRuns\ReconcileLostRunsCommand;
+use App\Processes\Enums\CaptureStatus;
+use App\Processes\Enums\LifecycleStatus;
+use App\Processes\Enums\PartEndType;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\PartKey;
 use App\Values\ExecutionContext;
-use App\Values\PartKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

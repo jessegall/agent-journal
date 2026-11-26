@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Communication;
 
+use App\Bus\RequestKey;
 use App\Events\Messages\MessageSent;
 use App\Models\Messages\Message;
-use App\Support\RequestKey;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Reviews\Messaging\ReviewRequests;

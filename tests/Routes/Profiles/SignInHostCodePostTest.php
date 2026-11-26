@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\TakeSignInCode\TakeSignInCodeCommand;
-use App\Values\SignInPoll;
+use App\Accounts\Commands\TakeSignInCode\TakeSignInCodeCommand;
+use App\Accounts\Values\SignInPoll;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

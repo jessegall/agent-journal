@@ -6,7 +6,7 @@ namespace Domain\Plans\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Work\AgentStacks;
+use App\Stacks\Contracts\Work\AgentStacks;
 use Domain\Plans\Events\PlanStarted;
 use Domain\Plans\Support\States\Support\WorkOnPlanStateReference;
 

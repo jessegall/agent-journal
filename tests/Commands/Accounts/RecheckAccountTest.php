@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\Accounts\CancelSignIn\CancelSignInCommand;
-use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
-use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Accounts\AccountCheckResult;
-use App\Enums\Accounts\CommandEntry;
-use App\Exceptions\AccountRecheckRefused;
+use App\Accounts\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Accounts\Commands\CancelSignIn\CancelSignInCommand;
+use App\Accounts\Commands\CheckAccount\CheckAccountCommand;
+use App\Accounts\Commands\RecheckAccount\RecheckAccountCommand;
+use App\Accounts\Enums\AccountCheckResult;
+use App\Accounts\Enums\CommandEntry;
+use App\Accounts\Exceptions\AccountRecheckRefused;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\JournalCommands;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Support\Command;
-use App\Support\JournalCommands;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

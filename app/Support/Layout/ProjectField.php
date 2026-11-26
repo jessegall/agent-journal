@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Projects\ProjectDestination;
-use App\Contracts\Projects\ProjectDirectory;
-use App\Data\Projects\ProjectData;
-use App\Enums\Projects\ProjectSelectionType;
+use App\Projects\Contracts\CurrentProject;
+use App\Projects\Contracts\ProjectDestination;
+use App\Projects\Contracts\ProjectDirectory;
+use App\Projects\Data\ProjectData;
+use App\Projects\Enums\ProjectSelectionType;
 
 /**
  * The Project field of a create dialog: under All projects a choice of every project, by label with the key beside a

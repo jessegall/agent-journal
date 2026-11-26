@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Actors\AgentTexts;
+use App\Actors\Contracts\AgentTexts;
 
 /**
  * A text the journal puts in an agent's context, by its registered key and the values of its placeholders. Core's

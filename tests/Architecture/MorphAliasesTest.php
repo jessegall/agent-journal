@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Links\MorphAliases;
 use App\Mcp\Models\RetainedPage;
 use App\Models\Messages\Message;
 use App\Support\DomainRegistry;
-use App\Support\MorphAliases;
 use Domain\Tasks\Models\TaskRun;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Symfony\Component\Process\Process;

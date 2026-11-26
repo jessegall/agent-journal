@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Api;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 use Domain\Comments\Api\CommentPosted;
 use Domain\Comments\Api\PostCommentPayload;

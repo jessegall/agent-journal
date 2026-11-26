@@ -26,8 +26,8 @@ final class DriverTypeBoundaryTest extends TestCase
      * driver type it was not registered for.
      */
     private const array REGISTRATION = [
-        'app/Support/DriverCatalogue.php',
-        'app/Support/Driver.php',
+        'app/Agents/DriverCatalogue.php',
+        'app/Agents/Driver.php',
         'app/Values/DriverRegistration.php',
     ];
 

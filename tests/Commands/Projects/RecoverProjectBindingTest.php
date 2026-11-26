@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
 use App\Models\Projects\Host;
+use App\Projects\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

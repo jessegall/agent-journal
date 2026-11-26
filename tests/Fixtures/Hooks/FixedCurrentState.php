@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Work\CurrentState;
-use App\Support\Decisions\StateReferenceKeys;
-use App\Support\References\StateReference;
+use App\Stacks\Contracts\Work\CurrentState;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\References\StateReference;
 use App\Values\StackTarget;
 use PhpOption\None;
 use PhpOption\Option;

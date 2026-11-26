@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RevokeProjectBindings\RevokeProjectBindingsCommand;
-use App\Values\BindingOutcome;
-use App\Values\RevokedBindings;
+use App\Projects\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
+use App\Projects\Values\BindingOutcome;
+use App\Projects\Values\RevokedBindings;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

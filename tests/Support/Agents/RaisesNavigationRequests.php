@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Enums\Navigation\NavigationReason;
 use App\Models\Access\User;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
+use App\Navigation\Enums\NavigationReason;
 use App\Support\ActorReference;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;

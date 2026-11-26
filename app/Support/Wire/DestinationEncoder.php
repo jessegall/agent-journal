@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Wire;
 
-use App\Contracts\Navigation\DeclaredPages;
-use App\Support\Cards\DockDestination;
-use App\Support\Cards\DockLink;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Cards\DockLink;
+use App\Navigation\Contracts\DeclaredPages;
 
 /**
  * Writes a page a card opens as the link the browser follows.

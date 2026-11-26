@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\AccountStartRecipe;
+use App\Accounts\StartSetting;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Enums\Drivers\ExecutablePlace;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Sessions\TransportProfileType;
-use App\Support\AccountStartRecipe;
-use App\Support\StartSetting;
+use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Agents\Values\JournalServer;
+use App\Hosts\Enums\HostProcessType;
+use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
-use App\Values\JournalServer;
 use Closure;
 use Tests\TestCase;
 use Throwable;

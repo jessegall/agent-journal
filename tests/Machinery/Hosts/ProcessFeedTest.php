@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Data\Hosts\HostOutputData;
-use App\Support\Hosts\HostWake;
-use App\Support\Hosts\ProcessFeed;
+use App\Hosts\Data\HostOutputData;
+use App\Hosts\HostWake;
+use App\Hosts\ProcessFeed;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;

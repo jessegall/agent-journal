@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Commands\InstallBuiltInProfiles;
+
+use App\Accounts\Enums\CommandEntry;
+use App\Attributes\Commands\Entry;
+use App\Profiles\Values\ProfileActivation;
+use App\Support\Command;
+
+/**
+ * The journal activates its built-in profiles, with the project's proposal, the first time a start needs one.
+ *
+ * @extends Command<ProfileActivation>
+ */
+#[Entry(CommandEntry::HostControl)]
+final readonly class InstallBuiltInProfilesCommand extends Command {}

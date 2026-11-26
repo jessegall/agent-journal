@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Library;
 
-use App\Declarations\NavigationItem;
+use App\Navigation\Declarations\NavigationItem;
 
 /**
  * What ListedChildren lists and whether RevocableSight still lets the actor see, set by a test between reads.

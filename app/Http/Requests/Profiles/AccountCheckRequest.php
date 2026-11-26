@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Enums\Accounts\AccountCheckResult;
+use App\Accounts\Enums\AccountCheckResult;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

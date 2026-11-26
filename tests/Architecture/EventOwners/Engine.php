@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use App\Events\Engine\AgentStackClosed;
 use App\Events\Engine\AgentStackFramesSaved;
 use App\Events\Engine\AgentStackHeldForInvestigation;
@@ -24,7 +24,7 @@ return [
         'role' => EventRole::Infrastructure,
         'migrated' => false,
         'producers' => [
-            'app/Support/EngineTickedDelivery.php',
+            'app/Engine/EngineTickedDelivery.php',
         ],
     ],
     AgentStackStarted::class => [

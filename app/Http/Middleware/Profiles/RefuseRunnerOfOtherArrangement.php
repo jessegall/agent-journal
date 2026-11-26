@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Profiles;
 
-use App\Enums\Projects\ArrangementType;
-use App\Exceptions\RunnerArrangementRefused;
-use App\Support\ArrangementSetting;
+use App\Hosts\ArrangementSetting;
+use App\Hosts\Exceptions\RunnerArrangementRefused;
+use App\Projects\Enums\ArrangementType;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

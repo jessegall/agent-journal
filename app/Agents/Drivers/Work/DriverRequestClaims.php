@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\RequestProgress;
-use App\Enums\Runs\RuntimeActivity;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\RequestProgress;
+use App\Hosts\ClaimedRequests;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
+use App\Processes\Enums\RuntimeActivity;
+use App\Stacks\PendingWorkSources;
 use App\Support\ActorReference;
-use App\Support\ClaimedRequests;
-use App\Support\PendingWorkSources;
 use App\Values\AgentText;
 use App\Values\ClaimedRequest;
 use Carbon\CarbonImmutable;

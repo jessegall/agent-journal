@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Api\Exceptions\ApiFailed;
 use App\Support\CallKey;
 use Throwable;
 

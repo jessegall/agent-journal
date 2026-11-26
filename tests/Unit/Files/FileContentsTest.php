@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
-use App\Support\FileContents;
+use App\Files\Enums\Place;
+use App\Files\FileContents;
+use App\Files\Values\Fingerprint;
 use App\Values\FilePath;
-use App\Values\Fingerprint;
 use Carbon\CarbonImmutable;
 use Illuminate\Filesystem\Filesystem;
 use JsonException;

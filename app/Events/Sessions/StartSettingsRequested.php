@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Asks\AnsweredAtOnce;
-use App\Support\IsolatedHookSettings;
+use App\Asks\Contracts\AnsweredAtOnce;
+use App\Sessions\IsolatedHookSettings;
 
 /**
  * A driver is about to be started: listeners add the hooks and tool rules its isolated settings need.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Navigation\AnswerNavigation\AnswerNavigationCommand;
 use App\Mcp\Tools\NavigationAnswerTool;
+use App\Navigation\Commands\AnswerNavigation\AnswerNavigationCommand;
 use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

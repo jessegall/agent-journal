@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
-use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use Domain\Tasks\Enums\TaskStatus;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;

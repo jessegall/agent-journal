@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Admission\StackAdmission;
+use App\Access\Contracts\StackAdmission;
+use App\Access\StateEvents\StateEventScope;
+use App\Access\Values\FrameGrant;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\SystemActor;
+use App\Engine\EngineAccess;
 use App\Support\Delivery\StateEventBridge;
-use App\Support\EngineAccess;
 use App\Support\OperationDeadline;
-use App\Support\StateEvents\StateEventScope;
-use App\Support\SystemActor;
-use App\Values\FrameGrant;
 use App\Values\TrustedEntryAuthority;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
+use App\CommandRules\Values\RuleReference;
+use App\CommandRules\Values\RuleScope;
 use App\Support\Rules\CoreRules;
 use App\Values\CommandRule;
-use App\Values\RuleReference;
-use App\Values\RuleScope;
 use Tests\TestCase;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
-use App\Enums\Processes\OutputStream;
 use App\Models\Agents\Agent;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Commands\RecordRunChunk\RecordRunChunkCommand;
+use App\Processes\Enums\OutputStream;
 use App\Support\ActorReference;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

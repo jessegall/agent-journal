@@ -6,10 +6,10 @@ namespace Tests\Machinery\Hosts;
 
 use App\Agents\Drivers\Work\DriverRestartSignal;
 use App\Agents\Drivers\Work\DriverWorkers;
-use App\Contracts\Time\ServerClock;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
+use App\Time\Contracts\ServerClock;
 use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;

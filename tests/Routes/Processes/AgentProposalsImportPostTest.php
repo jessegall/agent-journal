@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
-use App\Values\ImportedProposals;
+use App\CommandRules\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\CommandRules\Values\ImportedProposals;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

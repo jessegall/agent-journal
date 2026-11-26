@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Policies;
 
-use App\Contracts\Authorization\Policy;
+use App\Access\Contracts\Policy;
 use Domain\Sharing\Models\Share;
 
 /**

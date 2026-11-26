@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Scripts;
 
-use App\Attributes\Scripts\ScriptMember;
-use App\Attributes\Scripts\ScriptObject;
-use App\Values\ScriptContext;
+use App\Scripts\Attributes\ScriptMember;
+use App\Scripts\Attributes\ScriptObject;
+use App\Scripts\Values\ScriptContext;
 
 #[ScriptObject('example')]
 final class ExampleScriptObject

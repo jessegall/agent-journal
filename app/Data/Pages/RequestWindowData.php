@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
-use App\Data\Processes\ReaderProofData;
-use App\Data\Processes\RequestRowData;
-use App\Data\Processes\SampleData;
-use App\Data\Profiles\ProposalData;
+use App\Processes\Data\ReaderProofData;
+use App\Processes\Data\RequestRowData;
+use App\Processes\Data\SampleData;
+use App\Profiles\Data\ProposalData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

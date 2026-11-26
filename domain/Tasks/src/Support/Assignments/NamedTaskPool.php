@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Support\PoolMembers;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\PoolMembers;
 
 /**
  * The tasks a reference listed, in its order; a task that ended stays a member, and the assigner skips it.

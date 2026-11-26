@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Inspection;
 
-use App\Data\Support\OptionalOrMissing;
-use App\Enums\Hooks\AnswerType;
+use App\Accounts\Data\Support\OptionalOrMissing;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Drivers\HookCall;
 use App\Support\Storage\WalkStep;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

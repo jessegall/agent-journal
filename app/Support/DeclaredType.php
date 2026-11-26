@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Engine\TypeShape;
+use App\Engine\Enums\TypeShape;
 use App\Exceptions\TypeNotNamed;
 use ReflectionIntersectionType;
 use ReflectionNamedType;

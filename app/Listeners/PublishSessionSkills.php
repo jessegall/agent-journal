@@ -6,7 +6,7 @@ namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
 use App\Events\Skills\SessionSkillsIntended;
-use App\Support\SkillPublishingService;
+use App\Skills\SkillPublishingService;
 
 /**
  * Publishes a session's skill set right after the transaction that asked for it committed, as the journal itself; a

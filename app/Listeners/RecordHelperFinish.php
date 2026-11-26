@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\HelperActivity;
 use App\Contracts\Events\Listener;
 use App\Events\Hooks\HelperFinishedOnRecord;
-use App\Support\HelperActivity;
 
 /**
  * Records a helper's report, when it finished, in its activity.

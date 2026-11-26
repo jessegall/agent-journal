@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\CommandRules\ProposeCommandRule\ProposeCommandRuleCommand;
-use App\Enums\CommandRules\RequestHoldReason;
-use App\Exceptions\CommandAdmissionRefused;
-use App\Exceptions\SampleRefused;
+use App\Bus\Exceptions\CommandAdmissionRefused;
+use App\CommandRules\Commands\ApproveSample\ApproveSampleCommand;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Commands\ProposeCommandRule\ProposeCommandRuleCommand;
+use App\CommandRules\Enums\RequestHoldReason;
+use App\CommandRules\Exceptions\SampleRefused;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\EvidencePermit;
 use App\Values\CommandRule;

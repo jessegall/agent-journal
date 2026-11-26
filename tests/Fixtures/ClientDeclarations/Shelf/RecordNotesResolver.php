@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Shelf;
 
-use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
+use App\Navigation\Contracts\SectionResolver;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 
 /**

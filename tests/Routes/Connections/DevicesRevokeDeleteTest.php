@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Projects\Commands\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Support\Decisions\MessageLine;
+use App\Stacks\AgentState;
+use App\Stacks\Decisions\MessageLine;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\StopRequested;
-use App\Support\States\AgentState;
 use Tests\Support\TestText;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Contracts\Agents\AgentNotices;
+use App\Agents\Contracts\AgentNotices;
 use App\Contracts\Events\Listener;
 use Domain\Documents\Events\DraftKept;
 

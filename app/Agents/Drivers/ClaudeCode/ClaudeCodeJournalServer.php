@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Contracts\Drivers\AccountPlanPart;
-use App\Exceptions\ProfileRefused;
+use App\Agents\Drivers\Contracts\AccountPlanPart;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Agents\Values\HostPath;
+use App\Agents\Values\PlanFile;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
-use App\Values\HostPath;
 use App\Values\PlanAddition;
-use App\Values\PlanFile;
 
 /**
  * The mcp.json of an account start: the journal's server alone, started by a resolved path, with no token,

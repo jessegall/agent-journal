@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\DriverRequestEvent;
+use App\Agents\Drivers\Contracts\DriverRequestEvent;
 
 /**
  * A newer driver request took the place of this one.

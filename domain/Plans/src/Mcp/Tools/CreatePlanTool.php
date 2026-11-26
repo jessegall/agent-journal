@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Projects\ProjectDestination;
+use App\Bus\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use App\Projects\Contracts\ProjectDestination;
 use Domain\Plans\Commands\CreatePlan\CreatePlanCommand;
 use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Enums\PlanType;

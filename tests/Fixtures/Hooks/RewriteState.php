@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Stacks\AgentState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ShellCommandRequested;
-use App\Support\States\AgentState;
 
 /**
  * A test state that rewrites each line it knows to its replacement and passes on anything else.

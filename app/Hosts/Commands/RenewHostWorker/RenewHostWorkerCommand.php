@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hosts\Commands\RenewHostWorker;
+
+use App\Accounts\Enums\CommandEntry;
+use App\Attributes\Commands\Entry;
+use App\Support\Command;
+
+/**
+ * A worker renews its lease of a process; a worker that was replaced is refused. Run by a driver worker (internal, not exported).
+ *
+ * @extends Command<null>
+ */
+#[Entry(CommandEntry::DriverWorker)]
+final readonly class RenewHostWorkerCommand extends Command
+{
+    public function __construct(
+        public string $processId,
+        public int $workerGeneration,
+    ) {}
+}

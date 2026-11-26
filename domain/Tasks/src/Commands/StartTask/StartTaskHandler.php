@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\StartTask;
 
-use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Processes\RunClaims;
+use App\Bus\Contracts\CommandFacts;
+use App\Processes\Contracts\RunClaims;
 use App\Support\ActorReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Contracts\TaskWaitResolver;

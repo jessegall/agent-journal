@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Contracts\Files\Files as FilesContract;
-use App\Enums\Files\Place;
 use App\Exceptions\PlaceUnavailable;
+use App\Files\Contracts\Files as FilesContract;
+use App\Files\Enums\Place;
 use App\Support\CodeFiles;
 use App\Support\Files;
 use App\Values\FilePath;

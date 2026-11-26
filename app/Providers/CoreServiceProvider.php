@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Assignments\AssignmentRegistration;
-use App\Contracts\Bus\PipelineRunner as PipelineRunnerContract;
-use App\Contracts\Processes\StatementDeadlines as StatementDeadlinesContract;
-use App\Contracts\Search\MessageSearch as MessageSearchContract;
-use App\Contracts\Search\RecordSearch as RecordSearchContract;
-use App\Contracts\Search\SearchSources as SearchSourcesContract;
-use App\Contracts\Search\TieredSearch as TieredSearchContract;
-use App\Enums\Assignments\AssignmentPurpose;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
+use App\Assignments\JournalAssignableProvider;
+use App\Bus\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Messages\MessageSearch;
 use App\Models\Asks\Ask;
+use App\Pipelines\Support\PipelineRunner;
+use App\Processes\Contracts\StatementDeadlines as StatementDeadlinesContract;
+use App\Search\Contracts\MessageSearch as MessageSearchContract;
+use App\Search\Contracts\RecordSearch as RecordSearchContract;
+use App\Search\Contracts\SearchSources as SearchSourcesContract;
+use App\Search\Contracts\TieredSearch as TieredSearchContract;
+use App\Search\RecordSearch;
+use App\Search\SearchSources;
+use App\Search\StatementDeadlines;
+use App\Search\TieredSearch;
 use App\Support\FolderClasses;
-use App\Support\JournalAssignableProvider;
-use App\Support\MessageSearch;
-use App\Support\PipelineRunner;
-use App\Support\RecordSearch;
-use App\Support\SearchSources;
-use App\Support\StatementDeadlines;
-use App\Support\TieredSearch;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 

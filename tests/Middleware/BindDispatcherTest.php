@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\AdmitStack;
-use App\CommandMiddleware\BindDispatcher;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\ActorContextMissing;
+use App\Bus\CommandMiddleware\AdmitStack;
+use App\Bus\CommandMiddleware\BindDispatcher;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandNotRegistered;
+use App\Bus\MiddlewareDeclaration;
 use App\Exceptions\CommandDispatcherMissing;
-use App\Exceptions\CommandNotRegistered;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordDispatcher;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;

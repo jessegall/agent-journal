@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Sessions\CurrentSession;
+use App\Sessions\Contracts\CurrentSession;
 
 /**
  * The calling agent's session for a test that runs outside an agent request.

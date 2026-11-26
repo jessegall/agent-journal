@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\BindingRevoked;
 use App\Models\Projects\ProjectBinding;
-use App\Support\ConnectedProject;
-use App\Support\ServedEnvironment;
+use App\Projects\ConnectedProject;
+use App\Projects\ServedEnvironment;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

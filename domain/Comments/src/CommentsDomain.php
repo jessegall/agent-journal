@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Comments;
 
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Drivers\Contracts\NativePartProvider;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasLinkRecords;
-use App\Contracts\Authorization\PolicyProvider;
-use App\Contracts\Bus\CommandProvider;
-use App\Contracts\Drivers\NativePartProvider;
-use App\Contracts\Records\LinkRecordProvider;
-use App\Contracts\Sharing\ShareRecordContributor;
-use App\Enums\Agents\AccessType;
+use App\Records\Contracts\LinkRecordProvider;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Support\Command;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\FolderClasses;
 use App\Support\ShareRecordDefinition;
-use App\Values\PolicyDefinition;
 use Domain\Chat\ChatDomain;
 use Domain\Comments\Api\ListCommentsPayload;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;

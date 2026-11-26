@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\Asks;
 
+use App\Asks\Enums\CoreAskType;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Asks\CoreAskType;
 use App\Events\Asks\AskHopAnswered;
 use App\Events\Asks\AskHopAssigned;
 use App\Events\Asks\AskHopAttentionRecorded;
@@ -18,6 +17,7 @@ use App\Events\Asks\AskHopWakeRecorded;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasActorColumns;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

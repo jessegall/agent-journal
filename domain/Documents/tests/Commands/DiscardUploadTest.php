@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandTransaction;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandTransaction;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;
 use Domain\Documents\Commands\DiscardUpload\DiscardUploadCommand;

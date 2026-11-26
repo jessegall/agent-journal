@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Parts;
 
 use App\Agents\Drivers\ClaudeCode\StatusLineLimits;
-use App\Contracts\Drivers\PlanPart;
+use App\Agents\Drivers\Contracts\PlanPart;
 use App\Values\DriverStart;
 use App\Values\PlanAddition;
 

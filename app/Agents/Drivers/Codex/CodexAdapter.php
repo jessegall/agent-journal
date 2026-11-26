@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\CheckProtectedResources;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Drivers\Contracts\DriverCall;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Enums\CodexTool;
+use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
 use App\Agents\Drivers\Hooks\GuardedFiles;
@@ -14,17 +20,16 @@ use App\Agents\Drivers\Hooks\JournalToolCall;
 use App\Agents\Drivers\Hooks\JournalTools;
 use App\Agents\Drivers\Hooks\JudgedCall;
 use App\Agents\Drivers\Hooks\UnjudgedCall;
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Drivers\DriverAdapter;
-use App\Contracts\Drivers\DriverCall;
-use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\Drivers\CodexTool;
-use App\Enums\Drivers\RewriteSupport;
-use App\Enums\Files\FileAccess;
-use App\Enums\Hooks\HookEvent;
-use App\Enums\Processes\ShellDialect;
+use App\Agents\Inputs\Values\FileChanges;
+use App\Agents\Inputs\Values\PromptDetails;
+use App\Agents\Inputs\Values\SessionEndDetails;
+use App\Agents\Inputs\Values\StopDetails;
 use App\Exceptions\UnsupportedHook;
-use App\Support\CheckProtectedResources;
+use App\Files\Enums\FileAccess;
+use App\Hooks\Enums\HookEvent;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\ShellDialect;
+use App\Stacks\HookAnswer;
 use App\Support\Compatibility\DriverCompatibility;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\PromptSubmitted;
@@ -34,12 +39,7 @@ use App\Support\Inputs\SessionStarted;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Inputs\Values\PromptDetails;
-use App\Support\Inputs\Values\SessionEndDetails;
-use App\Support\Inputs\Values\StopDetails;
-use App\Support\Stack\HookAnswer;
 
 /**
  * Reads Codex's hook payloads into the journal's inputs and renders its answers as Codex replies. Codex takes a

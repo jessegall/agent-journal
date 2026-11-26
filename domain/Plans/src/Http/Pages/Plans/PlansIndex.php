@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Pages\Plans;
 
-use App\Contracts\Navigation\DraftProducers;
-use App\Enums\Settings\ActionMethod;
-use App\Enums\Web\ReaderWidth;
 use App\Http\Pages\CreationDialog;
+use App\Navigation\Contracts\DraftProducers;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
@@ -20,6 +19,7 @@ use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
 use App\Support\Layout\ProjectField;
 use App\Support\Layout\ProjectRowLabel;
+use App\Web\Enums\ReaderWidth;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanFiltersData;

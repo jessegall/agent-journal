@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\VerifyRestoredOutput\VerifyRestoredOutputCommand;
-use App\Enums\Runs\CaptureStatus;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
-use App\Support\OutputRecorder;
+use App\Processes\Commands\VerifyRestoredOutput\VerifyRestoredOutputCommand;
+use App\Processes\Enums\CaptureStatus;
+use App\Processes\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;

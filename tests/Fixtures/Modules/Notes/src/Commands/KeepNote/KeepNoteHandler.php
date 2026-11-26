@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\KeepNote\KeepNoteCommand;
 
 final class KeepNoteHandler implements CommandHandler
 {

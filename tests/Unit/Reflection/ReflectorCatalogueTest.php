@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Exceptions\ClassMissing;
+use App\Reflection\Exceptions\ClassMissing;
 use App\Support\Reflector;
 use ArrayObject;
 use PHPUnit\Framework\TestCase;

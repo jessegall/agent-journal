@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\AccountSignInEvent;
-use App\Contracts\Accounts\ShownOnAccounts;
+use App\Accounts\Contracts\AccountSignInEvent;
+use App\Accounts\Contracts\ShownOnAccounts;
 
 /**
  * A sign-in completed on a saved account, new or reconnected.

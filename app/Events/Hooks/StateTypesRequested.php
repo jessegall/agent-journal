@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Hooks;
 
-use App\Contracts\Asks\AnsweredAtOnce;
+use App\Asks\Contracts\AnsweredAtOnce;
 use App\Support\StateCatalog\Registration\Contracts\StateRegistration;
 
 /**

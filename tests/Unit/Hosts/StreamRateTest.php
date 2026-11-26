@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hosts;
 
-use App\Support\Hosts\StreamRate;
+use App\Hosts\StreamRate;
 use PHPUnit\Framework\TestCase;
 
 /**

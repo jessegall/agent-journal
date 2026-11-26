@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
-use App\Contracts\Actors\CurrentActor;
-use App\Enums\Drivers\RewriteSupport;
-use App\Enums\Hooks\AnswerType;
+use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Agents\AgentSession;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\Decisions\StateReferenceKeys;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
 use App\Support\Inputs\StopRequested;
-use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Fixtures\Domains\Counting\CountingDomain;
 use Tests\Fixtures\Domains\Counting\Events\SubjectSeen;

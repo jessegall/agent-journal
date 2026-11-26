@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\ShownOnAccounts;
-use App\Contracts\Accounts\SignInAttemptEvent;
+use App\Accounts\Contracts\ShownOnAccounts;
+use App\Accounts\Contracts\SignInAttemptEvent;
 
 /**
  * A sign-in attempt ended without completing: cancelled, failed, interrupted or expired; the account it wrote, if

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
-use App\Commands\Runs\ReplayAssessment\ReplayAssessmentCommand;
-use App\Enums\Runs\RunMode;
-use App\Exceptions\ReplayRefused;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
 use App\Models\Runs\ResultReceipt;
-use App\Values\PartKey;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
+use App\Processes\Commands\ReplayAssessment\ReplayAssessmentCommand;
+use App\Processes\Enums\RunMode;
+use App\Processes\Exceptions\ReplayRefused;
+use App\Processes\Values\PartKey;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;

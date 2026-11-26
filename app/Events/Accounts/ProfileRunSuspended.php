@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Sessions\ProfileRunEvent;
+use App\Sessions\Contracts\ProfileRunEvent;
 
 /**
  * A profile's script run stopped at a line to wait for a step.

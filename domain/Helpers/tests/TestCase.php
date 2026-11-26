@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests;
 
-use App\Contracts\Actors\CurrentActorSetter;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Support\ActorReference;
-use App\Values\OwnerAuthority;
 use Domain\Helpers\HelpersDomain;
 use Tests\Support\DomainBoot;
 use Tests\TestCase as BaseTestCase;

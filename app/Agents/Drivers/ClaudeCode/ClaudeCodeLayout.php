@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Contracts\Drivers\DriverLayout;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Navigation\NavigationKey;
-use App\Support\Screens\FencedRow;
-use App\Support\Screens\MarkedRow;
-use App\Support\Screens\MenuFamily;
-use App\Support\Screens\OptionList;
-use App\Support\Screens\ScreenLayout;
-use App\Support\Screens\Slider;
+use App\Agents\Drivers\Contracts\DriverLayout;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Navigation\Enums\NavigationKey;
+use App\Terminals\Screens\FencedRow;
+use App\Terminals\Screens\MarkedRow;
+use App\Terminals\Screens\MenuFamily;
+use App\Terminals\Screens\OptionList;
+use App\Terminals\Screens\ScreenLayout;
+use App\Terminals\Screens\Slider;
 
 /**
  * How the pinned build draws its terminal, measured from resources/recordings/claude-code: the composer is the

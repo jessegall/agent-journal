@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Agents\RetireAgent\RetireAgentCommand;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
 use App\Support\AssignmentResult;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

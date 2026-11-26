@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentUserResolver as CurrentUserResolverContract;
+use App\Actors\Contracts\CurrentUserResolver as CurrentUserResolverContract;
+use App\Actors\CurrentUser;
 use App\Models\Access\User;
-use App\Support\CurrentUser;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Guard;
 use PhpOption\None;

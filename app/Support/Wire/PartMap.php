@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace App\Support\Wire;
 
-use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureStatus;
-use App\Enums\Runs\PartType;
-use App\Enums\Runs\Tone;
-use App\Enums\Web\Alignment;
-use App\Enums\Web\Emphasis;
+use App\Docking\Cards\ConsoleOutput;
 use App\Exceptions\PartMapInvalid;
+use App\Processes\Cards\Duration;
+use App\Processes\Cards\StateLabel;
+use App\Processes\Enums\ConsoleStream;
+use App\Processes\Enums\DisclosureStatus;
+use App\Processes\Enums\PartType;
+use App\Processes\Enums\Tone;
 use App\Support\Cards\Button;
-use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\Contracts\DockPart;
 use App\Support\Cards\CountedProgress;
 use App\Support\Cards\Disclosure;
-use App\Support\Cards\Duration;
 use App\Support\Cards\Group;
 use App\Support\Cards\IndeterminateProgress;
 use App\Support\Cards\MessagesExcerpt;
 use App\Support\Cards\Row;
 use App\Support\Cards\Stack;
-use App\Support\Cards\StateLabel;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
 use App\Support\Registry;
@@ -35,6 +33,8 @@ use App\Support\Wire\Fields\InstantField;
 use App\Support\Wire\Fields\LinesField;
 use App\Support\Wire\Fields\NumberField;
 use App\Support\Wire\Fields\TextField;
+use App\Web\Enums\Alignment;
+use App\Web\Enums\Emphasis;
 
 /**
  * The one map from each part class to the literal type it is written as and its fields, read by the encoder and by

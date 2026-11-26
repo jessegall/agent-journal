@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Exceptions\ActorNotAllowed;
-use App\Exceptions\CommandInputInvalid;
 use Domain\Tasks\Commands\CancelTask\CancelTaskCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;

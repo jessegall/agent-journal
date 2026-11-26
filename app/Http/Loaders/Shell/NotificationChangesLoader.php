@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Shell;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Data\Notifications\NotificationChangePage;
-use App\Data\Notifications\NotificationChangesInput;
+use App\Actors\Contracts\CurrentActor;
+use App\Notifications\Data\NotificationChangePage;
+use App\Notifications\Data\NotificationChangesInput;
 use App\Resolvers\Support\NotificationChanges;
 
 /**

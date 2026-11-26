@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Assignments\AutoAssignmentAccess;
-use App\Contracts\Authorization\AgentAuthority;
-use App\Contracts\Authorization\TargetAuthorizer;
+use App\Access\Contracts\AgentAuthority;
+use App\Access\Contracts\JournalAdmission;
+use App\Access\Contracts\TargetAuthorizer;
+use App\Actors\Contracts\Actor;
+use App\Assignments\Contracts\AutoAssignmentAccess;
+use App\Assignments\Exceptions\AutoAssignmentDenied;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\ActorUnavailable;
 use App\Exceptions\AssignmentDenied;
-use App\Exceptions\AutoAssignmentDenied;
 use App\Models\Records\AssignmentRecord;
 use App\Policies\AssignmentPolicy;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\ProveReader\ProveReaderCommand;
-use App\Enums\CommandRules\RequestStatus;
-use App\Exceptions\ReaderProofFailed;
+use App\CommandRules\Commands\ProveReader\ProveReaderCommand;
+use App\CommandRules\Enums\RequestStatus;
+use App\CommandRules\Exceptions\ReaderProofFailed;
 use App\Exceptions\RevisionImmutable;
 use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;

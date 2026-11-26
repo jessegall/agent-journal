@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
-use App\Contracts\Hosts\HostCalls;
-use App\Enums\Accounts\CommandEntry;
-use App\Exceptions\ApiSignatureInvalid;
-use App\Exceptions\BindingUnrecoverable;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\JournalCommands;
 use App\Exceptions\HostCredentialRejected;
+use App\Hosts\Contracts\HostCalls;
+use App\Hosts\Exceptions\ApiSignatureInvalid;
 use App\Http\Requests\Connections\RecoverBindingRequest;
-use App\Support\JournalCommands;
+use App\Projects\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
+use App\Projects\Exceptions\BindingUnrecoverable;
 use Illuminate\Http\JsonResponse;
 
 /**

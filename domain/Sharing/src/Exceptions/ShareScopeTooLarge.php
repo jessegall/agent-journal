@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use App\Concerns\RendersRefusal;
-use App\Contracts\Bus\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
-use App\Exceptions\ShareBudgetExceeded;
+use App\Engine\Enums\RefusalCode;
+use App\Sharing\Exceptions\ShareBudgetExceeded;
 use RuntimeException;
 
 /**

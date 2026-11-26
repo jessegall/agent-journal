@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Contracts\Records\Commentable;
-use App\Concerns\Linkable;
-use App\Contracts\Records\Numbered;
-use App\Concerns\HasNumber;
-use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
-use App\Contracts\Reads\TextContent;
+use App\Concerns\HasNumber;
+use App\Concerns\Linkable;
+use App\Reads\Contracts\TextContent;
+use App\Records\Contracts\Commentable;
+use App\Records\Contracts\Numbered;
+use App\Records\Contracts\ReadableModel;
 use App\Values\TextVersion;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -43,5 +43,4 @@ final class NotePage extends Model implements Commentable, Numbered, ReadableMod
     {
         return self::query()->create(['text' => $text]);
     }
-
 }

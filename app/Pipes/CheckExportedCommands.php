@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
-use App\Exceptions\CommandDeclarationInvalid;
-use App\Support\CommandDeclarations;
+use App\Bus\CommandDeclarations;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Exceptions\CommandDeclarationInvalid;
 
 /**
  * Every command an owner exports is one it registers itself.

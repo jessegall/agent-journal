@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Commands\Projects\ProvisionLocalProject\ProvisionLocalProjectCommand;
-use App\Contracts\Bus\JournalCommands;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Models\Access\User;
+use App\Projects\Commands\ProvisionLocalProject\ProvisionLocalProjectCommand;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Seeder;
 

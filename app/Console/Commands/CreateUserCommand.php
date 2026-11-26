@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Actions\Access\CreateNewUser;
+use App\Access\Actions\CreateNewUser;
 use Illuminate\Console\Command;
 
 final class CreateUserCommand extends Command

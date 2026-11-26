@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Assignments\AssignmentChange;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\AssignmentRequest;
+use App\Assignments\AssignmentSet;
+use App\Assignments\Enums\AssignmentOutcomeType;
 
 /**
  * What a command did: one outcome for every record it was asked about, and only the actual changes.

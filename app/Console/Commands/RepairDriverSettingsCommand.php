@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Agents\RepairDriverSettings\RepairDriverSettingsCommand as RepairDriverSettings;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\RepairDriverSettings\RepairDriverSettingsCommand as RepairDriverSettings;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

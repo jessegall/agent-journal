@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;

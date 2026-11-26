@@ -7,7 +7,7 @@ shows how a domain declares settings, reads them at runtime and changes them, us
 
 ## Declaring settings
 
-A domain that has settings implements `App\Contracts\Settings\SettingsProvider` on its Domain class and returns a
+A domain that has settings implements `App\Settings\Contracts\SettingsProvider` on its Domain class and returns a
 separate final definition class. The definition implements `SettingsDefinition`: each setting and group is a typed
 readonly property, assigned once in the constructor, and each setting is listed in exactly one group.
 
@@ -142,7 +142,7 @@ the default quietly. A database failure raises `SettingsUnavailable`, never a de
 
 ## Changing values
 
-Only the journal's owner changes settings, through the command bus. `App\Contracts\Settings\SettingCommands` builds the
+Only the journal's owner changes settings, through the command bus. `App\Settings\Contracts\SettingCommands` builds the
 typed commands from the registered declarations; building a command grants nothing, and its handler checks the actor,
 the value, the revision and the group again.
 
@@ -169,7 +169,7 @@ target (`SettingTarget::Setting` or `Group`), the key and the revision, never th
 
 ## Invalid values and repair
 
-The owner's catalogue (`App\Contracts\Settings\SettingsCatalogue`) shows an invalid stored value as invalid, with its
+The owner's catalogue (`App\Settings\Contracts\SettingsCatalogue`) shows an invalid stored value as invalid, with its
 address and the revision, without showing what was stored. Resetting that setting at that revision removes only that
 entry and keeps every other stored entry exactly as it was, unknown and invalid ones included. A toggle whose stored
 switch is not a boolean makes its group invalid; resetting the group with `resetGroup` repairs it.
@@ -189,5 +189,5 @@ A document that is broken as a whole (not JSON, a wrong envelope, a duplicate ke
   the owner can always repair a value the code depends on.
 - A domain reads another domain's settings only through that domain's exported definition class and a declared
   required-domain relation.
-- `App\Support\Access\AccessSettings` is configuration-backed owner identity, not a settings definition. A future
+- `App\Access\AccessSettings` is configuration-backed owner identity, not a settings definition. A future
   settings definition for Access would be named `AccessSettingDefinitions`.

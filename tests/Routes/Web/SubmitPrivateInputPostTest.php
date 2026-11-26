@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
 use App\Models\Drivers\TerminalGrant;
-use App\Values\PrivateSubmission;
+use App\Terminals\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Terminals\Values\PrivateSubmission;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

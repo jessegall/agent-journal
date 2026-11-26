@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Api\Processes\AdmissionRefusalDetails;
+use App\Actors\Contracts\AgentTexts;
 use App\Concerns\RendersRefusal;
-use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
+use App\Processes\Api\AdmissionRefusalDetails;
 use App\Values\AdmissionRefusal;
 use RuntimeException;
 

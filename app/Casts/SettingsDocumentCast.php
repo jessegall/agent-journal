@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Casts;
 
 use App\Attributes\Rules\DecodesAnyJson;
-use App\Exceptions\SettingsDocumentInvalid;
-use App\Support\SettingKey;
-use App\Support\Storage\EncodedSetting;
-use App\Support\Storage\EncodedToggle;
-use App\Support\Storage\EncodedValue;
+use App\Settings\Exceptions\SettingsDocumentInvalid;
+use App\Settings\SettingKey;
+use App\Settings\Storage\EncodedSetting;
+use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedValue;
 use App\Support\Storage\SettingsDocument;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
-use App\Enums\Sessions\OfflineReplyMode;
-use App\Exceptions\OfflineReplyModeInvalid;
-use App\Exceptions\OfflineReplySealInvalid;
-use App\Support\AgentClientSettings;
-use App\Support\OfflineReplySeal;
-use App\Support\Relay\RelaySettings;
-use App\Support\StartEnvironment;
-use App\Support\StartProfilePin;
+use App\Agents\Relay\Exceptions\OfflineReplySealInvalid;
+use App\Agents\Relay\RelaySettings;
+use App\Profiles\StartProfilePin;
+use App\Sessions\AgentClientSettings;
+use App\Sessions\Enums\OfflineReplyMode;
+use App\Sessions\Exceptions\OfflineReplyModeInvalid;
+use App\Sessions\OfflineReplySeal;
+use App\Sessions\StartEnvironment;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Shell;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Search\SearchSources;
+use App\Actors\Contracts\CurrentActor;
 use App\Data\Palette\PaletteSourcesData;
 use App\Data\Palette\SearchSourcesInput;
-use App\Enums\Search\SearchSurface;
-use App\Values\SearchReader;
+use App\Search\Contracts\SearchSources;
+use App\Search\Enums\SearchSurface;
+use App\Search\Values\SearchReader;
 
 /**
  * A page of the sources the palette's scope picker offers the viewer, which works before two characters are typed.

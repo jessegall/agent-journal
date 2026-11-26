@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Drivers\Commands\RetryDriverSwitch\RetryDriverSwitchCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

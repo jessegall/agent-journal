@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\ClaimGatewayOperation;
 
+use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Enums\Accounts\CommandEntry;
 use App\Support\Command;
 use Domain\Sharing\Support\ClaimedGatewayOperation;
 

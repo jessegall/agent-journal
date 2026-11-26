@@ -7,9 +7,9 @@ namespace Tests\Fixtures\Modules\Ledger\Models;
 use App\Concerns\BoundedReads;
 use App\Concerns\HasNumber;
 use App\Concerns\Linkable;
-use App\Contracts\Records\Numbered;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\HasUlidKey;
+use App\Records\Contracts\Numbered;
+use App\Records\Contracts\ReadableModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 

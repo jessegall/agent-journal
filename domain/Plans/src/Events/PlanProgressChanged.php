@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
-use App\Support\Sources\Contracts\DockSourceChanged;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Processes\Sources\Contracts\DockSourceChanged;
 use Domain\Plans\Models\Plan;
 
 /**

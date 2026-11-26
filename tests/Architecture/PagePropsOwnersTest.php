@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Data\Web\AppContextData;
 use App\Declarations\RegisteredLoader;
-use App\Declarations\RegisteredPage;
-use App\Declarations\RegisteredSection;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use App\Http\Responses\LoaderProps;
 use App\Support\ClientDeclarations;
 use App\Support\ReflectedParameter;
 use App\Support\Reflector;
-use App\Support\Web\PageProps;
+use App\Web\Data\AppContextData;
+use App\Web\Declarations\RegisteredPage;
+use App\Web\Declarations\RegisteredSection;
+use App\Web\PageProps;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tests\Fixtures\PagePropsOwners\SharingAnUnownedProp;

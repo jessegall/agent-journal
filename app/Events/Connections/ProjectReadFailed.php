@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectReadEvent;
-use App\Enums\Projects\ProjectReadFailure;
+use App\Connections\Contracts\ProjectReadEvent;
+use App\Projects\Enums\ProjectReadFailure;
 
 /**
  * A project read failed.

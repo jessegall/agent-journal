@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Access\Contracts\AuthoritySource;
 use App\Attributes\Commands\Authorize;
-use App\Contracts\Authorization\AuthoritySource;
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 
 /**
  * An agent's authority: the admitted profile revision its session was started with.

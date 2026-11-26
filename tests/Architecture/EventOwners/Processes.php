@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Runs\CaptureStatus;
-use App\Enums\Runs\RunLogicalResult;
 use App\Events\Processes\BundleActivated;
 use App\Events\Processes\ClassificationRuleActivated;
 use App\Events\Processes\ClassificationRuleRestored;
@@ -43,6 +41,8 @@ use App\Events\Processes\RuleRetired;
 use App\Events\Processes\RunChanged;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Models\Agents\Agent;
+use App\Processes\Enums\CaptureStatus;
+use App\Processes\Enums\RunLogicalResult;
 use App\Support\ActorReference;
 use Tests\Architecture\Support\EventRole;
 
@@ -63,49 +63,49 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/CommandRules/ApproveRuleBundle/ApproveRuleBundleHandler.php',
+            'app/CommandRules/Commands/ApproveRuleBundle/ApproveRuleBundleHandler.php',
         ],
     ],
     EvidenceFoundInvalid::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/PartAssessments.php',
+            'app/Processes/PartAssessments.php',
         ],
     ],
     OutputChunkCommitted::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/OutputRecorder.php',
+            'app/Processes/OutputRecorder.php',
         ],
     ],
     RuleActivated::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/RuleApprovals.php',
+            'app/CommandRules/RuleApprovals.php',
         ],
     ],
     RuleRejected::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/CommandRules/RejectRuleProposal/RejectRuleProposalHandler.php',
+            'app/CommandRules/Commands/RejectRuleProposal/RejectRuleProposalHandler.php',
         ],
     ],
     RuleRetired::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/CommandRules/RetireCommandRule/RetireCommandRuleHandler.php',
+            'app/CommandRules/Commands/RetireCommandRule/RetireCommandRuleHandler.php',
         ],
     ],
     RunChanged::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Support/RunUpdates.php',
+            'app/Processes/RunUpdates.php',
         ],
     ],
     RunOutcomeRecorded::class => [

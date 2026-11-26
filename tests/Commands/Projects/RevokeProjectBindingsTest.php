@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RevokeProjectBindings\RevokeProjectBindingsCommand;
-use App\Enums\Connections\BindingReadiness;
+use App\Connections\Enums\BindingReadiness;
 use App\Models\Projects\Environment;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
-use App\Values\InstallTicket;
+use App\Projects\Commands\RevokeProjectBindings\RevokeProjectBindingsCommand;
+use App\Projects\Values\InstallTicket;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsCommand;

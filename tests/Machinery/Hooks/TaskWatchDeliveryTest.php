@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Contracts\Actors\ActorAttention;
+use App\Actors\Contracts\ActorAttention;
 use App\Contracts\Events\Event;
-use App\Enums\Hooks\AnswerType;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Drivers\HookCall;
 use App\Providers\DomainEventServiceProvider;
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
 use App\Support\OperationDeadline;
-use App\Support\References\StateReference;
-use App\Support\References\SubjectReference;
 use App\Support\StackTransaction;
 use Domain\Rules\RulesDomain;
 use Domain\Tasks\Enums\TaskStatus;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Accounts\Commands\PublishSignInChallenge\PublishSignInChallengeCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

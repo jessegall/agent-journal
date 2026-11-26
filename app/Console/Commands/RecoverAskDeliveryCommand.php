@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Support\AskAttention;
+use App\Asks\AskAttention;
 use Illuminate\Console\Command;
 
 final class RecoverAskDeliveryCommand extends Command

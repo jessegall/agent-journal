@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\CommandMiddleware\LogCommand;
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Bus\CommandEnd;
-use App\Data\Layouts\LayoutShape;
+use App\Bus\CommandCall;
+use App\Bus\CommandMiddleware\LogCommand;
+use App\Bus\CommandOwner;
+use App\Bus\Contracts\CommandEnd;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Records\Layout;
-use App\Support\CommandCall;
-use App\Support\CommandOwner;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Commands\Layouts\SaveLayoutTest;

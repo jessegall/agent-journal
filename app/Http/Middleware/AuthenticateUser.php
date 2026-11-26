@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Authorization\AuthoritySource;
-use App\Contracts\Inboxes\InboxEligibility;
-use App\Contracts\Inboxes\InboxMemberRoutes;
+use App\Access\Contracts\AuthoritySource;
+use App\Access\Contracts\JournalAdmission;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Exceptions\JournalAccessDenied;
+use App\Inboxes\Contracts\InboxEligibility;
+use App\Inboxes\Contracts\InboxMemberRoutes;
 use App\Support\ActorReference;
 use App\Values\InboxMemberAuthority;
-use App\Values\OwnerAuthority;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

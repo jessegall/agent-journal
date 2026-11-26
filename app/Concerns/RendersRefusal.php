@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

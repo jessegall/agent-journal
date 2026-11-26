@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Contracts\Projects\ProjectOwned;
 use App\Exceptions\CrossProjectEdge;
+use App\Projects\Contracts\ProjectOwned;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Values\TaskSummary;
 

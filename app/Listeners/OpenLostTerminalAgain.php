@@ -6,8 +6,8 @@ namespace App\Listeners;
 
 use App\Agents\Drivers\Work\HeadlessStarts;
 use App\Contracts\Events\Listener;
-use App\Enums\Hosts\HostProcessPurpose;
 use App\Events\Connections\HostProcessLost;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostProcess;
 

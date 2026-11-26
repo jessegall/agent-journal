@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
-use App\Declarations\StateMethods;
+use App\Stacks\AgentState;
+use App\Stacks\Declarations\StateMethods;
 use App\Support\Reflector;
-use App\Support\States\AgentState;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassLike;

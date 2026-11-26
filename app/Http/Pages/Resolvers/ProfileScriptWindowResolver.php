@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Sessions\ProfileLanguage;
-use App\Data\Profiles\ProfileScriptPageData;
-use App\Support\Readers\ProfileDraftReader;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Readers\ProfileDraftReader;
+use App\Profiles\Data\ProfileScriptPageData;
+use App\Sessions\Contracts\ProfileLanguage;
 use App\Values\ProfileKey;
 use Illuminate\Http\Request;
 

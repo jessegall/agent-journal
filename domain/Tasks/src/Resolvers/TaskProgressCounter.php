@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use Domain\Tasks\Contracts\TaskProgressCounter as TaskProgressCounterContract;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;

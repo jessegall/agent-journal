@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\HoldAccountUses\HoldAccountUsesCommand;
-use App\Contracts\Accounts\AccountUses;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Commands\HoldAccountUses\HoldAccountUsesCommand;
+use App\Accounts\Contracts\AccountUses;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ActorNotAllowed;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Values\OwnerAuthority;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Links\Note;

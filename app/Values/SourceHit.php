@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Search\Values\HitIdentity;
+use App\Search\Values\SearchResult;
+
 /**
  * A result together with the source that returned it: its qualified key and label, as the search shows them.
  */

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Terminal;
 
 use App\Http\Requests\Agents\TerminalControlRequest;
 use App\Http\Responses\Agents\TerminalAnswers;
-use App\Support\TerminalFrames;
+use App\Terminals\TerminalFrames;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

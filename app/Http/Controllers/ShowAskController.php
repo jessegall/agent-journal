@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Supervision\ShowAskPayload;
-use App\Contracts\Asks\AskReader;
-use App\Data\Asks\AskCard;
+use App\Api\Api\Supervision\ShowAskPayload;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Data\AskCard;
 use App\Values\AskReference;
 
 final readonly class ShowAskController

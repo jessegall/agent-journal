@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Agents;
 
+use App\Agents\Data\StartPreviewData;
+use App\Agents\Data\StartPreviewInput;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Data\Agents\StartPreviewData;
-use App\Data\Agents\StartPreviewInput;
 use App\Http\Loaders\Agents\StartPreviewLoader;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;

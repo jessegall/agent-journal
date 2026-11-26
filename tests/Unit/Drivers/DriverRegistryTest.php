@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Agents\DriverCatalogue;
 use App\Agents\Drivers\Capabilities\CodexHeadlessCapabilities;
 use App\Agents\Drivers\Capabilities\CodexTerminalCapabilities;
 use App\Agents\Drivers\Capabilities\HeadlessCapabilities;
+use App\Agents\Drivers\Contracts\Driver;
+use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\Driver;
-use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
-use App\Enums\Drivers\DriverCapability;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverCapability;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Exceptions\DriverRegisteredTwice;
+use App\Agents\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverCapabilityUnsupported;
 use App\Exceptions\DriverKeyInvalid;
-use App\Exceptions\DriverRegisteredTwice;
-use App\Exceptions\DriverTypeAmbiguous;
 use App\Exceptions\DriverUnknown;
-use App\Support\DriverCatalogue;
 use App\Values\BoundTarget;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;

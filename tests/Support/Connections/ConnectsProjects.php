@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Connections;
 
-use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Api\SignedCall;
 use App\Models\Access\User;
 use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\ProjectInvitation;
-use App\Support\SignedCall;
-use App\Values\InstallTicket;
-use App\Values\SettingReference;
+use App\Projects\Values\InstallTicket;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

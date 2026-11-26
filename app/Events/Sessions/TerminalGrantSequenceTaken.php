@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\TerminalGrantEvent;
+use App\Agents\Drivers\Contracts\TerminalGrantEvent;
 
 /**
  * A terminal grant handed out its next input sequence number.

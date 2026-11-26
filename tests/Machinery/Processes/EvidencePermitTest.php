@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Enums\Runs\RunMode;
+use App\CommandRules\Values\PermitLimits;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\EvidencePermit;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Enums\RunMode;
+use App\Processes\EvidenceRuns;
 use App\Support\ActorReference;
-use App\Support\EvidenceRuns;
-use App\Values\PermitLimits;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\Processes\ProcessOutputDisk;

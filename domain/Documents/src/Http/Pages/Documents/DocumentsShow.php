@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Documents;
 
-use App\Contracts\Navigation\RecordMenus;
-use App\Contracts\Sessions\AgentDirectory;
 use App\Data\Pages\RecordCard;
-use App\Enums\Settings\ActionMethod;
+use App\Navigation\Contracts\RecordMenus;
+use App\Sessions\Contracts\AgentDirectory;
+use App\Settings\Enums\ActionMethod;
 use App\Support\AgentOption;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;

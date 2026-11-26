@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Access;
 
-use App\Commands\Access\DisableUser\DisableUserCommand;
+use App\Access\Commands\DisableUser\DisableUserCommand;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;

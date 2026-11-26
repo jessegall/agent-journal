@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Communication;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class SendMessageRequest extends FormRequest

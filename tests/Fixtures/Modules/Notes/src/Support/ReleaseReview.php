@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
+use App\Docking\Cards\ConsoleOutput;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Processes\Cards\Duration;
+use App\Processes\Cards\StateLabel;
+use App\Processes\Enums\ConsoleStream;
+use App\Processes\Enums\DisclosureStatus;
+use App\Processes\Enums\Tone;
 use App\Support\Cards\Button;
-use App\Support\Cards\MessagesExcerpt;
-use App\Support\Cards\ConsoleOutput;
 use App\Support\Cards\CountedProgress;
 use App\Support\Cards\Disclosure;
 use App\Support\Cards\DockCard;
-use App\Support\Cards\DockDestination;
 use App\Support\Cards\DockIdentity;
-use App\Support\Cards\Duration;
 use App\Support\Cards\ExcerptMessage;
 use App\Support\Cards\Group;
 use App\Support\Cards\IndeterminateProgress;
+use App\Support\Cards\MessagesExcerpt;
 use App\Support\Cards\Row;
 use App\Support\Cards\Stack;
-use App\Support\Cards\StateLabel;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Enums\Web\Alignment;
-use App\Enums\Runs\ConsoleStream;
-use App\Enums\Runs\DisclosureStatus;
-use App\Enums\Web\Emphasis;
-use App\Enums\Runs\Tone;
-use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
+use App\Web\Enums\Alignment;
+use App\Web\Enums\Emphasis;
 use DateTimeImmutable;
 
 /**

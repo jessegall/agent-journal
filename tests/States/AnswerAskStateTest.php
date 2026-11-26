@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\States;
 
-use App\Commands\Asks\OfferNextAsk\OfferNextAskCommand;
+use App\Asks\Commands\OfferNextAsk\OfferNextAskCommand;
 use App\Events\Asks\AskClosed;
 use App\Events\Asks\AskHopAssigned;
 use App\Models\Asks\AskHop;
-use App\Support\States\AnswerAskState;
-use App\Support\States\Support\AnswerAskStateReference;
+use App\Stacks\AnswerAskState;
+use App\Stacks\Support\AnswerAskStateReference;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\Seeding\StateHandle;

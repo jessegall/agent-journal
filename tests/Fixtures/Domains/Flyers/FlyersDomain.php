@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Flyers;
 
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Sharing\ShareRecordContributor;
 use App\Support\ShareRecordDefinition;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 

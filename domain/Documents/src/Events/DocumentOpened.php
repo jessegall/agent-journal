@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A document's draft was opened. It carries the document, never the text or the draft token.

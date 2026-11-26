@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup\Contracts;
 
-use App\Values\SignInFolder;
-use App\Values\SignInReport;
+use App\Agents\Values\SignInFolder;
+use App\Agents\Values\SignInReport;
 
 /**
  * Reads what a driver's sign-in status command printed for an account folder, for the host's sign-in probe (which

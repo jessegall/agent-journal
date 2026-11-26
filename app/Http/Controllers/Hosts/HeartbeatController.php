@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hosts;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Hosts\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Values\HostContext;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
+use App\Hosts\Values\HostContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

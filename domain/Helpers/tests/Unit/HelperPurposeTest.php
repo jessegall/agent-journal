@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Unit;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Records\RecordVisibility;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Records\Contracts\RecordVisibility;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Values\OwnerAuthority;
 use Domain\Helpers\Exceptions\PurposeConflict;
 use Domain\Helpers\Exceptions\PurposeRequired;
 use Domain\Helpers\Models\HelperPurpose;

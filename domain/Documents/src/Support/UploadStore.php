@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Bus\CommandTransaction;
-use App\Contracts\Sessions\SessionProvenance;
+use App\Bus\Contracts\CommandTransaction;
+use App\Sessions\Contracts\SessionProvenance;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Enums\UploadType;

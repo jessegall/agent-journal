@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\Drivers\DriverType;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Sessions\CleanupStatus;
-use App\Enums\Sessions\StopCheckStatus;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Events\Sessions\AccountUseChanged;
 use App\Events\Sessions\ActivityRecorded;
@@ -128,6 +125,9 @@ use App\Events\Sessions\TerminalGrantSequenceTaken;
 use App\Events\Sessions\TerminalTakeSent;
 use App\Events\Sessions\TerminalViewClosed;
 use App\Events\Sessions\TerminalViewFollowed;
+use App\Processes\Enums\RuntimeActivity;
+use App\Sessions\Enums\CleanupStatus;
+use App\Sessions\Enums\StopCheckStatus;
 use App\Support\RecordIdentity;
 use Illuminate\Support\Str;
 use Tests\Architecture\Support\EventRole;
@@ -142,72 +142,72 @@ return [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Support/ActivityLog.php',
+            'app/Agents/ActivityLog.php',
         ],
     ],
     AccountSettingsRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartExtensionRequests.php',
+            'app/Sessions/StartExtensionRequests.php',
         ],
     ],
     ChildCheckoutRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartExtensionRequests.php',
+            'app/Sessions/StartExtensionRequests.php',
         ],
     ],
     SessionStateChanged::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Drivers/NotifyRequestProgress/NotifyRequestProgressHandler.php',
-            'app/Commands/Agents/NotifyRunning/NotifyRunningHandler.php',
-            'app/Commands/Drivers/NotifyRuntimeActivity/NotifyRuntimeActivityHandler.php',
-            'app/Commands/Agents/NotifyRuntimeExit/NotifyRuntimeExitHandler.php',
-            'app/Commands/Drivers/NotifyStopped/NotifyStoppedHandler.php',
+            'app/Agents/Drivers/Commands/NotifyRequestProgress/NotifyRequestProgressHandler.php',
+            'app/Agents/Commands/NotifyRunning/NotifyRunningHandler.php',
+            'app/Agents/Drivers/Commands/NotifyRuntimeActivity/NotifyRuntimeActivityHandler.php',
+            'app/Agents/Commands/NotifyRuntimeExit/NotifyRuntimeExitHandler.php',
+            'app/Agents/Drivers/Commands/NotifyStopped/NotifyStoppedHandler.php',
         ],
     ],
     AccountUseChanged::class => [
         'role' => EventRole::Projection,
         'migrated' => false,
         'producers' => [
-            'app/Support/RegisterPendingStart.php',
-            'app/Commands/Accounts/CancelAccountUses/CancelAccountUsesHandler.php',
-            'app/Commands/Accounts/HoldAccountUses/HoldAccountUsesHandler.php',
-            'app/Commands/Drivers/NotifyStopped/NotifyStoppedHandler.php',
-            'app/Commands/Agents/RetireAgent/RetireAgentHandler.php',
-            'app/Commands/Accounts/SettleAccountUses/SettleAccountUsesHandler.php',
+            'app/Sessions/RegisterPendingStart.php',
+            'app/Accounts/Commands/CancelAccountUses/CancelAccountUsesHandler.php',
+            'app/Accounts/Commands/HoldAccountUses/HoldAccountUsesHandler.php',
+            'app/Agents/Drivers/Commands/NotifyStopped/NotifyStoppedHandler.php',
+            'app/Agents/Commands/RetireAgent/RetireAgentHandler.php',
+            'app/Accounts/Commands/SettleAccountUses/SettleAccountUsesHandler.php',
         ],
     ],
     AgentHoldReleased::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Sessions/ReleaseAgentHold/ReleaseAgentHoldHandler.php',
+            'app/Sessions/Commands/ReleaseAgentHold/ReleaseAgentHoldHandler.php',
         ],
     ],
     AgentRuntimeReassigned::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Agents/ReassignAgentRuntime/ReassignAgentRuntimeHandler.php',
+            'app/Agents/Commands/ReassignAgentRuntime/ReassignAgentRuntimeHandler.php',
         ],
     ],
     DriverRequestRecovered::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/DriverRequestRecovery.php',
+            'app/Agents/DriverRequestRecovery.php',
         ],
     ],
     SessionStartCancelled::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Agents/CancelSessionStart/CancelSessionStartHandler.php',
+            'app/Agents/Commands/CancelSessionStart/CancelSessionStartHandler.php',
         ],
     ],
     DriverSwitchStopped::class => [
@@ -228,43 +228,43 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/RecordDriverFailure.php',
+            'app/Agents/RecordDriverFailure.php',
         ],
     ],
     SessionClosed::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartHeartbeats.php',
-            'app/Support/StartSessions.php',
+            'app/Sessions/StartHeartbeats.php',
+            'app/Sessions/StartSessions.php',
         ],
     ],
     SessionOpened::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartSessions.php',
+            'app/Sessions/StartSessions.php',
         ],
     ],
     StartAccepted::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Commands/Agents/StartAgent/StartAgentHandler.php',
+            'app/Agents/Commands/StartAgent/StartAgentHandler.php',
         ],
     ],
     StartGrantRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartExtensionRequests.php',
+            'app/Sessions/StartExtensionRequests.php',
         ],
     ],
     StartSettingsRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/StartSessions.php',
+            'app/Sessions/StartSessions.php',
         ],
     ],
     StartRefused::class => [

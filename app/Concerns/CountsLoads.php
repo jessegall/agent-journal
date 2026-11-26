@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Support\ReadMeter;
+use App\Reads\ReadMeter;
 use Illuminate\Events\NullDispatcher;
 
 /**

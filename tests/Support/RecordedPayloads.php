@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Api\ApiSender;
+use App\Api\Contracts\Domains\ApiSender as ApiSenderContract;
 use App\Contracts\Domains\ApiPayload;
-use App\Contracts\Domains\ApiSender as ApiSenderContract;
 use App\Exceptions\ApiRefused;
 use App\Exceptions\JournalUnreachable;
-use App\Support\ApiSender;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Assert;
 use RuntimeException;

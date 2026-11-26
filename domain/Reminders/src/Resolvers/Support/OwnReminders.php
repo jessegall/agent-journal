@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Resolvers\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Enums\AccessType;
 use App\Exceptions\ActorNotAllowed;
 use Domain\Reminders\Models\Reminder;
 use Domain\Reminders\Policies\ReminderPolicy;

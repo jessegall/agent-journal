@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\SaveCommandAlias\SaveCommandAliasCommand;
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\Processes\ShellDialect;
+use App\Bus\Contracts\CommandClassifier;
+use App\CommandRules\Commands\SaveCommandAlias\SaveCommandAliasCommand;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
 use App\Models\CommandRules\CommandAlias;
 use App\Models\Projects\Project;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;

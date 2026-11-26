@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\RetryAccountCleanup\RetryAccountCleanupCommand;
+use App\Accounts\Commands\RetryAccountCleanup\RetryAccountCleanupCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

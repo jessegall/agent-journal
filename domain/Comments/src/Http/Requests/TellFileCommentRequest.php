@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Requests;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Projects\ProjectRead;
 use Illuminate\Foundation\Http\FormRequest;
 

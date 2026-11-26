@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Events\ActiveRuleChange;
 use App\Models\CommandRules\ModuleRuleBundle;
+use App\Processes\Contracts\Events\ActiveRuleChange;
 
 /**
  * A project owner activated a module's rule bundle at one digest; raised after the change is committed.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Support\GatewayOperation;
+use App\Sharing\GatewayOperation;
 use Domain\Sharing\Enums\GatewayOperationType;
 
 /**

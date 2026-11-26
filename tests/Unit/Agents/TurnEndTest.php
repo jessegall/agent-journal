@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Drivers\Enums\RequestOutcome;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Values\TurnEnd;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;

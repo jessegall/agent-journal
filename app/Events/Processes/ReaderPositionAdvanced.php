@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\ReaderPositionEvent;
+use App\Processes\Contracts\ReaderPositionEvent;
 
 /**
  * A reader's position moved on to a later checkpoint.

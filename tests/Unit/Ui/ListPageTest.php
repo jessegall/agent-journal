@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Ui;
 
-use App\Enums\Layouts\LayoutTag;
-use App\Enums\Web\NarrowView;
-use App\Enums\Web\ReaderWidth;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;
 use App\Support\Layout\LayoutFieldData;
@@ -16,6 +13,9 @@ use App\Support\Layout\LayoutTabData;
 use App\Support\Layout\ListEmpty;
 use App\Support\Layout\ListPage;
 use App\Support\Layout\ListPaging;
+use App\Terminals\Enums\LayoutTag;
+use App\Web\Enums\NarrowView;
+use App\Web\Enums\ReaderWidth;
 use Spatie\LaravelData\Optional;
 use Tests\TestCase;
 

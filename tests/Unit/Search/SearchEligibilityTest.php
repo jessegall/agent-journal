@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\Search\ScopeAnswer;
-use App\Enums\Search\SearchSurface;
-use App\Exceptions\SearchableMissing;
+use App\Search\Enums\ScopeAnswer;
+use App\Search\Enums\SearchSurface;
+use App\Search\Exceptions\SearchableMissing;
+use App\Search\SearchablesRegistry;
+use App\Search\SearchSources;
+use App\Search\Values\DiscoveryPage;
+use App\Search\Values\ScopeResolution;
+use App\Search\Values\SearchReader;
 use App\Support\ActorReference;
 use App\Support\DomainRegistry;
-use App\Support\SearchablesRegistry;
-use App\Support\SearchSources;
-use App\Values\DiscoveryPage;
-use App\Values\ScopeResolution;
-use App\Values\SearchReader;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Searching\Logs\LogsDomain;

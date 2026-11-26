@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
+use App\Terminals\Commands\ResumeKeyScript\ResumeKeyScriptCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Inboxes\Commands\LeaveInbox\LeaveInboxCommand;
 use App\Support\ActorReference;
 use Domain\Chat\Data\ParticipantInput;
 use Domain\Chat\Support\PairChats;

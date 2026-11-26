@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Exceptions\CrossOwnerReadRefused;
+use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Exceptions\InvalidActorText;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sequences\Http\Pages\SequenceRuns\SequenceRunsIndex;
 use Domain\Sequences\Http\Requests\SequenceRunsRequest;

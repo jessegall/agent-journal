@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Values\PlanStep;
+use App\Processes\Execution\RunState;
+use App\Processes\Values\PlanStep;
 
 /**
  * The steps of a sequence still to run, each in the context the one before it left, and the outcome so far.

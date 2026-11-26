@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\StartProjectCommandRun\StartProjectCommandRunCommand;
-use App\Enums\Connections\CommandRunStatus;
-use App\Enums\Projects\ArrangementType;
+use App\Connections\Enums\CommandRunStatus;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
-use App\Values\BindingFolder;
-use App\Values\CommandRunStart;
+use App\Projects\Commands\StartProjectCommandRun\StartProjectCommandRunCommand;
+use App\Projects\Enums\ArrangementType;
+use App\Projects\Values\BindingFolder;
+use App\Projects\Values\CommandRunStart;
 use App\Values\PresenceReport;
 use Domain\Comments\CommentsDomain;
 use Tests\Fixtures\Agents\TestStart;

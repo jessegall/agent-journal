@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Assignments\AssignedWorkResolver as AssignedWorkResolverContract;
-use App\Contracts\Assignments\AssignmentProviders;
+use App\Assignments\Contracts\AssignedWorkResolver as AssignedWorkResolverContract;
+use App\Assignments\Contracts\AssignmentProviders;
 use App\Support\AssigneeIdentity;
 
 /**

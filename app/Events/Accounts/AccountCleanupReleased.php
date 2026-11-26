@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\AccountCleanupEvent;
+use App\Accounts\Contracts\AccountCleanupEvent;
 
 /**
  * A removed account's folder may now be cleaned by a host, since its processes are gone.

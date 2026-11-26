@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Projects\ProjectDestination;
+use App\Bus\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use App\Projects\Contracts\ProjectDestination;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

@@ -44,7 +44,7 @@ final class ExplicitTransactionTest extends TestCase
      */
     private const array ALLOWED = [
         // The bus's own frame step: the one place that opens a command's transaction.
-        'app/CommandMiddleware/RunInTransaction.php',
+        'app/Bus/CommandMiddleware/RunInTransaction.php',
         'tests/Fixtures/Modules/Notes/src/Commands/OpenTransactionNote/OpenTransactionNoteHandler.php',
     ];
 
@@ -53,16 +53,16 @@ final class ExplicitTransactionTest extends TestCase
      * decision: an owner of an event unit, one that joins a unit, or one that holds no unit.
      */
     public const array OPENERS = [
-        'app/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
+        'app/Bus/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
         'app/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
-        'app/Support/Storage/AssignmentTransaction.php' => 'joins the open unit inside a command',
-        'app/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
-        'app/Support/ReadOnlyTransaction.php' => 'no unit: a read-only snapshot',
-        'app/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
+        'app/Assignments/Storage/AssignmentTransaction.php' => 'joins the open unit inside a command',
+        'app/Sessions/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
+        'app/Reads/ReadOnlyTransaction.php' => 'no unit: a read-only snapshot',
+        'app/Engine/EnginePass.php' => 'no unit: rolls back what a pass left open',
         'app/Support/AgentChatAccessService.php' => 'owns a unit: the console change of an agent\'s chat access',
         'app/Support/MessageBatchService.php' => 'owns a unit: each settled batch of the sweep',
         'app/Support/ReceiptDeliveryService.php' => 'owns a unit: each delivery a pass tries',
-        'app/Support/StatementDeadlines.php' => 'joins the open unit: scopes a statement time limit with SET LOCAL',
+        'app/Search/StatementDeadlines.php' => 'joins the open unit: scopes a statement time limit with SET LOCAL',
     ];
 
     public function test_every_transaction_opener_of_the_application_is_named(): void

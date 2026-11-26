@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Messages\DeliverClosingWords\DeliverClosingWordsCommand;
-use App\Contracts\Bus\Command;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\Command;
 use App\Mcp\Support\ToolArguments;
+use App\Messages\Commands\DeliverClosingWords\DeliverClosingWordsCommand;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

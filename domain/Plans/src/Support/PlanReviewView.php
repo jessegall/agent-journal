@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
+use App\Assignments\AssignmentGroup;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Support\AssigneeName;
-use App\Support\AssignmentGroup;
 use App\Support\IdListPage;
 use Domain\Plans\Data\PlanReviewData;
 use Domain\Plans\Data\PlanReviewReceiptData;

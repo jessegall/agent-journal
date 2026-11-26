@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Search\SearchProvider;
-use App\Contracts\Search\TieredSearch;
-use App\Enums\Search\ScoreTier;
+use App\Hosts\Contracts\ServedEnvironment;
+use App\Search\Contracts\SearchProvider;
+use App\Search\Contracts\TieredSearch;
+use App\Search\Enums\ScoreTier;
+use App\Search\Values\AdmittedConstraints;
+use App\Search\Values\BodyMatch;
+use App\Search\Values\HitIdentity;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchableBody;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+use App\Search\Values\SearchResult;
+use App\Search\Values\SearchWords;
+use App\Search\Values\TieredSearchSource;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Values\AdmittedConstraints;
-use App\Values\BodyMatch;
-use App\Values\HitIdentity;
-use App\Values\RefreshCandidates;
-use App\Values\SearchableBody;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
-use App\Values\SearchResult;
-use App\Values\SearchWords;
-use App\Values\TieredSearchSource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Values\TaskBriefPassage;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Pages;
 
-use App\Contracts\Actors\ActorVisibility;
+use App\Actors\Contracts\ActorVisibility;
 use App\Support\Layout\LayoutRowData;
 
 /**

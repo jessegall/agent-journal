@@ -14,7 +14,8 @@ declare(strict_types=1);
  *   php tools/refactoring/move.php --dry-run ...                              print the rows, write nothing
  *   php tools/refactoring/move.php --root=<tree> ...
  *
- * A new name given alone renames the class in its own namespace. Each class's file is found, and its new file placed,
+ * After the move, layout/moved-strings.php rewrites each moved file path and class name written as text (tests, config,
+ * docs, tools), so nothing is left to change by hand. A new name given alone renames the class in its own namespace. Each class's file is found, and its new file placed,
  * through composer.json's PSR-4 map, the longest prefix first.
  */
 
@@ -79,6 +80,17 @@ passthru(implode(' ', array_map('escapeshellarg', [
     $list,
     "--root={$root}",
 ])), $status);
+
+// The syntax tree misses a path or a name written as text; the same rows rewrite those once the move succeeded.
+if ($status === 0) {
+    passthru(implode(' ', array_map('escapeshellarg', [
+        PHP_BINARY,
+        __DIR__.'/layout/moved-strings.php',
+        $list,
+        "--root={$root}",
+    ])), $status);
+}
+
 unlink($list);
 
 exit($status);

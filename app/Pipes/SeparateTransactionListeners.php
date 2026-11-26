@@ -6,9 +6,9 @@ namespace App\Pipes;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Attributes\Listeners\TransactionListenerConsent;
-use App\Contracts\Bus\Pipe;
-use App\Exceptions\InvalidListener;
-use App\Support\ListenerDeclarations;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\ListenerDeclarations;
 use App\Support\Reflector;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;

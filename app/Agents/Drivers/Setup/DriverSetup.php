@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Accounts\Contracts\AccountSettingsFiller;
+use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Drivers\Contracts\DriverKeyScripts;
+use App\Agents\Drivers\Contracts\DriverLayout;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
-use App\Contracts\Accounts\AccountSettingsFiller;
-use App\Contracts\CommandLines\Condition;
-use App\Contracts\Drivers\DriverAdapter;
-use App\Contracts\Drivers\DriverKeyScripts;
-use App\Contracts\Drivers\DriverLayout;
-use App\Contracts\Skills\DriverSkills;
-use App\Exceptions\ProfileRefused;
-use App\Support\CommandLines\ArgumentBuilder;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Processes\ArgumentBuilder;
+use App\Processes\Contracts\Condition;
+use App\Skills\Contracts\DriverSkills;
 use App\Values\DriverStart;
 use Closure;
 

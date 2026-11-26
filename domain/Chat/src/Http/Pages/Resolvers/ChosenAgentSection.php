@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\SectionResolver;
-use App\Contracts\Sessions\AgentDirectory;
 use App\Declarations\SlotContext;
+use App\Navigation\Contracts\SectionResolver;
+use App\Sessions\Contracts\AgentDirectory;
 use App\Support\AgentOption;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Http\Requests\ConversationRequest;

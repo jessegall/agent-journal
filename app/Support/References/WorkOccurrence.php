@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\References;
 
+use App\Stacks\References\StateReference;
+use App\Stacks\References\SubjectReference;
+
 /**
  * One occurrence of the work a frame stands for: its state type, its subject and the run of that subject, such as run
  * 3 of task 41. A finished occurrence never comes alive again; a new run is a new occurrence.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Enums\Projects\InstallLineHold;
+use App\Projects\Enums\InstallLineHold;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 

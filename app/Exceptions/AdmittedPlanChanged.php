@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Api\Exceptions\CommandStopped;
+
 /**
  * The plan handed out for a run does not match the command line the journal admitted, so nothing starts.
  */

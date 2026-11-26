@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\States;
 
-use App\Contracts\Authorization\OperationPolicy;
-use App\Enums\Hooks\AnswerType;
-use App\Enums\Sessions\StopCheckStatus;
+use App\Access\Contracts\OperationPolicy;
 use App\Events\Sessions\StopCheckSettled;
+use App\Hooks\Enums\AnswerType;
+use App\Sessions\Enums\StopCheckStatus;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\StopConditionGate;
+use App\Stacks\Inputs\Contracts\HookHandler;
+use App\Stacks\ReadyState;
+use App\Stacks\Support\ReadyStateReference;
 use App\Support\Decisions\Decision;
-use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
-use App\Support\States\AgentState;
-use App\Support\States\Contracts\StopConditionGate;
-use App\Support\States\ReadyState;
-use App\Support\States\Support\ReadyStateReference;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\AllowedStops;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hosts;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Support\Hosts\HostClaimSlots;
-use App\Support\Hosts\HostWake;
-use App\Values\HostContext;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\HostClaimSlots;
+use App\Hosts\HostWake;
+use App\Hosts\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

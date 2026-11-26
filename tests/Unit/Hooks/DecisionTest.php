@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Enums\Hooks\AnswerType;
 use App\Exceptions\NoRefusalReason;
 use App\Exceptions\NoReplacementLine;
+use App\Hooks\Enums\AnswerType;
 use App\Support\Decisions\Decision;
 use App\Support\Decisions\Denied;
 use Tests\Support\TestText;

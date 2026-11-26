@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Values\SignInStarted;
+use App\Accounts\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Accounts\Values\SignInStarted;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

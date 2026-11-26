@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Fixtures;
 
-use App\Contracts\Bus\Command;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Support\DriverCatalogue;
-use App\Support\OwnerStartReceipt;
-use App\Support\StartReceipt;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\DriverCatalogue;
+use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Bus\Contracts\Command;
+use App\Sessions\OwnerStartReceipt;
+use App\Sessions\StartReceipt;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
 use Domain\Helpers\Models\HelperIdentity;

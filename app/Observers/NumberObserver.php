@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Contracts\Records\Numbered;
-use App\Support\LockingNumberAllocator;
+use App\Numbers\LockingNumberAllocator;
+use App\Records\Contracts\Numbered;
 use Illuminate\Database\Eloquent\Model;
 
 /**

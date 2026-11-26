@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Authorization\VisibilityCheck;
-use App\Contracts\Navigation\NavigationChildren;
-use App\Contracts\Records\CountResolver;
-use App\Exceptions\InvalidNavigationDeclaration;
+use App\Access\Contracts\VisibilityCheck;
+use App\Navigation\Contracts\NavigationChildren;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\NavigationItem;
+use App\Navigation\Exceptions\InvalidNavigationDeclaration;
+use App\Records\Contracts\CountResolver;
+use App\Web\Declarations\RegisteredPage;
 
 /**
  * A checked navigation item of an installed domain: its full key, the page of its own domain it opens with route

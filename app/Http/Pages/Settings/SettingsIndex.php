@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Settings;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Settings\SettingsCatalogue;
-use App\Data\Settings\SettingData;
-use App\Data\Settings\SettingGroupData;
-use App\Data\Settings\SettingsCatalogueData;
-use App\Data\Settings\StringChoiceConstraintsData;
-use App\Data\Settings\StringChoiceOptionData;
-use App\Data\Settings\StringChoiceValueData;
-use App\Data\Settings\ToggleGroupAvailabilityData;
-use App\Enums\Settings\ActionMethod;
-use App\Enums\Settings\GroupAvailability;
-use App\Enums\Settings\SettingSource;
-use App\Enums\Settings\SettingType;
-use App\Exceptions\ServerOriginInvalid;
+use App\Actors\Contracts\CurrentActor;
+use App\Connections\ConnectionsOwnerCheck;
+use App\Connections\Exceptions\ServerOriginInvalid;
 use App\Http\Pages\Resolvers\ConnectProjectWindowResolver;
-use App\Support\ConnectionsOwnerCheck;
-use App\Support\CoreSettings;
+use App\Settings\Contracts\SettingsCatalogue;
+use App\Settings\CoreSettings;
+use App\Settings\Data\SettingData;
+use App\Settings\Data\SettingGroupData;
+use App\Settings\Data\SettingsCatalogueData;
+use App\Settings\Data\StringChoiceConstraintsData;
+use App\Settings\Data\StringChoiceOptionData;
+use App\Settings\Data\StringChoiceValueData;
+use App\Settings\Data\ToggleGroupAvailabilityData;
+use App\Settings\Enums\ActionMethod;
+use App\Settings\Enums\GroupAvailability;
+use App\Settings\Enums\SettingSource;
+use App\Settings\Enums\SettingType;
+use App\Settings\SettingRegistry;
+use App\Settings\SettingsValues;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
@@ -29,8 +31,6 @@ use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsPage as SettingsLayout;
 use App\Support\Layout\SettingsRow;
-use App\Support\SettingRegistry;
-use App\Support\SettingsValues;
 
 /**
  * The settings of every owner on the shared settings recipe: one section for each declared group, in the order

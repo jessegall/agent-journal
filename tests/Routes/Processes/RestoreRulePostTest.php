@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\RestoreCommandRule\RestoreCommandRuleCommand;
+use App\CommandRules\Commands\RestoreCommandRule\RestoreCommandRuleCommand;
+use App\CommandRules\Values\ProposalReceipt;
+use App\CommandRules\Values\ProposedRule;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
-use App\Values\ProposalReceipt;
-use App\Values\ProposedRule;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Reads\TextContent;
-use App\Contracts\Reads\TextResolver as TextResolverContract;
-use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\TextSections;
 use App\Data\Pages\TextVersionSummary;
 use App\Exceptions\TargetHasNoText;
 use App\Exceptions\TextSelectionRefused;
+use App\Reads\Contracts\TextContent;
+use App\Reads\Contracts\TextResolver as TextResolverContract;
+use App\Reads\Values\PageSize;
+use App\Records\Contracts\RecordResolver;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Support\TextPart;
 use App\Support\TextSelection;
-use App\Values\PageSize;
 use App\Values\TextVersion;
 
 /**

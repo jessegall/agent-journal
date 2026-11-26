@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Bus\PipelineRunner;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Declarations\StateEvents;
-use App\Declarations\StateMethods;
-use App\Enums\Engine\ListenerLane;
-use App\Exceptions\InvalidListener;
-use App\Support\AvailableListener;
-use App\Support\CoreListenerFolders;
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\AvailableListener;
+use App\Bus\Contracts\PipelineRunner;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\IsolatedListener;
+use App\Bus\ListenerOwnership;
+use App\Bus\ListenerRegistry;
+use App\Engine\Enums\ListenerLane;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Stacks\Declarations\StateEvents;
+use App\Stacks\Declarations\StateMethods;
+use App\Stacks\StateListenerDeclarations;
+use App\Stacks\StateTypes;
 use App\Support\Delivery\StateEventBridge;
 use App\Support\DomainRegistry;
-use App\Support\IsolatedListener;
-use App\Support\ListenerOwnership;
-use App\Support\ListenerRegistry;
 use App\Support\Registration\ListenerPolicy;
-use App\Support\Stack\StateTypes;
-use App\Support\StateListenerDeclarations;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 

@@ -6,7 +6,7 @@ namespace Domain\Comments\Exceptions;
 
 use App\Concerns\RendersRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
+use App\Engine\Enums\RefusalCode;
 use RuntimeException;
 
 /**

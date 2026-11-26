@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Skills;
 
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Contracts\Skills\DriverSkills;
-use App\Exceptions\DriverSkillsUnsupported;
+use App\Agents\Exceptions\DriverSkillsUnsupported;
+use App\Skills\Contracts\DriverSkills;
 use App\Values\DriverKey;
 
 /**

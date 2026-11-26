@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
-use App\Contracts\Drivers\DriverLayout;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Navigation\NavigationKey;
-use App\Support\Screens\MarkedRow;
-use App\Support\Screens\MenuFamily;
-use App\Support\Screens\OptionList;
-use App\Support\Screens\ScreenLayout;
+use App\Agents\Drivers\Contracts\DriverLayout;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Navigation\Enums\NavigationKey;
+use App\Terminals\Screens\MarkedRow;
+use App\Terminals\Screens\MenuFamily;
+use App\Terminals\Screens\OptionList;
+use App\Terminals\Screens\ScreenLayout;
 
 /**
  * How the pinned build draws its terminal, measured from resources/recordings/codex/0.165.0: the alternate buffer,

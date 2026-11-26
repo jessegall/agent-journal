@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Records\ReferenceRecognizer;
-use App\Values\RecognizedReference;
-use App\Values\SearchWords;
+use App\Records\Contracts\ReferenceRecognizer;
+use App\Records\Values\RecognizedReference;
+use App\Search\Values\SearchWords;
 
 /**
  * Recognizes a whole input that is a numbered record's reference as the journal writes it, such as task 2241 or

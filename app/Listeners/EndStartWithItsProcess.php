@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Commands\NotifyStopped\NotifyStoppedCommand;
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostProcessEndEvent;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Hosts\Contracts\HostProcessEndEvent;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 use App\Models\Sessions\SessionProcess;
 

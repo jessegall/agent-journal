@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
-use App\Enums\CommandRules\ProposalStatus;
-use App\Enums\CommandRules\RequestStatus;
+use App\CommandRules\Commands\RejectRuleProposal\RejectRuleProposalCommand;
+use App\CommandRules\Enums\ProposalStatus;
+use App\CommandRules\Enums\RequestStatus;
 use App\Events\Processes\RuleRejected;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;

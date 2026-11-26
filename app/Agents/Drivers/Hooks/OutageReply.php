@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Enums\Drivers\DriverStopDecision;
-use App\Enums\Hooks\CallFailure;
-use App\Enums\Hooks\HookEvent;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Drivers\Enums\DriverStopDecision;
+use App\Hooks\Enums\CallFailure;
+use App\Hooks\Enums\HookEvent;
 use App\Values\AgentText;
 
 /**

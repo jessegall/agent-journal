@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\Assignable;
-use App\Contracts\Assignments\AssignableProvider;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Contracts\Assignable;
+use App\Assignments\Contracts\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;

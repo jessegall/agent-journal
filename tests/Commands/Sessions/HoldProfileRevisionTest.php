@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Sessions\HoldProfileRevision\HoldProfileRevisionCommand;
 use App\Models\Profiles\ProfileRevisionHold;
+use App\Sessions\Commands\HoldProfileRevision\HoldProfileRevisionCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

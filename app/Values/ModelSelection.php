@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\ModelSelectionType;
 use App\Exceptions\ModelRequired;
+use App\Sessions\Enums\ModelSelectionType;
 
 /**
  * The model a start asked for: a named model, or its profile's default. It is never empty.

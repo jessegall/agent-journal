@@ -6,9 +6,9 @@ namespace Domain\Helpers\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Notifications\Notifications;
-use App\Data\Notifications\NotificationTarget;
-use App\Enums\Notifications\NotificationSourceType;
+use App\Notifications\Contracts\Notifications;
+use App\Notifications\Data\NotificationTarget;
+use App\Notifications\Enums\NotificationSourceType;
 use Domain\Helpers\Events\ReportJobLinked;
 use Domain\Helpers\Models\HelperJob;
 

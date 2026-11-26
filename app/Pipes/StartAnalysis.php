@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Grammar\Lines\ShellSource;
+use App\Processes\Grammar\Syntax\TreeDraft;
 use App\Support\Lines\ShellLine;
-use App\Support\Lines\ShellSource;
-use App\Support\Syntax\TreeDraft;
 
 /**
  * Opens a fresh draft for the line and makes the whole line the first source, at depth 0 with no parent.

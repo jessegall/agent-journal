@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Sessions\SessionProvenance;
+use App\Actors\Contracts\Actor;
+use App\Sessions\Contracts\SessionProvenance;
 use Domain\Documents\Concerns\RefusesOtherDrafts;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;

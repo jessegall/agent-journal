@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
-use App\Commands\Settings\SetIntegerChoice\SetIntegerChoiceCommand;
-use App\Contracts\Settings\SettingsResolver;
-use App\Enums\Settings\SettingsOutcome;
-use App\Values\SettingsChange;
+use App\Settings\Commands\SetIntegerChoice\SetIntegerChoiceCommand;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;

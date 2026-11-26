@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Bus;
 
-use App\Support\EventUnitLifecycle;
-use App\Support\ListenerRegistry;
+use App\Bus\EventUnitLifecycle;
+use App\Bus\ListenerRegistry;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Events\Dispatcher;

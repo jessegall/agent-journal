@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Hosts\HostChunkData;
-use App\Data\Hosts\HostFrameData;
+use App\Hosts\Data\HostChunkData;
+use App\Hosts\Data\HostFrameData;
 
 /**
  * One entry a worker read: a frame or chunk of its process, an answer to one of its orders, or a wake of its

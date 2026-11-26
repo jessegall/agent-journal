@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Assignments\Assignable;
-use App\Contracts\Assignments\AssignableProvider;
+use App\Assignments\Contracts\Assignable;
+use App\Assignments\Contracts\AssignableProvider;
 use App\Exceptions\RecordUnavailable;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Enums\TaskRunStatus;

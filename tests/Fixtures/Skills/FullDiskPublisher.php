@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills;
 
-use App\Contracts\Skills\SkillPublisher;
-use App\Exceptions\SkillPublicationFailed;
+use App\Skills\Contracts\SkillPublisher;
+use App\Skills\Exceptions\SkillPublicationFailed;
 
 /**
  * A publisher whose disk is full: staging fails, activation and reads pass through.
@@ -29,7 +29,7 @@ final readonly class FullDiskPublisher implements SkillPublisher
         $this->host->clear($stagingFolder, $files);
     }
 
-    public function activeFolder(string $target): ?string
+    public function activeFolder(string $target): string|null
     {
         return $this->host->activeFolder($target);
     }

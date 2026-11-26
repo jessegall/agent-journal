@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\BuiltInStartProfiles;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\StartAgentRequest;
-use App\Support\StartPreviews;
+use App\Sessions\Contracts\BuiltInStartProfiles;
+use App\Sessions\StartPreviews;
 use Illuminate\Http\JsonResponse;
 
 /**

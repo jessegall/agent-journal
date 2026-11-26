@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Support;
 
-use App\Contracts\Bus\CommandMiddleware;
-use App\Support\CommandCall;
-use App\Support\CommandName;
+use App\Bus\CommandCall;
+use App\Bus\CommandName;
+use App\Bus\Contracts\CommandMiddleware;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 

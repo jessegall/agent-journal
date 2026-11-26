@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Access\AccessSettings;
 use App\Enums\Assignments\ActorType;
 use App\Models\Access\User;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\MainAgentDesignation;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorIdentity;
 use Domain\Chat\Models\DirectChat;
 

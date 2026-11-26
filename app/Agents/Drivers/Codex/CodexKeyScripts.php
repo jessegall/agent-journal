@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
+use App\Agents\Drivers\Contracts\DriverKeyScripts;
+use App\Agents\Drivers\Contracts\PinnedBuilds;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\DriverKeyScripts;
-use App\Contracts\Drivers\PinnedBuilds;
-use App\Enums\Navigation\NavigationKey;
-use App\Support\KeyScripts\KeyScript;
-use App\Support\KeyScripts\KeyStep;
-use App\Support\KeyScripts\ScreenExpectation;
+use App\Navigation\Enums\NavigationKey;
+use App\Terminals\KeyScripts\KeyScript;
+use App\Terminals\KeyScripts\KeyStep;
+use App\Terminals\KeyScripts\ScreenExpectation;
 
 /**
  * The key scripts recorded for Codex: each goes through the /model picker and ends on Codex's own line saying the

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Contracts\Bus\JournalCommands;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use Illuminate\Database\Seeder;
 
 final class InboxesSeeder extends Seeder

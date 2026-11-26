@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Exceptions\AccountLabelInvalid;
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Exceptions\AccountLabelInvalid;
+use App\Accounts\Values\AccountLabel;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Models\Accounts\Account;
 use App\Support\ActorReference;
-use App\Values\AccountLabel;
-use App\Values\OwnerAuthority;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Agents\Drivers\Isolation\IsolationProbes;
-use App\Commands\Hosts\RequestHostProtection\RequestHostProtectionCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Hosts\Commands\RequestHostProtection\RequestHostProtectionCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;

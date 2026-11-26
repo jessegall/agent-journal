@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Navigation\GroupDeclaration;
-use App\Exceptions\SettingDeclarationInvalid;
-use App\Support\CoreSettings;
+use App\Navigation\Contracts\GroupDeclaration;
+use App\Settings\CoreSettings;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingRegistry;
 use App\Support\DomainRegistry;
-use App\Support\SettingRegistry;
 use Tests\Fixtures\Domains\BadSettings\BadSettingsDomain;
 use Tests\Fixtures\Domains\Library\LibraryDomain;
 use Tests\Fixtures\Domains\Library\LibrarySettings;

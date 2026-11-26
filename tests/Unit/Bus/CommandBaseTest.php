@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Bus;
 
+use App\Bus\CommandGrammar;
 use App\Exceptions\CommandDispatcherMissing;
+use App\Reflection\ReflectedProperty;
 use App\Support\ActorReference;
 use App\Support\Command;
-use App\Support\CommandGrammar;
 use App\Support\PlainValue;
-use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Bus\Proof\BoundItem;

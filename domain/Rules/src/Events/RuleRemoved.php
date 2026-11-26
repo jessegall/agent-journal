@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A rule stopped holding. Raised once the change has committed.

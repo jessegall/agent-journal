@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Terminals\TerminalDraftChoice;
-use App\Exceptions\TerminalControlRefused;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Terminals\Enums\TerminalDraftChoice;
+use App\Terminals\Exceptions\TerminalControlRefused;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;

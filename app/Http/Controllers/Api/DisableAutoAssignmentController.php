@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\DisableAutoAssignmentPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Assignments\AutoAssignmentChangeData;
+use App\Assignments\Api\DisableAutoAssignmentPayload;
+use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
+use App\Assignments\Data\AutoAssignmentChangeData;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 
 /**
  * Disables an auto-assignment and answers its revision.

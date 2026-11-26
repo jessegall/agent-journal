@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers\Api;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Records\Contracts\RecordResolver;
 use Domain\Plans\Api\ReassignPlanWorkPayload;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;
 use Domain\Plans\Data\PlanWorkResultData;

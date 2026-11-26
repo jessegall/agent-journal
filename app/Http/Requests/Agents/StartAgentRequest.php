@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\BuiltInStartProfiles;
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Sessions\StartOriginType;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\ConversationModeType;
 use App\Models\Agents\Agent;
-use App\Support\StartPreviews;
+use App\Sessions\Contracts\BuiltInStartProfiles;
+use App\Sessions\Enums\StartOriginType;
+use App\Sessions\StartPreviews;
+use App\Sessions\Values\StartPolicy;
 use App\Values\ModelSelection;
 use App\Values\SelectedDriver;
-use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

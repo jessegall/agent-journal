@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Sessions\SessionResolver as SessionResolverContract;
-use App\Enums\Sessions\SessionStatus;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\AgentInspection;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\AgentInspection;
+use App\Sessions\Contracts\SessionResolver as SessionResolverContract;
+use App\Sessions\Enums\SessionStatus;
+use App\Sessions\SessionOption;
+use App\Sessions\StartReceipt;
 use App\Support\ReadBuilder;
-use App\Support\SessionOption;
-use App\Support\StartReceipt;
 use App\Values\StackTarget;
 
 /**

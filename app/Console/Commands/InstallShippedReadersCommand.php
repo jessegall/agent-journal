@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Bus\ConsoleOwner;
+use App\CommandRules\ShippedReaderInstaller;
+use App\CommandRules\Values\ToolVersions;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Models\Projects\Project;
-use App\Support\ConsoleOwner;
-use App\Support\ShippedReaderInstaller;
-use App\Values\ToolVersions;
 use Illuminate\Console\Command;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Events\Hooks\StateTypesRequested;
-use App\Support\StateLoading\RegisteredStateType;
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
+use App\Stacks\StateLoading\RegisteredStateType;
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 

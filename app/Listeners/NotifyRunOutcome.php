@@ -6,12 +6,12 @@ namespace App\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Notifications\Notifications;
-use App\Data\Notifications\NotificationTarget;
-use App\Enums\Notifications\NotificationSourceType;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Models\Runs\ProcessRun;
-use App\Resolvers\RunNotificationTarget;
+use App\Notifications\Contracts\Notifications;
+use App\Notifications\Data\NotificationTarget;
+use App\Notifications\Enums\NotificationSourceType;
+use App\Processes\Resolvers\RunNotificationTarget;
 
 /**
  * Tells the actor responsible for a run of its attempt's logical result, in the transaction that recorded it: one

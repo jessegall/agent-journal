@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\Enums\UsageWindowSlot;
 use App\Agents\Drivers\ClaudeCode\ClaudeResult;
-use App\Enums\Accounts\UsageWindowSlot;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Values\UsageCost;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;

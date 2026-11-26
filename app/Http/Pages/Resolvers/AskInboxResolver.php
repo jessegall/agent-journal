@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Asks\AskReader;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Asks\AskInbox;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Data\AskInbox;
+use App\Navigation\Contracts\PageResolver;
 
 final readonly class AskInboxResolver implements PageResolver
 {

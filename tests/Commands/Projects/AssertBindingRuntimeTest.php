@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Commands\Projects\AssertBindingRuntime\AssertBindingRuntimeCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
-use App\Support\JournalCommands;
+use App\Projects\Commands\AssertBindingRuntime\AssertBindingRuntimeCommand;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

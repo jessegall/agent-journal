@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\SignInAttemptEvent;
+use App\Accounts\Contracts\SignInAttemptEvent;
 
 /**
  * A sign-in attempt took the user's answer and checks it.

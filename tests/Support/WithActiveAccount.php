@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Actors\CurrentActorSetter;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Models\Accounts\Account;
 use App\Support\ActorReference;
-use App\Values\OwnerAuthority;
 
 /**
  * For a test that starts agents through the real start path: saves a signed-in account for each driver and

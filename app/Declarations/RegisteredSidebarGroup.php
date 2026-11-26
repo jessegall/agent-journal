@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\SidebarGroup;
+
 /**
  * A checked sidebar group of an installed domain: its full key and the label its owner gives it.
  */

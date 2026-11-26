@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Exceptions\InvalidRecordReference;
+use App\Web\Exceptions\InvalidRecordReference;
 use Illuminate\Support\Str;
 
 /**

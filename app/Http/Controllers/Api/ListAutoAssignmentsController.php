@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\ListAutoAssignmentsPayload;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Assignments\AutoAssignmentAccess;
-use App\Contracts\Assignments\AutoAssignmentResolver;
-use App\Data\Assignments\AutoAssignmentPageData;
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Api\ListAutoAssignmentsPayload;
+use App\Assignments\Contracts\AutoAssignmentAccess;
+use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Data\AutoAssignmentPageData;
 use App\Support\ActorReference;
 use App\Support\IdListPage;
 

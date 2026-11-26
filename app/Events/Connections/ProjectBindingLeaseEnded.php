@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectBindingEvent;
+use App\Connections\Contracts\ProjectBindingEvent;
 
 /**
  * The runtime that held a project binding stopped, so the binding is free.

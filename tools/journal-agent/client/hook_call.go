@@ -28,7 +28,7 @@ var ErrHookReplyMalformed = errors.New("the journal's answer is no hook reply")
 const hookReplyLimit = 4 << 20
 
 // HookCall is one native hook call prepared for the journal under its own call id and issue time, so a second send
-// after a failed one reaches the journal as the same call (App\Support\Relay\HookRelay::send).
+// after a failed one reaches the journal as the same call (App\Agents\Relay\HookRelay::send).
 type HookCall struct {
 	grant    StartGrant
 	target   string
@@ -38,7 +38,7 @@ type HookCall struct {
 }
 
 // PrepareHookCall prepares the native call of a driver's hook for the journal: POST /hooks/{driver}, with the
-// process generation as its query when the start names one (App\Support\Relay\RelaySettings::hookPath).
+// process generation as its query when the start names one (App\Agents\Relay\RelaySettings::hookPath).
 func (grant StartGrant) PrepareHookCall(driver string, generation int, native []byte) (HookCall, error) {
 	callID, err := newCallID()
 	if err != nil {
@@ -101,7 +101,7 @@ var directClient = &http.Client{
 
 // signedRequest is a POST of the content as JSON, signed as the grant's agent under the call id and issue time
 // given: the envelope with the start's profile key and revision after it
-// (App\Support\SignedCall::agentSignatureFor, App\Support\PreparedAgentCall::headers).
+// (App\Api\SignedCall::agentSignatureFor, App\Api\PreparedAgentCall::headers).
 func (grant StartGrant) signedRequest(
 	ctx context.Context,
 	target string,
@@ -138,7 +138,7 @@ type SignedAnswer struct {
 }
 
 // PostAsAgent posts the body, signed as the start's agent under a new call id and the issue time given, with the
-// unsigned headers beside it, and answers whatever the journal says (App\Support\AgentRequestClient::sendPrepared).
+// unsigned headers beside it, and answers whatever the journal says (App\Api\AgentRequestClient::sendPrepared).
 // Only a failure to reach the journal is an error.
 func (grant StartGrant) PostAsAgent(
 	ctx context.Context,

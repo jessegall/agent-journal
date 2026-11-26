@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

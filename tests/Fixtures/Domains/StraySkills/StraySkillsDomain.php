@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\StraySkills;
 
+use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Skills\SkillProvider;
 use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
 
 /**

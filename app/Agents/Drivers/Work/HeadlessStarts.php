@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
-use App\Commands\Agents\OpenAccountOwner\OpenAccountOwnerCommand;
-use App\Commands\Agents\OpenHeadlessTurn\OpenHeadlessTurnCommand;
-use App\Commands\Agents\OpenJournalTerminal\OpenJournalTerminalCommand;
-use App\Contracts\Bus\JournalCommands;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Hosts\HostProcessType;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Commands\OpenAccountOwner\OpenAccountOwnerCommand;
+use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
+use App\Agents\Commands\OpenJournalTerminal\OpenJournalTerminalCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\Values\JournalServer;
+use App\Bus\Contracts\JournalCommands;
 use App\Exceptions\DriverUnknown;
+use App\Hosts\Enums\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Sessions\SessionProcess;
 use App\Models\Sessions\SessionRequest;
-use App\Support\AgentClientSettings;
-use App\Support\SessionTokens;
-use App\Support\StartClaims;
-use App\Support\StartProfilePin;
+use App\Profiles\StartProfilePin;
+use App\Sessions\AgentClientSettings;
+use App\Sessions\SessionTokens;
+use App\Sessions\StartClaims;
 use App\Values\DriverAccount;
 use App\Values\DriverRegistration;
 use App\Values\DriverStart;
-use App\Values\JournalServer;
 
 /**
  * The start of a headless Claude Code runtime the journal drives itself, as each of its processes runs it: in the

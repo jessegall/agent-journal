@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Domains\DomainAvailability;
-use App\Contracts\Files\WorkspaceReader;
-use App\Exceptions\ScriptDefinitionRefused;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
+use App\Files\Contracts\WorkspaceReader;
+use App\Scripts\Exceptions\ScriptDefinitionRefused;
+use App\Scripts\ScriptKeywordRegistration;
+use App\Scripts\ScriptObjectRegistration;
+use App\Scripts\Values\ProfileRevisionReference;
+use App\Scripts\Values\ScriptContext;
 use App\Support\ActorReference;
 use App\Support\Bootstrappers\RegisterScriptDefinitions;
 use App\Support\DomainEntry;
 use App\Support\Objects\WorkspaceObject;
-use App\Support\ScriptKeywordRegistration;
-use App\Support\ScriptObjectRegistration;
 use App\Values\ProfileKey;
-use App\Values\ProfileRevisionReference;
-use App\Values\ScriptContext;
 use App\Values\WorkReference;
 use App\Values\WorkspaceReadReference;
 use Tests\Fixtures\Scripts\ExampleScriptObject;

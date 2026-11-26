@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
 use App\Models\Drivers\TerminalGrant;
+use App\Terminals\Commands\TakeTerminalControl\TakeTerminalControlCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

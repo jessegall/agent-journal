@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Projects;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Projects\AgentProjects;
+use App\Access\Contracts\JournalAdmission;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\ActorStore;
+use App\Projects\Contracts\AgentProjects;
+use App\Projects\CurrentProject;
 use App\Support\ActorReference;
-use App\Support\ActorStore;
-use App\Support\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use App\Values\TrustedEntryAuthority;

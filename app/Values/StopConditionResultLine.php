@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\StopConditionResultType;
+use App\Sessions\Enums\StopConditionResultType;
 
 /**
  * One stop condition's result as an inspection shows it: its label, how it ended, how long it took and the safe

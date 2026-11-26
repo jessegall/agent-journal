@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
-use App\Support\Sources\Contracts\DockSourceChanged;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Processes\Sources\Contracts\DockSourceChanged;
 use Domain\Tasks\Contracts\TaskRunEndEvent;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;

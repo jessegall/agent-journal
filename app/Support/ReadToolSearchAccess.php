@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Authorization\ReadGrant;
-use App\Contracts\Search\SearchAccess;
-use App\Values\AdmittedConstraints;
+use App\Access\Contracts\ReadGrant;
+use App\Search\Contracts\SearchAccess;
+use App\Search\Values\AdmittedConstraints;
+use App\Search\Values\OpenAction;
+use App\Search\Values\RecordLocation;
+use App\Search\Values\SearchReader;
 use App\Values\AllowedNames;
-use App\Values\OpenAction;
 use App\Values\ReadRequest;
-use App\Values\RecordLocation;
-use App\Values\SearchReader;
 
 /**
  * The access of a searchable whose records an agent reads through one read tool by an id argument, such as

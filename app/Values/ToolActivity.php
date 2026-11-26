@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Agents\Drivers\ClaudeCode\Enums\ClaudeCodeTool;
-use App\Enums\Agents\ActivityType;
-use App\Enums\Drivers\CodexTool;
-use App\Support\Inputs\Values\FileChanges;
+use App\Agents\Drivers\Enums\CodexTool;
+use App\Agents\Enums\ActivityType;
+use App\Agents\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\ToolResult;
 use PhpOption\None;
 use PhpOption\Option;

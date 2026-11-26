@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\GuardCommandProject;
-use App\Commands\Agents\CreateAgent\CreateAgentCommand;
-use App\Contracts\Actors\CurrentActor;
-use App\Enums\CommandRules\ReceiptStatus;
-use App\Exceptions\CrossProjectWrite;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Commands\CreateAgent\CreateAgentCommand;
+use App\Bus\CommandCall;
+use App\Bus\CommandMiddleware\GuardCommandProject;
+use App\Bus\Exceptions\CrossProjectWrite;
+use App\CommandRules\Enums\ReceiptStatus;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Agents\Agent;
-use App\Support\CommandCall;
-use App\Support\Projects\CurrentProject;
+use App\Projects\CurrentProject;
 use App\Values\ProjectOwner;
 use App\Values\ProjectSelection;
 use Tests\Fixtures\Projects\OwnedWrite;

@@ -6,10 +6,10 @@ namespace App\Support\Inspection\Queries;
 
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
+use App\Stacks\StackRestorer;
 use App\Support\Inspection\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Support\Inspection\InspectedCall;
 use App\Support\Inspection\StackInspection;
-use App\Support\Stack\StackRestorer;
 use App\Values\StackTarget;
 
 /**

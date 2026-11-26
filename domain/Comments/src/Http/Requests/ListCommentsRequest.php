@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Comments\Http\Requests;
 
 use App\Http\Requests\RecordTargetRequest;
+use App\Reads\Values\PageSize;
 use App\Support\IdListPage;
-use App\Values\PageSize;
 
 /**
  * A page of one record's comments, after a comment id when reading on.

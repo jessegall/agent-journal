@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Library;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Authorization\VisibilityCheck;
+use App\Access\Contracts\VisibilityCheck;
+use App\Actors\Contracts\Actor;
 
 /**
  * Lets every actor see until a test revokes it in ListedNavigation.

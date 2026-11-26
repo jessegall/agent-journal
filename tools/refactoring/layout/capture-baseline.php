@@ -11,10 +11,10 @@ declare(strict_types=1);
  *   php tools/refactoring/layout/capture-baseline.php
  */
 
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\CommandName;
 use App\Mcp\Support\McpCatalogue;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\CommandName;
-use App\Support\CoreListenerFolders;
 use App\Support\Reflector;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Routing\Route;

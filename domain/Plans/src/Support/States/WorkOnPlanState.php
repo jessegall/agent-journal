@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\States;
 
-use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Contracts\Work\DurableState;
-use App\Contracts\Work\WorkState;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
+use App\Stacks\Contracts\Work\WorkState;
 use App\Support\RecordIdentity;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Plans\Events\PlanCancelled;
 use Domain\Plans\Events\PlanEvent;

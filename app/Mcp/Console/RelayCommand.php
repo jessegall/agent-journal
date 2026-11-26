@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Contracts\Sessions\SessionTokenSource;
+use App\Api\AgentRequestClient;
 use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
-use App\Exceptions\SessionTokenRefused;
-use App\Exceptions\StartSettingMissing;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\RelayFrames;
-use App\Support\AgentRequestClient;
+use App\Sessions\Contracts\SessionTokenSource;
+use App\Sessions\Exceptions\SessionTokenRefused;
+use App\Sessions\Exceptions\StartSettingMissing;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 

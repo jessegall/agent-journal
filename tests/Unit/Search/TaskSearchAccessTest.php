@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Contracts\Authorization\ReadGrant;
-use App\Data\Profiles\ProfileAuthorization;
-use App\Data\Profiles\ScopedRead;
-use App\Enums\Profiles\AuthorizationType;
-use App\Enums\Search\SearchSurface;
-use App\Exceptions\ReadGrantRefused;
+use App\Access\Contracts\ReadGrant;
+use App\Profiles\Data\ProfileAuthorization;
+use App\Profiles\Data\ScopedRead;
+use App\Profiles\Enums\AuthorizationType;
+use App\Reads\Exceptions\ReadGrantRefused;
+use App\Search\Enums\SearchSurface;
+use App\Search\Values\SearchReader;
 use App\Support\ActorReference;
 use App\Values\AllowedNames;
 use App\Values\ReadRequest;
-use App\Values\SearchReader;
 use Domain\Tasks\Support\Mcp\TaskReadResult;
 use Domain\Tasks\Support\TaskSearchAccess;
 use Domain\Tasks\TasksDomain;

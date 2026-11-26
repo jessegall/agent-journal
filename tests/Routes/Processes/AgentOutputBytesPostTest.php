@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\RecordEvidenceReads\RecordEvidenceReadsCommand;
+use App\CommandRules\Commands\RecordEvidenceReads\RecordEvidenceReadsCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

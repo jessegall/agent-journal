@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Accounts\AccountUses;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Accounts\StartAccountData;
-use App\Exceptions\AccountUseMissing;
+use App\Accounts\Contracts\AccountUses;
+use App\Accounts\Data\StartAccountData;
+use App\Accounts\Exceptions\AccountUseMissing;
 use App\Http\Requests\Profiles\StartAccountPageRequest;
 use App\Models\Accounts\Account;
+use App\Navigation\Contracts\PageResolver;
 
 /**
  * Reads the account a start ran with through the owner-only account uses, and its label from the saved accounts; a

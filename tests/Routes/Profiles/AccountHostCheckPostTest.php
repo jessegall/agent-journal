@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\CheckAccount\CheckAccountCommand;
-use App\Enums\Accounts\AccountCheckResult;
+use App\Accounts\Commands\CheckAccount\CheckAccountCommand;
+use App\Accounts\Enums\AccountCheckResult;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

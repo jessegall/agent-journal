@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
+use App\Bus\Attributes\Dispatches;
+use App\CommandRules\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
 use App\Http\Requests\Processes\ApproveBundleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

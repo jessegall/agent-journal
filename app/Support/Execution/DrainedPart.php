@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
+use App\Processes\Execution\SpawnedPart;
+
 /**
  * A started part whose output was read while it ran: the standard output kept for a substitution, and whether the
  * output was read to its end before the drain stopped.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Values;
 
-use App\Values\RecordLocation;
+use App\Search\Values\RecordLocation;
 use Domain\Documents\Exceptions\PublicationPassageUnknown;
 
 /**

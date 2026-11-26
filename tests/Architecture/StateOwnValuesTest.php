@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Support\ReflectedProperty;
-use App\Support\Stack\StateTypes;
-use App\Support\StateLoading\StateValues;
-use App\Support\States\AgentState;
+use App\Reflection\ReflectedProperty;
+use App\Stacks\AgentState;
+use App\Stacks\StateLoading\StateValues;
+use App\Stacks\StateTypes;
 use Tests\Fixtures\Hooks\StateLoading\HandedCountState;
 use Tests\Fixtures\Hooks\StateLoading\HandedFlagState;
 use Tests\Fixtures\Hooks\StateLoading\KeptValuesState;

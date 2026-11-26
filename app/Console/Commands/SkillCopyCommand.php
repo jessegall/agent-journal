@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Skills\CopySkill\CopySkillCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Console\Concerns\PrintsSkillRefusals;
-use App\Contracts\Bus\CommandBus;
-use App\Support\SkillAuthoringService;
+use App\Skills\Commands\CopySkill\CopySkillCommand;
+use App\Skills\SkillAuthoringService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

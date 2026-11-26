@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RevokeProjectInvitation\RevokeProjectInvitationCommand;
-use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Connections\Values\ReleaseManifest;
 use App\Models\Projects\ProjectInvitation;
-use App\Values\ReleaseManifest;
-use App\Values\SettingReference;
+use App\Projects\Commands\RevokeProjectInvitation\RevokeProjectInvitationCommand;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Event;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Assignments;
 
-use App\Contracts\Assignments\AssignedWorkProvider as AssignedWorkProviderContract;
-use App\Contracts\Assignments\AssignmentQuery;
+use App\Assignments\Contracts\AssignedWorkProvider as AssignedWorkProviderContract;
+use App\Assignments\Contracts\AssignmentQuery;
 use App\Support\AssigneeIdentity;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskType;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Chat\Commands\React\ReactCommand;
 use Domain\Chat\Data\ReactInput;
 use Illuminate\Http\RedirectResponse;

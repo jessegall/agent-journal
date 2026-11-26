@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\ClearNotes\ClearNotesCommand;
 
 final class ClearNotesHandler implements CommandHandler
 {

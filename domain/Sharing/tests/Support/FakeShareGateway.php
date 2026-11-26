@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Support;
 
-use App\Contracts\Sharing\ShareGateway;
-use App\Support\GatewayConfiguration;
-use App\Support\GatewayEndpoint;
-use App\Support\GatewayHealth;
-use App\Support\GatewayOperation;
-use App\Support\GatewaySettings;
-use App\Support\GatewaySetupCheck;
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\GatewayConfiguration;
+use App\Sharing\GatewayEndpoint;
+use App\Sharing\GatewayHealth;
+use App\Sharing\GatewayOperation;
+use App\Sharing\GatewaySettings;
+use App\Sharing\GatewaySetupCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
 
 /**

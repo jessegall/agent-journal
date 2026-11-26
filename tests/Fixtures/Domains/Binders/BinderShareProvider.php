@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Binders;
 
+use App\Sharing\Contracts\ShareBudget;
+use App\Sharing\Contracts\ShareRecordProvider;
 use App\Support\RecordIdentity;
-use App\Contracts\Sharing\ShareBudget;
-use App\Contracts\Sharing\ShareRecordProvider;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;
@@ -14,8 +14,8 @@ use App\Support\ShareRecords;
 use App\Support\ShareRelationRead;
 use App\Support\ShareSelection;
 use App\Support\ShareTargetRead;
-use Illuminate\Support\Facades\DB;
 use App\Values\ProjectOwner;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Reads every batch of binder pages with one query, at the versions BinderPublications names; the record with the
@@ -48,11 +48,11 @@ final class BinderShareProvider implements ShareRecordProvider
     {
         DB::select('select 1');
         $eligible = array_values(
-array_filter($read->targets, fn (RecordIdentity $target) => $this->mayDisclose($target)),
-);
+            array_filter($read->targets, fn (RecordIdentity $target) => $this->mayDisclose($target)),
+        );
         $ineligible = array_values(
-array_filter($read->targets, fn (RecordIdentity $target) => ! $this->mayDisclose($target)),
-);
+            array_filter($read->targets, fn (RecordIdentity $target) => ! $this->mayDisclose($target)),
+        );
 
         return new ShareRecords(array_map($this->card(...), $eligible), $ineligible, null);
     }

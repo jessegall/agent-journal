@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Agents\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Commands\InstallMainAgent\InstallMainAgentCommand as InstallMainAgent;
+use App\Bus\JournalCommands;
 use App\Models\Agents\MainAgentDesignation;
 use App\Models\Projects\Project;
-use App\Support\JournalCommands;
 use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
 

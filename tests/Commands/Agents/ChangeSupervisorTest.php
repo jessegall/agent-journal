@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ChangeSupervisor\ChangeSupervisorCommand;
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\ChangeSupervisor\ChangeSupervisorCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Asks\SupervisorChange;
 use App\Models\Asks\SupervisorLink;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\ProfileProposal;
+use App\Profiles\Values\ProfileActivation;
 use App\Support\ActorReference;
-use App\Support\ProfileProposal;
 use App\Values\AskTypeKey;
-use App\Values\ProfileActivation;
 use App\Values\SupervisorTarget;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

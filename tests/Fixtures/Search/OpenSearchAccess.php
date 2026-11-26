@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Search;
 
-use App\Contracts\Search\SearchAccess;
+use App\Search\Contracts\SearchAccess;
+use App\Search\Values\AdmittedConstraints;
+use App\Search\Values\OpenAction;
+use App\Search\Values\RecordLocation;
+use App\Search\Values\SearchReader;
 use App\Support\ActorReference;
-use App\Values\AdmittedConstraints;
-use App\Values\OpenAction;
 use App\Values\ReadRequest;
-use App\Values\RecordLocation;
-use App\Values\SearchReader;
 
 /**
  * A search policy that asks agents for tasks_read and lets every signed-in user search.

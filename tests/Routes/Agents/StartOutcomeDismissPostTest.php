@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
-use App\Enums\Sessions\StartDisposition;
+use App\Sessions\Commands\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
+use App\Sessions\Enums\StartDisposition;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

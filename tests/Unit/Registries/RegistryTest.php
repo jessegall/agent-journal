@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Registries;
 
-use App\Exceptions\StateTypeRepeated;
-use App\Exceptions\StateTypeUnknown;
+use App\Stacks\Exceptions\StateTypeRepeated;
+use App\Stacks\Exceptions\StateTypeUnknown;
 use App\Support\Registry;
 use PHPUnit\Framework\TestCase;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
-use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
-use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
+use App\Skills\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Skills\Commands\PublishSkills\PublishSkillsCommand;
+use App\Skills\Exceptions\SkillPublicationStale;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

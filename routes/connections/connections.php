@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Projects\HostRouteRole;
 use App\Http\Controllers\Api\CancelProjectCommandController;
 use App\Http\Controllers\Api\ReadProjectCommandStatusController;
 use App\Http\Controllers\Api\RunProjectCommandController;
@@ -24,6 +23,7 @@ use App\Http\Controllers\RevokeProjectBindingsController;
 use App\Http\Controllers\RevokeProjectInvitationController;
 use App\Http\Controllers\RuntimeLeaseController;
 use App\Http\Middleware\AuthenticateDeviceGrant;
+use App\Projects\Enums\HostRouteRole;
 use App\Support\ApiRegistrar;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;

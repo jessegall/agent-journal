@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Processes\PartOutputData;
-use App\Data\Processes\ProblemData;
-use App\Data\Processes\RunWindowData;
 use App\Http\Pages\ProcessRuns\ProcessRunsShow;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Resolvers\Support\RunSnapshotResolver;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\PartOutputData;
+use App\Processes\Data\ProblemData;
+use App\Processes\Data\RunWindowData;
+use App\Processes\Resolvers\Support\RunSnapshotResolver;
+use App\Processes\StoredOutput;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\StoredOutput;
 
 /**
  * One run of the current project for its page: the live snapshot, the escaped tail of every stream of every part and

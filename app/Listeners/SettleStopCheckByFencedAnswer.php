@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Sessions\SettleFencedStopCheck\SettleFencedStopCheckCommand;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostOrderAnswerEvent;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Contracts\HostOrderAnswerEvent;
+use App\Hosts\Enums\HostOrderType;
+use App\Sessions\Commands\SettleFencedStopCheck\SettleFencedStopCheckCommand;
 
 /**
  * The host's answer to a run_fenced order, or its refusal, settles the stop attempt whose conditions it ran.

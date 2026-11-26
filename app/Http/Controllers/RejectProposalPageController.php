@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
+use App\Bus\Attributes\Dispatches;
+use App\CommandRules\Commands\RejectRuleProposal\RejectRuleProposalCommand;
 use App\Http\Requests\Processes\ReviewRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

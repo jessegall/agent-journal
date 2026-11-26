@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
-use App\Contracts\Actors\CurrentUserResolver;
-use App\Data\Layouts\LayoutShape;
+use App\Actors\Contracts\CurrentUserResolver;
 use App\Models\Records\Layout;
+use App\Terminals\Data\LayoutShape;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;

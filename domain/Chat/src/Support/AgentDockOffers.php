@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Data\Docks\DockOfferData;
-use App\Exceptions\DockSourceUnavailable;
+use App\Docking\Data\DockOfferData;
+use App\Docking\Exceptions\DockSourceUnavailable;
+use App\Docking\Sources\Contracts\DockOffers;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Support\Cards\DockIdentity;
-use App\Support\Sources\Contracts\DockOffers;
-use App\Support\Sources\Contracts\DockRegistration;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

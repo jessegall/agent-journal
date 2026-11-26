@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\AgentSessionEvent;
+use App\Sessions\Contracts\AgentSessionEvent;
 
 /**
  * A session entered its driver's conversation.

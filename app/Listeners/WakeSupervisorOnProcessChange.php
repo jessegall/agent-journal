@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostProcessEvent;
-use App\Support\Hosts\HostWake;
+use App\Hosts\Contracts\HostProcessEvent;
+use App\Hosts\HostWake;
 
 /**
  * Once a change of a host's process is committed, the worker supervisor looks again at which processes need a worker.

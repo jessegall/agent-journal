@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
-use App\Values\Redemption;
+use App\Projects\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
+use App\Projects\Values\Redemption;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;

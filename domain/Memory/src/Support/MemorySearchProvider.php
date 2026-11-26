@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Support;
 
-use App\Contracts\Search\SearchProvider;
-use App\Contracts\Search\TieredSearch;
-use App\Enums\Search\ScoreTier;
+use App\Search\Contracts\SearchProvider;
+use App\Search\Contracts\TieredSearch;
+use App\Search\Enums\ScoreTier;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+use App\Search\Values\SearchResult;
+use App\Search\Values\TieredSearchSource;
 use App\Support\ActorReference;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
-use App\Values\RefreshCandidates;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
-use App\Values\SearchResult;
-use App\Values\TieredSearchSource;
 use Domain\Memory\Models\Memory;
 
 /**

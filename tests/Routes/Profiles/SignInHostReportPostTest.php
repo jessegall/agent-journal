@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\NotifySignIn\NotifySignInCommand;
-use App\Enums\Accounts\SignInOutcome;
+use App\Accounts\Commands\NotifySignIn\NotifySignInCommand;
+use App\Accounts\Enums\SignInOutcome;
 use App\Values\SignInIdentity;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;

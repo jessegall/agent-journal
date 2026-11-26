@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Agents\AgentSession;
-use App\Support\ConsoleOwner;
+use App\Terminals\Commands\RunKeyScript\RunKeyScriptCommand as RunKeyScript;
 use App\Values\ScriptParameter;
 use Illuminate\Console\Command;
 

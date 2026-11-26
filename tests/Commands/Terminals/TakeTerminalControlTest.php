@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Terminals\TerminalControlRefusal;
-use App\Enums\Terminals\TerminalGrantStatus;
-use App\Exceptions\TerminalControlRefused;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Hosts\Enums\HostOrderType;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Terminals\Enums\TerminalControlRefusal;
+use App\Terminals\Enums\TerminalGrantStatus;
+use App\Terminals\Exceptions\TerminalControlRefused;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InspectOnlyAuthorizer;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Admission\StackAdmission;
-use App\Contracts\Sessions\StartTransaction;
+use App\Access\Contracts\StackAdmission;
+use App\Access\Exceptions\StackLockTimedOut;
+use App\Access\StateEvents\StateEventScope;
+use App\Bus\Contracts\Work\UnitOfWork;
 use App\Contracts\Work\StackTransaction as StackTransactionContract;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Contracts\Work\UnitOfWork;
-use App\Exceptions\StackLockTimedOut;
 use App\Exceptions\StackTransactionRequired;
-use App\Support\StateEvents\StateEventScope;
+use App\Sessions\Contracts\StartTransaction;
 use App\Values\StackTarget;
 use Closure;
 use Illuminate\Database\ConnectionInterface;

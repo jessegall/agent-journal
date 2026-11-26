@@ -8,12 +8,12 @@ use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
 use App\Events\Sessions\SessionTokenIssued;
 use App\Events\Sessions\SessionTokenRevoked;
 use App\Events\Sessions\SessionTokenRotated;
 use App\Models\Agents\AgentSession;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

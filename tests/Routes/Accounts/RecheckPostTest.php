@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\RecheckAccount\RecheckAccountCommand;
+use App\Accounts\Commands\RecheckAccount\RecheckAccountCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

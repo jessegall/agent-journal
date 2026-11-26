@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Sessions\SessionClosed;
 use Domain\Documents\Commands\ChangeDocumentDetails\ChangeDocumentDetailsCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;

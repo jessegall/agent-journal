@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Rules;
 
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\OperandType;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\OperandType;
 use App\Values\CommandClassSet;
 use App\Values\OptionGrammar;
 use App\Values\WrapperRule;

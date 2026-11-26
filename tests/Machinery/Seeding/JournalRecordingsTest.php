@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Contracts\Hosts\HostChannel;
+use App\Hosts\Contracts\HostChannel;
 use App\Values\HostOrderSource;
 use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 use Tests\TestCase;

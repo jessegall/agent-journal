@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Records;
 
-use App\Commands\Records\InstallNumbers\InstallNumbersCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use App\Models\Records\GlobalGroup;
+use App\Records\Commands\InstallNumbers\InstallNumbersCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

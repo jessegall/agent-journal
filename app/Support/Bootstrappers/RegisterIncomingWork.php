@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Bootstrappers;
 
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Contracts\Work\IncomingWorkRegistration;
+use App\Stacks\Contracts\Work\IncomingWorkRegistration;
 use App\Support\DomainEntry;
 
 /**

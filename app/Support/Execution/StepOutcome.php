@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
+use App\Processes\Execution\StepStatus;
 use App\Values\ExecutionContext;
 
 /**

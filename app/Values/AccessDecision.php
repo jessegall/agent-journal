@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Profiles\AccessRuleType;
+use App\Profiles\Enums\AccessRuleType;
 
 /**
  * What an access policy decided about one operation: allowed or refused, by which rule and why.

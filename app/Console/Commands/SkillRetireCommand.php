@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Skills\RetireSkill\RetireSkillCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
-use App\Contracts\Bus\CommandBus;
 use App\Models\Skills\Skill;
-use App\Support\SkillAuthoringService;
+use App\Skills\Commands\RetireSkill\RetireSkillCommand;
+use App\Skills\SkillAuthoringService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

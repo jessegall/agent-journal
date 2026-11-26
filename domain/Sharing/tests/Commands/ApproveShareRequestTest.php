@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;

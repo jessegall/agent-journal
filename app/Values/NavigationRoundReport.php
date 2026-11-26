@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Agents\Drivers\Values\MenuStep;
+
 /**
  * What the host saw after carrying out one round of the main agent: the stable screen after it, its rows redacted,
  * whether the round's proof showed on it, and the label helper's refusal when a choose or confirm was refused.

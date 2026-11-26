@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Records\AddLinkPayload;
-use App\Api\Records\LinkChanged;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
+use App\Records\Api\AddLinkPayload;
+use App\Records\Api\LinkChanged;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 
 /**

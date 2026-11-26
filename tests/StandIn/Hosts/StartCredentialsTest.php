@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\StandIn\Hosts;
 
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostProcessStatus;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostProcessStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
 use Tests\Support\TimeLimits\TimeLimit;

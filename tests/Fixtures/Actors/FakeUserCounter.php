@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Actors;
 
+use App\Actors\Contracts\ActiveActorCounter;
 use App\Models\Access\User;
-use App\Contracts\Actors\ActiveActorCounter;
 use Carbon\CarbonImmutable;
 
 /**

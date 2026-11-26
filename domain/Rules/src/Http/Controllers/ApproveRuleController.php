@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Http\Requests\ReviewRuleRequest;
 use Domain\Rules\Models\Rule;

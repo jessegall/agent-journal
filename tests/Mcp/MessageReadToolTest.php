@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
 use App\Mcp\Tools\MessageReadTool;
-use App\Support\ShownMessage;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\ShownMessage;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;

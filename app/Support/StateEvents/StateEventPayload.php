@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
+use App\Access\StateEvents\StateEventDispatch;
+
 /**
  * A dispatch carried privately through the framework's deferred arguments.
  */

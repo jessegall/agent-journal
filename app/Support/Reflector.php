@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Concerns\ReadsDeclaredAttributes;
-use App\Contracts\Reflection\Reflector as ReflectorContract;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Exceptions\ClassMissing;
 use App\Exceptions\MethodMissing;
 use App\Exceptions\PropertyMissing;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Reflection\Concerns\ReadsDeclaredAttributes;
+use App\Reflection\Contracts\Reflector as ReflectorContract;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\DeclarationAttributes;
+use App\Reflection\Exceptions\ClassMissing;
+use App\Reflection\ReflectedEnumCase;
+use App\Reflection\ReflectedProperty;
+use App\Reflection\ReflectionCatalogue;
+use App\Reflection\ReflectorNegation;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\TerminalViewEvent;
+use App\Agents\Drivers\Contracts\TerminalViewEvent;
 
 /**
  * A terminal view follows a runtime at its process generation.

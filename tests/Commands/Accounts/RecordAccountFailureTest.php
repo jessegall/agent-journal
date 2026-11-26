@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Commands\RecordAccountFailure\RecordAccountFailureCommand;
+use App\Accounts\Values\AccountLabel;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Accounts\RecordAccountFailure\RecordAccountFailureCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Drivers\DriverFailure;
+use App\Agents\Drivers\Enums\DriverFailure;
 use App\Events\Sessions\DriverFailed;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorReference;
-use App\Values\AccountLabel;
-use App\Values\OwnerAuthority;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;

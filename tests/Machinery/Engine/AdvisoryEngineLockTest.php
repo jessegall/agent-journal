@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Engine;
 
-use App\Exceptions\EngineConnectionLost;
-use App\Support\AdvisoryEngineLock;
-use App\Support\EngineSettings;
+use App\Engine\AdvisoryEngineLock;
+use App\Engine\EngineSettings;
+use App\Engine\Exceptions\EngineConnectionLost;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;

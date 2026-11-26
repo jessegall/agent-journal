@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Models\Drivers\DriverSwitch;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;

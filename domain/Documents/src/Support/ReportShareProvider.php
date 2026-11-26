@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Sharing\ShareBudget;
-use App\Contracts\Sharing\ShareRecordProvider;
-use App\Exceptions\ContentTooLarge;
 use App\Exceptions\RecordUnavailable;
+use App\Sharing\Contracts\ShareBudget;
+use App\Sharing\Contracts\ShareRecordProvider;
+use App\Skills\Exceptions\ContentTooLarge;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;

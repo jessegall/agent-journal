@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Enums\Profiles\ModelTier;
-use App\Support\BuiltInAuthorizations;
+use App\Profiles\BuiltInAuthorizations;
+use App\Profiles\Enums\ModelTier;
 use App\Support\DomainRegistry;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;

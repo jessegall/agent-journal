@@ -8,7 +8,7 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\DefaultDrivers;
 use App\Events\Sessions\StartSettingsRequested;
 use App\Listeners\SupplyHookSettings;
-use App\Support\IsolatedHookSettings;
+use App\Sessions\IsolatedHookSettings;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

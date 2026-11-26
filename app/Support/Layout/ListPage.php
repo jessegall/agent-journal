@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Enums\Web\ReaderWidth;
+use App\Navigation\Layout\LayoutMenuData;
+use App\Web\Enums\ReaderWidth;
 
 /**
  * The shared recipe of an index page: its header with the title, the count when the response supplies a total, the

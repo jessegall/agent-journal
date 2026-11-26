@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
 use App\Exceptions\CodeReadOutsideProject;
+use App\Files\Enums\Place;
 use App\Support\CodeFiles;
 use App\Values\FilePath;
 use Illuminate\Filesystem\Filesystem;

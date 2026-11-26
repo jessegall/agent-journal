@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\DisableShareGateway;
 
-use App\Contracts\Sharing\SharePolicy;
-use App\Support\GatewayConfiguration;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\GatewayConfiguration;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\GatewayOutcome;

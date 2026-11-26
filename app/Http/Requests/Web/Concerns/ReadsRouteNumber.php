@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web\Concerns;
 
-use App\Support\Web\RouteNumber;
+use App\Web\RouteNumber;
 
 /**
  * Reads a record number from a user route, or the page is not found.

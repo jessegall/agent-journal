@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Accounts\ClaimAccountCheck\ClaimAccountCheckCommand;
+use App\Accounts\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

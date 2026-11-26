@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Values\AccountLabel;
+use App\Accounts\Values\AccountLabel;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

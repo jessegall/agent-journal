@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Layouts\LayoutShape;
+use App\Bus\Contracts\CommandBus;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Client\StrayRequestException;
 use Illuminate\Support\Facades\Http;

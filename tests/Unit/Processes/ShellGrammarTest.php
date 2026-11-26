@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\AnalysisLimit;
-use App\Enums\CommandRules\NodeType;
-use App\Enums\CommandRules\ParseOutcome;
-use App\Values\ShellNode;
+use App\Access\Values\ShellNode;
+use App\CommandRules\Enums\AnalysisLimit;
+use App\CommandRules\Enums\NodeType;
+use App\CommandRules\Enums\ParseOutcome;
 use App\Values\ShellTree;
 use Tests\Support\Processes\ParsesBashLines;
 use Tests\Support\TestText;

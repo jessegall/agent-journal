@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Bootstrappers;
 
-use App\Contracts\Assignments\AssignmentRegistration;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Contracts\Domains\DomainBootstrapper;
-use App\Enums\Assignments\AssignmentPurpose;
 use App\Support\DomainEntry;
 
 /**

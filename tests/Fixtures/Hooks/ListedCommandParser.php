@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\CommandRules\CommandEffect;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\ParseOutcome;
-use App\Enums\Processes\ShellDialect;
-use App\Values\CommandPart;
+use App\Agents\Values\CommandPart;
+use App\CommandRules\Enums\CommandEffect;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\ParseOutcome;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\ShellDialect;
 use App\Values\ShellCommand;
 
 /**

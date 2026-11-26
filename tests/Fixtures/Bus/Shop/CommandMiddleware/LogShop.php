@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\CommandMiddleware;
 
-use App\Contracts\Bus\CommandMiddleware;
-use App\Support\CommandCall;
+use App\Bus\CommandCall;
+use App\Bus\Contracts\CommandMiddleware;
 use Closure;
 
 final class LogShop implements CommandMiddleware

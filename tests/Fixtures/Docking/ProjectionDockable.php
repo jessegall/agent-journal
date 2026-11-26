@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Docking;
 
-use App\Support\Sources\Contracts\Dockable;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Support\Cards\DockCard;
+use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Support\Sources\Contracts\CardContext;
-use App\Support\Cards\DockCard;
+use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
-use App\Support\Cards\DockIdentity;
 
 /**
  * A source whose id says what its card is: a large one near the card's byte budget, one with a part that cannot be

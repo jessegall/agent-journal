@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\States;
 
 use App\Contracts\Events\Event;
-use App\Enums\Hooks\AnswerType;
 use App\Events\Assignments\AssignmentsEnded;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Agents\AgentFocus;
 use App\Models\Agents\AgentStackRow;
+use App\Stacks\References\SubjectReference;
 use App\Support\ActorReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
-use App\Support\References\SubjectReference;
 use App\Support\Storage\FrameRecord;
 use App\Values\StackTarget;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;

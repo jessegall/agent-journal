@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
-use App\Contracts\Bus\ResultReceipts;
-use App\Enums\Runs\AssessmentOutcome;
-use App\Enums\Runs\ProblemCode;
-use App\Enums\Runs\RunMode;
+use App\Bus\Contracts\ResultReceipts;
 use App\Events\Processes\EvidenceFoundInvalid;
 use App\Models\Runs\OutputAssessment;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ResultReceipt;
-use App\Values\OutputProblem;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
+use App\Processes\Enums\AssessmentOutcome;
+use App\Processes\Enums\ProblemCode;
+use App\Processes\Enums\RunMode;
+use App\Processes\Values\OutputProblem;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\StartsWithApprovedAcmePair;

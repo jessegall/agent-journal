@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\States\StateType;
-use App\Support\ReflectedProperty;
+use App\Reflection\ReflectedProperty;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\StateLoading\RegisteredStateType;
+use App\Stacks\StateLoading\StateValues;
+use App\Stacks\StateTypes;
 use App\Support\Reflector;
-use App\Support\Stack\StateTypes;
-use App\Support\StateLoading\RegisteredStateType;
-use App\Support\StateLoading\StateValues;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;

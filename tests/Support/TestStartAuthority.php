@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Enums\Profiles\ModelTier;
+use App\Access\Contracts\PolicyCatalogue;
+use App\Access\Values\PolicyDefinition;
 use App\Models\Agents\Agent;
-use App\Support\BuiltInAuthorizations;
-use App\Values\PolicyDefinition;
+use App\Profiles\BuiltInAuthorizations;
+use App\Profiles\Enums\ModelTier;
 use App\Values\ProfileBase;
 use App\Values\ProfileKey;
 use App\Values\ProfileSnapshot;

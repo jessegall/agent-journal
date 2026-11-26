@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Events\Web\PageChanged;
-use App\Exceptions\CommandAdmissionRefused;
 use App\Exceptions\CrossProjectEdge;
 use App\Support\ActorReference;
-use App\Support\UserChannel;
 use App\Values\ProjectOwner;
+use App\Web\UserChannel;
 use Domain\Rules\Commands\ApproveRule\ApproveRuleCommand;
 use Domain\Rules\Commands\DenyRule\DenyRuleCommand;
 use Domain\Rules\Enums\RuleStatus;

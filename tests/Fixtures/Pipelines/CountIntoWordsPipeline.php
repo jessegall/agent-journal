@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
 
 /**
  * A fixture pipeline that declares Words as its output but ends on the Counted its one pipe hands out.

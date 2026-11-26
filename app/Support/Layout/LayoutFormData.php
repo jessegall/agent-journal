@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Enums\Settings\ActionMethod;
+use App\Settings\Enums\ActionMethod;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

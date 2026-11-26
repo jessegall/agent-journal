@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectReadEvent;
+use App\Connections\Contracts\ProjectReadEvent;
 
 /**
  * A project read was answered with a file's text.

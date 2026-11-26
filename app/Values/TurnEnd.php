@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\RequestOutcome;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Models\Drivers\DriverRequest;
 
 /**

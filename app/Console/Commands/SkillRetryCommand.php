@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsPublicationOutcomes;
-use App\Exceptions\SkillPublicationFailed;
-use App\Exceptions\SkillPublicationMissing;
-use App\Support\SkillPublishingService;
+use App\Skills\Exceptions\SkillPublicationFailed;
+use App\Skills\Exceptions\SkillPublicationMissing;
+use App\Skills\SkillPublishingService;
 use Illuminate\Console\Command;
 
 /**

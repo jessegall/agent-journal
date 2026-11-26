@@ -16,7 +16,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/SettingsWriter.php',
+            'app/Settings/SettingsWriter.php',
         ],
     ],
     SettingsRevised::class => [

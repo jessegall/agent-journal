@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Enums\Engine\NoSubject;
-use App\Enums\Hooks\AnswerType;
-use App\Exceptions\AgentContextMissing;
+use App\Actors\ActorStore;
+use App\Agents\Drivers\Storage\RecordedSteps;
+use App\Engine\Enums\NoSubject;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
-use App\Support\ActorStore;
+use App\Sessions\Exceptions\AgentContextMissing;
+use App\Stacks\References\StateReference;
+use App\Stacks\StateTypes;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\References\StateReference;
-use App\Support\Stack\StateTypes;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\RecordedAnswer;
-use App\Support\Storage\RecordedSteps;
 use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;

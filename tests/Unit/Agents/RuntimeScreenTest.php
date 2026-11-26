@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Agents;
 
-use App\Data\Terminals\ScreenFrameData;
-use App\Enums\Terminals\ScreenBuffer;
-use App\Support\RuntimeScreen;
-use App\Support\ScreenRegistration;
+use App\Terminals\Data\ScreenFrameData;
+use App\Terminals\Enums\ScreenBuffer;
+use App\Terminals\RuntimeScreen;
+use App\Terminals\ScreenRegistration;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
 

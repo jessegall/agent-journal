@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
-use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
-use App\Enums\Connections\BindingReadiness;
-use App\Enums\Projects\DeviceGrantStatus;
+use App\Connections\Enums\BindingReadiness;
 use App\Models\Projects\DeviceGrant;
 use App\Models\Projects\ProjectBinding;
-use App\Values\InstallTicket;
+use App\Projects\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Projects\Commands\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Projects\Enums\DeviceGrantStatus;
+use App\Projects\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;

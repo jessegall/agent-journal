@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\FocusTask;
 
-use App\Contracts\Work\AgentFocuses;
-use App\Contracts\Work\AgentStacks;
-use App\Exceptions\FrameNotHeld;
+use App\Stacks\Contracts\Work\AgentFocuses;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Exceptions\FrameNotHeld;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Exceptions\TaskChangedSinceRead;
 use Domain\Tasks\Models\Task;

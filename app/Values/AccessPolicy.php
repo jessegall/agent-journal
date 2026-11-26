@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Profiles\AccessRuleType;
-use App\Enums\Profiles\ResourceType;
+use App\Profiles\Enums\AccessRuleType;
+use App\Profiles\Enums\ResourceType;
+use App\Profiles\Values\HostAccess;
+use App\Sessions\Values\ProcessGrants;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

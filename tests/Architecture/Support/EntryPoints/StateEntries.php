@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
+use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\Reflector;
 use App\Support\StateCatalog\Contracts\StateTypes;
-use App\Support\StateLoading\RegisteredStateType;
 
 /**
  * Every state type the booted journal registers, each with its one test file under the states folder of core or of

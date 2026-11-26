@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Skills\RefreshSkills\RefreshSkillsCommand;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
 use App\Events\Skills\SkillsChanged;
-use App\Support\JournalCommands;
+use App\Skills\Commands\RefreshSkills\RefreshSkillsCommand;
 
 /**
  * After a stored skill changed and its transaction committed, the journal refreshes the catalogue as itself, so the

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Exceptions\SearchableInvalid;
+use App\Search\Exceptions\SearchableInvalid;
+use App\Search\SearchablesRegistry;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
 use App\Support\DomainRegistry;
 use App\Support\Searchable;
-use App\Support\SearchablesRegistry;
-use App\Values\RefreshCandidates;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Searching\Tasks\TasksDomain;
 use Tests\Fixtures\Domains\Tasks\TasksDomain as PlainTasksDomain;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\ListenerOwnership;
 use App\Listeners\BroadcastPageChange;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\CoreListenerFolders;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
-use App\Support\ListenerOwnership;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\TimeLimits\TimeLimit;
 

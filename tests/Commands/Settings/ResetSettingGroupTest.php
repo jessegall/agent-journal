@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
-use App\Commands\Settings\ResetSettingGroup\ResetSettingGroupCommand;
-use App\Contracts\Settings\EnabledSettingsGroup;
-use App\Contracts\Settings\SettingsResolver;
-use App\Enums\Settings\SettingsOutcome;
-use App\Exceptions\SettingStorageInvalid;
-use App\Support\Storage\EncodedSetting;
-use App\Support\Storage\EncodedToggle;
-use App\Support\Storage\EncodedValue;
+use App\Settings\Commands\ResetSettingGroup\ResetSettingGroupCommand;
+use App\Settings\Contracts\EnabledSettingsGroup;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Exceptions\SettingStorageInvalid;
+use App\Settings\Storage\EncodedSetting;
+use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedValue;
+use App\Settings\Values\SettingsChange;
 use App\Support\Storage\SettingsDocument;
-use App\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\Runs\PartType;
 use App\Exceptions\DockCardInvalid;
+use App\Processes\Enums\PartType;
 
 /**
  * The check every part makes of its key: present, since siblings are told apart by it.

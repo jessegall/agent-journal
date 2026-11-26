@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Authorization\VisibilityCheck;
+use App\Access\Contracts\VisibilityCheck;
 use App\Exceptions\InvalidMenuDeclaration;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\MenuItem;
+use App\Web\Declarations\RegisteredPage;
 
 /**
  * A checked menu item of an installed domain: its full key, the menu it joins, and the page or action of its own

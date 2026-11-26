@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Navigation\NavigationRecords as NavigationRecordsContract;
-use App\Data\Navigation\NavigationCountsData;
-use App\Data\Navigation\NavigationData;
-use App\Data\Navigation\NavigationGroupData;
-use App\Data\Navigation\NavigationItemData;
+use App\Navigation\Contracts\NavigationRecords as NavigationRecordsContract;
+use App\Navigation\Data\NavigationCountsData;
+use App\Navigation\Data\NavigationData;
+use App\Navigation\Data\NavigationGroupData;
+use App\Navigation\Data\NavigationItemData;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;

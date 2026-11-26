@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Bus\PipelineRunner;
-use App\Declarations\DomainClient;
-use App\Declarations\ToggleGroup;
+use App\Bootstrap\DomainSwitches;
+use App\Bootstrap\Exceptions\DomainNotFound;
+use App\Bus\CheckedCommandRegistries;
+use App\Bus\CommandOwner;
+use App\Bus\Contracts\PipelineRunner;
+use App\CommandRules\CommandRuleRegistry;
 use App\Exceptions\AmbiguousDomainRoot;
 use App\Exceptions\DomainCycle;
 use App\Exceptions\DomainListedTwice;
-use App\Exceptions\DomainNotFound;
 use App\Exceptions\RequiredDomainMissing;
-use App\Exceptions\SettingDeclarationInvalid;
 use App\Mcp\Contracts\McpRegistration;
+use App\Navigation\Declarations\DomainClient;
+use App\Settings\CoreSettings;
+use App\Settings\Declarations\ToggleGroup;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingRegistry;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Values\CommandRule;
-use App\Values\SkillConditionDefinition;
 use App\Values\SkillOwner;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Enums\Settings\ActionMethod;
+use App\Settings\Enums\ActionMethod;
 
 /**
  * An action a page or section owns: a route Web registers under the owning domain's prefix and route name, run behind

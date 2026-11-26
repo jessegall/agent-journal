@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Search\Contracts;
+
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+
+/**
+ * A domain's search over one searchable: it answers a query, or a RefreshCandidates query, with one batch. A
+ * closure declared in its place takes the same query and returns the same batch. It charges its work against the
+ * query's budget before each read and reads only what the reader's grant admits.
+ */
+interface SearchProvider
+{
+    /**
+     * One batch of matches for the query, or the candidates to look at again on a refresh.
+     */
+    public function search(SearchQuery|RefreshCandidates $query): SearchBatch;
+}

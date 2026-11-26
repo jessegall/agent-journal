@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\CommandMiddleware;
 
-use App\Contracts\Bus\CommandMiddleware;
-use App\Support\CommandCall;
+use App\Bus\CommandCall;
+use App\Bus\Contracts\CommandMiddleware;
 use Closure;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
@@ -19,7 +19,7 @@ final readonly class UppercasesText implements CommandMiddleware
         $command = $call->command();
 
         return $next(
-$command instanceof WriteNoteCommand ? $call->replacedBy(new WriteNoteCommand(strtoupper($command->text))) : $call,
-);
+            $command instanceof WriteNoteCommand ? $call->replacedBy(new WriteNoteCommand(strtoupper($command->text))) : $call,
+        );
     }
 }

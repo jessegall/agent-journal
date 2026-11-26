@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
+use App\Agents\Drivers\Enums\CodexAgentFeature;
 use App\Agents\Drivers\StartConditions\ResumedTerminal;
-use App\Enums\Drivers\CodexAgentFeature;
-use App\Support\CommandLines\AnyContext;
-use App\Support\CommandLines\Argument;
-use App\Support\CommandLines\ArgumentBuilder;
+use App\Processes\AnyContext;
+use App\Processes\Argument;
+use App\Processes\ArgumentBuilder;
 use App\Values\DriverStart;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers\Api;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\ProjectDestination;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Projects\Contracts\ProjectDestination;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 use Domain\Documents\Api\MakeDocumentPayload;
 use Domain\Documents\Api\RecordFiled;

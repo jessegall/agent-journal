@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
+use App\Accounts\Enums\CommandEntry;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Enums\SignInStatus;
+use App\Bus\JournalCommands;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\JournalCommands;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Bus;

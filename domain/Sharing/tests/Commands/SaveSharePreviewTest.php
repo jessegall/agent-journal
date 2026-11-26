@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Reads\ReadMeter;
-use App\Exceptions\SharingNotAllowed;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Records\Link;
-use App\Support\GatewaySettings;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Exceptions\SharingNotAllowed;
+use App\Sharing\GatewaySettings;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
-use App\Support\ShareRecordRegistry;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectOwner;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Models\Document;

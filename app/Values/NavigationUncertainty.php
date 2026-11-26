@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Navigation\NavigationReason;
+use App\Navigation\Enums\NavigationReason;
 
 /**
  * Where a key script run could not be certain, as the host raised it: why, at which step, and the stable screen it

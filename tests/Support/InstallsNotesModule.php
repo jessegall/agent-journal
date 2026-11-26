@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Numbers\NumberedTypeRegistry;
 use App\Support\DomainEntry;
-use App\Support\NumberedTypeRegistry;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 

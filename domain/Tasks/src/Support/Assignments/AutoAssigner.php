@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Contracts\Assignments\AssignmentQuery;
-use App\Contracts\Assignments\AutoAssigner as AutoAssignerContract;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Contracts\AssignmentQuery;
+use App\Assignments\Contracts\AutoAssigner as AutoAssignerContract;
 use App\Support\ActorReference;
 use App\Support\OrderedRecordIds;
 use App\Support\RecordIdentity;

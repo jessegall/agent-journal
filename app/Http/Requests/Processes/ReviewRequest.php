@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Processes;
 
-use App\Values\OwnerApproval;
-use App\Values\ReaderApproval;
+use App\CommandRules\Values\OwnerApproval;
+use App\CommandRules\Values\ReaderApproval;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Projects;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Inboxes\InboxEligibility;
-use App\Contracts\Inboxes\InboxMemberPolicies;
-use App\Contracts\Projects\AgentProjects;
-use App\Support\Access\OwnerAuthorizerProvider;
-use App\Support\ActorStore;
-use App\Support\Projects\CurrentProject;
+use App\Access\Contracts\JournalAdmission;
+use App\Access\OwnerAuthorizerProvider;
+use App\Actors\ActorStore;
+use App\Inboxes\Contracts\InboxEligibility;
+use App\Inboxes\Contracts\InboxMemberPolicies;
+use App\Projects\Contracts\AgentProjects;
+use App\Projects\CurrentProject;
 
 /**
  * For a unit test: the project selection store over the test's own actors, agent projects and admission.

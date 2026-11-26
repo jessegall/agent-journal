@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Processes;
 
 use App\Models\Runs\ProcessRun;
-use App\Support\Execution\SpawnedProcess;
+use App\Processes\Execution\SpawnedProcess;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;

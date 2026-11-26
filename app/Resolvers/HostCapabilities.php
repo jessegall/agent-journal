@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Files\Files;
-use App\Contracts\Hosts\HostCapabilities as HostCapabilitiesContract;
-use App\Enums\Accounts\AccountModeType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Projects\CapabilityStatusType;
-use App\Enums\Projects\HostCapabilityType;
+use App\Accounts\Enums\AccountModeType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Relay\Exceptions\FileJsonInvalid;
 use App\Exceptions\CapabilityMatrixInvalid;
-use App\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileUnreadable;
-use App\Support\HostCapability;
-use App\Support\HostCapabilityQuery;
+use App\Files\Contracts\Files;
+use App\Hosts\Contracts\HostCapabilities as HostCapabilitiesContract;
+use App\Hosts\HostCapability;
+use App\Hosts\HostCapabilityQuery;
+use App\Projects\Enums\CapabilityStatusType;
+use App\Projects\Enums\HostCapabilityType;
 use App\Values\FilePath;
 use BackedEnum;
 

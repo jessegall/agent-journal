@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
-use App\Enums\Runs\RunLogicalResult;
-use App\Enums\Runs\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Listeners\NotifyRunOutcome;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Models\Runs\ProcessRun;
-use App\Resolvers\Support\RunOutcomeSummaries;
-use App\Support\RunOutcomes;
+use App\Processes\Commands\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
+use App\Processes\Enums\RunLogicalResult;
+use App\Processes\Enums\RunResultSource;
+use App\Processes\Resolvers\Support\RunOutcomeSummaries;
+use App\Processes\RunOutcomes;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;

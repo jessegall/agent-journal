@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\ClassificationRuleEvent;
+use App\Processes\Contracts\ClassificationRuleEvent;
 
 /**
  * A command classification rule was restored from an earlier revision.

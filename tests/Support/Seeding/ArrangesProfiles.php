@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\Profiles\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Actors\ActorStore;
+use App\Bus\JournalCommands;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileDraft;
-use App\Support\ActorStore;
-use App\Support\JournalCommands;
-use App\Support\ProfileProposal;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\InstallBuiltInProfiles\InstallBuiltInProfilesCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Profiles\ProfileProposal;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use PHPUnit\Framework\Assert;

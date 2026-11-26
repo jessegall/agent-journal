@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
-use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
-use App\Data\Hosts\HostProcessReportData;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Enums\Hosts\HostProcessStatus;
-use App\Enums\Hosts\HostRefusal;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Events\Connections\HostProcessStarted;
 use App\Exceptions\HostProtocolRefused;
+use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
+use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Enums\HostRefusal;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Values\HostOrderSource;

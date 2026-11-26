@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
-use App\Contracts\Navigation\TerminalViewCloser;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Terminals\TerminalControlRefusal;
-use App\Enums\Terminals\TerminalGrantStatus;
-use App\Enums\Terminals\TerminalInputType;
-use App\Enums\Terminals\TerminalNamedKey;
-use App\Exceptions\TerminalControlRefused;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
-use App\Support\TerminalInput;
+use App\Navigation\Contracts\TerminalViewCloser;
+use App\Terminals\Commands\SendTerminalInput\SendTerminalInputCommand;
+use App\Terminals\Enums\TerminalControlRefusal;
+use App\Terminals\Enums\TerminalGrantStatus;
+use App\Terminals\Enums\TerminalInputType;
+use App\Terminals\Enums\TerminalNamedKey;
+use App\Terminals\Exceptions\TerminalControlRefused;
+use App\Terminals\TerminalInput;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

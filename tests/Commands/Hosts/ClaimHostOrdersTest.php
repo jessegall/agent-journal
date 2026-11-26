@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\ClaimHostOrders\ClaimHostOrdersCommand;
-use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Commands\Hosts\WriteHostInput\WriteHostInputCommand;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostProcessReportType;
-use App\Enums\Hosts\HostProcessType;
+use App\Hosts\Commands\ClaimHostOrders\ClaimHostOrdersCommand;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\WriteHostInput\WriteHostInputCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Values\ClaimedHostOrder;
+use App\Hosts\Values\HostOrderClaim;
 use App\Models\Hosts\HostOrder;
 use App\Models\Projects\Host;
 use App\Support\AgentImage;
-use App\Values\ClaimedHostOrder;
-use App\Values\HostOrderClaim;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

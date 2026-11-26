@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\CreateSkill\CreateSkillCommand;
-use App\Commands\Skills\RestoreSkill\RestoreSkillCommand;
-use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillRevision;
-use App\Values\SectionDraft;
-use App\Values\SkillDraft;
-use App\Values\SkillRevisionResult;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Commands\RestoreSkill\RestoreSkillCommand;
+use App\Skills\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Skills\Values\SectionDraft;
+use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillRevisionResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\TestIds;

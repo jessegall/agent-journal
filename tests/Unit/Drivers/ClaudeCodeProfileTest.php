@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\AccountStartRecipe;
+use App\Accounts\StartSetting;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\DefaultDrivers;
+use App\Agents\Drivers\Enums\ExecutablePlace;
 use App\Agents\Drivers\Hooks\HookReplies;
 use App\Agents\Drivers\Setup\DriverProfile;
-use App\Enums\Drivers\ExecutablePlace;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Hosts\RestartPolicy;
-use App\Enums\Sessions\TransportProfileType;
-use App\Exceptions\BuildNotPinned;
-use App\Exceptions\ProfileRefused;
-use App\Support\AccountStartRecipe;
-use App\Support\StartSetting;
+use App\Agents\Exceptions\BuildNotPinned;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Agents\Values\JournalServer;
+use App\Agents\Values\PlanFile;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Enums\RestartPolicy;
+use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;
-use App\Values\JournalServer;
-use App\Values\PlanFile;
 use Tests\TestCase;
 
 /**

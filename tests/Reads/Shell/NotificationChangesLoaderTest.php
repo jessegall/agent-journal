@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Shell;
 
-use App\Contracts\Refusals\FieldRefusal;
-use App\Data\Notifications\NotificationChangesInput;
-use App\Exceptions\NotificationCursorInvalid;
 use App\Http\Loaders\Shell\NotificationChangesLoader;
+use App\Notifications\Contracts\Refusals\FieldRefusal;
+use App\Notifications\Data\NotificationChangesInput;
+use App\Notifications\Exceptions\NotificationCursorInvalid;
 use Tests\Support\Entries\Attributes\TestsRead;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

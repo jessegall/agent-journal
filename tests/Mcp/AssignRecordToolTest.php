@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Mcp\Tools\AssignRecordTool;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
-use App\Support\AssignmentOutcome;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;

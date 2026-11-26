@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\MarkFailedUpgrades\MarkFailedUpgradesCommand;
-use App\Commands\Hosts\NotifyHostInventory\NotifyHostInventoryCommand;
-use App\Commands\Hosts\UpgradeHost\UpgradeHostCommand;
+use App\Hosts\Commands\MarkFailedUpgrades\MarkFailedUpgradesCommand;
+use App\Hosts\Commands\NotifyHostInventory\NotifyHostInventoryCommand;
+use App\Hosts\Commands\UpgradeHost\UpgradeHostCommand;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

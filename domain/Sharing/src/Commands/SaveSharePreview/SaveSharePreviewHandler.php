@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\SaveSharePreview;
 
-use App\Contracts\Reads\ReadMeter;
-use App\Contracts\Sharing\SharePolicy;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Contracts\SharePolicy;
 use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Models\ShareGatewayConfiguration;

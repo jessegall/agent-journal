@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\ReaderPositionEvent;
+use App\Processes\Contracts\ReaderPositionEvent;
 
 /**
  * A reader failed on a run's output, so its interpretation stops there.

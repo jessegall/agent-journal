@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\ActiveAccountEvent;
+use App\Accounts\Contracts\ActiveAccountEvent;
 
 /**
  * A driver family has no account chosen to start with any more.

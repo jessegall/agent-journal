@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 use Tests\Support\Exceptions\SimulatedFailure;
 
 /**

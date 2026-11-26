@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Authorization\VisibilityCheck;
-use App\Contracts\Navigation\DeclaredPages;
-use App\Contracts\Navigation\SlotSections;
-use App\Data\Pages\SlotSectionData;
-use App\Declarations\DomainClient;
-use App\Declarations\Loader;
-use App\Declarations\Menu;
-use App\Declarations\MenuItem;
-use App\Declarations\NavigationItem;
+use App\Access\Contracts\VisibilityCheck;
 use App\Declarations\Page;
 use App\Declarations\RegisteredAction;
 use App\Declarations\RegisteredLoader;
 use App\Declarations\RegisteredMenu;
 use App\Declarations\RegisteredMenuItem;
 use App\Declarations\RegisteredNavigation;
-use App\Declarations\RegisteredPage;
-use App\Declarations\RegisteredSection;
 use App\Declarations\RegisteredSidebarGroup;
-use App\Declarations\SidebarGroup;
 use App\Exceptions\ClientDeclarationMissing;
 use App\Exceptions\ClientKeyRepeated;
 use App\Exceptions\ClientPathRepeated;
 use App\Exceptions\ClientRouteConflict;
 use App\Exceptions\ClientSlotMissing;
-use App\Exceptions\InvalidNavigationDeclaration;
+use App\Navigation\Contracts\DeclaredPages;
+use App\Navigation\Contracts\SlotSections;
+use App\Navigation\Data\Pages\SlotSectionData;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Navigation\Declarations\Menu;
+use App\Navigation\Declarations\MenuItem;
+use App\Navigation\Declarations\NavigationItem;
+use App\Navigation\Declarations\SidebarGroup;
+use App\Navigation\Exceptions\InvalidNavigationDeclaration;
+use App\Web\Declarations\RegisteredPage;
+use App\Web\Declarations\RegisteredSection;
 use PhpOption\Option;
 
 /**

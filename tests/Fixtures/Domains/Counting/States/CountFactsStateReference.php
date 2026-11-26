@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Counting\States;
 
-use App\Enums\Engine\NoSubject;
-use App\Support\Decisions\StateReferenceFactory;
-use App\Support\References\StateReference;
+use App\Engine\Enums\NoSubject;
+use App\Stacks\Decisions\StateReferenceFactory;
+use App\Stacks\References\StateReference;
 
 /**
  * The stack reference of counting facts.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 
 /**
  * What a switch moves an agent to: the driver and driver type, the chosen account at its reviewed sign-in, the

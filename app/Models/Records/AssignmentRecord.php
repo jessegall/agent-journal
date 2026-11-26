@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models\Records;
 
+use App\Actors\Contracts\ActorVisibility;
+use App\Actors\Contracts\CurrentActor;
 use App\Concerns\BoundedReads;
-use App\Concerns\CountsPivotLoads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
-use App\Contracts\Actors\ActorVisibility;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\Accessor;
 use App\Models\Support\HasUlidKey;
 use App\Models\Support\SignedInScope;
+use App\Records\Concerns\CountsPivotLoads;
+use App\Records\Contracts\ReadableModel;
 use App\Support\AssigneeIdentity;
 use App\Support\Assignment;
 use App\Support\AssignmentReference;

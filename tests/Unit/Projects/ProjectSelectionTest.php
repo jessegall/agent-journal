@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Projects;
 
-use App\Enums\Projects\ProjectSelectionType;
-use App\Exceptions\ProjectNotChosen;
+use App\Projects\Enums\ProjectSelectionType;
+use App\Projects\Exceptions\ProjectNotChosen;
 use App\Values\ProjectOwner;
 use App\Values\ProjectSelection;
 use PHPUnit\Framework\TestCase;

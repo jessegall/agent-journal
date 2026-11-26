@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\RefuseMissingModels;
+use App\Bus\CommandMiddleware\RefuseMissingModels;
 use App\Exceptions\RecordUnavailable;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\MemoryDomain;

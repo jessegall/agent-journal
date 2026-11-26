@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\SwitchAgentDriver\SwitchAgentDriverCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\SwitchAgentDriver\SwitchAgentDriverCommand;
+use App\Agents\Values\DriverSwitchReceipt;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SwitchAgentDriverRequest;
-use App\Values\DriverSwitchReceipt;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

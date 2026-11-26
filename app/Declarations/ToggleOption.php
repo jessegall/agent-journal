@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Navigation\PageOption;
+use App\Navigation\Contracts\PageOption;
 
 /**
  * A pane menu option that is on or off, starting in the given position.

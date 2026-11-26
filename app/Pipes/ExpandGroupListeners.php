@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
-use App\Support\ListenerDeclarations;
-use App\Support\ListenerOwnership;
+use App\Bus\Contracts\Pipe;
+use App\Bus\ListenerDeclarations;
+use App\Bus\ListenerOwnership;
 use App\Support\Reflector;
 
 /**

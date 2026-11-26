@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
+use App\Bootstrap\ExportValidator;
 use App\Contracts\Events\Event;
 use App\Support\Exports as ExportList;
-use App\Support\ExportValidator;
 use App\Support\Reflector;
 use Tests\Fixtures\ExportedEvents\Api\Events\DraftSaved;
 use Tests\Fixtures\ExportedEvents\Support\ReportPrepared;

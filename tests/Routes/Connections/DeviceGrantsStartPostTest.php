@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\StartDeviceGrant\StartDeviceGrantCommand;
-use App\Support\EnrolledHost;
-use App\Values\DeviceGrantStart;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\StartDeviceGrant\StartDeviceGrantCommand;
+use App\Projects\Values\DeviceGrantStart;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

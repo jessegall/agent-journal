@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Projects\ProjectOwned;
+use App\Actors\Contracts\Actor;
 use App\Models\Projects\Project;
+use App\Projects\Contracts\ProjectOwned;
 use App\Values\ProjectOwner;
 
 /**

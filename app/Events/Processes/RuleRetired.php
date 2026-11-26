@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Events\ActiveRuleChange;
 use App\Models\CommandRules\ClassificationRule;
+use App\Processes\Contracts\Events\ActiveRuleChange;
 
 /**
  * A project owner retired a command rule: new admissions stop relying on it, processes already started run on.

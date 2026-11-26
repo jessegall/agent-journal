@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Revisions;
 
+use App\Connections\Layout\LayoutBodyData;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
-use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\PublicationPage;
 use Domain\Documents\Data\RevisionView;

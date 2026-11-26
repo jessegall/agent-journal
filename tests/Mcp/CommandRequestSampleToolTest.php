@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\CommandRules\StartSample\StartSampleCommand;
-use App\Mcp\Tools\CommandRequestSampleTool;
+use App\CommandRules\Commands\StartSample\StartSampleCommand;
+use App\CommandRules\Mcp\Tools\CommandRequestSampleTool;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

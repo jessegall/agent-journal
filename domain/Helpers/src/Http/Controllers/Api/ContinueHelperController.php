@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Http\Controllers\Api;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Api\ContinueHelperPayload;
 use Domain\Helpers\Commands\ContinueHelper\ContinueHelperCommand;
 use Domain\Helpers\Data\HelperReceiptData;

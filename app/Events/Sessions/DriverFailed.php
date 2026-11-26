@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Accounts\AccountNoticeCause;
-use App\Contracts\Events\ListenerFailureLog;
-use App\Contracts\Navigation\ClientUpdate;
-use App\Enums\Accounts\AccountNoticeReason;
-use App\Enums\Drivers\DriverFailure;
+use App\Accounts\Contracts\AccountNoticeCause;
+use App\Accounts\Enums\AccountNoticeReason;
+use App\Agents\Drivers\Enums\DriverFailure;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Sessions\Contracts\Events\ListenerFailureLog;
 use App\Support\RecordIdentity;
 
 /**

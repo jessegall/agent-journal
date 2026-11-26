@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
-use App\Enums\Sessions\StartDisposition;
+use App\Sessions\Commands\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
+use App\Sessions\Enums\StartDisposition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

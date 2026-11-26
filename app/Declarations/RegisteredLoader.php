@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Web\Declarations\RegisteredPage;
 use Spatie\LaravelData\Data;
 
 /**

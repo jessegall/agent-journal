@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Agents;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandRefusal;
-use App\Contracts\Time\ServerClock;
-use App\Enums\Engine\RefusalCode;
-use App\Support\TerminalControls;
-use App\Support\TerminalViewCloser;
+use App\Actors\Contracts\CurrentActor;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandRefusal;
+use App\Engine\Enums\RefusalCode;
+use App\Terminals\TerminalControls;
+use App\Terminals\TerminalViewCloser;
+use App\Time\Contracts\ServerClock;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;

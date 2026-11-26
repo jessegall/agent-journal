@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Processes\Values\ProgramIdentity;
+
 /**
  * The behaviour a rule selected within a program: its literal subcommand tokens, such as status for git status. Two
  * commands that differ only in operands share the operation.

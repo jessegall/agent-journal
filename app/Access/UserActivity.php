@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Access;
+
+use App\Access\Contracts\JournalAdmission;
+use App\Assignments\Contracts\AutoAssignmentActivity;
+use App\Models\Access\User;
+use App\Support\ActorReference;
+
+/**
+ * A user may take work whenever the journal admits them; a user needs no running session.
+ */
+final readonly class UserActivity implements AutoAssignmentActivity
+{
+    public function __construct(private JournalAdmission $admission) {}
+
+    public function mayTakeWork(ActorReference $actor): bool
+    {
+        $user = User::query()->find($actor->id);
+
+        return $user !== null && $this->admission->admits($user);
+    }
+}

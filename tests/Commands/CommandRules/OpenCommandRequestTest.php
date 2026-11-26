@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestStatus;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Enums\RequestHoldReason;
+use App\CommandRules\Enums\RequestStatus;
 use App\Models\CommandRules\CommandRequest;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
-use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
-use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\DeviceGrant;
+use App\Projects\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Projects\Commands\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Projects\Exceptions\DeviceGrantRefused;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

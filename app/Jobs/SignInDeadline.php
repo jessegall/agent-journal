@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Commands\Accounts\ExpireSignInAttempt\ExpireSignInAttemptCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\JournalCommands;
+use App\Accounts\Commands\ExpireSignInAttempt\ExpireSignInAttemptCommand;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Search\Values;
+
+use App\Bus\Contracts\BatchOutcome;
+use App\Values\SourcePosition;
+
+/**
+ * The source has no hit it can publish yet and scans on from the next work position, which moved forward even when
+ * this batch found nothing. It carries no hits.
+ */
+final readonly class ScanningOutcome implements BatchOutcome
+{
+    public function __construct(public SourcePosition $nextWork) {}
+
+    public function canCarryHits(): bool
+    {
+        return false;
+    }
+
+    public function name(): string
+    {
+        return 'scanning';
+    }
+
+    public function isFailure(): bool
+    {
+        return false;
+    }
+
+    public function nextPosition(): SourcePosition
+    {
+        return $this->nextWork;
+    }
+
+    public function isLastBatch(): bool
+    {
+        return false;
+    }
+}

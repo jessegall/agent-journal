@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Sessions\StartRefusalReason;
+use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Models\Agents\AgentRuntime;
+use App\Sessions\Enums\StartRefusalReason;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;

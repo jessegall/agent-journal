@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\CommandMiddleware;
 
-use App\Contracts\Bus\AgentStartCommand;
-use App\Contracts\Bus\CommandMiddleware;
+use App\Accounts\Exceptions\AccountUnavailable;
+use App\Bus\CommandCall;
+use App\Bus\Contracts\AgentStartCommand;
+use App\Bus\Contracts\CommandMiddleware;
 use App\Events\Sessions\StartRefusedWithoutAccount;
-use App\Exceptions\AccountUnavailable;
-use App\Support\CommandCall;
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 

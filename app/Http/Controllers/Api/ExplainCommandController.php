@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\ExplainCommandPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Processes\ExplanationData;
-use App\Data\Processes\HeldPartData;
-use App\Enums\CommandRules\RequestHoldReason;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Enums\RequestHoldReason;
 use App\Models\CommandRules\CommandRequest;
-use App\Support\Explanations;
+use App\Processes\Api\ExplainCommandPayload;
+use App\Processes\Data\ExplanationData;
+use App\Processes\Data\HeldPartData;
+use App\Processes\Explanations;
 
 /**
  * Explains a line, opening a request for each part it holds.

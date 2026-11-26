@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Connections;
 
-use App\Support\ServerOrigin;
+use App\Connections\ServerOrigin;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

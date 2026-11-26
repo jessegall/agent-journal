@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Agents\StartSwitchReplacement\StartSwitchReplacementCommand;
-use App\Commands\Drivers\FailDriverSwitchStart\FailDriverSwitchStartCommand;
-use App\Contracts\Bus\CommandRefusal;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Commands\StartSwitchReplacement\StartSwitchReplacementCommand;
+use App\Agents\Drivers\Commands\FailDriverSwitchStart\FailDriverSwitchStartCommand;
+use App\Bus\Contracts\CommandRefusal;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
 use App\Events\Sessions\DriverSwitchStopped;
 
 /**

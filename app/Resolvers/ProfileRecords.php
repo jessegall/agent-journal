@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Scripts\ProfileScripts;
-use App\Contracts\Sessions\ProfileResolver;
-use App\Exceptions\ProfileRetired;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
+use App\Scripts\Contracts\ProfileScripts;
+use App\Sessions\Contracts\ProfileResolver;
+use App\Sessions\Exceptions\ProfileRetired;
 use App\Values\ProfileKey;
 use App\Values\ProfileScript;
 use App\Values\ProfileSnapshot;

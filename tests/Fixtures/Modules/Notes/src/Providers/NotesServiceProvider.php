@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
-use App\Support\Sources\Contracts\DockRegistration;
+use App\Docking\Sources\Contracts\DockRegistration;
+use Illuminate\Support\ServiceProvider;
+use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
+use Tests\Fixtures\Modules\Notes\Models\Note;
+use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\Support\NoteDocking;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Fixtures\Modules\Notes\Support\NotesTallyDocking;
 use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
 use Tests\Fixtures\Modules\Notes\Support\ReleaseReviewDocking;
-use Illuminate\Support\ServiceProvider;
-use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
-use Tests\Fixtures\Modules\Notes\Models\Note;
-use Tests\Fixtures\Modules\Notes\Models\NotePage;
-use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
-use Tests\Fixtures\Modules\Notes\NoteRecords;
 
 /**
  * Binds the module's reader and registers the stable link name of its note; the module registers its provider itself,

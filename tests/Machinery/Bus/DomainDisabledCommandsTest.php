@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Bus;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Domains\DomainAvailability;
-use App\Exceptions\CommandRefused;
-use App\Exceptions\DomainDisabled;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
+use App\Bus\Exceptions\DomainDisabled;
+use App\Bus\MiddlewareDeclaration;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;
 use Domain\Plans\Commands\StartPlan\StartPlanHandler;
 use Domain\Plans\PlansDomain;

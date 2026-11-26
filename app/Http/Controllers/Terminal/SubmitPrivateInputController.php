@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Terminal;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Terminals\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Bus\Attributes\Dispatches;
 use App\Http\Requests\Agents\TerminalControlRequest;
 use App\Http\Responses\Agents\TerminalAnswers;
-use App\Support\PrivateValues;
+use App\Terminals\Commands\SubmitPrivateInput\SubmitPrivateInputCommand;
+use App\Terminals\PrivateValues;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

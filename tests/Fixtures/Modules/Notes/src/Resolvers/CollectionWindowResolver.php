@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use Tests\Fixtures\Modules\Notes\Data\CollectionPageData;
 use Tests\Fixtures\Modules\Notes\Http\Requests\CollectionRequest;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -23,8 +23,8 @@ final readonly class CollectionWindowResolver implements PageResolver
         return CollectionPageData::from([
             'collection' => $collection,
             'texts' => array_values(
-Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->pluck('text')->all(),
-),
+                Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->pluck('text')->all(),
+            ),
         ]);
     }
 }

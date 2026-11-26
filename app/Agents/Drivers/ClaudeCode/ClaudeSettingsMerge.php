@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Agents\Exceptions\ProfileRefused;
 use App\Attributes\Rules\DecodesAnyJson;
-use App\Exceptions\ProfileRefused;
 
 /**
  * A start's Claude Code settings with an account's checked protection settings added: permission lists are joined,

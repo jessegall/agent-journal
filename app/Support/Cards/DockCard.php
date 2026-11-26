@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
+use App\Docking\Cards\DockDestination;
 use App\Exceptions\DockCardInvalid;
 use App\Support\Cards\Contracts\DockPart;
 

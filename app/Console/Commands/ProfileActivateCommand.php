@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
-use App\Support\ProfileProposal;
-use App\Values\ActivatedProfile;
-use App\Values\DraftExpectations;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\ProfileProposal;
+use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\DraftExpectations;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
 

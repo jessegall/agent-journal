@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Resolvers;
 
-use App\Contracts\Reads\TextContent;
-use App\Contracts\Records\Commentable;
-use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\RecordCard;
 use App\Exceptions\TargetHasNoText;
+use App\Reads\Contracts\TextContent;
+use App\Records\Contracts\Commentable;
+use App\Records\Contracts\RecordResolver;
 use App\Support\IdListPage;
 use App\Support\MarkdownText;
 use App\Support\ReadBuilder;

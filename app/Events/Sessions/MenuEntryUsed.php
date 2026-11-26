@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\MenuEntryEvent;
+use App\Agents\Drivers\Contracts\MenuEntryEvent;
 
 /**
  * A menu entry was used once more.

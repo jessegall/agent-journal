@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Records\ReferenceRecognizer;
-use App\Contracts\Search\SearchAccess;
-use App\Contracts\Search\SearchProvider;
-use App\Exceptions\SearchableInvalid;
+use App\Records\Contracts\ReferenceRecognizer;
+use App\Search\ClosureSearchProvider;
+use App\Search\Contracts\SearchAccess;
+use App\Search\Contracts\SearchProvider;
+use App\Search\Exceptions\SearchableInvalid;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 

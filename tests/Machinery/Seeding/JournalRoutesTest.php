@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
+use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

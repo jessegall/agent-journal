@@ -9,7 +9,7 @@ A model method changes only its own row, and the fact of that change is raised b
   `update` or `delete`. Work across rows lives in a support class or the handler, which calls each row's own method.
   A row that two requests may make at once is made with `insertIfAbsent` from `App\Concerns\InsertsAbsentRows`.
 - Handlers and supports never dispatch a business event. A fact with no row to raise on, such as a command-level fact
-  carrying the command's operation or reason, is staged with `App\Contracts\Bus\CommandFacts::publishAfterCommit`.
+  carrying the command's operation or reason, is staged with `App\Bus\Contracts\CommandFacts::publishAfterCommit`.
 - A listener whose writes must commit or roll back with the command is marked
   `#[App\Attributes\Listeners\InCommandTransaction]`; it runs inside the transaction. Every other listener hears the
   fact after the real commit. A domain's in-transaction listener on another domain's fact is admitted only when the

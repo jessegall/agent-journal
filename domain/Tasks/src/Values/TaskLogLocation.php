@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Values;
 
-use App\Values\RecordLocation;
+use App\Search\Values\RecordLocation;
 
 /**
  * Where a log line sits in its task: the line's own id, which never changes, and the run and line the user reads.

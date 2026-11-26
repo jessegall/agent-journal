@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\OrderHostUpgrade\OrderHostUpgradeCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Exceptions\HostUpgradeRefused;
+use App\Hosts\Commands\OrderHostUpgrade\OrderHostUpgradeCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Exceptions\HostUpgradeRefused;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

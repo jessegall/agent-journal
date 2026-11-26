@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support\Gateways;
 
-use App\Support\GatewayEndpoint;
-use App\Support\GatewayHealth;
+use App\Sharing\GatewayEndpoint;
+use App\Sharing\GatewayHealth;
 use App\Support\ProbeChallenges;
 use App\Support\PublicAddresses;
 use Illuminate\Http\Client\ConnectionException;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Data\Processes\ExplanationData;
-use App\Enums\CommandRules\AnalysisLimit;
-use App\Enums\Processes\ShellDialect;
-use App\Support\Explanations;
+use App\CommandRules\Enums\AnalysisLimit;
+use App\Processes\Data\ExplanationData;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Explanations;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

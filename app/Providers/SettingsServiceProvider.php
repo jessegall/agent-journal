@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
-use App\Contracts\Settings\SettingsAccessPolicy;
-use App\Contracts\Settings\SettingsCatalogue as SettingsCatalogueContract;
-use App\Contracts\Settings\SettingsResolver as SettingsResolverContract;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\PolicyCatalogue;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
 use App\Policies\SettingPolicy;
-use App\Support\ClosedSettingsAccess;
-use App\Support\SettingCodec;
-use App\Support\SettingCommands;
-use App\Support\SettingsCatalogue;
-use App\Support\SettingsResolver;
-use App\Values\PolicyDefinition;
+use App\Settings\ClosedSettingsAccess;
+use App\Settings\Contracts\SettingCommands as SettingCommandsContract;
+use App\Settings\Contracts\SettingsAccessPolicy;
+use App\Settings\Contracts\SettingsCatalogue as SettingsCatalogueContract;
+use App\Settings\Contracts\SettingsResolver as SettingsResolverContract;
+use App\Settings\SettingCodec;
+use App\Settings\SettingCommands;
+use App\Settings\SettingsCatalogue;
+use App\Settings\SettingsResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**

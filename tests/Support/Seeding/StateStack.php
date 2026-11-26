@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Seeding;
 
 use App\Models\Agents\AgentStackRow;
-use App\Support\References\StateReference;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\Frames\Frame;
-use App\Support\Stack\StackRestorer;
+use App\Stacks\AgentStack;
+use App\Stacks\Frames\Frame;
+use App\Stacks\References\StateReference;
+use App\Stacks\StackRestorer;
 use App\Values\StackTarget;
 use Illuminate\Contracts\Foundation\Application;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;

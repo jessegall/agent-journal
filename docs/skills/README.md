@@ -6,9 +6,9 @@ program reads are a projection of those sources, written by the journal.
 
 ## Declaring a skill in a domain or module
 
-- The owner's domain class implements `App\Contracts\Skills\SkillProvider` and lists its skill classes in `skills()`.
-  Core lists its own in `App\Support\CoreSkills`.
-- A skill class implements `App\Contracts\Skills\Skill`: its key, name, description, condition and
+- The owner's domain class implements `App\Skills\Contracts\SkillProvider` and lists its skill classes in `skills()`.
+  Core lists its own in `App\Skills\CoreSkills`.
+- A skill class implements `App\Skills\Contracts\Skill`: its key, name, description, condition and
   `sections(): SkillSections`. Keys are lowercase words joined by hyphens; `journal-*` is reserved for Core and the
   shipped domains, a registered module uses its own slug as prefix, and `user-*` is for stored skills.
 - A shipped skill names its file: `SkillSections::fromFile('core/shell.md')`, a file in the owner's `resources/skills`
@@ -30,7 +30,7 @@ program reads are a projection of those sources, written by the journal.
 
 ## Who a skill reaches
 
-A skill's condition is a tree of `App\Support\Conditions\Conditions`: `everyone()`, `mainAgent()`, `profiles(...)`,
+A skill's condition is a tree of `App\Skills\Conditions\Conditions`: `everyone()`, `mainAgent()`, `profiles(...)`,
 `agentTypes(...)`, `programs(...)`, `providers(...)`, `environments(...)`, `named(key, parameters)` and the groups
 `all`, `any` and `not`. A result is match, no match or unavailable; unavailable never becomes a match. A domain adds
 named conditions through `SkillConditionProvider`, each evaluator reading only its own facts; a write inside an

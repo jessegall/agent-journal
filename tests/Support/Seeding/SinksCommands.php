@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandEnd;
-use App\Enums\Engine\MiddlewareStage;
-use App\Support\CommandFrame;
+use App\Bus\CommandFrame;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandEnd;
+use App\Bus\LaravelCommandBus;
+use App\Bus\RegisteredMiddleware;
+use App\Engine\Enums\MiddlewareStage;
 use App\Support\CommandRegistry;
-use App\Support\LaravelCommandBus;
-use App\Support\RegisteredMiddleware;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Bus\CommandSink;
 use Tests\Support\Bus\ExpectedCommand;

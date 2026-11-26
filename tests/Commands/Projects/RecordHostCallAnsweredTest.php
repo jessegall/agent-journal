@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
-use App\Enums\Projects\HostRouteRole;
+use App\Hosts\HostLinkAlarms;
 use App\Models\Projects\Host;
-use App\Support\HostLinkAlarms;
+use App\Projects\Commands\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
+use App\Projects\Enums\HostRouteRole;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Route;
 use RuntimeException;

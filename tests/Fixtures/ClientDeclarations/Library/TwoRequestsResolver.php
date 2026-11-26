@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Library;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use Tests\Fixtures\ClientDeclarations\RecentNotesData;
 
 final readonly class TwoRequestsResolver implements PageResolver

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\ClaimSignIn\ClaimSignInCommand;
-use App\Commands\Accounts\PublishSignInChallenge\PublishSignInChallengeCommand;
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
-use App\Enums\Accounts\SignInMethod;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Commands\ClaimSignIn\ClaimSignInCommand;
+use App\Accounts\Commands\PublishSignInChallenge\PublishSignInChallengeCommand;
+use App\Accounts\Enums\SignInMethod;
 use App\Jobs\SignInDeadline;
+use App\Projects\Commands\EnrollHost\EnrollHostCommand;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;

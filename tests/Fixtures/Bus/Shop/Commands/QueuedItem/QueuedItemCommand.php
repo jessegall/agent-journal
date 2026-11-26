@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
 
-use Tests\Fixtures\Bus\Policies\FixturePolicy;
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Tests\Fixtures\Bus\Policies\FixturePolicy;
 
 /**
  * @extends Command<mixed>

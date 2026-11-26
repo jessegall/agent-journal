@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Navigation\AbandonNavigation\AbandonNavigationCommand;
 use App\Mcp\Tools\NavigationGiveUpTool;
+use App\Navigation\Commands\AbandonNavigation\AbandonNavigationCommand;
 use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

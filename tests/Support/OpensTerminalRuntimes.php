@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Time\ServerClock;
-use App\Data\Terminals\TerminalControlData;
-use App\Data\Terminals\TerminalInterestData;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Values\RuntimeIntent;
+use App\Bus\Contracts\Command;
 use App\Models\Agents\AgentRuntime;
+use App\Sessions\AgentRuntimes;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
-use App\Support\AgentRuntimes;
-use App\Support\StartSessions;
-use App\Support\TerminalControls;
-use App\Support\TerminalViewCloser;
-use App\Values\RuntimeIntent;
+use App\Terminals\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Terminals\Commands\RenewTerminalView\RenewTerminalViewCommand;
+use App\Terminals\Data\TerminalControlData;
+use App\Terminals\Data\TerminalInterestData;
+use App\Terminals\TerminalControls;
+use App\Terminals\TerminalViewCloser;
+use App\Time\Contracts\ServerClock;
 use Tests\Fixtures\Agents\TestSelections;
 
 /**

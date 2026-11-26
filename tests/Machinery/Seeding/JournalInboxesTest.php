@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Notifications\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
+use App\Notifications\Commands\MarkNotificationRead\MarkNotificationReadCommand;
 use App\Support\ActorReference;
 use PHPUnit\Framework\AssertionFailedError;
 use Tests\Support\RefreshHookDatabase;

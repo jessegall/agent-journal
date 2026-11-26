@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Domains\DomainAvailability;
-use App\Contracts\Scripts\ScriptChecks;
-use App\Support\ScriptKeywordRegistration;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
+use App\Scripts\Contracts\ScriptChecks;
+use App\Scripts\ScriptKeywordRegistration;
 use App\Values\ScriptSource;
 use App\Values\TextOperand;
 use PHPUnit\Framework\Attributes\DataProvider;

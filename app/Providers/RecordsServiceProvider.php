@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Access\Contracts\PolicyCatalogue;
+use App\Access\Values\PolicyDefinition;
+use App\Actors\Contracts\IdentityLinks as IdentityLinksContract;
+use App\Agents\Enums\AccessType;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\LinkAddCommand;
 use App\Console\Commands\LinkRemoveCommand;
-use App\Contracts\Actors\IdentityLinks as IdentityLinksContract;
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Records\RecordLinker as RecordLinkerContract;
-use App\Contracts\Records\RecordProviderRegistration;
-use App\Contracts\Records\RecordResolver;
-use App\Enums\Agents\AccessType;
+use App\Docking\RecordFallbackDocks;
+use App\Docking\Sources\Contracts\FallbackDocks;
+use App\Links\IdentityLinks;
+use App\Links\RecordLinker;
 use App\Models\Records\Link;
 use App\Policies\RecordLinkPolicy;
-use App\Support\Docking\RecordFallbackDocks;
-use App\Support\IdentityLinks;
-use App\Support\RecordLinker;
-use App\Support\RecordProviders;
-use App\Support\Sources\Contracts\FallbackDocks;
-use App\Values\PolicyDefinition;
+use App\Records\Contracts\RecordLinker as RecordLinkerContract;
+use App\Records\Contracts\RecordProviderRegistration;
+use App\Records\Contracts\RecordResolver;
+use App\Records\RecordProviders;
 use Illuminate\Support\ServiceProvider;
 
 /**

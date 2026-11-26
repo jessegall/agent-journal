@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Contracts\Records\RecordVisibility as RecordVisibilityContract;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Records\Contracts\RecordVisibility as RecordVisibilityContract;
 use App\Support\RecordIdentity;
 
 /**

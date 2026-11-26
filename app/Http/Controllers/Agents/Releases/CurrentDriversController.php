@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Releases;
 
-use App\Data\Connections\DriverInstallListData;
-use App\Support\DriverInstallList;
+use App\Connections\Data\DriverInstallListData;
+use App\Hosts\DriverInstallList;
 
 /**
  * Serves the drivers a connected machine's installer seals beside the current release.

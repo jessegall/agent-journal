@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\Refusals\FieldRefusal;
 use App\Exceptions\Concerns\ThrowsLater;
+use App\Notifications\Contracts\Refusals\FieldRefusal;
 use RuntimeException;
 
 final class StackTargetRefused extends RuntimeException implements FieldRefusal

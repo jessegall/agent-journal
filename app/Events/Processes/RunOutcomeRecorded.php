@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Enums\Runs\RunLogicalResult;
+use App\Processes\Enums\RunLogicalResult;
 
 /**
  * A run attempt's logical result was recorded, or a provisional one was corrected in place. It names the run, the

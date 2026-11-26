@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Navigation\RecordMenus as RecordMenusContract;
 use App\Declarations\RegisteredAction;
 use App\Declarations\RegisteredMenu;
 use App\Declarations\RegisteredMenuItem;
-use App\Enums\Settings\ActionMethod;
-use App\Support\Layout\LayoutMenuData;
-use App\Support\Layout\LayoutMenuGroupData;
-use App\Support\Layout\LayoutMenuItemData;
+use App\Navigation\Contracts\RecordMenus as RecordMenusContract;
+use App\Navigation\Layout\LayoutMenuData;
+use App\Navigation\Layout\LayoutMenuGroupData;
+use App\Navigation\Layout\LayoutMenuItemData;
+use App\Settings\Enums\ActionMethod;
 use Illuminate\Contracts\Routing\UrlGenerator;
 
 /**

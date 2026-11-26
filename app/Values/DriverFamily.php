@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\MarkTone;
-use App\Enums\Drivers\SignInCodeDirection;
-use App\Enums\Profiles\ModelTier;
+use App\Agents\Drivers\Enums\MarkTone;
+use App\Agents\Drivers\Enums\SignInCodeDirection;
+use App\Agents\Values\ProviderKey;
+use App\Profiles\Enums\ModelTier;
 
 /**
  * One family of drivers, such as Claude Code, which a terminal and a headless driver share: its name as users read

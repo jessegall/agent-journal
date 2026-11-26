@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Activity\ActivityLog;
+use App\Agents\Activity\Contracts\ActivityLog;
 use App\Contracts\Events\Listener;
 use App\Events\Hooks\ToolCallFinished;
 use App\Values\ToolActivity;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Models\Access\User;
 use App\Support\ActorReference;
 use Domain\Chat\Data\CreateGroupInput;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\PullHostPrivateValue\PullHostPrivateValueCommand;
-use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
-use App\Exceptions\PrivateValueRefused;
+use App\Hosts\Commands\PullHostPrivateValue\PullHostPrivateValueCommand;
+use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
+use App\Terminals\Exceptions\PrivateValueRefused;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

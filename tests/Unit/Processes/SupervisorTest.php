@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\Runs\PartEndType;
 use App\Models\Runs\ProcessRun;
-use App\Support\Execution\SpawnedProcess;
+use App\Processes\Enums\PartEndType;
+use App\Processes\Execution\SpawnedProcess;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\TestCase;
 

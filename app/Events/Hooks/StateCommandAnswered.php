@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Hooks;
 
-use App\Contracts\Authorization\AuthoritySource;
-use App\Contracts\Bus\Command;
+use App\Access\Contracts\AuthoritySource;
+use App\Bus\Contracts\Command;
 use App\Support\ActorReference;
 use App\Values\StackTarget;
 

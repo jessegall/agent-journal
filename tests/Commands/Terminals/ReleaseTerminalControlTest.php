@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\ReleaseTerminalControl\ReleaseTerminalControlCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Terminals\TerminalGrantStatus;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\ReleaseTerminalControl\ReleaseTerminalControlCommand;
+use App\Terminals\Enums\TerminalGrantStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;

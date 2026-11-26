@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
-use App\Contracts\Assignments\AssignmentTransaction;
+use App\Assignments\Contracts\AssignmentTransaction;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\NavigationRequest;
 use Tests\Fixtures\Agents\TestStart;

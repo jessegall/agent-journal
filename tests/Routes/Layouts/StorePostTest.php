@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Layouts;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Data\Layouts\LayoutShape;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

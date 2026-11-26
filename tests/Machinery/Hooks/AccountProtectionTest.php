@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Agents\CheckProtectedResources;
 use App\Agents\Drivers\ClaudeCode\ClaudeAccountProtection;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeAdapter;
 use App\Agents\Drivers\Codex\CodexAccountProtection;
 use App\Agents\Drivers\Codex\CodexAdapter;
+use App\Agents\Drivers\Contracts\DriverCall;
 use App\Agents\Drivers\Hooks\HookPayload;
-use App\Contracts\Drivers\DriverCall;
-use App\Contracts\Reads\SessionOutputAccess;
-use App\Support\CheckProtectedResources;
+use App\Reads\Contracts\SessionOutputAccess;
+use App\Stacks\AgentStack;
+use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\HookAnswer;
 use App\Values\SessionOutputPaths;
 use App\Values\StackTarget;
 use Closure;

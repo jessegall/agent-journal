@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
+use App\Sharing\Contracts\ShareGatewayProvider;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Contracts\Sharing\ShareGatewayProvider;
-use App\Contracts\Sharing\ShareRecordContributor;
 use App\Support\ShareRecordDefinition;
 
 final class PamphletsDomain extends Domain implements ShareGatewayProvider, ShareRecordContributor
@@ -31,17 +31,17 @@ final class PamphletsDomain extends Domain implements ShareGatewayProvider, Shar
     {
         return [
             new ShareRecordDefinition(
-'pamphlets.pamphlet',
- Pamphlet::class,
- PamphletShareProvider::class,
- ['share-linked-record'],
-),
+                'pamphlets.pamphlet',
+                Pamphlet::class,
+                PamphletShareProvider::class,
+                ['share-linked-record'],
+            ),
             new ShareRecordDefinition(
-'pamphlets.note',
- PamphletNote::class,
- PamphletShareProvider::class,
- ['share-note'],
-),
+                'pamphlets.note',
+                PamphletNote::class,
+                PamphletShareProvider::class,
+                ['share-note'],
+            ),
         ];
     }
 

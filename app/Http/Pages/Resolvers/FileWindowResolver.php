@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Hosts\ProjectFiles;
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Projects\FileComments;
-use App\Data\Connections\FileThreadData;
-use App\Data\Connections\FileWindowData;
-use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\FileWindowStatus;
-use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadStatus;
+use App\Connections\Data\FileThreadData;
+use App\Connections\Data\FileWindowData;
+use App\Connections\Enums\BindingReadiness;
+use App\Connections\Enums\FileWindowStatus;
+use App\Connections\Layout\LayoutBodyData;
+use App\Hosts\Contracts\ProjectFiles;
+use App\Hosts\Contracts\ServedEnvironment;
 use App\Http\Requests\Connections\FileWindowRequest;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectFile;
-use App\Support\Layout\LayoutBodyData;
+use App\Navigation\Contracts\PageResolver;
+use App\Projects\Contracts\FileComments;
+use App\Projects\Enums\ProjectReadFailure;
+use App\Projects\Enums\ProjectReadStatus;
 use App\Values\ProjectFileAnswer;
 use Carbon\CarbonImmutable;
 

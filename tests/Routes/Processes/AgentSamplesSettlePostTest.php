@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\SettleSample\SettleSampleCommand;
-use App\Enums\CommandRules\RequestStatus;
-use App\Values\SampleOutcome;
+use App\CommandRules\Commands\SettleSample\SettleSampleCommand;
+use App\CommandRules\Enums\RequestStatus;
+use App\CommandRules\Values\SampleOutcome;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

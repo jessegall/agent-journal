@@ -14,9 +14,9 @@ final class ReviewSettingsTypes
     public function enumSettingsKeepTheirEnum(ReviewSettings $settings): void
     {
         assertType(
-'App\\Declarations\\EnumSetting<Tests\\Fixtures\\Domains\\Reviews\\Enums\\ReviewMode>',
- $settings->reviewMode,
-);
+            'App\\Settings\\Declarations\\EnumSetting<Tests\\Fixtures\\Domains\\Reviews\\Enums\\ReviewMode>',
+            $settings->reviewMode,
+        );
         assertType('Tests\\Fixtures\\Domains\\Reviews\\Enums\\ReviewMode|null', $settings->reviewMode->caseOf('quick'));
     }
 }

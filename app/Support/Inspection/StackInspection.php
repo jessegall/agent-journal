@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Inspection;
 
-use App\Enums\Agents\StackStatus;
+use App\Agents\Enums\StackStatus;
 use App\Models\Agents\AgentStackRow;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\Frames\Frame;
+use App\Stacks\AgentStack;
+use App\Stacks\Frames\Frame;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

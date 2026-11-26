@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills;
 
-use App\Contracts\Work\AgentStacks;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\References\StateReference;
 use App\Support\ActorReference;
-use App\Support\References\StateReference;
 use App\Values\StackTarget;
 
 /**

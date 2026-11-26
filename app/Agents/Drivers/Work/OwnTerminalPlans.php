@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\Work;
 
 use App\Agents\Drivers\Setup\DriverProfiles;
-use App\Enums\Hosts\HostProcessType;
+use App\Hosts\Enums\HostProcessType;
 use App\Models\Agents\AgentRuntime;
 use App\Values\DriverStart;
 use App\Values\HostProcessPlan;

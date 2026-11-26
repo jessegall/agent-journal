@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\CommandRules\SaveCommandAlias\SaveCommandAliasCommand as SaveCommandAlias;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
+use App\CommandRules\Commands\SaveCommandAlias\SaveCommandAliasCommand as SaveCommandAlias;
 use App\Exceptions\ConsoleOwnerMissing;
 use App\Models\Projects\Project;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

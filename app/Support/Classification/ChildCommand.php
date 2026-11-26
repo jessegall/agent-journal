@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Classification;
 
-use App\Enums\CommandRules\CommandType;
-use App\Values\ClassFact;
+use App\Access\Values\ClassFact;
+use App\CommandRules\Enums\CommandType;
+use App\Processes\Values\ProgramIdentity;
 use App\Values\PartClassification;
-use App\Values\ProgramIdentity;
 use App\Values\UnresolvedFact;
 
 /**

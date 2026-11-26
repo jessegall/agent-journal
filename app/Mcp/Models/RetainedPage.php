@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Models;
 
+use App\Actors\Contracts\ActorVisibility;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Actors\ActorVisibility;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\AgentSessionScope;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;

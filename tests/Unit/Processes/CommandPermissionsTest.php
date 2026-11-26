@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\CommandClass;
+use App\CommandRules\Enums\CommandClass;
+use App\Sessions\Values\ProcessGrants;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;
 use App\Values\CommandPermissions;
-use App\Values\ProcessGrants;
 use Tests\TestCase;
 
 /**

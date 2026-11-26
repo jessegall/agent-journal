@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Projects\ProjectDirectory;
+use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\ProjectUnavailable;
-use App\Support\Projects\CurrentProject;
+use App\Projects\Contracts\ProjectDirectory;
+use App\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
 use App\Values\ProjectSelection;
 use Closure;

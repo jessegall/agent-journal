@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Drivers\RetryDriverRequest\RetryDriverRequestCommand as RetryDriverRequest;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Drivers\Commands\RetryDriverRequest\RetryDriverRequestCommand as RetryDriverRequest;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

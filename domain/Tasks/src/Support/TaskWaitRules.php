@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskWaitRefused;

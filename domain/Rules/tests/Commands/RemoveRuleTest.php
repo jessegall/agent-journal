@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Access\AccessSettings;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Events\Web\PageChanged;
-use App\Exceptions\CommandAdmissionRefused;
-use App\Support\Access\AccessSettings;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleRemoved;

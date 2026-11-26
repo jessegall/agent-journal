@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\Refusals\FieldRefusal;
 use App\Contracts\Refusals\StaleRefusal;
+use App\Notifications\Contracts\Refusals\FieldRefusal;
 use RuntimeException;
 
 /**

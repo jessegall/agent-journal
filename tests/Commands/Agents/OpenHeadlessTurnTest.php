@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\CheckSignIn\CheckSignInCommand;
-use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Agents\OpenHeadlessTurn\OpenHeadlessTurnCommand;
-use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Data\Messages\MessageTextData;
-use App\Enums\Drivers\RequestProgress;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessReportType;
+use App\Agents\Commands\CheckSignIn\CheckSignInCommand;
+use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
+use App\Agents\Commands\OpenHeadlessTurn\OpenHeadlessTurnCommand;
+use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Enums\RequestProgress;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessReportType;
+use App\Messages\Data\MessageTextData;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Hosts\HostProcess;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
-use App\Values\IssuedInvitation;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Projects\Values\IssuedInvitation;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Http\Controllers\Api;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Memory\Api\MemoryNamed;
 use Domain\Memory\Api\SaveMemoryPayload;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;

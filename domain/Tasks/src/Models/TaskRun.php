@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Assignments\Contracts\Assignable;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
-use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\FindsForUpdate;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
+use App\Projects\Commands\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

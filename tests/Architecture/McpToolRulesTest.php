@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\Command;
-use App\Contracts\Work\AgentStacks;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\Command;
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Contracts\Work\StackEditor;
 use App\Contracts\Work\StackTransactionRunner;
 use App\Mcp\Resources\JournalResource;
-use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
+use App\Stacks\Contracts\Work\AgentStacks;
 use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;

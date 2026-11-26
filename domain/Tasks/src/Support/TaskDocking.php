@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
-use App\Exceptions\DockSourceUnavailable;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\Docking\Cards\ComposedCard;
+use App\Docking\Exceptions\DockSourceUnavailable;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\DockableProvider;
 use App\Support\AssignmentHolder;
-use App\Support\Cards\ComposedCard;
-use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\Contracts\DockableProvider;
 use App\Support\Sources\DockDefinition;
 use App\Values\ProjectOwner;
 use Domain\Tasks\Models\Task;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Support\MarkdownText;
-use App\Support\TextReading;
 use App\Support\TextSelection;
+use App\Text\TextReading;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;

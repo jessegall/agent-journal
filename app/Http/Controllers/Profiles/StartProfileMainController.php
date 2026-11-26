@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\StartProfileMainRequest;
 use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;

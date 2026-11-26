@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\PrintsPublicationOutcomes;
-use App\Support\SkillPublishingService;
+use App\Skills\SkillPublishingService;
 use Illuminate\Console\Command;
 
 /**

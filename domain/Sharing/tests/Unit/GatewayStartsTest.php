@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Support\GatewayConfiguration;
-use App\Support\GatewayOperation;
+use App\Sharing\GatewayConfiguration;
+use App\Sharing\GatewayOperation;
 use Domain\Sharing\Enums\GatewayAddressCheck;
 use Domain\Sharing\Exceptions\GatewayOpenFailed;
 use Domain\Sharing\Support\Gateways\GatewayChildren;

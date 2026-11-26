@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\CancelTerminalTake\CancelTerminalTakeCommand;
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Terminals\TerminalGrantStatus;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Drivers\TerminalGrant;
 use App\Models\Projects\Host;
+use App\Terminals\Commands\CancelTerminalTake\CancelTerminalTakeCommand;
+use App\Terminals\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Terminals\Enums\TerminalGrantStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\OpensTerminalRuntimes;

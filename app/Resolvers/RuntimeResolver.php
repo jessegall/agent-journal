@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Sessions\RuntimeResolver as RuntimeResolverContract;
-use App\Data\Processes\RuntimeStatus;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\AgentInspection;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
-use App\Support\AgentInspection;
+use App\Processes\Data\RuntimeStatus;
+use App\Sessions\Contracts\RuntimeResolver as RuntimeResolverContract;
 use App\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
 

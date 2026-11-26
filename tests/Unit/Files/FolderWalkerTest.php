@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\EntryType;
-use App\Enums\Files\Place;
-use App\Exceptions\FilePathInvalid;
 use App\Exceptions\FolderMissing;
-use App\Support\FolderWalker;
-use App\Values\Depth;
+use App\Files\Enums\EntryType;
+use App\Files\Enums\Place;
+use App\Files\FolderWalker;
+use App\Files\Values\Depth;
+use App\Navigation\Exceptions\FilePathInvalid;
 use App\Values\FilePath;
 use App\Values\FolderEntry;
 use Illuminate\Filesystem\Filesystem;

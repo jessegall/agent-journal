@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Processes\ReadOutputSummaryPayload;
-use App\Api\Processes\ReadOutputTailPayload;
-use App\Api\Processes\SearchOutputPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Enums\CommandRules\JournalRouteType;
+use App\Processes\Api\ReadOutputSummaryPayload;
+use App\Processes\Api\ReadOutputTailPayload;
+use App\Processes\Api\SearchOutputPayload;
 use Illuminate\Console\Command;
 
 /**

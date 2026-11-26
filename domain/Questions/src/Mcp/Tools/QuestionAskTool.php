@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Actors\ActorTypes;
-use App\Contracts\Bus\Command;
-use App\Contracts\Projects\ProjectDestination;
+use App\Actors\Contracts\ActorTypes;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\Command;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\MessageWriteTool;
+use App\Projects\Contracts\ProjectDestination;
 use App\Support\ActorReference;
 use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
 use Domain\Questions\Enums\QuestionType;

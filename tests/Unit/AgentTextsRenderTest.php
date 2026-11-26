@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Exceptions\AgentTextUnknown;
-use App\Exceptions\AgentTextValuesMismatch;
+use App\Actors\Contracts\AgentTexts;
+use App\Actors\Exceptions\AgentTextUnknown;
+use App\Actors\Exceptions\AgentTextValuesMismatch;
 use App\Support\DomainRegistry;
 use App\Values\AgentText;
 use Illuminate\Contracts\Translation\Translator;

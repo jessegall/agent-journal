@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Messages;
 
-use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
+use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\TestCase;

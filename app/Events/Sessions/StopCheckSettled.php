@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\StopCheckEvent;
-use App\Enums\Sessions\StopCheckStatus;
+use App\Sessions\Contracts\StopCheckEvent;
+use App\Sessions\Enums\StopCheckStatus;
 
 /**
  * A stop attempt was settled in the state given; its outcome is the same for two attempts that settled alike, with

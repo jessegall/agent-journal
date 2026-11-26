@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\NotifyRuntimeExit\NotifyRuntimeExitCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostProcessEndEvent;
+use App\Hosts\Contracts\HostProcessEndEvent;
+use App\Hosts\HostRuntimes;
 use App\Models\Hosts\HostProcess;
-use App\Support\HostRuntimes;
 
 /**
  * An agent's process that exited or was lost ends its runtime's process generation, as a driver's exit report does.

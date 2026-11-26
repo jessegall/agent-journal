@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\AccountWriterEvent;
+use App\Accounts\Contracts\AccountWriterEvent;
 
 /**
  * The sign-in attempt that wrote an account's folder let it go.

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Enums\Assignments\PoolMembersType;
-use App\Exceptions\InvalidRecordIds;
+use App\Assignments\Enums\PoolMembersType;
+use App\Assignments\Exceptions\InvalidRecordIds;
+use App\Assignments\PoolMembers;
 use App\Support\OrderedRecordIds;
-use App\Support\PoolMembers;
 use App\Support\PoolReference;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestActors;

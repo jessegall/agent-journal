@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Accounts\ActiveAccountReader;
+use App\Accounts\Contracts\ActiveAccountReader;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\ActiveAccount;
 use App\Values\SelectedAccount;

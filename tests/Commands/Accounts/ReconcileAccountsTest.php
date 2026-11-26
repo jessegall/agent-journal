@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Accounts\SignInStatus;
+use App\Accounts\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Accounts\Commands\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Accounts\Enums\CommandEntry;
+use App\Accounts\Enums\SignInStatus;
+use App\Bus\JournalCommands;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
-use App\Support\JournalCommands;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

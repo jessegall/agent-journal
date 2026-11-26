@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Database\Seeders;
 
-use App\Contracts\Actors\Actor;
+use App\Actors\Contracts\Actor;
 use App\Values\ProjectOwner;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;

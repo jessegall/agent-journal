@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Contracts\Work\WorkOccurrenceGuard;
-use App\Support\References\Exceptions\WorkOccurrenceStale;
+use App\Engine\References\Exceptions\WorkOccurrenceStale;
+use App\Stacks\Contracts\Work\WorkOccurrenceGuard;
 use App\Support\References\WorkOccurrence;
 
 /**

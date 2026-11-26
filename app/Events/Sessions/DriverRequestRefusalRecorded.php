@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\DriverRequestEvent;
+use App\Agents\Drivers\Contracts\DriverRequestEvent;
 
 /**
  * The host refused to wake a driver request.

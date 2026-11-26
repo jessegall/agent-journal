@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\States;
 
-use App\Attributes\States\StateType;
 use App\Contracts\Events\Event;
-use App\Contracts\Work\DurableState;
-use App\Contracts\Work\WorkState;
 use App\Events\Assignments\AssignmentsEnded;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
+use App\Stacks\Contracts\Work\WorkState;
+use App\Stacks\References\StateReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\RecordIdentity;
-use App\Support\References\StateReference;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Tasks\Commands\FocusTask\FocusTaskCommand;
 use Domain\Tasks\Commands\UnfocusTask\UnfocusTaskCommand;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Contracts\Actors\CurrentUserResolver;
+use App\Actors\Contracts\CurrentUserResolver;
 use App\Http\Responses\LoaderProps;
-use App\Support\Web\AppContext;
+use App\Web\AppContext;
 use Closure;
 use Illuminate\Http\Request;
 use Inertia\Middleware;

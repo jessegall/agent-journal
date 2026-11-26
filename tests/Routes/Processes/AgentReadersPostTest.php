@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\ProposeReader\ProposeReaderCommand;
-use App\Enums\Records\RecordRole;
+use App\CommandRules\Commands\ProposeReader\ProposeReaderCommand;
+use App\CommandRules\Values\RecordRule;
+use App\Records\Enums\RecordRole;
 use App\Values\ReaderDefinition;
-use App\Values\RecordRule;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

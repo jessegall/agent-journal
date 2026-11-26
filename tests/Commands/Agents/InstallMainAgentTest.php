@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\InstallMainAgent\InstallMainAgentCommand;
-use App\Exceptions\MainAgentMissing;
+use App\Agents\Commands\InstallMainAgent\InstallMainAgentCommand;
+use App\Agents\Exceptions\MainAgentMissing;
 use App\Models\Agents\Agent;
 use App\Models\Agents\MainAgentDesignation;
 use App\Values\ProfileBase;

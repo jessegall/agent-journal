@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Exceptions\AssignmentTransactionRequired;
+use App\Assignments\Exceptions\AssignmentTransactionRequired;
+use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Exceptions\AutoAssignmentSizeInvalid;
 use App\Support\AutoAssignmentInput;
 use App\Support\AutoAssignmentKey;
 use App\Support\PoolReference;
-use App\Support\Storage\DatabaseAutoAssignments;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Settings\SettingsResolver as SettingsResolverContract;
-use App\Declarations\IntegerSetting;
-use App\Exceptions\SettingHandleUnknown;
-use App\Support\CoreSettings;
+use App\Settings\Contracts\SettingsResolver as SettingsResolverContract;
+use App\Settings\CoreSettings;
+use App\Settings\Declarations\IntegerSetting;
+use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\SettingRegistry;
+use App\Settings\SettingsResolver;
 use App\Support\DomainRegistry;
-use App\Support\SettingRegistry;
-use App\Support\SettingsResolver;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\CountsReads;

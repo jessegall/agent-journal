@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
-use App\Contracts\CommandLines\Condition;
-use App\Contracts\Drivers\AccountEnvironmentPart;
-use App\Contracts\Drivers\AccountPlanPart;
-use App\Contracts\Drivers\EnvironmentPart;
-use App\Contracts\Drivers\PlanPart;
-use App\Exceptions\DriverSetupInvalid;
-use App\Support\CommandLines\Negation;
+use App\Agents\Drivers\Contracts\AccountEnvironmentPart;
+use App\Agents\Drivers\Contracts\AccountPlanPart;
+use App\Agents\Drivers\Contracts\EnvironmentPart;
+use App\Agents\Drivers\Contracts\PlanPart;
+use App\Agents\Exceptions\DriverSetupInvalid;
+use App\Processes\Contracts\Condition;
+use App\Processes\Negation;
 use App\Values\DriverStart;
 use App\Values\EnvironmentAddition;
 use App\Values\PlanAddition;

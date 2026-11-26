@@ -6,9 +6,9 @@ namespace App\Models\Profiles;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Concerns\PreventsRevisionUpdates;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\ScriptSource;
 use Carbon\CarbonImmutable;

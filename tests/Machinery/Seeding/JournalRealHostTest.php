@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessStatus;
-use App\Support\Hosts\ProcessFeed;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Enums\SignInMethod;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\ProcessFeed;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Hosts\EchoProcessDriver;
 use Tests\Support\TimeLimits\TimeLimit;

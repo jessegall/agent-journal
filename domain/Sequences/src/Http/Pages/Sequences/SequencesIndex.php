@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Pages\Sequences;
 
-use App\Contracts\Navigation\DraftProducers;
-use App\Enums\Settings\ActionMethod;
 use App\Http\Pages\CreationDialog;
+use App\Navigation\Contracts\DraftProducers;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;

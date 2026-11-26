@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Commands\Sessions\RecordBindingRuntime\RecordBindingRuntimeCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
-use App\Support\JournalCommands;
+use App\Sessions\Commands\RecordBindingRuntime\RecordBindingRuntimeCommand;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;

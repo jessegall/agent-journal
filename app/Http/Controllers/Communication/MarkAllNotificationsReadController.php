@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Communication\MarkAllNotificationsReadRequest;
 use App\Http\Responses\PageActionAnswers;
+use App\Notifications\Commands\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**

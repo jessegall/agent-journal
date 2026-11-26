@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\HideLeftInboxNotifications;
 
-use App\Contracts\Notifications\Notifications;
+use App\Notifications\Contracts\Notifications;
 use App\Support\ActorReference;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Models\Question;

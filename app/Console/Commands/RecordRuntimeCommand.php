@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Drivers\RecordRuntime\RecordRuntimeCommand as RecordRuntime;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Drivers\Commands\RecordRuntime\RecordRuntimeCommand as RecordRuntime;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

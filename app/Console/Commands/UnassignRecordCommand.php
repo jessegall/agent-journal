@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Assignments\UnassignRecordPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Assignments\Api\UnassignRecordPayload;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\ReadsAssignmentArguments;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Enums\CommandRules\JournalRouteType;
 use App\Exceptions\InvalidActorText;
 use Illuminate\Console\Command;
 

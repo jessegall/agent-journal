@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\PhpStan;
 
 use App\Attributes\Commands\RetainedActorRequestKey;
-use App\Concerns\Reflects;
+use App\Bus\Concerns\Reflects;
 use App\Support\Reflector;
 use Tests\Fixtures\Reflection\Attributes\Marker;
 use Tests\Fixtures\Reflection\Parcel;

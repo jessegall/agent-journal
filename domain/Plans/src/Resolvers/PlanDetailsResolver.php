@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Enums\CommandRules\ReadView;
+use App\Actors\Contracts\CurrentActor;
+use App\CommandRules\Enums\ReadView;
 use Domain\Plans\Contracts\PlanDetailsResolver as PlanDetailsResolverContract;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;

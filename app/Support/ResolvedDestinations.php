@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Assignments\Assignee;
-use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Records\Destinations;
+use App\Assignments\Contracts\Assignee;
+use App\Inboxes\Contracts\LabeledInbox;
+use App\Records\Contracts\Destinations;
 
 /**
  * The resolved destinations of a recipient, for the direct and the forwarding case alike.

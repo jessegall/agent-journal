@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Enums\Agents\AccessType;
-use App\Contracts\Authorization\PolicyProvider;
-use App\Values\PolicyDefinition;
-use App\Contracts\Bus\CommandMiddlewareProvider;
-use App\Contracts\Bus\CommandProvider;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
+use App\Bus\MiddlewareDeclaration;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard\DrawCardCommand;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck\ShuffleDeckCommand;
-use Tests\Fixtures\Modules\Cards\Models\Deck;
 use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
 /**

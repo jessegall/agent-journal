@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Notes\Commands\EngineNote\EngineNoteCommand;
+use App\Bus\Contracts\CommandHandler;
 
 final class EngineNoteHandler implements CommandHandler
 {

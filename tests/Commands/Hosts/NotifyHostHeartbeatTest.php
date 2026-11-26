@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
-use App\Enums\Hosts\HostProcessStatus;
+use App\Hosts\Commands\NotifyHostHeartbeat\NotifyHostHeartbeatCommand;
+use App\Hosts\Enums\HostProcessStatus;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

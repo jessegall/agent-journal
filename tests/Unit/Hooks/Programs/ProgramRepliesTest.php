@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
+use App\Agents\Drivers\Enums\DriverPermission;
+use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Agents\Drivers\Hooks\DriverReplies;
 use App\Agents\Drivers\Hooks\DriverReply;
-use App\Enums\Drivers\DriverPermission;
-use App\Enums\Drivers\RewriteSupport;
-use App\Enums\Hooks\HookEvent;
-use App\Exceptions\InvalidStopAnswer;
+use App\Agents\Exceptions\InvalidStopAnswer;
+use App\Hooks\Enums\HookEvent;
+use App\Stacks\AgentStack;
+use App\Stacks\HookAnswer;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\HookAnswer;
 use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\TestText;

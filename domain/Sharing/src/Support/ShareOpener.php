@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use Domain\Sharing\Commands\ApproveShareRequest\ApproveShareRequestCommand;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Commands\RefreshShareScope\RefreshShareScopeCommand;

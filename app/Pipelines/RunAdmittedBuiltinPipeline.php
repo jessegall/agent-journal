@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\CommandRules\Execution\BuiltinCall;
+use App\Pipelines\Support\Step;
 use App\Pipes\Supervision\EndBuiltin;
 use App\Pipes\Supervision\StartBuiltin;
-use App\Support\Execution\BuiltinCall;
-use App\Support\Execution\QueuedPart;
+use App\Processes\Execution\QueuedPart;
 use App\Support\Execution\StepOutcome;
-use App\Support\Step;
 
 /**
  * Starts a builtin, runs the pipe of that builtin, and records how it ended.

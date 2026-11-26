@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Access;
 
-use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
-use App\Commands\Access\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
-use App\Enums\Messages\InboxPermission;
+use App\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
+use App\Access\Commands\RevokeEnvironmentAccess\RevokeEnvironmentAccessCommand;
+use App\Messages\Enums\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

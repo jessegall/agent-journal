@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Records\SettingsRecord;
-use App\Values\SettingsChange;
+use App\Settings\Values\SettingsChange;
 use Closure;
 use Throwable;
 

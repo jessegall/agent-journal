@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Support\Hosts\HostWake;
+use App\Hosts\HostWake;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;

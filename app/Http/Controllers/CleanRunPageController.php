@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Bus\Attributes\Dispatches;
 use App\Http\Requests\Processes\RunPageRequest;
 use App\Http\Responses\Processes\ReviewResponses;
+use App\Processes\Commands\CleanProcessOutput\CleanProcessOutputCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**

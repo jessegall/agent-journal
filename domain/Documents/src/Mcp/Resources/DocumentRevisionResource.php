@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Resources;
 
-use App\Contracts\Authorization\ReadGrant;
-use App\Mcp\Contracts\JobPermissionReader;
+use App\Access\Contracts\ReadGrant;
+use App\CommandRules\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Values\ReadRequest;
 use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;

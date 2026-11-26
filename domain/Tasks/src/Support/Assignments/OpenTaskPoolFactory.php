@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Contracts\Assignments\AssignmentPoolFactory;
-use App\Enums\Assignments\PoolInputType;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Contracts\AssignmentPoolFactory;
+use App\Assignments\Enums\PoolInputType;
+use App\Assignments\PoolDescription;
 use App\Support\ActorReference;
-use App\Support\PoolDescription;
 use App\Support\PoolReference;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
 use Illuminate\Container\Attributes\Scoped;

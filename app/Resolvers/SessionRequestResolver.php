@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Contracts\Sessions\CurrentSession;
-use App\Contracts\Sessions\SessionRequestResolver as SessionRequestResolverContract;
-use App\Enums\Agents\AccessType;
-use App\Exceptions\SessionRequestMissing;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Enums\AccessType;
 use App\Models\Agents\Agent;
 use App\Models\Sessions\SessionRequest;
 use App\Policies\AgentPolicy;
-use App\Support\SessionRequestDetails;
+use App\Sessions\Contracts\CurrentSession;
+use App\Sessions\Contracts\SessionRequestResolver as SessionRequestResolverContract;
+use App\Sessions\Exceptions\SessionRequestMissing;
+use App\Sessions\SessionRequestDetails;
 use PhpOption\None;
 use PhpOption\Option;
 

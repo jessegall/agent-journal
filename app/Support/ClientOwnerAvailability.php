@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Domains\DomainAvailability;
-use App\Contracts\Navigation\ClientOwnerAvailability as ClientOwnerAvailabilityContract;
-use App\Declarations\DomainClient;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
+use App\Navigation\Contracts\ClientOwnerAvailability as ClientOwnerAvailabilityContract;
+use App\Navigation\Declarations\DomainClient;
 
 /**
  * Whether the owner of a page, section or navigation item is available now: a listed domain asks its availability

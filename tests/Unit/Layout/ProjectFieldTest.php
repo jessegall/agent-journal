@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Layout;
 
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Projects\ProjectDestination;
-use App\Contracts\Projects\ProjectDirectory;
-use App\Data\Projects\ProjectData;
+use App\Projects\Contracts\CurrentProject;
+use App\Projects\Contracts\ProjectDestination;
+use App\Projects\Contracts\ProjectDirectory;
+use App\Projects\Data\ProjectData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\ProjectField;

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\TransportProfileType;
-use App\Support\AccountStartRecipe;
+use App\Accounts\AccountStartRecipe;
+use App\Agents\Values\JournalServer;
+use App\Sessions\Enums\TransportProfileType;
 
 /**
  * The saved account a driver start signs in with: the recipe its adapter checked, the journal's own MCP server the

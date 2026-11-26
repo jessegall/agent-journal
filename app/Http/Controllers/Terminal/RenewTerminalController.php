@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Terminal;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Terminals\RenewTerminalView\RenewTerminalViewCommand;
+use App\Bus\Attributes\Dispatches;
 use App\Http\Requests\Agents\TerminalViewRequest;
 use App\Http\Responses\Agents\TerminalAnswers;
+use App\Terminals\Commands\RenewTerminalView\RenewTerminalViewCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

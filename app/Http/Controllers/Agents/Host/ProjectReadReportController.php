@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Host;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
 use App\Http\Requests\Agents\ProjectReadReportRequest;
-use App\Values\HostContext;
+use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\FinishProjectCommandRun\FinishProjectCommandRunCommand;
-use App\Enums\Connections\CommandRunStatus;
-use App\Enums\Projects\ArrangementType;
+use App\Connections\Enums\CommandRunStatus;
+use App\Connections\Values\CommandFingerprint;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Host;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectCommandRun;
-use App\Values\BindingFolder;
-use App\Values\CommandFingerprint;
+use App\Projects\Commands\FinishProjectCommandRun\FinishProjectCommandRunCommand;
+use App\Projects\Enums\ArrangementType;
+use App\Projects\Values\BindingFolder;
 use App\Values\PresenceReport;
 use Domain\Comments\CommentsDomain;
 use Illuminate\Testing\TestResponse;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandRefusal;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

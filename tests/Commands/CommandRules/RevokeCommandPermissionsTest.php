@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\RevokeCommandPermissions\RevokeCommandPermissionsCommand;
-use App\Enums\CommandRules\CommandClass;
+use App\CommandRules\Commands\RevokeCommandPermissions\RevokeCommandPermissionsCommand;
+use App\CommandRules\Enums\CommandClass;
 use App\Models\Profiles\PermissionRevocation;
+use App\Sessions\Values\ProcessGrants;
 use App\Values\CommandClassSet;
 use App\Values\CommandPermissions;
-use App\Values\ProcessGrants;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\CreateShare;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Attributes\Commands\RequiresRequestKey;
-use App\Enums\Agents\AccessType;
+use App\Bus\Attributes\Commands\RequiresRequestKey;
 use App\Support\Command;
 use Domain\Sharing\Policies\SharingPolicy;
 use Domain\Sharing\Support\ShareSummary;

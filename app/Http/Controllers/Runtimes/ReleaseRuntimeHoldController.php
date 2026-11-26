@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
+use App\Bus\Attributes\Dispatches;
 use App\Http\Requests\Web\HoldReleaseRequest;
 use App\Http\Responses\Processes\ReviewResponses;
+use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**

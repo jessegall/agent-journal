@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Sessions\SessionStartEnded;
 use Domain\Helpers\Commands\CancelHelperJob\CancelHelperJobCommand;
 use Domain\Helpers\Enums\JobStatus;

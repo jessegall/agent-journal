@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models\Inboxes;
 
+use App\Assignments\Contracts\Assignee;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
-use App\Contracts\Assignments\Assignee;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Records\ReadableModel;
 use App\Events\Inboxes\InboxMessageNumberTaken;
 use App\Events\Inboxes\InboxOpened;
 use App\Exceptions\InboxUnavailable;
+use App\Inboxes\Contracts\LabeledInbox;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;

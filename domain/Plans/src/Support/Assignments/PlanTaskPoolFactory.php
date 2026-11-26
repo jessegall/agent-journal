@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Contracts\Assignments\AssignmentPoolFactory;
-use App\Enums\Assignments\PoolInputType;
-use App\Exceptions\AssignmentPoolTooLarge;
-use App\Exceptions\AssignmentPoolUnavailable;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Contracts\AssignmentPoolFactory;
+use App\Assignments\Enums\PoolInputType;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
+use App\Assignments\PoolDescription;
+use App\Assignments\PoolMembers;
 use App\Support\ActorReference;
-use App\Support\PoolDescription;
-use App\Support\PoolMembers;
 use App\Support\PoolReference;
 use App\Support\RecordIdentity;
 use Domain\Plans\Exceptions\PlanMissing;

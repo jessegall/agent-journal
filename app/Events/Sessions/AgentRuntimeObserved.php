@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\AgentRuntimeEvent;
-use App\Enums\Runs\RuntimeActivity;
+use App\Processes\Enums\RuntimeActivity;
+use App\Sessions\Contracts\AgentRuntimeEvent;
 
 /**
  * A runtime's host reported what the runtime is doing, at the process generation it reports.

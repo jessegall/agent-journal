@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Pipes\Supervision\RunNextSubstitution;
 use App\Pipes\Supervision\StartPart;
 use App\Support\Execution\PendingPart;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\Step;
 
 /**
  * Runs one builtin or external part: its substitutions run first and supply their output as values, then it runs with

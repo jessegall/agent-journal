@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Exceptions\InvalidPageDeclaration;
+use App\Web\Exceptions\InvalidPageDeclaration;
 
 /**
  * The size in pixels a page's window opens at when it is detached as a floating window.

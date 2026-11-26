@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
+use App\Hosts\EnrolledHost;
 use App\Http\Controllers\Web\PageController;
 use App\Support\ClientDeclarations;
-use App\Support\EnrolledHost;
 use App\Support\Reflector;
-use App\Support\Web\DeclaredRouteKey;
+use App\Web\DeclaredRouteKey;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\EntryPointTests\Machinery\tests\Machinery;
 
-use App\Commands\Agents\StartAgent\StartAgentCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 

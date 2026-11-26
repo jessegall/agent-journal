@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Declarations\VerificationContract;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\OutputRequirement;
-use App\Enums\CommandRules\ScopeType;
-use App\Enums\CommandRules\ToolType;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\OutputRequirement;
+use App\CommandRules\Enums\ScopeType;
+use App\CommandRules\Enums\ToolType;
+use App\CommandRules\Values\ProgramSpellings;
+use App\CommandRules\Values\RuleReference;
+use App\CommandRules\Values\RuleScope;
 use App\Exceptions\CommandRuleInvalid;
+use App\Processes\Declarations\VerificationContract;
+use App\Processes\Values\ExecutableBinding;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Profiles\ProfileAuthorization;
-use App\Enums\Profiles\InstancePolicy;
-use App\Enums\Profiles\ModelTier;
+use App\Profiles\Data\ProfileAuthorization;
+use App\Profiles\Enums\InstancePolicy;
+use App\Profiles\Enums\ModelTier;
 use App\Support\Reflector;
 
 /**

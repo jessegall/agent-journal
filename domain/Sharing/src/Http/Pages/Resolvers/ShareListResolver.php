@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sharing\Data\ShareRowData;
 use Domain\Sharing\Http\Pages\SharesIndex;

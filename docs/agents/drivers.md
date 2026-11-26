@@ -7,7 +7,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 
 | Part | Where | What it does |
 | --- | --- | --- |
-| Driver ledger | `app/Models/Drivers/DriverRequest.php`, `app/Support/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
+| Driver ledger | `app/Models/Drivers/DriverRequest.php`, `app/Agents/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
 | Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands (`RetryDriverRequest`, `CancelDriverRequest`, `ResolveDriverDelivery`, `RepairDriverSettings`, `ReleaseAgentHold`, `ResumeKeyScript`, `CancelKeyScript`, `ReassignAgentRuntime`) need the owner-only `AgentMaintenancePolicy` |
 | Host routes | `routes/agents/host.php` | Claim, start grant, and reports of request progress, turns, activity, heartbeats, exit and screens |
 | Host | `tools/journal-agent` | `serve` claims requests (`client/poll.go`) and hands them to the loop in `serving/loop.go` |
@@ -48,11 +48,11 @@ still be watched.
   is decided again on every frame read. A process-driver runtime, a stopped runtime and more than 20 live views of
   one viewer are refused. Watching never types: no route takes keys or input for the program.
 - The browser renews its view every 10 seconds, and a view lapses 30 seconds after its last renewal. Each engine pass
-  (`app/Commands/Terminals/EndTerminalViews/EndTerminalViewsCommand.php`) ends lapsed views and views of stopped runtimes, and deletes views
+  (`app/Terminals/Commands/EndTerminalViews/EndTerminalViewsCommand.php`) ends lapsed views and views of stopped runtimes, and deletes views
   that ended a day ago.
 - The claim answer carries `watched: [{runtime_id, interval_ms}]` and `watched_version`, a hash of that list (0 when
   nobody watches); the host sends the last version it saw, and a claim returns at once when the version differs
-  (`app/Support/WatchedRuntimes.php`).
+  (`app/Terminals/WatchedRuntimes.php`).
 - The host's watcher (`tools/journal-agent/host/screen_watch.go`) captures each watched runtime at its interval
   (500 ms or 1 s), sends a frame only when the screen changed or 10 seconds passed, and sends nothing for a runtime
   nobody watches. A frame is the whole screen as styled runs (`tools/journal-agent/screen/frame.go`); over 256 KiB it
@@ -63,7 +63,7 @@ still be watched.
   refused resize, is sent as an unreadable marker, and a runtime whose terminal the host does not hold as a no-terminal
   marker.
 - Only the latest frame per runtime is kept, in the cache, for 60 seconds after it arrived
-  (`app/Support/RuntimeScreen.php`); a frame is never written to the database or a log.
+  (`app/Terminals/RuntimeScreen.php`); a frame is never written to the database or a log.
 - The browser asks `GET /agents/{agent}/terminal?epoch=&after=` every 500 ms and gets the newer frame, or 204; a new
   epoch is a restarted host. The answer says `live`, `ended` with the last frame, or `restarted` once when the agent
   moved to a new runtime or generation.

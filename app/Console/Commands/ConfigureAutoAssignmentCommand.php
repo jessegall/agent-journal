@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Api\Assignments\ConfigureAutoAssignmentPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Assignments\Api\ConfigureAutoAssignmentPayload;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\ReadsAutoAssignmentChange;
-use App\Enums\CommandRules\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**

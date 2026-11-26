@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Mcp;
 
-use App\Contracts\Drivers\ToolDiscovery;
+use App\Agents\Drivers\Contracts\ToolDiscovery;
+use App\Api\SignedCall;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\McpCatalogue;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\AgentContext;
-use App\Support\CatalogueReflectorFactory;
 use App\Support\CommandRegistry;
 use App\Support\DomainRegistry;
-use App\Support\SignedCall;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Server\Tool;
 use Tests\Fixtures\Domains\Ledger\LedgerDomain;

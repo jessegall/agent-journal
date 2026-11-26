@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Inboxes;
 
-use App\Commands\Inboxes\ProvisionActorInbox\ProvisionActorInboxCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Inboxes\Commands\ProvisionActorInbox\ProvisionActorInboxCommand;
 use App\Models\Access\User;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;

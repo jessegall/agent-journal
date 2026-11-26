@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\HelperActivity;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\StartAccepted;
-use App\Support\HelperActivity;
 
 /**
  * Records a helper an agent started in the agent's activity.

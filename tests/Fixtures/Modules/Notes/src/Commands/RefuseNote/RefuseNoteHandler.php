@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 
-use App\Exceptions\CommandRefused;
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
+use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\RefuseNote\RefuseNoteCommand;
 
 final class RefuseNoteHandler implements CommandHandler
 {

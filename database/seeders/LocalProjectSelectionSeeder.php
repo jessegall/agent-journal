@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Projects\Project;
-use App\Support\Projects\CurrentProject;
+use App\Projects\CurrentProject;
 use App\Values\ProjectSelection;
 use Closure;
 use Illuminate\Database\Seeder;

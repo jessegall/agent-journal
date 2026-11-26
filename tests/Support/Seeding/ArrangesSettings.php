@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Settings\Setting;
-use App\Contracts\Settings\SettingCommands;
-use App\Contracts\Settings\SettingsResolver;
-use App\Declarations\BooleanSetting;
-use App\Declarations\DecimalSetting;
-use App\Declarations\IntegerSetting;
-use App\Declarations\StringSetting;
 use App\Models\Records\SettingsRecord;
-use App\Values\Decimal;
+use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\SettingCommands;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Declarations\BooleanSetting;
+use App\Settings\Declarations\DecimalSetting;
+use App\Settings\Declarations\IntegerSetting;
+use App\Settings\Declarations\StringSetting;
+use App\Settings\Values\Decimal;
 use Illuminate\Database\DatabaseManager;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;

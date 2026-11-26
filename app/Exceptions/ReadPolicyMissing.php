@@ -15,7 +15,7 @@ final class ReadPolicyMissing extends RuntimeException
     {
         return new self(
             sprintf(
-                '%s (link type %s) does not bound its reads; implement App\\Contracts\\Records\\ReadableModel and use App\\Concerns\\BoundedReads.',
+                '%s (link type %s) does not bound its reads; implement App\\Records\\Contracts\\ReadableModel and use App\\Concerns\\BoundedReads.',
                 $model,
                 $linkType,
             ),

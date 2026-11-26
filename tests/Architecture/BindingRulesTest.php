@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Assignments\AssignmentRegistration;
-use App\Contracts\Processes\ShellCommandParser as ShellCommandParserContract;
-use App\Support\ActorStore;
+use App\Actors\ActorStore;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Processes\Contracts\ShellCommandParser as ShellCommandParserContract;
+use App\Processes\ShellCommandParser;
 use App\Support\DomainRegistry;
 use App\Support\Exports;
 use App\Support\Registry\AssignmentRegistry;
-use App\Support\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -39,19 +39,19 @@ final class BindingRulesTest extends TestCase
      * or the system the same way the sharing console owner and supervisor do.
      */
     private const array ACTOR_SITES = [
-        'app/Support/ActorStore.php',
+        'app/Actors/ActorStore.php',
         'app/Providers/ActorsServiceProvider.php',
-        'app/Contracts/Actors/CurrentActor.php',
-        'app/Contracts/Actors/CurrentActorSetter.php',
+        'app/Actors/Contracts/CurrentActor.php',
+        'app/Actors/Contracts/CurrentActorSetter.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
         'app/Http/Middleware/AuthenticateDeviceGrant.php',
-        'app/Support/ConsoleOwner.php',
-        'app/Support/JournalCommands.php',
+        'app/Bus/ConsoleOwner.php',
+        'app/Bus/JournalCommands.php',
         'app/Http/Middleware/AuthenticateUser.php',
-        'app/Support/EnginePass.php',
+        'app/Engine/EnginePass.php',
         'app/Listeners/RefreshOnSkillsChanged.php',
-        'app/Support/BuiltInStartProfiles.php',
+        'app/Profiles/BuiltInStartProfiles.php',
     ];
 
     /**
@@ -59,7 +59,7 @@ final class BindingRulesTest extends TestCase
      * the registry, Core's composition root, its area providers, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
-        'app/Contracts/Assignments/AssignmentRegistration.php',
+        'app/Assignments/Contracts/AssignmentRegistration.php',
         'app/Support/Registry/AssignmentRegistry.php',
         'app/Providers/AssignmentsServiceProvider.php',
         'app/Providers/AgentsServiceProvider.php',
@@ -100,7 +100,7 @@ final class BindingRulesTest extends TestCase
             'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
             "PlansServiceProvider.php:19 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
             'PlansServiceProvider.php:20 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Contracts\\Actors\\CurrentActor beyond its request',
+            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Actors\\Contracts\\CurrentActor beyond its request',
         ], array_map(
             fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",
             $violations,

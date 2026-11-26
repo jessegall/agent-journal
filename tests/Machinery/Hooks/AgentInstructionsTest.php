@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Hooks\ContextStartType;
-use App\Enums\Sessions\SessionStatus;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Hooks\ContextStarted;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\ReminderContribution;
 use App\Listeners\RemindAgentInstructions;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\ReminderContribution;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Sessions\Enums\SessionStatus;
 use App\Values\ProfileBase;
 use App\Values\StackTarget;
 use Tests\Fixtures\Agents\TestSelections;

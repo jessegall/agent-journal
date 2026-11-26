@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use App\Support\RecordIdentity;
 use Domain\Sharing\Commands\ReopenSharedGateways\ReopenSharedGatewaysCommand;
 use Domain\Sharing\Enums\GatewayOperationType;

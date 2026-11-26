@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Navigation\PageResolver;
+use App\Actors\Contracts\CurrentActor;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Sharing\Data\ShareAuditData;
 use Domain\Sharing\Data\ShareControlsPartData;

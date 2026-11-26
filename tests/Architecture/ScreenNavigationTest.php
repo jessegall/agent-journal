@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Commands\Hosts\ForwardUserKeys\ForwardUserKeysCommand;
-use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Commands\ForwardUserKeys\ForwardUserKeysCommand;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\CodeReferenceScan;
 use Tests\Support\ScanCache\ScanCache;
@@ -26,11 +26,11 @@ final class ScreenNavigationTest extends TestCase
             'app/Support/KeyScripts/',
             'app/Support/Screens/',
             'app/Agents/Drivers/Processes/TerminalDriver.php',
-            'app/Support/Hosts/HostChannel.php',
+            'app/Hosts/HostChannel.php',
         ],
         ForwardUserKeysCommand::class => [
             'app/Agents/Drivers/Processes/TerminalDriver.php',
-            'app/Support/Hosts/HostChannel.php',
+            'app/Hosts/HostChannel.php',
         ],
     ];
 
@@ -45,7 +45,7 @@ final class ScreenNavigationTest extends TestCase
 
         $this->journal->assertResult(
             true,
-            in_array('app/Support/Hosts/HostChannel.php', $this->sendersOutside($narrowed), true),
+            in_array('app/Hosts/HostChannel.php', $this->sendersOutside($narrowed), true),
         );
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Accounts;
 
-use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

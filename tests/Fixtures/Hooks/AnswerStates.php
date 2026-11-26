@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Events\Messages\MessageSent;
-use App\Support\States\AnswerMessageState;
-use App\Values\AnswerBudget;
+use App\Stacks\AnswerMessageState;
+use App\Stacks\Values\AnswerBudget;
 use Tests\Support\TestActors;
 
 /**

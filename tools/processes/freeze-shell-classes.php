@@ -13,9 +13,9 @@ declare(strict_types=1);
  *       php tools/processes/freeze-shell-classes.php
  */
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Processes\ShellDialect;
+use App\Bus\Contracts\CommandClassifier;
 use App\Processes\Contracts\AliasReader;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use Illuminate\Contracts\Console\Kernel;

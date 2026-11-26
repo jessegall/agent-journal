@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Enums\Engine\NoSubject;
-use App\Support\References\StateReference;
-use App\Support\ReflectedProperty;
+use App\Engine\Enums\NoSubject;
+use App\Reflection\ReflectedProperty;
+use App\Stacks\Contracts\StateFactory;
+use App\Stacks\References\StateReference;
+use App\Stacks\StackRestorer;
+use App\Stacks\StateTypes;
 use App\Support\Reflector;
-use App\Support\Stack\Contracts\StateFactory;
-use App\Support\Stack\StackRestorer;
-use App\Support\Stack\StateTypes;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Values\StackTarget;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Support\Classification;
 
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\RedirectType;
-use App\Enums\CommandRules\UnresolvedType;
+use App\Access\Values\ClassFact;
+use App\Access\Values\ShellNode;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\RedirectType;
+use App\CommandRules\Enums\UnresolvedType;
+use App\Processes\Values\HereDocument;
+use App\Processes\Values\SyntaxOrigin;
 use App\Values\AgentText;
-use App\Values\ClassFact;
-use App\Values\HereDocument;
 use App\Values\Redirect;
-use App\Values\ShellNode;
-use App\Values\SyntaxOrigin;
 use App\Values\UnresolvedFact;
 
 /**

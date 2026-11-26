@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
+use App\Docking\Sources\Contracts\CardContext;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;
 use App\Support\Cards\Subtitle;
 use App\Support\Cards\Title;
-use App\Support\Sources\Contracts\CardContext;
 use App\Support\Sources\Contracts\Dockable;
 use App\Support\Sources\DockDefinition;
 use Domain\Tasks\Models\Task;

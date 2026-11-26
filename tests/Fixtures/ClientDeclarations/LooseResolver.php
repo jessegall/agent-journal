@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use Spatie\LaravelData\Data;
 
 /**

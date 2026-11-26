@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Values\HostContext;
+use App\Agents\Commands\RenewRuntimeLease\RenewRuntimeLeaseCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

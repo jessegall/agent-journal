@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Bootstrap\KnownFolderClasses;
+use App\Bootstrap\Psr4ClassNames;
+
 /**
  * The classes of one type a folder declares, read through Composer's PSR-4 roots, so a list that mirrors a folder is
  * found from the folder instead of written out by hand. Each folder is listed once per process (CodeFiles), and the

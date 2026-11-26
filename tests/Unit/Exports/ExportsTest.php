@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Exports;
 
-use App\Exceptions\MalformedExports;
+use App\Bootstrap\Exceptions\MalformedExports;
 use App\Support\Exports;
 use ArrayObject;
 use Domain\Plans\Events\PlanProgressChanged;

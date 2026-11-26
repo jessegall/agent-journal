@@ -6,8 +6,8 @@ namespace Tests\Fixtures\AgentRequests\Invalid;
 
 use App\Attributes\Api\Endpoint;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
 use Spatie\LaravelData\Data;
 use Tests\Fixtures\AgentRequests\NoteAnswer;
 

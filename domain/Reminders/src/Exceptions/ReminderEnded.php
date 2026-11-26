@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use Domain\Reminders\Enums\ReminderStatus;
 use RuntimeException;
 

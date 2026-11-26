@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands\LimitedItem;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Between;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 
 /**

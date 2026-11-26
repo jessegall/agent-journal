@@ -8,7 +8,7 @@ use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Processes\OutputChunkCommitted;
 use App\Models\Runs\PartRun;
-use App\Support\RunUpdates;
+use App\Processes\RunUpdates;
 
 /**
  * A committed chunk changes its part's activity view: the pages that show the run get a live update, at most one a

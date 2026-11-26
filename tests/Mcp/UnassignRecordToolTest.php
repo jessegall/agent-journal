@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Assignments\UnassignRecord\UnassignRecordCommand;
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\Commands\UnassignRecord\UnassignRecordCommand;
+use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Mcp\Tools\UnassignRecordTool;
-use App\Support\AssignmentOutcome;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;

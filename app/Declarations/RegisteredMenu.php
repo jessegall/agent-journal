@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Menu;
+
 /**
  * A checked menu of an installed domain: its full key, its label and the route parameter its record fills.
  */

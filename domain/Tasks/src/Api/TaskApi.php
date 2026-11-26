@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Api;
 
-use App\Contracts\Domains\ApiSender;
+use App\Api\Contracts\Domains\ApiSender;
 use App\Support\CallKey;
 use Domain\Tasks\Data\AssignedTaskListData;
 

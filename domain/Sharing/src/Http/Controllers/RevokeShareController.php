@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Http\Requests\ShareActionRequest;
 use Illuminate\Http\RedirectResponse;

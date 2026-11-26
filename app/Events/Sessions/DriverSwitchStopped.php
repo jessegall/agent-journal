@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\DriverSwitchEvent;
+use App\Agents\Drivers\Contracts\DriverSwitchEvent;
 
 /**
  * The session a switch replaces is proven stopped, so its replacement may start. Raised after the commit.

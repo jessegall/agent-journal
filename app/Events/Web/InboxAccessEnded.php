@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Web;
 
-use App\Support\UserChannel;
+use App\Web\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 

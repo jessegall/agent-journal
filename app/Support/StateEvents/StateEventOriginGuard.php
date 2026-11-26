@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
-use App\Declarations\StateMethod;
-use App\Declarations\StateMethods;
-use App\Enums\Engine\CommandOriginStatus;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\Frames\Frame;
-use App\Support\Stack\SelectedStateMethod;
-use App\Support\Stack\StateMethodSelector;
+use App\Engine\Enums\CommandOriginStatus;
+use App\Hooks\StateEvents\StateEventActivity;
+use App\Stacks\AgentStack;
+use App\Stacks\Declarations\StateMethod;
+use App\Stacks\Declarations\StateMethods;
+use App\Stacks\Frames\Frame;
+use App\Stacks\SelectedStateMethod;
+use App\Stacks\StateMethodSelector;
 
 /**
  * Checks the same originating frame against the current authorized snapshot in the command transaction.

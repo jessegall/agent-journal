@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\StartIdentityEvent;
+use App\Sessions\Contracts\StartIdentityEvent;
 
 /**
  * A start prepared the identity its driver session will carry.

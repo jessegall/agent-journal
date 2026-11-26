@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\RecordRunEventsPayload;
-use App\Api\Processes\RunEventsAccepted;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Runs\ProcessRun;
-use App\Values\RunEventBatch;
+use App\Processes\Api\RecordRunEventsPayload;
+use App\Processes\Api\RunEventsAccepted;
+use App\Processes\Commands\RecordRunEvents\RecordRunEventsCommand;
+use App\Processes\Values\RunEventBatch;
 
 /**
  * Records a batch of a run's events for the holder of its event key, assesses the parts that ended and settles them

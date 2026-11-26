@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\ClosingWordsEvent;
+use App\Sessions\Contracts\ClosingWordsEvent;
 
 /**
  * An agent stopped again with the same closing words, so they stay private.

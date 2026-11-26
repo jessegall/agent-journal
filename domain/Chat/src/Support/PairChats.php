@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
-use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Inboxes\InboxEligibility;
-use App\Enums\Messages\InboxPermission;
+use App\Actors\Contracts\ActorLabels;
+use App\Actors\Contracts\CurrentActor;
+use App\Bus\Contracts\CommandBus;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
+use App\Inboxes\Contracts\InboxEligibility;
+use App\Messages\Enums\InboxPermission;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;

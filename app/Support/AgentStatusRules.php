@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Agents\StatusActionType;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\DriverSwitchStage;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Drivers\RequestProgress;
-use App\Enums\Runs\RuntimeActivity;
-use App\Enums\Sessions\SessionActivityStatus;
-use App\Enums\Sessions\SessionStatus;
-use App\Enums\Sessions\StartDisposition;
-use App\Enums\Sessions\StartRefusalType;
-use App\Enums\Sessions\StartRemedyType;
-use App\Enums\Sessions\StartUnavailableReason;
+use App\Agents\Data\DriverRequestStatus;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\DriverSwitchStage;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Agents\Drivers\Enums\RequestProgress;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Agents\Enums\StatusActionType;
+use App\Processes\Enums\RuntimeActivity;
+use App\Sessions\Enums\SessionActivityStatus;
+use App\Sessions\Enums\SessionStatus;
+use App\Sessions\Enums\StartDisposition;
+use App\Sessions\Enums\StartRefusalType;
+use App\Sessions\Enums\StartRemedyType;
+use App\Sessions\Enums\StartUnavailableReason;
+use App\Sessions\SessionStartOutcome;
+use App\Sessions\StartRefusalCodes;
+use App\Sessions\StartRemedyWords;
 
 /**
  * Decides an agent's status from its evidence: the state, the words that name it and the actions it offers. Core's

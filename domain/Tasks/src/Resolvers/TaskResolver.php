@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Projects\ProjectOwned;
+use App\Actors\Contracts\CurrentActor;
+use App\Projects\Contracts\ProjectOwned;
 use Domain\Tasks\Contracts\TaskResolver as TaskResolverContract;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;

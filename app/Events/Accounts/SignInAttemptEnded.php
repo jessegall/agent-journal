@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Accounts;
 
-use App\Contracts\Accounts\SignInAttemptEvent;
-use App\Enums\Accounts\SignInStatus;
+use App\Accounts\Contracts\SignInAttemptEvent;
+use App\Accounts\Enums\SignInStatus;
 
 /**
  * A sign-in attempt ended in the state given.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Reads;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use Domain\Chat\Data\ChatRowsInput;
 use Domain\Chat\Data\ChatRowsPageData;
 use Domain\Chat\Exceptions\ChatUnavailable;

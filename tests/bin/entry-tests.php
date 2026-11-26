@@ -10,9 +10,9 @@ declare(strict_types=1);
  *   php -d memory_limit=1G tests/bin/entry-tests.php [--write | --prune], in the app container
  */
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
 use App\Mcp\Support\McpCatalogue;
 use App\Support\ClientDeclarations;
 use App\Values\FilePath;

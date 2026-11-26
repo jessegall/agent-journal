@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
-use App\Commands\Settings\ResetSetting\ResetSettingCommand;
-use App\Enums\Settings\SettingsOutcome;
 use App\Models\Records\SettingsRecord;
-use App\Support\Storage\EncodedSetting;
-use App\Support\Storage\EncodedValue;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Storage\EncodedSetting;
+use App\Settings\Storage\EncodedValue;
+use App\Settings\Values\SettingsChange;
 use App\Support\Storage\SettingsDocument;
-use App\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;

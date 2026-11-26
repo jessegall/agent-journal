@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Enums\Skills\PublicationStatus;
 use App\Events\Hooks\ContextStarted;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
-use App\Resolvers\Support\SkillContextResolver;
+use App\Skills\Enums\PublicationStatus;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Values\AgentText;
 
 /**

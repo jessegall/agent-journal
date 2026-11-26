@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\States;
 
-use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\Hooks\AnswerType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageSent;
+use App\Hooks\Enums\AnswerType;
 use App\Models\Messages\Message;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Stacks\AnswerMessageState;
+use App\Stacks\Support\AnswerMessageStateReference;
+use App\Stacks\Values\AnswerBudget;
 use App\Support\ActorReference;
-use App\Support\States\AnswerMessageState;
-use App\Support\States\Support\AnswerMessageStateReference;
-use App\Values\AnswerBudget;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;

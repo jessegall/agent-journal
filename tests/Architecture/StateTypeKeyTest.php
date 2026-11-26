@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Attributes\States\StateType;
+use App\Stacks\Attributes\StateType;
 use App\Support\Reflector;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\TestCase;

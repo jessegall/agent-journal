@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
-use App\Commands\Inboxes\JoinInbox\JoinInboxCommand;
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
+use App\Inboxes\Commands\JoinInbox\JoinInboxCommand;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\PairChats;

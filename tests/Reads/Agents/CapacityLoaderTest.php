@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Agents;
 
-use App\Data\Agents\CapacityData;
-use App\Data\Agents\CapacityInput;
+use App\Agents\Data\CapacityData;
+use App\Agents\Data\CapacityInput;
 use App\Http\Loaders\Agents\CapacityLoader;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;

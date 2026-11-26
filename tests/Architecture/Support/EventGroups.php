@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Events\Event;
+use App\Reflection\ReflectedProperty;
 use App\Support\DeclaredType;
-use App\Support\ReflectedProperty;
 use App\Support\Reflector;
 
 /**

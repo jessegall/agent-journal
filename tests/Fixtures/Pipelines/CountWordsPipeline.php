@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
 
 /**
  * A fixture pipeline of one pipe, run twice when its pipe is listed twice: the second run is handed a Counted.

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Listeners;
 
-use App\Contracts\Bus\JournalCommands;
-use App\Contracts\Events\HelperRecordFacts;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Contracts\Events\HelperRecordFacts;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
 use App\Events\Hooks\HelperCompletionCertified;
 use App\Support\RecordIdentity;
 use Domain\Helpers\Commands\FinishHelperJob\FinishHelperJobCommand;

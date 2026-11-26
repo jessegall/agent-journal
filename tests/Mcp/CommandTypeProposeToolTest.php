@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
-use App\Mcp\Tools\CommandTypeProposeTool;
+use App\CommandRules\Commands\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
+use App\CommandRules\Mcp\Tools\CommandTypeProposeTool;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;

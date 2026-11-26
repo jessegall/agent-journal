@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\EvidenceRunStarted;
-use App\Api\Processes\StartEvidenceRunPayload;
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use App\Models\CommandRules\EvidencePermit;
-use App\Support\EvidenceRuns;
+use App\Processes\Api\EvidenceRunStarted;
+use App\Processes\Api\StartEvidenceRunPayload;
+use App\Processes\EvidenceRuns;
 
 /**
  * Starts the evidence run a permit allows under the call's request key and answers its run.

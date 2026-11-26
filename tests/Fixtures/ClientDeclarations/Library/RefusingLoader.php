@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Library;
 
-use App\Exceptions\NotificationCursorInvalid;
-use App\Exceptions\SessionRequestMissing;
+use App\Notifications\Exceptions\NotificationCursorInvalid;
+use App\Sessions\Exceptions\SessionRequestMissing;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

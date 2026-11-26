@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders;
 
-use App\Contracts\Bus\CommandProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasStates;
-use App\Contracts\Records\StateProvider;
+use App\Records\Contracts\StateProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder\SendQuestionReminderCommand;

@@ -60,79 +60,79 @@
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\BindingListData",
+        "class": "App\\Connections\\Data\\BindingListData",
         "owner": "connections",
         "symbol": "BindingListData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\BindingProviderData",
+        "class": "App\\Connections\\Data\\BindingProviderData",
         "owner": "connections",
         "symbol": "BindingProviderData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\ConnectProjectWindowData",
+        "class": "App\\Connections\\Data\\ConnectProjectWindowData",
         "owner": "connections",
         "symbol": "ConnectProjectWindowData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\DeviceApprovalData",
+        "class": "App\\Connections\\Data\\DeviceApprovalData",
         "owner": "connections",
         "symbol": "DeviceApprovalData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\EnvironmentOptionData",
+        "class": "App\\Connections\\Data\\EnvironmentOptionData",
         "owner": "connections",
         "symbol": "EnvironmentOptionData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\InstallAttemptListData",
+        "class": "App\\Connections\\Data\\InstallAttemptListData",
         "owner": "connections",
         "symbol": "InstallAttemptListData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\InstallAttemptRowData",
+        "class": "App\\Connections\\Data\\InstallAttemptRowData",
         "owner": "connections",
         "symbol": "InstallAttemptRowData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\JoinTargetData",
+        "class": "App\\Connections\\Data\\JoinTargetData",
         "owner": "connections",
         "symbol": "JoinTargetData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\ProjectBindingRowData",
+        "class": "App\\Connections\\Data\\ProjectBindingRowData",
         "owner": "connections",
         "symbol": "ProjectBindingRowData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\ReleaseOfferData",
+        "class": "App\\Connections\\Data\\ReleaseOfferData",
         "owner": "connections",
         "symbol": "ReleaseOfferData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\ReleaseTargetData",
+        "class": "App\\Connections\\Data\\ReleaseTargetData",
         "owner": "connections",
         "symbol": "ReleaseTargetData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\SupportRecordRowData",
+        "class": "App\\Connections\\Data\\SupportRecordRowData",
         "owner": "connections",
         "symbol": "SupportRecordRowData",
         "module": "generated/types/connections/index.ts"
     },
     {
-        "class": "App\\Data\\Connections\\TerminalSignInRowData",
+        "class": "App\\Connections\\Data\\TerminalSignInRowData",
         "owner": "connections",
         "symbol": "TerminalSignInRowData",
         "module": "generated/types/connections/index.ts"
@@ -2664,7 +2664,7 @@
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Support\\Layout\\LayoutBodyData",
+        "class": "App\\Connections\\Layout\\LayoutBodyData",
         "owner": "core",
         "symbol": "LayoutBodyData",
         "module": "generated/types/core/index.ts"
@@ -2700,19 +2700,19 @@
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Support\\Layout\\LayoutMenuData",
+        "class": "App\\Navigation\\Layout\\LayoutMenuData",
         "owner": "core",
         "symbol": "LayoutMenuData",
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Support\\Layout\\LayoutMenuGroupData",
+        "class": "App\\Navigation\\Layout\\LayoutMenuGroupData",
         "owner": "core",
         "symbol": "LayoutMenuGroupData",
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Support\\Layout\\LayoutMenuItemData",
+        "class": "App\\Navigation\\Layout\\LayoutMenuItemData",
         "owner": "core",
         "symbol": "LayoutMenuItemData",
         "module": "generated/types/core/index.ts"
@@ -2754,7 +2754,7 @@
         "module": "generated/types/core/index.ts"
     },
     {
-        "class": "App\\Support\\Section",
+        "class": "App\\Text\\Section",
         "owner": "core",
         "symbol": "Section",
         "module": "generated/types/core/index.ts"

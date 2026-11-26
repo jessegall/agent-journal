@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Contracts\Actors\ActorTypes;
+use App\Actors\Contracts\ActorTypes;
 use App\Support\ActorReference;
 use App\Support\IdListPage;
 use Illuminate\Foundation\Http\FormRequest;

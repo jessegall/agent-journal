@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Asks\AskReader;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Asks\AskDetail;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Data\AskDetail;
 use App\Http\Requests\AskPageRequest;
+use App\Navigation\Contracts\PageResolver;
 
 /**
  * One ask's own page, where a notification leads: it shows the ask and answers nothing.

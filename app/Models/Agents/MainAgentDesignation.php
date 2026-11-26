@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Agents\Exceptions\MainAgentMissing;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Exceptions\MainAgentMissing;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use PhpOption\Option;

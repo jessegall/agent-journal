@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Loaders;
 
-use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Inboxes\InboxEligibility;
+use App\Actors\Contracts\ActorLabels;
+use App\Inboxes\Contracts\InboxEligibility;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
 use App\Support\ActorReference;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\ImportRuleProposals\ImportRuleProposalsCommand;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\ProposalStatus;
-use App\Exceptions\DeclarationInvalid;
+use App\CommandRules\Commands\ImportRuleProposals\ImportRuleProposalsCommand;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\ProposalStatus;
+use App\CommandRules\Exceptions\DeclarationInvalid;
+use App\CommandRules\Values\RuleExample;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleRevision;
 use App\Values\CommandClassSet;
-use App\Values\RuleExample;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

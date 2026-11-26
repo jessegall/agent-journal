@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
 use App\Pipes\StateLoading\MakeState;
 use App\Pipes\StateLoading\WriteStateValues;
 use App\Support\StateLoading\BuiltState;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Requests;
 
-use App\Contracts\Records\RecordResolver;
-use App\Enums\Records\TextAnchorType;
 use App\Http\Requests\RecordTargetRequest;
+use App\Records\Contracts\RecordResolver;
+use App\Records\Enums\TextAnchorType;
 use App\Values\TextRange;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;

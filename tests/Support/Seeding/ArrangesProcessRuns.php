@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Admission\ShellAdmission;
-use App\Enums\Processes\ShellDialect;
+use App\Access\Contracts\ShellAdmission;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\PartKey;
 use App\Values\ExecutionContext;
-use App\Values\PartKey;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 
 /**

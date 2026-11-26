@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\CurrentActor;
+use App\Bus\Contracts\CommandBus;
 use Domain\Plans\Exceptions\PlanGraphChangeMissing;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Values\PlanGraphUndo;

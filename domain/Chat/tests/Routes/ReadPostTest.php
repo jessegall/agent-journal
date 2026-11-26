@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
+use App\Messages\ShownMessage;
 use App\Models\Messages\Message;
-use App\Support\ShownMessage;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Tests\Support\DomainBoot;

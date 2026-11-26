@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Contracts\Sessions\SessionProvenance;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Enums\AccessType;
+use App\Sessions\Contracts\SessionProvenance;
 use App\Values\Operation;
 use App\Values\ResourceRequest;
 use Domain\Documents\Contracts\Drafts\DraftReader as DraftReaderContract;

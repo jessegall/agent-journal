@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Accounts\Enums\UsageWindowSlot;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Accounts\UsageWindowSlot;
 use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Concerns\KeepsNewestReading;
 use App\Models\Concerns\OfSignIn;
 use App\Models\Concerns\RemovedWithAccount;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

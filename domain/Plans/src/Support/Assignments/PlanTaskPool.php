@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support\Assignments;
 
-use App\Contracts\Assignments\AssignmentPool;
-use App\Support\PoolMembers;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\PoolMembers;
 
 /**
  * The tasks of a started plan, phase by phase and in each phase's order, as read when the pool was opened.

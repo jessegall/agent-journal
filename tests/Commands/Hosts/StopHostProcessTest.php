@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostProcessReportType;
 use App\Exceptions\HostProtocolRefused;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostProcessReportType;
 use App\Values\HostOrderSource;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

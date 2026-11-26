@@ -20,7 +20,7 @@ var errLineBreak = errors.New("a signed field holds a line break")
 
 // signature is the HMAC-SHA256, keyed by the secret, of the method, request target, call id, issue time and body
 // digest, one per line, then any extra fields such as an agent call's profile key and revision
-// (App\Support\SignedCall::envelope).
+// (App\Api\SignedCall::envelope).
 func signature(secret, method, target, callID string, issuedAt int64, body []byte, extra ...string) (string, error) {
 	digest := sha256.Sum256(body)
 	fields := append([]string{strings.ToUpper(method), target, callID, strconv.FormatInt(issuedAt, 10), hex.EncodeToString(digest[:])}, extra...)

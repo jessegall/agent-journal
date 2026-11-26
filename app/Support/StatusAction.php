@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Agents\StatusActionType;
+use App\Agents\Enums\StatusActionType;
 
 /**
  * One thing an agent's status offers now: its type and its button's words.

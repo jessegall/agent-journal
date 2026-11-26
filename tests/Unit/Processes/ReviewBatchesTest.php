@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\Processes\ReviewLimit;
+use App\Processes\Enums\ReviewLimit;
 use App\Values\CommandShape;
 use App\Values\ReviewBatches;
 use PHPUnit\Framework\TestCase;

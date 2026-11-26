@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Connections\DeviceOverviews;
+use App\Connections\Values\DeviceCaller;
+use App\Connections\Values\EnvironmentTask;
 use App\Exceptions\VerbNotServed;
 use App\Http\Requests\Connections\ProjectCommandRequest;
-use App\Support\DeviceOverviews;
-use App\Values\DeviceCaller;
-use App\Values\EnvironmentTask;
 use Illuminate\Http\JsonResponse;
 
 /**

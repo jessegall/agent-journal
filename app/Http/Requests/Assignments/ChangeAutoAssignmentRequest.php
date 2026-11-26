@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assignments;
 
-use App\Commands\Assignments\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
-use App\Commands\Assignments\EnableAutoAssignment\EnableAutoAssignmentCommand;
-use App\Contracts\Actors\ActorTypes;
-use App\Contracts\Records\RecordResolver;
+use App\Actors\Contracts\ActorTypes;
+use App\Assignments\Commands\ConfigureAutoAssignment\ConfigureAutoAssignmentCommand;
+use App\Assignments\Commands\EnableAutoAssignment\EnableAutoAssignmentCommand;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

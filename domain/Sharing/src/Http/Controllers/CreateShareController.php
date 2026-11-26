@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
+use App\Bus\Attributes\Dispatches;
 use Domain\Sharing\Commands\CreateShare\CreateShareCommand;
 use Domain\Sharing\Http\Requests\CreateShareRequest;
 use Domain\Sharing\Support\ShareOpener;

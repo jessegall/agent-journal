@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Processes\ClassificationSummaryData;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
+use App\Access\Values\ClassFact;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\Processes\Data\ClassificationSummaryData;
 
 /**
  * The classification of one shell tree: every executable part with its facts, and the

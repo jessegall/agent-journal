@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Profiles;
 
-use App\Contracts\Sessions\SessionRequestResolver;
-use App\Data\Profiles\StartReceiptData;
-use App\Data\Profiles\StartReceiptInput;
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverSourceType;
-use App\Enums\Sessions\ModelSelectionType;
-use App\Enums\Sessions\StartDisposition;
-use App\Enums\Sessions\StartOriginType;
-use App\Exceptions\SessionRequestMissing;
+use App\Agents\Drivers\Enums\DriverSourceType;
+use App\Agents\Enums\ConversationModeType;
 use App\Http\Loaders\Profiles\StartReceiptLoader;
-use App\Support\SessionRequestDetails;
+use App\Profiles\Data\StartReceiptData;
+use App\Profiles\Data\StartReceiptInput;
+use App\Sessions\Contracts\SessionRequestResolver;
+use App\Sessions\Enums\ModelSelectionType;
+use App\Sessions\Enums\StartDisposition;
+use App\Sessions\Enums\StartOriginType;
+use App\Sessions\Exceptions\SessionRequestMissing;
+use App\Sessions\SessionRequestDetails;
 use Illuminate\Validation\ValidationException;
 use Mockery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;

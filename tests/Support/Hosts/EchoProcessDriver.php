@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Hosts;
 
-use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
-use App\Contracts\Drivers\MessagePart;
-use App\Contracts\Drivers\ProcessDriver;
-use App\Data\Messages\MessageTextData;
-use App\Enums\Hosts\HostOrderStatus;
+use App\Agents\Drivers\Contracts\MessagePart;
+use App\Agents\Drivers\Contracts\ProcessDriver;
+use App\Hosts\Commands\SendHostKeys\SendHostKeysCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Messages\Data\MessageTextData;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\Command;

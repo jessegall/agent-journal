@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Settings\Setting;
-use App\Declarations\ChoiceSetting;
-use App\Exceptions\SettingStorageInvalid;
-use App\Exceptions\SettingValueInvalid;
-use App\Support\SettingCodec;
-use App\Support\Storage\EncodedValue;
-use App\Values\Choice;
-use App\Values\Decimal;
+use App\Settings\Contracts\Setting;
+use App\Settings\Declarations\ChoiceSetting;
+use App\Settings\Exceptions\SettingStorageInvalid;
+use App\Settings\Exceptions\SettingValueInvalid;
+use App\Settings\SettingCodec;
+use App\Settings\Storage\EncodedValue;
+use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
 use Closure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewLevel;

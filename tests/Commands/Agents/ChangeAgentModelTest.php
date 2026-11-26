@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
-use App\Commands\Agents\ChangeAgentModel\ChangeAgentModelCommand;
-use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
+use App\Agents\Commands\ChangeAgentModel\ChangeAgentModelCommand;
+use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Enums\RequestProgress;
+use App\Hosts\EnrolledHost;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
-use App\Support\EnrolledHost;
 use App\Values\TurnEnd;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;

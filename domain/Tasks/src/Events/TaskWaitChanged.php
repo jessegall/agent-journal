@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 use Domain\Tasks\Contracts\TaskWaitEvent;
 use Domain\Tasks\Enums\TaskWaitChange;
 

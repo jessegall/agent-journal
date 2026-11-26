@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Declarations\SettingGroup;
-use App\Declarations\StringSetting;
-use App\Enums\Settings\SettingType;
-use App\Exceptions\SettingDeclarationInvalid;
-use App\Support\SettingKey;
+use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\StringSetting;
+use App\Settings\Enums\SettingType;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\SettingKey;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

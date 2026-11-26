@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchLog;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchOutcome;
 

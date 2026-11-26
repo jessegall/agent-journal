@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Storage;
 
-use App\Enums\Hooks\AnswerType;
 use App\Exceptions\StoredValueInvalid;
+use App\Hooks\Enums\AnswerType;
 use Spatie\LaravelData\Data;
 
 /**

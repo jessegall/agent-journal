@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
+use App\Agents\Relay\Values\BypassReport;
+use App\Hooks\ReportedBypasses;
 use App\Support\AgentContext;
-use App\Support\ReportedBypasses;
-use App\Values\BypassReport;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

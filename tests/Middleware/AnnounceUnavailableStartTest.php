@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
+use App\Accounts\Exceptions\AccountUnavailable;
 use App\CommandMiddleware\AnnounceUnavailableStart;
-use App\Enums\Sessions\StartUnavailableReason;
 use App\Events\Sessions\StartRefusedWithoutAccount;
-use App\Exceptions\AccountUnavailable;
 use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
+use App\Sessions\Enums\StartUnavailableReason;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\Agents\StartsAgents;
 use Tests\Support\CommitsHookRows;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Terminals;
 
-use App\Commands\Terminals\EndTerminalViews\EndTerminalViewsCommand;
+use App\Engine\EnginePass;
+use App\Engine\EngineTickedDelivery;
+use App\Engine\Ticks\ElapsedTime;
 use App\Events\Engine\EngineTicked;
 use App\Models\Drivers\TerminalView;
-use App\Support\EnginePass;
-use App\Support\EngineTickedDelivery;
-use App\Support\Ticks\ElapsedTime;
+use App\Terminals\Commands\EndTerminalViews\EndTerminalViewsCommand;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

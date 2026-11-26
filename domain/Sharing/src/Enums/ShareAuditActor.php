@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Enums;
 
-use App\Exceptions\ActorProviderMissing;
+use App\Actors\Exceptions\ActorProviderMissing;
+use App\Actors\SystemActor;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\SystemActor;
 
 /**
  * Who an audit row shows as having acted, as the owner reads it: the owner, the requesting agent, the journal's own

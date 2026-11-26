@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Bus\CallerReceipts;
-use App\Data\Accounts\SignInReceiptData;
-use App\Data\Profiles\SignInReceiptInput;
-use App\Enums\Accounts\SignInReceiptStatus;
-use App\Enums\CommandRules\ReceiptStatus;
+use App\Accounts\Data\SignInReceiptData;
+use App\Accounts\Enums\SignInReceiptStatus;
+use App\Bus\Contracts\CallerReceipts;
+use App\CommandRules\Enums\ReceiptStatus;
 use App\Models\Accounts\SignInAttempt;
+use App\Profiles\Data\SignInReceiptInput;
 
 /**
  * Tells the owner what became of a sign-in start under its request key. It reads only the owner's receipt of that

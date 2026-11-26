@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Support\Reflector;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
 use Error;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;

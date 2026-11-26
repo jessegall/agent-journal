@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\SectionMissing;
+use App\Bus\Contracts\CommandBus;
+use App\Text\Exceptions\SectionMissing;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;

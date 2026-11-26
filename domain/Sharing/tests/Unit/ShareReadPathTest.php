@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Exceptions\UnknownShareRelation;
+use App\Sharing\Exceptions\UnknownShareRelation;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Exceptions\ShareReadRefused;
 use Domain\Sharing\Support\ShareCursor;
 use Domain\Sharing\Support\ShareCursors;

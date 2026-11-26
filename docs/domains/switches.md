@@ -28,7 +28,7 @@ There is no separate route, screen or command for switches.
 
 ## Configured and effective availability
 
-The switch is what the owner configured; availability is what the journal acts on. `App\Contracts\Domains\DomainAvailability`
+The switch is what the owner configured; availability is what the journal acts on. `App\Bootstrap\Contracts\Domains\DomainAvailability`
 answers `isEnabled(string $owner)`: Core and a domain that cannot be switched off are always available, and a
 switchable domain is available while its switch is on and every domain it requires is available. One answer reads
 Core's settings once.
@@ -43,7 +43,7 @@ and the names of the required domains that are not available. A stored switch th
 ## What a switched-off domain stops
 
 - **Commands.** A command of an unavailable domain stays registered and is refused with
-  `App\Exceptions\DomainDisabled` after Core's first steps (logging and the actor check), before its handler or any
+  `App\Bus\Exceptions\DomainDisabled` after Core's first steps (logging and the actor check), before its handler or any
   of its middleware is built. The same holds for users, agents and services. Its middleware is also left out of other
   owners' commands without being built; Core's middleware always runs.
 - **Pages and actions.** They answer a plain 404, the same as a page that does not exist.

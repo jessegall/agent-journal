@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\SessionProcessEvent;
+use App\Sessions\Contracts\SessionProcessEvent;
 
 /**
  * A process start was called off before it started.

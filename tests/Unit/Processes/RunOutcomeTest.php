@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\Runs\RunLogicalResult;
+use App\Processes\Enums\RunLogicalResult;
 use Tests\TestCase;
 
 /**

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Inboxes\InboxDestinationResolver as InboxDestinationResolverContract;
-use App\Contracts\Inboxes\LabeledInbox;
+use App\Assignments\DestinationRegistry;
+use App\Inboxes\Contracts\InboxDestinationResolver as InboxDestinationResolverContract;
+use App\Inboxes\Contracts\LabeledInbox;
 
 /**
  * The inbox side of a recipient's destinations.

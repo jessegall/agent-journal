@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\GuardCommandOrigin;
-use App\Contracts\Bus\GuardedCommandBus;
-use App\Enums\Engine\CommandOriginStatus;
+use App\Bus\CommandMiddleware\GuardCommandOrigin;
+use App\Bus\Contracts\GuardedCommandBus;
+use App\Engine\Enums\CommandOriginStatus;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote\CopyNoteCommand;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 use Tests\Support\Bus\RunsModuleCommands;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
-use App\Contracts\Settings\SettingCommands as SettingCommandsContract;
-use App\Support\Access\AccessSettings;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\CoreSettings;
+use App\Access\AccessSettings;
+use App\Bootstrap\DomainSwitches;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Settings\Contracts\SettingCommands as SettingCommandsContract;
+use App\Settings\CoreSettings;
+use App\Settings\SettingCommands;
+use App\Settings\SettingRegistry;
 use App\Support\DomainRegistry;
-use App\Support\DomainSwitches;
-use App\Support\SettingCommands;
-use App\Support\SettingRegistry;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Modules\Cards\CardsDomain;

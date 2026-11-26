@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\MakeHostFolder\MakeHostFolderCommand;
-use App\Commands\Hosts\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
-use App\Enums\Hosts\HostRefusal;
 use App\Exceptions\HostProtocolRefused;
+use App\Hosts\Commands\MakeHostFolder\MakeHostFolderCommand;
+use App\Hosts\Commands\ReadHostFolderAnswer\ReadHostFolderAnswerCommand;
+use App\Hosts\Enums\HostRefusal;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

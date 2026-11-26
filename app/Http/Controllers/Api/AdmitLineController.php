@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\AdmitLinePayload;
-use App\Api\Processes\LineAdmitted;
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Admission\ShellAdmission;
+use App\Access\Contracts\ShellAdmission;
+use App\Actors\Contracts\AgentTexts;
 use App\Exceptions\LineRefused;
+use App\Processes\Api\AdmitLinePayload;
+use App\Processes\Api\LineAdmitted;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 

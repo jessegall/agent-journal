@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\Support;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 
 /**
  * The base of every Questions handler.

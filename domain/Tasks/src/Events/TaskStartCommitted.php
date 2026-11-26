@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A task's start committed, so the pages that show the task read it again. It carries the task's id alone; the start

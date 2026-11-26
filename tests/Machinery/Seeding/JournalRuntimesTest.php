@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Machinery\Seeding;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
 use Carbon\CarbonImmutable;

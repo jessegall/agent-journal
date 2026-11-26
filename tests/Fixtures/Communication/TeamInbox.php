@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Inboxes\LabeledInbox;
+use App\Inboxes\Contracts\LabeledInbox;
 
 final readonly class TeamInbox implements LabeledInbox
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Methods;
 
-use App\Contracts\Drivers\ToolDiscovery;
+use App\Agents\Drivers\Contracts\ToolDiscovery;
 use App\Support\AgentContext;
 use Laravel\Mcp\Server\Methods\ListTools;
 use Laravel\Mcp\Server\ServerContext;

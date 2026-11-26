@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models\Concerns;
 
-use App\Contracts\Actors\Actor;
+use App\Actors\Contracts\Actor;
 use Domain\Documents\Enums\AttentionStatus;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

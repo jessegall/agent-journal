@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Console\Commands;
 
-use App\Attributes\Console\JournalRoute;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Console\Concerns\RunsApiPipelines;
-use App\Enums\CommandRules\JournalRouteType;
 use Domain\Comments\Api\CommentPlace;
 use Domain\Comments\Api\PostCommentPayload;
 use Illuminate\Console\Command;

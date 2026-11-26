@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Enums\Profiles\SlotContextType;
+use App\Profiles\Enums\SlotContextType;
 
 /**
  * What a slot hands a section in one request: nothing, or the id of the chosen session or the shown record.

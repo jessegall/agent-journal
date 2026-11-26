@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\Actor;
+use App\Actors\Contracts\Actor;
+use App\Api\SignedCall;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use Carbon\CarbonImmutable;

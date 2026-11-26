@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Declarations\StateMethods;
-use App\Exceptions\InvalidListener;
-use App\Support\CatalogueReflectorFactory;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\ListenerOwnership;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Stacks\Declarations\StateMethods;
+use App\Stacks\StateCatalog\StateRegistration;
+use App\Stacks\StateListenerDeclarations;
+use App\Stacks\StateLoading\RegisteredStateType;
 use App\Support\DomainRegistry;
-use App\Support\ListenerOwnership;
-use App\Support\StateCatalog\StateRegistration;
-use App\Support\StateListenerDeclarations;
-use App\Support\StateLoading\RegisteredStateType;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
 use Tests\TestCase;
 

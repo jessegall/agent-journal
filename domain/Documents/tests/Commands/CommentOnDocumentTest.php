@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\AnchorMismatch;
 use App\Models\Agents\Agent;
+use App\Records\Contracts\RecordResolver;
 use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use App\Support\RecordReference;
-use App\Values\OwnerAuthority;
 use App\Values\TextRange;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\Commands\PostTextComment\PostTextCommentCommand;

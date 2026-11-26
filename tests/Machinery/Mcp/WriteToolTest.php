@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Mcp;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\MiddlewareDeclaration;
+use App\Bus\RequestKey;
 use App\Mcp\Support\McpCatalogue;
-use App\Support\CatalogueReflectorFactory;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\CommandRegistry;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
-use App\Support\RequestKey;
 use App\Values\ProfileBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

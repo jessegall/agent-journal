@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
-use App\Enums\Connections\BindingReadiness;
-use App\Enums\Connections\ConnectionAuditType;
+use App\Connections\Enums\BindingReadiness;
+use App\Connections\Enums\ConnectionAuditType;
 use App\Exceptions\CrossProjectEdge;
-use App\Exceptions\HostRoleRefused;
+use App\Hosts\Exceptions\HostRoleRefused;
 use App\Models\Agents\Agent;
 use App\Models\Projects\ConnectionAudit;
 use App\Models\Projects\Environment;
@@ -16,9 +15,10 @@ use App\Models\Projects\InstallAttempt;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Projects\ProjectInvitation;
-use App\Values\BindingFolder;
-use App\Values\BindingOutcome;
-use App\Values\InstallTicket;
+use App\Projects\Commands\RevokeProjectBinding\RevokeProjectBindingCommand;
+use App\Projects\Values\BindingFolder;
+use App\Projects\Values\BindingOutcome;
+use App\Projects\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

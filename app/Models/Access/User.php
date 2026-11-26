@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models\Access;
 
+use App\Actors\Contracts\RecipientActor;
+use App\Asks\Contracts\QuestionRecipient;
+use App\Assignments\Contracts\Assignee;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
 use App\Concerns\TakesPartInMessages;
-use App\Contracts\Actors\RecipientActor;
-use App\Contracts\Assignments\Assignee;
-use App\Contracts\Messages\MessageReceiver;
-use App\Contracts\Messages\MessageSender;
-use App\Contracts\Questions\QuestionRecipient;
-use App\Contracts\Records\ReadableModel;
+use App\Messages\Contracts\MessageReceiver;
+use App\Messages\Contracts\MessageSender;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Support\HasUlidKey;
+use App\Records\Contracts\ReadableModel;
 use App\Support\AssigneeIdentity;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;

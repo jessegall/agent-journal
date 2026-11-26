@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Contracts\Assignments\Assignable;
-use App\Contracts\Assignments\AssignableProvider;
+use App\Assignments\Contracts\Assignable;
+use App\Assignments\Contracts\AssignableProvider;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Support\RecordIdentity;
 

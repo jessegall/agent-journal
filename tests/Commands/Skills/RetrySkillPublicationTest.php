@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Skills;
 
-use App\Commands\Skills\FailSkillPublication\FailSkillPublicationCommand;
-use App\Commands\Skills\PrepareSkillPublication\PrepareSkillPublicationCommand;
-use App\Commands\Skills\PublishSkills\PublishSkillsCommand;
-use App\Commands\Skills\RetrySkillPublication\RetrySkillPublicationCommand;
-use App\Contracts\Skills\SkillPublisher as SkillPublisherContract;
-use App\Enums\Skills\PublicationStatus;
-use App\Exceptions\SkillPublicationStale;
 use App\Models\Skills\SkillPublication;
-use App\Support\SkillPublisher;
-use App\Support\SkillPublishingService;
+use App\Skills\Commands\FailSkillPublication\FailSkillPublicationCommand;
+use App\Skills\Commands\PrepareSkillPublication\PrepareSkillPublicationCommand;
+use App\Skills\Commands\PublishSkills\PublishSkillsCommand;
+use App\Skills\Commands\RetrySkillPublication\RetrySkillPublicationCommand;
+use App\Skills\Contracts\SkillPublisher as SkillPublisherContract;
+use App\Skills\Enums\PublicationStatus;
+use App\Skills\Exceptions\SkillPublicationStale;
+use App\Skills\SkillPublisher;
+use App\Skills\SkillPublishingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;

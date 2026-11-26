@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\WordSegmentType;
+use App\CommandRules\Enums\WordSegmentType;
+use App\Processes\Grammar\Values\SourceRange;
+use App\Processes\Grammar\Values\WordSegment;
 
 /**
  * One shell word as its segments in order, so an empty quoted argument or "a"b adjacency is kept.

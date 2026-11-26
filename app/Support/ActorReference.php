@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\StoredActor;
+use App\Actors\SystemActor;
 use App\Concerns\ComparesTypeAndId;
-use App\Contracts\Actors\Actor;
-use App\Contracts\Actors\StoredActor;
 use App\Exceptions\InvalidActorText;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;

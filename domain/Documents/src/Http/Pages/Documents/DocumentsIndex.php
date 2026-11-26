@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Documents;
 
-use App\Contracts\Navigation\DraftProducers;
-use App\Contracts\Navigation\RecordMenus;
-use App\Enums\Settings\ActionMethod;
 use App\Http\Pages\CreationDialog;
+use App\Navigation\Contracts\DraftProducers;
+use App\Navigation\Contracts\RecordMenus;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
 use App\Support\Layout\LayoutBackData;

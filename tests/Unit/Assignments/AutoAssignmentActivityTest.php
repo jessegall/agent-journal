@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\Assignments\AssignmentProviders;
+use App\Actors\SystemActor;
+use App\Assignments\Contracts\AssignmentProviders;
 use App\Exceptions\AssignmentTypeUnavailable;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\SystemActor;
 use Tests\TestCase;
 
 /**

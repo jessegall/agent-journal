@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Assignments\ListAssignmentPoolsPayload;
-use App\Api\Assignments\PoolList;
-use App\Contracts\Assignments\AssignmentProviders;
-use App\Data\Assignments\PoolDefinitionData;
+use App\Assignments\Api\ListAssignmentPoolsPayload;
+use App\Assignments\Api\PoolList;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Data\PoolDefinitionData;
 
 /**
  * Lists the pools of one kind of record.

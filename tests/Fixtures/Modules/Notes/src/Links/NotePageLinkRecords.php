@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Links;
 
-use App\Support\ReadBuilder;
-use App\Contracts\Records\RecordProvider;
 use App\Data\Pages\RecordCard;
-use App\Concerns\ProvidesModelRecords;
+use App\Links\Concerns\ProvidesModelRecords;
+use App\Records\Contracts\RecordProvider;
+use App\Support\ReadBuilder;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;

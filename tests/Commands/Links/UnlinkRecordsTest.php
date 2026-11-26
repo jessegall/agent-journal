@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Links;
 
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
-use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
+use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Models\Records\Link;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;

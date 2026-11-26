@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Runs;
 
-use App\Commands\Runs\CleanProcessOutput\CleanProcessOutputCommand;
-use App\Enums\Runs\CaptureStatus;
-use App\Exceptions\CleanRefused;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\OutputRecorder;
+use App\Processes\Commands\CleanProcessOutput\CleanProcessOutputCommand;
+use App\Processes\Enums\CaptureStatus;
+use App\Processes\Exceptions\CleanRefused;
+use App\Processes\OutputRecorder;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Processes\RunsAcmeRequests;

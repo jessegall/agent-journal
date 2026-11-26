@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Runtimes;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
+use App\Bus\Attributes\Dispatches;
 use App\Http\Requests\Web\RequestRecoveryRequest;
 use App\Http\Responses\Processes\ReviewResponses;
+use App\Terminals\Commands\CancelKeyScript\CancelKeyScriptCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**

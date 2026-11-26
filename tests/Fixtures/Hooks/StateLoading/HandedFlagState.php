@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateLoading;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 
 /**
  * A state handed a flag worked out for it, which the state machine forbids.

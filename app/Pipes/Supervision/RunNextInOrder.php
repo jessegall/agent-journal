@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
 use App\Support\Execution\StepsInOrder;
-use App\Support\PipelineAdapter;
 
 /**
  * Runs the next step of a sequence in the context the step before it left.

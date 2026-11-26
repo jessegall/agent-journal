@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\Refusals\StartRefusal;
-use App\Enums\Sessions\StartRefusalType;
+use App\Sessions\Enums\StartRefusalType;
 use InvalidArgumentException;
 
 /**

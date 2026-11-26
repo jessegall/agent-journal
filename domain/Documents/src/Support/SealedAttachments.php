@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Contracts\Drivers\AttachmentReferences;
-use App\Contracts\Sessions\SessionProvenance;
-use App\Data\Messages\MessageAttachmentData;
+use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Exceptions\DriverRequestRefused;
+use App\Messages\Data\MessageAttachmentData;
+use App\Sessions\Contracts\SessionProvenance;
 use Domain\Documents\Exceptions\UploadExpired;
 use Domain\Documents\Models\TextUpload;
 

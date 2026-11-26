@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
+use App\Engine\Ticks\TickContext;
 use App\Support\Ticks\TickCommands;
-use App\Support\Ticks\TickContext;
 use Closure;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Skills\RecordSkillRead\RecordSkillReadCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Contracts\Events\Listener;
 use App\Events\Hooks\ToolCallFinished;
+use App\Skills\Commands\RecordSkillRead\RecordSkillReadCommand;
 use App\Values\ProvenSkillRead;
 
 /**

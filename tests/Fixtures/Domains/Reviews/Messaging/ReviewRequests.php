@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Messaging;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 
 /**
  * A domain posting a review request through Core alone: Core's send command to an inbox the actor is attached to,

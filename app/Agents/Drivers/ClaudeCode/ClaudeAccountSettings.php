@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Contracts\Accounts\AccountSettingsFiller;
-use App\Support\AccountStartSettings;
+use App\Accounts\AccountStartSettings;
+use App\Accounts\Contracts\AccountSettingsFiller;
 use App\Support\Compatibility\DriverCompatibility;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Setup;
 
+use App\Accounts\Contracts\SignInProtocol;
 use App\Agents\Drivers\Setup\Contracts\AccountFirstRun;
 use App\Agents\Drivers\Setup\Contracts\SignInEnvironment;
 use App\Agents\Drivers\Setup\Contracts\SignInPreparation;
-use App\Contracts\Accounts\SignInProtocol;
 
 /**
  * How the sign-in runner runs a driver's driver: the setting that names it, its environment, its model check, its

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Exceptions\ProjectNotChosen;
+use App\Projects\Exceptions\ProjectNotChosen;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

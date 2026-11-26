@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Contracts\Navigation\DraftProducer;
-use App\Data\Messages\DraftQuestionData;
+use App\Accounts\DraftAnswers;
 use App\Data\Pages\DraftedRecordData;
-use App\Support\DraftAnswers;
+use App\Messages\Data\DraftQuestionData;
+use App\Navigation\Contracts\DraftProducer;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 

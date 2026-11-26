@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
 use App\Data\Pages\HomeData;
 use App\Data\Pages\HomeWindowData;
-use App\Declarations\RegisteredPage;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\ClientDeclarations;
 use App\Support\Views\LayoutsView;
+use App\Web\Declarations\RegisteredPage;
 
 /**
  * Home's own data, owned by Web alone: the saved layouts, the windows the installed domains put on Home, and the

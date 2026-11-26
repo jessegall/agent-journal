@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actors;
 
-use App\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\ActorContextMissing;
 use App\Support\ActorReference;
 use Domain\Plans\PlansDomain;
 use Tests\Support\DomainBoot;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use Tests\Fixtures\Modules\Notes\Data\NotesPageData;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
@@ -16,7 +16,7 @@ final readonly class NotesWindowResolver implements PageResolver
     public function read(): NotesPageData
     {
         return NotesPageData::from(
-['texts' => array_values(Note::query()->forActor()->latest('id')->pluck('text')->all())],
-);
+            ['texts' => array_values(Note::query()->forActor()->latest('id')->pluck('text')->all())],
+        );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Releases;
 
-use App\Support\PublishedReleases;
+use App\Connections\PublishedReleases;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**

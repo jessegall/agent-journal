@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RevokeProjectBinding\RevokeProjectBindingCommand;
-use App\Values\BindingOutcome;
+use App\Projects\Commands\RevokeProjectBinding\RevokeProjectBindingCommand;
+use App\Projects\Values\BindingOutcome;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

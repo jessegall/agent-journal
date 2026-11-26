@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Connections\ProjectEntryData;
-use App\Enums\Projects\ProjectReadFailure;
-use App\Enums\Projects\ProjectReadStatus;
+use App\Connections\Data\ProjectEntryData;
 use App\Models\Projects\ProjectRead;
+use App\Projects\Enums\ProjectReadFailure;
+use App\Projects\Enums\ProjectReadStatus;
 
 /**
  * Where a read of a project's folder or file stands: waiting for its host, answered with entries or text, or failed

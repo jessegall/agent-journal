@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Enums\Hooks\AnswerType;
-use App\Support\References\StateReference;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\Frames\Frame;
-use App\Support\Stack\HookAnswer;
-use App\Support\StateLoading\StateValues;
+use App\Hooks\Enums\AnswerType;
+use App\Stacks\AgentStack;
+use App\Stacks\Frames\Frame;
+use App\Stacks\HookAnswer;
+use App\Stacks\References\StateReference;
+use App\Stacks\StateLoading\StateValues;
 use App\Support\Storage\WalkStep;
 use PHPUnit\Framework\Assert;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;

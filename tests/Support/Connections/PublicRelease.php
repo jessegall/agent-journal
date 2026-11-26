@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Connections;
 
-use App\Values\ReleaseManifest;
+use App\Connections\Values\ReleaseManifest;
 
 /**
  * The manifest of a release the window may offer to the public: every capability, and one platform with measured

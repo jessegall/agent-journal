@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
+use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\McpCatalogue;
-use App\Mcp\Tools\JournalTool;
 use App\Support\Reflector;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsMcpTool;

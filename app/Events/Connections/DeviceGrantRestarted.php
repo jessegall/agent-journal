@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\DeviceGrantEvent;
+use App\Connections\Contracts\DeviceGrantEvent;
 
 /**
  * A device grant began again with a new device code.

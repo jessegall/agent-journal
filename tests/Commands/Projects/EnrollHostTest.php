@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand;
-use App\Enums\Projects\ArrangementType;
 use App\Models\Projects\Host;
+use App\Projects\Commands\EnrollHost\EnrollHostCommand;
+use App\Projects\Enums\ArrangementType;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

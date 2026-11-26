@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Exceptions;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
-use App\Enums\Engine\RefusalCode;
-use App\Exceptions\MarkdownInvalid;
+use App\Engine\Enums\RefusalCode;
+use App\Skills\Exceptions\MarkdownInvalid;
 use RuntimeException;
 
 final class DraftMarkdownInvalid extends RuntimeException implements CodedRefusal, CommandRefusal

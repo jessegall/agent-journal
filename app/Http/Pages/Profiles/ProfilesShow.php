@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Profiles;
 
-use App\Contracts\Sessions\ProfileResolver;
-use App\Contracts\Sessions\ProfileRules;
 use App\Models\Profiles\Profile;
 use App\Models\Profiles\ProfileRevision;
+use App\Sessions\Contracts\ProfileResolver;
+use App\Sessions\Contracts\ProfileRules;
+use App\Sessions\Values\ProfileRule;
+use App\Sessions\Values\ProfileRuleGroup;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
 use App\Support\Layout\SettingsGroup;
 use App\Support\Layout\SettingsRow;
 use App\Values\ProfileKey;
-use App\Values\ProfileRule;
-use App\Values\ProfileRuleGroup;
 use App\Values\SupervisorRoutes;
 
 /**

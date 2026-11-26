@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Commands\RenameAccount\RenameAccountCommand;
+use App\Accounts\Commands\SwitchAccount\SwitchAccountCommand;
+use App\Accounts\Exceptions\AccountLabelInvalid;
+use App\Accounts\Exceptions\AccountLabelTaken;
+use App\Accounts\Exceptions\AccountNameChanged;
+use App\Accounts\Values\AccountLabel;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Accounts\RenameAccount\RenameAccountCommand;
-use App\Commands\Accounts\SwitchAccount\SwitchAccountCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Accounts\AccountsChanged;
-use App\Exceptions\AccountLabelInvalid;
-use App\Exceptions\AccountLabelTaken;
-use App\Exceptions\AccountNameChanged;
 use App\Models\Accounts\Account;
 use App\Support\ActorReference;
-use App\Values\AccountLabel;
-use App\Values\OwnerAuthority;
 use Illuminate\Events\Dispatcher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

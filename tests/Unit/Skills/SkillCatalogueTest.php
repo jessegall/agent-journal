@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Skills\SkillResolver;
-use App\Exceptions\SkillDeclarationInvalid;
-use App\Resolvers\SkillCatalogue;
-use App\Support\CanonicalRenderer;
-use App\Support\ConditionTree;
-use App\Support\MarkdownParts;
-use App\Support\SkillRegistry;
-use App\Support\StoredSkillSource;
+use App\Skills\CanonicalRenderer;
+use App\Skills\ConditionTree;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\MarkdownParts;
+use App\Skills\Resolvers\SkillCatalogue;
+use App\Skills\SkillRegistry;
+use App\Skills\StoredSkillSource;
 use App\Values\SkillOwner;
 use Tests\Fixtures\Skills\Guide\GuideSkill;
 use Tests\TestCase;

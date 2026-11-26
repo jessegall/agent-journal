@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Projects\ProjectDestination;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Projects\Contracts\ProjectDestination;
+use App\Records\Contracts\RecordResolver;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Http\Requests\CreateRecordRequest;
 use Illuminate\Http\RedirectResponse;

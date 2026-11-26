@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Contracts\Navigation\NavigationChildren;
-use App\Declarations\NavigationItem;
+use App\Navigation\Contracts\NavigationChildren;
+use App\Navigation\Declarations\NavigationItem;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
 /**
@@ -21,13 +21,13 @@ final readonly class CollectionChildren implements NavigationChildren
         )));
 
         return array_map(
-fn (string $month) => NavigationItem::page(
-"month-{$month}",
- $month,
- page: 'collection',
- route: ['collection' => $month],
-),
- $months,
-);
+            fn (string $month) => NavigationItem::page(
+                "month-{$month}",
+                $month,
+                page: 'collection',
+                route: ['collection' => $month],
+            ),
+            $months,
+        );
     }
 }

@@ -6,14 +6,14 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Projects\ProjectOwned;
-use App\Contracts\Records\ReadableModel;
 use App\Exceptions\RevisionImmutable;
 use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\JournalModel;
+use App\Processes\Values\ProvenBranch;
+use App\Projects\Contracts\ProjectOwned;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
-use App\Values\ProvenBranch;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

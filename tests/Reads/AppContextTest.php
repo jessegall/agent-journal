@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Reads;
 
-use App\Contracts\Bus\CommandRefusal;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Bus\Contracts\CommandRefusal;
 use App\Events\Web\InboxAccessEnded;
 use App\Events\Web\PageChanged;
 use App\Events\Web\ProtectedViewInvalidated;
-use App\Support\InstallationFaults;
-use App\Support\UserChannel;
-use App\Support\Web\AppContext;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
+use App\Web\AppContext;
+use App\Web\InstallationFaults;
+use App\Web\UserChannel;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store;

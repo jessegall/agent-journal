@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents;
+
+use App\Assignments\Contracts\AutoAssignmentActivity;
+use App\Models\Agents\Agent;
+use App\Models\Agents\AgentSession;
+use App\Support\ActorReference;
+
+/**
+ * An agent may take work while it is not retired and one of its sessions still runs; a silent session still runs,
+ * since heartbeat silence is not an end.
+ */
+final readonly class AgentActivity implements AutoAssignmentActivity
+{
+    public function mayTakeWork(ActorReference $actor): bool
+    {
+        $agent = Agent::query()->find($actor->id);
+
+        if ($agent === null || $agent->isRetired()) {
+            return false;
+        }
+
+        return AgentSession::query()->runningFor($agent->id)->exists();
+    }
+}

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Access;
 
+use App\Access\AccessSettings;
 use App\Models\Access\User;
-use App\Support\Access\AccessSettings;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;

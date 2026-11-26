@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Access\AccessSettings;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\Inputs\Values\HookIdentity;
 use App\Support\RecordIdentity;

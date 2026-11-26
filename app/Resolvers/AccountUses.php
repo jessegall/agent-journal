@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Accounts\AccountUses as AccountUsesContract;
-use App\Contracts\Actors\IdentityLinks;
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
-use App\Exceptions\AccountUseMissing;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Accounts\AccountSessions;
+use App\Accounts\AccountUseCounts;
+use App\Accounts\Contracts\AccountUses as AccountUsesContract;
+use App\Accounts\Exceptions\AccountUseMissing;
+use App\Actors\Contracts\IdentityLinks;
+use App\Agents\Enums\AccessType;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
 use App\Policies\AgentMaintenancePolicy;
-use App\Support\AccountSessions;
-use App\Support\AccountUseCounts;
 use App\Support\RecordIdentity;
 
 /**

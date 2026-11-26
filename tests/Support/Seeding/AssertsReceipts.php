@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Enums\CommandRules\ReceiptStatus;
+use App\Actors\Contracts\CurrentActor;
+use App\CommandRules\Enums\ReceiptStatus;
+use App\CommandRules\ReceiptCallers;
 use App\Models\CommandRules\CommandReceipt;
-use App\Support\ReceiptCallers;
 use PHPUnit\Framework\Assert;
 
 /**

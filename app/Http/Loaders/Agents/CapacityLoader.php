@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Agents;
 
-use App\Data\Agents\CapacityData;
-use App\Data\Agents\CapacityInput;
-use App\Enums\Sessions\StartRefusalType;
+use App\Agents\Data\CapacityData;
+use App\Agents\Data\CapacityInput;
+use App\Hosts\CapacityCheck;
 use App\Models\Agents\Agent;
-use App\Support\CapacityCheck;
-use App\Support\StartRemedyWords;
+use App\Sessions\Enums\StartRefusalType;
+use App\Sessions\StartRemedyWords;
 use Spatie\LaravelData\Optional;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Work;
 
-use App\Support\References\StateReference;
+use App\Stacks\References\StateReference;
 
 /**
  * The stack as one answering state may change it: remove itself, or put a new state over itself.

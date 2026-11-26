@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Contracts\Navigation\LoaderProvider;
-use App\Contracts\Records\TypeProvider;
-use App\Data\Notifications\NotificationChangePage;
-use App\Data\Notifications\NotificationChangesInput;
-use App\Data\Notifications\NotificationPage;
-use App\Data\Notifications\NotificationPageInput;
 use App\Data\Palette\PaletteSearchData;
 use App\Data\Palette\PaletteSourcesData;
 use App\Data\Palette\SearchInput;
 use App\Data\Palette\SearchSourcesInput;
-use App\Declarations\DomainClient;
-use App\Declarations\Loader;
 use App\Http\Loaders\Shell\NotificationChangesLoader;
 use App\Http\Loaders\Shell\NotificationsLoader;
 use App\Http\Loaders\Shell\SearchLoader;
 use App\Http\Loaders\Shell\SearchSourcesLoader;
+use App\Navigation\Contracts\LoaderProvider;
+use App\Navigation\Declarations\DomainClient;
+use App\Navigation\Declarations\Loader;
+use App\Notifications\Data\NotificationChangePage;
+use App\Notifications\Data\NotificationChangesInput;
+use App\Notifications\Data\NotificationPage;
+use App\Notifications\Data\NotificationPageInput;
+use App\Records\Contracts\TypeProvider;
 
 /**
  * The loaders of the shell around every page, under the key shell: no page guards them, only the member gate.

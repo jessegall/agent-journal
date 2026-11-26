@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Profiles;
 
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Support\BuiltInAuthorizations;
+use App\Access\Contracts\PolicyCatalogue;
+use App\Profiles\BuiltInAuthorizations;
 use App\Support\DomainRegistry;
 use App\Values\ProfileBase;
 use Tests\TestCase;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Access\Commands\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Attributes\Commands\Authorize;
 use App\Attributes\Commands\Entry;
 use App\Attributes\Commands\RepeatableRead;
-use App\Attributes\Commands\RequiresRequestKey;
-use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
+use App\Bus\Attributes\Commands\RequiresRequestKey;
+use App\Bus\RegisteredMiddleware;
 use App\Support\CommandRegistry;
 use App\Support\Reflector;
-use App\Support\RegisteredMiddleware;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\TypesDeclared;
 use Tests\Support\InstallsCommandModules;

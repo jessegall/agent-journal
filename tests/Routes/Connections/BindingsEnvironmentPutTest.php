@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\AssignBindingEnvironment\AssignBindingEnvironmentCommand;
+use App\Projects\Commands\AssignBindingEnvironment\AssignBindingEnvironmentCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

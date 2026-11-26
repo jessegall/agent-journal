@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Questions\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Data\Notifications\NotificationTarget;
-use App\Enums\Notifications\NotificationSourceType;
-use App\Support\NotificationDelivery;
+use App\Notifications\Data\NotificationTarget;
+use App\Notifications\Enums\NotificationSourceType;
+use App\Notifications\NotificationDelivery;
 use Domain\Questions\Events\QuestionAsked;
 use Domain\Questions\Values\QuestionNotificationKeys;
 

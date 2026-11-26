@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Bus;
 
-use App\Contracts\Bus\Command;
+use App\Bus\Contracts\Command;
 
 /**
  * A command a test expects the sink to have taken: its class and the public properties it must hold.

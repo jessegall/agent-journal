@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Tests\Commands;
 
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use Domain\Questions\Commands\DeliverWaitingQuestionAnswers\DeliverWaitingQuestionAnswersCommand;
 use Domain\Questions\Models\QuestionAnswerNotice;
 use Domain\Questions\Tests\Fixtures\QuestionFixtures;

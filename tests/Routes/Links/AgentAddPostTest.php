@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Links;
 
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
 use App\Support\RecordIdentity;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;

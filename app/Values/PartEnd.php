@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Runs\PartEndType;
+use App\Processes\Enums\PartEndType;
 
 /**
  * How a part's process ended. Only an exit has a status code and only a signal has a signal number, so a signalled

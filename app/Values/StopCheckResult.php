@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\StopCheckStatus;
-use App\Enums\Sessions\StopConditionResultType;
+use App\Sessions\Enums\StopCheckStatus;
+use App\Sessions\Enums\StopConditionResultType;
 
 /**
  * Where a stop attempt stands and how each of its conditions ended, by condition key, with the summaries a helper

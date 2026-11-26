@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Api;
 
-use App\Contracts\Domains\ApiSender;
+use App\Api\Contracts\Domains\ApiSender;
 use App\Support\CallKey;
 use Domain\Plans\Data\AssignedPlanListData;
 use Domain\Plans\Data\PlanWorkResultData;

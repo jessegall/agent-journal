@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Data\Messages\MessageTextData;
-use App\Enums\Drivers\DriverOperation;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Bus\Contracts\CommandBus;
 use App\Events\Sessions\SessionClosed;
+use App\Messages\Data\MessageTextData;
 use App\Models\Drivers\DriverRequest;
-use App\Support\AgentSessions;
+use App\Sessions\AgentSessions;
 use App\Support\StackTransaction;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;

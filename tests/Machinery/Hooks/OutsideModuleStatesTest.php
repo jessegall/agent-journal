@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Enums\Engine\NoSubject;
+use App\Engine\Enums\NoSubject;
+use App\Stacks\References\StateReference;
 use App\Support\DomainEntry;
-use App\Support\References\StateReference;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\Entries\Attributes\TestsMachinery;

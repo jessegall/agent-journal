@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\ReservedCommands;
 
-use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Support\RecordIdentity;
 
 /**

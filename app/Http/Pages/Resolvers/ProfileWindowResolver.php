@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
 use App\Http\Pages\Profiles\ProfilesIndex;
 use App\Http\Pages\Profiles\ProfilesShow;
 use App\Http\Requests\Profiles\ProfilePageRequest;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 
 /**

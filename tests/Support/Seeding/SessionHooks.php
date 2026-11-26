@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Enums\Files\FileOperation;
-use App\Enums\Hooks\ToolOutcome;
-use App\Enums\Processes\ShellDialect;
+use App\Agents\Inputs\Values\FileChange;
+use App\Agents\Inputs\Values\FileChanges;
+use App\Agents\Inputs\Values\StopDetails;
+use App\Files\Enums\FileOperation;
+use App\Hooks\Enums\ToolOutcome;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Inputs\FileEditRequested;
 use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\Values\DriverToolInput;
-use App\Support\Inputs\Values\FileChange;
-use App\Support\Inputs\Values\FileChanges;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\Inputs\Values\StopDetails;
 use App\Support\Inputs\Values\ToolResult;
 use App\Values\StackTarget;
 use Tests\Fixtures\Hooks\ListedCommandParser;

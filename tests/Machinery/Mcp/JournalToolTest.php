@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Mcp;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Data\Layouts\LayoutShape;
-use App\Exceptions\ApiFailedUnexpectedly;
+use App\Api\SignedCall;
+use App\Bus\Exceptions\ApiFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
 use App\Mcp\Support\McpCatalogue;
 use App\Models\Records\Layout;
 use App\Support\AgentContext;
-use App\Support\SignedCall;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Exceptions;
 use Tests\Commands\Layouts\SaveLayoutTest;

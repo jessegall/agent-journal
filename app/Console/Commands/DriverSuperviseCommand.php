@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Agents\Drivers\Work\DriverSupervisor;
-use App\Support\Hosts\HostWake;
+use App\Hosts\HostWake;
 use Illuminate\Console\Command;
 
 /**

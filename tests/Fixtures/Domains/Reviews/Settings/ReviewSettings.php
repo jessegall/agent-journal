@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\Settings;
 
-use App\Contracts\Settings\SettingsDefinition;
-use App\Declarations\BooleanSetting;
-use App\Declarations\ChoiceSetting;
-use App\Declarations\DecimalSetting;
-use App\Declarations\EnumSetting;
-use App\Declarations\IntegerSetting;
-use App\Declarations\SettingGroup;
-use App\Declarations\StringSetting;
-use App\Declarations\ToggleGroup;
-use App\Values\Choice;
-use App\Values\Decimal;
+use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Declarations\BooleanSetting;
+use App\Settings\Declarations\ChoiceSetting;
+use App\Settings\Declarations\DecimalSetting;
+use App\Settings\Declarations\EnumSetting;
+use App\Settings\Declarations\IntegerSetting;
+use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\StringSetting;
+use App\Settings\Declarations\ToggleGroup;
+use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewLevel;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewMode;
 
@@ -66,17 +66,17 @@ final class ReviewSettings implements SettingsDefinition
         ]);
         $this->reviewMode = EnumSetting::make('review_mode', 'Review mode', ReviewMode::class, ReviewMode::Quick);
         $this->reviewLevel = EnumSetting::make(
-'review_level',
- 'Review level',
- ReviewLevel::class,
- ReviewLevel::FirstPass,
-);
+            'review_level',
+            'Review level',
+            ReviewLevel::class,
+            ReviewLevel::FirstPass,
+        );
         $this->review = ToggleGroup::make(
-'review',
- 'Review',
- true,
- [$this->retryLimit, $this->notifyOwner, $this->weight, $this->summaryStyle, $this->reviewMode, $this->reviewLevel],
-);
+            'review',
+            'Review',
+            true,
+            [$this->retryLimit, $this->notifyOwner, $this->weight, $this->summaryStyle, $this->reviewMode, $this->reviewLevel],
+        );
         $this->title = StringSetting::make('title', 'Title', 'Reviews', minimumLength: 1);
         $this->priority = ChoiceSetting::make('priority', 'Priority', 0, [
             Choice::make(0, 'Normal'),

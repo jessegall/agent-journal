@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
+use App\Hosts\HostClaimSlots;
 use App\Http\Controllers\Hosts\ClaimOrdersController;
-use App\Support\Hosts\HostClaimSlots;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\TestCase;

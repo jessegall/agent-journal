@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Routes;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\AgentSession;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;

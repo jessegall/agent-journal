@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Connections\CancelProjectCommandPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\CancelProjectCommandRun\CancelProjectCommandRunCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\JournalCommands;
+use App\Connections\Api\CancelProjectCommandPayload;
+use App\Projects\Commands\CancelProjectCommandRun\CancelProjectCommandRunCommand;
 use App\Support\AgentContext;
-use App\Support\JournalCommands;
 use App\Values\ApiAccepted;
 
 /**

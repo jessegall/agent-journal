@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Drivers\DriverAdapter;
-use App\Enums\Hooks\CallFailure;
-use App\Enums\Hooks\HookEvent;
-use App\Values\PlanFile;
+use App\Agents\Drivers\Contracts\DriverAdapter;
+use App\Agents\Values\PlanFile;
+use App\Hooks\Enums\CallFailure;
+use App\Hooks\Enums\HookEvent;
 use Closure;
 use Illuminate\Support\Str;
 

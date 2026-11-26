@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Tests\Commands;
 
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use App\Models\Notifications\NotificationReceipt;
 use Domain\Questions\Commands\AskQuestion\AskQuestionCommand;
 use Domain\Questions\Commands\HideLeftInboxNotifications\HideLeftInboxNotificationsCommand;

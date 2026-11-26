@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Support\Run\RunStart;
-use App\Support\Step;
 use App\Values\CommandReport;
 
 /**

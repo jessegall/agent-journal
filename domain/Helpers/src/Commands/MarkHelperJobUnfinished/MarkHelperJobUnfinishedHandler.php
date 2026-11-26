@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands\MarkHelperJobUnfinished;
 
-use App\Contracts\Actors\AgentTexts;
+use App\Actors\Contracts\AgentTexts;
 use App\Values\AgentText;
 use Domain\Helpers\Commands\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;

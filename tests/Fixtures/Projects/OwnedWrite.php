@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Projects;
 
-use App\Contracts\Projects\ProjectCommand;
+use App\Projects\Contracts\ProjectCommand;
 use App\Support\Command;
 use App\Values\ProjectOwner;
 

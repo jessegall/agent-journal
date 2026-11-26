@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Contracts\Refusals;
 
-use App\Contracts\Bus\CommandRefusal;
-use App\Enums\Sessions\ResumeRefusal;
-use App\Enums\Sessions\StartPreflightRefusal;
-use App\Enums\Sessions\StartRefusalType;
-use App\Enums\Sessions\StartUnavailableReason;
+use App\Bus\Contracts\CommandRefusal;
+use App\Sessions\Enums\ResumeRefusal;
+use App\Sessions\Enums\StartPreflightRefusal;
+use App\Sessions\Enums\StartRefusalType;
+use App\Sessions\Enums\StartUnavailableReason;
 
 /**
  * A start refused with a stable reason code, which the start's record keeps as its receipt after the rollback.

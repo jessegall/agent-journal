@@ -14,9 +14,9 @@ ticks. A marked loader that builds a state without `onTick` fails with `Tickable
 ```php
 use App\Contracts\Work\TickableState;
 use App\Hooks\Contracts\TickableStateLoader;
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 use App\Support\Ticks\TickCommands;
-use App\Support\Ticks\TickContext;
+use App\Engine\Ticks\TickContext;
 
 final class AwaitingAnswerLoader implements TickableStateLoader { /* statesFor, schemaVersion as for any loader */ }
 
@@ -40,7 +40,7 @@ The fixture `tests/Fixtures/Domains/Reminders` is a full working example.
 | Field | What it is |
 | --- | --- |
 | `now` | The server time of this tick. |
-| `delta` | An `App\Support\Ticks\ElapsedTime`: the time since this frame's last settled tick. It is never null. |
+| `delta` | An `App\Engine\Ticks\ElapsedTime`: the time since this frame's last settled tick. It is never null. |
 | `enteredAt` | The server time the frame entered the stack. It survives covering, resuming and restoring. |
 | `target` | The `StackTarget` the frame sits on. |
 
@@ -67,8 +67,8 @@ answered none). Only then does its timing baseline move, so after a failure the 
 since the last success.
 
 The engine is authorized like any actor: its authorizer allows a command only while it holds a grant, the frame it is
-ticking or a maintenance capability (`App\Support\EngineAccess`). Outside one it may run nothing. Its own
-maintenance commands, such as `App\Commands\Sessions\MarkSilentSessions\MarkSilentSessionsCommand`, name the `EngineMaintenance` entry.
+ticking or a maintenance capability (`App\Engine\EngineAccess`). Outside one it may run nothing. Its own
+maintenance commands, such as `App\Sessions\Commands\MarkSilentSessions\MarkSilentSessionsCommand`, name the `EngineMaintenance` entry.
 
 Every command a tick answers runs with the frame's work as its origin (`App\Hooks\Values\WorkOccurrence`, for
 example run 3 of task 41). Inside the command's transaction and before its handler, `GuardTickOrigin` takes the
@@ -114,7 +114,7 @@ public function handle(SendQuestionReminder $command): void
 }
 ```
 
-Use `App\Contracts\Time\ServerClock` for times that are stored, never the PHP clock.
+Use `App\Time\Contracts\ServerClock` for times that are stored, never the PHP clock.
 
 ## Changing a stack from a handler
 
@@ -122,7 +122,7 @@ The engine's grant for a tick covers only that frame's target. In a handler:
 
 - `App\Hooks\Contracts\EngineStack::push($target, $reference)` pushes a state through the same push every caller uses.
   It refuses a target outside the grant (`EngineAccessRefused`) and a session that no longer runs.
-- `App\Contracts\Work\AgentStacks::popExposed($target)` pops the finished and switched-off frames exposed at the top,
+- `App\Stacks\Contracts\Work\AgentStacks::popExposed($target)` pops the finished and switched-off frames exposed at the top,
   with their exits; frames buried under a live one stay.
 
 Never change a stack from `onTick` itself.
@@ -148,7 +148,7 @@ final readonly class MarkSilentSessionsOnTick implements EngineListener
 }
 ```
 
-Add it to `App\Support\EngineListenerSet` from a Core provider. Each pass builds the listener fresh and grants
+Add it to `App\Engine\EngineListenerSet` from a Core provider. Each pass builds the listener fresh and grants
 it only its own maintenance scope. Its commands check that scope with `EngineAccess::checkMaintenance()`. A listener
 that throws is logged and the next one still runs. `App\Events\Engine\EngineTicked` (`now` and `sincePrevious`) is also
 dispatched on the event dispatcher for plain observers that run no commands. Listeners must do small, bounded reads.

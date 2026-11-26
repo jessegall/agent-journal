@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Processes\RunOutcomePageData;
-use App\Data\Processes\RunOutcomeSummaryData;
 use App\Http\Requests\Processes\RunPageRequest;
-use App\Resolvers\Support\RunOutcomeSummaries;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\RunOutcomePageData;
+use App\Processes\Data\RunOutcomeSummaryData;
+use App\Processes\Resolvers\Support\RunOutcomeSummaries;
 use Spatie\LaravelData\Optional;
 
 /**

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
 
-use App\Exceptions\CommandRefused;
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry\WriteEntryCommand;
+use App\Bus\Contracts\CommandHandler;
+use App\Bus\Exceptions\CommandRefused;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 
 final readonly class WriteEntryHandler implements CommandHandler

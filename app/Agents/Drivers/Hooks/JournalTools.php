@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Domains\JournalToolNames;
+use App\Agents\Contracts\Domains\JournalToolNames;
 use App\Exceptions\UnsupportedHook;
 
 /**

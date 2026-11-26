@@ -12,13 +12,13 @@ declare(strict_types=1);
  *   php tools/processes/analyse-shell-lines.php < input.jsonl > results.jsonl
  */
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\CommandRules\ParseOutcome;
-use App\Enums\Processes\ShellDialect;
+use App\Access\Values\ShellNode;
+use App\Bus\Contracts\CommandClassifier;
+use App\CommandRules\Enums\ParseOutcome;
 use App\Processes\Contracts\AliasReader;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
-use App\Values\ShellNode;
 use Illuminate\Contracts\Console\Kernel;
 use Tests\Fixtures\Processes\NoAliases;
 

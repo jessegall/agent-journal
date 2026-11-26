@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use App\Support\ConsoleOwner;
+use App\Bus\ConsoleOwner;
 use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Support\ShareListFilters;

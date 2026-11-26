@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Support;
 
-use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Projects\FileComments;
-use App\Data\Connections\FileCommentData;
-use App\Data\Connections\FileThreadData;
+use App\Actors\Contracts\ActorLabels;
+use App\Connections\Data\FileCommentData;
+use App\Connections\Data\FileThreadData;
 use App\Models\Projects\ProjectFile;
+use App\Projects\Contracts\FileComments;
 use App\Support\ActorLabelSet;
 use App\Support\ActorReference;
 use App\Support\IdListPage;

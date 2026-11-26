@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Bus;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\GuardedCommandBus;
-use App\Enums\Engine\CommandOriginStatus;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\GuardedCommandBus;
+use App\Engine\Enums\CommandOriginStatus;
 use Closure;
 use Tests\Support\Exceptions\BusUsedInUnitTest;
 

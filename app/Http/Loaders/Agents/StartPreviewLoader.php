@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Agents;
 
-use App\Contracts\Sessions\ProfileSelections;
-use App\Data\Agents\StartPreviewData;
-use App\Data\Agents\StartPreviewInput;
+use App\Agents\Data\StartPreviewData;
+use App\Agents\Data\StartPreviewInput;
 use App\Models\Agents\Agent;
-use App\Support\StartPreviews;
+use App\Sessions\Contracts\ProfileSelections;
+use App\Sessions\StartPreviews;
 use App\Values\ProfileKey;
 
 /**

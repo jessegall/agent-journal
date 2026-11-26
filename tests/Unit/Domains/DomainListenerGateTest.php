@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\Domains\DomainAvailability;
-use App\Enums\Engine\ListenerLane;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
+use App\Bus\AvailableListener;
+use App\Bus\ListenerRegistry;
+use App\Engine\Enums\ListenerLane;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\AvailableListener;
-use App\Support\ListenerRegistry;
 use Domain\Memory\Listeners\SupplyMemories;
 use Domain\Memory\MemoryDomain;
 use Domain\Tasks\TasksDomain;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States\Policies;
 
-use App\Contracts\Authorization\Policy;
+use App\Access\Contracts\Policy;
 use Tests\Fixtures\Domains\Tasks\States\Models\TaskWatch;
 
 /**

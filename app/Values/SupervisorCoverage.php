@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Asks\SupervisorCoverageType;
+use App\Asks\Enums\SupervisorCoverageType;
 
 final readonly class SupervisorCoverage
 {

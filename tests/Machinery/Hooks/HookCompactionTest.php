@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Machinery\Hooks;
 
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Drivers\RewriteSupport;
+use App\Agents\Drivers\Enums\RewriteSupport;
+use App\Agents\Inputs\Values\CompactionDetails;
+use App\Bus\Contracts\CommandBus;
 use App\Support\Inputs\ContextCompacted;
-use App\Support\Inputs\Values\CompactionDetails;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;

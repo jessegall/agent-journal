@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Processes\BundleListPartData;
-use App\Data\Processes\BundleRowData;
-use App\Data\Processes\ClassificationRuleRowData;
-use App\Data\Processes\RequestRowData;
+use App\CommandRules\CommandRuleRegistry;
+use App\CommandRules\ProjectRules;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\ModuleRuleBundle;
-use App\Support\CommandRuleRegistry;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\BundleListPartData;
+use App\Processes\Data\BundleRowData;
+use App\Processes\Data\ClassificationRuleRowData;
+use App\Processes\Data\RequestRowData;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;
-use App\Support\ProjectRules;
 use App\Values\RuleBundle;
 
 /**

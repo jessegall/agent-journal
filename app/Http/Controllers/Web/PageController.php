@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Support\ClientDeclarations;
-use App\Support\Web\DeclaredRouteKey;
-use App\Support\Web\PageProps;
+use App\Web\DeclaredRouteKey;
+use App\Web\PageProps;
 use Illuminate\Routing\Route;
 use Inertia\Response;
 use Inertia\ResponseFactory;

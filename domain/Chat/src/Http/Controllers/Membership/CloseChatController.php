@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers\Membership;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\CurrentActor;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Inboxes\Commands\LeaveInbox\LeaveInboxCommand;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\InboxMember;

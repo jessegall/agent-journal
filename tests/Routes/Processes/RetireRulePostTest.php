@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
+use App\CommandRules\Commands\RetireCommandRule\RetireCommandRuleCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

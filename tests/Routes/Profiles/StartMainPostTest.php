@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
+use App\Agents\Commands\StartProfileMain\StartProfileMainCommand;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Agents\StartProfileMain\StartProfileMainCommand;
-use App\Enums\Agents\ConversationModeType;
-use App\Enums\Drivers\DriverSourceType;
-use App\Support\StartReceipt;
+use App\Agents\Drivers\Enums\DriverSourceType;
+use App\Agents\Enums\ConversationModeType;
+use App\Agents\Values\SelectionSource;
+use App\Sessions\StartReceipt;
 use App\Values\ChosenAccount;
 use App\Values\ModelSelection;
 use App\Values\ProfileKey;
 use App\Values\SelectedDriver;
-use App\Values\SelectionSource;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

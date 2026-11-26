@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Bus;
 
-use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Bus\CommandScope;
+use App\Bus\MiddlewareDeclaration;
 use App\CoreCommands;
+use App\Sessions\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use App\Support\CommandRegistry;
-use App\Support\CommandScope;
-use App\Support\MiddlewareDeclaration;
 use Domain\Rules\RulesDomain;
 use Domain\Sharing\SharingDomain;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;

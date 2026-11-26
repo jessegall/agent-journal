@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Api\Processes\ProcessApi;
-use App\Contracts\Bus\Pipe;
-use App\Mcp\Tools\OutputsReadTool;
-use App\Support\Run\PartResult;
+use App\Access\Mcp\Tools\OutputsReadTool;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Api\ProcessApi;
+use App\Processes\Run\PartResult;
 use App\Support\Run\SupervisedRun;
 use App\Values\CommandReport;
 

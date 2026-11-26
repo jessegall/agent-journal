@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;

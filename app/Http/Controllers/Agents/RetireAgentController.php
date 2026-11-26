@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\RetireAgent\RetireAgentCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Assignments\AssignmentResultData;
+use App\Agents\Commands\RetireAgent\RetireAgentCommand;
+use App\Assignments\Data\AssignmentResultData;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\RetireAgentRequest;
 use App\Support\AssignmentHolders;
 use Illuminate\Http\JsonResponse;

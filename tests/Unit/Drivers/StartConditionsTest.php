@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\AccountStartRecipe;
 use App\Agents\Drivers\StartConditions\AccountStart;
 use App\Agents\Drivers\StartConditions\AccountTerminal;
 use App\Agents\Drivers\StartConditions\AccountWithoutFolder;
@@ -15,10 +16,9 @@ use App\Agents\Drivers\StartConditions\ResumedTerminal;
 use App\Agents\Drivers\StartConditions\ResumedTurn;
 use App\Agents\Drivers\StartConditions\SeatbeltedTurn;
 use App\Agents\Drivers\StartConditions\TurnStart;
-use App\Contracts\CommandLines\Condition;
-use App\Enums\Hosts\HostProcessType;
-use App\Enums\Sessions\TransportProfileType;
-use App\Support\AccountStartRecipe;
+use App\Hosts\Enums\HostProcessType;
+use App\Processes\Contracts\Condition;
+use App\Sessions\Enums\TransportProfileType;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use Tests\TestCase;

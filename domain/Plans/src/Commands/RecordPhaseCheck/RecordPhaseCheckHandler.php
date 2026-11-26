@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RecordPhaseCheck;
 
-use App\Contracts\Bus\ResultReceipts;
-use App\Enums\Runs\AssessmentOutcome;
+use App\Bus\Contracts\ResultReceipts;
+use App\Processes\Enums\AssessmentOutcome;
 use Domain\Plans\Commands\Support\PlanCommandHandler;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;

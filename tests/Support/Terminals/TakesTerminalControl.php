@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Terminals;
 
-use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
-use App\Commands\Terminals\TakeTerminalControl\TakeTerminalControlCommand;
-use App\Data\Terminals\TerminalControlData;
-use App\Enums\Drivers\DriverOperation;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalGrant;
+use App\Terminals\Commands\OpenTerminalView\OpenTerminalViewCommand;
+use App\Terminals\Commands\TakeTerminalControl\TakeTerminalControlCommand;
+use App\Terminals\Data\TerminalControlData;
 use Illuminate\Support\Str;
 
 /**

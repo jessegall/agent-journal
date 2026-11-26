@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Api\Processes\ProcessApi;
-use App\Contracts\Bus\Pipe;
-use App\Contracts\Files\Files;
+use App\Bus\Contracts\Pipe;
+use App\Files\Contracts\Files;
+use App\Processes\Api\ProcessApi;
 use App\Support\Execution\ChannelRunEvents;
 use App\Support\Run\FetchedAdmission;
 use App\Support\Run\RunChannel;

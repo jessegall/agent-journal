@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Processes\ProcessRunResolver;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ProcessRunOfAnotherActor;
 use App\Models\Access\User;
+use App\Processes\Contracts\ProcessRunResolver;
 use App\Support\ActorReference;
 use Domain\Tasks\Commands\RunTaskCheck\RunTaskCheckCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;

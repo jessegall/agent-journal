@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Docking;
 
-use App\Enums\Runs\PartType;
 use App\Exceptions\PartMapInvalid;
+use App\Processes\Enums\PartType;
 use App\Support\Cards\DockCard;
 use App\Support\Cards\DockIdentity;
 use App\Support\Cards\Stack;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Files\Files;
-use App\Exceptions\SignInRunnerRefused;
-use App\Support\AccountFolderUses;
-use App\Support\ArrangementSetting;
-use App\Support\FolderOrderWait;
+use App\Accounts\AccountFolderUses;
+use App\Accounts\Exceptions\SignInRunnerRefused;
+use App\Accounts\FolderOrderWait;
+use App\Accounts\SignInHost;
+use App\Accounts\SignInProtocols;
+use App\Files\Contracts\Files;
+use App\Hosts\ArrangementSetting;
+use App\Hosts\HostSecret;
 use App\Support\HostAccountFolders;
-use App\Support\HostSecret;
 use App\Support\LocalAccountFolders;
 use App\Support\PrivateSignInProcesses;
-use App\Support\SignInHost;
-use App\Support\SignInProtocols;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Factory;
 

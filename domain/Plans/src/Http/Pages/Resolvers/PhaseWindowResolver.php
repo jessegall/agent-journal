@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Time\VerificationTiming;
+use App\Navigation\Contracts\PageResolver;
+use App\Time\Contracts\VerificationTiming;
 use Domain\Plans\Data\PhaseCheckData;
 use Domain\Plans\Data\PhaseReaderData;
 use Domain\Plans\Http\Requests\PhaseRequest;

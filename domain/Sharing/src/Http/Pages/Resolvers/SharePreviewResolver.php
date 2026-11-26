@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Reads\ReadMeter;
-use App\Contracts\Records\RecordResolver;
+use App\Actors\Contracts\CurrentActor;
+use App\Navigation\Contracts\PageResolver;
+use App\Reads\Contracts\ReadMeter;
+use App\Records\Contracts\RecordResolver;
 use Domain\Sharing\Data\RootShareData;
 use Domain\Sharing\Data\SavedSharePreviewData;
 use Domain\Sharing\Data\ShareCandidateData;

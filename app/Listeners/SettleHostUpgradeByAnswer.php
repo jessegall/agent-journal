@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Hosts\SettleHostUpgrade\SettleHostUpgradeCommand;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostOrderAnswerEvent;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Commands\SettleHostUpgrade\SettleHostUpgradeCommand;
+use App\Hosts\Contracts\HostOrderAnswerEvent;
+use App\Hosts\Enums\HostOrderType;
 
 /**
  * The host's answer to its upgrade order, or its refusal, settles the upgrade it waits on.

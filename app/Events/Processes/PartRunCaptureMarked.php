@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\PartRunEvent;
-use App\Enums\Runs\CaptureStatus;
+use App\Processes\Contracts\PartRunEvent;
+use App\Processes\Enums\CaptureStatus;
 
 /**
  * A part of a run's capture took the state given.

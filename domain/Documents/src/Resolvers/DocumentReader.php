@@ -11,7 +11,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
-use App\Support\TextPreview;
+use App\Text\TextPreview;
 use Domain\Documents\Contracts\Documents\DocumentReader as DocumentReaderContract;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Models\Document;

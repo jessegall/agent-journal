@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\GuardedCommandBus;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\GuardedCommandBus;
+use App\Bus\LaravelCommandBus;
+use App\Bus\OuterTransactionOwner;
+use App\Bus\OutsideCommandAllowance;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Models\Projects\Project;
+use App\Processes\OutputRecorder;
 use App\Support\Domain;
 use App\Support\DomainRegistry;
-use App\Support\LaravelCommandBus;
-use App\Support\OuterTransactionOwner;
-use App\Support\OutputRecorder;
-use App\Support\OutsideCommandAllowance;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A Core listener the command's transaction requires.

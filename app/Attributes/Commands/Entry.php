@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Attributes\Commands;
 
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
 use Attribute;
 
 /**

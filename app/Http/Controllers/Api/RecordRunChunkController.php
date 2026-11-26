@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\ChunkStored;
-use App\Api\Processes\RecordRunChunkPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Runs\RecordRunChunk\RecordRunChunkCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Api\ChunkStored;
+use App\Processes\Api\RecordRunChunkPayload;
+use App\Processes\Commands\RecordRunChunk\RecordRunChunkCommand;
 
 /**
  * Stores one piece of a part's output for the holder of the run's event key, once.

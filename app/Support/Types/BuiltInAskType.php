@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Contracts\Asks\AskSubjectResolver as AskSubjectResolverContract;
-use App\Contracts\Asks\AskType;
-use App\Enums\Asks\CoreAskType;
-use App\Support\AskSubjectResolver;
+use App\Asks\AskSubjectResolver;
+use App\Asks\Contracts\AskSubjectResolver as AskSubjectResolverContract;
+use App\Asks\Contracts\AskType;
+use App\Asks\Enums\CoreAskType;
+use App\Asks\Values\SubjectType;
 use App\Values\AskTypeKey;
-use App\Values\SubjectType;
 use DateInterval;
 
 abstract readonly class BuiltInAskType implements AskType

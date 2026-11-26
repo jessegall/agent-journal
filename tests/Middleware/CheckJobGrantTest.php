@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\CheckJobGrant;
-use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Contracts\Admission\ReadAdmission;
-use App\Enums\Engine\CommandEffectType;
-use App\Enums\Profiles\AccessRuleType;
+use App\Access\AccessSettings;
+use App\Access\Contracts\ReadAdmission;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Bus\CommandMiddleware\CheckJobGrant;
+use App\Engine\Enums\CommandEffectType;
 use App\Models\Records\AssignmentRecord;
-use App\Support\Access\AccessSettings;
+use App\Profiles\Enums\AccessRuleType;
+use App\Reads\ReadGrant;
 use App\Support\CommandRegistry;
-use App\Support\ReadGrant;
 use App\Values\AccessDecision;
 use App\Values\AgentText;
 use App\Values\ReadRequest;

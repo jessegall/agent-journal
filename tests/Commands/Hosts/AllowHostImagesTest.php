@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\AllowHostImages\AllowHostImagesCommand;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Commands\AllowHostImages\AllowHostImagesCommand;
+use App\Hosts\Enums\HostOrderType;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

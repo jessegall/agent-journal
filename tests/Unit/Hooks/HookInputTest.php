@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Inputs\Values\StopDetails;
+use App\Stacks\AgentState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\StopRequested;
-use App\Support\Inputs\Values\StopDetails;
-use App\Support\States\AgentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;

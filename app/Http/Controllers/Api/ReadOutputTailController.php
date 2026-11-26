@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\OutputTail;
-use App\Api\Processes\ReadOutputTailPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Runs\ReadOutputTail\ReadOutputTailCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Api\OutputTail;
+use App\Processes\Api\ReadOutputTailPayload;
+use App\Processes\Commands\ReadOutputTail\ReadOutputTailCommand;
 
 /**
  * Answers the last lines of a part's stream and records the bytes read as evidence read.

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Declarations\RegisteredNavigation;
-use App\Declarations\RegisteredPage;
 use App\Support\ClientDeclarations;
+use App\Web\Declarations\RegisteredPage;
 
 /**
  * Every page of the app is listed in tools/design-compare/pages.json with its comparison views, or with the reason the

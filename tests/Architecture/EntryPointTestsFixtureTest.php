@@ -94,7 +94,7 @@ final class EntryPointTestsFixtureTest extends TestCase
         $tests = new MachineryTests(base_path('tests/Fixtures/EntryPointTests/Machinery'));
 
         $this->assertEqualsCanonicalizing([
-            'tests/Machinery/CommandSubjectTest.php names App\\Commands\\Agents\\StartAgent\\StartAgentCommand, a command: '
+            'tests/Machinery/CommandSubjectTest.php names App\\Agents\\Commands\\StartAgent\\StartAgentCommand, a command: '
                 ."its proofs belong in that entry's test.",
             'tests/Machinery/MissingSubjectTest.php names App\\Support\\NoSuchEngine, which does not exist: name the '
                 .'engine class it proves.',

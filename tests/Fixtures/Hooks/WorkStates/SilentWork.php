@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\WorkStates;
 
-use App\Contracts\Work\WorkState;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\Work\WorkState;
 use App\Support\RecordIdentity;
-use App\Support\States\AgentState;
 use Tests\Fixtures\Hooks\SubjectIds;
 
 /**

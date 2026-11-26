@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Drivers\NotifyEntryReplayed\NotifyEntryReplayedCommand;
-use App\Contracts\Actors\ActorAttention;
-use App\Enums\Navigation\NavigationCompletion;
-use App\Enums\Navigation\NavigationReason;
+use App\Access\AccessSettings;
+use App\Actors\Contracts\ActorAttention;
+use App\Agents\Drivers\Commands\NotifyEntryReplayed\NotifyEntryReplayedCommand;
+use App\Agents\Drivers\Values\MenuStep;
 use App\Models\Access\User;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;
 use App\Models\Drivers\NavigationRequest;
-use App\Support\Access\AccessSettings;
+use App\Navigation\Enums\NavigationCompletion;
+use App\Navigation\Enums\NavigationReason;
 use App\Support\ActorReference;
-use App\Values\MenuStep;
 use App\Values\NavigationScreen;
 use App\Values\NavigationUncertainty;
 use Carbon\CarbonImmutable;

@@ -7,9 +7,9 @@ namespace App\Listeners;
 use App\Agents\Drivers\Work\AccountOwners;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\DriverRequestAccepted;
+use App\Hosts\HostWake;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Sessions\SessionProcess;
-use App\Support\Hosts\HostWake;
 
 /**
  * Wakes the worker of the request's runtime once the accepted request is committed, so it takes the request up.

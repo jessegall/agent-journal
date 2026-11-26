@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Exceptions\InvalidRecordIds;
+use App\Assignments\Exceptions\InvalidRecordIds;
 use Illuminate\Support\Str;
 
 /**

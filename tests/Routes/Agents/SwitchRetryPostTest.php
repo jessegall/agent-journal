@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
+use App\Agents\Drivers\Commands\RetryDriverSwitch\RetryDriverSwitchCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Drivers\RetryDriverSwitch\RetryDriverSwitchCommand;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 use App\Models\Drivers\DriverSwitch;
 use App\Values\ChosenAccount;
 use App\Values\DriverSwitchTarget;

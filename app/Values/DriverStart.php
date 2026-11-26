@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\ExecutablePlace;
-use App\Enums\Hosts\HostProcessType;
+use App\Agents\Drivers\Enums\ExecutablePlace;
+use App\Hosts\Enums\HostProcessType;
 
 /**
  * One start of a driver as its profile plans it: the exact conversation it begins or resumes, whether it runs as a

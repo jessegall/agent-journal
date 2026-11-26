@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Commands\Runs\AssessPartOutput\AssessPartOutputCommand;
+use App\Processes\Commands\AssessPartOutput\AssessPartOutputCommand;
 use Domain\Plans\Commands\RecordPhaseCheck\RecordPhaseCheckCommand;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;

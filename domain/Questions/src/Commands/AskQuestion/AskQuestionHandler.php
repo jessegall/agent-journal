@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\AskQuestion;
 
-use App\Contracts\Actors\ActorResolver;
-use App\Contracts\Questions\QuestionRecipient;
+use App\Actors\Contracts\ActorResolver;
+use App\Asks\Contracts\QuestionRecipient;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Text;
 
 use App\Http\Requests\RecordTargetRequest;
-use App\Values\PageSize;
+use App\Reads\Values\PageSize;
 
 /**
  * A page of the sections of one version of a record's text, after a section number.

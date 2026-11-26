@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Declarations\VerificationContract;
-use App\Enums\CommandRules\CommandClass;
-use App\Enums\CommandRules\CommandType;
-use App\Enums\CommandRules\EmptySelection;
-use App\Enums\CommandRules\FramingType;
-use App\Enums\CommandRules\Outcome;
-use App\Enums\CommandRules\OutputEncoding;
-use App\Enums\CommandRules\StreamUse;
-use App\Enums\CommandRules\SummaryRule;
-use App\Enums\CommandRules\ToolType;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Enums\CommandType;
+use App\CommandRules\Enums\EmptySelection;
+use App\CommandRules\Enums\FramingType;
+use App\CommandRules\Enums\Outcome;
+use App\CommandRules\Enums\OutputEncoding;
+use App\CommandRules\Enums\StreamUse;
+use App\CommandRules\Enums\SummaryRule;
+use App\CommandRules\Enums\ToolType;
+use App\CommandRules\Values\EmptyRunPolicy;
+use App\CommandRules\Values\ExitBranch;
+use App\CommandRules\Values\ExitPolicy;
+use App\CommandRules\Values\ProgramSpellings;
+use App\CommandRules\Values\ProposedRule;
+use App\CommandRules\Values\RuleExample;
+use App\CommandRules\Values\RuleScope;
+use App\Processes\Declarations\VerificationContract;
+use App\Processes\Values\ExecutableBinding;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
-use App\Values\EmptyRunPolicy;
-use App\Values\ExecutableBinding;
-use App\Values\ExitBranch;
-use App\Values\ExitPolicy;
 use App\Values\OutputContract;
-use App\Values\ProgramSpellings;
 use App\Values\ProgressPolicy;
-use App\Values\ProposedRule;
 use App\Values\ReaderReference;
-use App\Values\RuleExample;
-use App\Values\RuleScope;
 
 /**
  * The hypothetical acme verify check as a project declaration with its proven exits.

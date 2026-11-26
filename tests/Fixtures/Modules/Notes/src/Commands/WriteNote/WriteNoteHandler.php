@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 
-use App\Contracts\Bus\CommandHandler;
+use App\Bus\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 final class WriteNoteHandler implements CommandHandler
 {

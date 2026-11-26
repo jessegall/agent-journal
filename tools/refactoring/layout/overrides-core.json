@@ -287,9 +287,9 @@
         "app/Hooks/Settlement/LifecycleAnswers.php": "app/Support/Settlement/LifecycleAnswers.php",
         "app/Hooks/Settlement/LifecycleEffects.php": "app/Support/Settlement/LifecycleEffects.php",
         "app/Actors/Models/Support/BelongsToOneActor.php": "app/Models/Support/BelongsToOneActor.php",
-        "app/Http/Data/Support/OptionalOrMissing.php": "app/Data/Support/OptionalOrMissing.php",
+        "app/Http/Data/Support/OptionalOrMissing.php": "app/Accounts/Data/Support/OptionalOrMissing.php",
         "app/Exports/Support/Exports.php": "app/Support/Exports.php",
-        "app/Domains/Support/Exports.php": "app/Support/ExportValidator.php",
+        "app/Domains/Support/Exports.php": "app/Bootstrap/ExportValidator.php",
         "app/Web/Support/NavigationRecords.php": "app/Support/WebNavigationRecords.php",
         "app/Agents/Support/NavigationRecords.php": "app/Support/AgentNavigationRecords.php"
     }

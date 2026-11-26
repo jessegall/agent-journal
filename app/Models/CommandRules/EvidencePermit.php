@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Models\CommandRules;
 
+use App\CommandRules\Exceptions\EvidencePermitRefused;
+use App\CommandRules\Values\PermitLimits;
+use App\CommandRules\Values\PermittedLine;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Projects\ProjectOwned;
-use App\Contracts\Records\ReadableModel;
 use App\Events\Processes\EvidencePermitConsumed;
 use App\Events\Processes\EvidencePermitExpired;
-use App\Exceptions\EvidencePermitRefused;
 use App\Models\Projects\Project;
 use App\Models\Runs\ProcessRun;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\JournalModel;
+use App\Projects\Contracts\ProjectOwned;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\CommandRule;
-use App\Values\PermitLimits;
-use App\Values\PermittedLine;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

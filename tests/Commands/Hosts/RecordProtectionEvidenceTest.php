@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Hosts\RecordProtectionEvidence\RecordProtectionEvidenceCommand;
-use App\Enums\Drivers\BoundaryItem;
-use App\Enums\Drivers\IsolationPlatform;
+use App\Agents\Drivers\Enums\BoundaryItem;
+use App\Agents\Drivers\Enums\IsolationPlatform;
+use App\Hosts\Commands\RecordProtectionEvidence\RecordProtectionEvidenceCommand;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

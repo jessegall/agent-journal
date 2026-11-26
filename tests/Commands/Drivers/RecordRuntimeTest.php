@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Drivers;
 
-use App\Commands\Drivers\RecordRuntime\RecordRuntimeCommand;
-use App\Enums\Drivers\DriverOperation;
+use App\Agents\Drivers\Commands\RecordRuntime\RecordRuntimeCommand;
+use App\Agents\Drivers\Enums\DriverOperation;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use Tests\Support\Agents\OpensLedgerRuntimes;

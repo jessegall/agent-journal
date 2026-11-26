@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Support;
 
-use App\Contracts\Sessions\ProfileRules;
+use App\Sessions\Contracts\ProfileRules;
+use App\Sessions\Values\ProfileRule;
+use App\Sessions\Values\ProfileRuleGroup;
+use App\Sessions\Values\ProfileRuleGroups;
 use App\Values\ProfileKey;
-use App\Values\ProfileRule;
-use App\Values\ProfileRuleGroup;
-use App\Values\ProfileRuleGroups;
 use Domain\Rules\Models\Rule;
 
 /**

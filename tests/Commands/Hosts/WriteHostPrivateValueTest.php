@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\WriteHostPrivateValue\WriteHostPrivateValueCommand;
-use App\Enums\Hosts\HostOrderType;
+use App\Hosts\Commands\WriteHostPrivateValue\WriteHostPrivateValueCommand;
+use App\Hosts\Enums\HostOrderType;
 use App\Values\HostOrderSource;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

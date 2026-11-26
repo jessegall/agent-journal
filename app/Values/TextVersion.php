@@ -6,7 +6,7 @@ namespace App\Values;
 
 use App\Exceptions\TextVersionUnavailable;
 use App\Support\MarkdownText;
-use App\Support\Section;
+use App\Text\Section;
 
 /**
  * One immutable version of a record's text: its id and label, its LF-normalised text and its sections.

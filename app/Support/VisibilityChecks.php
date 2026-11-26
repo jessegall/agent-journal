@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\VisibilityCheck;
+use App\Access\Contracts\VisibilityCheck;
+use App\Actors\Contracts\CurrentActor;
 use Illuminate\Contracts\Container\Container;
 
 /**

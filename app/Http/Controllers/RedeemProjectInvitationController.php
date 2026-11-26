@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\RedeemProjectInvitation\RedeemProjectInvitationCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\JournalCommands;
+use App\Connections\ServerOrigin;
 use App\Http\Requests\Connections\RedeemProjectInvitationRequest;
-use App\Support\JournalCommands;
-use App\Support\ServerOrigin;
+use App\Projects\Commands\RedeemProjectInvitation\RedeemProjectInvitationCommand;
 use Illuminate\Http\JsonResponse;
 
 /**

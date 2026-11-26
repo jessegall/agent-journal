@@ -10,7 +10,7 @@ use App\Mcp\Support\Continuation;
 use App\Support\IdListPage;
 use App\Support\MarkdownText;
 use App\Support\RecordIdentity;
-use App\Support\TextPreview;
+use App\Text\TextPreview;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Documents\Values\DocumentReadCard;
 use Domain\Documents\Values\ReportReadCard;

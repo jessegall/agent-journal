@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Links;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Records\RecordResolver;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Links\LinkRecordsRequest;
+use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 

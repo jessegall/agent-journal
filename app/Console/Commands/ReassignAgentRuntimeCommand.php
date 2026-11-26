@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Agents\ReassignAgentRuntime\ReassignAgentRuntimeCommand as ReassignAgentRuntime;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\ReassignAgentRuntime\ReassignAgentRuntimeCommand as ReassignAgentRuntime;
+use App\Bus\ConsoleOwner;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\ConsoleOwnerMissing;
-use App\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

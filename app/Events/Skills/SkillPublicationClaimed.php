@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Skills;
 
-use App\Contracts\Skills\SkillPublicationEvent;
+use App\Skills\Contracts\SkillPublicationEvent;
 
 /**
  * A host claimed a skill publication to prepare it, under the fence given.

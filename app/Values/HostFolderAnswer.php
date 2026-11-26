@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Hosts\HostOrderStatus;
+use App\Hosts\Enums\HostOrderStatus;
 use App\Models\Hosts\HostOrder;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Api\Agents\RecordHeartbeatPayload;
-use App\Attributes\Console\JournalRoute;
+use App\Agents\Api\RecordHeartbeatPayload;
+use App\Bus\Attributes\Console\JournalRoute;
+use App\CommandRules\Enums\JournalRouteType;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\CommandRules\JournalRouteType;
 use App\Mcp\Servers\JournalServer;
 use App\Support\ApiRegistrar;
 use App\Support\Reflector;
@@ -86,7 +86,7 @@ final class SignedPayloadRulesTest extends TestCase
 
     public function test_no_code_writes_an_agent_path_outside_the_routes_and_the_sender(): void
     {
-        $allowed = ['/routes/', 'app/Support/ApiSender.php', 'Mcp/Servers/JournalServer.php'];
+        $allowed = ['/routes/', 'app/Api/ApiSender.php', 'Mcp/Servers/JournalServer.php'];
         $found = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {

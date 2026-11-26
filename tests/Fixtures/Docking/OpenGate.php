@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Docking;
 
-use App\Contracts\Actors\Actor;
-use App\Support\Sources\Contracts\CardContext as CardContextContract;
-use App\Support\Sources\Contracts\DestinationGate;
-use App\Support\CardContext;
-use App\Support\Cards\DockDestination;
+use App\Actors\Contracts\Actor;
+use App\Docking\CardContext;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Sources\Contracts\CardContext as CardContextContract;
+use App\Docking\Sources\Contracts\DestinationGate;
 
 /**
  * A gate that lets every viewer open every page, for tests that are not about access.

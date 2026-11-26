@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Skills\Skill;
 use App\Exceptions\SkillDeclarationRefused;
-use App\Support\CoreSkills;
+use App\Skills\Contracts\Skill;
+use App\Skills\CoreSkills;
 use App\Support\DomainRegistry;
 use App\Values\SkillOwner;
 use Tests\Fixtures\Domains\FalseSkills\FalseSkillsDomain;

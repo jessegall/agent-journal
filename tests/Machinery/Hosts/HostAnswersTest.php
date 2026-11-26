@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hosts;
 
-use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
-use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostProcessType;
-use App\Exceptions\HostAnswerAwaitedInTransaction;
-use App\Support\Hosts\HostAnswers;
+use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Hosts\Commands\StopHostProcess\StopHostProcessCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostProcessType;
+use App\Hosts\Exceptions\HostAnswerAwaitedInTransaction;
+use App\Hosts\HostAnswers;
 use App\Values\HostOrderSource;
 use Illuminate\Database\DatabaseManager;
 use Tests\Support\CommitsHookRows;

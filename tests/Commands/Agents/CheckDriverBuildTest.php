@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Agents\Commands\CheckDriverBuild\CheckDriverBuildCommand;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Hosts\HostProcessPurpose;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Hosts\Enums\HostProcessPurpose;
 use App\Models\Hosts\HostProcess;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

@@ -6,12 +6,12 @@ namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
 use App\Agents\Drivers\Setup\DriverProfile;
-use App\Enums\Navigation\NavigationReason;
-use App\Enums\Screens\KeyMoveType;
-use App\Support\KeyScripts\KeyMove;
-use App\Support\KeyScripts\KeyScriptCatalogue;
-use App\Support\KeyScripts\KeyScriptRun;
-use App\Support\KeyScripts\KeyScriptRunner;
+use App\Navigation\Enums\NavigationReason;
+use App\Terminals\KeyScripts\KeyMove;
+use App\Terminals\KeyScripts\KeyScriptCatalogue;
+use App\Terminals\KeyScripts\KeyScriptRun;
+use App\Terminals\KeyScripts\KeyScriptRunner;
+use App\Terminals\Screens\Enums\KeyMoveType;
 use App\Values\HostOrderSource;
 use Tests\TestCase;
 

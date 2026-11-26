@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Support\Skills;
 
-use App\Contracts\Skills\Skill;
-use App\Contracts\Skills\SkillCondition;
-use App\Support\Conditions\Conditions;
-use App\Values\SkillSections;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Sequences domain's skill, written in resources/skills/sequences.md.

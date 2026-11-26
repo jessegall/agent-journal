@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

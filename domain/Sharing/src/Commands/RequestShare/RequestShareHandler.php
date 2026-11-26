@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\RequestShare;
 
-use App\Contracts\Records\RecordResolver;
+use App\Records\Contracts\RecordResolver;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;

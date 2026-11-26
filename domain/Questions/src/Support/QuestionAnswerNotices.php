@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Support;
 
-use App\Contracts\Actors\AgentTexts;
-use App\Contracts\Agents\AgentNotices;
-use App\Contracts\Time\ServerClock;
+use App\Actors\Contracts\AgentTexts;
+use App\Agents\Contracts\AgentNotices;
+use App\Time\Contracts\ServerClock;
 use App\Values\AgentText;
 use Domain\Questions\Models\QuestionAnswerNotice;
 

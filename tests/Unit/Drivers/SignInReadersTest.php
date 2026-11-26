@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
 use App\Agents\Drivers\Codex\CodexSignInReader;
-use App\Enums\Accounts\SignInMethod;
-use App\Values\SignInFolder;
+use App\Agents\Values\SignInFolder;
 use Tests\TestCase;
 
 /**

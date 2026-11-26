@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Engine;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Projects\AgentProjects;
-use App\Exceptions\EngineAccessRefused;
+use App\Access\Contracts\JournalAdmission;
+use App\Actors\ActorStore;
+use App\Actors\SystemActor;
+use App\Engine\EngineAccess;
+use App\Engine\Exceptions\EngineAccessRefused;
+use App\Projects\Contracts\AgentProjects;
 use App\Support\ActorReference;
-use App\Support\ActorStore;
-use App\Support\EngineAccess;
-use App\Support\SystemActor;
 use App\Values\StackTarget;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Projects\BuildsCurrentProject;

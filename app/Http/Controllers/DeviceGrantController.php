@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\PollDeviceGrant\PollDeviceGrantCommand;
-use App\Commands\Projects\StartDeviceGrant\StartDeviceGrantCommand;
-use App\Contracts\Hosts\HostCalls;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Engine\RefusalCode;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\JournalCommands;
+use App\Connections\ServerOrigin;
+use App\Engine\Enums\RefusalCode;
+use App\Hosts\Contracts\HostCalls;
 use App\Models\Projects\DeviceGrant;
-use App\Support\JournalCommands;
-use App\Support\ServerOrigin;
-use App\Values\InstallTicket;
+use App\Projects\Commands\PollDeviceGrant\PollDeviceGrantCommand;
+use App\Projects\Commands\StartDeviceGrant\StartDeviceGrantCommand;
+use App\Projects\Values\InstallTicket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

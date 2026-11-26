@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Actors;
 
-use App\Commands\Sessions\RecordUserHeartbeat\RecordUserHeartbeatCommand;
+use App\Sessions\Commands\RecordUserHeartbeat\RecordUserHeartbeatCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

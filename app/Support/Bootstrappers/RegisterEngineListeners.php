@@ -6,8 +6,8 @@ namespace App\Support\Bootstrappers;
 
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Contracts\Events\EngineListenerProvider;
+use App\Engine\EngineListenerSet;
 use App\Support\DomainEntry;
-use App\Support\EngineListenerSet;
 
 /**
  * Adds the engine listeners a domain declares to every engine pass, beside Core's own.

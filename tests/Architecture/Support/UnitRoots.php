@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\Bus\CommandTransaction;
-use App\Contracts\Bus\PipelineDefinition;
-use App\Contracts\Sessions\StartTransaction;
+use App\Bus\CommandFrame;
+use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Bus\Contracts\Work\UnitOfWork;
 use App\Contracts\Work\StackTransaction;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Contracts\Work\UnitOfWork;
-use App\Support\CommandFrame;
+use App\Sessions\Contracts\StartTransaction;
+use App\Stacks\AgentState;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Reflector;
 use App\Support\StackTransaction as StackTransactionOwner;
-use App\Support\States\AgentState;
 use Illuminate\Contracts\Container\Container;
 use Tests\Support\CodeReferenceScan;
 use Tests\Support\ScanCache\ScanCache;

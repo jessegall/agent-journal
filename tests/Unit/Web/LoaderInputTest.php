@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Web;
 
-use App\Exceptions\LoaderInputUnreadable;
-use App\Values\Web\LoaderInput;
+use App\Web\Exceptions\LoaderInputUnreadable;
+use App\Web\Values\LoaderInput;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Tests\TestCase;

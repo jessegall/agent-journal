@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use App\Enums\Agents\AccessType;
-use App\Contracts\Authorization\PolicyProvider;
-use App\Values\PolicyDefinition;
-use App\Contracts\Bus\CommandProvider;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandProvider;
 use App\Concerns\HasStates;
-use App\Contracts\Records\StateProvider;
+use App\Records\Contracts\StateProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use Domain\Tasks\TasksDomain;
-use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled\RecordTaskCancelledCommand;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskFinished\RecordTaskFinishedCommand;
 use Tests\Fixtures\Domains\Tasks\States\Policies\TaskWatchPolicy;

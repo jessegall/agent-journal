@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
 use Domain\Documents\Contracts\Drafts\DraftResolver as DraftResolverContract;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;

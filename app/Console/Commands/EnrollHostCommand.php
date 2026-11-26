@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Projects\EnrollHost\EnrollHostCommand as EnrollHost;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Projects\ArrangementType;
-use App\Support\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Projects\Commands\EnrollHost\EnrollHostCommand as EnrollHost;
+use App\Projects\Enums\ArrangementType;
 use Illuminate\Console\Command;
 
 /**

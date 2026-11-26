@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Data\Profiles\ProtectedItemData;
-use App\Data\Profiles\ProtectionReportData;
-use App\Enums\Drivers\BoundaryItem;
-use App\Enums\Drivers\IsolationPlatform;
-use App\Enums\Drivers\StartProfileType;
+use App\Agents\Drivers\Enums\BoundaryItem;
+use App\Agents\Drivers\Enums\IsolationPlatform;
+use App\Agents\Drivers\Enums\StartProfileType;
+use App\Agents\Values\BoundaryMechanisms;
+use App\Profiles\Data\ProtectedItemData;
+use App\Profiles\Data\ProtectionReportData;
+use App\Profiles\Values\ProtectedItem;
+use App\Projects\Values\ProtectionEvidence;
 
 /**
  * What a contained host found of a driver's protected arrangement in the agent image (journal-agent protection),

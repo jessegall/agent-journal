@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Sessions\AgentRuntimeEvent;
+use App\Sessions\Contracts\AgentRuntimeEvent;
 
 /**
  * The journal chose the conversation every turn of a runtime it drives continues.

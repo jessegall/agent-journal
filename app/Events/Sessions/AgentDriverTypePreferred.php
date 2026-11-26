@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
 
 /**
  * An agent's starts use this driver type from now on when they name none.

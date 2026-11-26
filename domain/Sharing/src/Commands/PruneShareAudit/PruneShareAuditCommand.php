@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\PruneShareAudit;
 
+use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Enums\Accounts\CommandEntry;
 use App\Support\AuditPruning;
 use App\Support\Command;
 

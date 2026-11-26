@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\Layout\DeclaredLayoutData;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Http\Pages\Revisions\RevisionsShow;

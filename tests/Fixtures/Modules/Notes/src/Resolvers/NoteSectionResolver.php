@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Resolvers;
 
-use App\Contracts\Sessions\SessionResolver;
-use App\Contracts\Navigation\SectionResolver;
 use App\Declarations\SlotContext;
+use App\Navigation\Contracts\SectionResolver;
+use App\Sessions\Contracts\SessionResolver;
 use Tests\Fixtures\Modules\Notes\Data\NoteSectionData;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

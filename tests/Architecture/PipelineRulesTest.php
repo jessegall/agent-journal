@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Bus\Pipe;
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\PipelineAdapter;
+use App\Pipelines\Support\PipelineRunner;
 use App\Support\DeclaredType;
-use App\Support\PipelineAdapter;
-use App\Support\PipelineRunner;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use App\Support\StateLoading\StateBuilder;

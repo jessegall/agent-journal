@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Reads\ReadMeter;
-use App\Contracts\Sharing\SharePolicy;
+use App\Actors\Contracts\Actor;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\ActorReference;
-use App\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Enums\GatewayOperationType;
 use Domain\Sharing\Enums\ShareAuditType;

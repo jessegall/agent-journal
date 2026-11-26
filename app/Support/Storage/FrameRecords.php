@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Storage;
 
 use App\Exceptions\InvalidBottomState;
-use App\Support\Decisions\StateReferenceKeys;
-use App\Support\States\Support\ReadyStateReference;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\Support\ReadyStateReference;
 use App\Support\Ticks\TickingTypes;
 use App\Values\WorkReference;
 use Carbon\CarbonImmutable;

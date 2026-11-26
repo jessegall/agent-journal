@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Links\LinkRecords\LinkRecordsCommand;
-use App\Commands\Links\UnlinkRecords\UnlinkRecordsCommand;
 use App\Events\Links\LinkEvent;
 use App\Events\Links\LinkRemoved;
+use App\Links\Commands\LinkRecords\LinkRecordsCommand;
+use App\Links\Commands\UnlinkRecords\UnlinkRecordsCommand;
 use App\Models\Records\Link;
 use App\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;

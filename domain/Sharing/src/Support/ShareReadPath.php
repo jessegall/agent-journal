@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Exceptions\InvalidRecordIdentity;
-use App\Exceptions\UnknownShareRecordType;
-use App\Exceptions\UnknownShareRelation;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\Exceptions\UnknownShareRelation;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\ShareRecordRegistry;
 use Domain\Sharing\Exceptions\ShareReadRefused;
 
 /**

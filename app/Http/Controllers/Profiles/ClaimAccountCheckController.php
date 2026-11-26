@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Profiles;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Accounts\ClaimAccountCheck\ClaimAccountCheckCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Values\HostContext;
+use App\Accounts\Commands\ClaimAccountCheck\ClaimAccountCheckCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 

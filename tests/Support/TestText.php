@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Hooks\OutageReply;
-use App\Contracts\Actors\AgentTexts;
 use App\Values\AgentText;
 use Illuminate\Container\Container;
 

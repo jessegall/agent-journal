@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Sessions;
 
-use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Commands\Agents\InterruptAgent\InterruptAgentCommand;
-use App\Commands\Agents\WakeAgent\WakeAgentCommand;
-use App\Commands\Drivers\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
-use App\Commands\Sessions\ReleaseAgentHold\ReleaseAgentHoldCommand;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Runs\RuntimeActivity;
+use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
+use App\Agents\Commands\InterruptAgent\InterruptAgentCommand;
+use App\Agents\Commands\WakeAgent\WakeAgentCommand;
+use App\Agents\Drivers\Commands\NotifyRuntimeActivity\NotifyRuntimeActivityCommand;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
-use App\Support\OpenedRuntime;
+use App\Processes\Enums\RuntimeActivity;
+use App\Sessions\Commands\ReleaseAgentHold\ReleaseAgentHoldCommand;
+use App\Sessions\OpenedRuntime;
 use App\Values\DriverReceipt;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;

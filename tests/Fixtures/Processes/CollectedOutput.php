@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Processes;
 
-use App\Contracts\Reads\OutputRecorder;
 use App\Models\Runs\PartRun;
+use App\Reads\Contracts\OutputRecorder;
+use App\Reads\Values\OutputPosition;
 use App\Values\CapturedChunk;
-use App\Values\OutputPosition;
 use App\Values\PartEnd;
 
 /**

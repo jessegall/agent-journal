@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Sessions\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\DismissSessionStartOutcomeRequest;
 use App\Http\Responses\PageActionAnswers;
+use App\Sessions\Commands\DismissSessionStartOutcome\DismissSessionStartOutcomeCommand;
 use Illuminate\Http\RedirectResponse;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Declarations;
 
-use App\Contracts\Navigation\PageOption;
-use App\Exceptions\InvalidPageDeclaration;
+use App\Navigation\Contracts\PageOption;
+use App\Web\Exceptions\InvalidPageDeclaration;
 
 /**
  * A pane menu option that picks one of several named values, starting on one of them.

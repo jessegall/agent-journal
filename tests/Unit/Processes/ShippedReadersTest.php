@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\Outcome;
-use App\Enums\Processes\OutputStream;
-use App\Support\DeclarativeReader;
-use App\Support\Rules\ShippedReaders;
-use App\Values\OutputFrame;
-use App\Values\ProofSample;
-use App\Values\ReaderCheckpoint;
-use App\Values\ShippedReader;
-use App\Values\ToolVersions;
+use App\CommandRules\Enums\Outcome;
+use App\CommandRules\Rules\ShippedReaders;
+use App\CommandRules\Values\ShippedReader;
+use App\CommandRules\Values\ToolVersions;
+use App\Processes\DeclarativeReader;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Values\OutputFrame;
+use App\Processes\Values\ProofSample;
+use App\Processes\Values\ReaderCheckpoint;
 use Tests\TestCase;
 
 /**

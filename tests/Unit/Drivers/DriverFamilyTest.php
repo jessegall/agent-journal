@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
-use App\Contracts\Drivers\DriverCatalogue as DriverCatalogueContract;
+use App\Agents\DriverCatalogue;
+use App\Agents\Drivers\Contracts\DriverCatalogue as DriverCatalogueContract;
 use App\Exceptions\DriverFamilyUnknown;
-use App\Support\DriverCatalogue;
 use App\Values\DriverFamily;
 use App\Values\DriverKey;
 use App\Values\DriverRegistration;

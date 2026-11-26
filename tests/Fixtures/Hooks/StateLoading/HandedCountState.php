@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\StateLoading;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 
 /**
  * A state handed a count it then changes itself, which belongs in a property of its own instead.

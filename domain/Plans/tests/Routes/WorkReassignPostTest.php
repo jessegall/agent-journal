@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
-use App\Support\AssignmentOutcome;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Plans\Commands\ReassignPlanWork\ReassignPlanWorkCommand;

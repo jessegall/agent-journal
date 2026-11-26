@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
+use App\Accounts\Data\CodexEventData;
 use App\Agents\Drivers\Setup\Contracts\ModelAnswerReader;
-use App\Data\Accounts\CodexEventData;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Commands\SaveSharePreview;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Sharing\Policies\SharingPolicy;
 use Domain\Sharing\Support\SavedSharePreview;

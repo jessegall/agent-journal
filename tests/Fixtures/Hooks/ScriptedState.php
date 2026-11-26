@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Stacks\AgentState;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\FileEditRequested;
@@ -14,7 +15,6 @@ use App\Support\Inputs\ShellCommandRequested;
 use App\Support\Inputs\StopRequested;
 use App\Support\Inputs\ToolFinished;
 use App\Support\Inputs\ToolRequested;
-use App\Support\States\AgentState;
 
 /**
  * A test state that gives the same answer to every hook, a decision or a delegate to pass, and counts how often a hook

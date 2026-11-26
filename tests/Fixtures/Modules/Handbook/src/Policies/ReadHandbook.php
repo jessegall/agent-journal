@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Handbook\Policies;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Authorization\VisibilityCheck;
+use App\Access\Contracts\VisibilityCheck;
+use App\Actors\Contracts\Actor;
 use Tests\Fixtures\Modules\Handbook\Support\HandbookEntries;
 
 /**

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
 use App\Events\Sessions\StartGrantRequested;
-use App\Support\ArrangementSetting;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Hosts\ArrangementSetting;
+use App\Sessions\StartFile;
+use App\Sessions\StartFolder;
 use App\Support\MountRules;
-use App\Support\StartFile;
-use App\Support\StartFolder;
 use App\Values\FilePath;
 
 /**

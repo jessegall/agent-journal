@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Inboxes;
 
-use App\Commands\Inboxes\HandOverInbox\HandOverInboxCommand;
-use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
+use App\Inboxes\Commands\HandOverInbox\HandOverInboxCommand;
+use App\Inboxes\Commands\OpenInbox\OpenInboxCommand;
 use App\Models\Inboxes\InboxMember;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

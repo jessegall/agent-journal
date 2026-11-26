@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Layouts;
 
-use App\Commands\Layouts\ChangeLayout\ChangeLayoutCommand;
-use App\Data\Layouts\LayoutShape;
 use App\Models\Access\User;
 use App\Models\Records\Layout;
+use App\Terminals\Commands\ChangeLayout\ChangeLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

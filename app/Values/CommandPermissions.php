@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Sessions\Values\ProcessGrants;
+
 /**
  * What one actor may run: allowed and denied classes, allowed and denied exact
  * patterns, and the declared ceiling that no allow goes past. A denied pattern or class beats every allow; an exact

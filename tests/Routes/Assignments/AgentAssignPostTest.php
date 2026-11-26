@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Assignments;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Enums\Assignments\AssignmentOutcomeType;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
-use App\Support\AssignmentOutcome;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Tasks\TasksDomain;

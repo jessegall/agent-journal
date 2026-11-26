@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Bus\PipelineRunner;
-use App\Declarations\StateMethods;
-use App\Exceptions\InvalidListener;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\CoreListenerFolders;
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\Contracts\PipelineRunner;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\ListenerOwnership;
+use App\Reflection\CatalogueReflectorFactory;
+use App\Stacks\Declarations\StateMethods;
+use App\Stacks\StateListenerDeclarations;
+use App\Stacks\StateTypes;
 use App\Support\DomainRegistry;
-use App\Support\ListenerOwnership;
 use App\Support\Registration\ListenerPolicy;
-use App\Support\Stack\StateTypes;
-use App\Support\StateListenerDeclarations;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;

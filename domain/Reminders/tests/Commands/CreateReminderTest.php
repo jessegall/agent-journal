@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Reminders\Tests\Commands;
 
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Support\ActorReference;
 use Carbon\CarbonImmutable;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;

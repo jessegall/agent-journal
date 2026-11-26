@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Sessions\StartReceipts as StartReceiptsContract;
-use App\Exceptions\SessionRequestMissing;
+use App\Actors\Contracts\CurrentActor;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
-use App\Support\OwnerStartReceipt;
+use App\Sessions\Contracts\StartReceipts as StartReceiptsContract;
+use App\Sessions\Exceptions\SessionRequestMissing;
+use App\Sessions\OwnerStartReceipt;
+use App\Sessions\StartReceipt;
 use App\Support\RecordIdentity;
-use App\Support\StartReceipt;
 
 /**
  * Reads an owner's start again from its start record, found by the work and the actor that asked; another actor's

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Exceptions\ContentMissing;
-use App\Exceptions\ContentTooLarge;
-use App\Exceptions\MarkdownInvalid;
-use App\Exceptions\SectionMissing;
 use App\Exceptions\TextLineTooLong;
 use App\Exceptions\TextMatchInvalid;
+use App\Skills\Exceptions\ContentMissing;
+use App\Skills\Exceptions\ContentTooLarge;
+use App\Skills\Exceptions\MarkdownInvalid;
+use App\Text\Exceptions\SectionMissing;
+use App\Text\Section;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Communication\ReadUnreadMessagesPayload;
-use App\Api\Communication\UnreadMessages;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Messages\MessageView;
+use App\Api\Api\Communication\ReadUnreadMessagesPayload;
+use App\Api\Api\Communication\UnreadMessages;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
+use App\Messages\Data\MessageView;
 
 /**
  * Reads the caller's unread messages and records each read.

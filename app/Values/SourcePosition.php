@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Exceptions\SearchValueInvalid;
+use App\Search\Exceptions\SearchValueInvalid;
 
 /**
  * Where a source stopped: the fields its own provider chose, such as a tier, the last examined id and a high

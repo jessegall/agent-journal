@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Types;
 
-use App\Enums\Asks\CoreAskType;
+use App\Asks\Enums\CoreAskType;
 
 final readonly class QuestionAskType extends BuiltInAskType
 {

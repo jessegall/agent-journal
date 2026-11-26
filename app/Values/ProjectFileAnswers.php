@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Exceptions\ProjectReadRefused;
+use App\Projects\Exceptions\ProjectReadRefused;
 
 /**
  * The answers to one request for several of a project's folders or files, one per path asked for.

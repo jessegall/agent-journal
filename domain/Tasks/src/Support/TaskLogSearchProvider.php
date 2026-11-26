@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Support;
 
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Processes\StatementDeadlines;
-use App\Contracts\Search\SearchProvider;
-use App\Enums\Search\ScoreTier;
+use App\Hosts\Contracts\ServedEnvironment;
+use App\Processes\Contracts\StatementDeadlines;
+use App\Search\Contracts\SearchProvider;
+use App\Search\Enums\ScoreTier;
+use App\Search\Values\AdmittedConstraints;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+use App\Search\Values\SearchResult;
 use App\Support\ReadBuilder;
 use App\Support\RecordIdentity;
 use App\Support\TextSearch;
-use App\Values\AdmittedConstraints;
-use App\Values\RefreshCandidates;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
-use App\Values\SearchResult;
 use App\Values\SourcePosition;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;

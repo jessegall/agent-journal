@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\OpenCommandRequest\OpenCommandRequestCommand;
-use App\Commands\CommandRules\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
-use App\Declarations\RuleDeclaration;
-use App\Enums\CommandRules\RequestHoldReason;
-use App\Enums\CommandRules\RequestStatus;
+use App\CommandRules\Commands\OpenCommandRequest\OpenCommandRequestCommand;
+use App\CommandRules\Commands\ProposeRuleDeclaration\ProposeRuleDeclarationCommand;
+use App\CommandRules\Declarations\RuleDeclaration;
+use App\CommandRules\Enums\RequestHoldReason;
+use App\CommandRules\Enums\RequestStatus;
+use App\CommandRules\Values\RuleExample;
 use App\Models\CommandRules\CommandRequest;
 use App\Models\CommandRules\RuleProposal;
-use App\Values\RuleExample;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;

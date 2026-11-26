@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
+use App\Actors\Contracts\AgentTexts;
 use App\Agents\Drivers\Capabilities\DriverCapabilities;
+use App\Agents\Drivers\Enums\RewriteSupport;
 use App\Agents\Drivers\Hooks\DriverReplies;
-use App\Contracts\Actors\AgentTexts;
-use App\Enums\Drivers\RewriteSupport;
-use App\Enums\Hooks\ContextStartType;
-use App\Enums\Hooks\HookEvent;
+use App\Agents\Inputs\Values\SessionStartDetails;
 use App\Events\Hooks\ContextStarted;
-use App\Support\ContextBudget;
+use App\Hooks\ContextBudget;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Enums\HookEvent;
+use App\Stacks\HookAnswer;
 use App\Support\Inputs\SessionStarted;
-use App\Support\Inputs\Values\SessionStartDetails;
 use App\Support\OperationDeadline;
-use App\Support\Stack\HookAnswer;
 use Domain\Memory\MemoryDomain;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;

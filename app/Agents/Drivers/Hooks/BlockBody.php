@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Enums\Drivers\DriverStopDecision;
+use App\Agents\Drivers\Enums\DriverStopDecision;
 use Spatie\LaravelData\Data;
 
 /**

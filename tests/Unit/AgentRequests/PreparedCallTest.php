@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
+use App\Api\AgentRequestClient;
+use App\Api\SignedCall;
 use App\Exceptions\ApiDeadlinePassed;
 use App\Exceptions\JournalUnreachable;
-use App\Exceptions\SessionTokenRefused;
-use App\Exceptions\StartSettingMissing;
-use App\Support\AgentClientSettings;
-use App\Support\AgentRequestClient;
-use App\Support\SessionTokenSource;
-use App\Support\SignedCall;
-use App\Support\StartEnvironment;
-use App\Support\StartProfilePin;
+use App\Profiles\StartProfilePin;
+use App\Sessions\AgentClientSettings;
+use App\Sessions\Exceptions\SessionTokenRefused;
+use App\Sessions\Exceptions\StartSettingMissing;
+use App\Sessions\SessionTokenSource;
+use App\Sessions\StartEnvironment;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;

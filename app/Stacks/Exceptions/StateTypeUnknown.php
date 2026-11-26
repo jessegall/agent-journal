@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Stacks\Exceptions;
+
+use InvalidArgumentException;
+
+final class StateTypeUnknown extends InvalidArgumentException
+{
+    public static function forKey(string $typeKey): self
+    {
+        return new self("No state type is registered under {$typeKey}.");
+    }
+
+    public static function forTicking(string $typeKey): self
+    {
+        return new self("The state type {$typeKey} does not tick.");
+    }
+}

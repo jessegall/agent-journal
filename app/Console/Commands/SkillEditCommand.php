@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Skills\ReviseSkill\ReviseSkillCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Console\Concerns\NamesStoredSkill;
 use App\Console\Concerns\PrintsSkillRefusals;
 use App\Console\Concerns\ReadsAudienceOptions;
-use App\Contracts\Bus\CommandBus;
 use App\Models\Skills\SkillRevision;
-use App\Support\SkillAuthoringService;
-use App\Values\SkillDraft;
+use App\Skills\Commands\ReviseSkill\ReviseSkillCommand;
+use App\Skills\SkillAuthoringService;
+use App\Skills\Values\SkillDraft;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries\Attributes;
 
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
 use Attribute;
 use Tests\Support\Entries\Contracts\NamesEntry;
 

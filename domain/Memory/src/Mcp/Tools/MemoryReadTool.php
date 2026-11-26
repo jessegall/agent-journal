@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Mcp\Tools;
 
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use App\Values\ReadRequest;
 use Domain\Memory\Support\Mcp\MemoryReadResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

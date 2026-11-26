@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Shell;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Data\Notifications\NotificationPage;
-use App\Data\Notifications\NotificationPageInput;
+use App\Actors\Contracts\CurrentActor;
+use App\Notifications\Data\NotificationPage;
+use App\Notifications\Data\NotificationPageInput;
 use App\Resolvers\Support\NotificationFeed;
 
 /**

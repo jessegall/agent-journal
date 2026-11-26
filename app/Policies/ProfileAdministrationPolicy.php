@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Contracts\Authorization\OwnerPolicy;
+use App\Access\Contracts\OwnerPolicy;
 use App\Models\Profiles\Profile;
 
 /**

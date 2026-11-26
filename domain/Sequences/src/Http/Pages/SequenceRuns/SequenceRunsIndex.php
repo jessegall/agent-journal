@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Http\Pages\SequenceRuns;
 
-use App\Contracts\Actors\ActorLabels;
+use App\Actors\Contracts\ActorLabels;
 use App\Support\ActorReference;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutBackData;

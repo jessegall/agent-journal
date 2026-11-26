@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Providers;
 
-use App\Contracts\Authorization\SystemEntryPolicies;
-use App\Contracts\Processes\SupervisorDispatch;
+use App\Access\Contracts\SystemEntryPolicies;
+use App\Processes\Contracts\SupervisorDispatch;
 use App\Support\FolderClasses;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Support\HelperLifecycleEntry;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\OpenTerminalView\OpenTerminalViewCommand;
 use App\Models\Drivers\TerminalView;
+use App\Terminals\Commands\OpenTerminalView\OpenTerminalViewCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

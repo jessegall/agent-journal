@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Support\StartDriver;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Agents\StartDriver;
 use Tests\TestCase;
 
 /**

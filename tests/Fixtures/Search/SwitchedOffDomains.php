@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Search;
 
-use App\Contracts\Domains\DomainAvailability;
+use App\Bootstrap\Contracts\Domains\DomainAvailability;
 
 /**
  * Domain availability where every owner runs except the ones switched off.

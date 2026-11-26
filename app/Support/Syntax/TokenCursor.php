@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\CommandRules\TokenType;
+use App\CommandRules\Enums\TokenType;
 use App\Exceptions\ShellGrammarStopped;
+use App\Processes\Grammar\Syntax\Token;
 use App\Values\AgentText;
 use App\Values\Word;
 

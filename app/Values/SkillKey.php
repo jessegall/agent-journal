@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Exceptions\SkillKeyInvalid;
-use App\Support\StableKey;
+use App\Text\StableKey;
 
 /**
  * The stable name of a skill, such as journal-plans. journal- keys belong to first-party shipped skills and user- keys

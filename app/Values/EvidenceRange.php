@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\EvidenceSource;
+use App\CommandRules\Enums\EvidenceSource;
 
 /**
  * What one output read showed of one part: its envelope, or the bytes from the first byte up to the end byte of one

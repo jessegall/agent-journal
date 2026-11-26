@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandInputInvalid;
-use App\Exceptions\CrossProjectWrite;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CrossProjectWrite;
 use App\Models\Access\User;
 use App\Models\Projects\Environment;
+use App\Projects\ConnectedProject;
+use App\Projects\ServedEnvironment;
 use App\Support\ActorReference;
-use App\Support\ConnectedProject;
-use App\Support\ServedEnvironment;
-use App\Values\OwnerAuthority;
 use Domain\Tasks\Commands\CreateTask\CreateTaskCommand;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Models\Task;

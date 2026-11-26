@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Pages\DeclarationData;
 use App\Data\Pages\RequestWindowData;
-use App\Data\Processes\ReaderProofData;
-use App\Data\Processes\RequestRowData;
-use App\Data\Processes\SampleData;
-use App\Data\Profiles\ProposalData;
 use App\Http\Requests\Processes\RequestPageRequest;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\CommandRequest;
@@ -20,12 +14,18 @@ use App\Models\CommandRules\RuleProposalRevision;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ReaderProof;
 use App\Models\Runs\ReaderRevision;
+use App\Navigation\Contracts\PageResolver;
+use App\Processes\Data\ReaderProofData;
+use App\Processes\Data\RequestRowData;
+use App\Processes\Data\SampleData;
+use App\Processes\Values\ProvenBranch;
+use App\Profiles\Data\Pages\DeclarationData;
+use App\Profiles\Data\ProposalData;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
-use App\Values\ProvenBranch;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

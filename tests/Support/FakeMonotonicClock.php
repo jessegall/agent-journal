@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Time\MonotonicClock;
+use App\Time\Contracts\MonotonicClock;
 
 /**
  * A monotonic clock that moves only when a test moves it.

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Agents\Drivers\Contracts\DriverKeyScripts;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Contracts\Drivers\DriverKeyScripts;
-use App\Support\KeyScripts\KeyScript;
-use App\Support\KeyScripts\KeyStep;
-use App\Support\KeyScripts\ScreenExpectation;
+use App\Terminals\KeyScripts\KeyScript;
+use App\Terminals\KeyScripts\KeyStep;
+use App\Terminals\KeyScripts\ScreenExpectation;
 
 /**
  * The key scripts recorded for Claude Code: each changes a setting for this session only and ends on Claude

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Resolvers;
 
-use App\Contracts\Assignments\AssigneeResolver;
-use App\Enums\CommandRules\ReadView;
+use App\Assignments\Contracts\AssigneeResolver;
+use App\CommandRules\Enums\ReadView;
 use Domain\Tasks\Contracts\TaskDetailsResolver as TaskDetailsResolverContract;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Data\TaskDetails;

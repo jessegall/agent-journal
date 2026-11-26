@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Tools;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Projects\ProjectDestination;
+use App\Bus\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
+use App\Projects\Contracts\ProjectDestination;
 use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\Support\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

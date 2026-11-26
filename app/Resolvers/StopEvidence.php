@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Processes\StopEvidence as StopEvidenceContract;
 use App\Exceptions\StopCheckMissing;
 use App\Models\Sessions\StopCheck;
+use App\Processes\Contracts\StopEvidence as StopEvidenceContract;
 use App\Values\StopCheckReference;
 use App\Values\StopCheckResult;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes\Run;
 
-use App\Api\Processes\ProcessApi;
-use App\Contracts\Bus\Pipe;
-use App\Enums\Processes\ShellDialect;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Api\ProcessApi;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Run\PendingAdmission;
 use App\Support\Run\RunStart;
 

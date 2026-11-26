@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\RecoverProjectBinding\RecoverProjectBindingCommand;
-use App\Support\EnrolledHost;
-use App\Values\Redemption;
+use App\Hosts\EnrolledHost;
+use App\Projects\Commands\RecoverProjectBinding\RecoverProjectBindingCommand;
+use App\Projects\Values\Redemption;
 use Illuminate\Support\Str;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\Support\Entries\Attributes\TestsRoute;

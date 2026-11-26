@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use App\Agents\Values\UsageSource;
 use App\Events\Accounts\AccountUsageChanged;
 use App\Models\Accounts\Account;
-use App\Values\UsageSource;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

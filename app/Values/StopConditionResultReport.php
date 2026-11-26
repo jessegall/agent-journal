@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Sessions\StopConditionResultType;
+use App\Sessions\Enums\StopConditionResultType;
 
 /**
  * What the host reports for one stop condition it ran: the condition and the definition it ran, how it ended, its

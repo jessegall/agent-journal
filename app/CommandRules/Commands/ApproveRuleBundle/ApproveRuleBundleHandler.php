@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\CommandRules\Commands\ApproveRuleBundle;
+
+use App\Bus\Contracts\CommandFacts;
+use App\Bus\Contracts\CommandHandler;
+use App\CommandRules\CommandRuleRegistry;
+use App\CommandRules\Exceptions\ApprovalRefused;
+use App\Events\Processes\BundleActivated;
+use App\Models\CommandRules\ModuleRuleBundle;
+use App\Projects\SelectedProject;
+use App\Values\RuleBundle;
+
+/**
+ * Records the owner's activation of a module bundle that is installed now with the digest they reviewed; a bundle that
+ * changed since, or is no longer installed, is refused.
+ */
+final readonly class ApproveRuleBundleHandler implements CommandHandler
+{
+    public function __construct(
+        private CommandRuleRegistry $rules,
+        private SelectedProject $projects,
+        private CommandFacts $facts,
+    ) {}
+
+    /**
+     * @throws ApprovalRefused
+     */
+    public function handle(ApproveRuleBundleCommand $command): string
+    {
+        $installed = array_values(array_filter(
+            $this->rules->bundles(),
+            fn (RuleBundle $bundle): bool => $bundle->module === $command->module
+                && $bundle->version === $command->version
+                && $bundle->digest() === $command->digest,
+        ));
+
+        if ($installed === []) {
+            throw ApprovalRefused::bundleChanged($command->module);
+        }
+
+        $owner = $command->dispatchedBy();
+        $approval = ModuleRuleBundle::create($this->projects->find(), $installed[0], $owner);
+        $this->facts->publishAfterCommit(BundleActivated::forApproval($approval));
+
+        return $approval->getKey();
+    }
+}

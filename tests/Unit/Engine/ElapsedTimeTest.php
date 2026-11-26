@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Engine;
 
-use App\Exceptions\MonotonicClockWentBack;
-use App\Support\Ticks\ElapsedTime;
+use App\Engine\Exceptions\MonotonicClockWentBack;
+use App\Engine\Ticks\ElapsedTime;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\FakeMonotonicClock;
 

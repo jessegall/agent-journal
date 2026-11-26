@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Pamphlets;
 
+use App\Sharing\Contracts\ShareBudget;
+use App\Sharing\Contracts\ShareRecordProvider;
 use App\Support\RecordIdentity;
-use App\Contracts\Sharing\ShareBudget;
-use App\Contracts\Sharing\ShareRecordProvider;
 use App\Support\ShareContentRead;
 use App\Support\SharedContent;
 use App\Support\ShareRecordCard;

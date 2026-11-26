@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
+use App\Hosts\DriverInstallList;
 use App\Support\Compatibility\DriverCompatibility;
-use App\Support\DriverInstallList;
 use Tests\TestCase;
 
 /**

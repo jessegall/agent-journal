@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Agents\Enums\ConversationModeType;
+use App\Assignments\Contracts\Assignable;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
-use App\Contracts\Assignments\Assignable;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Projects\ProjectOwned;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Agents\ConversationModeType;
 use App\Models\Support\Accessor;
 use App\Models\Support\BelongsToOneActor;
 use App\Models\Support\BelongsToProject;
 use App\Models\Support\JournalModel;
+use App\Projects\Contracts\ProjectOwned;
+use App\Records\Contracts\ReadableModel;
+use App\Sessions\OwnerStartReceipt;
 use App\Support\ActorReference;
-use App\Support\OwnerStartReceipt;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobStatus;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
-use App\Data\Hosts\HostOutputData;
 use App\Exceptions\HostProtocolRefused;
-use App\Support\Hosts\ProcessFeed;
+use App\Hosts\Commands\NotifyHostOutput\NotifyHostOutputCommand;
+use App\Hosts\Data\HostOutputData;
+use App\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

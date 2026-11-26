@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Http\Controllers\Api;
 
-use App\Contracts\Records\RecordResolver;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 use App\Support\TextSelection;
 use Domain\Comments\Api\CommentLocated;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Mcp\Tools\MessageSendTool;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

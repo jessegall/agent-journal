@@ -95,7 +95,7 @@ final class EventPayloads
             AgentHoldReleased::class => [
                 'fields' => [
                     'runtimeId' => 'string',
-                    'hold' => 'App\Enums\Drivers\HoldReason',
+                    'hold' => 'App\Agents\Drivers\Enums\HoldReason',
                     'actor' => 'App\Support\ActorReference',
                     'reason' => 'string',
                 ],
@@ -114,7 +114,7 @@ final class EventPayloads
             DriverRequestRecovered::class => [
                 'fields' => [
                     'requestId' => 'string',
-                    'action' => 'App\Enums\Drivers\RecoveryAction',
+                    'action' => 'App\Agents\Drivers\Enums\RecoveryAction',
                     'actor' => 'App\Support\ActorReference',
                     'reason' => 'string',
                 ],
@@ -129,7 +129,7 @@ final class EventPayloads
                     'agentId' => 'string',
                     'sessionId' => 'string',
                     'driver' => 'string',
-                    'failure' => 'App\Enums\Drivers\DriverFailure',
+                    'failure' => 'App\Agents\Drivers\Enums\DriverFailure',
                     'account' => '?App\Support\RecordIdentity',
                     'accountGeneration' => '?int',
                 ],
@@ -158,14 +158,14 @@ final class EventPayloads
                 'fields' => [
                     'agentId' => 'string',
                     'driver' => 'string',
-                    'reason' => 'App\Enums\Sessions\StartUnavailableReason',
+                    'reason' => 'App\Sessions\Enums\StartUnavailableReason',
                 ],
             ],
             AssignmentsChanged::class => [
                 'fields' => [
                     'operationId' => 'string',
                     'actor' => 'App\Support\ActorReference',
-                    'reason' => 'App\Enums\Assignments\AssignmentReason',
+                    'reason' => 'App\Assignments\Enums\AssignmentReason',
                     'changes' => 'array',
                     'occurredAt' => 'DateTimeImmutable',
                 ],
@@ -195,7 +195,7 @@ final class EventPayloads
             EngineTicked::class => [
                 'fields' => [
                     'now' => 'Carbon\CarbonImmutable',
-                    'sincePrevious' => 'App\Support\Ticks\ElapsedTime',
+                    'sincePrevious' => 'App\Engine\Ticks\ElapsedTime',
                 ],
             ],
             HelperCompletionCertified::class => [
@@ -274,7 +274,7 @@ final class EventPayloads
             SettingsChanged::class => [
                 'fields' => [
                     'owner' => 'string',
-                    'target' => 'App\Enums\Settings\SettingTarget',
+                    'target' => 'App\Settings\Enums\SettingTarget',
                     'key' => 'string',
                     'revision' => 'int',
                 ],

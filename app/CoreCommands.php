@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
+use App\Agents\Commands\OpenAgentRuntime\OpenAgentRuntimeCommand;
+use App\Agents\Commands\StartAgent\StartAgentCommand;
+use App\Bus\CommandOwner;
+use App\Bus\CommandScope;
+use App\Bus\Contracts\Command;
+use App\Bus\MiddlewareDeclaration;
 use App\CommandMiddleware\AnnounceUnavailableStart;
 use App\CommandMiddleware\CommitHeldStartRefusals;
 use App\CommandMiddleware\GuardTickOrigin;
 use App\CommandMiddleware\KeepStartReceipt;
-use App\Commands\Agents\ContinueStart\ContinueStartCommand;
-use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
-use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Contracts\Bus\Command;
-use App\Support\CommandOwner;
-use App\Support\CommandScope;
 use App\Support\Exports;
 use App\Support\FolderClasses;
-use App\Support\MiddlewareDeclaration;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains'.
@@ -28,7 +28,11 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return FolderClasses::in(__DIR__.'/Commands/*/*', Command::class);
+        // Each subject keeps its commands in its own Commands folder, one or two levels down (app/Agents/Drivers).
+        return [
+            ...FolderClasses::in(__DIR__.'/*/Commands/*', Command::class),
+            ...FolderClasses::in(__DIR__.'/*/*/Commands/*', Command::class),
+        ];
     }
 
     /**

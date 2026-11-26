@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\StandIn\Hosts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\BeginSignInAgain\BeginSignInAgainCommand;
-use App\Commands\Accounts\ReconcileAccounts\ReconcileAccountsCommand;
-use App\Commands\Accounts\SubmitSignInCode\SubmitSignInCodeCommand;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostProcessPurpose;
-use App\Enums\Hosts\HostProcessStatus;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Commands\BeginSignInAgain\BeginSignInAgainCommand;
+use App\Accounts\Commands\ReconcileAccounts\ReconcileAccountsCommand;
+use App\Accounts\Commands\SubmitSignInCode\SubmitSignInCodeCommand;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Enums\SignInStatus;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Hosts\Enums\HostProcessPurpose;
+use App\Hosts\Enums\HostProcessStatus;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use Tests\Support\CommitsHookRows;

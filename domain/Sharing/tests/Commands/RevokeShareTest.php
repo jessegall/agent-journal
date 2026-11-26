@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
-use App\Values\OwnerAuthority;
 use Domain\Sharing\Commands\DisableShareGateway\DisableShareGatewayCommand;
 use Domain\Sharing\Commands\RevokeShare\RevokeShareCommand;
 use Domain\Sharing\Enums\GatewayOperationType;

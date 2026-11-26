@@ -4,7 +4,7 @@ A gateway makes the share listener reachable on one fixed public origin.
 
 ## The contract
 
-A gateway implements `App\Contracts\Sharing\ShareGateway`:
+A gateway implements `App\Sharing\Contracts\ShareGateway`:
 
 - `readiness(GatewayConfiguration): GatewayReadiness`: each missing piece as a plain sentence for the owner; no
   problems means ready.
@@ -28,7 +28,7 @@ supervisor's run, the endpoint version and the lease under which it acts.
 ## Registration
 
 Core registers its own gateways, `tunler` and `ngrok`, in `Domain\Sharing\Providers\SharingServiceProvider`. A domain
-brings its own by implementing `App\Contracts\Sharing\ShareGatewayProvider`, returning each key with its class. A key
+brings its own by implementing `App\Sharing\Contracts\ShareGatewayProvider`, returning each key with its class. A key
 registered twice stops the boot.
 
 ## Running a gateway

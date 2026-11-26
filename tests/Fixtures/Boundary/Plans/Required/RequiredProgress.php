@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Plans\Required;
 
-use App\Exceptions\RaisedOutsideUnit;
-use App\Exceptions\RowWriteRefused;
-use App\Contracts\Bus\CommandFacts;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Attributes\Listeners\TransactionListenerConsent;
+use App\Bus\Contracts\CommandFacts;
+use App\Bus\Exceptions\RaisedOutsideUnit;
+use App\Exceptions\RowWriteRefused;
 
 /**
  * A domain listener the command's transaction requires, using the seams and exceptions Core exports for it.

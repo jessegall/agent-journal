@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Commands\Projects\ProvisionLocalProject\ProvisionLocalProjectCommand as ProvisionLocalProject;
-use App\Contracts\Bus\JournalCommands;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\Access\AccessSettings;
+use App\Access\AccessSettings;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
+use App\Projects\Commands\ProvisionLocalProject\ProvisionLocalProjectCommand as ProvisionLocalProject;
 use Illuminate\Config\Repository;
 use Illuminate\Console\Command;
 

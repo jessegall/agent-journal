@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Architecture\Pipes;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
 
 /**
  * A pipe that only hands its work to a service, as the pipes architecture test refuses.

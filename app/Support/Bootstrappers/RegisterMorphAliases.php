@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Bootstrappers;
 
 use App\Contracts\Domains\DomainBootstrapper;
+use App\Links\MorphAliases;
 use App\Support\DomainEntry;
-use App\Support\MorphAliases;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**

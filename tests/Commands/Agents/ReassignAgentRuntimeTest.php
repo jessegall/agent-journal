@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ReassignAgentRuntime\ReassignAgentRuntimeCommand;
-use App\Enums\Drivers\HoldReason;
+use App\Agents\Commands\ReassignAgentRuntime\ReassignAgentRuntimeCommand;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Agents\AgentRuntime;
 use Tests\Support\Agents\OpensLedgerRuntimes;

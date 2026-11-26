@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Support\Access\AccessSettings;
+use App\Access\AccessSettings;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
+use App\Messages\ShownMessage;
+use App\Projects\CurrentProject;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\CommandRegistry;
-use App\Support\Projects\CurrentProject;
-use App\Support\ShownMessage;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
 use App\Values\StackTarget;
 use Tests\Support\CommitsHookRows;

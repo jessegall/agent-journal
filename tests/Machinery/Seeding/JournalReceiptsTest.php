@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Data\Layouts\LayoutShape;
-use App\Enums\CommandRules\ReceiptStatus;
+use App\CommandRules\Enums\ReceiptStatus;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Tests\Commands\Layouts\SaveLayoutTest;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

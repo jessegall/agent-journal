@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
-use App\Commands\Skills\CreateSkill\CreateSkillCommand;
-use App\Enums\Skills\PublicationStatus;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\Skill;
 use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillRevision;
-use App\Support\SkillPublishingService;
-use App\Values\SkillDraft;
+use App\Skills\Commands\CreateSkill\CreateSkillCommand;
+use App\Skills\Enums\PublicationStatus;
+use App\Skills\SkillPublishingService;
+use App\Skills\Values\SkillDraft;
 use App\Values\SkillKey;
 use PHPUnit\Framework\Assert;
 

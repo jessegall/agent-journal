@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Values;
 
-use App\Support\OwnerStartReceipt;
+use App\Sessions\OwnerStartReceipt;
 use Domain\Helpers\Enums\JobStatus;
 
 /**

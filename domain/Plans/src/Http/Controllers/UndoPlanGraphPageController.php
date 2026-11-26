@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
+use App\Bus\Attributes\Dispatches;
 use Domain\Plans\Http\Requests\PlanGraphRequest;
 use Domain\Plans\Support\PlanGraphService;
 use Domain\Tasks\Commands\ApplyTaskWaits\ApplyTaskWaitsCommand;

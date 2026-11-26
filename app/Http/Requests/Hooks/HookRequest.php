@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Hooks;
 
 use App\Agents\Drivers\Hooks\HookPayload;
-use App\Support\TextOrArrayRule;
+use App\Hooks\TextOrArrayRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 

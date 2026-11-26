@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\RequestKey;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\RequestKey;
+use App\CommandRules\Mcp\Contracts\McpCall;
+use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;

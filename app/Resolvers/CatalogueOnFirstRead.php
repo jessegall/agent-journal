@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Resolvers;
 
-use App\Contracts\Skills\SkillResolver;
-use App\Values\SkillEntry;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Resolvers\SkillCatalogue;
+use App\Skills\Values\SkillEntry;
 use App\Values\SkillKey;
 use Closure;
 

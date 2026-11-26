@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Agents\OpenHeadlessStart\OpenHeadlessStartCommand;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Commands\OpenHeadlessStart\OpenHeadlessStartCommand;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\CommandEntry;
 use App\Events\Sessions\SessionProcessRegistered;
 
 /**

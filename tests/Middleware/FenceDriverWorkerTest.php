@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Middleware;
 
 use App\Agents\Drivers\Work\WorkerLease;
-use App\CommandMiddleware\FenceDriverWorker;
-use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
-use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
-use App\Data\Hosts\HostProcessReportData;
-use App\Enums\Hosts\HostProcessStatus;
+use App\Bus\CommandMiddleware\FenceDriverWorker;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
+use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\Enums\HostProcessStatus;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

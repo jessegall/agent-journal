@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Skills\PublicationStatus;
 use App\Events\Skills\SessionSkillsIntended;
 use App\Events\Skills\SkillContextEpochAdvanced;
 use App\Events\Skills\SkillGenerationRetired;
@@ -10,6 +9,7 @@ use App\Events\Skills\SkillPublicationClaimed;
 use App\Events\Skills\SkillPublicationMoved;
 use App\Events\Skills\SkillPublicationProgressed;
 use App\Events\Skills\SkillsChanged;
+use App\Skills\Enums\PublicationStatus;
 use Tests\Architecture\Support\EventRole;
 
 /**

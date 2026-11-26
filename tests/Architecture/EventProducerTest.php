@@ -34,7 +34,7 @@ final class EventProducerTest extends TestCase
      * The file that releases migrated facts after the commit, the one place allowed to send them; a fact with no row
      * to raise on goes in through EventUnitLifecycle::publishAfterCommit, which counts as its producer's send.
      */
-    private const string BUS_PUBLISHER = 'app/Support/Publication.php';
+    private const string BUS_PUBLISHER = 'app/Bus/Publication.php';
 
     private const string FIXTURES = 'tests/Fixtures/EventProducers';
 

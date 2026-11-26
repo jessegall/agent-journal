@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Assignments\AssignmentWriter;
+use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\WriteAssignments;
 use App\Support\AssigneeIdentity;
 use App\Support\AssignmentReference;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
-use App\Support\WriteAssignments;
 use Closure;
 
 /**

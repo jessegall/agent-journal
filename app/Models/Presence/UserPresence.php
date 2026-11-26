@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Presence;
 
+use App\Actors\PresenceWindow;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
 use App\Events\Messages\UserPresenceConfirmed;
 use App\Models\Support\JournalModel;
-use App\Support\PresenceWindow;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Attributes\Scope;

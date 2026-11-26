@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands\ResumeTaskRun;
 
-use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Processes\RunClaims;
-use App\Contracts\Work\AgentStacks;
-use App\Contracts\Work\CurrentState;
-use App\Exceptions\RunClaimRefused;
-use App\Support\References\SubjectReference;
+use App\Bus\Contracts\CommandFacts;
+use App\Processes\Contracts\RunClaims;
+use App\Processes\Exceptions\RunClaimRefused;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Contracts\Work\CurrentState;
+use App\Stacks\References\SubjectReference;
 use Domain\Tasks\Commands\Support\TaskCommandHandler;
 use Domain\Tasks\Enums\TaskStatus;
 use Domain\Tasks\Events\TaskRunClaimed;

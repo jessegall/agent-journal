@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\ParseOutcome;
-use App\Enums\Processes\ShellDialect;
+use App\Access\Values\ShellNode;
+use App\CommandRules\Enums\ParseOutcome;
 use App\Exceptions\ShellNodeMissing;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Grammar\Values\SourceRange;
+use App\Processes\Grammar\Values\TreeDiagnostic;
 
 /**
  * A shell line read as a tree: the unchanged source, its dialect and outcome, every node by id from the root, and

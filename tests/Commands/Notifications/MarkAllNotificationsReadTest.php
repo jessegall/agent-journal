@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Notifications;
 
-use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
+use App\Notifications\Commands\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Contracts\Scripts\ScriptKeywordDefinition as ScriptKeywordDefinitionContract;
-use App\Contracts\Scripts\ScriptStatement;
-use App\Contracts\Scripts\ScriptTrigger;
-use App\Enums\CommandRules\SyntaxForm;
-use App\Enums\Profiles\KeywordCategory;
-use App\Enums\Profiles\ScriptEffect;
+use App\CommandRules\Enums\SyntaxForm;
+use App\Profiles\Enums\KeywordCategory;
+use App\Profiles\Enums\ScriptEffect;
+use App\Scripts\Contracts\ScriptKeywordDefinition as ScriptKeywordDefinitionContract;
+use App\Scripts\Contracts\ScriptStatement;
+use App\Scripts\Contracts\ScriptTrigger;
 
 final readonly class ScriptKeywordDefinition implements ScriptKeywordDefinitionContract
 {

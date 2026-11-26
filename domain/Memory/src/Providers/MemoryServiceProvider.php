@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Values\ReadEntitlement;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Values\ReadEntitlement;
 use Domain\Memory\Console\Commands\MemoryEditCommand;
 use Domain\Memory\Console\Commands\MemoryListCommand;
 use Domain\Memory\Console\Commands\MemoryRemoveCommand;

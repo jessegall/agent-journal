@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp\Tools;
 
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use App\Values\ReadRequest;
 use Domain\Documents\Support\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

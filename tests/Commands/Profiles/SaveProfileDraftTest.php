@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Profiles;
 
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Profiles\CommandDirectory;
-use App\Exceptions\CommandAdmissionRefused;
-use App\Exceptions\InvalidScript;
-use App\Exceptions\ProfileDraftRefused;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Models\Profiles\ProfileDraft;
 use App\Models\Profiles\ProfileDraftRevision;
 use App\Models\Profiles\ProfileRevision;
-use App\Support\ProfileProposal;
-use App\Values\DraftExpectations;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Profiles\Enums\CommandDirectory;
+use App\Profiles\Exceptions\ProfileDraftRefused;
+use App\Profiles\ProfileProposal;
+use App\Profiles\Values\DraftExpectations;
+use App\Scripts\Exceptions\InvalidScript;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Tests\Support\CommitsHookRows;

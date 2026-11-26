@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
-use App\Enums\Processes\OutputStream;
-use App\Support\Execution\BuiltinEnded;
+use App\Bus\Contracts\Pipe;
+use App\CommandRules\Execution\BuiltinEnded;
+use App\Processes\Enums\OutputStream;
 use App\Support\Execution\StepOutcome;
 use App\Values\PartEnd;
 

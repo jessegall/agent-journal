@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hooks\Pipes\Answer;
+
+use App\Agents\Drivers\Hooks\DriverReply;
+use App\Agents\Drivers\Storage\RecordedSteps;
+use App\Bus\Contracts\Pipe;
+use App\Hooks\CallStages\RenderedCall;
+use App\Models\Drivers\HookCall;
+use App\Models\Records\Link;
+use App\Stacks\StateTypes;
+
+/**
+ * Saves the stack as the answer left it, records the call with its reply and steps so a retry gets the same bytes,
+ * links the two and hands the reply out.
+ */
+final readonly class SaveCall implements Pipe
+{
+    public function __construct(private StateTypes $types) {}
+
+    public function handle(RenderedCall $rendered): DriverReply
+    {
+        $answer = $rendered->answer;
+        $rendered->row->saveFrames($answer->stack->records(), $this->types->ticking());
+        $call = new HookCall();
+
+        $call->recordFor(
+            $rendered->call->identity,
+            $rendered->reply->recordedAs($answer->decision->answerType()),
+            RecordedSteps::of($answer->steps),
+        );
+
+        Link::createForModels($rendered->row, $call);
+
+        return $rendered->reply;
+    }
+}

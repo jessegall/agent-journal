@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\HoldAgentStack\HoldAgentStackCommand;
-use App\Enums\Engine\NoSubject;
-use App\Enums\Hooks\AnswerType;
+use App\Agents\Commands\HoldAgentStack\HoldAgentStackCommand;
+use App\Agents\Drivers\Storage\RecordedSteps;
+use App\Engine\Enums\NoSubject;
+use App\Hooks\Enums\AnswerType;
+use App\Hooks\PruneHookHistory;
 use App\Models\Agents\AgentStackRow;
 use App\Models\Drivers\HookCall;
+use App\Stacks\References\StateReference;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\PruneHookHistory;
-use App\Support\References\StateReference;
 use App\Support\Storage\FrameRecord;
 use App\Support\Storage\FrameRecords;
 use App\Support\Storage\RecordedAnswer;
-use App\Support\Storage\RecordedSteps;
 use App\Support\Ticks\TickingTypes;
 use App\Values\StackTarget;
 use Carbon\CarbonImmutable;

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote\EngineCopyNoteCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote\WriteNoteCommand;
 
 final class EngineCopyNoteHandler implements CommandHandler

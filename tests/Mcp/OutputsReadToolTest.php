@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Api\Processes\OutputTail;
-use App\Commands\Runs\ReadOutputTail\ReadOutputTailCommand;
-use App\Enums\Processes\OutputStream;
-use App\Mcp\Tools\OutputsReadTool;
-use App\Values\PartKey;
+use App\Access\Mcp\Tools\OutputsReadTool;
+use App\Processes\Api\OutputTail;
+use App\Processes\Commands\ReadOutputTail\ReadOutputTailCommand;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Values\PartKey;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;

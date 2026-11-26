@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Settings\SetBooleanSetting\SetBooleanSettingCommand;
-use App\Commands\Settings\SetIntegerSetting\SetIntegerSettingCommand;
-use App\Commands\Settings\SetStringChoice\SetStringChoiceCommand;
-use App\Commands\Settings\SetStringSetting\SetStringSettingCommand;
-use App\Contracts\Bus\Command;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Settings\SettingsCatalogue;
-use App\Data\Settings\SettingData;
-use App\Data\Settings\SettingGroupData;
-use App\Data\Settings\StringChoiceValueData;
-use App\Enums\Settings\SettingType;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SaveSettingsRequest;
 use App\Http\Responses\PageActionAnswers;
-use App\Support\SettingsValues;
-use App\Values\SettingReference;
-use App\Values\SettingsChange;
+use App\Settings\Commands\SetBooleanSetting\SetBooleanSettingCommand;
+use App\Settings\Commands\SetIntegerSetting\SetIntegerSettingCommand;
+use App\Settings\Commands\SetStringChoice\SetStringChoiceCommand;
+use App\Settings\Commands\SetStringSetting\SetStringSettingCommand;
+use App\Settings\Contracts\SettingsCatalogue;
+use App\Settings\Data\SettingData;
+use App\Settings\Data\SettingGroupData;
+use App\Settings\Data\StringChoiceValueData;
+use App\Settings\Enums\SettingType;
+use App\Settings\SettingsValues;
+use App\Settings\Values\SettingReference;
+use App\Settings\Values\SettingsChange;
 use Illuminate\Http\RedirectResponse;
 
 /**

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Data\Agents\DriverRequestStatus;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Sessions\SessionStatus;
-use App\Enums\Sessions\StartDisposition;
-use App\Enums\Sessions\StartReadiness;
+use App\Agents\Data\DriverRequestStatus;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Sessions\Enums\SessionStatus;
+use App\Sessions\Enums\StartDisposition;
+use App\Sessions\Enums\StartReadiness;
+use App\Sessions\SessionStartOutcome;
 
 /**
  * Every fact the server holds of one agent that its status is decided from: retirement, the live session, its

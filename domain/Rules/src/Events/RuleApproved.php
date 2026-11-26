@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * The owner approved a proposed rule; it holds from now on. Raised once the change has committed.

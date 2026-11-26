@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Enums\Hooks\ToolOutcome;
 use App\Events\Hooks\ToolCallFinished;
+use App\Hooks\Enums\ToolOutcome;
 use App\Listeners\RecordProvenSkillReads;
 use App\Models\Agents\AgentSession;
 use App\Support\Inputs\Values\DriverToolInput;

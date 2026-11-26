@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Profiles\PolicyOriginType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Profiles\Enums\PolicyOriginType;
+use App\Profiles\Values\FieldOrigin;
+use App\Profiles\Values\ProfileProvenance;
+use App\Sessions\Values\ExecutionPolicy;
+use App\Sessions\Values\StartPolicy;
+use App\Sessions\Values\StopConditions;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;

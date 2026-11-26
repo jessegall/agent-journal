@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostOrderEvent;
+use App\Hosts\Contracts\HostOrderEvent;
 
 /**
  * The journal made an order for the host, which wakes the host's claim once it commits.

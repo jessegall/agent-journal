@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands\RequestPlanReview;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Enums\Agents\AccessType;
 use App\Support\ActorReference;
 use App\Support\Command;
 use Domain\Plans\Policies\PlanPolicy;

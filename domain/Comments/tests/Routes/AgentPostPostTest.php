@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Routes;
 
-use App\Contracts\Records\RecordResolver;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordReference;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
 use Domain\Comments\CommentsDomain;

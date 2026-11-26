@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Navigation\DraftProducer;
-use App\Contracts\Navigation\DraftProducers as DraftProducersContract;
 use App\Exceptions\DraftProducerMissing;
 use App\Exceptions\DraftProducerRepeated;
+use App\Navigation\Contracts\DraftProducer;
+use App\Navigation\Contracts\DraftProducers as DraftProducersContract;
 use Illuminate\Container\Container;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Unit;
 
-use App\Contracts\Reads\ReadMeter;
 use App\Exceptions\RecordUnavailable;
-use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\ShareRecordRegistry;
 use App\Support\RecordIdentity;
-use App\Support\ShareRecordRegistry;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Support\ShareBudget;

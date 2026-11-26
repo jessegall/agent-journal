@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Hooks;
 
-use App\Contracts\Drivers\DriverCall;
-use App\Support\Inputs\FailureDetails;
+use App\Agents\Drivers\Contracts\DriverCall;
+use App\Agents\Inputs\FailureDetails;
+use App\Agents\RecordDriverFailure;
 use App\Support\Inputs\Values\HookIdentity;
-use App\Support\RecordDriverFailure;
 use Closure;
 
 /**

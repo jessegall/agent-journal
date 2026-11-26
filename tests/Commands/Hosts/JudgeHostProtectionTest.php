@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Hosts\JudgeHostProtection\JudgeHostProtectionCommand;
-use App\Enums\Drivers\IsolationPlatform;
+use App\Agents\Drivers\Enums\IsolationPlatform;
+use App\Hosts\Commands\JudgeHostProtection\JudgeHostProtectionCommand;
 use App\Models\Projects\Host;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

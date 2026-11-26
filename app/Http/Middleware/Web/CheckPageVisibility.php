@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Support\Web\DeclaredRouteKey;
-use App\Support\Web\PageVisibility;
+use App\Web\DeclaredRouteKey;
+use App\Web\PageVisibility;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

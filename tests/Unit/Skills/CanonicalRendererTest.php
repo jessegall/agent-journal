@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Exceptions\SkillDeclarationInvalid;
 use App\Exceptions\SkillSourceInvalid;
-use App\Support\CanonicalRenderer;
-use App\Support\MarkdownParts;
-use App\Values\MarkdownPart;
+use App\Reads\Values\MarkdownPart;
+use App\Skills\CanonicalRenderer;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\MarkdownParts;
 use App\Values\SkillOwner;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;

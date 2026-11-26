@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\ReviseRuleProposal\ReviseRuleProposalCommand;
+use App\CommandRules\Commands\ReviseRuleProposal\ReviseRuleProposalCommand;
+use App\CommandRules\Values\ProposalReceipt;
 use App\Models\CommandRules\RuleProposal;
-use App\Values\ProposalReceipt;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

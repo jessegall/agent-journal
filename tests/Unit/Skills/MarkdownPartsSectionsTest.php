@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Exceptions\SkillSourceInvalid;
-use App\Support\MarkdownParts;
+use App\Skills\MarkdownParts;
 use App\Values\SkillOwner;
 use App\Values\SkillSection;
 use Illuminate\Support\Facades\File;

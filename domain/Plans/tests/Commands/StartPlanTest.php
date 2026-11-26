@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Commands;
 
-use App\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\ActorContextMissing;
 use App\Models\Access\User;
 use App\Support\StackTransaction;
 use Domain\Plans\Commands\StartPlan\StartPlanCommand;

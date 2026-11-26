@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Agents\Values\PlanFile;
+use App\Agents\Values\RestartFile;
 use App\Exceptions\PlanAdditionClash;
 
 /**

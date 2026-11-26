@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Accounts\AccountFolders;
-use App\Contracts\Accounts\SignInHost;
-use App\Exceptions\AccountFolderRefused;
+use App\Accounts\Contracts\AccountFolders;
+use App\Accounts\Contracts\SignInHost;
+use App\Accounts\Exceptions\AccountFolderRefused;
+use App\Accounts\FolderOrderWait;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Str;
 

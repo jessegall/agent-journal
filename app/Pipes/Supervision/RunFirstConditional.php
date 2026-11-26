@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\ConditionalSteps;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\PipelineAdapter;
 
 /**
  * Runs the first step of an && or || list, which always runs, and lines up the steps after it.

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Enums\Accounts\CommandEntry;
-use App\Support\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\JournalCommands;
 use App\Support\ReadPermit;
 use App\Support\SourceAddressRule;
 use Domain\Sharing\Commands\ReadShare\ReadShareCommand;

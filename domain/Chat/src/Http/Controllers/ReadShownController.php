@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
 use Domain\Chat\Data\ReadShownInput;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Http\RedirectResponse;

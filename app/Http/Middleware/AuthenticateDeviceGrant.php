@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Actors\ActorResolver;
-use App\Contracts\Actors\CurrentActorSetter;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ActorResolver;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Connections\Values\DeviceCaller;
 use App\Exceptions\ActorUnavailable;
-use App\Exceptions\DeviceGrantRefused;
 use App\Models\Projects\DeviceGrant;
+use App\Projects\Exceptions\DeviceGrantRefused;
+use App\Projects\Values\InstallTicket;
 use App\Support\ActorReference;
-use App\Values\DeviceCaller;
-use App\Values\InstallTicket;
-use App\Values\OwnerAuthority;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;

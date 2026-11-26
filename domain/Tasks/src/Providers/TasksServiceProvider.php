@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Authorization\SystemEntryPolicies;
-use App\Contracts\Work\EnvironmentTasks as EnvironmentTasksContract;
-use App\Support\Sources\Contracts\DockRegistration;
-use App\Values\ReadEntitlement;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Contracts\SystemEntryPolicies;
+use App\Access\Values\ReadEntitlement;
+use App\Connections\Contracts\Work\EnvironmentTasks as EnvironmentTasksContract;
+use App\Docking\Sources\Contracts\DockRegistration;
 use Domain\Tasks\Console\Commands\AssignedTasksCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver as AssignedTaskResolverContract;
 use Domain\Tasks\Contracts\TaskAssignmentResolver as TaskAssignmentResolverContract;

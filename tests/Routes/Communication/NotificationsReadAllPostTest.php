@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Communication;
 
-use App\Commands\Notifications\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
+use App\Notifications\Commands\MarkAllNotificationsRead\MarkAllNotificationsReadCommand;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;

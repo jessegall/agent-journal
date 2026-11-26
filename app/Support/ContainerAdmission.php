@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Hosts\DockerImageVerifier;
-use App\Contracts\Hosts\HostCapabilities;
-use App\Enums\Accounts\AccountModeType;
-use App\Enums\Agents\ExecutionModeType;
-use App\Enums\Projects\HostCapabilityType;
+use App\Accounts\Enums\AccountModeType;
+use App\Agents\Enums\ExecutionModeType;
 use App\Exceptions\ImageUnverified;
+use App\Hosts\Contracts\DockerImageVerifier;
+use App\Hosts\Contracts\HostCapabilities;
+use App\Hosts\HostCapabilityQuery;
+use App\Hosts\HostCapacityLock;
 use App\Models\Sessions\CapacityReservation;
-use App\Values\ExecutionPolicy;
-use App\Values\HostCapacity;
+use App\Projects\Enums\HostCapabilityType;
+use App\Sessions\Values\ExecutionPolicy;
+use App\Sessions\Values\HostCapacity;
 
 final readonly class ContainerAdmission
 {

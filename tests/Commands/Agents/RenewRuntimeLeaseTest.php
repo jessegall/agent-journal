@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\RenewRuntimeLease\RenewRuntimeLeaseCommand;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Commands\RenewRuntimeLease\RenewRuntimeLeaseCommand;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Values\RuntimeIntent;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\ProjectBinding;
-use App\Support\AgentRuntimes;
-use App\Support\StartSessions;
-use App\Values\RuntimeIntent;
+use App\Sessions\AgentRuntimes;
+use App\Sessions\StartSessions;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

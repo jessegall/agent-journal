@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\CommandAdmissionRefused;
-use App\Exceptions\CommandInputInvalid;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
+use App\Bus\Exceptions\CommandInputInvalid;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\OpenDocument\OpenDocumentCommand;
 use Domain\Documents\Commands\RecoverDocument\RecoverDocumentCommand;

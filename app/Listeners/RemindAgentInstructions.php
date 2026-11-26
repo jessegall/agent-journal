@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Messages\ReadMessage\ReadMessageCommand;
-use App\Commands\Messages\SendMessage\SendMessageCommand;
 use App\Contracts\Events\Listener;
 use App\Events\Hooks\ContextStarted;
 use App\Mcp\Support\McpCatalogue;
+use App\Messages\Commands\ReadMessage\ReadMessageCommand;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\AgentSession;
-use App\Resolvers\Support\SkillContextResolver;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Values\AgentText;
 
 /**

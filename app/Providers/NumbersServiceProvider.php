@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Console\Commands\InstallNumbersCommand;
-use App\Support\LockingNumberAllocator;
-use App\Support\NumberedTypeRegistry;
+use App\Numbers\LockingNumberAllocator;
+use App\Numbers\NumberedTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**

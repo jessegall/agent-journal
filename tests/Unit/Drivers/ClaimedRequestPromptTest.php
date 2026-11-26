@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Drivers;
 
-use App\Contracts\Drivers\MessagePart;
-use App\Data\Messages\MessageAttachmentData;
-use App\Data\Messages\MessageTextData;
+use App\Agents\Drivers\Contracts\MessagePart;
+use App\Messages\Data\MessageAttachmentData;
+use App\Messages\Data\MessageTextData;
 use App\Values\ClaimedRequest;
 use PHPUnit\Framework\TestCase;
 

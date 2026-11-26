@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Providers;
 
-use App\Contracts\Authorization\ReadEntitlements;
-use App\Contracts\Sessions\ProfileRules;
-use App\Values\ReadEntitlement;
+use App\Access\Contracts\ReadEntitlements;
+use App\Access\Values\ReadEntitlement;
+use App\Sessions\Contracts\ProfileRules;
 use Domain\Rules\Contracts\RuleDetailsResolver as RuleDetailsResolverContract;
 use Domain\Rules\Contracts\RuleResolver as RuleResolverContract;
 use Domain\Rules\Exceptions\RuleMissing;

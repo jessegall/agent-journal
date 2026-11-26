@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Commands\Hosts\OrderHostUpgrade\OrderHostUpgradeCommand;
-use App\Contracts\Bus\JournalCommands;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\Contracts\JournalCommands;
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostProcessEndEvent;
-use App\Enums\Accounts\CommandEntry;
+use App\Hosts\Commands\OrderHostUpgrade\OrderHostUpgradeCommand;
+use App\Hosts\Contracts\HostProcessEndEvent;
 use App\Models\Hosts\HostProcess;
 
 /**

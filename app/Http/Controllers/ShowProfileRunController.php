@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Scripts\ShowProfileRunPayload;
-use App\Data\Profiles\ProfileRunData;
 use App\Models\Profiles\ProfileRun;
+use App\Profiles\Data\ProfileRunData;
+use App\Scripts\Api\ShowProfileRunPayload;
 
 /**
  * Answers one of the caller's own profile runs with its recorded steps; another actor's run is not found.

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hosts;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Hosts\HostProcessReportData;
-use App\Values\HostContext;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Hosts\Commands\NotifyHostProcess\NotifyHostProcessCommand;
+use App\Hosts\Data\HostProcessReportData;
+use App\Hosts\Values\HostContext;
 use Illuminate\Http\Response;
 
 /**

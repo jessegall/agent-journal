@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Decisions\Enums;
 
-use App\Contracts\Asks\Answer;
-use App\Enums\Hooks\AnswerType;
+use App\Asks\Contracts\Answer;
+use App\Hooks\Enums\AnswerType;
 
 enum SimpleAnswer: string implements Answer
 {

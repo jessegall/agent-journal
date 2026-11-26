@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Commands\CloseDocument\CloseDocumentCommand;
 use Domain\Documents\Http\Requests\DraftPageRequest;
 use Illuminate\Http\RedirectResponse;

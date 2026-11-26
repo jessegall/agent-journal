@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Events;
 
 use App\Contracts\Events\InboxScopedFact;
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * An entry of an inbox's chat appeared or changed; the open windows of that inbox read it again.

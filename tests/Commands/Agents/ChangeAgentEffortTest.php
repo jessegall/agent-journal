@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
-use App\Enums\Drivers\DriverOperation;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
+use App\Agents\Drivers\Enums\DriverOperation;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Exceptions\DriverRequestRefused;
 use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\OpensLedgerRuntimes;

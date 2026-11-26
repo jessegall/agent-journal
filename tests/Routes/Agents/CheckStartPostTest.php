@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Agents;
 
-use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
+use App\Agents\Commands\CheckStartStatus\CheckStartStatusCommand;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

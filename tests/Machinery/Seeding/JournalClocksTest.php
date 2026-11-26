@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Contracts\Time\ServerClock;
+use App\Time\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;

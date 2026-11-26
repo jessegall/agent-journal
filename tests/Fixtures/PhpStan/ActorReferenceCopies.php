@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\PhpStan;
 
-use App\Contracts\Actors\Actor;
+use App\Actors\Contracts\Actor;
 use App\Support\ActorReference;
 use App\Support\Command;
 

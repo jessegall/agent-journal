@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\SendTerminalInput\SendTerminalInputCommand;
-use App\Enums\Terminals\TerminalInputType;
-use App\Enums\Terminals\TerminalNamedKey;
 use App\Models\Drivers\TerminalGrant;
-use App\Support\TerminalInput;
+use App\Terminals\Commands\SendTerminalInput\SendTerminalInputCommand;
+use App\Terminals\Enums\TerminalInputType;
+use App\Terminals\Enums\TerminalNamedKey;
+use App\Terminals\TerminalInput;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

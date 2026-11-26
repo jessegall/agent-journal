@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Projects;
 
-use App\Contracts\Projects\AgentProjects;
 use App\Models\Agents\Agent;
+use App\Projects\Contracts\AgentProjects;
 use Tests\Support\TestProjects;
 
 /**

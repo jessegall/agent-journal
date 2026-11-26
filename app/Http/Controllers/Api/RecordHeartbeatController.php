@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Agents\RecordHeartbeatPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Api\RecordHeartbeatPayload;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Support\AgentContext;
 use App\Values\ApiAccepted;
 

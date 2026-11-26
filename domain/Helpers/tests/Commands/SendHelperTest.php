@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Agents\ConversationModeType;
+use App\Agents\Enums\ConversationModeType;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Agents\Agent;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Commands\SendHelper\SendHelperCommand;

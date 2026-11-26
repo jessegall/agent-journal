@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Reads\ReadMeter;
-use App\Exceptions\RequestKeyConflict;
-use App\Exceptions\RequestKeyMissing;
-use App\Exceptions\StackLockTimedOut;
+use App\Access\Exceptions\StackLockTimedOut;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\RequestKeyMissing;
+use App\Bus\RequestKey;
 use App\Models\Access\User;
 use App\Models\CommandRules\CommandReceipt;
 use App\Models\Records\Link;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\ShareRecordRegistry;
+use App\Skills\Exceptions\RequestKeyConflict;
 use App\Support\ActorReference;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
-use App\Support\ShareRecordRegistry;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;

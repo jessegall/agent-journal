@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\CommandMiddleware;
-use App\Contracts\Bus\Pipe;
-use App\Enums\Engine\CommandScopeType;
+use App\Bootstrap\SharedBindingCheck;
+use App\Bus\CommandDeclarations;
+use App\Bus\CommandOwner;
+use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\Pipe;
+use App\Bus\MiddlewareDeclaration;
+use App\Bus\RegisteredMiddleware;
+use App\Engine\Enums\CommandScopeType;
 use App\Exceptions\MiddlewareDeclarationInvalid;
 use App\Exceptions\MiddlewareListedTwice;
-use App\Support\CommandDeclarations;
-use App\Support\CommandOwner;
-use App\Support\MiddlewareDeclaration;
 use App\Support\Reflector;
-use App\Support\RegisteredMiddleware;
-use App\Support\SharedBindingCheck;
 
 /**
  * Checks every middleware declaration: a CommandMiddleware in its owner's CommandMiddleware folder, built fresh,

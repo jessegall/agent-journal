@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\CommandRules\Mcp\Tools\JournalTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Resources\OverviewResource;
 use App\Mcp\Tools\CapabilitiesReadTool;
-use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;
 use App\Mcp\Tools\SearchTool;
 use App\Support\FolderClasses;

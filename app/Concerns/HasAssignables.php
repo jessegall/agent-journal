@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use App\Attributes\Rules\RequiresInterface;
-use App\Contracts\Assignments\AssignableContributor;
-use App\Contracts\Assignments\AssigneeContributor;
-use App\Contracts\Assignments\AutoAssignmentProvider;
-use App\Contracts\Assignments\InternalAssignableContributor;
+use App\Assignments\Contracts\AssignableContributor;
+use App\Assignments\Contracts\AssigneeContributor;
+use App\Assignments\Contracts\AutoAssignmentProvider;
+use App\Assignments\Contracts\InternalAssignableContributor;
+use App\Bootstrap\Attributes\Rules\RequiresInterface;
 use App\Contracts\Domains\DomainBootstrapper;
 use App\Support\Bootstrappers\RegisterAssignables;
 

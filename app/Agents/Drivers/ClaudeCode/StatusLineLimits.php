@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Data\Drivers\StatusLineInputData;
-use App\Enums\Accounts\UsageWindowSlot;
-use App\Values\UsageSource;
+use App\Accounts\Enums\UsageWindowSlot;
+use App\Agents\Drivers\Data\StatusLineInputData;
+use App\Agents\Values\UsageSource;
 use App\Values\UsageWindowReading;
 use Carbon\CarbonImmutable;
 use JsonException;

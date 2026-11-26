@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Agents;
 
+use App\Sessions\StartedAgent;
 use App\Support\ServerClock;
-use App\Support\StartedAgent;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Navigation\ClientUpdate;
+use App\Docking\Sources\Contracts\DockedSources;
 use App\Events\Web\PageChanged;
 use App\Models\Access\User;
 use App\Models\Inboxes\InboxMember;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Processes\Sources\Contracts\DockSourceChanged;
 use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
-use App\Support\Sources\Contracts\DockedSources;
-use App\Support\Sources\Contracts\DockSourceChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

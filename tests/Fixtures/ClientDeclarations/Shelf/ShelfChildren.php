@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\ClientDeclarations\Shelf;
 
-use App\Contracts\Navigation\NavigationChildren;
-use App\Declarations\NavigationItem;
+use App\Navigation\Contracts\NavigationChildren;
+use App\Navigation\Declarations\NavigationItem;
 
 final readonly class ShelfChildren implements NavigationChildren
 {

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Settings\ResetSetting\ResetSettingCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Settings\SettingsCatalogue;
-use App\Data\Settings\SettingData;
-use App\Enums\Settings\SettingSource;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Settings\SettingsGroupRequest;
 use App\Http\Responses\PageActionAnswers;
-use App\Values\SettingReference;
+use App\Settings\Commands\ResetSetting\ResetSettingCommand;
+use App\Settings\Contracts\SettingsCatalogue;
+use App\Settings\Data\SettingData;
+use App\Settings\Enums\SettingSource;
+use App\Settings\Values\SettingReference;
 use Illuminate\Http\RedirectResponse;
 
 /**

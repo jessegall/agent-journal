@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Wire\Fields;
 
+use App\Docking\Cards\DockDestination;
 use App\Support\Cards\Contracts\DockPart;
-use App\Support\Cards\DockDestination;
 use App\Support\Wire\Contracts\PartField;
 use App\Support\Wire\DestinationEncoder;
 

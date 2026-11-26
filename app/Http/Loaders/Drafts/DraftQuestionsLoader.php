@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Drafts;
 
-use App\Data\Drafts\DraftQuestionsInput;
-use App\Data\Messages\DraftQuestionsData;
+use App\Messages\Data\DraftQuestionsData;
 use App\Support\DraftProducers;
+use App\Web\Drafts\Data\DraftQuestionsInput;
 
 /**
  * The questions of the draft producer registered for a noun; a noun with none is unavailable. No record is read.

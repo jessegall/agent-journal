@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
-use App\Data\Connections\ProjectEntryData;
-use App\Enums\Projects\ProjectReadFailure;
-use App\Values\ProjectFileText;
+use App\Connections\Data\ProjectEntryData;
+use App\Projects\Commands\NotifyProjectRead\NotifyProjectReadCommand;
+use App\Projects\Enums\ProjectReadFailure;
+use App\Projects\Values\ProjectFileText;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

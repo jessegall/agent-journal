@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Connections\ProjectBindingEvent;
-use App\Contracts\Navigation\ClientUpdate;
-use App\Enums\Connections\BindingReadiness;
+use App\Connections\Contracts\ProjectBindingEvent;
+use App\Connections\Enums\BindingReadiness;
+use App\Navigation\Contracts\ClientUpdate;
 use DateTimeImmutable;
 
 /**

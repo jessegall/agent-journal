@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Pages;
 
+use App\Navigation\Data\Pages\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

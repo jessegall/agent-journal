@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote\CopyLimitNoteCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote\LimitNoteCommand;
 
 final class CopyLimitNoteHandler implements CommandHandler

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Listeners;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Events\Listener;
 use Domain\Tasks\Contracts\TaskStateEvent;
 use Domain\Tasks\Events\TaskStarted;

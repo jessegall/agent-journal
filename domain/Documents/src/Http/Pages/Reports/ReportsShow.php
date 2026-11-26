@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Pages\Reports;
 
+use App\Connections\Layout\LayoutBodyData;
 use App\Data\Pages\RecordCard;
-use App\Enums\Settings\ActionMethod;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\LayoutActionData;
-use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutFieldData;
 use App\Support\Layout\LayoutFormData;
 use App\Support\Layout\LayoutNativeData;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
-use App\Contracts\Bus\CommandFacts;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Events\Listener;
 use Domain\Tasks\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;

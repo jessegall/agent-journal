@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Supervision\ListAsksPayload;
-use App\Contracts\Asks\AskReader;
-use App\Data\Asks\AskInbox;
+use App\Api\Api\Supervision\ListAsksPayload;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Data\AskInbox;
 
 final readonly class ListAsksController
 {

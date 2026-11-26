@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\AttachmentReferences;
-use App\Data\Messages\MessageAttachmentData;
+use App\Agents\Drivers\Contracts\AttachmentReferences;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\DriverRequestRefused;
+use App\Messages\Data\MessageAttachmentData;
 use Domain\Documents\Commands\AppendUpload\AppendUploadCommand;
 use Domain\Documents\Commands\BeginUpload\BeginUploadCommand;
 use Domain\Documents\Commands\CommitUpload\CommitUploadCommand;

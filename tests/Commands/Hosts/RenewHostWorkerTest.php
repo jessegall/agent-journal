@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
-use App\Commands\Hosts\RenewHostWorker\RenewHostWorkerCommand;
 use App\Exceptions\WorkerFenced;
+use App\Hosts\Commands\ClaimHostWorker\ClaimHostWorkerCommand;
+use App\Hosts\Commands\RenewHostWorker\RenewHostWorkerCommand;
 use App\Models\Hosts\HostProcess;
 use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostProcessEndEvent;
+use App\Hosts\Contracts\HostProcessEndEvent;
 
 /**
  * The process's exit is proven, with its code or signal.

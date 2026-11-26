@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\RunFenced\RunFencedCommand;
-use App\Enums\Hosts\HostOrderType;
-use App\Values\FencedRun;
+use App\Hosts\Commands\RunFenced\RunFencedCommand;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Values\FencedRun;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

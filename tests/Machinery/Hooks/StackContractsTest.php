@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Hooks;
 
-use App\Contracts\Work\AgentStacks as AgentStacksContract;
 use App\Contracts\Work\StackTransactionRunner;
-use App\Contracts\Work\UserStack as UserStackContract;
-use App\Support\AgentStacks;
+use App\Stacks\AgentStacks;
+use App\Stacks\Contracts\Work\AgentStacks as AgentStacksContract;
+use App\Stacks\Contracts\Work\UserStack as UserStackContract;
+use App\Stacks\UserStack;
 use App\Support\StackTransaction;
-use App\Support\UserStack;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;

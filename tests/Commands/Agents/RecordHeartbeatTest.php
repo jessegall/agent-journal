@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\Sessions\SessionStatus;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Agents\Commands\RecordHeartbeat\RecordHeartbeatCommand;
+use App\Bus\Contracts\CommandBus;
 use App\Exceptions\CredentialRejected;
 use App\Models\Agents\AgentSession;
+use App\Sessions\Enums\SessionStatus;
+use App\Sessions\SessionTokens;
+use App\Sessions\StartedAgent;
+use App\Sessions\StartHeartbeats;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
 use App\Support\ServerClock;
-use App\Support\SessionTokens;
-use App\Support\StartedAgent;
-use App\Support\StartHeartbeats;
-use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

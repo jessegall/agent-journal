@@ -7,11 +7,11 @@ namespace App\Listeners;
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\SessionClosed;
+use App\Hosts\CapacityRelease;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\CapacityReservation;
 use App\Models\Sessions\SessionCleanup;
-use App\Support\CapacityRelease;
 
 /**
  * Opens the durable cleanup of a container start that ended, on the host it ran on; its capacity stays reserved

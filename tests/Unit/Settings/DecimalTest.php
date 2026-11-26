@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Exceptions\DecimalInvalid;
-use App\Values\Decimal;
+use App\Settings\Exceptions\DecimalInvalid;
+use App\Settings\Values\Decimal;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

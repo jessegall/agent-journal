@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Data;
 
-use App\Data\Support\OptionalOrMissing;
+use App\Accounts\Data\Support\OptionalOrMissing;
 use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Spatie\LaravelData\Data;

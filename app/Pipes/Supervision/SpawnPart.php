@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipes\Supervision;
 
-use App\Contracts\Bus\Pipe;
-use App\Contracts\Processes\SpawnablePart;
-use App\Support\Execution\SpawnedPart;
-use App\Support\Execution\SpawnedProcess;
+use App\Bus\Contracts\Pipe;
+use App\Processes\Contracts\SpawnablePart;
+use App\Processes\Execution\SpawnedPart;
+use App\Processes\Execution\SpawnedProcess;
 
 /**
  * Starts the next part to spawn after its intent is stored: a single part, or the next command of a pipeline. A part

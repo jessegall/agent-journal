@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Resolvers\Support;
 
-use App\Data\Notifications\NotificationDestination;
-use App\Data\Notifications\NotificationItem;
-use App\Data\Notifications\NotificationLink;
-use App\Data\Notifications\NotificationPage;
-use App\Exceptions\NotificationCursorInvalid;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
+use App\Notifications\Data\NotificationDestination;
+use App\Notifications\Data\NotificationItem;
+use App\Notifications\Data\NotificationLink;
+use App\Notifications\Data\NotificationPage;
+use App\Notifications\Exceptions\NotificationCursorInvalid;
+use App\Notifications\NotificationCursor;
+use App\Notifications\NotificationScopes;
+use App\Notifications\NotificationTargets;
 use App\Support\ActorReference;
-use App\Support\NotificationCursor;
-use App\Support\NotificationScopes;
-use App\Support\NotificationTargets;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Settings;
 
-use App\Commands\Settings\EnableSettingGroup\EnableSettingGroupCommand;
-use App\Contracts\Settings\EnabledSettingsGroup;
-use App\Contracts\Settings\SettingsResolver;
-use App\Enums\Settings\SettingsOutcome;
-use App\Values\SettingsChange;
+use App\Settings\Commands\EnableSettingGroup\EnableSettingGroupCommand;
+use App\Settings\Contracts\EnabledSettingsGroup;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Values\SettingsChange;
 use Domain\Rules\RulesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Accounts\Data\ClaudeAnswerData;
 use App\Agents\Drivers\Setup\Contracts\ModelAnswerReader;
-use App\Data\Accounts\ClaudeAnswerData;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;

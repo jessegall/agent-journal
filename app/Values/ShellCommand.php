@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\ParseOutcome;
-use App\Enums\Processes\ShellDialect;
+use App\Agents\Values\CommandPart;
+use App\CommandRules\Enums\ParseOutcome;
+use App\Processes\Enums\ShellDialect;
 
 /**
  * A shell line as the Processes parser read it: the source, its dialect, how far the parse got, and its parts.

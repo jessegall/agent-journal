@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\Search\ScoreTier;
+use App\Search\Enums\ScoreTier;
+use App\Search\Values\HitIdentity;
+use App\Search\Values\RecordLocation;
+use App\Search\Values\SearchResult;
 use App\Support\RecordIdentity;
-use App\Values\HitIdentity;
-use App\Values\RecordLocation;
-use App\Values\SearchResult;
 use App\Values\SourceHit;
 use PHPUnit\Framework\TestCase;
 

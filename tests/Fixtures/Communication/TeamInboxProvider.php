@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Communication;
 
-use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Inboxes\InboxProvider;
+use App\Inboxes\Contracts\InboxProvider;
+use App\Inboxes\Contracts\LabeledInbox;
 
 /**
  * A second kind of inbox for the registration tests: a team that owns its own label.

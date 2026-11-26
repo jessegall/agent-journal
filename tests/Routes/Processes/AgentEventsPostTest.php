@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\Runs\RecordRunEvents\RecordRunEventsCommand;
 use App\Models\Agents\Agent;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Commands\RecordRunEvents\RecordRunEventsCommand;
 use App\Support\ActorReference;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Support\States;
 
-use App\Attributes\States\StateType;
-use App\Contracts\Work\UniqueSubjectState;
-use App\Support\Decisions\ContextLine;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\UniqueSubjectState;
+use App\Stacks\Decisions\ContextLine;
 use App\Support\Inputs\ContextCompacted;
 use App\Support\Inputs\SessionStarted;
 use App\Support\RecordIdentity;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Domain\Helpers\Events\HelperJobCancelled;
 use Domain\Helpers\Events\HelperJobFinished;

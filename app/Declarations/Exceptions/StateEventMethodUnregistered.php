@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Declarations\Exceptions;
 
-use App\Declarations\StateMethod;
+use App\Stacks\Declarations\StateMethod;
 use LogicException;
 
 final class StateEventMethodUnregistered extends LogicException

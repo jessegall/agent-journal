@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models\Accounts;
 
+use App\Accounts\Enums\AccountNoticeReason;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
 use App\Concerns\RaisesEvents;
 use App\Contracts\Events\EventSource;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Accounts\AccountNoticeReason;
 use App\Events\Accounts\AccountNoticeRecorded;
 use App\Events\Accounts\AccountNoticeResolved;
 use App\Models\Support\AccountOwnerScope;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

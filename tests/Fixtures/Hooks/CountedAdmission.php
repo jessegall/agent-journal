@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Admission\ShellAdmission;
-use App\Enums\Processes\ShellDialect;
-use App\Values\Admission;
+use App\Access\Contracts\ShellAdmission;
+use App\Access\Values\Admission;
+use App\Processes\Enums\ShellDialect;
 use App\Values\AdmissionRefusal;
 use App\Values\ExecutionContext;
 

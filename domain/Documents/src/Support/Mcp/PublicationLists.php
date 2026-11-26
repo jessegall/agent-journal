@@ -10,7 +10,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
-use App\Support\TextPreview;
+use App\Text\TextPreview;
 use Domain\Documents\Contracts\Documents\DocumentResolver;
 use Domain\Documents\Contracts\Reports\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;

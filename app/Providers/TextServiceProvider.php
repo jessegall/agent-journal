@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Actors\Contracts\AgentTexts as AgentTextsContract;
+use App\Agents\AgentTexts;
 use App\Concerns\LoadsCoreRoutes;
 use App\Console\Commands\TextReadCommand;
 use App\Console\Commands\TextSectionsCommand;
 use App\Console\Commands\TextVersionCommand;
-use App\Contracts\Actors\AgentTexts as AgentTextsContract;
-use App\Contracts\Reads\TextResolver as TextResolverContract;
+use App\Reads\Contracts\TextResolver as TextResolverContract;
 use App\Resolvers\TextResolver;
-use App\Support\AgentTexts;
 use Illuminate\Support\ServiceProvider;
 
 /**

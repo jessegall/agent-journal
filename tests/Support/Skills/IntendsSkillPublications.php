@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Data\Skills\GeneratedSkillData;
-use App\Enums\Skills\GenerationStatus;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
-use App\Support\SkillPublications;
+use App\Skills\Data\GeneratedSkillData;
+use App\Skills\Enums\GenerationStatus;
+use App\Skills\SkillPublications;
 use Tests\Support\TestIds;
 
 /**

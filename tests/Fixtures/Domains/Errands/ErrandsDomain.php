@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Contracts\Assignments\AutoAssignmentProvider;
-use App\Support\AutoAssignerDefinition;
-use App\Support\PoolDefinition;
+use App\Assignments\AutoAssignerDefinition;
+use App\Assignments\Contracts\AssignableContributor;
+use App\Assignments\Contracts\AutoAssignmentProvider;
+use App\Assignments\PoolDefinition;
 use App\Concerns\HasAssignables;
-use App\Contracts\Assignments\AssignableContributor;
 use App\Support\Domain;
 use App\Support\Exports;
 

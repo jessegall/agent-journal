@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Web;
 
-use App\Commands\Terminals\ChooseTerminalDraft\ChooseTerminalDraftCommand;
-use App\Enums\Terminals\TerminalDraftChoice;
 use App\Models\Drivers\TerminalGrant;
+use App\Terminals\Commands\ChooseTerminalDraft\ChooseTerminalDraftCommand;
+use App\Terminals\Enums\TerminalDraftChoice;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\GuardedRouteEntryTestCase;
 use Tests\Support\Entries\RouteCall;

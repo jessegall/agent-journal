@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files\WorkspaceSource;
-use App\Enums\Agents\WorkspaceUse;
-use App\Enums\Projects\MountType;
-use App\Exceptions\ManifestRefused;
-use App\Values\WorkspacePreparation;
+use App\Agents\ContainerManifest;
+use App\Agents\Enums\WorkspaceUse;
+use App\Agents\Exceptions\ManifestRefused;
+use App\Files\Contracts\WorkspaceSource;
+use App\Files\ManifestMount;
+use App\Files\Values\WorkspacePreparation;
+use App\Projects\Enums\MountType;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at

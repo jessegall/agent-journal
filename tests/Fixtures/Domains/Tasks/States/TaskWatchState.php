@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
-use App\Attributes\States\StateType;
-use App\Contracts\Work\DurableState;
-use App\Support\Decisions\ContextLine;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
+use App\Stacks\Decisions\ContextLine;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
-use App\Support\States\AgentState;
 use Domain\Tasks\Events\TaskCancelled;
 use Domain\Tasks\Events\TaskFinished;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordTaskCancelled\RecordTaskCancelledCommand;

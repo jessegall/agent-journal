@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Garden\Commands\Water;
 
-use App\Enums\Agents\AccessType;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
 use App\Support\Command;
-use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 
 /**

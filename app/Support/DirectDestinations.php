@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Actors\ActorInboxResolver;
-use App\Contracts\Assignments\Assignee;
-use App\Contracts\Inboxes\LabeledInbox;
-use App\Contracts\Records\Destinations;
+use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ActorInboxResolver;
+use App\Assignments\Contracts\Assignee;
+use App\Inboxes\Contracts\LabeledInbox;
+use App\Records\Contracts\Destinations;
 
 /**
  * An actor's own destinations: work goes to the actor, and messages to its preferred inbox, read only when a

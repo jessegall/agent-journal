@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Pages;
 
+use App\Connections\Layout\LayoutBodyData;
 use App\Support\Layout\DeclaredLayoutData;
-use App\Support\Layout\LayoutBodyData;
 use App\Support\Layout\LayoutNativeData;
 use App\Support\Layout\LayoutPartData;
 use App\Support\Layout\LayoutRowData;

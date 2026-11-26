@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Navigation\ProveNavigation\ProveNavigationCommand;
-use App\Enums\Navigation\NavigationCompletion;
 use App\Mcp\Tools\NavigationDoneTool;
+use App\Navigation\Commands\ProveNavigation\ProveNavigationCommand;
+use App\Navigation\Enums\NavigationCompletion;
 use Tests\Support\Agents\HoldsNavigationRequests;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;

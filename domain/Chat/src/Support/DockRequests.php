@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Contracts\Sessions\AgentDirectory;
-use App\Exceptions\DockDefinitionInvalid;
-use App\Exceptions\DockSourceUnavailable;
+use App\Docking\Exceptions\DockDefinitionInvalid;
+use App\Docking\Exceptions\DockSourceUnavailable;
+use App\Docking\Sources\Contracts\DockableProvider;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Exceptions\StackTargetRefused;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
+use App\Sessions\Contracts\AgentDirectory;
 use App\Support\ActorReference;
 use App\Support\Cards\DockIdentity;
-use App\Support\Sources\Contracts\DockableProvider;
-use App\Support\Sources\Contracts\DockRegistration;
 use App\Support\Sources\DockDefinition;
 use App\Values\ProjectOwner;
 use Domain\Chat\Exceptions\ChatUnavailable;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Contracts\Drivers\DriverAdapters;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Agents\Drivers\Contracts\DriverAdapters;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Contracts\Events\Listener;
 use App\Events\Sessions\StartSettingsRequested;
 

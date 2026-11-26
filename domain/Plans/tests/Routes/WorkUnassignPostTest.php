@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Routes;
 
-use App\Enums\Assignments\AssignmentOutcomeType;
-use App\Support\AssignmentOutcome;
+use App\Assignments\AssignmentOutcome;
+use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Support\AssignmentResult;
 use App\Support\RecordIdentity;
 use Domain\Plans\Commands\UnassignPlanWork\UnassignPlanWorkCommand;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Inboxes;
 
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Enums\Accounts\CommandEntry;
+use App\Accounts\Enums\CommandEntry;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Inboxes\Inbox;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

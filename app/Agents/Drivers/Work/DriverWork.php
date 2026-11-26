@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Work;
 
-use App\Contracts\Drivers\ProcessDriver;
+use App\Agents\Drivers\Contracts\ProcessDriver;
 use Carbon\CarbonImmutable;
 
 /**

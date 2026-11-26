@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\Contracts\Files\Files;
+use App\Files\Contracts\Files;
 
 /**
  * Reads the text of a new document or report from exactly one of --body, --body - (standard input) or --file, read

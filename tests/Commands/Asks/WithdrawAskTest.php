@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Asks;
 
-use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
-use App\Commands\Asks\WithdrawAsk\WithdrawAskCommand;
-use App\Commands\Profiles\ActivateProfiles\ActivateProfilesCommand;
-use App\Contracts\Asks\AskReader;
-use App\Contracts\Bus\CommandBus;
-use App\Exceptions\AskRefused;
+use App\Asks\Commands\AskSupervisor\AskSupervisorCommand;
+use App\Asks\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Asks\Commands\WithdrawAsk\WithdrawAskCommand;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Exceptions\AskRefused;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Asks\Ask;
 use App\Models\Asks\AskHop;
 use App\Models\Records\AssignmentRecord;
+use App\Profiles\Commands\ActivateProfiles\ActivateProfilesCommand;
+use App\Profiles\ProfileProposal;
 use App\Support\ActorReference;
-use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\DomainBoot;

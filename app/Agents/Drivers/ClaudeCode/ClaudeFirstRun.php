@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Agents\ContainerManifest;
 use App\Agents\Drivers\Setup\Contracts\AccountFirstRun;
 use App\Attributes\Rules\DecodesAnyJson;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Permissions;
-use App\Support\ContainerManifest;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
 use App\Values\FilePath;
 use stdClass;
 

@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Bootstrap;
+
+/**
+ * One owner's switch as the owner set it and whether the owner is available because of it and its requirements;
+ * the switch alone is never the availability.
+ */
+final readonly class DomainStatus
+{
+    /**
+     * @param  list<string>  $unavailableRequirements  the required domains that are not available, by name
+     */
+    public function __construct(
+        public string $owner,
+        public bool $isSwitchedOn,
+        public bool $isAvailable,
+        public array $unavailableRequirements,
+    ) {}
+}

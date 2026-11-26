@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\Syntax;
 
-use App\Enums\CommandRules\WordSegmentType;
-use App\Values\SourceRange;
+use App\CommandRules\Enums\WordSegmentType;
+use App\Processes\Grammar\Values\SourceRange;
+use App\Processes\Grammar\Values\WordSegment;
 use App\Values\Word;
-use App\Values\WordSegment;
 
 /**
  * Gathers one word while the lexer reads it: plain characters run together into a Literal segment, which ends where a

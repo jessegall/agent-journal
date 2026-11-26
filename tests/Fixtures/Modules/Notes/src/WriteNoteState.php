@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Attributes\States\StateType;
-use App\Contracts\Bus\Command;
-use App\Contracts\Work\DurableState;
-use App\Enums\Engine\NoSubject;
+use App\Bus\Contracts\Command;
+use App\Engine\Enums\NoSubject;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\DurableState;
+use App\Stacks\References\StateReference;
 use App\Support\Decisions\Decision;
 use App\Support\Inputs\StopRequested;
-use App\Support\References\StateReference;
-use App\Support\States\AgentState;
 use App\Values\AgentText;
 use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
 use Tests\Fixtures\Modules\Notes\Events\NotePublished;

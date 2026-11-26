@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\States;
 
-use App\Contracts\Processes\ShellCommandParser;
-use App\Enums\Hooks\AnswerType;
+use App\Hooks\Enums\AnswerType;
+use App\Processes\Contracts\ShellCommandParser;
 use Domain\Tasks\Events\TaskLogged;
 use Domain\Tasks\Support\States\LogDueState;
 use Domain\Tasks\Support\States\Support\LogDueStateReference;

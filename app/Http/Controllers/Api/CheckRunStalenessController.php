@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Api\Processes\CheckRunStalenessPayload;
-use App\Api\Processes\RunStaleness;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Api\CheckRunStalenessPayload;
+use App\Processes\Api\RunStaleness;
 
 /**
  * Answers whether a run's rules still hold, to the holder of its event key only.

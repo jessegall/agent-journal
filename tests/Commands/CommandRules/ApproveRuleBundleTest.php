@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\ApproveRuleBundle\ApproveRuleBundleCommand;
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Processes\ShellDialect;
-use App\Exceptions\ApprovalRefused;
-use App\Support\CommandRuleRegistry;
+use App\Bus\Contracts\CommandClassifier;
+use App\CommandRules\CommandRuleRegistry;
+use App\CommandRules\Commands\ApproveRuleBundle\ApproveRuleBundleCommand;
+use App\CommandRules\Exceptions\ApprovalRefused;
+use App\Processes\Enums\ShellDialect;
 use App\Support\DomainEntry;
 use App\Support\Syntax\TreeParser;
 use App\Values\CommandRule;

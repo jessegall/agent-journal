@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Octane;
 
-use App\Support\RunningCommand;
+use App\Bus\RunningCommand;
 
 /**
  * A class listener that records the running command it was built with, a service scoped to each request.

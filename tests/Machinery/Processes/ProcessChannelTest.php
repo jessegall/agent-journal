@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\LifecycleStatus;
+use App\Bus\Contracts\CommandClassifier;
 use App\Models\Agents\Agent;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessEvent;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Enums\LifecycleStatus;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\ExecutionPlanner;
 use App\Support\ActorReference;
-use App\Support\ExecutionPlanner;
 use App\Support\Syntax\TreeParser;
 use App\Values\ExecutionContext;
 use Tests\Fixtures\Agents\TestStart;

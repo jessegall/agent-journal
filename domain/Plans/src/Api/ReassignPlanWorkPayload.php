@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Api;
 
-use App\Api\Assignments\Concerns\NamesExpectedAssignment;
-use App\Api\Assignments\Concerns\NamesRecipient;
+use App\Assignments\Api\Concerns\NamesExpectedAssignment;
+use App\Assignments\Api\Concerns\NamesRecipient;
 use App\Attributes\Api\Endpoint;
 use App\Casts\CallKeyCast;
 use App\Contracts\Domains\ApiPayload;
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
 use App\Support\CallKey;
 use App\Support\Transformers\CallKeyTransformer;
 use Domain\Plans\Api\Concerns\NamesPlanWorkRoot;

@@ -9,8 +9,8 @@ declare(strict_types=1);
  *   php -d memory_limit=1G tools/model-docs/scope-stubs.php
  */
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
 use Illuminate\Contracts\Console\Kernel;
 use Tools\ModelDocs\ScopeStubs;

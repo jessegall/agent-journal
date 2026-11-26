@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Loaders\Drafts;
 
-use App\Data\Drafts\DraftAnswersInput;
 use App\Data\Pages\DraftedRecordData;
 use App\Support\DraftProducers;
+use App\Web\Drafts\Data\DraftAnswersInput;
 
 /**
  * Runs the draft producer registered for a noun on the caller's own answers and returns the fields it drafted; it

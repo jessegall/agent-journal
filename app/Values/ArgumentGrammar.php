@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\OperandType;
-use App\Enums\CommandRules\UnresolvedType;
+use App\CommandRules\Enums\OperandType;
+use App\CommandRules\Enums\UnresolvedType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;

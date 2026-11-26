@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Fixtures;
 
-use App\Exceptions\StackAlreadyClosed;
+use App\Agents\Exceptions\StackAlreadyClosed;
 use App\Models\Agents\AgentStackRow;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\AdvanceSequence\AdvanceSequenceCommand;

@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Navigation\NavigationReader;
-use App\Enums\Navigation\MenuEntryStatus;
+use App\Access\Contracts\JournalAdmission;
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
+use App\Navigation\Contracts\NavigationReader;
+use App\Navigation\Enums\MenuEntryStatus;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

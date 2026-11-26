@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Events\ActiveRuleChange;
 use App\Models\CommandRules\RuleRevision;
+use App\Processes\Contracts\Events\ActiveRuleChange;
 
 /**
  * A project owner made an approved revision of a command rule the active one; raised after the change is committed.

@@ -6,9 +6,9 @@ namespace App\Models\Runs;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Processes\OutputStream;
 use App\Models\Support\JournalModel;
+use App\Processes\Enums\OutputStream;
+use App\Records\Contracts\ReadableModel;
 use App\Values\CapturedChunk;
 use Carbon\CarbonImmutable;
 use Closure;

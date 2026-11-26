@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Api;
 
-use App\Enums\Records\TextAnchorType;
+use App\Records\Enums\TextAnchorType;
 use App\Values\TextRange;
 use Domain\Comments\Exceptions\CommentPlaceUnclear;
 use Spatie\LaravelData\Attributes\MapName;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Reads\Drafts;
 
-use App\Data\Drafts\DraftAnswersInput;
 use App\Http\Loaders\Drafts\DraftRecordLoader;
 use App\Support\DraftProducers;
+use App\Web\Drafts\Data\DraftAnswersInput;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\ClientDeclarations\StubDraftProducer;
 use Tests\Support\Entries\Attributes\TestsRead;

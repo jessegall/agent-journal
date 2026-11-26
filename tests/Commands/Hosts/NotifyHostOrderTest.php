@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Hosts;
 
-use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
-use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverType;
-use App\Enums\Hosts\HostOrderStatus;
-use App\Enums\Hosts\HostProcessStatus;
-use App\Enums\Hosts\HostRefusal;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Agents\Enums\SessionProcessStatus;
 use App\Exceptions\HostProtocolRefused;
-use App\Support\Hosts\ProcessFeed;
+use App\Hosts\Commands\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Hosts\Enums\HostOrderStatus;
+use App\Hosts\Enums\HostProcessStatus;
+use App\Hosts\Enums\HostRefusal;
+use App\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;

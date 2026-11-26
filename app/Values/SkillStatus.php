@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
+use App\Skills\Values\GenerationReport;
+use App\Skills\Values\PublicationReport;
 use JsonSerializable;
 
 /**

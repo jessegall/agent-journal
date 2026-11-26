@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Processes\EvidencePermitEvent;
+use App\Processes\Contracts\EvidencePermitEvent;
 
 /**
  * An evidence permit expired unused.

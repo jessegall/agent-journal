@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Drivers\DriverCapability;
+use App\Agents\Drivers\Enums\DriverCapability;
 use App\Exceptions\DriverCapabilityUnsupported;
 
 /**

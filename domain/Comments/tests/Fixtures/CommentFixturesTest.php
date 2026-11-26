@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Fixtures;
 
-use App\Enums\Records\TextAnchorType;
+use App\Records\Enums\TextAnchorType;
 use App\Support\RecordIdentity;
 use App\Values\TextRange;
 use Domain\Comments\Tests\TestCase;

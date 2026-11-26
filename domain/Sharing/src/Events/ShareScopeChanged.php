@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 use Domain\Sharing\Support\ShareFact;
 
 /**

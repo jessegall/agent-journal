@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
-use App\Support\ApiGroups;
+use App\Api\ApiGroups;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Values\FilePath;
 use Illuminate\Console\Command;
 use Illuminate\Process\Factory as ProcessFactory;
@@ -83,7 +83,7 @@ final class GenerateApiCommand extends Command
             }
         }
 
-        $generated['app/Support/JournalClient.php'] = ApiGroups::client($coreGroups);
+        $generated['app/Api/JournalClient.php'] = ApiGroups::client($coreGroups);
 
         return $generated;
     }

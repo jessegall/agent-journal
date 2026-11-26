@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Middleware;
 
-use App\CommandMiddleware\RefuseWritesDuringReads;
-use App\Commands\Layouts\SaveLayout\SaveLayoutCommand;
-use App\Data\Layouts\LayoutShape;
-use App\Exceptions\ReadOnlyWriteRefused;
+use App\Bus\CommandMiddleware\RefuseWritesDuringReads;
+use App\Bus\Exceptions\ReadOnlyWriteRefused;
 use App\Models\Records\Layout;
-use App\Support\ReadOnlyStretch;
+use App\Reads\ReadOnlyStretch;
+use App\Terminals\Commands\SaveLayout\SaveLayoutCommand;
+use App\Terminals\Data\LayoutShape;
 use Tests\Commands\Layouts\SaveLayoutTest;
 use Tests\Support\Entries\Attributes\TestsMiddleware;
 use Tests\Support\RefreshHookDatabase;

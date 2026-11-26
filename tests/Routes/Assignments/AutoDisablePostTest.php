@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Assignments;
 
-use App\Commands\Assignments\DisableAutoAssignment\DisableAutoAssignmentCommand;
+use App\Assignments\AutoAssignmentChange;
+use App\Assignments\Commands\DisableAutoAssignment\DisableAutoAssignmentCommand;
 use App\Support\ActorReference;
-use App\Support\AutoAssignmentChange;
 use App\Support\AutoAssignmentKey;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;

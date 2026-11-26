@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Messages;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Enums\Agents\ActivityType;
+use App\Agents\Enums\ActivityType;
+use App\Bus\Exceptions\CommandInputInvalid;
+use App\Bus\Exceptions\CommittedFactListenerFailed;
+use App\Bus\IsolatedListener;
 use App\Events\Messages\MessageSent;
-use App\Exceptions\CommandInputInvalid;
-use App\Exceptions\CommittedFactListenerFailed;
 use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\InboxUnavailable;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Agents\ActivityEntry;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Messages\Message;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
 use App\Support\DomainRegistry;
-use App\Support\IsolatedListener;
-use App\Support\StartSessions;
 use Carbon\CarbonImmutable;
 use Domain\Chat\Tests\Fixtures\ChatFixtures;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

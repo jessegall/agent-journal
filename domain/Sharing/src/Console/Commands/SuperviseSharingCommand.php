@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Console\Commands;
 
-use App\Support\Execution\SpawnedProcess;
+use App\Processes\Execution\SpawnedProcess;
 use App\Support\SupervisorTimer;
 use Domain\Sharing\Exceptions\GatewayRunStale;
 use Domain\Sharing\Support\SharingSupervisor;

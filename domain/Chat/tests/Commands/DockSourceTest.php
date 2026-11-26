@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Support\ActorReference;
 use App\Support\Command;
-use App\Support\RequestKey;
 use App\Support\Wire\EncodedCard;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Commands\DockSource\DockSourceCommand;

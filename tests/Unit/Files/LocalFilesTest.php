@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Enums\Files\Place;
-use App\Exceptions\FileJsonInvalid;
+use App\Agents\Relay\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;
 use App\Exceptions\FileReadReentered;
 use App\Exceptions\FileUnreadable;
-use App\Exceptions\LinkLeavesPlace;
+use App\Files\Enums\Place;
+use App\Navigation\Exceptions\LinkLeavesPlace;
 use App\Support\Files;
 use App\Support\Reflector;
 use App\Values\FilePath;

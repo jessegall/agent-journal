@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Processes;
 
-use App\Enums\Processes\OutputStream;
-use App\Enums\Runs\CaptureStatus;
-use App\Exceptions\OutputStorageFailed;
 use App\Models\Runs\OutputChunk;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
+use App\Processes\Enums\CaptureStatus;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Exceptions\OutputStorageFailed;
+use App\Processes\Execution\SpawnedProcess;
+use App\Processes\ManifestCheck;
+use App\Processes\OutputRecorder;
+use App\Processes\Values\PartKey;
 use App\Support\ActorReference;
-use App\Support\Execution\SpawnedProcess;
-use App\Support\ManifestCheck;
-use App\Support\OutputRecorder;
 use App\Values\CapturedChunk;
 use App\Values\PartEnd;
-use App\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Entries\Attributes\TestsMachinery;

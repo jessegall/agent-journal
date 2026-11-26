@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Runs\RuntimeActivity;
+use App\Agents\Drivers\Enums\HoldReason;
 use App\Models\Agents\AgentRuntime;
+use App\Processes\Enums\RuntimeActivity;
 use Carbon\CarbonImmutable;
 
 /**

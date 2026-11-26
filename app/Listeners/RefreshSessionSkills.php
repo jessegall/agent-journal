@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\Skills\DriverSkillAdapters;
-use App\Contracts\Bus\CommandFacts;
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Agents\StartDriver;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Events\Listener;
-use App\Contracts\Skills\SkillResolver;
-use App\Contracts\Work\AgentStacks;
-use App\Enums\Skills\SkillReload;
 use App\Events\Hooks\ContextStarted;
 use App\Events\Skills\SessionSkillsIntended;
-use App\Exceptions\SkillSelectionConflict;
 use App\Models\Agents\AgentSession;
 use App\Models\Skills\SkillGeneration;
 use App\Models\Skills\SkillPublication;
-use App\Resolvers\Support\SkillContextResolver;
-use App\Support\SkillPublications;
-use App\Support\SkillSelection;
-use App\Support\SkillTargets;
-use App\Support\StartDriver;
-use App\Support\States\Support\AwaitSkillsStateReference;
+use App\Skills\Contracts\SkillResolver;
+use App\Skills\Enums\SkillReload;
+use App\Skills\Exceptions\SkillSelectionConflict;
+use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\SkillPublications;
+use App\Skills\SkillSelection;
+use App\Skills\SkillTargets;
+use App\Skills\Values\SelectedSkills;
+use App\Stacks\Contracts\Work\AgentStacks;
+use App\Stacks\Support\AwaitSkillsStateReference;
 use App\Values\AgentText;
 use App\Values\DriverKey;
-use App\Values\SelectedSkills;
 
 /**
  * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh from today's facts and

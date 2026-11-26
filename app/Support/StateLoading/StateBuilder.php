@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\StateLoading;
 
-use App\Exceptions\StateValuesRefused;
 use App\Pipelines\BuildStatePipeline;
-use App\Support\PipelineRunner;
-use App\Support\States\AgentState;
+use App\Pipelines\Support\PipelineRunner;
+use App\Stacks\AgentState;
+use App\Stacks\Exceptions\StateValuesRefused;
+use App\Stacks\StateLoading\RegisteredStateType;
 
 /**
  * Builds every state from its values through BuildStatePipeline. A new frame's values are the ones its push gives, a

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Asks\AnsweredAtOnce;
-use App\Support\StartAdditions;
+use App\Asks\Contracts\AnsweredAtOnce;
+use App\Sessions\StartAdditions;
 
 /**
  * A host takes a session's start grant and is about to spawn its driver: listeners add the folders the start needs,

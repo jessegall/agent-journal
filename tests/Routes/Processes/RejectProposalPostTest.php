@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Processes;
 
-use App\Commands\CommandRules\RejectRuleProposal\RejectRuleProposalCommand;
+use App\CommandRules\Commands\RejectRuleProposal\RejectRuleProposalCommand;
 use App\Models\CommandRules\RuleProposal;
 use Tests\Support\Entries\Attributes\TestsRoute;
 use Tests\Support\Entries\Caller;

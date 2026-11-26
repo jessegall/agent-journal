@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
+use App\Accounts\Data\ClaudeStatusData;
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\Setup\Contracts\SignInReader;
-use App\Data\Accounts\ClaudeStatusData;
-use App\Enums\Accounts\SignInMethod;
-use App\Values\SignInFolder;
-use App\Values\SignInReport;
+use App\Agents\Values\SignInFolder;
+use App\Agents\Values\SignInReport;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;

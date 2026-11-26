@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Pages;
 
-use App\Data\Accounts\LoginInput;
+use App\Accounts\Data\LoginInput;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

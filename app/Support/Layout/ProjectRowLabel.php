@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Layout;
 
-use App\Contracts\Projects\CurrentProject;
-use App\Contracts\Projects\ProjectDirectory;
-use App\Enums\Projects\ProjectSelectionType;
+use App\Projects\Contracts\CurrentProject;
+use App\Projects\Contracts\ProjectDirectory;
+use App\Projects\Enums\ProjectSelectionType;
 use App\Values\ProjectOwner;
 
 /**

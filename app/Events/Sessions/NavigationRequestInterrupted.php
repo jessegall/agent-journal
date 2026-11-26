@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Sessions;
 
-use App\Contracts\Drivers\NavigationRequestEvent;
+use App\Agents\Drivers\Contracts\NavigationRequestEvent;
 
 /**
  * A navigation request was interrupted.

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\States;
 
-use App\Enums\Hooks\AnswerType;
 use App\Events\Hooks\HelperAssigned;
 use App\Events\Hooks\HelperFinishedOnRecord;
+use App\Hooks\Enums\AnswerType;
 use App\Support\Inputs\StopRequested;
 use App\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanReviewStatus;

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Communication;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Records\LinkRecordProvider;
-use App\Contracts\Records\StateProvider;
 use App\CoreCommands;
+use App\Links\LinkTypeRegistry;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Messages\Message;
+use App\Records\Contracts\LinkRecordProvider;
+use App\Records\Contracts\StateProvider;
+use App\Stacks\AnswerMessageState;
+use App\Stacks\Decisions\StateReferenceKeys;
+use App\Stacks\StateTypes;
+use App\Stacks\Support\AnswerMessageStateReference;
 use App\Support\CommandRegistry;
-use App\Support\Decisions\StateReferenceKeys;
-use App\Support\LinkTypeRegistry;
-use App\Support\Stack\StateTypes;
-use App\Support\States\AnswerMessageState;
-use App\Support\States\Support\AnswerMessageStateReference;
 use Domain\Chat\ChatDomain;
 use Tests\Support\DomainBoot;
 use Tests\TestCase;

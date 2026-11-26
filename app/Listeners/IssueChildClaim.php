@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Agents\Enums\ChildRole;
 use App\Contracts\Events\Listener;
-use App\Enums\Agents\ChildRole;
 use App\Events\Sessions\ChildCheckoutRequested;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use App\Models\Projects\ProjectBinding;
+use App\Projects\Commands\RecordBindingRuntimeStop\RecordBindingRuntimeStopCommand;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;

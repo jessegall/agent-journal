@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\CommandRules\ApproveSample\ApproveSampleCommand;
+use App\Bus\Attributes\Dispatches;
+use App\CommandRules\Commands\ApproveSample\ApproveSampleCommand;
 use App\Http\Requests\Processes\ApproveSampleRequest;
 use App\Http\Responses\Processes\ReviewResponses;
 use Illuminate\Http\RedirectResponse;

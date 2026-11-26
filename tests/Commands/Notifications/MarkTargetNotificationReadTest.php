@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Notifications;
 
-use App\Commands\Notifications\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
-use App\Exceptions\NotificationUnavailable;
-use App\Resolvers\RunNotificationTarget;
+use App\Notifications\Commands\MarkTargetNotificationRead\MarkTargetNotificationReadCommand;
+use App\Notifications\Exceptions\NotificationUnavailable;
+use App\Processes\Resolvers\RunNotificationTarget;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

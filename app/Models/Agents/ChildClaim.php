@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\Agents;
 
+use App\Agents\Enums\ChildRole;
+use App\Agents\Exceptions\ChildClaimRefused;
+use App\Agents\Values\ChildCheckout;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Agents\ChildRole;
-use App\Exceptions\ChildClaimRefused;
 use App\Models\Projects\ProjectBinding;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
-use App\Values\ChildCheckout;
+use App\Records\Contracts\ReadableModel;
 use App\Values\CommitObservation;
 use App\Values\WorkspaceFacts;
 use Carbon\CarbonImmutable;

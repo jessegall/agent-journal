@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Accounts;
 
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Data\Accounts\AccountListData;
-use App\Data\Accounts\AccountRowData;
-use App\Data\Accounts\AccountUsageData;
-use App\Data\Accounts\AccountUsageWindowData;
-use App\Enums\Accounts\AccountStatus;
-use App\Enums\Accounts\UsageWindowSlot;
-use App\Enums\Settings\ActionMethod;
+use App\Accounts\Data\AccountListData;
+use App\Accounts\Data\AccountRowData;
+use App\Accounts\Data\AccountUsageData;
+use App\Accounts\Data\AccountUsageWindowData;
+use App\Accounts\Enums\AccountStatus;
+use App\Accounts\Enums\UsageWindowSlot;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
+use App\Settings\Enums\ActionMethod;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\Layout\LayoutActionData;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Reflection;
 
-use App\Concerns\Reflects;
+use App\Bus\Concerns\Reflects;
 use App\Support\Reflector;
 
 /**

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
-use App\Contracts\Authorization\PolicyProvider;
-use App\Contracts\Bus\CommandProvider;
-use App\Contracts\Skills\SkillProvider;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
 use App\Support\Searchable;
-use App\Values\PolicyDefinition;
 use Domain\Memory\Commands\EditMemory\EditMemoryCommand;
 use Domain\Memory\Commands\RemoveMemory\RemoveMemoryCommand;
 use Domain\Memory\Commands\SaveMemory\SaveMemoryCommand;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Fixtures;
 
-use App\Exceptions\CommandAdmissionRefused;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use Domain\Rules\Commands\RemoveRule\RemoveRuleCommand;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Events\RuleRemoved;

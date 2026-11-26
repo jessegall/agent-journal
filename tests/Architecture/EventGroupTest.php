@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\ListenerOwnership;
 use App\Contracts\Events\Event;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\CoreListenerFolders;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
 use App\Support\FolderClasses;
-use App\Support\ListenerOwnership;
 use App\Support\Reflector;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Architecture\Support\DomainFiles;

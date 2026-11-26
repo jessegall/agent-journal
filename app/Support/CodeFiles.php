@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Files\Place;
 use App\Exceptions\CodeReadOutsideProject;
-use App\Exceptions\FileOutsidePlaces;
 use App\Exceptions\FileUnreadable;
+use App\Files\ClosedFolders;
+use App\Files\Enums\Place;
+use App\Files\FolderWalker;
+use App\Files\PathConfinement;
+use App\Files\PlaceRoots;
+use App\Files\Values\FolderEntries;
+use App\Navigation\Exceptions\FileOutsidePlaces;
 use App\Values\FilePath;
-use App\Values\FolderEntries;
 use Closure;
 use Composer\InstalledVersions;
 use Illuminate\Config\Repository;

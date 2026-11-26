@@ -1,7 +1,7 @@
 # Conditional states
 
 A conditional state is an agent state that only runs while something is switched on, usually a settings group that
-can be switched off. It implements `App\Contracts\Work\ConditionalState`:
+can be switched off. It implements `App\Stacks\Contracts\Work\ConditionalState`:
 
 ```php
 interface ConditionalState

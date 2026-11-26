@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
+use App\Accounts\Enums\CommandEntry;
+use App\Agents\Commands\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Agents\OpenBindingMainRuntime\OpenBindingMainRuntimeCommand;
-use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
-use App\Contracts\Assignments\AssignmentTransaction;
-use App\Contracts\Drivers\DriverCatalogue;
-use App\Contracts\Sessions\ProfileResolver;
-use App\Enums\Accounts\CommandEntry;
+use App\Assignments\Contracts\AssignmentTransaction;
+use App\Bus\JournalCommands;
+use App\Inboxes\Commands\InstallInboxes\InstallInboxesCommand;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Projects\ProjectBinding;
+use App\Sessions\Contracts\ProfileResolver;
 use App\Support\ActorReference;
-use App\Support\JournalCommands;
 use App\Values\ProfileKey;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

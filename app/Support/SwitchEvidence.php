@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Enums\Drivers\DriverSwitchStage;
+use App\Agents\Drivers\Enums\DriverSwitchStage;
 use App\Models\Drivers\DriverSwitch;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Scripts\SaveProfileDraftPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Profiles\ProfileDraftData;
-use App\Support\Readers\ProfileDraftReader;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Processes\Readers\ProfileDraftReader;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Profiles\Data\ProfileDraftData;
+use App\Scripts\Api\SaveProfileDraftPayload;
 
 /**
  * Saves the draft at the revision its writer read, kept even when it does not check, and answers what checking finds.

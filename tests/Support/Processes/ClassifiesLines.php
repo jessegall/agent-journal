@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Contracts\Bus\CommandClassifier;
-use App\Enums\Processes\ShellDialect;
+use App\Bus\Contracts\CommandClassifier;
+use App\Processes\Enums\ShellDialect;
 use App\Support\Syntax\TreeParser;
 use App\Values\Classification;
 use App\Values\ExecutionContext;

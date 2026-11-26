@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Connections;
 
-use App\Commands\Projects\ApproveDeviceGrant\ApproveDeviceGrantCommand;
-use App\Commands\Projects\RevokeDeviceGrant\RevokeDeviceGrantCommand;
+use App\Access\AccessSettings;
+use App\Hosts\EnrolledHost;
 use App\Models\Access\User;
 use App\Models\Projects\DeviceGrant;
-use App\Support\Access\AccessSettings;
-use App\Support\EnrolledHost;
+use App\Projects\Commands\ApproveDeviceGrant\ApproveDeviceGrantCommand;
+use App\Projects\Commands\RevokeDeviceGrant\RevokeDeviceGrantCommand;
 use Domain\Tasks\TasksDomain;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;

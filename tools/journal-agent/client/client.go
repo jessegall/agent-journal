@@ -278,7 +278,7 @@ func refusalOf(response *http.Response, target string) error {
 	}
 }
 
-// hostRoleRefusalCode is the code App\Exceptions\HostRoleRefused answers with (App\Enums\Engine\RefusalCode::Forbidden):
+// hostRoleRefusalCode is the code App\Hosts\Exceptions\HostRoleRefused answers with (App\Engine\Enums\RefusalCode::Forbidden):
 // the route is for the other role of host. Any other 403, such as a start the journal refuses, is a plain refusal.
 const hostRoleRefusalCode = "forbidden"
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Projects\IssueProjectInvitation\IssueProjectInvitationCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
+use App\Connections\InstallLine;
 use App\Http\Requests\Connections\IssueProjectInvitationRequest;
 use App\Http\Responses\PageActionAnswers;
-use App\Support\InstallLine;
-use App\Values\InstallTicket;
+use App\Projects\Commands\IssueProjectInvitation\IssueProjectInvitationCommand;
+use App\Projects\Values\InstallTicket;
 use Illuminate\Http\RedirectResponse;
 
 /**

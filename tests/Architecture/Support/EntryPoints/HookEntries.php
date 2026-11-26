@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support\EntryPoints;
 
-use App\Contracts\Drivers\DriverAdapters;
-use App\Enums\Hooks\HookEvent;
+use App\Agents\Drivers\Contracts\DriverAdapters;
+use App\Hooks\Enums\HookEvent;
 
 /**
  * Every moment a driver's hooks reach the journal: each native event of each hook protocol that a HookEvent case

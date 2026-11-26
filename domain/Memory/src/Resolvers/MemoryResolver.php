@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Resolvers;
 
-use App\Contracts\Actors\CurrentActor;
+use App\Actors\Contracts\CurrentActor;
 use App\Exceptions\RecordUnavailable;
 use Domain\Memory\Contracts\MemoryResolver as MemoryResolverContract;
 use Domain\Memory\Models\Memory;

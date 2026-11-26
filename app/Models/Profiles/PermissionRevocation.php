@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\Profiles;
 
+use App\CommandRules\Enums\CommandClass;
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
 use App\Concerns\OrdersById;
-use App\Contracts\Records\ReadableModel;
-use App\Data\Profiles\RevokedPatternData;
-use App\Enums\CommandRules\CommandClass;
 use App\Models\Support\JournalModel;
+use App\Profiles\Data\RevokedPatternData;
+use App\Records\Contracts\ReadableModel;
 use App\Support\ActorReference;
 use App\Values\CommandClassSet;
 use App\Values\CommandPattern;

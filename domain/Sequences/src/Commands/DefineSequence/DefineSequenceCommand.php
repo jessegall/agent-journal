@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Commands\DefineSequence;
 
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Contracts\Projects\ProjectCommand;
-use App\Enums\Agents\AccessType;
+use App\Projects\Contracts\ProjectCommand;
 use App\Support\Command;
 use App\Values\ProjectOwner;
 use Domain\Sequences\Policies\StoredSequencePolicy;

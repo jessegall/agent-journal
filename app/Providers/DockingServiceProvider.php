@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Support\DestinationGate;
-use App\Support\DockRegistration;
-use App\Support\NoDockOffers;
-use App\Support\NoFallbackDocks;
-use App\Support\NothingDocked;
-use App\Support\Sources\Contracts\DestinationGate as DestinationGateContract;
-use App\Support\Sources\Contracts\DockedSources;
-use App\Support\Sources\Contracts\DockOffers;
-use App\Support\Sources\Contracts\DockRegistration as DockRegistrationContract;
-use App\Support\Sources\Contracts\FallbackDocks;
+use App\Docking\DestinationGate;
+use App\Docking\DockRegistration;
+use App\Docking\NoDockOffers;
+use App\Docking\NoFallbackDocks;
+use App\Docking\NothingDocked;
+use App\Docking\Sources\Contracts\DestinationGate as DestinationGateContract;
+use App\Docking\Sources\Contracts\DockedSources;
+use App\Docking\Sources\Contracts\DockOffers;
+use App\Docking\Sources\Contracts\DockRegistration as DockRegistrationContract;
+use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Support\Wire\CardEncoder;
 use App\Support\Wire\Contracts\CardEncoder as CardEncoderContract;
 use App\Support\Wire\PartMap;

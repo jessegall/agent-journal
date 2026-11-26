@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries\Attributes;
 
-use App\Mcp\Tools\JournalTool;
+use App\CommandRules\Mcp\Tools\JournalTool;
 use Attribute;
 use Tests\Support\Entries\Contracts\NamesEntry;
 

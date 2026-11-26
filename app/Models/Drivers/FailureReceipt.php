@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Agents\Drivers\Enums\DriverFailure;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Drivers\DriverFailure;
 use App\Models\Support\JournalModel;
+use App\Records\Contracts\ReadableModel;
 use App\Support\Inputs\Values\HookIdentity;
 use Carbon\CarbonImmutable;
 

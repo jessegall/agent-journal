@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Pages\Resolvers;
 
-use App\Contracts\Actors\ActorLabels;
-use App\Contracts\Hosts\ServedEnvironment;
-use App\Contracts\Navigation\PageResolver;
-use App\Data\Activity\ActivityEventData;
-use App\Data\Activity\ActivityWindowData;
+use App\Actors\Contracts\ActorLabels;
+use App\Agents\Activity\Data\ActivityEventData;
+use App\Agents\Activity\Data\ActivityWindowData;
+use App\Hosts\Contracts\ServedEnvironment;
 use App\Http\Requests\ActivityWindowRequest;
 use App\Models\Agents\ActivityEntry;
+use App\Navigation\Contracts\PageResolver;
 use App\Support\ActorLabelSet;
 
 /**

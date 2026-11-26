@@ -38,13 +38,13 @@ final class JsonIntoDataTest extends TestCase
      * of any of its event types, or an account's protection settings, a settings document of the driver's own.
      */
     private const array ANY_JSON_METHODS = [
-        'App\\Support\\Storage\\EncodedValue::jsonSerialize',
+        'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
         'App\\Casts\\SettingsDocumentCast::get',
-        'App\\Support\\DeclarativeReader::lineOf',
+        'App\\Processes\\DeclarativeReader::lineOf',
         'App\\Console\\Concerns\\RunsApiPipelines::jsonOption',
         'App\\Console\\Commands\\ImportProfileDraftCommand::readCommands',
-        'App\\Support\\ConditionTree::fromJson',
-        'App\\Support\\WorkspaceSources::fromJson',
+        'App\\Skills\\ConditionTree::fromJson',
+        'App\\Hosts\\WorkspaceSources::fromJson',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeFirstRun::__invoke',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeResult::readLine',
         'App\\Agents\\Drivers\\Codex\\CodexAppDriver::readLine',

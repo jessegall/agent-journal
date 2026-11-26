@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Connections\Data;
+
+use App\Values\PresenceReport;
+use Spatie\LaravelData\Attributes\Validation\In;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
+use Spatie\LaravelData\Data;
+
+/**
+ * A relay's presence report as journal-agent sends it (client.PresenceReport): its boot, sequence, release, the
+ * combinations it can run, how setting up the folder ended, whether it takes over a live boot, the setup
+ * generation of the folder it reports for, and whether this boot reported what became of its earlier sessions.
+ */
+final class PresenceReportData extends Data
+{
+    public function __construct(
+        #[Max(128)]
+        public readonly string $bootId,
+        #[Min(1)]
+        public readonly int $sequence,
+        #[Max(64)]
+        public readonly string $release,
+        #[In(['succeeded', 'failed'])]
+        public readonly string $provisioning,
+        public readonly bool $isTakeover = false,
+        #[Min(0)]
+        public readonly int $setupGeneration = 0,
+        public readonly bool $isReconciled = false,
+    ) {}
+
+    public function report(): PresenceReport
+    {
+        return new PresenceReport(
+            $this->bootId,
+            $this->sequence,
+            $this->release,
+            $this->provisioning === 'succeeded',
+            $this->isTakeover,
+            $this->setupGeneration,
+            $this->isReconciled,
+        );
+    }
+}

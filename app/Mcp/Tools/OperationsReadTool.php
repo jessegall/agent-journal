@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Bus\RequestKey;
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\OperationsResolver;
 use App\Mcp\Support\ToolArguments;
-use App\Support\RequestKey;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Support\Stored\StoredSearch;
-use App\Support\Stored\StoredSearchPosition;
+use App\Search\Stored\StoredSearch;
+use App\Search\Stored\StoredSearchPosition;
 use Illuminate\Support\Str;
 
 return [

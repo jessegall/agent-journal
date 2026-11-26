@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 
-use App\Contracts\Bus\CommandHandler;
-use Tests\Fixtures\Modules\Notes\Commands\SystemNote\SystemNoteCommand;
+use App\Bus\Contracts\CommandHandler;
 
 final class SystemNoteHandler implements CommandHandler
 {

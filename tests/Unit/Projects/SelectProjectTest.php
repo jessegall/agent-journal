@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Projects;
 
-use App\Contracts\Admission\JournalAdmission;
-use App\Contracts\Projects\AgentProjects;
-use App\Contracts\Projects\ProjectDirectory;
+use App\Access\Contracts\JournalAdmission;
+use App\Access\Values\OwnerAuthority;
+use App\Actors\ActorStore;
 use App\Exceptions\ProjectUnavailable;
 use App\Http\Middleware\Web\SelectProject;
+use App\Projects\Contracts\AgentProjects;
+use App\Projects\Contracts\ProjectDirectory;
+use App\Projects\CurrentProject;
 use App\Support\ActorReference;
-use App\Support\ActorStore;
-use App\Support\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
-use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\DataProvider;

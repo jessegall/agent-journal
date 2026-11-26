@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Capabilities;
 
-use App\Contracts\Drivers\DriverCapabilities;
+use App\Agents\Drivers\Contracts\DriverCapabilities;
 use App\Values\BoundTarget;
 use App\Values\SupportSnapshot;
 

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\BeginSignIn\BeginSignInCommand;
-use App\Commands\Accounts\ReconcileSignIns\ReconcileSignInsCommand;
-use App\Contracts\Actors\CurrentActorSetter;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Accounts\SignInMethod;
-use App\Enums\Accounts\SignInStatus;
+use App\Access\Values\OwnerAuthority;
+use App\Accounts\Commands\BeginSignIn\BeginSignInCommand;
+use App\Accounts\Commands\ReconcileSignIns\ReconcileSignInsCommand;
+use App\Accounts\Enums\CommandEntry;
+use App\Accounts\Enums\SignInMethod;
+use App\Accounts\Enums\SignInStatus;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Bus\JournalCommands;
 use App\Jobs\SignInDeadline;
 use App\Models\Accounts\SignInAttempt;
 use App\Support\ActorReference;
-use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;

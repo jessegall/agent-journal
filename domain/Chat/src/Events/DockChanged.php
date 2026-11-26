@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Events;
 
-use App\Contracts\Navigation\ClientUpdate;
+use App\Navigation\Contracts\ClientUpdate;
 
 /**
  * A source was docked in a chat or undocked from it. Raised after the commit; both sides' pages read their

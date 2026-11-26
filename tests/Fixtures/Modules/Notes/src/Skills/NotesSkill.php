@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Skills;
 
-use App\Support\Conditions\Conditions;
-use App\Contracts\Skills\Skill;
-use App\Contracts\Skills\SkillCondition;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Values\SkillSections;
 use App\Values\SkillSection;
-use App\Values\SkillSections;
 
 /**
  * The Notes module's one skill: how an agent keeps its notes.

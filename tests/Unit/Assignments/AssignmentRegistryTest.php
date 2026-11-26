@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Contracts\Assignments\AssignableProvider;
-use App\Contracts\Assignments\AssigneeProvider;
-use App\Enums\Assignments\AssignmentPurpose;
-use App\Exceptions\AssigneeTypeRepeated;
-use App\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\AssigneeDefinition;
+use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\AssigneeProvider;
+use App\Assignments\Enums\AssignmentPurpose;
+use App\Assignments\Exceptions\AssigneeTypeRepeated;
+use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Exceptions\AssignmentTypeRepeated;
 use App\Exceptions\AssignmentTypeUnavailable;
-use App\Exceptions\InvalidRecordIdentity;
 use App\Exceptions\UnknownLinkType;
+use App\Links\LinkTypeRegistry;
 use App\Models\Access\User;
 use App\Models\Agents\Agent;
-use App\Support\AssigneeDefinition;
-use App\Support\LinkTypeRegistry;
+use App\Sharing\Exceptions\InvalidRecordIdentity;
 use App\Support\Registry\AssignmentRegistry;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;

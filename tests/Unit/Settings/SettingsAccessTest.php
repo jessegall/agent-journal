@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
-use App\Contracts\Actors\Actor;
-use App\Contracts\Settings\SettingsAccessPolicy;
-use App\Exceptions\SettingsAccessDenied;
+use App\Actors\Contracts\Actor;
 use App\Providers\SettingsServiceProvider;
-use App\Support\OwnerSettingsAccess;
+use App\Settings\Contracts\SettingsAccessPolicy;
+use App\Settings\Exceptions\SettingsAccessDenied;
+use App\Settings\OwnerSettingsAccess;
 use Illuminate\Foundation\Application;
 use Tests\TestCase;
 

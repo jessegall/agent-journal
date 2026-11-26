@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Questions\Commands\AnswerQuestion;
 
-use App\Contracts\Time\ServerClock;
 use App\Exceptions\InboxUnavailable;
 use App\Models\Inboxes\InboxMember;
+use App\Time\Contracts\ServerClock;
 use Domain\Questions\Commands\Support\QuestionCommandHandler;
 use Domain\Questions\Exceptions\QuestionRefused;
 use Domain\Questions\Models\Question;

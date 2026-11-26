@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Contracts\Authorization\OperationResolver;
-use App\Exceptions\OperationUnavailable;
+use App\Access\Contracts\OperationResolver;
+use App\Access\Exceptions\OperationUnavailable;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Support\Operation;

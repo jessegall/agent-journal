@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Drivers;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Data\Hosts\HostFrameData;
-use App\Enums\Drivers\HoldReason;
-use App\Enums\Screens\ScreenType;
-use App\Support\Screens\ScreenClassifier;
-use App\Support\Screens\ScreenHolds;
-use App\Support\Screens\ScreenReading;
+use App\Agents\Drivers\Enums\HoldReason;
+use App\Hosts\Data\HostFrameData;
+use App\Terminals\Screens\Enums\ScreenType;
+use App\Terminals\Screens\ScreenClassifier;
+use App\Terminals\Screens\ScreenHolds;
+use App\Terminals\Screens\ScreenReading;
 use Tests\TestCase;
 
 /**

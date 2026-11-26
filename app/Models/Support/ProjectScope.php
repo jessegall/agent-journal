@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Support;
 
-use App\Enums\Projects\ProjectSelectionType;
+use App\Projects\Enums\ProjectSelectionType;
 use App\Values\ProjectSelection;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;

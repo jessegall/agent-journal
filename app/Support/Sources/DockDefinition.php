@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\Sources;
 
-use App\Exceptions\DockDefinitionInvalid;
+use App\Docking\Exceptions\DockDefinitionInvalid;
+use App\Docking\Sources\Contracts\DockableProvider;
 use App\Support\Cards\DockIdentity;
 use App\Support\Reflector;
 use App\Support\Sources\Contracts\Dockable;
-use App\Support\Sources\Contracts\DockableProvider;
 
 /**
  * One dockable type as its owner registered it: its type key, the class of its sources, the provider that reads

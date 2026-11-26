@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Support\Agents;
 
 use App\Agents\Drivers\DefaultDrivers;
-use App\Commands\Terminals\RunKeyScript\RunKeyScriptCommand;
-use App\Contracts\Bus\Command;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Bus\Contracts\Command;
+use App\Hosts\EnrolledHost;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
-use App\Support\EnrolledHost;
-use App\Support\OpenedRuntime;
+use App\Sessions\OpenedRuntime;
+use App\Terminals\Commands\RunKeyScript\RunKeyScriptCommand;
 use App\Values\ScriptParameter;
 use Illuminate\Support\Str;
 use Tests\Support\WithActiveAccount;

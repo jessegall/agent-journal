@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Enums\CommandRules\ScopeType;
-use App\Support\CommandRuleRegistry;
+use App\CommandRules\CommandRuleRegistry;
+use App\CommandRules\Enums\ScopeType;
 use App\Support\DomainEntry;
 use App\Values\CommandRule;
 use Tests\Fixtures\Modules\Notes\NotesDomain;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Exceptions\StackLockTimedOut;
+use App\Access\AccessSettings;
+use App\Access\Exceptions\StackLockTimedOut;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
-use App\Support\GatewaySettings;
+use App\Sharing\GatewaySettings;
 use App\Support\OperationDeadline;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;

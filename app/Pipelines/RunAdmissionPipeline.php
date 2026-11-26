@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
+use App\Pipelines\Support\Step;
 use App\Pipes\Run\FetchAdmission;
 use App\Pipes\Run\NotifyAlreadyStarted;
 use App\Support\Run\FetchedAdmission;
 use App\Support\Run\PendingAdmission;
-use App\Support\Step;
 use App\Values\CommandReport;
 
 /**

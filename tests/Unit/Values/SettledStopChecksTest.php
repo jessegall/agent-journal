@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Values;
 
-use App\Values\SettledStopChecks;
+use App\Stacks\Values\SettledStopChecks;
 use PHPUnit\Framework\TestCase;
 
 /**

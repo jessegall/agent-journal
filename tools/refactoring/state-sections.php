@@ -12,7 +12,7 @@ declare(strict_types=1);
  *       prints "file:line<TAB>what is wrong" and fails while there is one.
  */
 
-use App\Support\Inputs\Contracts\HookHandler;
+use App\Stacks\Inputs\Contracts\HookHandler;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use PhpParser\Node\Stmt\Class_;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Contracts\Authorization\Policy;
-use App\Enums\Agents\AccessType;
+use App\Access\Contracts\Policy;
+use App\Agents\Enums\AccessType;
 use App\Models\Records\AssignmentRecord;
 use App\Support\AssigneeIdentity;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events\Connections;
 
-use App\Contracts\Hosts\HostOrderAnswerEvent;
-use App\Enums\Hosts\HostOrderType;
-use App\Enums\Hosts\HostRefusal;
+use App\Hosts\Contracts\HostOrderAnswerEvent;
+use App\Hosts\Enums\HostOrderType;
+use App\Hosts\Enums\HostRefusal;
 
 /**
  * The host refused the order, or it expired before a host answered it.

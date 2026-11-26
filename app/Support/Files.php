@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Files\Files as FilesContract;
-use App\Enums\Files\Permissions;
-use App\Enums\Files\Place;
-use App\Exceptions\FileJsonInvalid;
+use App\Agents\Relay\Exceptions\FileJsonInvalid;
 use App\Exceptions\FileMissing;
-use App\Exceptions\FileOutsidePlaces;
 use App\Exceptions\FileReadReentered;
 use App\Exceptions\FileUnreadable;
-use App\Exceptions\LinkLeavesPlace;
 use App\Exceptions\PlaceUnavailable;
-use App\Values\Depth;
+use App\Files\Contracts\Files as FilesContract;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\FileContents;
+use App\Files\FileWriter;
+use App\Files\FolderWalker;
+use App\Files\PathConfinement;
+use App\Files\PlaceRoots;
+use App\Files\Values\Depth;
+use App\Files\Values\Fingerprint;
+use App\Files\Values\FolderEntries;
+use App\Navigation\Exceptions\FileOutsidePlaces;
+use App\Navigation\Exceptions\LinkLeavesPlace;
 use App\Values\FilePath;
-use App\Values\Fingerprint;
-use App\Values\FolderEntries;
 use Closure;
 use JsonException;
 

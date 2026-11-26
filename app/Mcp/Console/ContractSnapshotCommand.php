@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\Contracts\Files\Files;
-use App\Enums\Files\Place;
-use App\Exceptions\FileUnwritable;
+use App\Agents\Exceptions\FileUnwritable;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Mcp\Support\ContractSnapshot;
 use App\Values\FilePath;
 use Illuminate\Console\Command;

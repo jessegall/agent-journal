@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Asks;
 
-use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Commands\Asks\ReplyToAsk\ReplyToAskCommand;
-use App\Support\ProfileProposal;
+use App\Asks\Commands\AskSupervisor\AskSupervisorCommand;
+use App\Asks\Commands\ReplyToAsk\ReplyToAskCommand;
+use App\Profiles\ProfileProposal;
 use App\Values\AskReference;
 use Domain\Tasks\TasksDomain;
 use Tests\Support\DomainBoot;

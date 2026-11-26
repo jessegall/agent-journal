@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Concerns;
 
-use App\Contracts\Sharing\ShareBudget;
 use App\Exceptions\RecordUnavailable;
+use App\Sharing\Contracts\ShareBudget;
 use App\Support\RecordIdentity;
 use App\Support\ShareContentRead;
 use App\Support\ShareRecordCard;

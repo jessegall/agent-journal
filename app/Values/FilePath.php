@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Files\Place;
-use App\Exceptions\FilePathInvalid;
+use App\Files\Enums\Place;
+use App\Navigation\Exceptions\FilePathInvalid;
 
 /**
  * A place and a path inside it, the only path the file funnel accepts; two paths naming the same file are equal.

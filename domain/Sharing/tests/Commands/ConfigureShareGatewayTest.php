@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\CommandRules\CommandReceipt;
-use App\Support\GatewayConfiguration;
+use App\Sharing\GatewayConfiguration;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Domain\Sharing\Commands\ConfigureShareGateway\ConfigureShareGatewayCommand;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Exceptions\GatewayNotSetUp;

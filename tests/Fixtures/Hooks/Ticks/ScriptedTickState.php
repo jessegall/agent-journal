@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Attributes\States\Ticks;
 use App\Contracts\Work\TickableState;
-use App\Support\States\AgentState;
+use App\Engine\Ticks\TickContext;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\Ticks;
 use App\Support\Ticks\TickCommands;
-use App\Support\Ticks\TickContext;
 
 /**
  * A ticking state whose tick answers what the test's script says for its subject.

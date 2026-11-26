@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\CheckStartStatus\CheckStartStatusCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\CheckStartStatus\CheckStartStatusCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\CheckStartStatusRequest;
 use App\Http\Responses\PageActionAnswers;
 use Illuminate\Http\RedirectResponse;

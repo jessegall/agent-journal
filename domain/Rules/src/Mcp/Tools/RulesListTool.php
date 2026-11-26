@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Mcp\Tools;
 
+use App\CommandRules\Mcp\Tools\JournalReadTool;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use Domain\Rules\Enums\RuleStatus;
 use Domain\Rules\Support\Mcp\RulesListResult;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

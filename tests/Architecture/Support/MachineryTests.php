@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Contracts\Bus\CommandHandler;
-use App\Mcp\Tools\JournalTool;
+use App\Bus\Contracts\CommandHandler;
+use App\CommandRules\Mcp\Tools\JournalTool;
+use App\Stacks\AgentState;
 use App\Support\Command;
 use App\Support\Reflector;
-use App\Support\States\AgentState;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\ScanCache\ScanCache;

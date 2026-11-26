@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Search;
 
-use App\Enums\Search\FailureReason;
-use App\Enums\Search\ScoreTier;
-use App\Enums\Search\SearchSurface;
-use App\Exceptions\SearchBatchInvalid;
+use App\Search\Enums\FailureReason;
+use App\Search\Enums\ScoreTier;
+use App\Search\Enums\SearchSurface;
+use App\Search\Exceptions\SearchBatchInvalid;
+use App\Search\Values\ExhaustedOutcome;
+use App\Search\Values\FailedOutcome;
+use App\Search\Values\HitIdentity;
+use App\Search\Values\MoreOutcome;
+use App\Search\Values\RefreshCandidates;
+use App\Search\Values\ScanningOutcome;
+use App\Search\Values\SearchBatch;
+use App\Search\Values\SearchQuery;
+use App\Search\Values\SearchReader;
+use App\Search\Values\SearchResult;
+use App\Search\Values\SearchScope;
+use App\Search\Values\SearchWords;
+use App\Search\Values\WorkAllowance;
 use App\Support\ActorReference;
 use App\Support\RecordIdentity;
-use App\Values\ExhaustedOutcome;
-use App\Values\FailedOutcome;
-use App\Values\HitIdentity;
-use App\Values\MoreOutcome;
-use App\Values\RefreshCandidates;
-use App\Values\ScanningOutcome;
-use App\Values\SearchBatch;
-use App\Values\SearchQuery;
-use App\Values\SearchReader;
-use App\Values\SearchResult;
-use App\Values\SearchScope;
-use App\Values\SearchWords;
 use App\Values\SourcePosition;
-use App\Values\WorkAllowance;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Api;
 
-use App\Contracts\Domains\ApiSender;
-use App\Enums\Drivers\DriverType;
+use App\Agents\Drivers\Enums\DriverType;
+use App\Api\Contracts\Domains\ApiSender;
 use App\Support\CallKey;
 use Domain\Helpers\Data\HelperJobNamed;
 use Domain\Helpers\Data\HelperNoticeListData;

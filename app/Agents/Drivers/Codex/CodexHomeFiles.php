@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\Codex;
 
-use App\Contracts\Drivers\PlanPart;
-use App\Enums\Drivers\CodexAgentFeature;
+use App\Agents\Drivers\Contracts\PlanPart;
+use App\Agents\Drivers\Enums\CodexAgentFeature;
+use App\Agents\Values\PlanFile;
+use App\Agents\Values\RelayedHookCommand;
 use App\Values\DriverStart;
 use App\Values\PlanAddition;
-use App\Values\PlanFile;
-use App\Values\RelayedHookCommand;
 
 /**
  * The isolated home of a Codex start with no account: its config.toml and, with a hook command, its hooks.json.

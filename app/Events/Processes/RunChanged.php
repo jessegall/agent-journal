@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Events\Processes;
 
-use App\Contracts\Navigation\ClientUpdate;
 use App\Models\Runs\ProcessRun;
-use App\Support\Sources\Contracts\DockSourceChanged;
-use App\Values\PartProjection;
+use App\Navigation\Contracts\ClientUpdate;
+use App\Processes\Sources\Contracts\DockSourceChanged;
+use App\Processes\Values\PartProjection;
 
 /**
  * A run changed after its change was stored: its next update number, and the parts that changed with the reading each

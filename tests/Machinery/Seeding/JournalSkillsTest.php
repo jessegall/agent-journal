@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Values\PartKey;
-use App\Values\SectionDraft;
-use App\Values\SkillDraft;
+use App\Processes\Values\PartKey;
+use App\Skills\Values\SectionDraft;
+use App\Skills\Values\SkillDraft;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\TestCase;

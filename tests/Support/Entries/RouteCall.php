@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Entries;
 
-use App\Contracts\Bus\Command;
-use App\Support\EnrolledHost;
+use App\Bus\Contracts\Command;
+use App\Hosts\EnrolledHost;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\HostContract;
 use Tests\Support\Bus\ExpectedCommand;

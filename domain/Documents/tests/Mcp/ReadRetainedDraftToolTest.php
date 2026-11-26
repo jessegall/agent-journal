@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Mcp;
 
 use App\Events\Sessions\SessionClosed;
-use App\Support\AgentSessions;
+use App\Sessions\AgentSessions;
 use App\Support\StackTransaction;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
 use Domain\Documents\Commands\EditDocument\EditDocumentCommand;

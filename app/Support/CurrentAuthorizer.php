@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Contracts\Authorization\CurrentAuthorizer as CurrentAuthorizerContract;
-use App\Enums\Agents\AccessType;
+use App\Access\ActorAuthorizers;
+use App\Access\Contracts\CurrentAuthorizer as CurrentAuthorizerContract;
+use App\Actors\Contracts\CurrentActor;
+use App\Agents\Enums\AccessType;
 
 /**
  * Authorization for the actor of this request: the authorizer its type's provider gives it, asked with the policy the

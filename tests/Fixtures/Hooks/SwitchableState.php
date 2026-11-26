@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Contracts\Work\ConditionalState;
-use App\Support\States\AgentState;
+use App\Stacks\AgentState;
+use App\Stacks\Contracts\Work\ConditionalState;
 
 /**
  * A test state that is on or off as it was built, and counts how often it was asked.

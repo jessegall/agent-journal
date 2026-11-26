@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Resolvers;
 
-use App\Contracts\Records\RecordProvider;
-use App\Contracts\Records\RecordResolver;
 use App\Data\Pages\RecordCard;
 use App\Exceptions\RecordUnavailable;
+use App\Records\Contracts\RecordProvider;
+use App\Records\Contracts\RecordResolver;
 use App\Support\RecordIdentity;
 use Domain\Comments\Models\Comment;
 use Illuminate\Container\Attributes\Scoped;

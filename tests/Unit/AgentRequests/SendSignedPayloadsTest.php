@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\AgentRequests;
 
-use App\Contracts\Domains\ApiSender;
-use App\Exceptions\AnswerUnreadable;
-use App\Exceptions\ApiTooLarge;
-use App\Exceptions\JournalUnavailable;
+use App\Api\Contracts\Domains\ApiSender;
+use App\Api\Exceptions\AnswerUnreadable;
+use App\Api\Exceptions\ApiTooLarge;
+use App\Api\Exceptions\JournalUnavailable;
 use App\Exceptions\StateBlocked;
-use App\Support\AgentClientSettings;
-use App\Support\StartProfilePin;
+use App\Profiles\StartProfilePin;
+use App\Sessions\AgentClientSettings;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
-use App\Enums\Processes\ApiEffect;
-use App\Enums\Processes\ReceiptOwner;
+use App\Api\ApiDeclaration;
+use App\Bus\RequestKey;
 use App\Exceptions\KeyedWriteWithoutReceipt;
-use App\Support\ApiDeclaration;
+use App\Processes\Enums\ApiEffect;
+use App\Processes\Enums\ReceiptOwner;
+use App\Reads\ReadGrant;
 use App\Support\ApiRegistrar;
-use App\Support\ReadGrant;
 use App\Support\Reflector;
-use App\Support\RequestKey;
 use App\Values\ReadRequest;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;

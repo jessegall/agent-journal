@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Attributes\States\StateType;
-use App\Contracts\Settings\EnabledSettingsGroup;
-use App\Contracts\Work\ConditionalState;
-use App\Support\CurrentSettingsResolver;
-use App\Support\DisabledSettingsGroup;
-use App\Support\States\AgentState;
+use App\Settings\Contracts\EnabledSettingsGroup;
+use App\Settings\CurrentSettingsResolver;
+use App\Settings\DisabledSettingsGroup;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
+use App\Stacks\Contracts\Work\ConditionalState;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 
 /**

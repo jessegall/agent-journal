@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Drivers\ClaudeCode;
 
-use App\Contracts\Drivers\AccountPlanPart;
-use App\Exceptions\ProfileRefused;
+use App\Agents\Drivers\Contracts\AccountPlanPart;
+use App\Agents\Exceptions\ProfileRefused;
+use App\Agents\Values\PlanFile;
 use App\Values\DriverAccount;
 use App\Values\DriverStart;
 use App\Values\PlanAddition;
-use App\Values\PlanFile;
 
 /**
  * The Seatbelt profile one turn and every tool it starts run under: no other workspace's history in the account

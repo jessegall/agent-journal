@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Support\Execution;
 
-use App\Api\Processes\ProcessApi;
-use App\Api\Processes\RunChunk;
-use App\Api\Processes\RunPart;
-use App\Contracts\Events\RunEvents;
-use App\Contracts\Files\Files;
-use App\Enums\Files\Permissions;
-use App\Enums\Processes\OutputStream;
-use App\Enums\Runs\RunEventType;
-use App\Exceptions\ApiFailed;
+use App\Api\Exceptions\ApiFailed;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Processes\Api\ProcessApi;
+use App\Processes\Api\RunChunk;
+use App\Processes\Api\RunPart;
+use App\Processes\Contracts\Events\RunEvents;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\RunEventType;
+use App\Processes\Values\PartKey;
+use App\Processes\Values\RunEvent;
 use App\Values\FilePath;
 use App\Values\PartEnd;
-use App\Values\PartKey;
-use App\Values\RunEvent;
 use Psr\Log\LoggerInterface;
 
 /**

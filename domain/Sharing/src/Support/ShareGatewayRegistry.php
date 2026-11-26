@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Support;
 
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Contracts\Sharing\ShareGateway;
-use App\Support\GatewayHealth;
-use App\Support\GatewayOperation;
-use App\Support\GatewaySetupCheck;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\GatewayHealth;
+use App\Sharing\GatewayOperation;
+use App\Sharing\GatewaySetupCheck;
 use Domain\Sharing\Exceptions\ShareGatewayInvalid;
 use Domain\Sharing\Exceptions\UnknownShareGateway;
 use Domain\Sharing\Models\ShareGatewayConfiguration;

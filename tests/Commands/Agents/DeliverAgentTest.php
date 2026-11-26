@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\DeliverAgent\DeliverAgentCommand;
-use App\Contracts\Drivers\AttachmentReferences;
-use App\Data\Messages\MessageAttachmentData;
-use App\Data\Messages\MessageTextData;
+use App\Agents\Commands\DeliverAgent\DeliverAgentCommand;
+use App\Agents\DriverBudgets;
+use App\Agents\Drivers\Contracts\AttachmentReferences;
 use App\Exceptions\DriverRequestRefused;
+use App\Messages\Data\MessageAttachmentData;
+use App\Messages\Data\MessageTextData;
 use App\Models\Agents\Agent;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
-use App\Support\DriverBudgets;
-use App\Support\OpenedRuntime;
+use App\Sessions\OpenedRuntime;
 use App\Values\DriverReceipt;
 use Illuminate\Support\Str;
 use Tests\Support\Agents\OpensLedgerRuntimes;

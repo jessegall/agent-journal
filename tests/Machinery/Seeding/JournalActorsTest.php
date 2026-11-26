@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Machinery\Seeding;
 
-use App\Contracts\Actors\CurrentActor;
-use App\Support\Access\AccessSettings;
+use App\Access\AccessSettings;
+use App\Actors\Contracts\CurrentActor;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
 use Tests\TestCase;

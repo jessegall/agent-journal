@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Commands;
 
-use App\Contracts\Bus\CommandBus;
-use App\Contracts\Processes\RunClaims;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
 use App\Models\Records\AssignmentRecord;
+use App\Processes\Contracts\RunClaims;
+use App\Sessions\StartSessions;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
-use App\Support\RequestKey;
-use App\Support\StartSessions;
 use Domain\Tasks\Commands\BlockTask\BlockTaskCommand;
 use Domain\Tasks\Commands\ResumeTaskRun\ResumeTaskRunCommand;
 use Domain\Tasks\Commands\StartTask\StartTaskCommand;

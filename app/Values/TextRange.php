@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Records\TextAnchorType;
 use App\Exceptions\AnchorMismatch;
 use App\Exceptions\InvalidTextRange;
+use App\Records\Enums\TextAnchorType;
 
 /**
  * Where a caller asks to point in a version of a text: a section, a span of lines, or an exact quote. It is checked

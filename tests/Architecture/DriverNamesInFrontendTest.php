@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Contracts\Drivers\DriverCatalogue;
+use App\Agents\Drivers\Contracts\DriverCatalogue;
 use App\Values\DriverFamily;
 use Tests\Architecture\Support\WordLines;
 use Tests\Support\TimeLimits\TimeLimit;

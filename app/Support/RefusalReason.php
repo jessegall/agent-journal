@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Contracts\Refusals\StaleRefusal;
 use Illuminate\Support\Str;

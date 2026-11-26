@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use App\Commands\Messages\ReadUnreadMessages\ReadUnreadMessagesCommand;
 use App\Mcp\Tools\MessageReadUnreadTool;
-use App\Support\ShownMessage;
-use App\Support\ShownMessages;
+use App\Messages\Commands\ReadUnreadMessages\ReadUnreadMessagesCommand;
+use App\Messages\ShownMessage;
+use App\Messages\ShownMessages;
 use Tests\Support\Entries\Attributes\TestsMcpTool;
 use Tests\Support\Entries\McpToolEntryTestCase;
 use Tests\Support\Entries\ToolCall;

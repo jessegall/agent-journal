@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
-use App\Support\RequestKey;
+use App\Bus\RequestKey;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

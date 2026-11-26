@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Routes\Profiles;
 
-use App\Commands\Profiles\SaveProfileDraft\SaveProfileDraftCommand;
+use App\Profiles\Commands\SaveProfileDraft\SaveProfileDraftCommand;
 use App\Values\ProfileKey;
 use App\Values\ScriptSource;
 use Tests\Support\Entries\Attributes\TestsRoute;

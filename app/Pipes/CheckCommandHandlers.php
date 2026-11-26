@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
+use App\Access\Contracts\PolicyCatalogue;
+use App\Access\Contracts\RecordPolicy;
+use App\Actors\Contracts\Actor;
+use App\Agents\Enums\AccessType;
 use App\Attributes\Commands\Authorize;
-use App\Contracts\Actors\Actor;
-use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Authorization\RecordPolicy;
-use App\Contracts\Bus\Pipe;
-use App\Contracts\Bus\RecordCommand;
-use App\Contracts\Reflection\ReflectorFactory;
-use App\Enums\Agents\AccessType;
+use App\Bootstrap\SharedBindingCheck;
+use App\Bus\CommandDeclarations;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Contracts\RecordCommand;
+use App\Bus\DeclaredCommand;
+use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Exceptions\CommandAuthorizationInvalid;
-use App\Exceptions\CommandDeclarationInvalid;
 use App\Exceptions\GrantNotRegistered;
-use App\Support\CommandDeclarations;
-use App\Support\DeclaredCommand;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\DeclaredType;
 use App\Support\ReflectedMethod;
 use App\Support\ReflectedParameter;
 use App\Support\Reflector;
-use App\Support\SharedBindingCheck;
 use Illuminate\Auth\Access\Response;
 use PhpOption\Option;
 

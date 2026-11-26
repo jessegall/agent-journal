@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Support\Cards;
 
-use App\Enums\Runs\PartType;
-use App\Enums\Web\Alignment;
+use App\Processes\Enums\PartType;
 use App\Support\Cards\Contracts\DockPart;
+use App\Web\Enums\Alignment;
 
 /**
  * Parts shown side by side, wrapping on a narrow card, placed by the alignment.

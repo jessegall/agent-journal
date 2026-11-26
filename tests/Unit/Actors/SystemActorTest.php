@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Actors;
 
+use App\Access\Values\OwnerAuthority;
+use App\Actors\ActorStore;
+use App\Actors\SystemActor;
 use App\Exceptions\InvalidActorText;
 use App\Models\Access\User;
 use App\Support\ActorReference;
-use App\Support\ActorStore;
-use App\Support\SystemActor;
-use App\Values\OwnerAuthority;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;
 

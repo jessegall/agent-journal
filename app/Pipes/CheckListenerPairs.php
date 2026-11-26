@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Pipes;
 
-use App\Contracts\Bus\Pipe;
+use App\Bus\Contracts\Pipe;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\ListenerDeclarations;
+use App\Bus\ListenerOwnership;
 use App\Contracts\Events\Event;
-use App\Enums\Engine\TypeShape;
-use App\Exceptions\InvalidListener;
+use App\Engine\Enums\TypeShape;
+use App\Stacks\AgentState;
 use App\Support\DeclaredType;
-use App\Support\ListenerDeclarations;
-use App\Support\ListenerOwnership;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
-use App\Support\States\AgentState;
 
 /**
  * Checks each listener declaration against its callable, concrete event and owner.

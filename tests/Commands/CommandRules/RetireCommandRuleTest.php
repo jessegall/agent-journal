@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\CommandRules;
 
-use App\Commands\CommandRules\RetireCommandRule\RetireCommandRuleCommand;
-use App\Commands\CommandRules\SaveCommandRule\SaveCommandRuleCommand;
-use App\Enums\CommandRules\CommandClass;
+use App\CommandRules\Commands\RetireCommandRule\RetireCommandRuleCommand;
+use App\CommandRules\Commands\SaveCommandRule\SaveCommandRuleCommand;
+use App\CommandRules\Enums\CommandClass;
+use App\CommandRules\Values\ProgramSpellings;
+use App\CommandRules\Values\RuleScope;
 use App\Models\Agents\Agent;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\Runs\ProcessRun;
@@ -14,8 +16,6 @@ use App\Support\ActorReference;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
-use App\Values\ProgramSpellings;
-use App\Values\RuleScope;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;

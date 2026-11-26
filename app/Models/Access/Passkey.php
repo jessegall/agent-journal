@@ -6,8 +6,8 @@ namespace App\Models\Access;
 
 use App\Concerns\BoundedReads;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
 use App\Models\Support\HasUlidKey;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Laravel\Passkeys\Passkey as PackagePasskey;
 

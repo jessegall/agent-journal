@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Pipes\Supervision;
 
 use App\Pipelines\ExecuteStepPipeline;
+use App\Pipelines\Support\PipelineAdapter;
 use App\Support\Execution\PendingStep;
 use App\Support\Execution\StepOutcome;
-use App\Support\PipelineAdapter;
 
 /**
  * Runs the negated step and reports its outcome as ! does: only the branch decision flips, never the part's stored end.

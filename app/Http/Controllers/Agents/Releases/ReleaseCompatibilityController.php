@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents\Releases;
 
-use App\Data\Images\ReleaseCompatibilityData;
-use App\Support\PublishedReleases;
+use App\Connections\Data\Images\ReleaseCompatibilityData;
+use App\Connections\PublishedReleases;
 
 /**
  * Tells a relay, whatever protocol it speaks, which release this journal publishes and which protocols it speaks.

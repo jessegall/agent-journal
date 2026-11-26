@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipelines;
 
-use App\Contracts\Bus\PipelineDefinition;
+use App\Bus\Contracts\PipelineDefinition;
 use App\Pipes\Supervision\DrainPart;
 use App\Pipes\Supervision\FinishPart;
-use App\Support\Execution\SpawnedPart;
+use App\Processes\Execution\SpawnedPart;
 use App\Support\Execution\StepOutcome;
 
 /**

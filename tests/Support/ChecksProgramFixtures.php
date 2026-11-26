@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Agents\Drivers\Contracts\DriverCall;
 use App\Agents\Drivers\Hooks\HookPayload;
 use App\Agents\Drivers\Hooks\JudgedCall;
-use App\Contracts\Drivers\DriverCall;
 use App\Support\Inputs\Contracts\HookInput;
 use App\Support\Inputs\Values\HookIdentity;
 

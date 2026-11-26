@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Agents;
 
-use App\Commands\Agents\ChangeAgentEffort\ChangeAgentEffortCommand;
-use App\Commands\Agents\RepairDriverSettings\RepairDriverSettingsCommand;
-use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Enums\Drivers\RequestOutcome;
-use App\Enums\Drivers\RequestProgress;
+use App\Agents\Commands\ChangeAgentEffort\ChangeAgentEffortCommand;
+use App\Agents\Commands\RepairDriverSettings\RepairDriverSettingsCommand;
+use App\Agents\Drivers\Commands\NotifyRequestProgress\NotifyRequestProgressCommand;
+use App\Agents\Drivers\Enums\RequestOutcome;
+use App\Agents\Drivers\Enums\RequestProgress;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Drivers\DriverRequest;
 use Tests\Support\Agents\OpensLedgerRuntimes;

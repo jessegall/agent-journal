@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Contracts\Drivers\DriverAdapter;
+use App\Agents\Drivers\Contracts\DriverAdapter;
 
 /**
  * What the test of one driver's adapter checks beside its fixtures: that it reports no actual model.

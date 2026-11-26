@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Accounts\Enums\SignInMethod;
 use App\Agents\Drivers\ClaudeCode\ClaudeTokenSignIn;
 use App\Contracts\Events\Listener;
-use App\Enums\Accounts\SignInMethod;
 use App\Events\Sessions\AccountSettingsRequested;
 use App\Models\Accounts\Account;
 

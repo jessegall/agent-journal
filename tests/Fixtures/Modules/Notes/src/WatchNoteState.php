@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Attributes\States\StateType;
-use App\Contracts\Bus\Command;
-use App\Support\States\AgentState;
+use App\Bus\Contracts\Command;
+use App\Stacks\AgentState;
+use App\Stacks\Attributes\StateType;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 
 /**

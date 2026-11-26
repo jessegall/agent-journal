@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Projects;
 
-use App\Commands\Projects\ProvisionLocalProject\ProvisionLocalProjectCommand;
-use App\Enums\Accounts\CommandEntry;
-use App\Enums\Messages\InboxPermission;
+use App\Accounts\Enums\CommandEntry;
+use App\Bus\JournalCommands;
+use App\Messages\Enums\InboxPermission;
 use App\Models\Access\EnvironmentUserGrant;
 use App\Models\Access\User;
 use App\Models\Projects\Environment;
 use App\Models\Projects\Project;
-use App\Support\JournalCommands;
+use App\Projects\Commands\ProvisionLocalProject\ProvisionLocalProjectCommand;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

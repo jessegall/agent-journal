@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Agents\ContinueStart\ContinueStartCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Agents\Commands\ContinueStart\ContinueStartCommand;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\ContinueStartRequest;
 use Illuminate\Http\JsonResponse;
 

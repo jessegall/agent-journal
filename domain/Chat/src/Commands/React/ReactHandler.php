@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands\React;
 
-use App\Commands\Messages\SendMessage\SendMessageCommand;
-use App\Contracts\Bus\CommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Messages\Commands\SendMessage\SendMessageCommand;
 use App\Models\Messages\Message;
 use Domain\Chat\Commands\Support\ChatCommandHandler;
 use Domain\Chat\Exceptions\ReactionRefused;

@@ -6,8 +6,8 @@ namespace Domain\Helpers\Listeners;
 
 use App\Attributes\Listeners\InCommandTransaction;
 use App\Contracts\Events\Listener;
-use App\Contracts\Sessions\SessionRequestResolver;
-use App\Support\SessionRequestDetails;
+use App\Sessions\Contracts\SessionRequestResolver;
+use App\Sessions\SessionRequestDetails;
 use Domain\Documents\Events\ReportFiled;
 use Domain\Helpers\Support\ReportJobLinkService;
 use Domain\Helpers\Values\FiledReport;

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Support\StateEvents;
 
+use App\Access\StateEvents\StateEventDispatch;
 use App\Models\Agents\AgentSession;
 use App\Models\Agents\AgentStackRow;
-use App\Support\Stack\AgentStack;
-use App\Support\Stack\StackRestorer;
+use App\Stacks\AgentStack;
+use App\Stacks\StackRestorer;
 use App\Values\StackTarget;
 use PhpOption\None;
 use PhpOption\Option;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\Projects\ProjectSelectionType;
-use App\Exceptions\ProjectNotChosen;
+use App\Projects\Enums\ProjectSelectionType;
+use App\Projects\Exceptions\ProjectNotChosen;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

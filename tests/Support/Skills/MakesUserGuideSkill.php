@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
-use App\Contracts\Work\AgentStacks;
-use App\Support\Access\AccessSettings;
-use App\Support\SkillPublishingService;
+use App\Access\AccessSettings;
+use App\Skills\SkillPublishingService;
+use App\Stacks\Contracts\Work\AgentStacks;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\TestActors;
 

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
-use App\Contracts\Authorization\PolicyProvider;
-use App\Contracts\Bus\CommandProvider;
-use App\Contracts\Navigation\PageProvider;
-use App\Contracts\Skills\SkillProvider;
+use App\Access\Contracts\PolicyProvider;
+use App\Access\Values\PolicyDefinition;
+use App\Agents\Enums\AccessType;
+use App\Bus\Contracts\CommandProvider;
 use App\Declarations\Page;
-use App\Enums\Agents\AccessType;
-use App\Enums\Navigation\Icon;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Navigation\Contracts\PageProvider;
+use App\Navigation\Enums\Icon;
+use App\Skills\Contracts\SkillProvider;
 use App\Support\Domain;
 use App\Support\Exports;
-use App\Values\PolicyDefinition;
 use Domain\Reminders\Commands\CreateReminder\CreateReminderCommand;
 use Domain\Reminders\Commands\FinishReminder\FinishReminderCommand;
 use Domain\Reminders\Http\Pages\Resolvers\RemindersWindowResolver;

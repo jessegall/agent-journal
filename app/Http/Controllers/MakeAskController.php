@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Api\Supervision\MakeAskPayload;
-use App\Attributes\Bus\Dispatches;
-use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Contracts\Asks\AskReader;
-use App\Contracts\Bus\CommandBus;
-use App\Data\Asks\AskCard;
+use App\Api\Api\Supervision\MakeAskPayload;
+use App\Asks\Commands\AskSupervisor\AskSupervisorCommand;
+use App\Asks\Contracts\AskReader;
+use App\Asks\Data\AskCard;
+use App\Bus\Attributes\Dispatches;
+use App\Bus\Contracts\CommandBus;
 
 final readonly class MakeAskController
 {

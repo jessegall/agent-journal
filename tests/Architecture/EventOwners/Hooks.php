@@ -23,28 +23,28 @@ return [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/ContextCollection.php',
+            'app/Hooks/ContextCollection.php',
         ],
     ],
     HelperCompletionCertified::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/StopCertification.php',
+            'app/Sessions/StopCertification.php',
         ],
     ],
     HelperAssigned::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/HelperRecordFacts.php',
+            'app/Agents/HelperRecordFacts.php',
         ],
     ],
     HelperFinishedOnRecord::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/HelperRecordFacts.php',
+            'app/Agents/HelperRecordFacts.php',
         ],
     ],
     HelperStopHeld::class => [
@@ -58,21 +58,21 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Support/Stack/StateCommandPublisher.php',
+            'app/Stacks/StateCommandPublisher.php',
         ],
     ],
     StateTypesRequested::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/Stack/StateTypes.php',
+            'app/Stacks/StateTypes.php',
         ],
     ],
     ToolCallFinished::class => [
         'role' => EventRole::Request,
         'migrated' => false,
         'producers' => [
-            'app/Support/FinishedToolCalls.php',
+            'app/Hooks/FinishedToolCalls.php',
         ],
     ],
     HookCallRecorded::class => [

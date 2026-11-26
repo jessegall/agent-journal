@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Assignments;
 
-use App\Commands\Assignments\AssignRecord\AssignRecordCommand;
-use App\Contracts\Bus\CommandBus;
-use App\Enums\CommandRules\ReceiptStatus;
+use App\Assignments\Commands\AssignRecord\AssignRecordCommand;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\RequestKey;
+use App\CommandRules\Enums\ReceiptStatus;
 use App\Exceptions\CrossProjectEdge;
-use App\Exceptions\RequestKeyConflict;
 use App\Models\Access\User;
 use App\Models\Agents\AgentSession;
 use App\Models\Inboxes\Inbox;
 use App\Models\Inboxes\InboxMember;
 use App\Models\Records\AssignmentRecord;
+use App\Skills\Exceptions\RequestKeyConflict;
 use App\Support\ActorReference;
 use App\Support\AssigneeIdentity;
 use App\Support\RecordIdentity;
-use App\Support\RequestKey;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;

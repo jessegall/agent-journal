@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Navigation;
 
-use App\Commands\Navigation\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
-use App\Enums\Navigation\NavigationCompletion;
-use App\Enums\Navigation\NavigationReason;
+use App\Agents\Drivers\Values\MenuStep;
+use App\Hosts\EnrolledHost;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\MenuEntry;
-use App\Support\EnrolledHost;
-use App\Values\MenuStep;
+use App\Navigation\Commands\MarkMenuEntryStale\MarkMenuEntryStaleCommand;
+use App\Navigation\Enums\NavigationCompletion;
+use App\Navigation\Enums\NavigationReason;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;

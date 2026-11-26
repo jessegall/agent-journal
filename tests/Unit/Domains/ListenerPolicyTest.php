@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Contracts\Bus\PipelineRunner;
-use App\Contracts\Navigation\ClientUpdate;
-use App\Exceptions\InvalidListener;
+use App\Bootstrap\CoreListenerFolders;
+use App\Bus\Contracts\PipelineRunner;
+use App\Bus\Exceptions\InvalidListener;
+use App\Bus\ListenerOwnership;
 use App\Listeners\BroadcastPageChange;
+use App\Navigation\Contracts\ClientUpdate;
 use App\Providers\DomainEventServiceProvider;
-use App\Support\CatalogueReflectorFactory;
-use App\Support\CoreListenerFolders;
+use App\Reflection\CatalogueReflectorFactory;
 use App\Support\DomainRegistry;
-use App\Support\ListenerOwnership;
 use App\Support\Registration\ListenerPolicy;
 use Domain\Plans\Events\PlanProgressChanged;
 use Domain\Plans\PlansDomain as InstalledPlansDomain;

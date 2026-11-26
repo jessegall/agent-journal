@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Refusals;
 
-use App\Contracts\Bus\CommandRefusal;
+use App\Bus\Contracts\CommandRefusal;
 
 /**
  * A refusal because what the caller saw is out of date, such as the session it wrote to or the version of a message;

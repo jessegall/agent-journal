@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Enums\CommandRules\StepType;
-use App\Enums\Processes\ShellDialect;
-use App\Enums\Runs\RunMode;
-use App\Enums\Runs\RunRequestIntent;
+use App\CommandRules\Enums\StepType;
+use App\Processes\Enums\RunMode;
+use App\Processes\Enums\RunRequestIntent;
+use App\Processes\Enums\ShellDialect;
 use App\Values\ExecutionPlan;
 use App\Values\RunAdmission;
 

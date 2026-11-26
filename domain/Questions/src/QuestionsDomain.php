@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Questions;
 
-use App\Contracts\Bus\CommandProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Support\Domain;
 use App\Support\Exports;

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Values;
 
-use App\Enums\CommandRules\StepType;
+use App\CommandRules\Enums\StepType;
+use App\Processes\Values\PlanStep;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 

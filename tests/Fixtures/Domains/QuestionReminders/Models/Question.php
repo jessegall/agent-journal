@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Models;
 
-use App\Contracts\Records\ReadableModel;
 use App\Concerns\BoundedReads;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -64,5 +64,4 @@ final class Question extends Model implements ReadableModel
     {
         return self::query()->create(['text' => $text]);
     }
-
 }

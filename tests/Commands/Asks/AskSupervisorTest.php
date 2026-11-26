@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Asks;
 
-use App\Commands\Asks\AskSupervisor\AskSupervisorCommand;
-use App\Contracts\Actors\ActorAttention;
-use App\Contracts\Asks\AskReader;
-use App\Contracts\Bus\CommandBus;
+use App\Actors\Contracts\ActorAttention;
+use App\Asks\Commands\AskSupervisor\AskSupervisorCommand;
+use App\Asks\Contracts\AskReader;
+use App\Bus\Contracts\CommandBus;
 use App\Models\Asks\Ask;
 use App\Models\Records\AssignmentRecord;
+use App\Profiles\ProfileProposal;
 use App\Support\ActorReference;
-use App\Support\ProfileProposal;
 use Domain\Tasks\TasksDomain;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;

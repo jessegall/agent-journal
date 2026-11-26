@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Commands\Accounts;
 
-use App\Commands\Accounts\RecordThreadTokens\RecordThreadTokensCommand;
-use App\Enums\Accounts\AccountProcessRole;
-use App\Enums\Agents\SessionProcessStatus;
+use App\Accounts\Commands\RecordThreadTokens\RecordThreadTokensCommand;
+use App\Accounts\Enums\AccountProcessRole;
+use App\Agents\Enums\SessionProcessStatus;
+use App\Agents\Values\UsageSource;
+use App\Hosts\EnrolledHost;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\AccountUsageTokens;
-use App\Support\EnrolledHost;
 use App\Values\ReportedStart;
 use App\Values\ThreadTokens;
-use App\Values\UsageSource;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

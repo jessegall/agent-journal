@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Drivers;
 
+use App\Agents\Drivers\Values\RecordedEvent;
 use App\Concerns\BoundedReads;
 use App\Concerns\InsertsAbsentRows;
 use App\Concerns\Linkable;
-use App\Contracts\Records\ReadableModel;
-use App\Enums\Runs\RuntimeEventType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Support\JournalModel;
-use App\Values\RecordedEvent;
+use App\Processes\Enums\RuntimeEventType;
+use App\Records\Contracts\ReadableModel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;

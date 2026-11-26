@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Pages\Resolvers;
 
-use App\Contracts\Authorization\CurrentAuthorizer;
-use App\Contracts\Navigation\PageResolver;
-use App\Contracts\Navigation\SlotSections;
-use App\Enums\Agents\AccessType;
-use App\Enums\CommandRules\ReadView;
+use App\Access\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AccessType;
+use App\CommandRules\Enums\ReadView;
+use App\Navigation\Contracts\PageResolver;
+use App\Navigation\Contracts\SlotSections;
 use App\Support\Layout\DeclaredLayoutData;
 use App\Support\Layout\DetailPage;
 use App\Support\NumberedPage;
