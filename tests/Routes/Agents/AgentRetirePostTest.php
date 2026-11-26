@@ -26,6 +26,7 @@ final class AgentRetirePostTest extends GuardedRouteEntryTestCase
         return RouteCall::as(Caller::Agent, $start)
             ->payload([
                 'agentId' => $helper->agent->id,
+                'request_key' => 'retire-1',
             ])
             ->reply(RetireAgentCommand::class, new AssignmentResult([], []))
             ->expects(RetireAgentCommand::class, [

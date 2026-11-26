@@ -313,9 +313,7 @@ final class CreateShareTest extends TestCase
 
     public function test_a_share_carries_its_roots_project(): void
     {
-        $this->app->make(CommandBus::class)->run(
-            new CreateDocumentCommand('Design', 'What we build', 'Ship it.', TestProjects::local()->id),
-        );
+        $this->journal->asOwner(new CreateDocumentCommand('Design', 'What we build', 'Ship it.', TestProjects::local()->id));
 
         $this->root = Document::query()->sole()->shareIdentity();
 
@@ -326,11 +324,13 @@ final class CreateShareTest extends TestCase
 
     public function test_a_walk_from_a_global_root_stops_at_global_records(): void
     {
-        $bus = $this->app->make(CommandBus::class);
-        $bus->run(new CreateDocumentCommand('Local design', 'Ours', 'Ship it.', TestProjects::local()->id));
-        $bus->run(new CreateDocumentCommand('Shared design', 'Everyone\'s', 'Ship it.', ProjectOwner::GLOBAL_KEY));
-        $local = Document::query()->where('title', 'Local design')->sole();
-        $global = Document::query()->where('title', 'Shared design')->sole();
+        $local = Document::query()->findOrFail($this->journal->asOwner(
+            new CreateDocumentCommand('Local design', 'Ours', 'Ship it.', TestProjects::local()->id),
+        )->id);
+
+        $global = Document::query()->findOrFail($this->journal->asOwner(
+            new CreateDocumentCommand('Shared design', 'Everyone\'s', 'Ship it.', ProjectOwner::GLOBAL_KEY),
+        )->id);
 
         foreach ([
             $local,

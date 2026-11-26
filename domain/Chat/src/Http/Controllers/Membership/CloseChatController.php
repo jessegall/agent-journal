@@ -31,12 +31,10 @@ final readonly class CloseChatController
     ): RedirectResponse {
         $chats->assertManages($input->inboxId);
 
-        foreach ([
+        $commands->run(new LeaveInboxCommand($input->inboxId, [
             ...InboxMember::resolveAttachedTo([$input->inboxId], User::class),
             ...InboxMember::resolveAttachedTo([$input->inboxId], Agent::class),
-        ] as $member) {
-            $commands->run(new LeaveInboxCommand($input->inboxId, $member));
-        }
+        ]));
 
         return $redirect->back(303);
     }

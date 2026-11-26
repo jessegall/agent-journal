@@ -44,7 +44,7 @@ final class ProposeRuleTool extends JournalWriteTool
         return new ProposeRuleCommand(
             $arguments->text('text'),
             $arguments->text('reason'),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
             $arguments->optionalUlid('replaces_rule_id'),
         );
     }
@@ -55,5 +55,13 @@ final class ProposeRuleTool extends JournalWriteTool
             'rule_id' => $ruleId,
             'state' => RuleStatus::Proposed->value,
         ]);
+    }
+
+    /**
+     * The calling agent's project, which the proposed rule belongs to.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

@@ -16,7 +16,6 @@ use Domain\Helpers\Support\PurposeChoice;
 use Domain\Helpers\Support\PurposeResolver;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
-use Tests\Support\TestProjects;
 
 /**
  * A helper job's purpose comes from exactly one of a subject, a purpose or words:
@@ -25,6 +24,11 @@ use Tests\Support\TestProjects;
  */
 final class HelperPurposeTest extends TestCase
 {
+    /**
+     * A project id the resolver only carries: a unit test reads no project row.
+     */
+    private const string PROJECT_ID = '01jqzr00000000000000project';
+
     private ActorReference $parent;
 
     private RecordIdentity $visible;
@@ -60,7 +64,7 @@ final class HelperPurposeTest extends TestCase
     {
         return $this->app->make(PurposeResolver::class)->resolve(
             new PurposeChoice(
-                TestProjects::local()->id,
+                self::PROJECT_ID,
                 $this->parent,
                 'read-only-helper',
                 $subject,

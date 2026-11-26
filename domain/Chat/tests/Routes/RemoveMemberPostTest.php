@@ -6,7 +6,6 @@ namespace Domain\Chat\Tests\Routes;
 
 use App\Commands\Inboxes\LeaveInbox\LeaveInboxCommand;
 use App\Commands\Inboxes\OpenInbox\OpenInboxCommand;
-use App\Support\ActorReference;
 use Domain\Chat\ChatDomain;
 use Domain\Chat\Support\PairChats;
 use Illuminate\Support\Str;
@@ -27,24 +26,49 @@ final class RemoveMemberPostTest extends GuardedRouteEntryTestCase
         return DomainBoot::withRequirements(ChatDomain::class);
     }
 
+    public function test_removing_a_member_from_the_members_list_detaches_it_too(): void
+    {
+        $group = $this->groupWithSam($this->journal);
+
+        $this->assertReachedAndDispatchesItsCommands($this->removesSam(RouteCall::recorded('chat-remove-member', [
+            '01JPAGEREQUESTINBOX0000000' => $group,
+            '01JPAGEREQUESTMEMBER000000' => $this->journal->userCalled('Sam')->id,
+        ]), $group));
+    }
+
     protected function arrange(TestJournal $journal): RouteCall
+    {
+        $group = $this->groupWithSam($journal);
+
+        return $this->removesSam(RouteCall::recorded('chat-transfer', [
+            '01JPAGEREQUESTINBOX0000000' => $group,
+            '01JPAGEREQUESTMEMBER000000' => $journal->userCalled('Sam')->id,
+        ]), $group);
+    }
+
+    /**
+     * A group of the owner and Sam; its inbox id.
+     */
+    private function groupWithSam(TestJournal $journal): string
     {
         $journal->owner()->user('Sam');
 
-        $group = $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
+        return $journal->run(new OpenInboxCommand(PairChats::GROUP_PROVIDER, (string) Str::ulid(), 'Design', [
             $journal->actorCalled('Owner'),
             $journal->actorCalled('Sam'),
         ]));
+    }
 
-        $member = $journal->userCalled('Sam');
-
-        return RouteCall::recorded('chat-transfer', [
-            '01JPAGEREQUESTINBOX0000000' => $group,
-            '01JPAGEREQUESTMEMBER000000' => $member->id,
-        ])
-            ->expects(LeaveInboxCommand::class, [
-                'inboxId' => $group,
-                'actor' => ActorReference::forUser($member->id),
-            ]);
+    /**
+     * The recorded call detaches Sam from the group.
+     */
+    private function removesSam(RouteCall $call, string $group): RouteCall
+    {
+        return $call->expects(LeaveInboxCommand::class, [
+            'inboxId' => $group,
+            'actors' => [
+                $this->journal->actorCalled('Sam'),
+            ],
+        ]);
     }
 }

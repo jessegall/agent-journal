@@ -9,7 +9,7 @@ use App\Contracts\Time\ServerClock;
 use App\Models\Inboxes\InboxMember;
 
 /**
- * Detaches the actor from the inbox.
+ * Detaches each of the actors from the inbox; an actor that is no member is passed over.
  */
 final readonly class LeaveInboxHandler implements CommandHandler
 {
@@ -17,12 +17,8 @@ final readonly class LeaveInboxHandler implements CommandHandler
 
     public function handle(LeaveInboxCommand $command): void
     {
-        $member = InboxMember::findActive($command->inboxId, $command->actor);
-
-        if ($member === null) {
-            return;
+        foreach ($command->actors as $actor) {
+            InboxMember::findActive($command->inboxId, $actor)?->leave($this->clock->now());
         }
-
-        $member->leave($this->clock->now());
     }
 }

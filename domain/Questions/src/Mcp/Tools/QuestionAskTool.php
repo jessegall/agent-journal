@@ -51,7 +51,7 @@ final class QuestionAskTool extends MessageWriteTool
             $this->targetOf($arguments),
             $arguments->text('text'),
             $arguments->enum('type', QuestionType::class),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
             $arguments->optionalList('options'),
         );
     }
@@ -69,5 +69,13 @@ final class QuestionAskTool extends MessageWriteTool
         $type = $arguments->oneOf('target_type', $this->actorTypes->requestTypes());
 
         return ActorReference::fromStored($type, $arguments->text('target_id'));
+    }
+
+    /**
+     * The calling agent's project, which the question belongs to.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

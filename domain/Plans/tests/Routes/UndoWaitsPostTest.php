@@ -31,7 +31,7 @@ final class UndoWaitsPostTest extends GuardedRouteEntryTestCase
         $plan = $journal->owner()->fixtures(PlanFixtures::class)->createPlan('Release');
         $graph = $journal->service(PlanGraphService::class);
         $graph->suggest($plan);
-        $graph->apply($plan);
+        $journal->keyed(fn () => $graph->apply($plan));
 
         return RouteCall::as(Caller::User)
             ->parameters([

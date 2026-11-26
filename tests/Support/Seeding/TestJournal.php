@@ -429,6 +429,17 @@ final class TestJournal
     }
 
     /**
+     * Puts back the actor the journal had in place, as after one of the journal's own requests; a request a test sends
+     * itself ends this way too.
+     */
+    public function reselect(): self
+    {
+        $this->requests->reselect();
+
+        return $this;
+    }
+
+    /**
      * Agents known only by their id, with no agent row, work in the local project from here on.
      */
     public function placeBareAgentsInLocalProject(): self

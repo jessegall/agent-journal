@@ -55,6 +55,17 @@ final class JournalCommandsTest extends TestCase
         $this->assertNull($this->app->make(RequestKey::class)->key());
     }
 
+    public function test_keyed_work_runs_under_one_key_and_leaves_none_behind(): void
+    {
+        $this->journal->owner();
+        $key = $this->app->make(RequestKey::class);
+
+        $during = $this->journal->keyed(fn () => $key->key());
+
+        $this->assertNotNull($during);
+        $this->assertNull($key->key());
+    }
+
     public function test_a_journal_command_runs_from_its_entry_and_the_owner_acts_again_after_it(): void
     {
         $this->journal->owner();

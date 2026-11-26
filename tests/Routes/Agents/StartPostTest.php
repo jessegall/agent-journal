@@ -35,6 +35,7 @@ final class StartPostTest extends GuardedRouteEntryTestCase
             ])
             ->payload([
                 'requestId' => strtolower((string) Str::ulid()),
+                'model' => 'claude-opus-5-5',
             ])
             ->reply(StartAgentCommand::class, new StartReceipt(
                 strtolower((string) Str::ulid()),

@@ -218,7 +218,11 @@ abstract class TestCase extends BaseTestCase
             throw HttpUsedInUnitTest::by(static::class);
         }
 
-        return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
+        try {
+            return parent::call($method, $uri, $parameters, $cookies, $files, $server, $content);
+        } finally {
+            $this->journal->reselect();
+        }
     }
 
     /**

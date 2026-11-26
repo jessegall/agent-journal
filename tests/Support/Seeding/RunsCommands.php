@@ -12,6 +12,7 @@ use App\Support\ActorStore;
 use App\Support\CommandRegistry;
 use App\Support\JournalCommands;
 use App\Support\RequestKey;
+use Closure;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 
@@ -37,6 +38,27 @@ trait RunsCommands
 
         try {
             return $this->app->make(CommandBus::class)->run($command);
+        } finally {
+            $key->forget();
+        }
+    }
+
+    /**
+     * Runs the work as the actor in place under one request key of its own, as a request that calls a service which
+     * sends its commands does, and forgets the key afterwards.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function keyed(Closure $work): mixed
+    {
+        $key = $this->app->make(RequestKey::class);
+        $key->set((string) Str::ulid());
+
+        try {
+            return $work();
         } finally {
             $key->forget();
         }

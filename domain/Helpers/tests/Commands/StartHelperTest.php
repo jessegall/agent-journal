@@ -39,6 +39,7 @@ use Domain\Helpers\Exceptions\HelperProfileTypeConflict;
 use Domain\Helpers\Exceptions\HelperRequestConflict;
 use Domain\Helpers\Exceptions\HelperRetired;
 use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\HelpersDomain;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
@@ -48,9 +49,11 @@ use Domain\Helpers\Tests\TestCase;
 use Domain\Helpers\Values\HelperReceipt;
 use Domain\Helpers\Values\HelperWork;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestProjects;
@@ -70,6 +73,14 @@ final class StartHelperTest extends TestCase
     use RefreshHookDatabase;
 
     private const string SHELL_LIKE_BRIEF = 'Review it; rm -rf / && echo "$(whoami)" `id`';
+
+    /**
+     * A task of another project is the source the cross-project refusal is checked with, so Tasks boots beside Helpers.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(HelpersDomain::class, TasksDomain::class);
+    }
 
     public function test_a_default_start_names_the_resolved_model_revision_and_type_and_keeps_the_brief_as_data(): void
     {

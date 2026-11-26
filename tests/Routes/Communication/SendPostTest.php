@@ -24,10 +24,8 @@ final class SendPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::User)
             ->payload([
-                'message' => [
-                    'inboxId' => $inbox->id,
-                    'body' => 'Hello',
-                ],
+                'inboxId' => $inbox->id,
+                'body' => 'Hello',
                 'request_key' => 'send-1',
             ])
             ->reply(SendMessageCommand::class, (string) Str::ulid())

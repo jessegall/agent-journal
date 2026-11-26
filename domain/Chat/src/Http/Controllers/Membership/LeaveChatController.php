@@ -27,7 +27,7 @@ final readonly class LeaveChatController
         Redirector $redirect,
     ): RedirectResponse {
         $chats->attached($input->inboxId);
-        $commands->run(new LeaveInboxCommand($input->inboxId, $actors->actor()));
+        $commands->run(new LeaveInboxCommand($input->inboxId, [$actors->actor()]));
 
         return $redirect->back(303);
     }

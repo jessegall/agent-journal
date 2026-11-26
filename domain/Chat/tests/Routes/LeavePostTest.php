@@ -40,7 +40,9 @@ final class LeavePostTest extends GuardedRouteEntryTestCase
         ])
             ->expects(LeaveInboxCommand::class, [
                 'inboxId' => $group,
-                'actor' => $journal->actorCalled('Owner'),
+                'actors' => [
+                    $journal->actorCalled('Owner'),
+                ],
             ]);
     }
 }

@@ -7,7 +7,8 @@ namespace Tests\Unit\Web;
 use App\Exceptions\LoaderInputUnreadable;
 use App\Values\Web\LoaderInput;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use Tests\TestCase;
 
 /**
  * A loader call's input header is read only when it is base64url UTF-8 JSON of a token and an input, within its
@@ -50,15 +51,15 @@ final class LoaderInputTest extends TestCase
             'not base64url' => ['eyJ0b2tlbiI6InQxIn0=+/', LoaderInputUnreadable::notEncoded()],
             'not JSON' => [self::base64url('{token'), LoaderInputUnreadable::notEncoded()],
             'not UTF-8' => [self::base64url("\xff\xfe"), LoaderInputUnreadable::notEncoded()],
-            'no input' => [self::encoded(['token' => 't1']), LoaderInputUnreadable::notACall()],
-            'empty token' => [self::encoded(['token' => '', 'input' => []]), LoaderInputUnreadable::notACall()],
+            'no input' => [self::encoded(['token' => 't1']), LoaderInputUnreadable::notACall(new RuntimeException())],
+            'empty token' => [self::encoded(['token' => '', 'input' => []]), LoaderInputUnreadable::notACall(new RuntimeException())],
             'token with a space' => [
                 self::encoded(['token' => 't 1', 'input' => []]),
-                LoaderInputUnreadable::notACall(),
+                LoaderInputUnreadable::notACall(new RuntimeException()),
             ],
             'token too long' => [
                 self::encoded(['token' => str_repeat('t', 65), 'input' => []]),
-                LoaderInputUnreadable::notACall(),
+                LoaderInputUnreadable::notACall(new RuntimeException()),
             ],
         ];
     }

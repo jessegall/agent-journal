@@ -6,6 +6,7 @@ namespace App\Exceptions;
 
 use Illuminate\Http\Response;
 use RuntimeException;
+use Throwable;
 
 /**
  * A loader call whose input header cannot be read: the browser sent something no page of the journal sends, so it is
@@ -23,10 +24,11 @@ final class LoaderInputUnreadable extends RuntimeException
         return new self("A loader's input is base64url UTF-8 JSON.");
     }
 
-    public static function notACall(): self
+    public static function notACall(Throwable $cause): self
     {
         return new self(
             "A loader's input names a token of 1 to 64 letters, digits, dashes or underscores, and an input.",
+            previous: $cause,
         );
     }
 

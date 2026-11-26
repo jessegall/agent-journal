@@ -73,10 +73,17 @@ final readonly class SunkCommand
     }
 
     /**
-     * A scalar or array is the same only when identical; a value object is the same when its fields are equal.
+     * A scalar is the same only when identical, a value object when its fields are equal, and an array when each of
+     * its keys holds the same value.
      */
     private static function isSameValue(mixed $sent, mixed $expected): bool
     {
+        if (is_array($expected)) {
+            return is_array($sent)
+                && array_keys($sent) === array_keys($expected)
+                && array_all($expected, fn (mixed $value, int|string $key) => self::isSameValue($sent[$key], $value));
+        }
+
         return is_object($expected) ? $sent == $expected : $sent === $expected;
     }
 }

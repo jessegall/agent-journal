@@ -26,6 +26,7 @@ use App\Models\Skills\SkillPublication;
 use App\Models\Skills\SkillReceipt;
 use App\Resolvers\Support\SkillStatusResolver;
 use App\Support\DomainRegistry;
+use App\Support\Drivers\ClaudeCodeSkills;
 use App\Support\Inputs\Values\DriverToolInput;
 use App\Support\Inputs\Values\ToolResult;
 use App\Support\ReminderContribution;
@@ -120,7 +121,7 @@ final class RecordSkillReadTest extends TestCase
     {
         $session = $this->startedMainAgent();
         $digest = $this->deliveredDigest($session, 'journal-plans');
-        $this->finished($session, 'mcp__journal__skills_show', ['key' => 'journal-plans']);
+        $this->finished($session, 'Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':journal-plans']);
         $this->assertTrue(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
 
         $this->app->make(AdvanceSkillContext::class)->handle(new ContextStarted(
@@ -139,7 +140,7 @@ final class RecordSkillReadTest extends TestCase
 
         $this->assertReminded($this->boundary($session));
 
-        $this->finished($session, 'mcp__journal__skills_show', ['key' => 'user-guide']);
+        $this->finished($session, 'Skill', ['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']);
         $this->assertNotReminded($this->boundary($session));
 
         $this->app->make(SkillPublishingService::class)->refresh();
@@ -172,9 +173,9 @@ final class RecordSkillReadTest extends TestCase
         $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
             new StackTarget($session->agent_id, $session->id),
             new ToolResult(
-                'mcp__journal__skills_show',
+                'Skill',
                 ToolOutcome::Succeeded,
-                new DriverToolInput(['key' => 'user-guide']),
+                new DriverToolInput(['skill' => ClaudeCodeSkills::PLUGIN_NAME.':user-guide']),
             ),
         ));
         $this->assertTrue($this->guideOf($session)->isLoaded);

@@ -108,7 +108,7 @@ return [
         'not_delivered' => 'The skills the journal gives you are {state}, not delivered yet, so file changes wait. Reading still '
             .'works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
         'read_required' => 'Read the required skill {skill} whole before work it covers: php artisan skill:show '
-            .'{skill}, or the skills_show tool',
+            .'{skill}',
         'changed' => 'Your skills changed to {skills}: {driver} loads skills only when a session starts, so start a '
             .'new session to use them; until then read one with php artisan skill:show <key>',
         'not_chosen' => 'Your skills could not be chosen for this start: {problem}',

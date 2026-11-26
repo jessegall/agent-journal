@@ -26,7 +26,7 @@ final readonly class RemoveParticipantController
         Redirector $redirect,
     ): RedirectResponse {
         $chats->assertManages($input->inboxId);
-        $commands->run(new LeaveInboxCommand($input->inboxId, ActorReference::fromText($input->participant)));
+        $commands->run(new LeaveInboxCommand($input->inboxId, [ActorReference::fromText($input->participant)]));
 
         return $redirect->back(303);
     }

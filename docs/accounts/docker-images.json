@@ -184,6 +184,86 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-23T15:39:11+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:061774b866c60b13e269068d331c47fb0881fccb12ea5baea43f6934826c4f73",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T16:41:41+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:69625d1ec538f24a0d189a5554af74bdf948e2398a6289ae8d2452cc1f8a74bb",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T16:42:49+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:0f9da2bdb884ca091204009808955f6dbff11d27625443e6b6a6cc3b923d9ccf",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T17:06:44+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:bf86a004334013643209650db13176bd8d063b0f73b93230645003fd1cb2745c",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T17:08:46+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:b8d9610424cfaa199aa3ffd05d16f005ee2cb71389bf9dfdec93786518896bef",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T20:08:25+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:311f37808cc062503f8401ceb1df79e6485b9ffa602746ee2997de623a987282",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-23T20:09:33+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:65256e488bd40aa5f8f91794ba82139755015f60297d275a38c212d2c3cc751f",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-26T01:15:55+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:6d0a31cc5091b25aef5d5e42bd2c777be0e7706e2a5d2936770764edbec447fe",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-26T01:17:55+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:c10401eab4d7a9ab024496737e4d3a7005bcd16b06bc7c29e912108345ec7189",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-26T01:22:29+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:92a5c61d7bf0175fd9eac2c64e8568f2eaa342bd6b4d4b011b0c80b684f7809e",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-26T01:25:25+00:00"
         }
     ]
 }

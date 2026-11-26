@@ -26,7 +26,7 @@ final class AgentSendPostTest extends GuardedRouteEntryTestCase
         return RouteCall::as(Caller::Agent, $start)
             ->payload([
                 'message' => [
-                    'inboxId' => $inbox->id,
+                    'inbox_id' => $inbox->id,
                     'body' => 'Hello',
                 ],
                 'request_key' => 'send-1',

@@ -62,6 +62,17 @@ final class JournalActingTest extends TestCase
         );
     }
 
+    public function test_an_agent_with_a_row_keeps_its_own_project_when_bare_agents_are_placed_locally(): void
+    {
+        $this->journal->placeBareAgentsInLocalProject()->owner()->project('Shop')->agent('Cy', 'main-agent', 'Shop')
+            ->actAs('Cy');
+
+        $this->assertEquals(
+            ProjectSelection::of($this->journal->projectCalled('Shop')->id),
+            $this->app->make(CurrentProject::class)->selection(),
+        );
+    }
+
     public function test_the_owner_reads_the_project_the_browser_chose_or_all_of_them(): void
     {
         $this->journal->owner()->project('Shop')->selectProject('Shop');
@@ -72,6 +83,15 @@ final class JournalActingTest extends TestCase
 
         $this->journal->inAllProjects();
         $this->assertEquals(ProjectSelection::all(), $this->app->make(CurrentProject::class)->selection());
+    }
+
+    public function test_the_actor_in_place_comes_back_after_a_request_the_test_sends_itself(): void
+    {
+        $this->journal->owner();
+
+        $this->get('/up');
+
+        $this->assertActor(ActorReference::of($this->journal->ownerUser()));
     }
 
     public function test_a_command_run_as_a_named_actor_is_sent_by_them_and_the_actor_in_place_comes_back(): void

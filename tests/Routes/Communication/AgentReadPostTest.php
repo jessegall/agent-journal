@@ -27,7 +27,7 @@ final class AgentReadPostTest extends GuardedRouteEntryTestCase
 
         return RouteCall::as(Caller::Agent, $start)
             ->payload([
-                'messageId' => $messageId,
+                'message_id' => $messageId,
                 'request_key' => 'read-1',
             ])
             ->reply(ReadMessageCommand::class, new ShownMessage(

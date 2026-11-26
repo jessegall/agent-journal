@@ -17,7 +17,6 @@ use App\Values\RuleBundle;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -29,12 +28,21 @@ final class ApproveRuleBundleTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // A bundle is approved in the local project, which the owner's every-project view writes to.
+        $this->journal->owner();
+        $this->localProject();
+    }
+
     public function test_a_module_bundle_classifies_only_after_the_owner_activates_its_exact_digest(): void
     {
         $bundle = $this->installNotes(1);
         $this->assertFalse($this->isKnown('notes-cli list'));
 
-        $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
+        $this->journal->asOwner(new ApproveRuleBundleCommand($bundle->module, $bundle->version, $bundle->digest()));
         $this->assertTrue($this->isKnown('notes-cli list'));
 
         $this->installNotes(2);
@@ -47,7 +55,7 @@ final class ApproveRuleBundleTest extends TestCase
         $this->installNotes(2);
 
         $this->assertThrows(
-            fn () => $this->journal->actAsUserId(TestIds::of(7))->runUnkeyed(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
+            fn () => $this->journal->asOwner(new ApproveRuleBundleCommand($old->module, $old->version, $old->digest())),
             ApprovalRefused::class,
         );
     }

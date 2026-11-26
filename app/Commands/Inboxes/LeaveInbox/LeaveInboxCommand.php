@@ -8,11 +8,14 @@ use App\Support\ActorReference;
 use App\Support\Command;
 
 /**
- * Detaches the actor from the inbox.
+ * Detaches each of the actors from the inbox, in one write.
  *
  * @extends Command<null>
  */
 final readonly class LeaveInboxCommand extends Command
 {
-    public function __construct(public string $inboxId, public ActorReference $actor) {}
+    /**
+     * @param  list<ActorReference>  $actors
+     */
+    public function __construct(public string $inboxId, public array $actors) {}
 }

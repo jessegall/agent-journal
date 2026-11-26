@@ -42,12 +42,20 @@ final class CreatePlanTool extends PlanWriteTool
             $arguments->text('title'),
             $arguments->text('brief'),
             $arguments->enum('type', PlanType::class),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
         );
     }
 
     protected function present(mixed $planId): ToolResult
     {
         return ToolResult::ok(['plan_id' => $planId]);
+    }
+
+    /**
+     * The calling agent's project, which the plan belongs to.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

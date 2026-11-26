@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Comments\Tests\Commands;
 
+use App\Commands\Projects\NotifyProjectRead\NotifyProjectReadCommand;
 use App\Contracts\Bus\CommandBus;
 use App\Contracts\Reads\TextResolver;
 use App\Enums\Projects\ProjectReadType;
@@ -26,6 +27,7 @@ use App\Support\RecordIdentity;
 use App\Support\TextSelection;
 use App\Values\BindingFolder;
 use App\Values\PageSize;
+use App\Values\ProjectFileText;
 use App\Values\TextRange;
 use Carbon\CarbonImmutable;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
@@ -305,12 +307,14 @@ final class PostTextCommentTest extends TestCase
             ActorReference::ofClass(User::class, '01jqzr0000000000000000user'),
         );
 
-        $this->journal->hostCall($this->host, 'POST', "/host/reports/project-reads/{$read->id}", [
-            'text' => $text,
-            'digest' => hash('sha256', $text),
-            'size' => strlen($text),
-            'truncated' => $isTruncated,
-        ])->assertNoContent();
+        $this->journal->asSystem(new NotifyProjectReadCommand(
+            $this->host->hostId,
+            $read->id,
+            [],
+            new ProjectFileText($text, hash('sha256', $text), strlen($text)),
+            $isTruncated,
+            null,
+        ));
     }
 
     private function actAsOwner(): void

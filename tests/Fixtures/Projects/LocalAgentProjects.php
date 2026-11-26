@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Projects;
 
 use App\Contracts\Projects\AgentProjects;
+use App\Models\Agents\Agent;
 use Tests\Support\TestProjects;
 
 /**
- * Agent projects for a test whose agents are ids with no agent row: every agent works in the local project.
+ * Agent projects for a test whose agents are ids with no agent row: such an agent works in the local project, and an
+ * agent with a row works in its own.
  */
 final class LocalAgentProjects implements AgentProjects
 {
     public function projectIdOf(string $agentId): string
     {
-        return TestProjects::local()->id;
+        return Agent::query()->whereKey($agentId)->value('project_id') ?? TestProjects::local()->id;
     }
 }

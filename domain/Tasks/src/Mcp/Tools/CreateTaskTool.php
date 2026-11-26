@@ -39,12 +39,20 @@ final class CreateTaskTool extends TaskWriteTool
         return new CreateTaskCommand(
             $arguments->text('title'),
             $arguments->text('brief'),
-            $this->destination->projectFor(None::create()),
+            $this->projectId(),
         );
     }
 
     protected function present(mixed $taskId): ToolResult
     {
         return ToolResult::ok(['task_id' => $taskId]);
+    }
+
+    /**
+     * The calling agent's project, which the task belongs to.
+     */
+    private function projectId(): string
+    {
+        return $this->destination->projectFor(None::create());
     }
 }

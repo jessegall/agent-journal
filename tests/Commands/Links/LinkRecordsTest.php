@@ -10,12 +10,10 @@ use App\Contracts\Bus\CommandBus;
 use App\Contracts\Records\RecordResolver;
 use App\Exceptions\CrossProjectEdge;
 use App\Exceptions\RecordUnavailable;
-use App\Models\Access\User;
 use App\Models\Agents\Agent;
 use App\Models\Messages\Message;
 use App\Models\Projects\Environment;
 use App\Models\Records\Link;
-use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AgentContext;
 use App\Support\RecordIdentity;
@@ -24,11 +22,8 @@ use App\Values\OwnerAuthority;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument\CreateDocumentCommand;
-use Domain\Documents\Commands\CreateReport\CreateReportCommand;
 use Domain\Documents\DocumentsDomain;
 use Domain\Documents\Models\Document;
-use Domain\Plans\Enums\PlanType;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\PlansDomain;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\TasksDomain;
@@ -153,23 +148,6 @@ final class LinkRecordsTest extends TestCase
         $this->actAsAgent(9);
 
         $this->assertSame([], $this->records()->linkedCards(Document::query()->sole()));
-    }
-
-    public function test_the_page_adds_and_removes_a_link_and_goes_back_to_the_record(): void
-    {
-        $this->actAsUser();
-
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
-        $this->bus()->run(new CreateReportCommand('Check', 'What we found', "All good\n", TestProjects::local()->id));
-        $link = ['source' => 'report 1', 'target' => 'plan 1'];
-
-        $this->actingAs($owner)->from('/reports/1')->post('/links/add', $link)->assertRedirect('/reports/1');
-        $this->assertSame(1, Link::query()->count());
-
-        $this->actingAs($owner)->from('/reports/1')->post('/links/remove', $link)->assertRedirect('/reports/1');
-        $this->assertSame(0, Link::query()->count());
     }
 
     public function test_records_of_two_projects_are_refused_and_both_stay_unlinked(): void

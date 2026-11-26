@@ -19,6 +19,6 @@ final readonly class HandOverInboxHandler implements CommandHandler
     public function handle(HandOverInboxCommand $command): void
     {
         $this->commands->run(new JoinInboxCommand($command->inboxId, $command->to));
-        $this->commands->run(new LeaveInboxCommand($command->inboxId, $command->from));
+        $this->commands->run(new LeaveInboxCommand($command->inboxId, [$command->from]));
     }
 }

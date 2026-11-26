@@ -13,8 +13,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Only a call that returns a whole skill proves a read: the Skill tool, a whole Read or cat of a delivered SKILL.md,
- * or skills_show. A listing, a partial read and a failed call prove nothing.
+ * Only a call that returns a whole skill proves a read: the Skill tool, or a whole Read or cat of a delivered SKILL.md.
+ * A listing, a partial read and a failed call prove nothing.
  */
 final class ProvenSkillReadTest extends TestCase
 {
