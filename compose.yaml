@@ -321,7 +321,7 @@ services:
         command:
             - journal-agent
             - enroll
-            - --journal=http://app:8000
+            - --journal=${AGENTS_JOURNAL_URL:-http://app:8000}
             - --host=${AGENTS_HOST_ID:-}
             - --state=/var/lib/journal-host
             - --secret-file=/run/secrets/journal_host_secret
