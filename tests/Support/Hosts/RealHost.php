@@ -29,6 +29,8 @@ final class RealHost
      */
     private array $running = [];
 
+    private InvokedProcess|null $host = null;
+
     private function __construct(private readonly Factory $processes, public readonly string $folder) {}
 
     /**
@@ -48,7 +50,7 @@ final class RealHost
             '--state', "{$folder}/state", '--secret-file', "{$folder}/secret",
         ]);
         Assert::assertTrue($enrolled->successful(), 'The real host did not enroll: '.$enrolled->errorOutput());
-        $real->run([self::binary(), 'protocol', '--state', "{$folder}/state", '--docker', "unix://{$folder}/docker.sock"]);
+        $real->startHost();
 
         return $real;
     }
@@ -92,8 +94,22 @@ final class RealHost
         return substr(hash_final($context), 0, 16);
     }
 
+    /**
+     * Stops the host binary and starts it again; the stand-in daemon and its containers run on.
+     */
+    public function restartHost(): void
+    {
+        $this->host?->signal(SIGTERM);
+        $this->host?->wait();
+        $this->startHost();
+    }
+
     public function stop(): void
     {
+        $this->host?->signal(SIGTERM);
+        $this->host?->wait();
+        $this->host = null;
+
         foreach ($this->running as $process) {
             $process->signal(SIGTERM);
             $process->wait();
@@ -105,6 +121,13 @@ final class RealHost
     public function __destruct()
     {
         $this->stop();
+    }
+
+    private function startHost(): void
+    {
+        $command = [self::binary(), 'protocol', '--state', "{$this->folder}/state", '--docker', "unix://{$this->folder}/docker.sock"];
+        $this->host = $this->processes->env(getenv())->forever()->start($command);
+        usleep(200_000);
     }
 
     /**

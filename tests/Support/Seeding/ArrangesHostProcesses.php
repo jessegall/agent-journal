@@ -20,12 +20,15 @@ use App\Enums\Hosts\RestartPolicy;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\ContainerManifest;
+use App\Support\Drivers\DriverWork;
+use App\Support\Drivers\DriverWorkers;
 use App\Support\Drivers\ProgramDrivers;
 use App\Support\MountRules;
 use App\Support\SecurityOptions;
 use App\Values\ExecutionBudgets;
 use App\Values\HostOrderSource;
 use App\Values\HostProcessPlan;
+use Closure;
 use Illuminate\Process\Factory;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
@@ -195,12 +198,16 @@ trait ArrangesHostProcesses
     /**
      * Opens a container of the stand-in's echo program on the named host, which must run for real.
      */
-    public function openEchoContainer(string $host, string $name): self
-    {
+    public function openEchoContainer(
+        string $host,
+        string $name,
+        string|null $runtimeId = null,
+        RestartPolicy $restart = RestartPolicy::Never,
+    ): self {
         $plan = new HostProcessPlan(
             HostProcessPurpose::Probe,
             HostProcessType::Terminal,
-            RestartPolicy::Never,
+            $restart,
             ['echo-program'],
             [],
             '/workspace',
@@ -220,10 +227,41 @@ trait ArrangesHostProcesses
             ),
         );
         $this->hostProcesses[$name] = $this->asSystem(
-            new OpenHostProcessCommand($this->hostCalled($host)->hostId, null, $plan, HostOrderSource::fromJournal()),
+            new OpenHostProcessCommand($this->hostCalled($host)->hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
         );
 
         return $this;
+    }
+
+    /**
+     * The real host's binary stops and starts again, its containers left running.
+     */
+    public function restartRealHost(): self
+    {
+        $this->realHost?->restartHost();
+
+        return $this;
+    }
+
+    /**
+     * A driver worker drives the named process in this test's own process, step by step, until the condition holds
+     * or the seconds pass, and answers the worker for further driving.
+     *
+     * @param  Closure(): bool  $until
+     */
+    public function driveHostProcess(string $name, Closure $until, DriverWork|null $work = null, int $seconds = 10): DriverWork
+    {
+        $workers = $this->app->make(DriverWorkers::class);
+        $work ??= $workers->begin($this->hostProcessCalled($name)->id);
+        $deadline = microtime(true) + $seconds;
+
+        while (! $until() && microtime(true) < $deadline && $workers->step($work, 200)) {
+            continue;
+        }
+
+        Assert::assertTrue($until(), "The worker of {$name} did not reach what the test waits for.");
+
+        return $work;
     }
 
     /**
