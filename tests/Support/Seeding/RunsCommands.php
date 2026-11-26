@@ -105,7 +105,8 @@ trait RunsCommands
     }
 
     /**
-     * The same as throughEntry() on a fresh request: the scoped instances of the last one are forgotten first.
+     * The same as throughEntry() on a request of its own: the scoped instances are forgotten before and after it, so
+     * neither the last request nor the next one shares its actor.
      *
      * @template TResult
      *
@@ -116,7 +117,11 @@ trait RunsCommands
     {
         $this->app->forgetScopedInstances();
 
-        return $this->throughEntry($command);
+        try {
+            return $this->throughEntry($command);
+        } finally {
+            $this->app->forgetScopedInstances();
+        }
     }
 
     /**

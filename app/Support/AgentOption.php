@@ -48,14 +48,14 @@ final readonly class AgentOption
     ) {}
 
     /**
-     * Refuses a message written for another session or process generation than the one the agent runs now; one
-     * written while the agent was idle reaches its inbox.
+     * Refuses a message written for another session than the one the agent runs now. The session's process may have
+     * changed since, as a headless driver starts one for every turn: the message is written to the session.
      *
      * @throws SessionOutdated
      */
-    public function assertRuns(string|null $sessionId, int $generation): void
+    public function assertRuns(string|null $sessionId): void
     {
-        if ($this->sessionId !== $sessionId || $this->sessionGeneration !== $generation) {
+        if ($this->sessionId !== $sessionId) {
             throw SessionOutdated::forAgent($this->agentId);
         }
     }

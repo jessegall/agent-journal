@@ -58,7 +58,6 @@ function draft(text: string) {
     text,
     agent: "agent-1",
     expectedSessionId: "session-1",
-    expectedGeneration: 1,
     inboxId: "inbox-chat",
   };
 }

@@ -26,7 +26,7 @@ final readonly class SendMessageController
         Redirector $redirect,
     ): RedirectResponse {
         if ($input->agent !== null) {
-            $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId, $input->expectedGeneration);
+            $agents->visibleAgent($input->agent)->assertRuns($input->expectedSessionId);
         }
 
         $commands->run(new SendMessageCommand($input->inboxId, $input->body, $input->targetMessageNumber));

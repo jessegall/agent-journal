@@ -24,7 +24,6 @@ const props = defineProps<{
   agent: string | null;
   addresseeName: string | null;
   sessionId: string | null;
-  sessionGeneration: number;
   inboxId: string;
   replyingTo: ReplyTarget | null;
   conversationProp: string;
@@ -78,7 +77,6 @@ function submit(): void {
     text: body.value,
     agent: props.agent,
     expectedSessionId: props.sessionId,
-    expectedGeneration: props.sessionGeneration,
     inboxId: props.inboxId,
   };
   const replyingTo = props.replyingTo;

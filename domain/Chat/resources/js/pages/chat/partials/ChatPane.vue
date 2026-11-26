@@ -204,7 +204,6 @@ watch(
         text: handOverText(handed),
         agent: handed.agentId,
         expectedSessionId: opened.sessionId,
-        expectedGeneration: opened.sessionGeneration,
         inboxId: opened.inboxId,
       }),
       props.protectedProp,
@@ -429,7 +428,6 @@ watch(isShown, readOnOpen);
           :agent="agentIdsInChat.length === 1 ? (selected?.id ?? null) : null"
           :addressee-name="selected?.name ?? null"
           :session-id="conversation.sessionId"
-          :session-generation="conversation.sessionGeneration"
           :inbox-id="conversation.inboxId"
           :replying-to="replyingTo"
           :conversation-prop="protectedProp"

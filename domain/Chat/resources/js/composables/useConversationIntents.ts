@@ -44,7 +44,6 @@ type SendDraft = {
   text: string;
   agent: string | null;
   expectedSessionId: string | null;
-  expectedGeneration: number;
   inboxId: string;
 };
 
@@ -112,7 +111,6 @@ function createOwner(draftKey: string) {
       body: draft.text,
       agent: draft.agent,
       expectedSessionId: draft.expectedSessionId,
-      expectedGeneration: draft.expectedGeneration,
       inboxId: draft.inboxId,
     });
   }
@@ -125,7 +123,6 @@ function createOwner(draftKey: string) {
       body: draft.text,
       agent: draft.agent,
       expectedSessionId: draft.expectedSessionId,
-      expectedGeneration: draft.expectedGeneration,
       inboxId: draft.inboxId,
       targetMessageNumber: original.number,
     });

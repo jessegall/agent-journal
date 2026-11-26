@@ -26,7 +26,6 @@ final class MessageInput extends Data
         public readonly string|null $agent = null,
         #[Ulid]
         public readonly string|null $expectedSessionId = null,
-        public readonly int $expectedGeneration = 0,
         public readonly int|null $targetMessageNumber = null,
     ) {}
 }

@@ -5,7 +5,6 @@
         "body": "Hello",
         "agent": null,
         "expectedSessionId": null,
-        "expectedGeneration": 0,
         "inboxId": "01JPAGEREQUESTINBOX0000000"
     },
     "headers": {

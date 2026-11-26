@@ -48,7 +48,6 @@ function mountComposer(replyingTo: ReplyTarget | null = null) {
       agent: "agent-1",
       addresseeName: "Main agent",
       sessionId: null,
-      sessionGeneration: 0,
       inboxId: "inbox-chat",
       replyingTo,
       conversationProp: "window_chat_conversation",

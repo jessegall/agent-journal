@@ -47,7 +47,6 @@ describe('the Inertia posts of the chat, as the page sends them', () => {
             text: 'Hello',
             agent: null,
             expectedSessionId: null,
-            expectedGeneration: 0,
             inboxId: RECORDED.inbox,
         });
         owner.submit(intent, 'conversation');
