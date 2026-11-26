@@ -1,2 +1,0 @@
-{"Service": "web", "State": "running", "Health": "healthy", "ExitCode": 0}
-{"Service": "agent-images", "State": "exited", "Health": "", "ExitCode": 0}

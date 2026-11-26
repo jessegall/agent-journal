@@ -1,2 +1,0 @@
-Host {{host}} is enrolled as journal.
-{{secret}}
