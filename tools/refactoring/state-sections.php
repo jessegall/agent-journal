@@ -12,7 +12,7 @@ declare(strict_types=1);
  *       prints "file:line<TAB>what is wrong" and fails while there is one.
  */
 
-use App\Support\Inputs\Contracts\HookAnswerer;
+use App\Support\Inputs\Contracts\HookHandler;
 use App\Support\ReflectedMethod;
 use App\Support\Reflector;
 use PhpParser\Node\Stmt\Class_;
@@ -49,7 +49,7 @@ function hookMethods(): array
 {
     return array_map(
         fn (ReflectedMethod $method) => $method->name(),
-        Reflector::of(HookAnswerer::class)->methods(),
+        Reflector::of(HookHandler::class)->methods(),
     );
 }
 
