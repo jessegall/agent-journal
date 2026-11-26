@@ -22,6 +22,8 @@ final readonly class DriverRegistration
      * @param  string  $skillProtocol  the key of the skill format and installer the driver reads, one per family
      * @param  class-string<DriverCapabilities>  $capabilities
      * @param  list<DriverCapability>  $profileRequirements  the operations every profile on the driver needs
+     * @param  bool  $isDrivenByJournal  whether the journal opens and drives the driver's runtimes itself, one turn
+     *                                   at a time, instead of its host
      */
     public function __construct(
         public DriverKey $key,
@@ -34,6 +36,7 @@ final readonly class DriverRegistration
         public string $skillProtocol,
         public string $capabilities,
         public array $profileRequirements,
+        public bool $isDrivenByJournal = false,
     ) {}
 
     public function sharesModeWith(self $other): bool

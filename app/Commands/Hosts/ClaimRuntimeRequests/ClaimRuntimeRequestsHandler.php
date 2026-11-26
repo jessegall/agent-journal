@@ -30,6 +30,10 @@ final readonly class ClaimRuntimeRequestsHandler implements CommandHandler
             ->get()
             ->keyBy('id');
 
+        if (! $process->purpose->isRuntimeProcess()) {
+            return $this->claims->claimControlFor($runtimes);
+        }
+
         return $this->claims->claimFor($runtimes, $command->limit);
     }
 }

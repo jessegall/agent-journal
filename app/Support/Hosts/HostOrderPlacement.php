@@ -124,7 +124,15 @@ final readonly class HostOrderPlacement
             throw HostProtocolRefused::lacksCapability($host->id, $body->type);
         }
 
-        return HostOrder::findWithKey($body->idempotencyKey)
-            ?? HostOrder::create($host, $process, $body, $this->clock->now()->addSeconds($seconds));
+        $known = HostOrder::findWithKey($body->idempotencyKey);
+
+        if ($known !== null) {
+            return $known;
+        }
+
+        // The process numbers its orders under its own lock, so the order takes the next number before it is made.
+        $sequence = $process->takeOrderNumber();
+
+        return HostOrder::create($host, $process, $body, $this->clock->now()->addSeconds($seconds), $sequence);
     }
 }

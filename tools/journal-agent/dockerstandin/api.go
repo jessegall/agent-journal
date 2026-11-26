@@ -202,7 +202,7 @@ func (daemon *Daemon) serveContainer(writer http.ResponseWriter, request *http.R
 		held.resize(request.URL.Query())
 		writer.WriteHeader(http.StatusOK)
 	case action == "logs":
-		held.writeLogs(writer, request.URL.Query().Get("tail"))
+		held.writeLogs(writer, request)
 	case action == "" && request.Method == http.MethodDelete:
 		daemon.remove(writer, held, request.URL.Query().Get("force"))
 	default:

@@ -10,9 +10,7 @@ use App\Commands\Agents\ReconcileStarts\ReconcileStartsCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Runs\RuntimeActivity;
 use App\Events\Sessions\SessionStateChanged;
@@ -22,7 +20,6 @@ use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Sessions\SessionProcess;
 use App\Support\ActorReference;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
@@ -73,13 +70,7 @@ final class ReconcileStartsTest extends TestCase
         parent::setUp();
 
         $this->first = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
-        {
-            public function for(string $driver): DriverCompatibility
-            {
-                return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
-            }
-        });
+        $this->journal->showDriverArrangements();
     }
 
     public function test_a_restarted_hosts_claimed_start_stays_possibly_running_until_its_exit_is_proven(): void
@@ -157,7 +148,7 @@ final class ReconcileStartsTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Headless,
+            DriverType::Terminal,
             'claude-opus-5-5',
         );
 
@@ -191,7 +182,7 @@ final class ReconcileStartsTest extends TestCase
     private function openRuntime(
         bool $shouldSaveDriverType = false,
         string $driver = 'claude-code',
-        DriverType $driverType = DriverType::Headless,
+        DriverType $driverType = DriverType::Terminal,
     ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));

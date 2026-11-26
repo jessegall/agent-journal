@@ -92,4 +92,8 @@ return [
     'NavigationRequest::interrupt',
     'NavigationRequest::cancel',
     'NavigationRequest::expire',
+    'AgentRuntime::chooseConversation',
+    'AgentRuntime::proveStart',
+    'AgentRuntime::beginProcessGeneration',
+    'SessionProcess::create',
 ];

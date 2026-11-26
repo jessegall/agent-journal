@@ -16,6 +16,10 @@ final readonly class RowGuard
      */
     public function payload(): array
     {
-        return ['from' => $this->from, 'to' => $this->to, 'hash' => $this->hash];
+        return [
+            'from' => $this->from,
+            'to' => $this->to,
+            'hash' => $this->hash,
+        ];
     }
 }

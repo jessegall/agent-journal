@@ -21,12 +21,13 @@ import (
 // a release build has none.
 var developmentCommands = map[string]func([]string) error{}
 
-// protocolOnly runs host protocol 1 alone, without the older serving loop: what serve becomes once phase 4 removes
-// that loop, and what the suite's real-host harness starts.
+// protocolOnly runs host protocol 1 alone, without the serving loop; the suite's real-host harness starts it.
 func protocolOnly(arguments []string) error {
 	flags := flag.NewFlagSet("protocol", flag.ContinueOnError)
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket the host opens containers through")
+	installation := flags.String("installation", "", "the protected installation saved-account starts run from")
+	hookCommand := flags.String("hook-command", "", "the hook relay command the drivers call")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends, as when the process that started it died")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -51,7 +52,8 @@ func protocolOnly(arguments []string) error {
 	if err := hostapi.CheckOrigin(journal.JournalURL(), *dockerSocket != ""); err != nil {
 		return err
 	}
-	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, containers, "development"); err != nil {
+	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, hostNamesOf(journal, *installation, *hookCommand), containers,
+		"development"); err != nil {
 		return err
 	}
 	<-ctx.Done()
@@ -70,6 +72,7 @@ func stopWhenInputEnds(stop func()) {
 // startHostProtocol runs host protocol 1 beside the older serving loop: process reports and output kept and sent,
 // orders claimed through the long poll and carried out, the inventory sent once and a heartbeat every 30 s.
 func startHostProtocol(ctx context.Context, journal *client.Client, enrollment host.Enrollment, stateFolder string,
+	names map[string]string,
 	containers host.Containers, release string) error {
 	calls := hostapi.Journal{Client: journal}
 	reports, err := hostapi.OpenReportQueue(stateFolder, func(report hostapi.ProcessReport) error {
@@ -86,6 +89,7 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 		return calls.NotifyProcessOutput(ctx, processID, output)
 	}, time.Now)
 	table := hostapi.OpenProcessTable(stateFolder, containers, reports, outputs)
+	table.NameHost(names)
 	if err := table.Adopt(ctx); err != nil {
 		return err
 	}
@@ -113,4 +117,21 @@ func startHostProtocol(ctx context.Context, journal *client.Client, enrollment h
 		}
 	}()
 	return nil
+}
+
+// hostNamesOf are the names a plan may ask this host for: the journal's URL as this host reaches it, the host's own
+// binary, which a driver's status line runs as its reader, the protected installation account starts run from and the
+// hook relay command the drivers call.
+func hostNamesOf(journal *client.Client, installation, hookCommand string) map[string]string {
+	names := map[string]string{"JOURNAL_URL": journal.JournalURL()}
+	if installation != "" {
+		names["INSTALLATION"] = installation
+	}
+	if hookCommand != "" {
+		names["HOOK_COMMAND"] = hookCommand
+	}
+	if executable, err := os.Executable(); err == nil {
+		names["JOURNAL_AGENT"] = executable
+	}
+	return names
 }

@@ -18,6 +18,10 @@ return new class extends Migration
             $table->boolean('remember')->default(false);
             $table->string('driver_key', 128);
             $table->string('family', 64);
+            // The conversation a runtime the journal opens itself continues in every turn; none for one a host opens.
+            $table->string('conversation_id', 128)->nullable();
+            // When the journal proved the installed build of a runtime it opens itself, before its first turn.
+            $table->timestampTz('start_proven_at')->nullable();
             $table->string('driver_label', 64);
             $table->boolean('has_screen')->default(false);
             $table->string('driver_build', 64);

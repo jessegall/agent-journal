@@ -14,17 +14,21 @@ use App\Enums\Drivers\DriverOperation;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\RequestProgress;
+use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Runs\RuntimeActivity;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
+use App\Events\Sessions\AgentRuntimeConversationChosen;
 use App\Events\Sessions\AgentRuntimeHeld;
 use App\Events\Sessions\AgentRuntimeHostChanged;
 use App\Events\Sessions\AgentRuntimeObserved;
+use App\Events\Sessions\AgentRuntimeProcessGenerationAdvanced;
 use App\Events\Sessions\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\Sessions\AgentRuntimeSettingsObserved;
 use App\Events\Sessions\AgentRuntimeStarted;
 use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
 use App\Events\Sessions\AgentRuntimeStartGrantHeld;
+use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Exceptions\CredentialRejected;
 use App\Models\Drivers\DriverRequest;
@@ -55,6 +59,8 @@ use PhpOption\Option;
  * @property bool $remember
  * @property string $driver_key
  * @property string $family
+ * @property string|null $conversation_id
+ * @property CarbonImmutable|null $start_proven_at
  * @property string $driver_label
  * @property bool $has_screen
  * @property string $driver_build
@@ -110,6 +116,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
             'hold_reason' => HoldReason::class,
             'settings_observed_at' => 'immutable_datetime',
             'last_observed_at' => 'immutable_datetime',
+            'start_proven_at' => 'immutable_datetime',
             'generation_started_at' => 'immutable_datetime',
         ];
     }
@@ -263,6 +270,47 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
+     * The conversation every turn of a runtime the journal opens itself continues, chosen once when it opens.
+     */
+    public function chooseConversation(string $conversationId): void
+    {
+        $this->conversation_id = $conversationId;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeConversationChosen($this->id));
+    }
+
+    /**
+     * Records that the probe printed the pinned build, so the runtime's turns may open.
+     */
+    public function proveStart(CarbonImmutable $now): void
+    {
+        $this->start_proven_at = $now;
+        $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeStartProven($this->id));
+    }
+
+    public function hasProvenStart(): bool
+    {
+        return $this->start_proven_at !== null;
+    }
+
+    /**
+     * Whether a turn of the runtime is ordered or running, so its next work waits for it to end.
+     */
+    public function hasLiveTurn(): bool
+    {
+        return $this->hostProcesses()->live()->where('purpose', HostProcessPurpose::AgentTurn)->exists();
+    }
+
+    /**
+     * Whether a turn of the runtime ran before, so the next one resumes its conversation.
+     */
+    public function hasRunTurn(): bool
+    {
+        return $this->hostProcesses()->where('purpose', HostProcessPurpose::AgentTurn)->exists();
+    }
+
+    /**
      * Hands the start token over once: the first claim gets it and clears it, any later claim gets nothing.
      */
     public function claimStartGrant(): string|null
@@ -309,6 +357,7 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->generation_started_at = $at;
         $this->row_version++;
         $this->assertSaved($this->save());
+        $this->raise(new AgentRuntimeProcessGenerationAdvanced($this->id, $this->process_generation));
     }
 
     /**
@@ -814,5 +863,17 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
     protected function withoutDrivingWorker(Builder $query, CarbonImmutable $now): void
     {
         $query->whereDoesntHave('hostProcesses', fn (Builder $processes) => $processes->drivenAt($now));
+    }
+
+    /**
+     * The runtimes of any driver but those named.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $keys
+     */
+    #[Scope]
+    protected function exceptDrivers(Builder $query, array $keys): void
+    {
+        $query->whereNotIn('driver_key', $keys);
     }
 }

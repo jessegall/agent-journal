@@ -105,9 +105,9 @@ final class NotifyRunningTest extends TestCase
         $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
 
         $agent->refresh();
-        $this->assertSame(DriverType::Headless, $agent->driver_type_preference);
-        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(DriverType::Terminal, DriverType::Headless));
-        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(null, DriverType::Terminal));
+        $this->assertSame(DriverType::Terminal, $agent->driver_type_preference);
+        $this->assertSame(DriverType::Headless, $agent->driverTypeFor(DriverType::Headless, DriverType::Terminal));
+        $this->assertSame(DriverType::Terminal, $agent->driverTypeFor(null, DriverType::Headless));
     }
 
     public function test_a_running_report_that_comes_after_the_start_ended_keeps_no_mode(): void
@@ -150,7 +150,7 @@ final class NotifyRunningTest extends TestCase
     private function openRuntime(
         bool $shouldSaveDriverType = false,
         string $driver = 'claude-code',
-        DriverType $driverType = DriverType::Headless,
+        DriverType $driverType = DriverType::Terminal,
     ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));

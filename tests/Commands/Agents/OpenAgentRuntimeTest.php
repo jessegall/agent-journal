@@ -134,7 +134,7 @@ final class OpenAgentRuntimeTest extends TestCase
 
     public function test_an_opened_runtime_keeps_the_driver_it_was_pinned_to(): void
     {
-        [, $opened] = $this->openRuntime();
+        [, $opened] = $this->openRuntime(driverType: DriverType::Headless);
 
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
 
@@ -147,7 +147,7 @@ final class OpenAgentRuntimeTest extends TestCase
 
     public function test_only_a_runtime_whose_driver_can_be_watched_has_a_screen(): void
     {
-        [, $headless] = $this->openRuntime();
+        [, $headless] = $this->openRuntime(driverType: DriverType::Headless);
         [, $terminal] = $this->openRuntime(driverType: DriverType::Terminal);
 
         $this->assertSame(

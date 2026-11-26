@@ -21,6 +21,7 @@ use App\Events\Connections\HostBrowserInputAdvertised;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostDescriptorsRecorded;
+use App\Events\Connections\HostHeartbeatRecorded;
 use App\Events\Connections\HostProtectionRecorded;
 use App\Events\Connections\HostRevoked;
 use App\Exceptions\HostArrangementRefused;
@@ -30,7 +31,6 @@ use App\Exceptions\StartRefused;
 use App\Models\Hosts\HostOrder;
 use App\Models\Support\Accessor;
 use App\Models\Support\JournalModel;
-use App\Support\Hosts\HostOrderPayload;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ProtectionReport;
 use App\Values\StartPlace;
@@ -52,7 +52,6 @@ use Spatie\LaravelData\DataCollection;
  * @property int $protocol
  * @property string|null $order_secret
  * @property list<string> $capabilities
- * @property int $order_sequence
  * @property DataCollection<int, EnrolledDescriptorData> $descriptors
  * @property bool $browser_input
  * @property bool $browser_keys
@@ -87,6 +86,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
      * @return array<string, string>
      *
      * @column start_roots list<string>
+     * @column capabilities list<string>
      */
     protected function casts(): array
     {
@@ -95,7 +95,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             'protocol' => 'integer',
             'order_secret' => 'encrypted',
             'capabilities' => 'array',
-            'order_sequence' => 'integer',
             'start_roots' => 'array',
             'protection' => DataCollection::class.':'.ProtectionReportData::class,
             'descriptors' => DataCollection::class.':'.EnrolledDescriptorData::class,
@@ -138,17 +137,6 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     }
 
     // ----------[ Mutations ]----------
-
-    /**
-     * The next number of the host's orders that are about no process; the caller holds the row's lock.
-     */
-    public function takeOrderNumber(): int
-    {
-        $this->order_sequence++;
-        $this->assertSaved($this->save());
-
-        return $this->order_sequence;
-    }
 
     public function recordProtection(ProtectionReport $report): void
     {
@@ -203,6 +191,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
     {
         $this->last_heartbeat_at = $at;
         $this->assertSaved($this->save());
+        $this->raise(new HostHeartbeatRecorded($this->id));
     }
 
     /**
@@ -432,7 +421,7 @@ final class Host extends JournalModel implements EventSource, ReadableModel
             (string) $order->sequence,
             $order->type->value,
             (string) $order->host_process_id,
-            hash('sha256', HostOrderPayload::encode($order->payload)),
+            hash('sha256', $order->payload),
             $order->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
         ]);
 

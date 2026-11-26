@@ -14,7 +14,6 @@ use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\Agents\AgentPresence;
 use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
@@ -68,6 +67,9 @@ final class ClaimStartTest extends TestCase
         'session_policies',
     ];
 
+    /** What an unproven arrangement's refusal says of it. */
+    private const string ARRANGEMENT_UNPROVEN = 'is prerequisite-missing';
+
     private const string FOLDER = '/work/project';
 
     private Account $first;
@@ -77,13 +79,7 @@ final class ClaimStartTest extends TestCase
         parent::setUp();
 
         $this->first = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
-        {
-            public function for(string $driver): DriverCompatibility
-            {
-                return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
-            }
-        });
+        $this->journal->showDriverArrangements();
     }
 
     public function test_switching_the_account_moves_only_the_next_start(): void
@@ -144,17 +140,18 @@ final class ClaimStartTest extends TestCase
         $this->assertSame($start->refusal, $agent->startRefusal);
     }
 
-    public function test_until_the_real_program_shows_its_arrangement_no_start_is_claimed(): void
+    public function test_until_the_real_program_shows_its_arrangement_a_claimed_start_ends_with_the_reason(): void
     {
         $this->app->forgetInstance(DriverCompatibilities::class);
         $this->app->bind(DriverCompatibilities::class, DriverCompatibilitiesResolver::class);
         [$host, $opened] = $this->openRuntime();
 
-        $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);
+        $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertGone();
 
-        $this->assertSame(
-            SessionProcessStatus::Pending,
-            SessionProcess::query()->withoutGlobalScopes()->sole()->status,
+        $start = SessionProcess::query()->withoutGlobalScopes()->sole();
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, true],
+            [$start->status, str_contains((string) $start->refusal, self::ARRANGEMENT_UNPROVEN)],
         );
     }
 
@@ -237,7 +234,7 @@ final class ClaimStartTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Headless,
+            DriverType::Terminal,
             'claude-opus-5-5',
         );
 
@@ -271,7 +268,7 @@ final class ClaimStartTest extends TestCase
     private function openRuntime(
         bool $shouldSaveDriverType = false,
         string $driver = 'claude-code',
-        DriverType $driverType = DriverType::Headless,
+        DriverType $driverType = DriverType::Terminal,
     ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));

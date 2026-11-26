@@ -19,7 +19,7 @@ final class DriverWorkCommand extends Command
 
     protected $signature = 'drivers:work {process : the host process to drive}';
 
-    protected $description = 'Drive one host process with its program driver';
+    protected $description = 'Drive one host process with its process driver';
 
     public function handle(DriverWorkers $workers): int
     {

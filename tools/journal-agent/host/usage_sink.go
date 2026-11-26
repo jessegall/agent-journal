@@ -67,12 +67,6 @@ func (sink *UsageSink) Window(reading WindowReading) {
 	sink.queue(sink.execution, measurement)
 }
 
-// ResultCost queues one result's cost in US dollars, as an exact decimal, under the result's own identity within the
-// execution, so a replay of the same result is the same source.
-func (sink *UsageSink) ResultCost(resultID, usd string) {
-	sink.queue(sink.execution+":"+resultID, client.UsageMeasurement{Type: client.UsageResultCost, USD: usd})
-}
-
 func (sink *UsageSink) ThreadTokens(count ThreadCount) {
 	total := count.Total
 	sink.queue(sink.execution, client.UsageMeasurement{Type: client.UsageThreadTokens, ThreadID: count.ThreadID,

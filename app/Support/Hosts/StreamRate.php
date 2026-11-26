@@ -17,6 +17,10 @@ final readonly class StreamRate
 
     public static function of(bool $hasWorker, int $viewerRate): int
     {
-        return $hasWorker ? max(self::WORKER_MINIMUM, $viewerRate) : max(0, $viewerRate);
+        if ($hasWorker) {
+            return max(self::WORKER_MINIMUM, $viewerRate);
+        }
+
+        return max(0, $viewerRate);
     }
 }

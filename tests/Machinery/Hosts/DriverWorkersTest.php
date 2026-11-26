@@ -10,7 +10,7 @@ use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Hosts\HostOrder;
 use App\Support\Drivers\DriverRestartSignal;
 use App\Support\Drivers\DriverWorkers;
-use Tests\Support\Drivers\StandInProgramDriver;
+use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -31,7 +31,7 @@ final class DriverWorkersTest extends TestCase
         parent::setUp();
 
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProgramDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->openHostProcess('Mac', 'shell');
     }

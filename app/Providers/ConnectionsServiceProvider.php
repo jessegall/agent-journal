@@ -8,7 +8,7 @@ use App\Commands\Hosts\MarkSilentHosts\MarkSilentHostsCommand;
 use App\Commands\Hosts\SweepHostOrders\SweepHostOrdersCommand;
 use App\Concerns\LoadsCoreRoutes;
 use App\Contracts\Authorization\PolicyCatalogue;
-use App\Contracts\Hosts\HostChannel;
+use App\Contracts\Hosts\HostChannel as HostChannelContract;
 use App\Contracts\Hosts\HostOperatorAccess as HostOperatorAccessContract;
 use App\Contracts\Hosts\LocalProjectHosts as LocalProjectHostsContract;
 use App\Contracts\Hosts\ProjectFiles as ProjectFilesContract;
@@ -21,15 +21,18 @@ use App\Contracts\Projects\ProjectDirectory as ProjectDirectoryContract;
 use App\Contracts\Records\RecordProviderRegistration;
 use App\Enums\Accounts\CommandEntry;
 use App\Enums\Agents\AccessType;
+use App\Enums\Hosts\HostProcessPurpose;
 use App\Models\Projects\ProjectFile;
 use App\Policies\ConnectionsPolicy;
 use App\Policies\ProjectFilesPolicy;
 use App\Resolvers\AgentDirectory;
 use App\Support\CommandRunEvidence;
-use App\Support\Drivers\ProgramDrivers;
+use App\Support\Drivers\ProcessDrivers;
+use App\Support\Drivers\Processes\HeadlessDriver;
+use App\Support\Drivers\Processes\ProbeDriver;
 use App\Support\Drivers\WorkerLease;
 use App\Support\HostOperatorAccess;
-use App\Support\Hosts\HostOrders;
+use App\Support\Hosts\HostChannel;
 use App\Support\JournalCommands;
 use App\Support\JournalRoutes;
 use App\Support\Links\ProjectFileLinkRecords;
@@ -58,8 +61,14 @@ final class ConnectionsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LocalProjectHostsContract::class, LocalProjectHosts::class);
-        $this->app->bind(HostChannel::class, HostOrders::class);
-        $this->app->singleton(ProgramDrivers::class);
+        $this->app->bind(HostChannelContract::class, HostChannel::class);
+
+        // Each purpose of process the journal drives has its process driver; a test adds its stand-in drivers.
+        $this->app->singleton(ProcessDrivers::class, fn ($app) => new ProcessDrivers($app)
+            ->with(HostProcessPurpose::AgentTurn, HeadlessDriver::class)
+            ->with(HostProcessPurpose::BuildProbe, ProbeDriver::class)
+            ->with(HostProcessPurpose::SignInProbe, ProbeDriver::class));
+
         $this->app->singleton(WorkerLease::class);
         $this->app->bind(HostOperatorAccessContract::class, HostOperatorAccess::class);
         $this->app->bind(ProjectFilesContract::class, ProjectFiles::class);

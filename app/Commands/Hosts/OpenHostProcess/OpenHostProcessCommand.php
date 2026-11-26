@@ -24,5 +24,9 @@ final readonly class OpenHostProcessCommand extends Command
         public string|null $runtimeId,
         public HostProcessPlan $plan,
         public HostOrderSource $source,
+        /**
+         * The journal's start record the process runs for; none for a process no start made
+         */
+        public string|null $sessionProcessId = null,
     ) {}
 }

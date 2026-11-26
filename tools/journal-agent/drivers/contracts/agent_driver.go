@@ -173,10 +173,6 @@ const (
 	RefusalPinnedBuildMissing RefusalReason = "pinned-build-missing"
 	// RefusalNoObservation answers Check status when the host keeps no ready report of the runtime's start.
 	RefusalNoObservation RefusalReason = "no_observation"
-	// RefusalNotSignedIn: the account's sign-in check found no sign-in by a method the journal accepts in its folder.
-	RefusalNotSignedIn RefusalReason = "not-signed-in"
-	// RefusalConversationUnknown: the start names no conversation for a turn to continue.
-	RefusalConversationUnknown RefusalReason = "conversation-unknown"
 )
 
 // StartRefused is the failure of an operation the host refused for an allowlisted reason before it created any process

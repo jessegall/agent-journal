@@ -9,63 +9,47 @@ use App\Commands\Agents\NotifyRuntimeExit\NotifyRuntimeExitCommand;
 use App\Commands\Agents\StopAgent\StopAgentCommand;
 use App\Commands\Drivers\ClaimDriverRequests\ClaimDriverRequestsCommand;
 use App\Commands\Drivers\NotifyRequestProgress\NotifyRequestProgressCommand;
-use App\Commands\Sessions\ClaimStartGrant\ClaimStartGrantCommand;
 use App\Commands\Terminals\CancelKeyScript\CancelKeyScriptCommand;
 use App\Commands\Terminals\ResumeKeyScript\ResumeKeyScriptCommand;
 use App\Contracts\Actors\AgentTexts;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Sessions\AgentDirectory;
 use App\Enums\Agents\ConversationModeType;
-use App\Enums\Agents\ExecutionModeType;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Drivers\HoldReason;
 use App\Enums\Drivers\HostWakeRefusal;
 use App\Enums\Drivers\RequestOutcome;
 use App\Enums\Drivers\RequestProgress;
-use App\Enums\Projects\ArrangementType;
 use App\Enums\Sessions\HostRefusal;
 use App\Enums\Sessions\SessionStatus;
 use App\Enums\Sessions\StartOriginType;
 use App\Enums\Sessions\StartReadiness;
 use App\Exceptions\HostReportRefused;
 use App\Models\Accounts\Account;
-use App\Models\Accounts\ActiveAccount;
-use App\Models\Agents\Agent;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Agents\AgentSession;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\RuntimeEvent;
 use App\Models\Projects\Host;
-use App\Models\Sessions\SessionPolicy;
 use App\Models\Sessions\SessionRequest;
 use App\Support\ActorReference;
 use App\Support\AgentStatus;
 use App\Support\AgentWakes;
-use App\Support\ArrangementSetting;
-use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\InitialWakeSettlement;
 use App\Support\OpenedRuntime;
-use App\Support\StartProfiles;
-use App\Values\AccountLabel;
 use App\Values\AgentText;
 use App\Values\BrowserInputCapabilities;
 use App\Values\ClaimedRequest;
 use App\Values\DriverReceipt;
-use App\Values\ExecutionBudgets;
-use App\Values\ExecutionPolicy;
 use App\Values\OwnerAuthority;
-use App\Values\ProfileBase;
-use App\Values\ProfileStartPolicy;
 use App\Values\RequestReportBinding;
 use App\Values\ScriptProgress;
 use App\Values\StackTarget;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
-use App\Values\StopConditions;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\Agents\HostContract;
 use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -335,33 +319,6 @@ final class NotifyRequestProgressTest extends TestCase
         $this->assertSame([], $this->claimedIds($host));
     }
 
-    public function test_a_protected_headless_start_runs_on_the_messages_both_sides_keep(): void
-    {
-        [$host, $fixedValues] = $this->claimedProtectedStart();
-
-        // What the host's scenario reports once the turn ran in its container: the journal keeps the conversation whole.
-        $applied = HostContract::of('host-start/protected-headless-claude/request-report.json')->readFor($fixedValues);
-        $this->journal->hostCall($host, 'POST', '/host/reports/request', $applied)->assertSuccessful();
-
-        $request = DriverRequest::query()->findOrFail($applied['request_id']);
-        $this->assertSame(RequestProgress::Applied, $request->progress);
-        $this->assertSame($applied['actual_binding'], $request->actual_binding);
-    }
-
-    public function test_a_protected_start_the_host_refused_ends_its_session_with_the_reason(): void
-    {
-        [$host, $fixedValues] = $this->claimedProtectedStart();
-
-        // What the host's scenario reports when it cannot carry the start out: the session ends, saying why.
-        $refused = HostContract::of('host-start/protected-headless-claude/request-report-refused.json')->readFor($fixedValues);
-        $this->journal->hostCall($host, 'POST', '/host/reports/request', $refused)->assertSuccessful();
-
-        $request = DriverRequest::query()->findOrFail($refused['request_id']);
-        $session = AgentSession::query()->findOrFail(array_search('01contractsession000000000', $fixedValues, true));
-        $this->assertTrue($request->progress->isRefused());
-        $this->assertStringContainsString($request->refusal_reason->value, (string) $session->end_evidence);
-    }
-
     public function test_a_numbered_report_sent_again_is_taken_once(): void
     {
         [$host, $opened] = $this->openRuntime();
@@ -481,95 +438,6 @@ final class NotifyRequestProgressTest extends TestCase
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt
     {
         return $this->asOwner(DeliverAgentCommand::text($this->agentIdOf($opened), $opened->sessionId, $key, $message));
-    }
-
-    /**
-     * A protected headless start on a contained host, walked on the journal's side up to the host's claim, each
-     * message held to the contract the host's scenarios read: the host and the run's ids under their fixed values.
-     *
-     * @return array{0: EnrolledHost, 1: array<string, string>}
-     */
-    private function claimedProtectedStart(): array
-    {
-        config(['agents.protected_account_trial' => DefaultDrivers::CLAUDE_CODE]);
-        $account = Account::create(
-            DefaultDrivers::CLAUDE_CODE,
-            AccountLabel::from('Plain'),
-            '/journal/accounts/01plain',
-        );
-        ActiveAccount::findLockedFor(DefaultDrivers::CLAUDE_CODE)->select($account);
-        [$host, $opened] = $this->openRuntime('Say hello');
-        // The host is a contained one, as the installation's arrangement below says.
-        Host::query()->findOrFail($host->hostId)->forceFill(['arrangement' => ArrangementType::Contained])->save();
-        $this->app->instance(
-            ArrangementSetting::class,
-            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
-        );
-        $this->app->forgetInstance(StartProfiles::class);
-        $execution = new ExecutionPolicy(
-            ExecutionModeType::RequiredContainer,
-            'journal-agent@sha256:'.str_repeat('a', 64),
-            ProfileStartPolicy::WORKSPACE,
-            ExecutionBudgets::mainAgent(),
-            [],
-            ProfileBase::mainAgent()->isAttachable(),
-        );
-        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
-        SessionPolicy::create(
-            AgentSession::query()->findOrFail($opened->sessionId),
-            new StartPolicy(
-                ProfileBase::mainAgent()->defaultAccess(),
-                new StopConditions([]),
-                $execution,
-                null,
-                null,
-                null,
-            ),
-        );
-
-        $fixedValues = [
-            $opened->sessionId => '01contractsession000000000',
-            $opened->runtimeId => '01contractruntime000000000',
-        ];
-        $claimed = $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/claim?limit=10&wait=0&watched_version=0&arrangement=contained',
-            [],
-        )->assertSuccessful();
-        $fixedValues[(string) $claimed->json('requests.0.requestId')] = '01contractrequest000000000';
-        $fixedValues[(string) $claimed->json('requests.0.sessionProcessId')] = '01contractstart00000000000';
-
-        HostContract::of('host-start/protected-headless-claude/requests.json')->assertHolds(
-            (array) $claimed->json(),
-            $fixedValues,
-        );
-
-        $grant = $this->journal->asSystem(new ClaimStartGrantCommand($host->hostId, $opened->runtimeId));
-
-        HostContract::of('host-start/protected-headless-claude/grant.json')->assertHolds($grant->toArray(), [
-            $grant->toArray()['token'] => 'contract-token',
-            $grant->toArray()['offline_reply_seal'] => 'contract-seal',
-            $opened->sessionId => '01contractsession000000000',
-        ]);
-
-        // What the host's own scenario sends about the agent image: every item has its mechanism and awaits its run.
-        $report = HostContract::of('host-start/protected-headless-claude/protection-report.json')->read();
-        $this->journal->hostCall($host, 'POST', '/host/reports/protection', $report)->assertSuccessful();
-        $claim = $this->journal->hostCall(
-            $host,
-            'POST',
-            '/host/starts/claim',
-            ['session_id' => $opened->sessionId],
-        )->assertSuccessful();
-
-        HostContract::of('host-start/protected-headless-claude/claim.json')->assertHolds((array) $claim->json(), [
-            (string) $claim->json('start_key') => 'contract-start-key',
-            $opened->sessionId => '01contractsession000000000',
-            $account->id => '01contractaccount000000000',
-        ]);
-
-        return [$host, $fixedValues];
     }
 
     private function numberedReport(string $hostId, string $requestId, RequestProgress $progress, int $sequence): void

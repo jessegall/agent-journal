@@ -18,11 +18,12 @@ final class AccountStartGetTest extends GuardedRouteEntryTestCase
 {
     protected function arrange(TestJournal $journal): RouteCall
     {
-        $start = $journal->owner()->user('Member')->signedStart('Main');
+        $journal->owner()->user('Member')->chooseActiveAccounts()->idleAgent('Main')->enrollHost('Mac', [base_path()]);
+        $opened = $journal->openRuntimeOn('Main', 'Mac', base_path());
 
         return RouteCall::as(Caller::User)
             ->parameters([
-                'session' => $start->session->id,
+                'session' => $opened->sessionId,
             ])
             ->hiddenFrom('Member');
     }

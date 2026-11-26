@@ -396,11 +396,6 @@ func (ClaudeCode) KeepsToolsFromSignIn() bool {
 	return true
 }
 
-// ReportsTurnResults: Claude Code prints each headless turn as stream-json with its usage.
-func (ClaudeCode) ReportsTurnResults() bool {
-	return true
-}
-
 // ReportsLimitWindows: Claude Code gives its limit windows through its status line.
 func (ClaudeCode) ReportsLimitWindows() bool {
 	return true

@@ -6,6 +6,7 @@ namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\ClaimHostWorker\ClaimHostWorkerCommand;
 use App\Commands\Hosts\ClaimRuntimeRequests\ClaimRuntimeRequestsCommand;
+use App\Enums\Drivers\DriverType;
 use App\Exceptions\WorkerFenced;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -47,7 +48,7 @@ final class ClaimRuntimeRequestsTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), firstMessage: 'hello');
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal, firstMessage: 'hello');
         $this->journal->openHostProcess('Mac', 'shell', runtimeId: $opened->runtimeId);
         $id = $this->journal->hostProcessCalled('shell')->id;
         $generation = $this->journal->asSystem(new ClaimHostWorkerCommand($id));

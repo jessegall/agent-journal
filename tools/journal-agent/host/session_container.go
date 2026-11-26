@@ -59,39 +59,6 @@ func (container SessionContainer) Open(
 	return nil
 }
 
-// ErrSessionContainerAttachable refuses a terminal manifest for a program run one turn at a time without a terminal.
-var ErrSessionContainerAttachable = errors.New("a program without a terminal needs a container without one")
-
-// Turn creates the session's container for one turn of a program without a terminal, the program its own process,
-// and answers the turn, created and not yet started. The container of the turn before is removed first; the
-// session's network and volumes, a writer's checkout too, stay.
-func (container SessionContainer) Turn(
-	ctx context.Context,
-	manifest ContainerManifest,
-	process ContainerProcess,
-) (*ContainerTurn, error) {
-	if manifest.IsAttachable {
-		return nil, contracts.RefuseStart(contracts.RefusalContainerUnavailable, ErrSessionContainerAttachable)
-	}
-
-	if err := container.Containers.Remove(ctx, container.Name, StopSeconds); err != nil {
-		return nil, fmt.Errorf("the session container %s of the turn before could not be removed: %w", container.Name, err)
-	}
-
-	if err := container.Containers.EnsureNetwork(ctx, manifest.Network, container.Labels); err != nil {
-		return nil, err
-	}
-
-	if _, err := container.Containers.Create(ctx, manifest, container.Name, container.Labels, process); err != nil {
-		return nil, contracts.RefuseStart(
-			contracts.RefusalContainerUnavailable,
-			fmt.Errorf("creating the session container %s failed: %w", container.Name, err),
-		)
-	}
-
-	return &ContainerTurn{containers: container.Containers, name: container.Name}, nil
-}
-
 // RemoveCheckout removes a writer's checkout once the main's workspace holds its work, and answers the volume it
 // kept otherwise, the place to recover the work from; a session without a checkout has nothing to remove.
 func (container SessionContainer) RemoveCheckout(ctx context.Context, manifest ContainerManifest) (string, error) {

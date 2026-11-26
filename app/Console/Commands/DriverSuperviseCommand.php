@@ -9,7 +9,7 @@ use App\Support\Hosts\HostWake;
 use Illuminate\Console\Command;
 
 /**
- * Keeps a worker on every process a program driver drives: it looks again whenever a process changes, or when the
+ * Keeps a worker on every process a process driver drives: it looks again whenever a process changes, or when the
  * first lease of a driven process could have ended; no timer of its own.
  */
 final class DriverSuperviseCommand extends Command

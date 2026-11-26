@@ -8,8 +8,8 @@ import (
 
 // BaseStart is what every start of one runtime's program has, however the program runs: where its settings and its
 // work live, the exact conversation, the account, and the model and effort the journal asked for. A terminal and a
-// headless turn each take their start from it and add only what is theirs, so a value such as the model is never in
-// one and missing in the other.
+// recorded process each take their start from it and add only what is theirs, so a value such as the model is never
+// in one and missing in the other.
 type BaseStart struct {
 	SettingsFolder string
 	// SessionID is the exact conversation the start begins or resumes; "the latest" is never resumed.
@@ -34,17 +34,12 @@ func (base BaseStart) Terminal(resume bool) Start {
 	return base.In(recording.TerminalMode, "", resume)
 }
 
-// Turn is one headless turn of the base's conversation with its prompt; resume goes on from an earlier turn.
-func (base BaseStart) Turn(prompt string, resume bool) Start {
-	return base.In(recording.ProcessMode, prompt, resume)
-}
-
 // In is the base's start in the mode given, for a caller that takes the mode from outside, such as a recording.
 func (base BaseStart) In(mode recording.Mode, prompt string, resume bool) Start {
 	return Start{BaseStart: base, Mode: mode, Prompt: prompt, Resume: resume}
 }
 
-// Start is one start of a program: its base and what the way it runs adds, the mode, the prompt of a headless turn
+// Start is one start of a program: its base and what the way it runs adds, the mode, the prompt of a recorded process
 // and whether it resumes its conversation. It is made from a BaseStart, never written out field by field.
 type Start struct {
 	BaseStart
@@ -143,10 +138,6 @@ type DriverProfile interface {
 	// KeepsToolsFromSignIn says whether the program's sandbox keeps its tools from reading its own sign-in, as a
 	// contained host needs before it starts the program.
 	KeepsToolsFromSignIn() bool
-
-	// ReportsTurnResults says whether a headless turn prints its result and usage for the host to read, and its
-	// account's sign-in can be checked in its own folder before the first turn.
-	ReportsTurnResults() bool
 
 	// ReportsLimitWindows says whether the program's status line gives its subscription's limit windows.
 	ReportsLimitWindows() bool

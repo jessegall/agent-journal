@@ -119,7 +119,7 @@ final class NotifyFailureTest extends TestCase
     private function openRuntime(
         bool $shouldSaveDriverType = false,
         string $driver = 'claude-code',
-        DriverType $driverType = DriverType::Headless,
+        DriverType $driverType = DriverType::Terminal,
     ): array {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorReference::forUser('owner'), new OwnerAuthority('test'));

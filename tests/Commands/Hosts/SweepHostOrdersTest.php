@@ -35,7 +35,7 @@ final class SweepHostOrdersTest extends TestCase
         $this->journal->asSystem($keys);
         [$open, $typed] = $this->journal->hostOrdersOf('shell');
         $this->journal->answerHostOrder($typed);
-        $erased = $typed->refresh()->payload;
+        $erased = $this->journal->payloadOf($typed->refresh());
 
         $this->journal->moveServerClockTo(CarbonImmutable::parse('2026-11-26 10:01:00'));
         $this->journal->asSystem(new SweepHostOrdersCommand());

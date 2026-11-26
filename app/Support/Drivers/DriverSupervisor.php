@@ -10,7 +10,7 @@ use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 
 /**
- * Starts a worker for each live process a program driver drives and no worker holds; a worker it started and that
+ * Starts a worker for each live process a process driver drives and no worker holds; a worker it started and that
  * still runs is left to its lease. It waits for a process to change, or for the first lease that could end.
  */
 final class DriverSupervisor
@@ -26,7 +26,7 @@ final class DriverSupervisor
     private array $workers = [];
 
     public function __construct(
-        private readonly ProgramDrivers $drivers,
+        private readonly ProcessDrivers $drivers,
         private readonly Factory $processes,
         private readonly ServerClock $clock,
     ) {}
@@ -54,7 +54,12 @@ final class DriverSupervisor
 
             $this->workers[$processId] = $this->processes->newPendingProcess()->path(base_path())
                 ->forever()
-                ->start(['php', 'artisan', 'drivers:work', $processId]);
+                ->start([
+                    'php',
+                    'artisan',
+                    'drivers:work',
+                    $processId,
+                ]);
 
             $started[] = $processId;
         }
@@ -71,6 +76,10 @@ final class DriverSupervisor
         $now = $this->clock->now();
         $next = HostProcess::resolveNextLeaseEnd($this->drivers->purposes(), $now);
 
-        return $next === null ? self::UNTIL_WOKEN : max(1, (int) ceil($now->diffInSeconds($next)));
+        if ($next === null) {
+            return self::UNTIL_WOKEN;
+        }
+
+        return max(1, (int) ceil($now->diffInSeconds($next)));
     }
 }

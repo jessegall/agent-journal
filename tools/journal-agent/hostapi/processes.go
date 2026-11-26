@@ -34,6 +34,16 @@ type OpenPlan struct {
 	Container   *host.ContainerManifest `json:"container"`
 	Labels      host.StartLabels        `json:"labels"`
 	Size        TerminalSize            `json:"size"`
+	Files       []PlanFile              `json:"files"`
+	Folders     []string                `json:"folders"`
+	Inherit     []string                `json:"inherit"`
+	SideSockets []string                `json:"side_sockets"`
+	// Seatbelt names a plan file holding a Seatbelt profile the process runs under where the host has Seatbelt
+	// (macOS); empty runs it as it is.
+	Seatbelt string `json:"seatbelt,omitempty"`
+	// ReadFiles are files the host opens read-only for a process on this host, handed over as its descriptors 3 on,
+	// such as a token it reads on a descriptor instead of from its environment.
+	ReadFiles []string `json:"read_files,omitempty"`
 }
 
 // TerminalSize is a terminal's columns and rows.
@@ -66,17 +76,24 @@ type ProcessTable struct {
 	containers host.Containers
 	reports    *ReportQueue
 	outputs    *Outputs
-	// keptPath is where the plans of the held containers are kept, so a host that restarted adopts them again.
+	// keptPath is where the plans of the held processes that can outlive the host are kept, so a host that restarted
+	// adopts them again.
 	keptPath string
+	// stateFolder holds each process's files folder, which the host writes from the process's plan.
+	stateFolder string
+	// hostNames are the names on the installer's list a plan may name as {host:<NAME>}.
+	hostNames map[string]string
 
 	mutex     sync.Mutex
 	processes map[string]*heldProcess
 }
 
-// keptContainer is what the host keeps on disk of one container it holds.
-type keptContainer struct {
+// keptProcess is what the host keeps on disk of one process it holds that can outlive it: a container, or a native
+// process without a terminal, whose output goes to its spool and whose process group is named by its pid.
+type keptProcess struct {
 	Plan       OpenPlan `json:"plan"`
 	Generation int      `json:"generation"`
+	Pid        int      `json:"pid,omitempty"`
 }
 
 // heldProcess is one process the host holds, contained or native.
@@ -91,24 +108,38 @@ type heldProcess struct {
 	terminal   host.TerminalStream
 	input      io.WriteCloser
 	native     *exec.Cmd
-	stopping   atomic.Bool
-	exited     chan struct{}
+	// pid names the process group of a native process, a child of this host or one it adopted after a restart.
+	pid      int
+	stopping atomic.Bool
+	// finished closes once a native process ended for good, so its spool is read to its end before its exit report.
+	finished chan struct{}
+	exited   chan struct{}
+	// drained closes once the output of a container without a terminal was read to its end, so its exit is reported
+	// only after everything it printed was sent.
+	drained chan struct{}
 }
 
 // OpenProcessTable holds processes on the daemon of these containers, keeps their output, reports through the queue
 // and keeps the plans of its containers in the state folder.
 func OpenProcessTable(stateFolder string, containers host.Containers, reports *ReportQueue, outputs *Outputs) *ProcessTable {
 	return &ProcessTable{
-		containers: containers,
-		reports:    reports,
-		outputs:    outputs,
-		keptPath:   filepath.Join(stateFolder, "orders", "containers.json"),
-		processes:  map[string]*heldProcess{},
+		containers:  containers,
+		reports:     reports,
+		outputs:     outputs,
+		keptPath:    filepath.Join(stateFolder, "orders", "processes.json"),
+		stateFolder: stateFolder,
+		processes:   map[string]*heldProcess{},
 	}
 }
 
-// Adopt takes back every container the host held before it restarted: one still running is attached again and
-// watched, with no new report, so the inventory lists it under its identity; one that is gone is reported lost.
+// NameHost gives the names a plan may name as {host:<NAME>}, such as the journal's URL as this host reaches it.
+func (table *ProcessTable) NameHost(names map[string]string) {
+	table.hostNames = names
+}
+
+// Adopt takes back every process the host held before it restarted: a container still running is attached again and
+// watched, with no new report, so the inventory lists it under its identity; one that is gone is reported lost. A
+// native process is followed on in its spool, whether it still runs or ended while the host was away.
 func (table *ProcessTable) Adopt(ctx context.Context) error {
 	kept, err := table.readKept()
 	if err != nil {
@@ -118,6 +149,10 @@ func (table *ProcessTable) Adopt(ctx context.Context) error {
 		held := &heldProcess{id: id, plan: container.Plan, generation: container.Generation, exited: make(chan struct{})}
 		if err := table.outputs.Open(id, held.plan); err != nil {
 			return err
+		}
+		if container.Pid != 0 {
+			table.adoptNative(held, container.Pid)
+			continue
 		}
 		if err := table.reattach(ctx, held); err != nil {
 			table.keep(held)
@@ -230,11 +265,19 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 	if !host.IsPinnedReference(plan.Container.Image) {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "the image " + plan.Container.Image + " is not pinned by digest"}
 	}
+	if plan, err = writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames); err != nil {
+		return nil, err
+	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
 	if err := table.outputs.Open(held.id, plan); err != nil {
 		return nil, err
 	}
+	closeSides, err := table.listenSideSockets(held)
+	if err != nil {
+		return nil, err
+	}
 	if err := table.startContainer(ctx, held); err != nil {
+		closeSides()
 		return nil, err
 	}
 	table.keep(held)
@@ -294,8 +337,44 @@ func (table *ProcessTable) reattach(ctx context.Context, held *heldProcess) erro
 		}
 		held.terminal = terminal
 		go table.copyOutput(held.id, terminal)
+		return nil
 	}
+	return table.followPipes(ctx, held)
+}
+
+// followPipes reads a container without a terminal from its log, from its first start on, past the bytes the spool
+// already counted, so a host that restarted goes on where it was and nothing is sent twice.
+func (table *ProcessTable) followPipes(ctx context.Context, held *heldProcess) error {
+	printed, err := table.containers.FollowOutput(ctx, held.containerName())
+	if err != nil {
+		return err
+	}
+	counted := table.outputs.SpoolOffset(held.id)
+	drained := make(chan struct{})
+	held.drained = drained
+	go func() {
+		<-held.exited
+		_ = printed.Close()
+	}()
+	go func() {
+		defer close(drained)
+		if _, err := io.CopyN(io.Discard, printed, counted); err != nil {
+			return
+		}
+		table.copyOutput(held.id, printed)
+	}()
 	return nil
+}
+
+// awaitDrained waits a while for the output of a container without a terminal to be read to its end.
+func (held *heldProcess) awaitDrained() {
+	if held.drained == nil {
+		return
+	}
+	select {
+	case <-held.drained:
+	case <-time.After(5 * time.Second):
+	}
 }
 
 // watchContainer waits for each exit of the container: a crash of a process healed on a crash starts it again,
@@ -310,6 +389,7 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 		}
 		if held.isStopping() || held.plan.Restart != "on_crash" || exit.Code == 0 {
 			code := exit.Code
+			held.awaitDrained()
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "exited", ExitCode: &code, Evidence: exit.Evidence()})
 			return
 		}
@@ -333,11 +413,19 @@ func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[stri
 	if plan.Isolation != "" && plan.Isolation != "none" {
 		return nil, RefusalError{Refusal: Unsafe, Reason: "this host does not launch with " + plan.Isolation}
 	}
+	if plan, err = writePlanFiles(table.stateFolder, order.ProcessID, plan, table.hostNames); err != nil {
+		return nil, err
+	}
 	held := &heldProcess{id: order.ProcessID, plan: plan, exited: make(chan struct{})}
 	if err := table.outputs.Open(held.id, plan); err != nil {
 		return nil, err
 	}
+	closeSides, err := table.listenSideSockets(held)
+	if err != nil {
+		return nil, err
+	}
 	if err := table.startNative(held, plan.Argv); err != nil {
+		closeSides()
 		return nil, err
 	}
 	table.keep(held)
@@ -354,6 +442,13 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 	command := exec.Command(argv[0], argv[1:]...)
 	command.Dir = held.plan.Folder
 	command.Env = held.plan.Environment
+	files, err := host.OpenReadFiles(held.plan.ReadFiles)
+	if err != nil {
+		return RefusalError{Refusal: Unsafe, Reason: "a file the order hands the process cannot be read: " + err.Error()}
+	}
+	// The process holds its own copies of the descriptors once it started; the host's close with this start.
+	defer host.CloseFiles(files)
+	command.ExtraFiles = files
 	if held.plan.Type == "terminal" {
 		terminal, err := pty.StartWithAttrs(command, &pty.Winsize{Rows: held.plan.Size.Rows, Cols: held.plan.Size.Columns},
 			&syscall.SysProcAttr{Setsid: true, Setctty: true})
@@ -368,17 +463,24 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 		if err != nil {
 			return err
 		}
-		printed, err := command.StdoutPipe()
+		spool, err := openSpool(table.stateFolder, held.id)
 		if err != nil {
 			return err
 		}
-		if err := command.Start(); err != nil {
+		command.Stdout = spool
+		err = command.Start()
+		_ = spool.Close()
+		if err != nil {
 			return err
 		}
 		held.input = input
-		go table.copyOutput(held.id, printed)
+		if held.finished == nil {
+			held.finished = make(chan struct{})
+			table.followSpool(held, 0)
+		}
 	}
 	held.native = command
+	held.pid = command.Process.Pid
 	held.setIdentity(fmt.Sprintf("pid:%d", command.Process.Pid))
 	report := "running"
 	identity, generation := held.state()
@@ -394,15 +496,19 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 		code := held.native.ProcessState.ExitCode()
 		signal := signalOf(held.native.ProcessState)
 		if held.isStopping() || held.plan.Restart != "on_crash" || (err == nil && code == 0) {
+			held.finish()
+			held.awaitDrained()
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "exited", ExitCode: &code, Signal: signal,
 				Evidence: fmt.Sprintf("the process exited with %d", code)})
 			return
 		}
 		held.nextGeneration()
 		if startErr := table.startNative(held, held.plan.restartArgv()); startErr != nil {
+			held.finish()
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: startErr.Error()})
 			return
 		}
+		table.saveKept()
 	}
 }
 
@@ -442,12 +548,12 @@ func (table *ProcessTable) signal(ctx context.Context, order Order) (map[string]
 	if err != nil {
 		return nil, err
 	}
-	if held.native != nil {
+	if held.pid != 0 {
 		number, known := signalNumbers[plan.Signal]
 		if !known {
 			return nil, RefusalError{Refusal: Unsafe, Reason: "unknown signal " + plan.Signal}
 		}
-		return nil, host.OwnedGroupOf(held.native.Process.Pid).Signal(number)
+		return nil, host.OwnedGroupOf(held.pid).Signal(number)
 	}
 	return nil, table.containers.Kill(ctx, held.containerName(), plan.Signal)
 }
@@ -465,8 +571,8 @@ func (table *ProcessTable) stop(ctx context.Context, order Order) (map[string]an
 	held.markStopping()
 	grace := time.Duration(plan.GraceMs) * time.Millisecond
 	force := time.Duration(plan.ForceMs) * time.Millisecond
-	if held.native != nil {
-		host.OwnedGroupOf(held.native.Process.Pid).Stop(host.StopStagesOf(grace, force))
+	if held.pid != 0 {
+		host.OwnedGroupOf(held.pid).Stop(host.StopStagesOf(grace, force))
 	} else {
 		seconds := max(1, int(grace/time.Second))
 		_ = table.containers.Stop(ctx, held.containerName(), seconds)
@@ -526,25 +632,27 @@ func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
 	close(held.exited)
 }
 
-// saveKept writes the plans of the containers that still run, so a restart adopts exactly those.
+// saveKept writes the plans of the processes that still run and can outlive the host, so a restart adopts exactly
+// those.
 func (table *ProcessTable) saveKept() {
 	table.writeKept(nil)
 }
 
-// writeKept writes the plans of the containers that still run but the one ending, if any.
+// writeKept writes the plans of the processes that still run and can outlive the host but the one ending, if any.
 func (table *ProcessTable) writeKept(ending *heldProcess) {
 	table.mutex.Lock()
-	kept := map[string]keptContainer{}
+	kept := map[string]keptProcess{}
 	for id, held := range table.processes {
 		select {
 		case <-held.exited:
 			continue
 		default:
 		}
-		if held.plan.Container != nil && held != ending {
-			_, generation := held.state()
-			kept[id] = keptContainer{Plan: held.plan, Generation: generation}
+		if held == ending || !held.canOutliveHost() {
+			continue
 		}
+		_, generation := held.state()
+		kept[id] = keptProcess{Plan: held.plan, Generation: generation, Pid: held.pid}
 	}
 	table.mutex.Unlock()
 	content, err := json.Marshal(kept)
@@ -560,8 +668,8 @@ func (table *ProcessTable) writeKept(ending *heldProcess) {
 	}
 }
 
-func (table *ProcessTable) readKept() (map[string]keptContainer, error) {
-	kept := map[string]keptContainer{}
+func (table *ProcessTable) readKept() (map[string]keptProcess, error) {
+	kept := map[string]keptProcess{}
 	content, err := os.ReadFile(table.keptPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		return kept, nil

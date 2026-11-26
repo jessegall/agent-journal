@@ -14,14 +14,23 @@ use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
 use App\Events\Connections\HostProcessExited;
+use App\Events\Connections\HostProcessInputGenerationRaised;
 use App\Events\Connections\HostProcessLost;
 use App\Events\Connections\HostProcessOpened;
+use App\Events\Connections\HostProcessOpenOrderHeld;
+use App\Events\Connections\HostProcessOrderNumbered;
+use App\Events\Connections\HostProcessOutputRecorded;
 use App\Events\Connections\HostProcessRestarted;
+use App\Events\Connections\HostProcessSeenInHeartbeat;
 use App\Events\Connections\HostProcessStarted;
+use App\Events\Connections\HostProcessWorkerClaimed;
+use App\Events\Connections\HostProcessWorkerRenewed;
 use App\Exceptions\WorkerFenced;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
+use App\Models\Sessions\SessionProcess;
 use App\Models\Support\JournalModel;
+use App\Models\Support\SessionProcessScope;
 use App\Values\HostProcessPlan;
 use App\Values\ProcessExit;
 use Carbon\CarbonImmutable;
@@ -33,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $id
  * @property string $host_id
  * @property string|null $agent_runtime_id
+ * @property string|null $session_process_id
  * @property HostProcessPurpose $purpose
  * @property HostProcessType $type
  * @property int $generation
@@ -56,6 +66,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $updated_at
  * @property-read Host $host
  * @property-read AgentRuntime|null $runtime
+ * @property-read SessionProcess|null $sessionProcess
  *
  * @mixin \Eloquent
  */
@@ -100,13 +111,19 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     // ----------[ Constructors ]----------
 
     /**
-     * A process the journal orders the host to open, for the runtime it runs when it runs one.
+     * A process the journal orders the host to open, for the runtime it runs and the start it runs for, when it has
+     * them.
      */
-    public static function create(Host $host, AgentRuntime|null $runtime, HostProcessPlan $plan): self
-    {
+    public static function create(
+        Host $host,
+        AgentRuntime|null $runtime,
+        HostProcessPlan $plan,
+        SessionProcess|null $start = null,
+    ): self {
         $process = new self();
         $process->host_id = $host->id;
         $process->agent_runtime_id = $runtime?->id;
+        $process->session_process_id = $start?->id;
         $process->purpose = $plan->purpose;
         $process->type = $plan->type;
         $process->restart = $plan->restart;
@@ -118,6 +135,16 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     // ----------[ Relations ]----------
+
+    /**
+     * The start the process runs for, whoever's agent it belongs to.
+     *
+     * @return BelongsTo<SessionProcess, $this>
+     */
+    public function sessionProcess(): BelongsTo
+    {
+        return $this->belongsTo(SessionProcess::class)->withoutGlobalScope(SessionProcessScope::class);
+    }
 
     /**
      * @return BelongsTo<Host, $this>
@@ -190,6 +217,30 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     }
 
     /**
+     * The host sent the pipe process's standard output through the offset given; a later post that sent less moves
+     * nothing. The row is locked by its caller, so two posts never move it backwards.
+     */
+    public function recordOutputThrough(int $offset): void
+    {
+        if ($offset <= $this->output_offset) {
+            return;
+        }
+
+        $this->output_offset = $offset;
+        $this->assertSaved($this->save());
+        $this->raise(new HostProcessOutputRecorded($this->id, $offset));
+    }
+
+    /**
+     * Whether the host holds less of the pipe process's standard output than it already sent, as when its spool was
+     * lost in a restart, so what the process prints next cannot be read in order.
+     */
+    public function hasLostOutputOf(int $spoolOffset): bool
+    {
+        return $this->type === HostProcessType::Pipe && $spoolOffset < $this->output_offset;
+    }
+
+    /**
      * A heartbeat named the process: it runs as far as the host knows.
      */
     public function seeInHeartbeat(): void
@@ -200,6 +251,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
 
         $this->missed_heartbeats = 0;
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessSeenInHeartbeat($this->id));
     }
 
     /**
@@ -223,6 +275,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->worker_generation++;
         $this->worker_until = $now->addSeconds(self::WORKER_LEASE_SECONDS);
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessWorkerClaimed($this->id, $this->worker_generation));
 
         return $this->worker_generation;
     }
@@ -235,6 +288,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
         $this->assertWorker($generation);
         $this->worker_until = $now->addSeconds(self::WORKER_LEASE_SECONDS);
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessWorkerRenewed($this->id, $generation));
     }
 
     /**
@@ -244,6 +298,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $this->order_sequence++;
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessOrderNumbered($this->id, $this->order_sequence));
 
         return $this->order_sequence;
     }
@@ -252,6 +307,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $this->open_order_id = $orderId;
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessOpenOrderHeld($this->id, $orderId));
     }
 
     /**
@@ -261,6 +317,7 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $this->input_generation++;
         $this->assertSaved($this->save());
+        $this->raise(new HostProcessInputGenerationRaised($this->id, $this->input_generation));
 
         return $this->input_generation;
     }
@@ -322,7 +379,11 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     {
         $until = self::query()->drivenAt($now)->ofPurposes($purposes)->min('worker_until');
 
-        return $until === null ? null : CarbonImmutable::parse($until);
+        if ($until === null) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($until);
     }
 
     /**
@@ -383,6 +444,9 @@ final class HostProcess extends JournalModel implements EventSource, ReadableMod
     #[Scope]
     protected function live(Builder $query): void
     {
-        $query->whereIn('status', [HostProcessStatus::Ordered, HostProcessStatus::Running]);
+        $query->whereIn('status', [
+            HostProcessStatus::Ordered,
+            HostProcessStatus::Running,
+        ]);
     }
 }

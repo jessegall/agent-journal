@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Values;
 
 use App\Models\Hosts\HostOrder;
-use App\Support\Hosts\HostOrderPayload;
 use JsonSerializable;
 
 /**
@@ -31,7 +30,7 @@ final readonly class ClaimedHostOrder implements JsonSerializable
             $order->sequence,
             $order->type->value,
             (string) $order->host_process_id,
-            HostOrderPayload::encode($order->payload),
+            $order->payload,
             $order->expires_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
             $signature,
         );

@@ -11,10 +11,8 @@ use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Assignments\AssignmentResolver;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Sessions\StartTransaction;
 use App\Enums\Agents\SessionProcessStatus;
-use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Exceptions\ActorNotAllowed;
 use App\Exceptions\AgentRetirementDenied;
@@ -32,7 +30,6 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\AgentSessions;
 use App\Support\AssigneeIdentity;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Support\CredentialLookup;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
@@ -277,15 +274,7 @@ final class RetireAgentTest extends TestCase
     public function test_a_retired_agents_unclaimed_start_never_runs(): void
     {
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
-        {
-            public function for(string $driver): DriverCompatibility
-            {
-                $pinned = DriverCompatibility::pinned($driver);
-
-                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
-            }
-        });
+        $this->journal->showDriverArrangements();
 
         $host = $this->enrollHost();
         $opened = $this->open($host);
@@ -463,7 +452,7 @@ final class RetireAgentTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Headless,
+            DriverType::Terminal,
             'claude-opus-5-5',
         );
 

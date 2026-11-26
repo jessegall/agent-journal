@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -127,6 +128,13 @@ func (output containerOutput) Write(printed []byte) (int, error) {
 	sent := container.framed(printed)
 	for _, connection := range container.attached {
 		_, _ = connection.Write(sent)
+	}
+	for _, follower := range container.followers {
+		// A follower that fell this far behind loses the print, as the stand-in never blocks its program on a reader.
+		select {
+		case follower <- sent:
+		default:
+		}
 	}
 
 	return len(printed), nil
@@ -281,9 +289,14 @@ func (container *Container) resize(query url.Values) {
 }
 
 // writeLogs writes what the program printed, only its last lines when the client asks for a tail.
-func (container *Container) writeLogs(writer http.ResponseWriter, tail string) {
+func (container *Container) writeLogs(writer http.ResponseWriter, request *http.Request) {
+	query := request.URL.Query()
+	if query.Get("follow") == "1" || query.Get("follow") == "true" {
+		container.followLogs(writer, request)
+		return
+	}
 	printed := container.Printed()
-	if count, err := strconv.Atoi(tail); err == nil {
+	if count, err := strconv.Atoi(query.Get("tail")); err == nil {
 		lines := strings.SplitAfter(printed, "\n")
 		if len(lines) > 0 && lines[len(lines)-1] == "" {
 			lines = lines[:len(lines)-1]
@@ -292,6 +305,49 @@ func (container *Container) writeLogs(writer http.ResponseWriter, tail string) {
 	}
 	writer.WriteHeader(http.StatusOK)
 	_, _ = writer.Write(container.framed([]byte(printed)))
+}
+
+// followLogs sends everything printed so far, then each new print as it comes, until the program ends or the client
+// leaves, as a daemon's followed log does.
+func (container *Container) followLogs(writer http.ResponseWriter, request *http.Request) {
+	follower := make(chan []byte, 1024)
+	container.mutex.Lock()
+	sofar := container.framed(container.printed.Bytes())
+	hasEnded := container.started && !container.running
+	if !hasEnded {
+		container.followers = append(container.followers, follower)
+	}
+	exited := container.exited
+	container.mutex.Unlock()
+	flusher, _ := writer.(http.Flusher)
+	writer.WriteHeader(http.StatusOK)
+	_, _ = writer.Write(sofar)
+	if flusher != nil {
+		flusher.Flush()
+	}
+	if hasEnded {
+		return
+	}
+	defer container.unfollow(follower)
+	for {
+		select {
+		case sent := <-follower:
+			_, _ = writer.Write(sent)
+			if flusher != nil {
+				flusher.Flush()
+			}
+		case <-exited:
+			return
+		case <-request.Context().Done():
+			return
+		}
+	}
+}
+
+func (container *Container) unfollow(follower chan []byte) {
+	container.mutex.Lock()
+	defer container.mutex.Unlock()
+	container.followers = slices.DeleteFunc(container.followers, func(each chan []byte) bool { return each == follower })
 }
 
 // status is the container's state as a daemon names it.

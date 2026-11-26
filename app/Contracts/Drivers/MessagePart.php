@@ -16,6 +16,11 @@ interface MessagePart
     public function textBytes(): int;
 
     /**
+     * The part as a line of a turn's prompt: its text, or how the agent reads the attachment.
+     */
+    public function promptLine(): string;
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array;

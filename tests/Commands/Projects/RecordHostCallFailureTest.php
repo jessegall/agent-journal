@@ -84,7 +84,7 @@ final class RecordHostCallFailureTest extends TestCase
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            driverType: DriverType::Headless,
+            driverType: DriverType::Terminal,
             previewRevision: $previewRevision,
         );
     }

@@ -1,4 +1,3 @@
-client/client.go
 cmd/journal-agent/descriptors.go
 cmd/journal-agent/host_commands.go
 cmd/journal-agent/install_release.go
@@ -6,13 +5,10 @@ cmd/journal-agent/main.go
 cmd/journal-agent/protection.go
 cmd/journal-agent/relay.go
 cmd/journal-agent/start_executor.go
-cmd/journal-agent/status_line.go
 cmd/journal/disconnect.go
 cmd/journal/main.go
-drivers/claude_result.go
 drivers/codex_driver.go
 drivers/contracts/turn_end.go
-drivers/headless_driver.go
 hookadapter/adapter.go
 host/arrangement.go
 host/codex_owner.go
@@ -26,10 +22,8 @@ host/protection_container.go
 host/protection_darwin.go
 host/protection_linux.go
 host/protection_other.go
-host/resumable_conversation.go
 host/sandbox_mechanisms.go
 host/session_files.go
-host/session_sandbox.go
 host/start_environment.go
 host/start_request.go
 host/status_line.go

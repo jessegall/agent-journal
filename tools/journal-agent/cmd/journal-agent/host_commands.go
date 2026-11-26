@@ -220,7 +220,8 @@ func serve(arguments []string) error {
 	if err := hostapi.CheckOrigin(journal.JournalURL(), arrangement.IsContained()); err != nil {
 		return err
 	}
-	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder, opener.containers, release); err != nil {
+	if err := startHostProtocol(ctx, journal, enrollment, *stateFolder,
+		hostNamesOf(journal, *installationFolder, *hookCommand), opener.containers, release); err != nil {
 		return err
 	}
 	if *startSocketFolder == "" {
@@ -239,8 +240,7 @@ func serve(arguments []string) error {
 }
 
 // runtimeOpener opens the driver of a runtime the journal hands this host, by the driver key its start grant names:
-// a headless runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
-// owns.
+// a terminal runtime keeps one program open on a PTY the attach socket owns, and a Codex runtime talks to its owner.
 type runtimeOpener struct {
 	// worktrees prepares a connected project's children their own linked worktrees; nil on an enrolled host.
 	worktrees *host.NativeWorktrees
@@ -316,6 +316,10 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 		return nil, fmt.Errorf("runtime %s runs the driver %q, which this host has no registration for", runtimeID,
 			grant.Runtime.DriverKey)
 	}
+	if contained && registration.openContained == nil {
+		return nil, fmt.Errorf("runtime %s runs the driver %q, which this host runs in no container", runtimeID,
+			grant.Runtime.DriverKey)
+	}
 	if contained {
 		return registration.openContained(opener, runtimeID, prepared, profile, manifest)
 	}
@@ -342,16 +346,11 @@ var driverRegistrations = map[string]driverRegistration{
 		open:          runtimeOpener.terminalRuntime,
 		openContained: inContainer(runtimeOpener.containedTerminalRuntime),
 	},
-	"claude-code-headless": {
-		open:          runtimeOpener.headlessRuntime,
-		openContained: inContainer(runtimeOpener.containedHeadlessRuntime),
-	},
 	"codex-headless": {
 		open: func(opener runtimeOpener, runtimeID string, prepared host.PreparedStart, _ contracts.DriverProfile,
 			environment []string, _ *host.ChildConfinement) (serving.Runtime, error) {
 			return opener.codexRuntime(runtimeID, prepared, environment)
 		},
-		openContained:      inContainer(runtimeOpener.containedHeadlessRuntime),
 		confinementRefusal: ErrCodexChildUnconfined,
 	},
 	"codex": {
@@ -475,48 +474,6 @@ func (opener runtimeOpener) codexRuntime(
 		settings.Model = *runtime.Model
 	}
 	return drivers.NewCodexDriver(owner, settings, runtime.ProcessGeneration), nil
-}
-
-// headlessRuntime opens a headless runtime, one child per turn, from its start grant, with a conversation of its own, the
-// pinned profile of its program and the model the journal asked for.
-func (opener runtimeOpener) headlessRuntime(
-	runtimeID string,
-	prepared host.PreparedStart,
-	profile contracts.DriverProfile,
-	environment []string,
-	confined *host.ChildConfinement,
-) (serving.Runtime, error) {
-	grant := prepared.Grant
-	settingsFolder := filepath.Join(opener.stateFolder, "runtimes", runtimeID)
-	if err := host.RequireNoLinks(opener.stateFolder, settingsFolder); err != nil {
-		return nil, err
-	}
-	conversationID, resumes, err := conversationOf(prepared, grant.Runtime.Folder)
-	if err != nil {
-		return nil, err
-	}
-	headless := drivers.HeadlessRuntime{
-		Limits:                grant.Runtime.Limits,
-		SignInMethods:         grant.Runtime.SignInMethods,
-		ConfinesAccountStarts: grant.Runtime.ConfinesAccountStarts,
-		JournalURL:            opener.journalURL,
-		Credential:            grant.Token,
-		ProfilePin:            grant.ProfileEnvironment(),
-		Start: startOnThisMachine(grant, conversationID, settingsFolder, opener.hookCommand,
-			accountOf(prepared, opener.installationFolder, runtimeID)),
-		ResumesConversation: resumes,
-		Profile:             profile,
-		Environment:         environment,
-		ReadFiles:           prepared.Claim.Recipe.ReadFiles,
-		RelayVariables:      prepared.RelayVariables(settingsFolder),
-		Executable:          installedProgram(opener.installationFolder, profile),
-		Usage:               opener.usageOf(prepared),
-	}
-	// A nil pointer must not reach the interface, where it would read as a confinement.
-	if confined != nil {
-		headless.Confinement = confined
-	}
-	return drivers.NewHeadlessDriver(headless, grant.Runtime.ProcessGeneration), nil
 }
 
 // terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a user attached
@@ -963,22 +920,6 @@ func terminalSize() (uint16, uint16) {
 	return uint16(rows), uint16(columns)
 }
 
-// ErrResumeFailed refuses a start whose explicitly chosen conversation has no transcript left to resume.
-var ErrResumeFailed = errors.New("the chosen conversation's transcript is gone, so it cannot be resumed; start fresh instead")
-
-// conversationOf is the conversation a start runs in: the one the journal chose to resume when its transcript is in
-// the start's own account folder for its own workspace, else a new one, unless the owner chose it explicitly.
-func conversationOf(prepared host.PreparedStart, workFolder string) (string, bool, error) {
-	if resumed, ok := prepared.ResumableConversation(workFolder); ok {
-		return resumed, true, nil
-	}
-	if prepared.Claim.ConversationRequired {
-		return "", false, ErrResumeFailed
-	}
-	conversationID, err := newConversationID()
-	return conversationID, false, err
-}
-
 // newConversationID is a random UUID: Claude Code takes the exact session id it is given and never picks the latest.
 func newConversationID() (string, error) {
 	random := make([]byte, 16)
@@ -1012,14 +953,6 @@ func pinnedBuild(profile contracts.DriverProfile, requested string) error {
 	}
 
 	return profile.CheckBuild(strings.TrimSpace(string(output)))
-}
-
-// usageOf is the usage sink of the start; none when this host queues no usage.
-func (opener runtimeOpener) usageOf(prepared host.PreparedStart) drivers.UsageObserver {
-	if opener.usage == nil {
-		return nil
-	}
-	return host.NewUsageSink(prepared, opener.usage)
 }
 
 // statusLineOf is the status-line reader command of a terminal Claude start signed in with Claude, whose status line

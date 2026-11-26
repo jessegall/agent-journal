@@ -6,15 +6,12 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\MaintainAccount\MaintainAccountCommand;
 use App\Contracts\Actors\CurrentActorSetter;
-use App\Contracts\Drivers\DriverCompatibilities;
 use App\Enums\Accounts\SignInMethod;
-use App\Enums\Drivers\DriverEvidence;
 use App\Models\Accounts\Account;
 use App\Models\Accounts\SignInAttempt;
 use App\Models\Agents\Agent;
 use App\Support\AccountMaintenance;
 use App\Support\ActorReference;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Values\OwnerAuthority;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
@@ -64,15 +61,7 @@ final class MaintainAccountTest extends TestCase
         parent::setUp();
 
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
-        {
-            public function for(string $driver): DriverCompatibility
-            {
-                $pinned = DriverCompatibility::pinned($driver);
-
-                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
-            }
-        });
+        $this->journal->showDriverArrangements();
     }
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void

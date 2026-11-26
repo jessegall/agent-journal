@@ -27,7 +27,7 @@ use App\Values\HostOrderSource;
 
 /**
  * Runs the worker of one process: it takes the process over, goes on where the worker before it stopped, and then
- * hands its program driver each output, request and order answer as it arrives, until it is fenced, asked to
+ * hands its process driver each output, request and order answer as it arrives, until it is fenced, asked to
  * restart or the process ends. Nothing polls: a step waits on the process's feed and its runtime's wakes.
  */
 final readonly class DriverWorkers
@@ -46,7 +46,7 @@ final readonly class DriverWorkers
 
     public function __construct(
         private ProcessFeed $feed,
-        private ProgramDrivers $drivers,
+        private ProcessDrivers $drivers,
         private JournalCommands $commands,
         private ServerClock $clock,
         private DriverRestartSignal $restart,
@@ -61,13 +61,20 @@ final readonly class DriverWorkers
     {
         $generation = $this->run(new ClaimHostWorkerCommand($processId));
         $process = HostProcess::query()->with('runtime')->whereKey($processId)->sole();
-        $streams = [ProcessFeed::streamKey($process->id)];
+        $output = ProcessFeed::streamKey($process->id);
+        $streams = [$output];
 
         if ($process->agent_runtime_id !== null) {
             $streams[] = HostWake::runtimeKey($process->agent_runtime_id);
         }
 
         $cursors = array_combine($streams, array_map($this->feed->lastCursor(...), $streams));
+
+        // The process's first worker reads all it printed, as a short process may print before a worker begins.
+        if ($generation === 1) {
+            $cursors[$output] = ProcessFeed::FIRST_CURSOR;
+        }
+
         $driver = $this->drivers->for($process, $generation);
         $now = $this->clock->now();
         $work = new DriverWork($process->id, $generation, $driver, $now, $cursors, $now);
@@ -129,7 +136,9 @@ final readonly class DriverWorkers
     private function handOver(DriverWork $work, FeedEntry $entry): DriverActions
     {
         if ($entry->answeredOrderId !== null) {
-            return $work->driver->onAnswer(HostOrder::query()->whereKey($entry->answeredOrderId)->sole());
+            $answered = HostOrder::query()->whereKey($entry->answeredOrderId)->sole();
+
+            return $work->driver->onAnswer($answered);
         }
 
         if ($entry->isWake()) {

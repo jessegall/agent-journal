@@ -16,4 +16,20 @@ final class HostChunkData extends Data
         public readonly int $offset,
         public readonly string $bytes,
     ) {}
+
+    /**
+     * The bytes as the process printed them; the host sends them base64 encoded.
+     */
+    public function printed(): string
+    {
+        return (string) base64_decode($this->bytes, true);
+    }
+
+    /**
+     * The offset just past this chunk in its stream.
+     */
+    public function end(): int
+    {
+        return $this->offset + strlen($this->printed());
+    }
 }

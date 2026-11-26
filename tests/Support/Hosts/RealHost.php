@@ -69,6 +69,7 @@ final class RealHost
             '--state', "{$folder}/state", '--secret-file', "{$folder}/secret",
         ]);
         Assert::assertTrue($enrolled->successful(), 'The real host did not enroll: '.$enrolled->errorOutput());
+        $real->installStandIns();
         $real->startHost();
 
         return $real;
@@ -226,18 +227,52 @@ final class RealHost
 
     private function serveJournal(): void
     {
-        $command = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
+        $server = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
+        $command = [__DIR__.'/scripts/serve-until-input-ends.sh', ...$server];
         // The host holds one claim open as a long poll, so the server answers its reports beside it on other workers.
         $environment = [...getenv(), 'DB_DATABASE' => $this->database, 'PHP_CLI_SERVER_WORKERS' => '8'];
-        $this->journal = $this->processes->env($environment)->forever()->start($command);
+        $this->journal = $this->processes->env($environment)->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
+    }
+
+    /**
+     * Holds the stand-in's next headless turn after its first lines, until it is released.
+     */
+    public function holdTurns(): void
+    {
+        touch("{$this->installation()}/hold");
+    }
+
+    public function releaseTurns(): void
+    {
+        unlink("{$this->installation()}/hold");
+    }
+
+    public function installation(): string
+    {
+        return "{$this->folder}/installation";
+    }
+
+    /**
+     * The protected installation the host runs account starts from holds the stand-in for Claude Code and the recorded
+     * headless turn it plays.
+     */
+    private function installStandIns(): void
+    {
+        mkdir("{$this->installation()}/bin", 0o700, true);
+        copy(__DIR__.'/scripts/claude-stand-in.sh', "{$this->installation()}/bin/claude");
+        chmod("{$this->installation()}/bin/claude", 0o700);
+        copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
     }
 
     private function startHost(): void
     {
         $state = "{$this->folder}/state";
         $docker = "unix://{$this->folder}/docker.sock";
-        $command = [self::binary(), 'protocol', '--state', $state, '--docker', $docker, '--until-input-ends'];
+        $command = [
+            self::binary(), 'protocol', '--state', $state, '--docker', $docker, '--until-input-ends',
+            '--installation', $this->installation(), '--hook-command', "{$this->installation()}/bin/journal-hook",
+        ];
         $this->host = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }

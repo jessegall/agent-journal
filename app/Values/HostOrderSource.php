@@ -27,9 +27,9 @@ final readonly class HostOrderSource
     /**
      * A worker's own order, about no driver request, such as the snapshot it starts with.
      */
-    public static function forWorker(int $workerGeneration): self
+    public static function forWorker(int $generation): self
     {
-        return new self(null, null, 0, $workerGeneration);
+        return new self(null, null, 0, $generation);
     }
 
     public static function fromJournal(): self

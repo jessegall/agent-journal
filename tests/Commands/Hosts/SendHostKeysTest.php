@@ -51,7 +51,7 @@ final class SendHostKeysTest extends TestCase
 
         $this->journal->assertResult(
             [$id, HostOrderType::WriteKeys, self::PAYLOAD, CarbonImmutable::parse(self::NOW)->addSeconds(5)->toIso8601String()],
-            [$order->id, $order->type, $order->payload, $order->expires_at->toIso8601String()],
+            [$order->id, $order->type, $this->journal->payloadOf($order), $order->expires_at->toIso8601String()],
         );
     }
 

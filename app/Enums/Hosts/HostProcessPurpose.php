@@ -13,4 +13,19 @@ enum HostProcessPurpose: string
     case AgentTurn = 'agent_turn';
     case AccountOwner = 'account_owner';
     case Probe = 'probe';
+    case BuildProbe = 'build_probe';
+    case SignInProbe = 'sign_in_probe';
+
+    /**
+     * Whether the process is its runtime's own: it takes the runtime's work and its end is the runtime's end. A turn
+     * or a probe the journal opened for a runtime takes only stops and interrupts, and ends alone.
+     */
+    public function isRuntimeProcess(): bool
+    {
+        return ! in_array($this, [
+            self::AgentTurn,
+            self::BuildProbe,
+            self::SignInProbe,
+        ], true);
+    }
 }

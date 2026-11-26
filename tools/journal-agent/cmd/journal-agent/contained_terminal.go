@@ -11,7 +11,6 @@ import (
 	"sync/atomic"
 
 	"journal-agent/client"
-	"journal-agent/drivers"
 	drivercontracts "journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/profiles/contracts"
@@ -103,40 +102,6 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	return runtime, nil
 }
 
-// containedHeadlessRuntime runs a runtime without a terminal whose session is contained, such as a helper's: one turn
-// at a time, each turn's program its session container's own process, created afresh for the turn on the session's
-// volumes. A stop is the container's proven stop; a turn's end is the end of that turn, not of the runtime.
-func (opener runtimeOpener) containedHeadlessRuntime(
-	runtimeID string,
-	prepared host.PreparedStart,
-	profile contracts.DriverProfile,
-	manifest host.ContainerManifest,
-) (serving.Runtime, error) {
-	conversationID, err := newConversationID()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := opener.writeProtectedAccountFiles(context.Background(), profile, manifest); err != nil {
-		return nil, err
-	}
-
-	container := opener.sessionContainer(runtimeID, prepared, manifest)
-	grant := prepared.Grant
-	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
-		Limits:  grant.Runtime.Limits,
-		Start:   startInContainer(grant, conversationID, manifest),
-		Profile: profile,
-		Container: containedTurns{
-			container: container, manifest: manifest, profile: profile, journalURL: opener.sessionJournalURL,
-			prepared: prepared, runtimeID: runtimeID,
-		},
-		Usage: opener.usageOf(prepared),
-	}, grant.Runtime.ProcessGeneration)
-
-	return &containedRuntime{Runtime: driver, container: container, manifest: manifest}, nil
-}
-
 // writeProtectedAccountFiles writes, for a protected start of a profile that needs them, the files its account's
 // folder must hold that no argument can carry; any other start writes nothing.
 func (opener runtimeOpener) writeProtectedAccountFiles(
@@ -175,32 +140,6 @@ func (opener runtimeOpener) sessionContainer(
 			Account: manifest.AccountFolder(),
 		},
 	}
-}
-
-// containedTurns runs each turn of a contained runtime without a terminal in its session's own container.
-type containedTurns struct {
-	container  host.SessionContainer
-	manifest   host.ContainerManifest
-	profile    contracts.DriverProfile
-	journalURL string
-	prepared   host.PreparedStart
-	runtimeID  string
-}
-
-func (turns containedTurns) TurnProgram(start contracts.Start, generation int) (drivers.TurnProgram, error) {
-	process, err := containedProcessOf(turns.profile, turns.journalURL, turns.prepared, turns.runtimeID, start,
-		generation, os.Environ())
-	if err != nil {
-		return nil, err
-	}
-
-	ctx := context.Background()
-	grant := turns.prepared.Grant
-	if err := turns.container.Containers.WriteSessionFiles(ctx, grant.Runtime.SessionID, grant.Folders); err != nil {
-		return nil, err
-	}
-
-	return turns.container.Turn(ctx, turns.manifest, process)
 }
 
 // containedProcessOf is the program's own process for its session container, for the start given (its mode,
@@ -312,7 +251,7 @@ type containedRuntime struct {
 	manifest  host.ContainerManifest
 	// stopped is set by a requested stop, whose end the serving loop reports itself.
 	stopped atomic.Bool
-	// ended says how the container's program ended on its own; a headless runtime, with a container a turn, has none.
+	// ended says how the container's program ended on its own.
 	ended chan string
 }
 

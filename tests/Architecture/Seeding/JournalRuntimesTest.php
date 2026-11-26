@@ -7,6 +7,7 @@ namespace Tests\Architecture\Seeding;
 use App\Enums\Drivers\DriverType;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Projects\Host;
+use App\Support\DefaultDrivers;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\WithActiveAccount;
@@ -50,6 +51,19 @@ final class JournalRuntimesTest extends TestCase
         $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
         $host = $this->journal->hostCalled('Laptop')->hostId;
         $this->assertSame([$host, $opened->sessionId], [$runtime->host_id, $runtime->agent_session_id]);
+    }
+
+    public function test_the_owner_chooses_an_account_for_every_driver_and_a_start_runs_with_it(): void
+    {
+        $this->journal->owner()->chooseActiveAccounts()->showDriverArrangements()->idleAgent('Driven')->enrollHost('Laptop', ['/work/project']);
+
+        $opened = $this->journal->openRuntimeOn('Driven', 'Laptop', '/work/project');
+
+        $chosen = $this->journal->chosenAccounts();
+        $this->journal->assertResult(
+            [DefaultDrivers::familyKeys(), $chosen['claude-code']->id],
+            [array_keys($chosen), $this->journal->startOfSession($opened->sessionId)->account_id],
+        );
     }
 
     public function test_the_one_session_agent_has_its_runtime(): void

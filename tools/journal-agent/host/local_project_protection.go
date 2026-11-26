@@ -239,3 +239,16 @@ func RunProtectionProbe(action string, path string) error {
 
 	return fmt.Errorf("the protection probe has no action %q", action)
 }
+
+// SandboxExecutable is macOS's Seatbelt launcher; the host wraps a confined child's program in it.
+const SandboxExecutable = "/usr/bin/sandbox-exec"
+
+// realPath resolves a folder's symbolic links, as Seatbelt matches the real path; a folder that does not exist yet
+// stays as it is.
+func realPath(folder string) string {
+	resolved, err := filepath.EvalSymlinks(folder)
+	if err != nil {
+		return folder
+	}
+	return resolved
+}

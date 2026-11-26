@@ -10,8 +10,6 @@ use App\Commands\Drivers\NotifyStopped\NotifyStoppedCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
-use App\Contracts\Drivers\DriverCompatibilities;
-use App\Enums\Drivers\DriverEvidence;
 use App\Enums\Drivers\DriverType;
 use App\Enums\Sessions\StartUnavailableReason;
 use App\Exceptions\AccountUnavailable;
@@ -19,7 +17,6 @@ use App\Models\Accounts\Account;
 use App\Models\Agents\Agent;
 use App\Support\AccountMaintenance;
 use App\Support\ActorReference;
-use App\Support\Compatibility\DriverCompatibility;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
 use App\Values\OwnerAuthority;
@@ -73,15 +70,7 @@ final class NotifyStoppedTest extends TestCase
         parent::setUp();
 
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
-        {
-            public function for(string $driver): DriverCompatibility
-            {
-                $pinned = DriverCompatibility::pinned($driver);
-
-                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
-            }
-        });
+        $this->journal->showDriverArrangements();
     }
 
     public function test_maintenance_cancels_unclaimed_starts_and_settles_only_after_proven_exits(): void
@@ -125,7 +114,7 @@ final class NotifyStoppedTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Headless,
+            DriverType::Terminal,
             'claude-opus-5-5',
         );
 

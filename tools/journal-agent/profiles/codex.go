@@ -319,11 +319,6 @@ func (Codex) KeepsToolsFromSignIn() bool {
 	return false
 }
 
-// ReportsTurnResults: Codex reports its turns through its app-server, not on its output.
-func (Codex) ReportsTurnResults() bool {
-	return false
-}
-
 // ReportsLimitWindows: Codex has no status line with limit windows.
 func (Codex) ReportsLimitWindows() bool {
 	return false

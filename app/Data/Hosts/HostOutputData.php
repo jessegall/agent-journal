@@ -27,4 +27,20 @@ final class HostOutputData extends Data
         #[DataCollectionOf(HostChunkData::class)]
         public readonly array $chunks = [],
     ) {}
+
+    /**
+     * How far into the process's standard output this post reaches; 0 for a post with none.
+     */
+    public function stdoutThrough(): int
+    {
+        $ends = array_map(
+            fn (HostChunkData $chunk) => $chunk->stream === 'stdout' ? $chunk->end() : 0,
+            $this->chunks,
+        );
+
+        return max([
+            0,
+            ...$ends,
+        ]);
+    }
 }

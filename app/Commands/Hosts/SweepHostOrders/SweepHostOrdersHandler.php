@@ -33,6 +33,6 @@ final readonly class SweepHostOrdersHandler implements CommandHandler
             $order->expire($now);
         }
 
-        HostOrder::pruneAnsweredBefore($now->subSeconds(self::RETENTION_SECONDS));
+        HostOrder::query()->answeredBefore($now->subSeconds(self::RETENTION_SECONDS))->delete();
     }
 }

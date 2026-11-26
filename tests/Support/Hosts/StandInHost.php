@@ -8,8 +8,8 @@ use App\Contracts\Hosts\HostChannel;
 use App\Values\HostOrderSource;
 use App\Values\RowGuard;
 use Illuminate\Support\Str;
-use PHPUnit\Framework\Assert;
 use Tests\Support\FakeMonotonicClock;
+use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 
 /**
  * A host that plays one committed recording on a fake clock: it shows the recorded frames as the clock passes their
@@ -105,11 +105,9 @@ final class StandInHost implements HostChannel
     {
         $expected = implode('', array_slice($this->inputs, 0, $input + 1));
 
-        Assert::assertSame(
-            bin2hex($expected),
-            bin2hex($this->typed),
-            "At checkpoint {$input} the driver typed other bytes than the recording's user.",
-        );
+        if ($expected !== $this->typed) {
+            throw RecordingDiverged::at($input);
+        }
     }
 
     /**

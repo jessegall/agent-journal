@@ -10,6 +10,7 @@ use App\Commands\Hosts\SendHostKeys\SendHostKeysCommand;
 use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
+use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\HostRefusal;
 use App\Models\Hosts\HostOrder;
 use App\Values\HostOrderSource;
@@ -67,6 +68,29 @@ final class NotifyHostInventoryTest extends TestCase
                 $refused->status,
                 $refused->refusal,
             ],
+        );
+    }
+
+    public function test_a_pipe_whose_host_holds_less_output_than_it_sent_is_lost(): void
+    {
+        $this->journal
+            ->enrollHost('Mac', [base_path()])
+            ->openHostProcess('Mac', 'turn', HostProcessType::Pipe)
+            ->reportHostProcess('turn', HostProcessReportType::Running)
+            ->printOnPipe('turn', "{\"type\":\"system\"}\n");
+        $process = $this->journal->hostProcessCalled('turn');
+        $inventory = json_encode([
+            'protocol' => 1,
+            'release' => '6.0.0',
+            'answered_through' => null,
+            'processes' => [['process_id' => $process->id, 'identity' => 'pid:turn', 'is_alive' => true, 'spool_offset' => 0]],
+        ], JSON_THROW_ON_ERROR);
+
+        $this->journal->asSystem(new NotifyHostInventoryCommand($process->host_id, $inventory));
+
+        $this->journal->assertResult(
+            [HostProcessStatus::Lost, 'the host restarted without the output it had already sent'],
+            [$process->refresh()->status, $process->exit_evidence],
         );
     }
 }

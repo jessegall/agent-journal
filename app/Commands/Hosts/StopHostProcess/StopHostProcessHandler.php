@@ -21,7 +21,10 @@ final readonly class StopHostProcessHandler implements CommandHandler
             $command->processId,
             $command->source,
             HostOrderType::Stop,
-            ['grace_ms' => $command->graceMs, 'force_ms' => $command->forceMs],
+            [
+                'grace_ms' => $command->graceMs,
+                'force_ms' => $command->forceMs,
+            ],
         )->id;
     }
 }

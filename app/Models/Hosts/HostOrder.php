@@ -14,12 +14,14 @@ use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostOrderType;
 use App\Enums\Hosts\HostRefusal;
 use App\Events\Connections\HostOrderAnswered;
+use App\Events\Connections\HostOrderClaimed;
 use App\Events\Connections\HostOrderMade;
 use App\Events\Connections\HostOrderRefused;
 use App\Exceptions\HostOrderStateRefused;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Projects\Host;
 use App\Models\Support\JournalModel;
+use App\Support\Hosts\HostOrderPayload;
 use App\Values\HostOrderBody;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -34,20 +36,18 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $idempotency_key
  * @property int $sequence
  * @property HostOrderType $type
- * @property array<string, mixed> $payload
+ * @property string $payload
+ * @property string $kept_payload
  * @property CarbonImmutable $expires_at
  * @property HostOrderStatus $status
  * @property HostRefusal|null $refusal
- * @property array<string, mixed>|null $answer
+ * @property HostAnswerData|null $answer
  * @property CarbonImmutable|null $claimed_at
  * @property CarbonImmutable|null $answered_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  *
  * @mixin \Eloquent
- *
- * @column payload array<string, mixed>
- * @column answer array<string, mixed>
  */
 final class HostOrder extends JournalModel implements EventSource, ReadableModel
 {
@@ -71,8 +71,9 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
             'status' => HostOrderStatus::class,
             'refusal' => HostRefusal::class,
             'sequence' => 'integer',
-            'payload' => 'encrypted:array',
-            'answer' => 'array',
+            'payload' => 'encrypted',
+            'kept_payload' => 'encrypted',
+            'answer' => HostAnswerData::class,
             'expires_at' => 'immutable_datetime',
             'claimed_at' => 'immutable_datetime',
             'answered_at' => 'immutable_datetime',
@@ -90,6 +91,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         HostProcess|null $process,
         HostOrderBody $body,
         CarbonImmutable $expires,
+        int $sequence,
     ): self {
         $order = new self();
         $order->host_id = $host->id;
@@ -97,13 +99,14 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $order->driver_request_id = $body->driverRequestId;
         $order->step = $body->step;
         $order->idempotency_key = $body->idempotencyKey;
-        $order->sequence = $process === null ? $host->takeOrderNumber() : $process->takeOrderNumber();
+        $order->sequence = $sequence;
         $order->type = $body->type;
-        $order->payload = $body->payload;
+        $order->payload = HostOrderPayload::encode($body->payload);
+        $order->kept_payload = HostOrderPayload::encode($body->keptPayload());
         $order->expires_at = $expires;
         $order->status = HostOrderStatus::Pending;
         $order->assertSaved($order->save());
-        $order->raise(new HostOrderMade($order->id, $host->id));
+        $order->raise(new HostOrderMade($order->id, $process?->id, $host->id));
 
         return $order;
     }
@@ -115,6 +118,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->status = HostOrderStatus::Claimed;
         $this->claimed_at = $at;
         $this->assertSaved($this->save());
+        $this->raise(new HostOrderClaimed($this->id, $this->host_process_id));
     }
 
     /**
@@ -131,7 +135,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->assertOpen();
         $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Done;
-        $this->answer = $answer->facts;
+        $this->answer = $answer;
         $this->answered_at = $at;
         $this->assertSaved($this->save());
         $this->raise(new HostOrderAnswered($this->id, $this->host_process_id, $this->type));
@@ -148,7 +152,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Refused;
         $this->refusal = $refusal;
-        $this->answer = $facts;
+        $this->answer = new HostAnswerData(HostOrderStatus::Refused, $refusal, $facts);
         $this->answered_at = $at;
         $this->assertSaved($this->save());
         $this->raise(new HostOrderRefused($this->id, $this->host_process_id, $this->type, $refusal));
@@ -164,17 +168,11 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
 
     /**
      * An input order's bytes and an open order's environment, which holds the start's credentials, are needed only
-     * until the host answers it: then they are erased, so neither is kept longer than it travels.
+     * until the host answers it: then only what the payload keeps stays, so neither is kept longer than it travels.
      */
     private function forgetCarriedSecrets(): void
     {
-        if ($this->type->isInput()) {
-            $this->payload = [];
-        }
-
-        if ($this->type->isOpening()) {
-            $this->payload = [...$this->payload, 'environment' => []];
-        }
+        $this->payload = $this->kept_payload;
     }
 
     // ----------[ Predicates ]----------
@@ -214,7 +212,10 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public static function findExpiredAt(CarbonImmutable $now, int $limit): array
     {
         $orders = self::query()
-            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
+            ->whereIn('status', [
+                HostOrderStatus::Pending,
+                HostOrderStatus::Claimed,
+            ])
             ->where('expires_at', '<=', $now)
             ->lock('for update skip locked')
             ->readExactly($limit)
@@ -232,23 +233,14 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     {
         $orders = self::query()
             ->where('host_process_id', $processId)
-            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed])
+            ->whereIn('status', [
+                HostOrderStatus::Pending,
+                HostOrderStatus::Claimed,
+            ])
             ->lockForUpdate()
             ->get();
 
         return array_values($orders->all());
-    }
-
-    /**
-     * Deletes the orders answered before the moment and answers how many: an answered order is kept only as long as a
-     * worker may still read it.
-     */
-    public static function pruneAnsweredBefore(CarbonImmutable $before): int
-    {
-        return self::query()
-            ->whereIn('status', [HostOrderStatus::Done, HostOrderStatus::Refused])
-            ->where('answered_at', '<', $before)
-            ->delete();
     }
 
     /**
@@ -336,7 +328,11 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     {
         $orders = self::query()
             ->ofDriverRequest($request)
-            ->whereIn('status', [HostOrderStatus::Pending, HostOrderStatus::Claimed, HostOrderStatus::Done])
+            ->whereIn('status', [
+                HostOrderStatus::Pending,
+                HostOrderStatus::Claimed,
+                HostOrderStatus::Done,
+            ])
             ->orderBy('sequence')
             ->get();
 
@@ -373,5 +369,18 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
                     ->where('claimed_at', '<', $now->subSeconds(self::CLAIM_SECONDS)),
             ),
         );
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answeredBefore(Builder $query, CarbonImmutable $before): void
+    {
+        $query->whereIn('status', [
+            HostOrderStatus::Done,
+            HostOrderStatus::Refused,
+        ])
+            ->where('answered_at', '<', $before);
     }
 }

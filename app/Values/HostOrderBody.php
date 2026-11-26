@@ -29,4 +29,22 @@ final readonly class HostOrderBody
     {
         return new self($type, $payload, $source->idempotencyKey(), $source->driverRequestId, $source->step);
     }
+
+    /**
+     * What of the payload is kept once the host answered: none of an input's bytes, an opening without the
+     * environment that holds the start's credentials, and every other payload whole.
+     *
+     * @return array<string, mixed>
+     */
+    public function keptPayload(): array
+    {
+        return match (true) {
+            $this->type->isInput() => [],
+            $this->type->isOpening() => [
+                ...$this->payload,
+                'environment' => [],
+            ],
+            default => $this->payload,
+        };
+    }
 }

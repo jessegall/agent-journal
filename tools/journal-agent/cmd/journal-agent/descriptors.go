@@ -23,8 +23,8 @@ func advertises(advertised []client.HostDescriptor, key, build string) bool {
 }
 
 // descriptorsOf is every driver this host runs in its arrangement, each at its family's pinned build, on the
-// protected host or in a required container. The Codex terminal is not advertised until it is proven, and Codex runs
-// in no container until its provider transport exists.
+// protected host or in a required container. The Codex terminal is not advertised until it is proven; Codex, and the
+// headless Claude turns the journal opens itself, run in no container until the journal orders them in one.
 func descriptorsOf(arrangement host.Arrangement) []client.HostDescriptor {
 	placement := "protected_host"
 	if arrangement.IsContained() {
@@ -34,12 +34,11 @@ func descriptorsOf(arrangement host.Arrangement) []client.HostDescriptor {
 		return client.HostDescriptor{Key: key, Build: build,
 			Arrangement: string(arrangement), Placement: placement}
 	}
-	descriptors := []client.HostDescriptor{
-		descriptor("claude-code", profiles.ClaudeCode{}.Build()),
-		descriptor("claude-code-headless", profiles.ClaudeCode{}.Build()),
-	}
+	descriptors := []client.HostDescriptor{descriptor("claude-code", profiles.ClaudeCode{}.Build())}
 	if !arrangement.IsContained() {
-		descriptors = append(descriptors, descriptor("codex-headless", profiles.Codex{}.Build()))
+		descriptors = append(descriptors,
+			descriptor("claude-code-headless", profiles.ClaudeCode{}.Build()),
+			descriptor("codex-headless", profiles.Codex{}.Build()))
 	}
 
 	return descriptors

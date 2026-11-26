@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\Connections\BindingReadiness;
 use App\Enums\Connections\CommandRunStatus;
+use App\Enums\Hosts\HostOrderType;
+use App\Enums\Hosts\HostRefusal;
 use App\Enums\Projects\ProjectReadFailure;
 use App\Events\Connections\BindingRuntimeRecorded;
 use App\Events\Connections\DeviceGrantApproved;
@@ -16,6 +18,23 @@ use App\Events\Connections\HostBrowserInputAdvertised;
 use App\Events\Connections\HostCallAnswered;
 use App\Events\Connections\HostCallFailed;
 use App\Events\Connections\HostDescriptorsRecorded;
+use App\Events\Connections\HostHeartbeatRecorded;
+use App\Events\Connections\HostOrderAnswered;
+use App\Events\Connections\HostOrderClaimed;
+use App\Events\Connections\HostOrderMade;
+use App\Events\Connections\HostOrderRefused;
+use App\Events\Connections\HostProcessExited;
+use App\Events\Connections\HostProcessInputGenerationRaised;
+use App\Events\Connections\HostProcessLost;
+use App\Events\Connections\HostProcessOpened;
+use App\Events\Connections\HostProcessOpenOrderHeld;
+use App\Events\Connections\HostProcessOrderNumbered;
+use App\Events\Connections\HostProcessOutputRecorded;
+use App\Events\Connections\HostProcessRestarted;
+use App\Events\Connections\HostProcessSeenInHeartbeat;
+use App\Events\Connections\HostProcessStarted;
+use App\Events\Connections\HostProcessWorkerClaimed;
+use App\Events\Connections\HostProcessWorkerRenewed;
 use App\Events\Connections\HostProtectionRecorded;
 use App\Events\Connections\HostRevoked;
 use App\Events\Connections\InstallAttemptCancelled;
@@ -308,5 +327,124 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new WorkspaceReadAnswered('read'),
+    ],
+    HostProcessSeenInHeartbeat::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::seeInHeartbeat',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessSeenInHeartbeat('process'),
+    ],
+    HostProcessWorkerClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::claimWorker',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessWorkerClaimed('process', 1),
+    ],
+    HostProcessWorkerRenewed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::renewWorker',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessWorkerRenewed('process', 1),
+    ],
+    HostProcessOrderNumbered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::takeOrderNumber',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessOrderNumbered('process', 1),
+    ],
+    HostProcessOpenOrderHeld::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::holdOpenOrder',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessOpenOrderHeld('process', 'order'),
+    ],
+    HostProcessInputGenerationRaised::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::raiseInputGeneration',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessInputGenerationRaised('process', 1),
+    ],
+    HostOrderClaimed::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostOrder::claim',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostOrderClaimed('order', 'process'),
+    ],
+    HostHeartbeatRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Host::recordHeartbeat',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostHeartbeatRecorded('host'),
+    ],
+    HostOrderMade::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostOrder::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostOrderMade('order', 'process', 'host'),
+    ],
+    HostOrderAnswered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostOrder::answer',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostOrderAnswered('order', 'process', HostOrderType::cases()[0]),
+    ],
+    HostOrderRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostOrder::refuse',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostOrderRefused('order', 'process', HostOrderType::cases()[0], HostRefusal::cases()[0]),
+    ],
+    HostProcessOutputRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::recordOutputThrough',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessOutputRecorded('process', 8),
+    ],
+    HostProcessOpened::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessOpened('process', 'runtime'),
+    ],
+    HostProcessStarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::run',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessStarted('process', 'runtime', 1, 'pid:1'),
+    ],
+    HostProcessRestarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::restart',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessRestarted('process', 'runtime', 2, 'pid:2'),
+    ],
+    HostProcessExited::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::exit',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessExited('process', 'runtime', 0, null, 'exited 0'),
+    ],
+    HostProcessLost::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'HostProcess::lose',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new HostProcessLost('process', 'runtime', 'lost'),
     ],
 ];

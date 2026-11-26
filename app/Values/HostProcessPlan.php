@@ -12,13 +12,22 @@ use App\Support\ContainerManifest;
 
 /**
  * How a host is to open one process: what it is for, terminal or pipes, whether it is healed, its argv and
- * environment, each variable as NAME=value, its folder, and the container it runs in when it is contained.
+ * environment, each variable as NAME=value, its folder, the container it runs in when it is contained, and the files
+ * the host writes into the process's own files folder first, which argv, environment and mounts name as {folder:files};
+ * each of its folders is an empty folder of the process's own, named {folder:<name>}, and each name it inherits is a
+ * variable of the host's own environment, passed on when the host has it. Each side socket is a socket the host listens
+ * on beside the process, in {folder:sockets}, whose bytes arrive as output of a stream of its name.
  */
 final readonly class HostProcessPlan
 {
     /**
      * @param  list<string>  $argv
      * @param  list<string>  $environment
+     * @param  list<PlanFile>  $files
+     * @param  list<string>  $folders
+     * @param  list<string>  $inherit
+     * @param  list<string>  $sideSockets
+     * @param  list<string>  $readFiles
      */
     public function __construct(
         public HostProcessPurpose $purpose,
@@ -30,11 +39,43 @@ final readonly class HostProcessPlan
         public ContainerManifest|null $container = null,
         public int $columns = 120,
         public int $rows = 40,
+        public array $files = [],
+        public array $folders = [],
+        public array $inherit = [],
+        public array $sideSockets = [],
+        /**
+         * a plan file holding the Seatbelt profile the process runs under where the host has Seatbelt
+         */
+        public string|null $seatbelt = null,
+        /**
+         * files the host opens read-only for the process, handed over as its descriptors 3 on
+         */
+        public array $readFiles = [],
     ) {}
+
+    /**
+     * The same plan with more variables in its environment, each as NAME=value.
+     *
+     * @param  list<string>  $environment
+     */
+    public function withEnvironment(array $environment): self
+    {
+        return new self(...[
+            ...get_object_vars($this),
+            'environment' => [
+                ...$this->environment,
+                ...$environment,
+            ],
+        ]);
+    }
 
     public function orderType(): HostOrderType
     {
-        return $this->container === null ? HostOrderType::OpenProcess : HostOrderType::OpenContainer;
+        if ($this->container === null) {
+            return HostOrderType::OpenProcess;
+        }
+
+        return HostOrderType::OpenContainer;
     }
 
     /**
@@ -51,7 +92,16 @@ final readonly class HostProcessPlan
             'environment' => $this->environment,
             'folder' => $this->folder,
             'container' => $this->container,
-            'size' => ['columns' => $this->columns, 'rows' => $this->rows],
+            'size' => [
+                'columns' => $this->columns,
+                'rows' => $this->rows,
+            ],
+            'files' => $this->files,
+            'folders' => $this->folders,
+            'inherit' => $this->inherit,
+            'side_sockets' => $this->sideSockets,
+            'seatbelt' => $this->seatbelt,
+            'read_files' => $this->readFiles,
         ];
     }
 }

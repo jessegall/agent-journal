@@ -14,22 +14,6 @@ use App\Values\DriverLimits;
  */
 final readonly class RuntimeStart
 {
-    /**
-     * The Claude sign-in methods the journal accepts for an account start, as the driver names them: OAuth, a
-     * provider token read from a descriptor, and an API key from the account folder's apiKeyHelper.
-     */
-    public const array CLAUDE_SIGN_IN_METHODS = [
-        'claude.ai',
-        'oauth_token',
-        'api_key_helper',
-    ];
-
-    /**
-     * Whether an account start's turns run in their session sandbox, so a turn reads only its account folder, its
-     * settings and its work folder.
-     */
-    public const bool CONFINES_ACCOUNT_STARTS = true;
-
     public function __construct(
         public string $sessionId,
         public string $driver,
@@ -58,8 +42,7 @@ final readonly class RuntimeStart
 
     /**
      * @return array{session_id: string, driver: string, driver_key: string, driver_build: string, folder: string,
-     *     process_generation: int, model: string|null, effort: string|null, limits: array<string, int>,
-     *     sign_in_methods: list<string>, confines_account_starts: bool}
+     *     process_generation: int, model: string|null, effort: string|null, limits: array<string, int>}
      */
     public function toArray(): array
     {
@@ -73,8 +56,6 @@ final readonly class RuntimeStart
             'model' => $this->model,
             'effort' => $this->effort,
             'limits' => $this->limits->toArray(),
-            'sign_in_methods' => self::CLAUDE_SIGN_IN_METHODS,
-            'confines_account_starts' => self::CONFINES_ACCOUNT_STARTS,
         ];
     }
 }

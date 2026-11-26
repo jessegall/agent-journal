@@ -50,12 +50,6 @@ func (limits Limits) TurnStartWindow() time.Duration { return milliseconds(limit
 // StrandedSettle is how long a driver waits for a browser take to settle its stranded line.
 func (limits Limits) StrandedSettle() time.Duration { return milliseconds(limits.StrandedSettleMs) }
 
-// StopGrace is how long a stopped program has to end after the graceful signal.
-func (limits Limits) StopGrace() time.Duration { return milliseconds(limits.StopGraceMs) }
-
-// StopForce is how long a stopped program has to end after the force signal.
-func (limits Limits) StopForce() time.Duration { return milliseconds(limits.StopForceMs) }
-
 func milliseconds(count int) time.Duration {
 	return time.Duration(count) * time.Millisecond
 }

@@ -30,7 +30,8 @@ final class JsonIntoDataTest extends TestCase
      * type kept as stored, a tool's own JSON line, a user's option or file sent on for the journal to check, a tree
      * checked node by node against its limits, a bare list of texts, a map keyed by the operator's own environment
      * names whose entries each go into their own Data class, a driver's own state file, kept whole with the fields
-     * the journal does not know, or a page's layout, kept as the page wrote it.
+     * the journal does not know, a page's layout, kept as the page wrote it, a line of a driver's stream-json output,
+     * of any of its event types, or an account's protection settings, a settings document of the driver's own.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Support\\Storage\\EncodedValue::jsonSerialize',
@@ -41,6 +42,8 @@ final class JsonIntoDataTest extends TestCase
         'App\\Support\\ConditionTree::fromJson',
         'App\\Support\\WorkspaceSources::fromJson',
         'App\\Support\\Drivers\\ClaudeFirstRun::settle',
+        'App\\Support\\Drivers\\Processes\\ClaudeResult::readLine',
+        'App\\Support\\Drivers\\Profiles\\ClaudeSettingsMerge::withProtection',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

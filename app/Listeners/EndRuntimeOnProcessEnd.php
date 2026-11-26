@@ -24,7 +24,13 @@ final readonly class EndRuntimeOnProcessEnd implements Listener
             return;
         }
 
-        $hostId = HostProcess::query()->whereKey($fact->processId)->sole()->host_id;
+        $process = HostProcess::query()->whereKey($fact->processId)->sole();
+
+        if (! $process->purpose->isRuntimeProcess()) {
+            return;
+        }
+
+        $hostId = $process->host_id;
         $generation = $this->runtimes->lockedFor($hostId, $fact->runtimeId)->process_generation;
         $this->commands->run(new NotifyRuntimeExitCommand($hostId, $fact->runtimeId, $generation, $fact->evidence));
     }

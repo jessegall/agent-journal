@@ -28,7 +28,10 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
         $inventory = HostInventoryData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
 
         $reported = array_column(
-            array_map(fn (InventoryProcessData $process) => [$process->processId, $process], $inventory->processes),
+            array_map(fn (InventoryProcessData $process) => [
+                $process->processId,
+                $process,
+            ], $inventory->processes),
             1,
             0,
         );
@@ -45,6 +48,10 @@ final readonly class NotifyHostInventoryHandler implements CommandHandler
 
             if ($held !== null && ! $held->isAlive) {
                 $process->lose('the host restarted and holds it no longer running', $now);
+            }
+
+            if ($held?->isAlive === true && $process->hasLostOutputOf($held->spoolOffset)) {
+                $process->lose('the host restarted without the output it had already sent', $now);
             }
         }
 

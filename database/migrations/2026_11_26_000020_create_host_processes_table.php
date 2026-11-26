@@ -14,6 +14,8 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('host_id')->constrained('hosts');
             $table->ulid('agent_runtime_id')->nullable()->index();
+            // The journal's start record this process runs for; none for a process no start made, such as a probe.
+            $table->ulid('session_process_id')->nullable()->index();
             $table->string('purpose', 24);
             $table->string('type', 16);
             $table->unsignedInteger('generation')->default(0);

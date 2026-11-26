@@ -6,10 +6,7 @@ namespace Tests\Support;
 
 use App\Contracts\Actors\CurrentActorSetter;
 use App\Models\Accounts\Account;
-use App\Models\Accounts\ActiveAccount;
 use App\Support\ActorReference;
-use App\Support\DefaultDrivers;
-use App\Values\AccountLabel;
 use App\Values\OwnerAuthority;
 
 /**
@@ -30,15 +27,7 @@ trait WithActiveAccount
             ActorReference::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $chosen = [];
 
-        foreach (DefaultDrivers::familyKeys() as $driver) {
-            $directory = "/journal/accounts/{$driver}";
-            $account = Account::create($driver, AccountLabel::from('Test account'), $directory);
-            ActiveAccount::findLockedFor($driver)->select($account);
-            $chosen[$driver] = $account;
-        }
-
-        return $chosen;
+        return $this->journal->chooseActiveAccounts()->chosenAccounts();
     }
 }

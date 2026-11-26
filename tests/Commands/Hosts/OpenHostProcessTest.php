@@ -49,7 +49,7 @@ final class OpenHostProcessTest extends TestCase
         $order = HostOrder::query()->whereKey($process->open_order_id)->sole();
         $this->journal->assertResult(
             [HostProcessStatus::Ordered, RestartPolicy::OnCrash, HostOrderType::OpenProcess, $plan->payload()],
-            [$process->status, $process->restart, $order->type, $order->payload],
+            [$process->status, $process->restart, $order->type, $this->journal->payloadOf($order)],
         );
     }
 }

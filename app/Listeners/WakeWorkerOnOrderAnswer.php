@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Contracts\Events\Listener;
-use App\Contracts\Hosts\HostOrderEvent;
+use App\Contracts\Hosts\HostOrderAnswerEvent;
 use App\Support\Hosts\ProcessFeed;
 
 /**
@@ -15,7 +15,7 @@ final readonly class WakeWorkerOnOrderAnswer implements Listener
 {
     public function __construct(private ProcessFeed $feed) {}
 
-    public function handle(HostOrderEvent $fact): void
+    public function handle(HostOrderAnswerEvent $fact): void
     {
         if ($fact->processId === null) {
             return;

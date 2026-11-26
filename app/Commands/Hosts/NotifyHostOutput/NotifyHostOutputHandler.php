@@ -32,7 +32,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
             throw HostProtocolRefused::outputTooLarge($command->processId, strlen($command->body));
         }
 
-        $process = HostProcess::query()->whereKey($command->processId)->sole();
+        $process = HostProcess::findLocked($command->processId);
 
         if ($process->host_id !== $command->hostId) {
             $this->logOnce($command->hostId, 'A host sent output of a process it does not run.');
@@ -42,6 +42,7 @@ final readonly class NotifyHostOutputHandler implements CommandHandler
 
         $output = HostOutputData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
         $this->feed->push($process->id, $output);
+        $process->recordOutputThrough($output->stdoutThrough());
     }
 
     private function logOnce(string $hostId, string $message): void

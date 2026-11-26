@@ -17,6 +17,7 @@ use App\Enums\Sessions\TransportProfileType;
 use App\Events\Sessions\SessionProcessCancelled;
 use App\Events\Sessions\SessionProcessClaimed;
 use App\Events\Sessions\SessionProcessOutputAdvanced;
+use App\Events\Sessions\SessionProcessRegistered;
 use App\Events\Sessions\SessionProcessSeenRunning;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\StartRefused;
@@ -112,6 +113,7 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
         $start->transport_profile = $transport;
         $start->role = AccountProcessRole::Execution;
         $start->save();
+        $start->raise(new SessionProcessRegistered($start->id, $start->session_id));
 
         return $start;
     }
@@ -235,6 +237,14 @@ final class SessionProcess extends JournalModel implements EventSource, Readable
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The start by its id, locked, as a host process that runs for it names it, whoever's agent it belongs to.
+     */
+    public static function findLockedById(string $id): self
+    {
+        return self::query()->supervised()->whereKey($id)->lockForUpdate()->sole();
+    }
 
     /**
      * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session

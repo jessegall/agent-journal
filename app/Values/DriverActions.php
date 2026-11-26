@@ -7,7 +7,7 @@ namespace App\Values;
 use App\Support\Command;
 
 /**
- * The commands a program driver asks to run next, in order: the orders to its host and the reports on its requests.
+ * The commands a process driver asks to run next, in order: the orders to its host and the reports on its requests.
  */
 final readonly class DriverActions
 {
@@ -31,6 +31,9 @@ final readonly class DriverActions
 
     public function then(self $more): self
     {
-        return new self([...$this->commands, ...$more->commands]);
+        return new self([
+            ...$this->commands,
+            ...$more->commands,
+        ]);
     }
 }

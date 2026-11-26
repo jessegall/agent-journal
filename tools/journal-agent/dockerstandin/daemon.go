@@ -274,6 +274,7 @@ type Container struct {
 	printed     bytes.Buffer
 	typed       bytes.Buffer
 	attached    []net.Conn
+	followers   []chan []byte
 	input       *io.PipeWriter
 	inputReader *io.PipeReader
 	rows        uint

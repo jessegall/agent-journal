@@ -44,7 +44,7 @@ final class ResizeHostProcessTest extends TestCase
 
         $this->journal->assertResult(
             [$id, HostOrderType::Resize, self::PAYLOAD, CarbonImmutable::parse(self::NOW)->addSeconds(30)->toIso8601String()],
-            [$order->id, $order->type, $order->payload, $order->expires_at->toIso8601String()],
+            [$order->id, $order->type, $this->journal->payloadOf($order), $order->expires_at->toIso8601String()],
         );
     }
 

@@ -43,6 +43,10 @@ final readonly class HostOrderClaim implements JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return ['orders' => $this->orders, 'idle_window_s' => self::IDLE_WINDOW_SECONDS, 'now' => $this->now];
+        return [
+            'orders' => $this->orders,
+            'idle_window_s' => self::IDLE_WINDOW_SECONDS,
+            'now' => $this->now,
+        ];
     }
 }

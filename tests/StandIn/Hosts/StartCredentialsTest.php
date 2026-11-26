@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\StandIn\Hosts;
 
+use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostProcessStatus;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsAgainstStandIn;
@@ -50,7 +51,7 @@ final class StartCredentialsTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Relay')->enrollHost('Mac', [base_path()])->runRealHost('Mac');
-        $opened = $this->journal->openRuntimeOn('Relay', 'Mac', base_path());
+        $opened = $this->journal->openRuntimeOn('Relay', 'Mac', base_path(), driverType: DriverType::Terminal);
         $answer = tempnam(sys_get_temp_dir(), 'relay-answer-');
         $relay = 'printf "%s\\n" "$0" | php artisan mcp:relay > "$1"';
 

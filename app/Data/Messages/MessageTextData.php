@@ -20,4 +20,9 @@ final class MessageTextData extends MessagePartData
     {
         return strlen($this->text);
     }
+
+    public function promptLine(): string
+    {
+        return $this->text;
+    }
 }

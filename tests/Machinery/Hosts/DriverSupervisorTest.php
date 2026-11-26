@@ -7,7 +7,7 @@ namespace Tests\Machinery\Hosts;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Support\Drivers\DriverSupervisor;
 use App\Support\Hosts\HostWake;
-use Tests\Support\Drivers\StandInProgramDriver;
+use Tests\Support\Drivers\StandInProcessDriver;
 use Tests\Support\Entries\Attributes\TestsMachinery;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ final class DriverSupervisorTest extends TestCase
     {
         $this->journal
             ->fakeStartedPrograms()
-            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProgramDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->openHostProcess('Mac', 'shell');
         $process = $this->journal->hostProcessCalled('shell')->id;
@@ -40,7 +40,7 @@ final class DriverSupervisorTest extends TestCase
 
     public function test_a_new_process_wakes_the_supervisor_which_otherwise_waits_without_a_timer(): void
     {
-        $this->journal->driveProcessesWith(HostProcessPurpose::Probe, StandInProgramDriver::class);
+        $this->journal->driveProcessesWith(HostProcessPurpose::Probe, StandInProcessDriver::class);
         $supervisor = $this->journal->service(DriverSupervisor::class);
         $wake = $this->journal->service(HostWake::class);
         $wake->waitForSupervisor(1);

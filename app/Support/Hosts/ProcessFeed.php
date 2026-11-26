@@ -116,7 +116,11 @@ final readonly class ProcessFeed
     {
         $newest = $this->connection()->xrevrange($stream, '+', '-', 1);
 
-        return is_array($newest) && $newest !== [] ? (string) array_key_first($newest) : self::FIRST_CURSOR;
+        if (is_array($newest) && $newest !== []) {
+            return (string) array_key_first($newest);
+        }
+
+        return self::FIRST_CURSOR;
     }
 
     /**
@@ -145,7 +149,11 @@ final readonly class ProcessFeed
         $start = strpos($stream, 'host:process:');
         $start = $start === false ? strpos($stream, 'driver:wake:') : $start;
 
-        return $start === false ? $stream : substr($stream, $start);
+        if ($start === false) {
+            return $stream;
+        }
+
+        return substr($stream, $start);
     }
 
     private function connection(): Connection

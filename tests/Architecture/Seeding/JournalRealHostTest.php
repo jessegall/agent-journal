@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Seeding;
 
+use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Hosts\EchoProgramDriver;
+use Tests\Support\Hosts\EchoProcessDriver;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -46,7 +47,7 @@ final class JournalRealHostTest extends TestCase
     public function test_a_real_host_opens_the_echo_program_the_journal_orders(): void
     {
         $this->journal
-            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProgramDriver::class)
+            ->driveProcessesWith(HostProcessPurpose::Probe, EchoProcessDriver::class)
             ->enrollHost('Mac', [base_path()])
             ->runRealHost('Mac')
             ->openEchoContainer('Mac', 'echo')
@@ -74,7 +75,7 @@ final class JournalRealHostTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Probe')->enrollHost('Mac', [base_path()])->runRealHost('Mac');
-        $opened = $this->journal->openRuntimeOn('Probe', 'Mac', base_path());
+        $opened = $this->journal->openRuntimeOn('Probe', 'Mac', base_path(), driverType: DriverType::Terminal);
         $seen = tempnam(sys_get_temp_dir(), 'start-credentials-');
         $print = 'printf "%s" "$JOURNAL_START_TOKEN" > "$0"';
 
@@ -83,5 +84,20 @@ final class JournalRealHostTest extends TestCase
             ->waitForHostProcess('probe', HostProcessStatus::Exited);
 
         $this->assertSame(64, strlen((string) file_get_contents($seen)));
+    }
+
+    public function test_the_real_hosts_installation_holds_the_stand_in_whose_turns_are_held_and_released(): void
+    {
+        $this->journal->enrollHost('Mac', [base_path()])->runRealHost('Mac')->holdStandInTurns();
+        $installation = $this->journal->realHostInstallation();
+        $held = file_exists("{$installation}/hold");
+
+        $this->journal->releaseStandInTurns();
+
+        $this->journal->assertResult(
+            [true, true, false],
+            [is_executable("{$installation}/bin/claude"), $held, file_exists("{$installation}/hold")],
+        );
+        $this->journal->stopRealHost();
     }
 }

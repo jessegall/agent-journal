@@ -42,6 +42,19 @@ final readonly class ClaimedRequest
     ) {}
 
     /**
+     * What a turn is told: the claim's message, or else each part as a line, a blank line between them; none for a
+     * claim with neither.
+     */
+    public function prompt(): string|null
+    {
+        if ($this->message !== null || $this->parts === []) {
+            return $this->message;
+        }
+
+        return implode("\n\n", array_map(fn (MessagePart $part) => $part->promptLine(), $this->parts));
+    }
+
+    /**
      * The same claim carrying another message: the prompt its wake presents, or a private input's value for the host.
      */
     public function withMessage(string $message): self

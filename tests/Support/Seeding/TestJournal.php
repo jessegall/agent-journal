@@ -7,6 +7,7 @@ namespace Tests\Support\Seeding;
 use App\Commands\Access\GrantEnvironmentAccess\GrantEnvironmentAccessCommand;
 use App\Commands\Agents\RecordHeartbeat\RecordHeartbeatCommand;
 use App\Commands\Inboxes\InstallInboxes\InstallInboxesCommand;
+use App\Contracts\Drivers\DriverCompatibilities;
 use App\Contracts\Projects\AgentProjects;
 use App\Contracts\Time\ServerClock;
 use App\Enums\Accounts\CommandEntry;
@@ -35,6 +36,7 @@ use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Fixtures\Drivers\ShownDriverArrangements;
 use Tests\Fixtures\Projects\LocalAgentProjects;
 use Tests\Support\FakeServerClock;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -436,6 +438,17 @@ final class TestJournal
     public function reselect(): self
     {
         $this->requests->reselect();
+
+        return $this;
+    }
+
+    /**
+     * Every pinned driver's way of sharing an account's sign-in counts as shown on the real driver from here on, so
+     * its starts run.
+     */
+    public function showDriverArrangements(): self
+    {
+        $this->app->instance(DriverCompatibilities::class, new ShownDriverArrangements());
 
         return $this;
     }

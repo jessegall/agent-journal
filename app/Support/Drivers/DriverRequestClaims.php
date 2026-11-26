@@ -35,14 +35,49 @@ final readonly class DriverRequestClaims
     ) {}
 
     /**
+     * Every waiting stop, interrupt and recording of the runtimes first, then their other requests up to the limit.
+     *
      * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
      */
     public function claimFor(Collection $runtimes, int $limit): ClaimedRequests
     {
-        $runtimeIds = $runtimes->keys()->all();
+        $control = $this->controlOf($runtimes);
 
+        return new ClaimedRequests([
+            ...$control,
+            ...$this->workOf($runtimes, $limit - count($control)),
+        ]);
+    }
+
+    /**
+     * Only the waiting stops, interrupts and recordings of the runtimes, for a process that runs one turn: the work it
+     * was opened for is its own, and the next work waits for the next turn.
+     *
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     */
+    public function claimControlFor(Collection $runtimes): ClaimedRequests
+    {
+        return new ClaimedRequests($this->controlOf($runtimes));
+    }
+
+    /**
+     * Only the next work of the runtimes, up to the limit, for the journal opening a turn for it.
+     *
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     */
+    public function claimWorkFor(Collection $runtimes, int $limit): ClaimedRequests
+    {
+        return new ClaimedRequests($this->workOf($runtimes, $limit));
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     * @return list<ClaimedRequest>
+     */
+    private function controlOf(Collection $runtimes): array
+    {
         $control = DriverRequest::query()
-            ->ofAgentRuntimes($runtimeIds)
+            ->ofAgentRuntimes($runtimes->keys()->all())
             ->withProgress(RequestProgress::Accepted)
             ->withAnyOperation(DriverOperation::control())
             ->bySequence()
@@ -50,36 +85,11 @@ final readonly class DriverRequestClaims
             ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
             ->get();
 
-        $pending = DriverRequest::query()
-            ->ofAgentRuntimes($runtimeIds)
-            ->withProgress(RequestProgress::Accepted)
-            ->offerable(CarbonImmutable::now())
-            ->excludingControl()
-            ->bySequence()
-            ->lockForUpdate()
-            ->readUpTo($limit * max(1, $runtimes->count()))
-            ->get()
-            ->groupBy('agent_runtime_id');
-
         $now = CarbonImmutable::now();
+        $sessions = $this->sessionsOf($runtimes);
+        $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);
+        $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers($sessions);
         $claimed = [];
-
-        $held = SessionRequest::resolveSessionsHoldingDeliveries(array_values(array_map(
-            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
-            $runtimes->all(),
-        )));
-
-        $bootstrapped = [];
-
-        $starts = SessionProcess::resolveLatestIdsOfSessions(array_values(array_map(
-            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
-            $runtimes->all(),
-        )));
-
-        $waitingOnHelpers = AgentRuntime::resolveSessionsWaitingOnHelpers(array_values(array_map(
-            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
-            $runtimes->all(),
-        )));
 
         foreach ($control as $request) {
             $runtime = $runtimes->get($request->agent_runtime_id);
@@ -95,6 +105,37 @@ final readonly class DriverRequestClaims
                 $request->claimed($runtime, $starts[$runtime->agent_session_id] ?? null, false),
             );
         }
+
+        return $claimed;
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes  keyed by id
+     * @return list<ClaimedRequest>
+     */
+    private function workOf(Collection $runtimes, int $limit): array
+    {
+        if ($limit < 1) {
+            return [];
+        }
+
+        $pending = DriverRequest::query()
+            ->ofAgentRuntimes($runtimes->keys()->all())
+            ->withProgress(RequestProgress::Accepted)
+            ->offerable(CarbonImmutable::now())
+            ->excludingControl()
+            ->bySequence()
+            ->lockForUpdate()
+            ->readUpTo($limit * max(1, $runtimes->count()))
+            ->get()
+            ->groupBy('agent_runtime_id');
+
+        $now = CarbonImmutable::now();
+        $sessions = $this->sessionsOf($runtimes);
+        $held = SessionRequest::resolveSessionsHoldingDeliveries($sessions);
+        $starts = SessionProcess::resolveLatestIdsOfSessions($sessions);
+        $claimed = [];
+        $bootstrapped = [];
 
         for ($round = 0; count($claimed) < $limit && $pending->isNotEmpty(); $round++) {
             foreach ($pending as $runtimeId => $requests) {
@@ -146,7 +187,16 @@ final readonly class DriverRequestClaims
             );
         }
 
-        return new ClaimedRequests($claimed);
+        return $claimed;
+    }
+
+    /**
+     * @param  Collection<string, AgentRuntime>  $runtimes
+     * @return list<string>
+     */
+    private function sessionsOf(Collection $runtimes): array
+    {
+        return array_values(array_map(fn (AgentRuntime $runtime) => $runtime->agent_session_id, $runtimes->all()));
     }
 
     /**

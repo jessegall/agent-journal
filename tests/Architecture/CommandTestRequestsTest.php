@@ -84,7 +84,6 @@ final class CommandTestRequestsTest extends TestCase
         'tests/Commands/Agents/ReconcileStartsTest.php',
         'tests/Commands/Agents/WakeAgentTest.php',
         'tests/Commands/Drivers/NotifyEntryReplayedTest.php',
-        'tests/Commands/Drivers/NotifyRequestProgressTest.php',
         'tests/Commands/Drivers/NotifyRuntimeActivityTest.php',
         'tests/Commands/Navigation/AnswerNavigationTest.php',
         'tests/Commands/Navigation/InterruptNavigationTest.php',

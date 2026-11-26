@@ -7,7 +7,7 @@ namespace App\Contracts\Hosts;
 use App\Contracts\Events\Event;
 
 /**
- * A host answered an order, or refused it, or it expired unanswered.
+ * Something happened to one order the journal made for a host: it was made, claimed, answered or refused.
  */
 interface HostOrderEvent extends Event
 {

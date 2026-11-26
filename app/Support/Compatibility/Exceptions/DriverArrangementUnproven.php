@@ -6,6 +6,7 @@ namespace App\Support\Compatibility\Exceptions;
 
 use App\Concerns\RendersRefusal;
 use App\Contracts\Bus\CommandRefusal;
+use App\Contracts\Drivers\UnstartableDriver;
 use App\Contracts\Refusals\CodedRefusal;
 use App\Enums\Accounts\AuthenticationArrangement;
 use App\Enums\Drivers\DriverEvidence;
@@ -13,9 +14,13 @@ use App\Enums\Engine\RefusalCode;
 use RuntimeException;
 
 /**
- * A pinned driver's way of sharing an account's sign-in is not shown on the real driver, so no start uses it.
+ * A pinned driver's way of sharing an account's sign-in is not shown on the real driver, so a start of it ends with
+ * this reason instead of running.
  */
-final class DriverArrangementUnproven extends RuntimeException implements CodedRefusal, CommandRefusal
+final class DriverArrangementUnproven extends RuntimeException implements
+    CodedRefusal,
+    CommandRefusal,
+    UnstartableDriver
 {
     use RendersRefusal;
 

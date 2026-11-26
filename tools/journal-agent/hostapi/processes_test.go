@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -220,6 +222,30 @@ func TestANativeProcessThatEndsIsReportedExitedWithItsCode(t *testing.T) {
 	sent.waitFor(t, "running", "exited")
 }
 
+func TestANativeProcessReadsTheFilesItsPlanHandsItOnItsDescriptors(t *testing.T) {
+	table, sent := standinTable(t, dockerstandin.Start(t, standinImage))
+	token := filepath.Join(t.TempDir(), "token")
+	if err := os.WriteFile(token, []byte("secret\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(), ReadFiles: []string{token},
+		Argv: []string{"sh", "-c", `read line <&3; [ "$line" = secret ] && exit 7; exit 1`}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := table.openProcess(context.Background(), Order{ID: "open-r", Type: "open_process", ProcessID: "r", Payload: string(plan)}); err != nil {
+		t.Fatal(err)
+	}
+
+	sent.waitFor(t, "running", "exited")
+	sent.mutex.Lock()
+	defer sent.mutex.Unlock()
+	if code := sent.reports[1].ExitCode; code == nil || *code != 7 {
+		t.Fatalf("the process did not read the handed file on descriptor 3: exit %v", code)
+	}
+}
+
 func TestAnUnpinnedImageIsRefused(t *testing.T) {
 	daemon := dockerstandin.Start(t, "registry.example/journal-helper:latest")
 	table, _ := standinTable(t, daemon)
@@ -274,4 +300,103 @@ func TestReportsMadeWhileTheJournalIsAwayAreSentInOrderOnceItIsBack(t *testing.T
 	queue.Retry()
 
 	sent.waitFor(t, "running", "restarted", "exited")
+}
+
+func TestAPipeContainersOutputGoesOnWhereItsSpoolEndedAfterTheHostRestarted(t *testing.T) {
+	daemon := dockerstandin.Start(t, standinImage)
+	printAgain := make(chan struct{})
+	daemon.Programs = func(container *dockerstandin.Container) dockerstandin.Program {
+		return func(ctx context.Context, _ *dockerstandin.Container, _ io.Reader, output io.Writer) int {
+			_, _ = output.Write([]byte("first\n"))
+			select {
+			case <-printAgain:
+			case <-ctx.Done():
+				return 1
+			}
+			_, _ = output.Write([]byte("second\n"))
+			return 0
+		}
+	}
+	containers, err := host.ContainersOn(daemon.Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := t.TempDir()
+	open := func(sent *sentChunks) *ProcessTable {
+		queue, err := OpenReportQueue(t.TempDir(), (&sentReports{}).send)
+		if err != nil {
+			t.Fatal(err)
+		}
+		runQueue(t, queue)
+		return OpenProcessTable(state, containers, queue, NewOutputs(state, sent.send, time.Now))
+	}
+	before, after := &sentChunks{}, &sentChunks{}
+	order := openOrder(t, "turn", "never", standinImage)
+	order.Payload = strings.Replace(order.Payload, `"type":"terminal"`, `"type":"pipe"`, 1)
+	order.Payload = strings.Replace(order.Payload, `"isAttachable":true`, `"isAttachable":false`, 1)
+	if _, err := open(before).openContainer(context.Background(), order); err != nil {
+		t.Fatal(err)
+	}
+	waitForText(t, before, "first\n")
+
+	restarted := open(after)
+	if err := restarted.Adopt(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	close(printAgain)
+
+	waitForText(t, after, "second\n")
+	t.Cleanup(func() { stopAndWait(daemon, restarted) })
+}
+
+// waitForText waits until the chunks of standard output read as the text given.
+func waitForText(t *testing.T, sent *sentChunks, text string) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for sent.textOf("stdout") != text && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if got := sent.textOf("stdout"); got != text {
+		t.Fatalf("the host sent %q, not %q", got, text)
+	}
+}
+
+func TestANativePipeProcessPrintsOnAndEndsOnceAfterTheHostRestarted(t *testing.T) {
+	containers, err := host.ContainersOn(dockerstandin.Start(t, standinImage).Host(), host.ContainerRules{Arrangement: host.Local})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, hold := t.TempDir(), filepath.Join(t.TempDir(), "hold")
+	if err := os.WriteFile(hold, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	open := func(chunks *sentChunks, reports *sentReports) *ProcessTable {
+		queue, err := OpenReportQueue(t.TempDir(), reports.send)
+		if err != nil {
+			t.Fatal(err)
+		}
+		runQueue(t, queue)
+		return OpenProcessTable(state, containers, queue, NewOutputs(state, chunks.send, time.Now))
+	}
+	before, after, reports := &sentChunks{}, &sentChunks{}, &sentReports{}
+	plan, err := json.Marshal(OpenPlan{Type: "pipe", Restart: "never", Folder: t.TempDir(),
+		Argv: []string{"sh", "-c", `echo first; while [ -e "$0" ]; do sleep 0.05; done; echo second`, hold}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	order := Order{ID: "open-s", Type: "open_process", ProcessID: "s", Payload: string(plan)}
+	if _, err := open(before, &sentReports{}).openProcess(context.Background(), order); err != nil {
+		t.Fatal(err)
+	}
+	waitForText(t, before, "first\n")
+
+	if err := open(after, reports).Adopt(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(hold); err != nil {
+		t.Fatal(err)
+	}
+
+	waitForText(t, after, "second\n")
+	reports.waitFor(t, "exited")
 }

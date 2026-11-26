@@ -34,9 +34,8 @@ enum HostOrderType: string
     case Upgrade = 'upgrade';
 
     /**
-     * Whether the order writes into a process, so a host restart while it was claimed may have half carried it out.
-     */
-    /**
+     * The orders that write into a process, so a host restart while one was claimed may have half carried it out.
+     *
      * @return list<self>
      */
     public static function inputs(): array

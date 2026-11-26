@@ -21,6 +21,8 @@ return new class extends Migration
             $table->unsignedBigInteger('sequence');
             $table->string('type', 24);
             $table->text('payload');
+            // What the payload keeps once the host answered: an input's bytes and an opening's credentials are left out.
+            $table->text('kept_payload');
             $table->timestampTz('expires_at');
             $table->string('status', 16);
             $table->string('refusal', 24)->nullable();

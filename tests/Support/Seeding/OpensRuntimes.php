@@ -8,10 +8,15 @@ use App\Commands\Agents\OpenAgentRuntime\OpenAgentRuntimeCommand;
 use App\Commands\Projects\EnrollHost\EnrollHostCommand;
 use App\Commands\Projects\RecordHostCallAnswered\RecordHostCallAnsweredCommand;
 use App\Enums\Drivers\DriverType;
+use App\Models\Accounts\Account;
+use App\Models\Accounts\ActiveAccount;
 use App\Models\Agents\AgentSession;
+use App\Models\Sessions\SessionProcess;
 use App\Support\AgentRuntimes;
+use App\Support\DefaultDrivers;
 use App\Support\EnrolledHost;
 use App\Support\OpenedRuntime;
+use App\Values\AccountLabel;
 use App\Values\RuntimeIntent;
 use Illuminate\Support\Str;
 use Tests\Support\Seeding\Exceptions\FixtureRefused;
@@ -26,6 +31,13 @@ trait OpensRuntimes
      * @var array<string, EnrolledHost>
      */
     private array $hosts = [];
+
+    /**
+     * The account chosen for each driver, by driver.
+     *
+     * @var array<string, Account>
+     */
+    private array $chosenAccounts = [];
 
     /**
      * An open headless runtime for the named agent's one session, or for this session, so a command that needs a
@@ -91,6 +103,37 @@ trait OpensRuntimes
     public function hostCalled(string $name): EnrolledHost
     {
         return $this->hosts[$name] ?? throw FixtureRefused::missingAlias('host', $name, self::OWNER);
+    }
+
+    /**
+     * The session's newest start, read across every agent's starts whoever acts.
+     */
+    public function startOfSession(string $sessionId): SessionProcess
+    {
+        return SessionProcess::query()->supervised()->ofSessions([$sessionId])->newestFirst()->firstOrFail();
+    }
+
+    /**
+     * Whoever acts, the owner as a rule, saves a signed-in account for every driver and chooses it, as on the Accounts
+     * page, so the starts that follow run with it.
+     */
+    public function chooseActiveAccounts(): self
+    {
+        foreach (DefaultDrivers::familyKeys() as $driver) {
+            $account = Account::create($driver, AccountLabel::from('Test account'), "/journal/accounts/{$driver}");
+            ActiveAccount::findLockedFor($driver)->select($account);
+            $this->chosenAccounts[$driver] = $account;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, Account>
+     */
+    public function chosenAccounts(): array
+    {
+        return $this->chosenAccounts;
     }
 
     /**

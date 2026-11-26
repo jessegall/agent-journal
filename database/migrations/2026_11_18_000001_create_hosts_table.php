@@ -21,8 +21,6 @@ return new class extends Migration
             // The host protocol the host speaks, and the secret every order to it is signed with.
             $table->unsignedSmallInteger('protocol')->default(1);
             $table->text('order_secret')->nullable();
-            // The number of the host's last host-wide order: they are numbered under this row's lock.
-            $table->unsignedBigInteger('order_sequence')->default(0);
             // The order types the host's last inventory said it carries out; empty until its first inventory.
             $table->jsonb('capabilities')->default('[]');
             // The combinations the host reported it can run.

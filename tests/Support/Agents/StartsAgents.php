@@ -71,7 +71,7 @@ trait StartsAgents
             ConversationModeType::New,
             null,
             StartPolicy::withoutProfile(TestSelections::onHost()),
-            driverType: DriverType::Headless,
+            driverType: DriverType::Terminal,
             previewRevision: $previewRevision,
         );
     }

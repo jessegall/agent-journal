@@ -718,7 +718,10 @@ final class DriverRequest extends JournalModel implements EventSource, ReadableM
     protected function inFlightFor(Builder $query, AgentRuntime $runtime): void
     {
         $query->where('agent_runtime_id', $runtime->id)
-            ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying]);
+            ->whereIn('progress', [
+                RequestProgress::Staged,
+                RequestProgress::Applying,
+            ]);
     }
 
     /**

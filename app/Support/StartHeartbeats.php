@@ -88,6 +88,17 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     }
 
     /**
+     * A start that cannot run here at all is refused with the reason, and its session ends as a reported exit ends it,
+     * so its runtime stops and the agent can start again.
+     */
+    public function refuseStart(SessionProcess $start, string $refusal): void
+    {
+        $start->refuse($refusal);
+        $session = AgentSession::query()->findOrFail($start->session_id);
+        $this->markExited($session, $refusal);
+    }
+
+    /**
      * The host saw the driver exit, so the session ends at once with that evidence.
      */
     public function markExited(AgentSession $session, string $evidence): void

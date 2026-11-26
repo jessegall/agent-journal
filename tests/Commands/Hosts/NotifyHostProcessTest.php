@@ -7,7 +7,10 @@ namespace Tests\Commands\Hosts;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\StopHostProcess\StopHostProcessCommand;
 use App\Data\Hosts\HostProcessReportData;
+use App\Enums\Agents\SessionProcessStatus;
+use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostOrderStatus;
+use App\Enums\Hosts\HostProcessPurpose;
 use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostRefusal;
@@ -67,7 +70,7 @@ final class NotifyHostProcessTest extends TestCase
     {
         $this->chooseActiveAccounts();
         $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
-        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path());
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
         $this->journal->openHostProcess('Mac', 'agent', runtimeId: $opened->runtimeId);
         $generation = AgentRuntime::query()->whereKey($opened->runtimeId)->sole()->process_generation;
 
@@ -80,6 +83,40 @@ final class NotifyHostProcessTest extends TestCase
         $this->journal->assertResult(
             [$generation + 1, false],
             [$healed, AgentSession::query()->whereKey($opened->sessionId)->sole()->isActive()],
+        );
+    }
+
+    public function test_the_start_a_terminal_runs_for_runs_with_it_and_stops_when_it_exits(): void
+    {
+        $this->chooseActiveAccounts();
+        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
+
+        $this->journal->reportHostProcess('agent', HostProcessReportType::Running);
+        $running = $this->journal->startOfSession($opened->sessionId);
+        $this->journal->reportHostProcess('agent', HostProcessReportType::Exited, 0);
+
+        $this->journal->assertResult(
+            [[SessionProcessStatus::Running, 'pid:agent'], SessionProcessStatus::Stopped],
+            [[$running->status, $running->execution_id], $running->refresh()->status],
+        );
+    }
+
+    public function test_a_headless_turn_that_ends_leaves_its_start_running(): void
+    {
+        $this->chooseActiveAccounts();
+        $this->journal->owner()->idleAgent('Driven')->enrollHost('Mac', [base_path()]);
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->openHostProcessForStart('Mac', 'turn', $opened->sessionId, HostProcessPurpose::AgentTurn);
+
+        $this->journal
+            ->reportHostProcess('turn', HostProcessReportType::Running)
+            ->reportHostProcess('turn', HostProcessReportType::Exited, 0);
+
+        $this->journal->assertResult(
+            SessionProcessStatus::Running,
+            $this->journal->startOfSession($opened->sessionId)->status,
         );
     }
 

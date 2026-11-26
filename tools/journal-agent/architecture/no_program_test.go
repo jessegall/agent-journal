@@ -13,7 +13,7 @@ import (
 )
 
 // programWords are the words that name a program, its screens or its menus; the host knows none of them, as every
-// program decision is the journal's (doc 135). The list is fixed, written once from the PHP profiles and layouts.
+// program decision is the journal's. The list is fixed, written once from the PHP profiles and layouts.
 var programWords = regexp.MustCompile(`(?i)claude|codex|anthropic|openai|folder[-_ ]?trust|onboarding|theme[-_ ]?picker`)
 
 // exempt are the folders allowed to name a program: the helpers that run inside a program's image, the hook binary
@@ -22,8 +22,8 @@ var exempt = []string{
 	"cmd/journal-init", "cmd/journal-exec", "cmd/journal-shell", "cmd/journal-hook", "testdata", "architecture",
 }
 
-// baselinePath lists the files that still name a program today; each phase of plan 80 removes its own, so the list
-// only shrinks, and task 3454 empties it.
+// baselinePath lists the files that still name a program today; each file leaves it once its knowledge moved to the
+// journal, so the list only shrinks.
 const baselinePath = "testdata/program_words_baseline.txt"
 
 func TestNoGoFileOutsideTheBaselineNamesAProgram(t *testing.T) {

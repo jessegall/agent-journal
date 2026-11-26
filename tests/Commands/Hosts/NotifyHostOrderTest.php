@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Commands\Hosts;
 
 use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
+use App\Enums\Agents\SessionProcessStatus;
+use App\Enums\Drivers\DriverType;
 use App\Enums\Hosts\HostOrderStatus;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostRefusal;
@@ -12,6 +14,7 @@ use App\Exceptions\HostProtocolRefused;
 use App\Support\Hosts\ProcessFeed;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -22,6 +25,7 @@ use Tests\TestCase;
 final class NotifyHostOrderTest extends TestCase
 {
     use RefreshHookDatabase;
+    use WithActiveAccount;
 
     private const string REFUSED = '{"status":"refused","refusal":"guard_moved","facts":{"row_hash":"abc"}}';
 
@@ -42,7 +46,7 @@ final class NotifyHostOrderTest extends TestCase
         $heard = $this->journal->service(ProcessFeed::class)->after($open->host_process_id, ProcessFeed::FIRST_CURSOR, 0);
         $this->journal->assertResult(
             [HostOrderStatus::Refused, HostRefusal::GuardMoved, ['row_hash' => 'abc'], $open->id],
-            [$open->status, $open->refusal, $open->answer, $heard[0]->answeredOrderId],
+            [$open->status, $open->refusal, $open->answer?->facts, $heard[0]->answeredOrderId],
         );
     }
 
@@ -56,6 +60,23 @@ final class NotifyHostOrderTest extends TestCase
         $this->journal->assertResult(
             [HostProcessStatus::Lost, 'the host refused to open it: guard_moved'],
             [$process->status, $process->exit_evidence],
+        );
+    }
+
+    public function test_the_start_whose_process_the_host_refused_to_open_ends_refused(): void
+    {
+        $this->chooseActiveAccounts();
+        $this->journal->owner()->idleAgent('Driven');
+        $opened = $this->journal->openRuntimeOn('Driven', 'Mac', base_path(), driverType: DriverType::Terminal);
+        $this->journal->openHostProcessForStart('Mac', 'agent', $opened->sessionId);
+        [$open] = $this->journal->hostOrdersOf('agent');
+
+        $this->journal->asSystem(new NotifyHostOrderCommand($this->journal->hostCalled('Mac')->hostId, $open->id, self::REFUSED));
+
+        $start = $this->journal->startOfSession($opened->sessionId);
+        $this->journal->assertResult(
+            [SessionProcessStatus::Stopped, 'the host refused to open it: guard_moved'],
+            [$start->status, $start->refusal],
         );
     }
 

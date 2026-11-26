@@ -51,3 +51,17 @@ func localProjectConfinement(folders LocalProjectFolders, scratch string) (Child
 		},
 	}, nil
 }
+
+// sessionSandboxRules close the account's other workspaces' history and every process outside the sandbox; the
+// folders are real paths.
+func sessionSandboxRules(accountFolder string, workFolder string) []string {
+	project := strings.NewReplacer("/", "-", ".", "-").Replace(filepath.Clean(workFolder))
+	return []string{
+		fmt.Sprintf("(deny file-read* file-write* (subpath %q))", filepath.Join(accountFolder, "projects")),
+		fmt.Sprintf("(allow file-read* file-write* (subpath %q))", filepath.Join(accountFolder, "projects", project)),
+		"(deny process-info*)",
+		"(allow process-info* (target same-sandbox))",
+		"(deny signal)",
+		"(allow signal (target same-sandbox))",
+	}
+}

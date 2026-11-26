@@ -47,7 +47,7 @@ trait OpensLedgerRuntimes
         string|null $firstMessage = null,
         string $build = '2.1.323',
         string $driver = 'claude-code',
-        DriverType $driverType = DriverType::Headless,
+        DriverType $driverType = DriverType::Terminal,
     ): array {
         $number = ++$this->openedRuntimeCount;
         $this->journal->idleAgent("Driven agent {$number}")->enrollHost("Test host {$number}", [self::FOLDER]);

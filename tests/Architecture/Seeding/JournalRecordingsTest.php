@@ -6,7 +6,7 @@ namespace Tests\Architecture\Seeding;
 
 use App\Contracts\Hosts\HostChannel;
 use App\Values\HostOrderSource;
-use PHPUnit\Framework\AssertionFailedError;
+use Tests\Support\Hosts\Exceptions\RecordingDiverged;
 use Tests\TestCase;
 
 /**
@@ -32,10 +32,11 @@ final class JournalRecordingsTest extends TestCase
     {
         $this->journal->playsRecording(self::RECORDING);
 
-        $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('At checkpoint 0');
-
-        $this->typeRecordedInputs(fn (string $input) => [$input.'x']);
+        $this->journal->assertRefused(
+            RecordingDiverged::class,
+            fn () => $this->typeRecordedInputs(fn (string $input) => [$input.'x']),
+            fn (RecordingDiverged $diverged) => $this->journal->assertResult(0, $diverged->checkpoint),
+        );
     }
 
     /**

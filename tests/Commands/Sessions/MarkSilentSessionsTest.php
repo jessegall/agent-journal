@@ -141,7 +141,7 @@ final class MarkSilentSessionsTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Headless,
+            DriverType::Terminal,
             'claude-opus-5-5',
         ));
     }

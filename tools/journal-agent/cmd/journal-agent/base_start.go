@@ -7,8 +7,8 @@ import (
 )
 
 // grantedStart is the base of every start of a runtime, built once from what the journal granted: the conversation
-// and the model and effort it asked for. A headless turn and a terminal, on this machine and in a container, all
-// take their start from it, so none of them can leave the model out.
+// and the model and effort it asked for. A terminal and an app-server runtime, on this machine and in a container, all take
+// their start from it, so none of them can leave the model out.
 func grantedStart(grant client.Grant, conversationID string) contracts.BaseStart {
 	return contracts.BaseStart{
 		SessionID: conversationID,

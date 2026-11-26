@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support\Seeding;
 
+use App\Commands\Agents\CheckDriverBuild\CheckDriverBuildCommand;
+use App\Commands\Agents\ClaimStart\ClaimStartCommand;
 use App\Commands\Hosts\NotifyHostOrder\NotifyHostOrderCommand;
 use App\Commands\Hosts\NotifyHostOutput\NotifyHostOutputCommand;
 use App\Commands\Hosts\NotifyHostProcess\NotifyHostProcessCommand;
 use App\Commands\Hosts\OpenHostProcess\OpenHostProcessCommand;
-use App\Contracts\Drivers\ProgramDriver;
+use App\Contracts\Drivers\ProcessDriver;
 use App\Contracts\Hosts\HostChannel;
 use App\Data\Hosts\HostProcessReportData;
 use App\Enums\Agents\WorkspaceUse;
@@ -20,10 +22,12 @@ use App\Enums\Hosts\RestartPolicy;
 use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
+use App\Models\Sessions\SessionProcess;
 use App\Support\ContainerManifest;
 use App\Support\Drivers\DriverWork;
 use App\Support\Drivers\DriverWorkers;
-use App\Support\Drivers\ProgramDrivers;
+use App\Support\Drivers\ProcessDrivers;
+use App\Support\Drivers\Profiles\ClaudeCodeProfile;
 use App\Support\Hosts\ProcessFeed;
 use App\Support\MountRules;
 use App\Support\SecurityOptions;
@@ -80,6 +84,64 @@ trait ArrangesHostProcesses
         return $this;
     }
 
+    /**
+     * The named host claims the session's start, its driver's arrangement shown, and is ordered to open a process of
+     * the purpose for it, which has not reported yet.
+     */
+    public function openHostProcessForStart(
+        string $host,
+        string $name,
+        string $sessionId,
+        HostProcessPurpose $purpose = HostProcessPurpose::AgentTerminal,
+    ): self {
+        $hostId = $this->hostCalled($host)->hostId;
+        $this->showDriverArrangements()->asSystem(new ClaimStartCommand($hostId, $sessionId));
+        $start = SessionProcess::findCurrentOf($sessionId) ?? throw FixtureRefused::missingAlias('start', $sessionId, self::OWNER);
+        $plan = new HostProcessPlan($purpose, HostProcessType::Terminal, RestartPolicy::Never, ['sh', '-c', 'cat'], [], base_path());
+        $source = HostOrderSource::fromJournal();
+        $this->hostProcesses[$name] = $this->asSystem(new OpenHostProcessCommand($hostId, null, $plan, $source, $start->id));
+
+        return $this;
+    }
+
+    /**
+     * Names the runtime's newest process of the purpose, one the journal opened itself, so the test can report on it.
+     */
+    public function callJournalProcess(string $name, string $runtimeId, HostProcessPurpose $purpose): self
+    {
+        $this->hostProcesses[$name] = HostProcess::query()
+            ->where('agent_runtime_id', $runtimeId)
+            ->where('purpose', $purpose)
+            ->latest('id')
+            ->firstOrFail()
+            ->id;
+
+        return $this;
+    }
+
+    /**
+     * The runtime's build probe, which the journal ordered, prints the pinned build, so its sign-in probe is ordered
+     * next; both are named for the test as <name>-probe and <name>-sign-in.
+     */
+    public function passBuildProbe(string $name, string $runtimeId): self
+    {
+        $build = $this->service(ClaudeCodeProfile::class)->build();
+        $this->callJournalProcess("{$name}-probe", $runtimeId, HostProcessPurpose::BuildProbe);
+        $this->asSystem(new CheckDriverBuildCommand($this->hostProcessCalled("{$name}-probe")->id, "{$build} (Claude Code)\n"));
+
+        return $this->callJournalProcess("{$name}-sign-in", $runtimeId, HostProcessPurpose::SignInProbe);
+    }
+
+    /**
+     * The order's payload as the host receives it, read back from its JSON.
+     *
+     * @return array<string, mixed>
+     */
+    public function payloadOf(HostOrder $order): array
+    {
+        return json_decode($order->payload, true, flags: JSON_THROW_ON_ERROR);
+    }
+
     public function hostProcessCalled(string $name): HostProcess
     {
         $id = $this->hostProcesses[$name] ?? throw FixtureRefused::missingAlias('host process', $name, self::OWNER);
@@ -115,11 +177,24 @@ trait ArrangesHostProcesses
     /**
      * Processes of the purpose are driven by the program driver given, as a domain that drives them registers it.
      *
-     * @param  class-string<ProgramDriver>  $driver
+     * @param  class-string<ProcessDriver>  $driver
      */
     public function driveProcessesWith(HostProcessPurpose $purpose, string $driver): self
     {
-        $this->app->instance(ProgramDrivers::class, $this->app->make(ProgramDrivers::class)->with($purpose, $driver));
+        $this->app->instance(ProcessDrivers::class, $this->app->make(ProcessDrivers::class)->with($purpose, $driver));
+
+        return $this;
+    }
+
+    /**
+     * The named pipe process's host sends what it printed next on its standard output, right after what it sent before.
+     */
+    public function printOnPipe(string $name, string $printed): self
+    {
+        $process = $this->hostProcessCalled($name);
+        $chunk = ['stream' => 'stdout', 'offset' => $process->output_offset, 'bytes' => base64_encode($printed)];
+        $body = json_encode(['chunks' => [$chunk]], JSON_THROW_ON_ERROR);
+        $this->asSystem(new NotifyHostOutputCommand($process->host_id, $process->id, $body));
 
         return $this;
     }
@@ -293,6 +368,31 @@ trait ArrangesHostProcesses
         $this->realHost = null;
 
         return $this;
+    }
+
+    /**
+     * The real host's stand-in for Claude Code holds each headless turn after its first lines until it is released.
+     */
+    public function holdStandInTurns(): self
+    {
+        $this->realHost?->holdTurns();
+
+        return $this;
+    }
+
+    public function releaseStandInTurns(): self
+    {
+        $this->realHost?->releaseTurns();
+
+        return $this;
+    }
+
+    /**
+     * The protected installation folder the real host runs account starts from.
+     */
+    public function realHostInstallation(): string
+    {
+        return $this->realHost?->installation() ?? throw FixtureRefused::missingAlias('real host', 'installation', self::OWNER);
     }
 
     /**

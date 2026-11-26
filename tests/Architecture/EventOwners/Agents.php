@@ -18,9 +18,11 @@ use App\Events\Sessions\AgentRetired;
 use App\Events\Sessions\AgentRuntimeAdopted;
 use App\Events\Sessions\AgentRuntimeClosed;
 use App\Events\Sessions\AgentRuntimeConfirmedAlive;
+use App\Events\Sessions\AgentRuntimeConversationChosen;
 use App\Events\Sessions\AgentRuntimeHeld;
 use App\Events\Sessions\AgentRuntimeHostChanged;
 use App\Events\Sessions\AgentRuntimeObserved;
+use App\Events\Sessions\AgentRuntimeProcessGenerationAdvanced;
 use App\Events\Sessions\AgentRuntimeReassigned;
 use App\Events\Sessions\AgentRuntimeRequestedSettingsRecomputed;
 use App\Events\Sessions\AgentRuntimeSettingsObserved;
@@ -28,6 +30,7 @@ use App\Events\Sessions\AgentRuntimesFenced;
 use App\Events\Sessions\AgentRuntimeStarted;
 use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
 use App\Events\Sessions\AgentRuntimeStartGrantHeld;
+use App\Events\Sessions\AgentRuntimeStartProven;
 use App\Events\Sessions\AgentRuntimeStopRequested;
 use App\Events\Sessions\AgentSessionConversationEntered;
 use App\Events\Sessions\AgentSessionDriverLabelKept;
@@ -90,6 +93,7 @@ use App\Events\Sessions\SessionOpened;
 use App\Events\Sessions\SessionProcessCancelled;
 use App\Events\Sessions\SessionProcessClaimed;
 use App\Events\Sessions\SessionProcessOutputAdvanced;
+use App\Events\Sessions\SessionProcessRegistered;
 use App\Events\Sessions\SessionProcessSeenRunning;
 use App\Events\Sessions\SessionProcessStopped;
 use App\Events\Sessions\SessionRequestRefused;
@@ -951,5 +955,33 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new NavigationRequestExpired('request'),
+    ],
+    AgentRuntimeConversationChosen::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::chooseConversation',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeConversationChosen('runtime'),
+    ],
+    AgentRuntimeStartProven::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::proveStart',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeStartProven('runtime'),
+    ],
+    AgentRuntimeProcessGenerationAdvanced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'AgentRuntime::beginProcessGeneration',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AgentRuntimeProcessGenerationAdvanced('runtime', 2),
+    ],
+    SessionProcessRegistered::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SessionProcess::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SessionProcessRegistered('start', 'session'),
     ],
 ];
