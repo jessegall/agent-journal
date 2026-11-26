@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace App\Api;
 
 use App\Api\Agents\AgentApi;
 use App\Api\Assignments\AssignmentApi;

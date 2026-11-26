@@ -16,9 +16,7 @@ final readonly class SystemActors implements ActorProvider
 {
     public function actor(ActorReference $identity): Actor
     {
-        if ($identity->isSameAs(
-            ActorReference::system(),
-        )) {
+        if ($identity->isSameAs(ActorReference::system())) {
             return new SystemActor();
         }
 

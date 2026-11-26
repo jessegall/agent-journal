@@ -8,7 +8,7 @@ use App\Reads\Contracts\ReadMeter as ReadMeterContract;
 use App\Records\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Support\ShareBudget;
 use Carbon\CarbonImmutable;
-use Tests\Support\Sharing\SharingTestCase;
+use Tests\Commands\Sharing\SharingTestCase;
 
 /**
  * The share budget: queries are counted through the read meter for the work each budget runs, bytes, records, links,

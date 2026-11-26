@@ -5,7 +5,7 @@ set -eu
 
 main() {
     local installation
-    installation=$(installation_folder)
+    installation=$(find_installation)
     case "${1:-}" in
         --version) print_build ;;
         login) print_sign_in ;;
@@ -23,7 +23,7 @@ play_terminal() {
 }
 
 # The stand-in lives at <installation>/bin/codex and is found by name on the host's path.
-installation_folder() {
+find_installation() {
     cd "$(dirname "$0")/.." && pwd -P
 }
 
@@ -72,7 +72,7 @@ answer() {
     local name="$2"
     local id="$3"
     shift 3
-    local line
+    local line value
     line=$(sed "s/{id}/$id/" "$installation/codex-app-server/$name.json")
     for value in "$@"; do
         line=$(printf '%s' "$line" | sed "s/{${value%%=*}}/${value#*=}/g")
@@ -101,6 +101,6 @@ print_turn() {
     cat "$installation/codex-turn.jsonl"
 }
 
-. "$(dirname "$0")/../stand-in-hold.sh"
+. "$(dirname "$0")/../lib/hold.sh"
 
 main "$@"

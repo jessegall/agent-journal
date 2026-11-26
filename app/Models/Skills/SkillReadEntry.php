@@ -17,6 +17,7 @@ use App\Skills\Enums\ReadEvidence;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * One proven read of a whole skill by a session's agent: every read is a row, so a second read after a compaction is a
@@ -78,15 +79,21 @@ final class SkillReadEntry extends JournalModel implements EventSource, Readable
     // ----------[ Mutations ]----------
 
     /**
-     * Forgets every read of the agent, one row at a time; a session that starts afresh begins with none on record.
+     * The next batch of the agent's reads, oldest first; none once every read was forgotten.
+     *
+     * @return Collection<int, self>
      */
-    public static function forgetOfAgent(string $agentId): void
+    public static function findBatchOfAgent(string $agentId): Collection
     {
-        while (($entries = self::query()->ofAgent($agentId)->readExactly(self::FORGET_BATCH)->get())->isNotEmpty()) {
-            foreach ($entries as $entry) {
-                $entry->delete();
-            }
-        }
+        return self::query()->ofAgent($agentId)->readExactly(self::FORGET_BATCH)->get();
+    }
+
+    /**
+     * Forgets this read.
+     */
+    public function forget(): void
+    {
+        $this->delete();
     }
 
     // ----------[ Queries ]----------

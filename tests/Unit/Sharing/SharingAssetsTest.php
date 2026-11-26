@@ -9,8 +9,8 @@ use App\Files\Enums\Place;
 use App\Http\Responses\Sharing\SharingAssets;
 use App\Values\FilePath;
 use Carbon\CarbonImmutable;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Support\Files\UsesTemporaryPlaces;
-use Tests\Support\Sharing\SharingTestCase;
 
 /**
  * The share reader's manifest is read through the funnel: once while it is unchanged, again after a build rewrote it,

@@ -20,6 +20,11 @@ final readonly class ClearAgentSkillReads implements Listener
             return;
         }
 
-        SkillReadEntry::forgetOfAgent($event->target->agentId);
+        // A session that starts afresh begins with no read on record.
+        while (($entries = SkillReadEntry::findBatchOfAgent($event->target->agentId))->isNotEmpty()) {
+            foreach ($entries as $entry) {
+                $entry->forget();
+            }
+        }
     }
 }

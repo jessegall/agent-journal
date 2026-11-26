@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actors\Resolvers\Support;
+namespace App\Actors\Resolvers;
 
 use App\Actors\Contracts\ActorResolver;
 use App\Agents\Values\RunningRuntime;

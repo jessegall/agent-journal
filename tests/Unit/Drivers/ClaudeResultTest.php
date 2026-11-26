@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Drivers;
 
 use App\Accounts\Enums\UsageWindowSlot;
-use App\Agents\Drivers\ClaudeCode\ClaudeResult;
+use App\Agents\Drivers\ClaudeCode\TurnResult;
 use App\Agents\Drivers\Enums\RequestProgress;
 use App\Values\UsageCost;
 use App\Values\UsageWindowReading;
@@ -28,7 +28,7 @@ final class ClaudeResultTest extends TestCase
         ];
 
         foreach ($recorded as $name => [$cost, $percent]) {
-            $result = new ClaudeResult('process-1');
+            $result = new TurnResult('process-1');
             $usage = [];
 
             foreach ($this->stdoutOf($name) as $bytes) {
@@ -55,7 +55,7 @@ final class ClaudeResultTest extends TestCase
 
     public function test_a_turn_that_exits_non_zero_or_prints_no_result_does_not_succeed(): void
     {
-        $result = new ClaudeResult('process-2');
+        $result = new TurnResult('process-2');
         $result->read("{\"type\":\"system\",\"subtype\":\"init\",\"model\":\"m\"}\n{\"type\":\"res", CarbonImmutable::now());
 
         $this->assertSame(

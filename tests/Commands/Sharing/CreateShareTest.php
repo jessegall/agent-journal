@@ -54,7 +54,6 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestProjects;
@@ -277,7 +276,7 @@ final class CreateShareTest extends SharingTestCase
     public function test_the_hundred_and_first_live_share_is_refused(): void
     {
         for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
-            $this->shareForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
+            $this->grantForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
         }
 
         $saved = $this->preview([]);
@@ -411,7 +410,7 @@ final class CreateShareTest extends SharingTestCase
         $second = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         for ($index = 1; $index < Share::LIVE_LIMIT; $index++) {
-            $this->shareForADay(TestActors::record('binders.binder', 1000 + $index), $first);
+            $this->grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
         }
 
         DB::transaction(fn () => ShareInstallation::create());

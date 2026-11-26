@@ -17,7 +17,6 @@ use Carbon\CarbonImmutable;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -40,8 +39,8 @@ final class PruneShareAuditTest extends SharingTestCase
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $live = $this->shareForADay(TestActors::record('binders.binder', 1), $configuration);
-        $ended = $this->shareForADay(TestActors::record('binders.binder', 2), $configuration);
+        $live = $this->grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $ended = $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
         $this->travelTo(CarbonImmutable::now()->subDays(400));
         $this->audit($ended, ShareAuditType::Created);

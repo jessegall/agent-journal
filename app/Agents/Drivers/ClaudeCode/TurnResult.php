@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Drivers\ClaudeCode;
 
 use App\Accounts\Enums\UsageWindowSlot;
-use App\Agents\Drivers\Contracts\TurnResult;
+use App\Agents\Drivers\Contracts\TurnResult as TurnResultContract;
 use App\Agents\Values\UsageSource;
 use App\Attributes\Rules\DecodesAnyJson;
 use App\Values\TurnEnd;
@@ -22,7 +22,7 @@ use Carbon\CarbonImmutable;
  * limit window and each result's cost as they are read, and the last result's subtype and error flag. Nothing else of
  * the output is kept.
  */
-final class ClaudeResult implements TurnResult
+final class TurnResult implements TurnResultContract
 {
     /**
      * The limit every Claude window belongs to.

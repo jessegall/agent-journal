@@ -33,7 +33,6 @@ use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -72,7 +71,7 @@ final class DisableShareGatewayTest extends SharingTestCase
             2,
             3,
         ] as $number) {
-            $share = $this->shareForADay(TestActors::record('binders.binder', $number), $configuration);
+            $share = $this->grantForADay(TestActors::record('binders.binder', $number), $configuration);
             $share->activate();
         }
 
@@ -115,7 +114,7 @@ final class DisableShareGatewayTest extends SharingTestCase
     public function test_a_closing_endpoint_version_is_never_opened_again(): void
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
-        $share = $this->shareForADay($this->root, $configuration);
+        $share = $this->grantForADay($this->root, $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         $this->journal->asSystem(new ClaimGatewayOperationCommand(self::RUN));
         $share->activate();
@@ -126,7 +125,7 @@ final class DisableShareGatewayTest extends SharingTestCase
 
         $configuration->disabled_at = null;
         $configuration->save();
-        $this->shareForADay(TestActors::record('binders.binder', 2), $configuration);
+        $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
         ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
         $this->assertSame(

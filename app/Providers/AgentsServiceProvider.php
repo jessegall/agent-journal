@@ -17,7 +17,7 @@ use App\Actors\ActorAttention;
 use App\Actors\Contracts\ActorAttention as ActorAttentionContract;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Resolvers\Support\CurrentAgentRuntimes;
+use App\Actors\Resolvers\CurrentAgentRuntimes;
 use App\Agents\Activity\Contracts\ActivityLog as ActivityLogContract;
 use App\Agents\ActivityLog;
 use App\Agents\ActivityRetentionService;

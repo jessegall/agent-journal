@@ -65,7 +65,7 @@ func standinDocker(arguments []string) error {
 	image := flags.String("image", "", "an image the daemon holds, by digest")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends")
 	sessionRecording := flags.String("recording", "", "the terminal recording a session's container plays; echo without one")
-	program := flags.String("program", "", "the program a session's container runs, by its name")
+	program := flags.String("executable", "", "the executable a session's container runs, by its name")
 	versionLine := flags.String("version-line", "", "what the program prints for --version")
 	signInLine := flags.String("sign-in-line", "", "what the program prints for auth, its $VARIABLES from the container's environment")
 	started := flags.String("containers", "", "the file each started container's shape is added to, one JSON object a line")

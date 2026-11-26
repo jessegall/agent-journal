@@ -11,9 +11,9 @@ use App\Sharing\Support\ShareCursors;
 use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Support\RecordIdentity;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

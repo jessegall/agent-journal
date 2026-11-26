@@ -32,7 +32,6 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\SelectsShareTargets;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;

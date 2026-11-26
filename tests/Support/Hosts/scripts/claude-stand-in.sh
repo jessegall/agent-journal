@@ -5,7 +5,7 @@ set -eu
 
 main() {
     local installation
-    installation=$(installation_folder)
+    installation=$(find_installation)
     case "${1:-}" in
         --version) print_build ;;
         auth) answer_auth "${2:-}" ;;
@@ -45,7 +45,7 @@ transcript_path() {
 }
 
 # The stand-in lives at <installation>/bin/claude.
-installation_folder() {
+find_installation() {
     cd "$(dirname "$0")/.." && pwd -P
 }
 
@@ -79,6 +79,6 @@ print_turn() {
     tail -n +4 "$installation/turn.jsonl"
 }
 
-. "$(dirname "$0")/../stand-in-hold.sh"
+. "$(dirname "$0")/../lib/hold.sh"
 
 main "$@"

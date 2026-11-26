@@ -14,7 +14,7 @@ use App\Sharing\Support\PublicAddresses;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Http\Client\Request;
 use Illuminate\Process\Factory as Processes;
-use Tests\Support\Sharing\SharingTestCase;
+use Tests\Commands\Sharing\SharingTestCase;
 
 /**
  * The Tunler gateway against fixture outputs of the tunler program, with no real account: the setup check names each

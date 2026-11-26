@@ -14,10 +14,10 @@ use App\Sharing\Support\ShareScope;
 use App\Support\RecordIdentity;
 use App\Values\ProjectOwner;
 use Carbon\CarbonImmutable;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Fixtures\Domains\Binders\BinderShareProvider;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 

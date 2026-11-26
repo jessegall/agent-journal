@@ -35,9 +35,9 @@ run_updater() {
     local folder="$2"
     local branch="$3"
     local script="$4"
-    (cd "$folder/root" && env COMPOSE_PROJECT_NAME="$(basename "$folder")" JOURNAL_ROOT="$folder/root" \
-        JOURNAL_BRANCH="$branch" JOURNAL_REPOSITORY="$checkout" JOURNAL_UPDATER_STATE="$folder/state" \
-        JOURNAL_UPDATER_LOOP="$folder/state/journal-updater" JOURNAL_HEAL_PAUSE_SECONDS=0 \
+    (cd "$folder/root" && exec env "COMPOSE_PROJECT_NAME=$(basename "$folder")" "JOURNAL_ROOT=$folder/root" \
+        "JOURNAL_BRANCH=$branch" "JOURNAL_REPOSITORY=$checkout" "JOURNAL_UPDATER_STATE=$folder/state" \
+        "JOURNAL_UPDATER_LOOP=$folder/state/journal-updater" "JOURNAL_HEAL_PAUSE_SECONDS=0" \
         sh "$checkout/.docker/updater/$script")
 }
 

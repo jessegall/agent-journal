@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -75,7 +74,7 @@ final class RecordGatewayOutcomeTest extends SharingTestCase
         $this->journal->owner();
 
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->share = $this->shareForADay(TestActors::record('binders.binder', 1), $this->configuration);
+        $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
     }
 

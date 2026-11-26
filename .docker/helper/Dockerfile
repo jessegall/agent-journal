@@ -26,7 +26,8 @@ FROM --platform=$BUILDPLATFORM ${BASE} AS programs
 ARG TARGETARCH
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
 COPY .docker/helper/install-programs.sh .docker/helper/program-digests.txt /programs/
 RUN sh /programs/install-programs.sh "$TARGETARCH" "$CLAUDE_CODE_VERSION" "$CODEX_VERSION" /out
 

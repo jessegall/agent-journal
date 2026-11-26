@@ -17,9 +17,9 @@ use App\Policies\RecordLinkPolicy;
 use App\Records\Contracts\RecordLinker as RecordLinkerContract;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
-use App\Records\Contracts\RecordSummaries;
+use App\Records\Contracts\RecordSummaries as RecordSummariesContract;
 use App\Records\RecordProviders;
-use App\Records\SummaryProviders;
+use App\Records\RecordSummaries;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -36,7 +36,7 @@ final class RecordsServiceProvider extends ServiceProvider
         $this->app->bind(IdentityLinksContract::class, IdentityLinks::class);
         $this->app->bind(RecordProviderRegistration::class, RecordProviders::class);
         $this->app->bind(RecordResolver::class, RecordProviders::class);
-        $this->app->bind(RecordSummaries::class, SummaryProviders::class);
+        $this->app->bind(RecordSummariesContract::class, RecordSummaries::class);
     }
 
     public function boot(PolicyCatalogue $policies): void

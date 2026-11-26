@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Records;
 
-use App\Records\Contracts\RecordSummaries;
+use App\Records\Contracts\RecordSummaries as RecordSummariesContract;
 use App\Records\Contracts\SummaryProvider;
 use App\Records\Exceptions\RecordProviderInvalid;
-use App\Support\Reflector;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
@@ -16,14 +16,14 @@ use Illuminate\Container\Container;
  * The summary provider of every record type whose owner registered one, made from the container when asked.
  */
 #[Singleton]
-final class SummaryProviders implements RecordSummaries
+final class RecordSummaries implements RecordSummariesContract
 {
     /**
      * @var Registry<class-string<SummaryProvider>>
      */
     private readonly Registry $providerOfType;
 
-    public function __construct(private readonly Container $container)
+    public function __construct(private readonly Container $container, private readonly ReflectorFactory $reflectors)
     {
         $this->providerOfType = Registry::once(
             RecordProviderInvalid::unknown(...),
@@ -33,7 +33,7 @@ final class SummaryProviders implements RecordSummaries
 
     public function register(string $type, string $provider): void
     {
-        if (! Reflector::factory()->isSubclassOf($provider, SummaryProvider::class)) {
+        if (! $this->reflectors->isSubclassOf($provider, SummaryProvider::class)) {
             throw RecordProviderInvalid::notAProvider($type, $provider);
         }
 

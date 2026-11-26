@@ -46,7 +46,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Skills\\ConditionTree::fromJson',
         'App\\Hosts\\WorkspaceSources::fromJson',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeFirstRun::__invoke',
-        'App\\Agents\\Drivers\\ClaudeCode\\ClaudeResult::readLine',
+        'App\\Agents\\Drivers\\ClaudeCode\\TurnResult::readLine',
         'App\\Agents\\Drivers\\Codex\\CodexAppDriver::readLine',
         'App\\Agents\\Drivers\\ClaudeCode\\ClaudeSettingsMerge::withProtection',
     ];

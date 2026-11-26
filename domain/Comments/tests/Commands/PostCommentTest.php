@@ -12,15 +12,19 @@ use App\Support\ActorReference;
 use App\Support\IdListPage;
 use App\Support\RecordIdentity;
 use Domain\Comments\Commands\PostComment\PostCommentCommand;
+use Domain\Comments\CommentsDomain;
 use Domain\Comments\Contracts\CommentResolver;
 use Domain\Comments\Data\RecordCommentLocation;
 use Domain\Comments\Data\RecordCommentView;
 use Domain\Comments\Models\Comment;
 use Domain\Comments\Tests\TestCase;
+use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\DomainBoot;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\InstallsNotesModule;
 
@@ -34,6 +38,14 @@ final class PostCommentTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsNotesModule;
+
+    /**
+     * The notes module these tests install requires Cards and Rules beside Comments.
+     */
+    protected static function bootedDomains(): array
+    {
+        return DomainBoot::withRequirements(CommentsDomain::class, CardsDomain::class, RulesDomain::class);
+    }
 
     private const string QUESTION = 'Is this still open?';
 

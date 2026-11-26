@@ -377,7 +377,8 @@ final class TestHost
     private function installStandIns(): void
     {
         mkdir("{$this->installation()}/bin", 0o700, true);
-        copy(__DIR__.'/scripts/stand-in-hold.sh', "{$this->installation()}/stand-in-hold.sh");
+        mkdir("{$this->installation()}/lib", 0o700);
+        copy(__DIR__.'/scripts/lib/hold.sh', "{$this->installation()}/lib/hold.sh");
         copy(__DIR__.'/scripts/claude-stand-in.sh', "{$this->installation()}/bin/claude");
         chmod("{$this->installation()}/bin/claude", 0o700);
         copy(__DIR__.'/fixtures/claude-turn.jsonl', "{$this->installation()}/turn.jsonl");
@@ -473,7 +474,7 @@ final class TestHost
         return [
             ...$command,
             '--recording', dirname(base_path(self::TERMINAL_TURN)),
-            '--program', 'claude',
+            '--executable', 'claude',
             '--version-line', basename(dirname(self::TERMINAL_TURN, 3)).' (Claude Code)',
             '--sign-in-line', '{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"$CLAUDE_CONFIG_DIR"}',
         ];

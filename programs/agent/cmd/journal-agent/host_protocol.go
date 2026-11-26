@@ -28,8 +28,19 @@ func protocolOnly(arguments []string) error {
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket the host opens containers through")
 	installation := flags.String("installation", "", "the protected installation saved-account starts run from")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the drivers call")
+	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
+	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
+	agentImage := flags.String("agent-image", "", "the agent image a contained host runs")
 	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends, as when the process that started it died")
 	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	arrangement, err := host.ParseArrangement(*arrangementFlag)
+	if err != nil {
+		return err
+	}
+	installationPrefix, err := host.ParseInstallationName(*installationName)
+	if err != nil {
 		return err
 	}
 	enrollment, err := (host.State{Folder: *stateFolder}).Load()
@@ -43,12 +54,14 @@ func protocolOnly(arguments []string) error {
 	}
 	containers := host.Containers{}
 	if *dockerSocket != "" {
-		containers, err = host.ContainersOn(*dockerSocket, host.ContainerRules{Arrangement: host.Local})
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installationPrefix, AgentImage: *agentImage,
+			Allowed: host.NewAllowedImages()}
+		containers, err = host.ContainersOn(*dockerSocket, rules)
 		if err != nil {
 			return err
 		}
 	}
-	journal := client.New(enrollment)
+	journal := client.New(enrollment).WithArrangement(string(arrangement))
 	if err := hostapi.CheckOrigin(journal.JournalURL(), *dockerSocket != ""); err != nil {
 		return err
 	}

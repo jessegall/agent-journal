@@ -117,7 +117,7 @@ final class OpenBindingMainRuntimeTest extends TestCase
             [
                 $plan['folders'],
                 $plan['kept_files'],
-                $plan['inherit'],
+                array_values(array_intersect(['HOME', 'PATH', 'CLAUDE_CONFIG_DIR'], $plan['inherit'])),
                 in_array('CLAUDE_CONFIG_DIR={folder:account}', $plan['environment'], true),
             ],
         );

@@ -17,7 +17,7 @@ use App\Models\Sharing\Share;
 use App\Models\Sharing\ShareGatewayConfiguration;
 use App\Providers\DomainEventServiceProvider;
 use App\Support\RecordIdentity;
-use Tests\Support\Sharing\SharingTestCase;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**

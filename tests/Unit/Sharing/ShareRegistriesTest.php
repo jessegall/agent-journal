@@ -14,6 +14,7 @@ use App\Sharing\Exceptions\UnknownShareRecordType;
 use App\Sharing\Exceptions\UnknownShareRelation;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Fixtures\Domains\Flyers\FlyersDomain;
 use Tests\Fixtures\Domains\Leaflets\LeafletsDomain;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
@@ -21,7 +22,6 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 use Tests\Fixtures\Domains\Pamphlets\PressGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 
 /**
  * The share registries: domains register shareable record types and gateways when they boot, each alias and key once

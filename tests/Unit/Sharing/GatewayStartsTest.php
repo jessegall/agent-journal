@@ -12,8 +12,8 @@ use App\Sharing\Support\Gateways\GatewayOperation;
 use App\Sharing\Support\Gateways\GatewayStarts;
 use Illuminate\Process\Factory as Processes;
 use Illuminate\Process\FakeInvokedProcess;
+use Tests\Commands\Sharing\SharingTestCase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 
 /**
  * The one start every gateway opens through: a confirmed address keeps the program for the run under its endpoint

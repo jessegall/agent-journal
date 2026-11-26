@@ -11,7 +11,7 @@ use App\Sharing\Support\Gateways\GatewaySettings;
 use App\Sharing\Support\Gateways\NgrokGateway;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Process\Factory as Processes;
-use Tests\Support\Sharing\SharingTestCase;
+use Tests\Commands\Sharing\SharingTestCase;
 
 /**
  * The ngrok gateway against fixture answers of its loopback control API: it accepts its own endpoint on the fixed

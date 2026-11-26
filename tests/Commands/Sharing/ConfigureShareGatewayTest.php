@@ -24,7 +24,6 @@ use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\Sharing\UnconfiguredShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\TestActors;
@@ -58,7 +57,7 @@ final class ConfigureShareGatewayTest extends SharingTestCase
     {
         $first = $this->configure(FakeShareGateway::KEY, false);
 
-        $share = $this->shareForADay(
+        $share = $this->grantForADay(
             TestActors::record('binders.binder', 1),
             ShareGatewayConfiguration::query()->findOrFail($first->configurationId),
         );

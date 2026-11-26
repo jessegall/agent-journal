@@ -33,7 +33,6 @@ use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestIds;
 use Tests\Support\TestProjects;
 use Tests\Support\TimeLimits\TimeLimit;

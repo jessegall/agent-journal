@@ -14,7 +14,6 @@ use App\Support\RecordIdentity;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -38,9 +37,9 @@ final class ExpireSharesTest extends SharingTestCase
     public function test_a_share_past_its_deadline_expires_and_one_within_it_stays(): void
     {
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $due = $this->shareForADay(TestActors::record('binders.binder', 1), $configuration);
+        $due = $this->grantForADay(TestActors::record('binders.binder', 1), $configuration);
         $this->travel(2)->days();
-        $current = $this->shareForADay(TestActors::record('binders.binder', 2), $configuration);
+        $current = $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
         $expiry = $this->journal->runAsJournal(
             CommandEntry::ShareGateway,

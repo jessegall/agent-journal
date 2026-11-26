@@ -166,8 +166,9 @@ class DomainServiceProvider extends ServiceProvider
         $booted = array_map(fn (DomainEntry $entry) => $entry->domain::class, $registry->all());
         $unbooted = array_diff(DomainRegistry::installedClasses($this->app->basePath()), $booted);
 
+        // A domain that does not boot is never loaded: its package folder is named for it.
         foreach ($unbooted as $class) {
-            $folder = DomainEntry::fromClass($class)->migrationFolder();
+            $folder = $this->app->basePath('domain/'.DomainEntry::nameOf($class).'/database/migrations');
             $this->app->afterResolving('migrator', fn (Migrator $migrator) => $migrator->path($folder));
         }
     }

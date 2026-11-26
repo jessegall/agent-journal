@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Support;
 
+use App\Support\Reflector;
 use Tests\Support\Exceptions\DomainNotBooted;
 use Tests\TestCase;
 
@@ -17,11 +18,11 @@ final class DomainLoadGuardTest extends TestCase
     {
         $this->expectException(DomainNotBooted::class);
 
-        class_exists('Domain\\Reminders\\'.'NotBootedHere');
+        Reflector::exists('Domain\\Reminders\\'.'NotBootedHere');
     }
 
     public function test_a_domains_own_tests_folder_still_loads(): void
     {
-        $this->assertFalse(class_exists('Domain\\Reminders\\Tests\\'.'NotBootedHere'));
+        $this->assertFalse(Reflector::exists('Domain\\Reminders\\Tests\\'.'NotBootedHere'));
     }
 }

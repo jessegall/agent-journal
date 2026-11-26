@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support\Sharing;
+namespace Tests\Commands\Sharing;
 
 use Domain\Documents\DocumentsDomain;
 use Domain\Plans\PlansDomain;

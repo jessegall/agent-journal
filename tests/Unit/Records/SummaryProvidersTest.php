@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Records;
 
 use App\Records\Exceptions\RecordProviderInvalid;
-use App\Records\SummaryProviders;
+use App\Records\RecordSummaries;
+use App\Support\Reflector;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
@@ -21,7 +22,7 @@ final class SummaryProvidersTest extends TestCase
 
     public function test_a_registered_type_is_covered_and_gives_its_provider(): void
     {
-        $summaries = new SummaryProviders(new Container());
+        $summaries = new RecordSummaries(new Container(), Reflector::factory());
 
         $summaries->register(self::TYPE, NoteSummaries::class);
 
@@ -32,7 +33,7 @@ final class SummaryProvidersTest extends TestCase
 
     public function test_a_type_nobody_registered_is_not_covered_and_has_no_provider(): void
     {
-        $summaries = new SummaryProviders(new Container());
+        $summaries = new RecordSummaries(new Container(), Reflector::factory());
 
         $this->assertFalse($summaries->covers(self::TYPE));
         $this->expectExceptionObject(RecordProviderInvalid::unknown(self::TYPE));
@@ -44,12 +45,12 @@ final class SummaryProvidersTest extends TestCase
     {
         $this->expectExceptionObject(RecordProviderInvalid::notAProvider(self::TYPE, NoteRecords::class));
 
-        new SummaryProviders(new Container())->register(self::TYPE, NoteRecords::class);
+        new RecordSummaries(new Container(), Reflector::factory())->register(self::TYPE, NoteRecords::class);
     }
 
     public function test_a_type_registered_twice_is_refused(): void
     {
-        $summaries = new SummaryProviders(new Container());
+        $summaries = new RecordSummaries(new Container(), Reflector::factory());
         $summaries->register(self::TYPE, NoteSummaries::class);
 
         $this->expectExceptionObject(RecordProviderInvalid::repeated(self::TYPE));

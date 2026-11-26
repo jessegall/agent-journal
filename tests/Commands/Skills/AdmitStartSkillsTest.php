@@ -69,6 +69,7 @@ final class AdmitStartSkillsTest extends TestCase
         foreach ($keys as $key) {
             $this->assertNotNull($generation->entry($key), "The generation holds no entry for {$key}.");
         }
+
         $this->journal->assertSkillsHanded($session, $generation, $keys);
     }
 

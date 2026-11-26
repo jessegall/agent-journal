@@ -27,7 +27,6 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 
@@ -85,7 +84,7 @@ final class RevokeShareTest extends SharingTestCase
 
         $this->journal->owner();
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->share = $this->shareForADay(TestActors::record('binders.binder', 1), $this->configuration);
+        $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
 
         Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {

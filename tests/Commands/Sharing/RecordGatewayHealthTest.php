@@ -19,7 +19,6 @@ use App\Support\RecordIdentity;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -43,7 +42,7 @@ final class RecordGatewayHealthTest extends SharingTestCase
         $this->journal->owner();
 
         $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->share = $this->shareForADay(TestActors::record('binders.binder', 1), $this->configuration);
+        $this->share = $this->grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
     }
 

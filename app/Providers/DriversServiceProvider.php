@@ -27,11 +27,11 @@ use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInEnvironment;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSignInReader;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeSkills;
 use App\Agents\Drivers\ClaudeCode\ClaudeCodeTranscriptRestart;
-use App\Agents\Drivers\ClaudeCode\ClaudeCodeTurnResults;
 use App\Agents\Drivers\ClaudeCode\ClaudeFirstRun;
 use App\Agents\Drivers\ClaudeCode\ClaudeKeySignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeSignIn;
 use App\Agents\Drivers\ClaudeCode\ClaudeTokenSignIn;
+use App\Agents\Drivers\ClaudeCode\TurnResults;
 use App\Agents\Drivers\Codex\CodexAccountSettings;
 use App\Agents\Drivers\Codex\CodexAdapter;
 use App\Agents\Drivers\Codex\CodexArguments;
@@ -194,7 +194,7 @@ final class DriversServiceProvider extends ServiceProvider
             signInReader: ClaudeCodeSignInReader::class,
             layout: ClaudeCodeLayout::class,
             keyScripts: ClaudeCodeKeyScripts::class,
-            headlessTurns: HeadlessTurns::eachInAProcess(ClaudeCodeTurnResults::class),
+            headlessTurns: HeadlessTurns::eachInAProcess(TurnResults::class),
             signIn: new SignInSetup(
                 executableSetting: 'accounts.claude_program',
                 environment: ClaudeCodeSignInEnvironment::class,

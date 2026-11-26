@@ -15,7 +15,6 @@ use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 
 /**
@@ -39,8 +38,8 @@ final class ReopenSharedGatewaysTest extends SharingTestCase
     public function test_a_gateway_with_live_shares_is_opened_once(): void
     {
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $this->shareForADay(TestActors::record('binders.binder', 1), $configuration);
-        $this->shareForADay(TestActors::record('binders.binder', 2), $configuration);
+        $this->grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $this->grantForADay(TestActors::record('binders.binder', 2), $configuration);
         $this->assertSame(0, ShareGatewayOperation::query()->count());
 
         $first = $this->reopen();

@@ -36,7 +36,6 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\Sharing\RegistersShareDomains;
-use Tests\Support\Sharing\SharingTestCase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestProjects;

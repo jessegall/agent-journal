@@ -6,14 +6,14 @@ namespace Domain\Chat\Support\Docking;
 
 use App\Records\Contracts\RecordResolver;
 use App\Records\Contracts\RecordSummaries;
-use Domain\Chat\Contracts\Docking\FallbackDocks;
+use Domain\Chat\Contracts\Docking\FallbackDocks as FallbackDocksContract;
 use Domain\Chat\Exceptions\DockDefinitionInvalid;
 use Domain\Chat\Values\DockDefinition;
 
 /**
  * Every record whose owner summarizes it docks as that summary, and every other record type with its link card.
  */
-final readonly class RecordFallbackDocks implements FallbackDocks
+final readonly class FallbackDocks implements FallbackDocksContract
 {
     public function __construct(private RecordResolver $records, private RecordSummaries $summaries) {}
 

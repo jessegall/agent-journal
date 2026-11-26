@@ -10,13 +10,12 @@
 #   GatewayBinary: a sharing gateway's program in the host's tool folders
 #   HostSecretFile: the host's secret file the sign-in runner is given
 #   HostAccountFolder: the host's own account folders, written by the host tools without the application
-
+exempt CommandFileSystem app/CommandRules/PackageScripts.php file_get_contents()
+exempt CommandFileSystem app/CommandRules/PackageScripts.php is_file()
 exempt CommandFileSystem app/CommandRules/Pipes/Supervision/Builtins/ChangeFolder.php is_dir()
 exempt CommandFileSystem app/CommandRules/Pipes/Supervision/Builtins/ChangeFolder.php realpath()
 exempt CommandFileSystem app/Processes/ExecutableCheck.php hash_file()
 exempt CommandFileSystem app/Processes/ExecutableCheck.php is_file()
-exempt CommandFileSystem app/CommandRules/PackageScripts.php file_get_contents()
-exempt CommandFileSystem app/CommandRules/PackageScripts.php is_file()
 exempt CommandFileSystem app/Support/Rules/ProgramClassifier.php realpath()
 exempt GatewayBinary app/Sharing/Support/Gateways/NgrokGateway.php is_executable()
 exempt GatewayBinary app/Sharing/Support/Gateways/NgrokGateway.php is_file()

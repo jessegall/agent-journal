@@ -47,7 +47,7 @@ final readonly class StartClaims
         $driver = $session->selection->driver;
 
         try {
-            $settings = $this->settingsOf($start, $session);
+            $settings = $this->settingsOf($start, $session, $start->directory);
         } catch (UnstartableDriver $refusal) {
             // The driver's build cannot start here at all: the start ends with the reason, and its session and
             // runtime end as a reported exit ends them, so the agent can start again.

@@ -67,15 +67,16 @@ final class LocalHostTest extends TestCase
         $this->assertTrue($this->checkout->docker->hasBuilt('agent'));
     }
 
-    public function test_a_change_to_the_host_program_builds_only_the_runner_image(): void
+    public function test_a_change_to_the_go_programs_builds_the_runner_and_the_agent_image_again(): void
     {
+        // The agent image's first stage builds its relays and stop check from the same Go module as the host.
         $this->setUpLocalHost();
         $this->checkout->write('programs/agent/cmd/journal-agent/main.go', "package main\n\nfunc main() {}\n");
 
         $this->setUpLocalHost();
 
         $this->assertTrue($this->checkout->docker->hasBuilt('runner'));
-        $this->assertFalse($this->checkout->docker->hasBuilt('agent'));
+        $this->assertTrue($this->checkout->docker->hasBuilt('agent'));
     }
 
     public function test_fresh_removes_the_containers_and_the_enrolment_first(): void
