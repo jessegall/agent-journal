@@ -9,7 +9,7 @@ use App\Exceptions\RecordUnavailable;
 use App\Exceptions\ShareBudgetExceeded;
 use App\Exceptions\UnknownShareRecordType;
 use App\Models\Records\Link;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Support\ReadMeter;
 use App\Support\RecordIdentity;
 use App\Support\ShareRecordCard;
@@ -33,7 +33,7 @@ final readonly class ShareScope
 
     public function __construct(
         private ShareRecordRegistry $records,
-        private ProjectSelectionStore $selections,
+        private CurrentProject $selections,
     ) {}
 
     /**

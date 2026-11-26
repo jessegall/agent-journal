@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Support\StateEvents;
 
 use App\Exceptions\StateEventReentry;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\StackTarget;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
@@ -28,7 +28,7 @@ final class StateEventActivity
      */
     private array $deliveries = [];
 
-    public function __construct(private readonly ProjectSelectionStore $projects) {}
+    public function __construct(private readonly CurrentProject $projects) {}
 
     /**
      * Runs a state's listener for its target under the target agent's project, whoever raised the fact.

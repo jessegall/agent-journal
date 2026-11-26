@@ -24,7 +24,7 @@ final readonly class NoteWorkPolicy implements Policy
 
 A policy that decides on one record implements `App\Contracts\Authorization\RecordPolicy` and has a public
 `permits(Actor $actor, <its model> $record, AccessType $access): Response`, which Laravel's Gate calls once the grant
-is held. `Domain\Tasks\Policies\RecordPolicy` is the one in the journal: only the run's holder finishes, blocks or
+is held. `Domain\Tasks\Policies\TaskRunPolicy` is the one in the journal: only the run's holder finishes, blocks or
 cancels it. The model points Laravel at it with `#[UsePolicy(TaskRunPolicy::class)]`; a model has one record policy.
 
 ## 2. Registering the policy

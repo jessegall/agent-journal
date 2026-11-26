@@ -5,7 +5,8 @@ declare(strict_types=1);
 /**
  * Lists the contracts that exactly one class implements under another name. Such a class is simply what its contract
  * says, so it carries the contract's name and imports the contract with a Contract alias: final readonly class
- * AgentDirectory implements AgentDirectoryContract. Interfaces live under a Contracts folder.
+ * AgentDirectory implements AgentDirectoryContract. Interfaces live under a Contracts folder; a class of another owner
+ * than its contract's, such as a domain filling a Core contract, keeps a name of its own.
  *
  *   php tools/refactoring/single-implementations.php app domain
  *       prints "file:line<TAB>class <Class> is the only implementation of <Contract> ..." for each, and fails while
@@ -57,6 +58,11 @@ function main(array $paths): void
         $only = $implementers[0];
 
         if ($only['type'] === 'interface' || $only['isAbstract'] || shortName($only['name']) === shortName($contract)) {
+            continue;
+        }
+
+        // A class of another owner fills a contract its owner declares for others, so it says what it fills it with.
+        if (! str_starts_with($only['name'], ownerOf($contract))) {
             continue;
         }
 
@@ -127,6 +133,14 @@ function implementedBy(Class_|Enum_|Interface_ $node): array
     $named = $node instanceof Interface_ ? $node->extends : $node->implements;
 
     return array_map(fn (Node\Name $name) => $name->toString(), $named);
+}
+
+/**
+ * The namespace that owns a contract: everything before its Contracts folder, such as App\\ or Domain\\Tasks\\.
+ */
+function ownerOf(string $contract): string
+{
+    return substr($contract, 0, (int) strpos($contract, '\\Contracts\\') + 1);
 }
 
 function shortName(string $name): string

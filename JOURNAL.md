@@ -52,7 +52,7 @@ A guard that raises lets the event through and says so in the chat: a block is n
 
 ## Projects in one journal
 
-The journal is one; its projects are a scope over it. `CurrentProject` answers which projects a read sees. A pin set by `ProjectSelectionStore::within` or `forTarget` comes first, whoever acts. Without one, an agent sees its own project, the journal itself sees all projects, and the owner sees what the browser chose, or all projects when nothing was chosen. Anyone else sees none: only Global rows.
+The journal is one; its projects are a scope over it. `CurrentProject` answers which projects a read sees. A pin set by `CurrentProject::within` or `forTarget` comes first, whoever acts. Without one, an agent sees its own project, the journal itself sees all projects, and the owner sees what the browser chose, or all projects when nothing was chosen. Anyone else sees none: only Global rows.
 
 A state, a tick or a share walk runs inside `forTarget` or `within`, so it reads only its agent's project and Global rows, whoever raised the fact. A read across every project goes through the named lift `acrossProjects()`, and a read of one named project goes through `inProject($id)`. ProjectOwnedModelsTest keeps the list of `acrossProjects()` callers short.
 

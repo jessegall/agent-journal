@@ -11,16 +11,16 @@ use App\Support\ActorStore;
 use App\Support\StateEvents\StateEventActivity;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
-use Tests\Support\Projects\BuildsProjectSelectionStore;
+use Tests\Support\Projects\BuildsCurrentProject;
 use Tests\Support\TestActors;
 
 final class StateEventActivityTest extends TestCase
 {
-    use BuildsProjectSelectionStore;
+    use BuildsCurrentProject;
 
     public function test_different_key_nesting_is_bounded_and_the_same_scope_accepts_later_deliveries(): void
     {
-        $activity = new StateEventActivity($this->projectSelectionStore(
+        $activity = new StateEventActivity($this->currentProject(
             new ActorStore(),
             $this->createStub(AgentProjects::class),
             $this->createStub(JournalAdmission::class),

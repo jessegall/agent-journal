@@ -9,7 +9,7 @@ use App\Contracts\Bus\Command;
 use App\Contracts\Bus\CommandFacts;
 use App\Contracts\Events\Event;
 use App\Events\Hooks\StateCommandAnswered;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\StackTarget;
 
 /**
@@ -21,7 +21,7 @@ final readonly class StateCommandPublisher
     public function __construct(
         private CommandFacts $facts,
         private CurrentActor $actors,
-        private ProjectSelectionStore $projects,
+        private CurrentProject $projects,
     ) {}
 
     /**

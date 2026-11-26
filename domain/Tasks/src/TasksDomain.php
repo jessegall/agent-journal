@@ -83,8 +83,8 @@ use Domain\Tasks\Http\Pages\Resolvers\TaskWindowResolver;
 use Domain\Tasks\Mcp\Resources\TaskResource;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
-use Domain\Tasks\Policies\RecordPolicy;
 use Domain\Tasks\Policies\TaskPolicy;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Resolvers\TaskRunAssignments;
@@ -283,7 +283,7 @@ final class TasksDomain extends Domain implements
                 ],
             ),
             new PolicyDefinition(
-                RecordPolicy::class,
+                TaskRunPolicy::class,
                 [
                     AccessType::Create,
                     AccessType::Edit,

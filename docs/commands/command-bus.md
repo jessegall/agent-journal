@@ -82,7 +82,7 @@ resolves). A handler returns nothing, one of those, or a final readonly value su
 Every command a user or an agent sends declares who may run it with one `#[Authorize(Policy::class,
 AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
 decides on one record implements `App\Contracts\Bus\RecordCommand` and returns that locked record from `subject()`,
-as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\RecordPolicy`; its handler takes the record as
+as `Domain\Tasks\Commands\BlockTask\BlockTaskCommand` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
 its second argument, as `Domain\Tasks\Commands\BlockTask\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
 loads it once. The bus checks the caller's profile grants before the subject is loaded and refuses with
 `App\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with

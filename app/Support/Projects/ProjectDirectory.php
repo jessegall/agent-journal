@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support\Projects;
 
-use App\Contracts\Projects\ProjectDirectory;
+use App\Contracts\Projects\ProjectDirectory as ProjectDirectoryContract;
 use App\Data\Projects\ProjectData;
 use App\Models\Projects\Project;
 
 /**
  * The journal's projects as a browser may choose them, read from the project rows.
  */
-final readonly class ListedProjects implements ProjectDirectory
+final readonly class ProjectDirectory implements ProjectDirectoryContract
 {
     public function isListed(string $id): bool
     {

@@ -9,7 +9,7 @@ use App\Contracts\Bus\RecordCommand;
 use App\Enums\Agents\AccessType;
 use App\Support\Command;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Policies\RecordPolicy;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -20,7 +20,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<null>
  */
-#[Authorize(RecordPolicy::class, AccessType::Edit)]
+#[Authorize(TaskRunPolicy::class, AccessType::Edit)]
 final readonly class BlockTaskCommand extends Command implements RecordCommand
 {
     public function __construct(

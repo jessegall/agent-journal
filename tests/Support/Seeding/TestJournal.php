@@ -21,7 +21,7 @@ use App\Support\Access\AccessSettings;
 use App\Support\ActorReference;
 use App\Support\Command;
 use App\Support\DomainRegistry;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Support\StartedAgent;
 use App\Support\StartSessions;
 use App\Values\ProjectSelection;
@@ -277,7 +277,7 @@ final class TestJournal
      */
     public function selectProject(string $name): self
     {
-        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::of($this->projectCalled($name)->id));
+        $this->app->make(CurrentProject::class)->select(ProjectSelection::of($this->projectCalled($name)->id));
 
         return $this;
     }
@@ -287,7 +287,7 @@ final class TestJournal
      */
     public function inAllProjects(): self
     {
-        $this->app->make(ProjectSelectionStore::class)->select(ProjectSelection::all());
+        $this->app->make(CurrentProject::class)->select(ProjectSelection::all());
 
         return $this;
     }

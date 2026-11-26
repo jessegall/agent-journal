@@ -10,19 +10,19 @@ use App\Contracts\Inboxes\InboxMemberPolicies;
 use App\Contracts\Projects\AgentProjects;
 use App\Support\Access\OwnerAuthorizerProvider;
 use App\Support\ActorStore;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 
 /**
  * For a unit test: the project selection store over the test's own actors, agent projects and admission.
  */
-trait BuildsProjectSelectionStore
+trait BuildsCurrentProject
 {
-    private function projectSelectionStore(
+    private function currentProject(
         ActorStore $actors,
         AgentProjects $agents,
         JournalAdmission $admission,
-    ): ProjectSelectionStore {
-        return new ProjectSelectionStore(
+    ): CurrentProject {
+        return new CurrentProject(
             $actors,
             $agents,
             new OwnerAuthorizerProvider(

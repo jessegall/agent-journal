@@ -7,7 +7,7 @@ namespace App\Http\Middleware\Web;
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Projects\ProjectDirectory;
 use App\Exceptions\ProjectUnavailable;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
 use App\Values\ProjectSelection;
 use Closure;
@@ -28,7 +28,7 @@ final readonly class SelectProject
 
     public function __construct(
         private ProjectDirectory $projects,
-        private ProjectSelectionStore $selections,
+        private CurrentProject $selections,
         private CurrentActor $actors,
     ) {}
 

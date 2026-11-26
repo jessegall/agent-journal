@@ -13,14 +13,14 @@ use App\Support\EngineAccess;
 use App\Support\SystemActor;
 use App\Values\StackTarget;
 use PHPUnit\Framework\TestCase;
-use Tests\Support\Projects\BuildsProjectSelectionStore;
+use Tests\Support\Projects\BuildsCurrentProject;
 
 /**
  * The engine addresses only what it was granted: nothing by default, one frame's target, or one maintenance scope.
  */
 final class EngineAccessTest extends TestCase
 {
-    use BuildsProjectSelectionStore;
+    use BuildsCurrentProject;
 
     public function test_with_no_grant_every_target_and_capability_is_refused(): void
     {
@@ -63,7 +63,7 @@ final class EngineAccessTest extends TestCase
 
     private function access(): EngineAccess
     {
-        return new EngineAccess($this->projectSelectionStore(
+        return new EngineAccess($this->currentProject(
             new ActorStore(),
             $this->createStub(AgentProjects::class),
             $this->createStub(JournalAdmission::class),

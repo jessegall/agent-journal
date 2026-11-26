@@ -6,7 +6,7 @@ namespace Tests\States;
 
 use App\Contracts\Processes\ShellCommandParser;
 use App\Contracts\Projects\AgentProjects;
-use App\Contracts\Projects\CurrentProject;
+use App\Contracts\Projects\CurrentProject as CurrentProjectContract;
 use App\Enums\Hooks\AnswerType;
 use App\Events\Inboxes\InboxLeft;
 use App\Events\Messages\MessageRead;
@@ -15,14 +15,14 @@ use App\Models\Inboxes\Inbox;
 use App\Models\Messages\Message;
 use App\Resolvers\AgentDirectory;
 use App\Support\ActorReference;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Support\States\ReadMessageState;
 use App\Support\States\Support\AnswerMessageStateReference;
 use App\Support\States\Support\ReadMessageStateReference;
 use App\Values\AnswerBudget;
 use App\Values\ProjectSelection;
-use Tests\Fixtures\Projects\AskedAgentProjects;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Fixtures\Projects\AskedAgentProjects;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsState;
 use Tests\Support\ScenarioTick;
@@ -175,9 +175,9 @@ final class ReadMessageStateTest extends TestCase
         $this->journal->project('Shop');
         $asked = new AskedAgentProjects($this->app->make(AgentDirectory::class));
         $this->app->instance(AgentProjects::class, $asked);
-        $this->app->forgetInstance(ProjectSelectionStore::class);
+        $this->app->forgetInstance(CurrentProject::class);
         $chosen = ProjectSelection::of($this->journal->projectCalled('Shop')->id);
-        $this->app->make(ProjectSelectionStore::class)->select($chosen);
+        $this->app->make(CurrentProject::class)->select($chosen);
 
         $this->reading()->given(
             new MessageSent('sent-3', $this->inbox->id, 3, null, $this->journal->actorCalled('Owner')),
@@ -188,7 +188,7 @@ final class ReadMessageStateTest extends TestCase
         );
 
         $this->assertContains($this->writerId(), $asked->askedAgentIds);
-        $this->assertEquals($chosen, $this->app->make(CurrentProject::class)->selection());
+        $this->assertEquals($chosen, $this->app->make(CurrentProjectContract::class)->selection());
     }
 
     private function reading(): StateHandle

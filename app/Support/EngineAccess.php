@@ -9,7 +9,7 @@ use App\Contracts\Admission\MaintenanceAdmission;
 use App\Contracts\Authorization\EngineGrant;
 use App\Contracts\Authorization\EngineTargetAccess;
 use App\Exceptions\EngineAccessRefused;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\FrameGrant;
 use App\Values\StackTarget;
 use Closure;
@@ -25,7 +25,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
 {
     private EngineGrant|FrameGrant $grant;
 
-    public function __construct(private readonly ProjectSelectionStore $projects)
+    public function __construct(private readonly CurrentProject $projects)
     {
         $this->grant = new NoEngineGrant();
     }

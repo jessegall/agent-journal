@@ -25,7 +25,7 @@ use App\Models\CommandRules\RuleProposal;
 use App\Models\Projects\Project;
 use App\Models\Runs\PartRun;
 use App\Models\Runs\ProcessRun;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Support\Rules\ShippedReaders;
 use App\Values\CapturedChunk;
 use App\Values\CommandRule;
@@ -61,7 +61,7 @@ final readonly class ShippedReaderInstaller
         private OutputRecorder $recorder,
         private OutputSummaries $summaries,
         private ActiveRules $rules,
-        private ProjectSelectionStore $projects,
+        private CurrentProject $projects,
     ) {}
 
     /**

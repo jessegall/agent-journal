@@ -11,7 +11,7 @@ use App\Exceptions\ProjectUnavailable;
 use App\Http\Middleware\Web\SelectProject;
 use App\Support\ActorReference;
 use App\Support\ActorStore;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\Support\Projects\BuildsProjectSelectionStore;
+use Tests\Support\Projects\BuildsCurrentProject;
 
 /**
  * The eight inputs of a browser's project choice: the header, the query, both agreeing, both disagreeing, a malformed
@@ -27,7 +27,7 @@ use Tests\Support\Projects\BuildsProjectSelectionStore;
  */
 final class SelectProjectTest extends TestCase
 {
-    use BuildsProjectSelectionStore;
+    use BuildsCurrentProject;
 
     public const string LISTED = '01jd8x0g9m3qz6v4k2t7r5w1cc';
 
@@ -37,7 +37,7 @@ final class SelectProjectTest extends TestCase
 
     private ActorStore $actors;
 
-    private ProjectSelectionStore $store;
+    private CurrentProject $store;
 
     protected function setUp(): void
     {
@@ -46,7 +46,7 @@ final class SelectProjectTest extends TestCase
         $this->actors = new ActorStore();
         $admission = $this->createStub(JournalAdmission::class);
         $admission->method('admits')->willReturn(true);
-        $this->store = $this->projectSelectionStore($this->actors, $this->createStub(AgentProjects::class), $admission);
+        $this->store = $this->currentProject($this->actors, $this->createStub(AgentProjects::class), $admission);
         $this->actors->set(ActorReference::forUser(self::USER), new OwnerAuthority('web'));
     }
 

@@ -35,8 +35,8 @@ use Domain\Tasks\Http\Pages\Tasks\TasksShow;
 use Domain\Tasks\Http\Requests\TaskRequest;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskLogEntry;
-use Domain\Tasks\Policies\RecordPolicy;
 use Domain\Tasks\Policies\TaskPolicy;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskStream;
 use Domain\Tasks\Values\TaskCard;
 use Domain\Tasks\Values\TaskFilters;
@@ -208,7 +208,7 @@ final readonly class TaskWindowResolver implements PageResolver
         $task = Task::findForId($taskId);
 
         $allowed = $this->authorizer->filterActions(
-            RecordPolicy::class,
+            TaskRunPolicy::class,
             $task,
             [
                 AccessType::Create,

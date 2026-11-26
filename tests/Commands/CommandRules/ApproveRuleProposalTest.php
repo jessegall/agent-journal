@@ -17,7 +17,7 @@ use App\Exceptions\CommandAdmissionRefused;
 use App\Models\CommandRules\ClassificationRule;
 use App\Models\CommandRules\RuleProposal;
 use App\Models\CommandRules\RuleRevision;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\ArgumentGrammar;
 use App\Values\CommandClassSet;
 use App\Values\CommandRule;
@@ -113,7 +113,7 @@ final class ApproveRuleProposalTest extends TestCase
         $shop = ProjectSelection::of($this->journal->projectCalled('Shop')->id);
 
         $this->assertThrows(
-            fn () => $this->app->make(ProjectSelectionStore::class)->within($shop, fn () => $this->journal->runUnkeyed(
+            fn () => $this->app->make(CurrentProject::class)->within($shop, fn () => $this->journal->runUnkeyed(
                 new ApproveRuleProposalCommand($proposal->id, new OwnerApproval(1, 0, [], 'b')),
             )),
             ModelNotFoundException::class,

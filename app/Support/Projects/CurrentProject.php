@@ -6,7 +6,7 @@ namespace App\Support\Projects;
 
 use App\Contracts\Actors\CurrentActor;
 use App\Contracts\Projects\AgentProjects;
-use App\Contracts\Projects\CurrentProject;
+use App\Contracts\Projects\CurrentProject as CurrentProjectContract;
 use App\Support\Access\OwnerAuthorizerProvider;
 use App\Support\SystemActor;
 use App\Values\ProjectSelection;
@@ -21,7 +21,7 @@ use PhpOption\Some;
  * The one place this request's project selection is kept and answered, by who acts and by the stack target pinned.
  */
 #[Scoped]
-final class ProjectSelectionStore implements CurrentProject
+final class CurrentProject implements CurrentProjectContract
 {
     /**
      * The selection the browser chose, installed by the web middleware.

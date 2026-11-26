@@ -8,7 +8,7 @@ use App\Contracts\Admission\JournalAdmission;
 use App\Contracts\Projects\AgentProjects;
 use App\Support\ActorReference;
 use App\Support\ActorStore;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\InboxMemberAuthority;
 use App\Values\OwnerAuthority;
 use App\Values\ProjectSelection;
@@ -16,14 +16,14 @@ use App\Values\StackTarget;
 use App\Values\TrustedEntryAuthority;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Tests\Support\Projects\BuildsProjectSelectionStore;
+use Tests\Support\Projects\BuildsCurrentProject;
 
 /**
  * Each row of how CurrentProject answers, by who acts, and a pinned target that is given back also on a throw.
  */
-final class ProjectSelectionStoreTest extends TestCase
+final class CurrentProjectTest extends TestCase
 {
-    use BuildsProjectSelectionStore;
+    use BuildsCurrentProject;
 
     public const string AGENT_OF_A = '01jd8x0g9m3qz6v4k2t7r5w1ca';
 
@@ -172,12 +172,12 @@ final class ProjectSelectionStoreTest extends TestCase
         $this->assertEquals(ProjectSelection::none(), $this->store()->selection());
     }
 
-    private function store(): ProjectSelectionStore
+    private function store(): CurrentProject
     {
         $admission = $this->createStub(JournalAdmission::class);
         $admission->method('admits')->willReturnCallback(fn (): bool => $this->admitsUser);
 
-        return $this->projectSelectionStore($this->actors, $this->agentProjects(), $admission);
+        return $this->currentProject($this->actors, $this->agentProjects(), $admission);
     }
 
     private function agentProjects(): AgentProjects
@@ -191,8 +191,8 @@ final class ProjectSelectionStoreTest extends TestCase
                 $this->reads++;
 
                 return [
-                    ProjectSelectionStoreTest::AGENT_OF_A => ProjectSelectionStoreTest::PROJECT_A,
-                    ProjectSelectionStoreTest::AGENT_OF_B => ProjectSelectionStoreTest::PROJECT_B,
+                    CurrentProjectTest::AGENT_OF_A => CurrentProjectTest::PROJECT_A,
+                    CurrentProjectTest::AGENT_OF_B => CurrentProjectTest::PROJECT_B,
                 ][$agentId];
             }
         };

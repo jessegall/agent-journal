@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Policies;
 
 use App\Contracts\Actors\Actor;
-use App\Contracts\Authorization\RecordPolicy as RecordPolicyContract;
+use App\Contracts\Authorization\RecordPolicy;
 use App\Contracts\Processes\RunClaims;
 use App\Enums\Agents\AccessType;
 use App\Support\ActorReference;
@@ -16,7 +16,7 @@ use Illuminate\Auth\Access\Response;
  * Who may work a task's run: anyone granted Create may open or resume one, and the task itself refuses a run another
  * holds; only the run's holder finishes, blocks or cancels it.
  */
-final readonly class RecordPolicy implements RecordPolicyContract
+final readonly class TaskRunPolicy implements RecordPolicy
 {
     public function __construct(private RunClaims $claims) {}
 

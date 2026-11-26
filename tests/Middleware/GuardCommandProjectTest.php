@@ -12,7 +12,7 @@ use App\Exceptions\CrossProjectWrite;
 use App\Exceptions\RecordUnavailable;
 use App\Models\Agents\Agent;
 use App\Support\CommandCall;
-use App\Support\Projects\ProjectSelectionStore;
+use App\Support\Projects\CurrentProject;
 use App\Values\ProjectOwner;
 use App\Values\ProjectSelection;
 use Tests\Fixtures\Projects\OwnedWrite;
@@ -85,7 +85,7 @@ final class GuardCommandProjectTest extends TestCase
     {
         $this->journal->owner()->project('Shop')->agent('Ada');
         $own = $this->journal->agentCalled('Ada')->project_id;
-        $store = $this->app->make(ProjectSelectionStore::class);
+        $store = $this->app->make(CurrentProject::class);
 
         $store->within(ProjectSelection::of($own), function () use ($own): void {
             $this->assertSame(self::PASSED, $this->guard(ProjectOwner::ofProject($own)));
@@ -97,7 +97,7 @@ final class GuardCommandProjectTest extends TestCase
     {
         $this->journal->owner()->project('Shop');
 
-        $this->app->make(ProjectSelectionStore::class)->within(ProjectSelection::none(), function (): void {
+        $this->app->make(CurrentProject::class)->within(ProjectSelection::none(), function (): void {
             $this->assertGuardRefuses(ProjectOwner::ofProject($this->projectId('Shop')));
             $this->assertGuardRefuses(ProjectOwner::global());
         });

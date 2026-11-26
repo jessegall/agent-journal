@@ -26,7 +26,7 @@ final class SingleImplementationsTest extends TestCase
         $this->assertSame('', trim($output), self::HOW_TO_FIX.$output);
     }
 
-    public function test_an_only_implementation_of_another_name_is_listed_and_named_or_shared_ones_are_not(): void
+    public function test_an_only_implementation_of_another_name_is_listed_and_named_shared_or_other_owners_ones_are_not(): void
     {
         preg_match_all('/\tclass (\w+) is the only implementation/', $this->checkOutput(self::FIXTURE), $listed);
 
