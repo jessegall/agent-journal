@@ -21,10 +21,7 @@ return [
     SessionSkillsIntended::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
-        'producers' => [
-            'app/Listeners/AdmitStartSkills.php',
-            'app/Listeners/RefreshSessionSkills.php',
-        ],
+        'producers' => [],
     ],
     SkillPublicationMoved::class => [
         'role' => EventRole::RowFact,

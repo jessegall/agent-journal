@@ -15,7 +15,6 @@ use App\Hooks\ReminderContribution;
 use App\Listeners\AdmitStartSkills;
 use App\Listeners\AdvanceSkillContext;
 use App\Listeners\RecordProvenSkillReads;
-use App\Listeners\RefreshSessionSkills;
 use App\Listeners\RemindRequiredSkills;
 use App\Models\Agents\Agent;
 use App\Models\Agents\AgentSession;
@@ -237,7 +236,6 @@ final class RecordSkillReadTest extends TestCase
             ContextStartType::Resume,
             $reminders,
         );
-        $this->app->make(RefreshSessionSkills::class)->handle($event);
         $this->app->make(RemindRequiredSkills::class)->handle($event);
 
         return $reminders->all();
