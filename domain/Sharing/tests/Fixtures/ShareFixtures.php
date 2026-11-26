@@ -57,6 +57,16 @@ final class ShareFixtures
         return $this->grantUntil($name, $root, $configuration, CarbonImmutable::now()->addDay());
     }
 
+    /**
+     * The named share's gateway serves it now, as after the gateway reported it open.
+     */
+    public function activate(string $name): self
+    {
+        $this->shareCalled($name)->activate();
+
+        return $this;
+    }
+
     public function shareCalled(string $name): Share
     {
         return $this->aliases->model(Share::class, $name);

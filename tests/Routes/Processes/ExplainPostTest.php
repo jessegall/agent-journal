@@ -31,7 +31,7 @@ final class ExplainPostTest extends GuardedRouteEntryTestCase
             ])
             ->reply(OpenCommandRequestCommand::class, $this->requestId)
             ->expects(OpenCommandRequestCommand::class, [
-                'operation' => 'acme verify',
+                'operation' => 'acme',
                 'line' => 'acme verify',
             ]);
     }

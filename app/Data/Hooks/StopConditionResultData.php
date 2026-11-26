@@ -7,6 +7,7 @@ namespace App\Data\Hooks;
 use App\Enums\Sessions\StopConditionResultType;
 use App\Values\StopConditionResultReport;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -27,6 +28,7 @@ final class StopConditionResultData extends Data
         public string|null $signal,
         public string $summary,
         public string|null $output,
+        #[MapInputName('truncated')]
         public bool $isTruncated,
     ) {}
 

@@ -35,7 +35,10 @@ final class RevealShareLinkPostTest extends GuardedRouteEntryTestCase
         $document = $journal->owner()->run(new CreateDocumentCommand('Design', 'The plan.', "# Design\nText.", TestProjects::local()->id));
         $root = Document::query()->findOrFail($document->id)->shareIdentity();
         $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
-        $shares = $journal->fixtures(ShareFixtures::class)->grantForADay('Design', $root, $configuration);
+
+        $shares = $journal->fixtures(ShareFixtures::class)->grantForADay('Design', $root, $configuration)
+            ->activate('Design');
+
         $share = $shares->shareCalled('Design');
 
         return RouteCall::as(Caller::User)

@@ -5,23 +5,17 @@ declare(strict_types=1);
 namespace Tests\Commands\Runs;
 
 use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessCommand;
-use App\Commands\Runs\RevokeRunOutcomeAccess\RevokeRunOutcomeAccessHandler;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Enums\Runs\RunLogicalResult;
 use App\Enums\Runs\RunResultSource;
 use App\Events\Processes\RunOutcomeRecorded;
 use App\Listeners\NotifyRunOutcome;
-use App\Models\Access\User;
 use App\Models\Notifications\NotificationReceipt;
 use App\Models\Notifications\NotificationScope;
 use App\Models\Runs\ProcessRun;
 use App\Resolvers\Support\RunOutcomeSummaries;
-use App\Support\ActorReference;
 use App\Support\RunOutcomes;
-use App\Values\OwnerAuthority;
 use Tests\Support\Entries\Attributes\TestsCommand;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestActors;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -37,16 +31,14 @@ final class RevokeRunOutcomeAccessTest extends TestCase
 
     public function test_an_entitled_user_reads_only_the_safe_summary_until_the_entitlement_is_revoked(): void
     {
-        $atlas = TestActors::agentIdentity(3);
-        $kim = TestActors::userIdentity(4);
-        $run = ProcessRun::create($atlas, TestRunAdmissions::of(
-            outcomeUserId: $kim->id,
-        ));
+        $this->journal->owner('Kim')->agent('Atlas');
+        $atlas = $this->journal->actorCalled('Atlas');
+        $kim = $this->journal->actorCalled('Kim');
+        $run = ProcessRun::create($atlas, TestRunAdmissions::of(outcomeUserId: $kim->id));
         $this->app->make(RunOutcomes::class)->record($run, RunLogicalResult::Failed, RunResultSource::Signed);
         $this->app->make(NotifyRunOutcome::class)
             ->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Failed, false));
 
-        $this->actAs($kim);
         $summary = $this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->get();
 
         $this->assertSame(self::FAILED_LABEL, $summary->label);
@@ -54,24 +46,13 @@ final class RevokeRunOutcomeAccessTest extends TestCase
         $this->assertTrue($summary->mayOpenFullRun);
         $this->assertSame(2, NotificationReceipt::query()->count());
 
-        $this->actAs($atlas);
-        $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
-            new RevokeRunOutcomeAccessCommand($run->id)->withDispatcher(ActorReference::forAgent($atlas->id)),
-        );
+        $this->journal->runAs('Atlas', new RevokeRunOutcomeAccessCommand($run->id));
+        $this->journal->actAs('Kim');
 
         $this->assertFalse($run->refresh()->hasOutcomeFor($kim));
         $this->assertSame(
             0,
             NotificationScope::query()->where('recipient_id', $kim->id)->sole()->unread_count,
         );
-    }
-
-    private function actAs(ActorReference $actor): void
-    {
-        $this->app->forgetScopedInstances();
-        $context = $actor->type === User::storedType()
-            ? ActorReference::forUser($actor->id)
-            : ActorReference::forAgent($actor->id);
-        $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));
     }
 }

@@ -449,13 +449,14 @@ final class StartAgentTest extends TestCase
     private function servingBindingOf(string $name): ProjectBinding
     {
         $project = $this->journal->project($name)->projectCalled($name);
+        $descriptors = Host::query()->enrolled()->sole()->descriptors->items();
         $relay = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
-        $relay->recordDescriptors(Host::query()->enrolled()->sole()->descriptors->items());
+        $relay->recordDescriptors($descriptors);
         $binding = ProjectBinding::create(
             $relay,
             $project,
             Environment::create($project, "{$name} work"),
-            $this->researcher,
+            $this->journal->idleAgent("{$name} main", 'main-agent', $name)->agentCalled("{$name} main"),
             new BindingFolder(
                 'root-'.bin2hex(random_bytes(4)),
                 '/Users/owner/shop',

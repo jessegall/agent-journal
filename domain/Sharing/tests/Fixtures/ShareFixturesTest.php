@@ -36,6 +36,18 @@ final class ShareFixturesTest extends TestCase
         );
     }
 
+    public function test_an_activated_grant_is_readable_now(): void
+    {
+        $this->journal->owner();
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+
+        $shares = $this->journal->fixtures(ShareFixtures::class)
+            ->grantForADay('Binder', TestActors::record('binders.binder', 1), $configuration)
+            ->activate('Binder');
+
+        $this->assertTrue($shares->shareCalled('Binder')->isReadableNow());
+    }
+
     public function test_every_grant_has_a_token_of_its_own(): void
     {
         $this->journal->owner();

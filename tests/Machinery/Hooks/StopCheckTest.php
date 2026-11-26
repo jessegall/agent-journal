@@ -155,7 +155,7 @@ final class StopCheckTest extends TestCase
                 'signal' => null,
                 'summary' => 'clean',
                 'output' => null,
-                'is_truncated' => false,
+                'truncated' => false,
             ]],
         ]);
 

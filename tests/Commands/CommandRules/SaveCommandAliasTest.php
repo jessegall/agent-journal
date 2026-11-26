@@ -59,7 +59,7 @@ final class SaveCommandAliasTest extends TestCase
             ->assertSuccessful();
         $this->artisan('processes:alias-save', [
             'name' => self::ALIAS,
-            'line' => 'composer test',
+            'line' => 'php artisan test --compact',
             '--project' => $shop->key,
         ])->assertSuccessful();
 

@@ -121,7 +121,7 @@ final class HomePageTest extends TestCase
     /**
      * The agent a send goes to and the session the sender saw it run.
      *
-     * @return array{agent: string, expectedSessionId: string, expectedGeneration: int}
+     * @return array{agent: string, expectedSessionId: string}
      */
     private function seenSession(): array
     {

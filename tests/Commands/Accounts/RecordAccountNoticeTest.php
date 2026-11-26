@@ -6,7 +6,6 @@ namespace Tests\Commands\Accounts;
 
 use App\Commands\Accounts\RecordAccountNotice\RecordAccountNoticeCommand;
 use App\Commands\Agents\StartAgent\StartAgentCommand;
-use App\Contracts\Actors\CurrentActorSetter;
 use App\Contracts\Bus\CommandBus;
 use App\Data\Accounts\AccountNoticesData;
 use App\Declarations\SlotContext;
@@ -20,9 +19,7 @@ use App\Exceptions\AccountUnavailable;
 use App\Http\Pages\Resolvers\AccountNoticesSection;
 use App\Models\Accounts\AccountNotice;
 use App\Models\Agents\Agent;
-use App\Support\ActorReference;
 use App\Support\JournalCommands;
-use App\Values\OwnerAuthority;
 use App\Values\StartPolicy;
 use App\Values\StartRequest;
 use Illuminate\Events\Dispatcher;
@@ -30,7 +27,6 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Entries\Attributes\TestsCommand;
-use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -74,10 +70,7 @@ final class RecordAccountNoticeTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
+        $this->journal->owner();
         $this->app->make(Dispatcher::class)->listen(AccountsChanged::class, function (AccountsChanged $changed): void {
             $this->changes[] = [$changed->driver, $changed->accountId];
         });
@@ -100,6 +93,8 @@ final class RecordAccountNoticeTest extends TestCase
     public function test_a_start_refused_for_want_of_an_account_leaves_one_counted_notice(): void
     {
         $agent = Agent::create('Waiting agent', 'read-only-helper', $this->localProject());
+        // A host that runs the driver is connected, so the start is refused only for want of an account.
+        $this->serveEveryCombination();
 
         $this->refusedStart($agent);
         $this->refusedStart($agent);
@@ -139,9 +134,6 @@ final class RecordAccountNoticeTest extends TestCase
 
     private function actAsOwner(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorReference::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
+        $this->journal->actAs('Owner');
     }
 }
