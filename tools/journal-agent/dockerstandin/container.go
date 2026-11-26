@@ -41,14 +41,17 @@ func (daemon *Daemon) run(container *Container) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	// Each start reads input of its own, as a real container's restarted process does.
+	reader, writer := io.Pipe()
 	container.mutex.Lock()
+	container.input, container.inputReader = writer, reader
 	container.running, container.started = true, true
 	container.cancel = cancel
 	container.exited = make(chan struct{})
 	container.mutex.Unlock()
 
 	go func() {
-		container.end(program(ctx, container, container.inputReader, containerOutput{container}))
+		container.end(program(ctx, container, reader, containerOutput{container}))
 	}()
 }
 
@@ -103,7 +106,10 @@ func (container *Container) end(code int) {
 	container.mutex.Unlock()
 
 	container.cancel()
-	_ = container.inputReader.Close()
+	container.mutex.Lock()
+	reader := container.inputReader
+	container.mutex.Unlock()
+	_ = reader.Close()
 	for _, connection := range attached {
 		_ = connection.Close()
 	}
@@ -189,14 +195,14 @@ func (container *Container) typeFrom(incoming io.Reader, connection net.Conn) {
 			container.mutex.Lock()
 			container.typed.Write(buffer[:count])
 			container.mutex.Unlock()
-			_, _ = container.input.Write(buffer[:count])
+			_, _ = container.currentInput().Write(buffer[:count])
 		}
 		if err != nil {
 			break
 		}
 	}
 	if !container.Config.Tty {
-		_ = container.input.Close()
+		_ = container.currentInput().Close()
 
 		return
 	}
@@ -331,4 +337,12 @@ func (container *Container) hasLabels(terms []string) bool {
 	}
 
 	return true
+}
+
+// currentInput is where what is typed goes: the input of the container's latest start.
+func (container *Container) currentInput() *io.PipeWriter {
+	container.mutex.Lock()
+	defer container.mutex.Unlock()
+
+	return container.input
 }

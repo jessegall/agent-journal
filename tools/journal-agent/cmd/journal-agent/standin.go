@@ -27,6 +27,7 @@ func standin(arguments []string) error {
 	flags := flag.NewFlagSet("standin docker", flag.ContinueOnError)
 	socket := flags.String("socket", "", "the Unix socket the daemon listens on")
 	image := flags.String("image", "", "an image the daemon holds, by digest")
+	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends")
 	if err := flags.Parse(arguments[1:]); err != nil {
 		return err
 	}
@@ -39,6 +40,9 @@ func standin(arguments []string) error {
 	defer daemon.Stop()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if *untilInputEnds {
+		stopWhenInputEnds(stop)
+	}
 	<-ctx.Done()
 	return nil
 }

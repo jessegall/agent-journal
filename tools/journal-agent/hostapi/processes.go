@@ -81,8 +81,11 @@ type keptContainer struct {
 
 // heldProcess is one process the host holds, contained or native.
 type heldProcess struct {
-	id         string
-	plan       OpenPlan
+	id   string
+	plan OpenPlan
+	// generation and identity change as the process is healed, while the inventory and the order that opened it read
+	// them, so they are read and written under their own lock.
+	stateMutex sync.Mutex
 	generation int
 	identity   string
 	terminal   host.TerminalStream
@@ -168,7 +171,7 @@ func (table *ProcessTable) Inventory() []InventoryProcess {
 		}
 		inventory = append(inventory, InventoryProcess{
 			ProcessID:      id,
-			Identity:       held.identity,
+			Identity:       held.currentIdentity(),
 			Container:      held.containerName(),
 			IsAlive:        alive,
 			IsTerminalHeld: held.terminal != nil,
@@ -236,7 +239,8 @@ func (table *ProcessTable) openContainer(ctx context.Context, order Order) (map[
 	}
 	table.keep(held)
 	go table.watchContainer(held)
-	return map[string]any{"identity": held.identity, "generation": held.generation}, nil
+	identity, generation := held.state()
+	return map[string]any{"identity": identity, "generation": generation}, nil
 }
 
 func (table *ProcessTable) startContainer(ctx context.Context, held *heldProcess) error {
@@ -268,11 +272,12 @@ func (table *ProcessTable) attachContainer(ctx context.Context, held *heldProces
 		return err
 	}
 	report := "running"
-	if held.generation > 0 {
+	identity, generation := held.state()
+	if generation > 0 {
 		report = "restarted"
 	}
 	table.saveKept()
-	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: held.identity, Generation: held.generation})
+	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: generation})
 }
 
 // reattach names the running container's instance and attaches to its terminal.
@@ -281,7 +286,7 @@ func (table *ProcessTable) reattach(ctx context.Context, held *heldProcess) erro
 	if err != nil {
 		return err
 	}
-	held.identity = identity
+	held.setIdentity(identity)
 	if held.plan.Container.IsAttachable {
 		terminal, err := table.containers.AttachTerminal(ctx, held.containerName(), held.plan.Size.Rows, held.plan.Size.Columns)
 		if err != nil {
@@ -308,7 +313,7 @@ func (table *ProcessTable) watchContainer(held *heldProcess) {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "exited", ExitCode: &code, Evidence: exit.Evidence()})
 			return
 		}
-		held.generation++
+		held.nextGeneration()
 		if err := table.containers.Start(ctx, held.containerName()); err != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: "the crashed container could not be started again: " + err.Error()})
 			return
@@ -337,7 +342,8 @@ func (table *ProcessTable) openProcess(_ context.Context, order Order) (map[stri
 	}
 	table.keep(held)
 	go table.watchNative(held)
-	return map[string]any{"identity": held.identity, "generation": held.generation}, nil
+	identity, generation := held.state()
+	return map[string]any{"identity": identity, "generation": generation}, nil
 }
 
 // startNative starts the process as a child of the host in its own process group, behind a terminal or pipes.
@@ -373,12 +379,13 @@ func (table *ProcessTable) startNative(held *heldProcess, argv []string) error {
 		go table.copyOutput(held.id, printed)
 	}
 	held.native = command
-	held.identity = fmt.Sprintf("pid:%d", command.Process.Pid)
+	held.setIdentity(fmt.Sprintf("pid:%d", command.Process.Pid))
 	report := "running"
-	if held.generation > 0 {
+	identity, generation := held.state()
+	if generation > 0 {
 		report = "restarted"
 	}
-	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: held.identity, Generation: held.generation})
+	return table.reports.Add(ProcessReport{ProcessID: held.id, Report: report, Identity: identity, Generation: generation})
 }
 
 func (table *ProcessTable) watchNative(held *heldProcess) {
@@ -391,7 +398,7 @@ func (table *ProcessTable) watchNative(held *heldProcess) {
 				Evidence: fmt.Sprintf("the process exited with %d", code)})
 			return
 		}
-		held.generation++
+		held.nextGeneration()
 		if startErr := table.startNative(held, held.plan.restartArgv()); startErr != nil {
 			table.end(held, ProcessReport{ProcessID: held.id, Report: "lost", Evidence: startErr.Error()})
 			return
@@ -513,15 +520,19 @@ func (table *ProcessTable) held(processID string) (*heldProcess, error) {
 }
 
 func (table *ProcessTable) end(held *heldProcess, report ProcessReport) {
-	report.Generation = held.generation
-	report.Identity = held.identity
+	report.Identity, report.Generation = held.state()
+	table.writeKept(held)
 	_ = table.reports.Add(report)
 	close(held.exited)
-	table.saveKept()
 }
 
 // saveKept writes the plans of the containers that still run, so a restart adopts exactly those.
 func (table *ProcessTable) saveKept() {
+	table.writeKept(nil)
+}
+
+// writeKept writes the plans of the containers that still run but the one ending, if any.
+func (table *ProcessTable) writeKept(ending *heldProcess) {
 	table.mutex.Lock()
 	kept := map[string]keptContainer{}
 	for id, held := range table.processes {
@@ -530,8 +541,9 @@ func (table *ProcessTable) saveKept() {
 			continue
 		default:
 		}
-		if held.plan.Container != nil {
-			kept[id] = keptContainer{Plan: held.plan, Generation: held.generation}
+		if held.plan.Container != nil && held != ending {
+			_, generation := held.state()
+			kept[id] = keptContainer{Plan: held.plan, Generation: generation}
 		}
 	}
 	table.mutex.Unlock()
@@ -571,6 +583,31 @@ func (table *ProcessTable) copyOutput(processID string, printed io.Reader) {
 			return
 		}
 	}
+}
+
+// state is the process's identity and generation as they are now.
+func (held *heldProcess) state() (string, int) {
+	held.stateMutex.Lock()
+	defer held.stateMutex.Unlock()
+	return held.identity, held.generation
+}
+
+func (held *heldProcess) currentIdentity() string {
+	identity, _ := held.state()
+	return identity
+}
+
+func (held *heldProcess) setIdentity(identity string) {
+	held.stateMutex.Lock()
+	defer held.stateMutex.Unlock()
+	held.identity = identity
+}
+
+// nextGeneration counts one more start of the healed process.
+func (held *heldProcess) nextGeneration() {
+	held.stateMutex.Lock()
+	defer held.stateMutex.Unlock()
+	held.generation++
 }
 
 // containerName is the name the host gives the container of a process: fixed by the process id, so a host that

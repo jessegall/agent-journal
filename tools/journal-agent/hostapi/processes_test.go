@@ -63,12 +63,44 @@ func standinTable(t *testing.T, daemon *dockerstandin.Daemon) (*ProcessTable, *s
 	if err != nil {
 		t.Fatal(err)
 	}
-	stopped := make(chan struct{})
-	t.Cleanup(func() { close(stopped) })
-	go queue.Run(stopped)
+	runQueue(t, queue)
 	state := t.TempDir()
 	outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
-	return OpenProcessTable(state, containers, queue, outputs), sent
+	table := OpenProcessTable(state, containers, queue, outputs)
+	t.Cleanup(func() { stopAndWait(daemon, table) })
+	return table, sent
+}
+
+// runQueue sends the queue's reports until the test ends, and the test waits for it to stop before its folders go.
+func runQueue(t *testing.T, queue *ReportQueue) {
+	t.Helper()
+	stopped, done := make(chan struct{}), make(chan struct{})
+	t.Cleanup(func() {
+		close(stopped)
+		<-done
+	})
+	go func() {
+		queue.Run(stopped)
+		close(done)
+	}()
+}
+
+// stopAndWait stops the daemon and waits for every process of the table to end, so nothing writes into the state
+// folder once the test removes it.
+func stopAndWait(daemon *dockerstandin.Daemon, table *ProcessTable) {
+	daemon.Stop()
+	table.mutex.Lock()
+	held := make([]*heldProcess, 0, len(table.processes))
+	for _, process := range table.processes {
+		held = append(held, process)
+	}
+	table.mutex.Unlock()
+	for _, process := range held {
+		select {
+		case <-process.exited:
+		case <-time.After(5 * time.Second):
+		}
+	}
 }
 
 func openOrder(t *testing.T, processID, restart, image string) Order {
@@ -152,9 +184,7 @@ func TestARunningContainerIsAdoptedAgainAfterTheHostRestarted(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		stopped := make(chan struct{})
-		t.Cleanup(func() { close(stopped) })
-		go queue.Run(stopped)
+		runQueue(t, queue)
 		outputs := NewOutputs(state, func(string, Output) error { return nil }, time.Now)
 		return OpenProcessTable(state, containers, queue, outputs), sent
 	}

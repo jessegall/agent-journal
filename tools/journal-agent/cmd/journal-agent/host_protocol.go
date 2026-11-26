@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"io"
 	"log"
 	"maps"
 	"os"
@@ -26,6 +27,7 @@ func protocolOnly(arguments []string) error {
 	flags := flag.NewFlagSet("protocol", flag.ContinueOnError)
 	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket the host opens containers through")
+	untilInputEnds := flags.Bool("until-input-ends", false, "stop once standard input ends, as when the process that started it died")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -35,6 +37,9 @@ func protocolOnly(arguments []string) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	if *untilInputEnds {
+		stopWhenInputEnds(stop)
+	}
 	containers := host.Containers{}
 	if *dockerSocket != "" {
 		containers, err = host.ContainersOn(*dockerSocket, host.ContainerRules{Arrangement: host.Local})
@@ -51,6 +56,15 @@ func protocolOnly(arguments []string) error {
 	}
 	<-ctx.Done()
 	return nil
+}
+
+// stopWhenInputEnds stops once standard input ends: a harness that started this keeps the pipe open, so this ends
+// with the harness even when it was killed and could stop nothing.
+func stopWhenInputEnds(stop func()) {
+	go func() {
+		_, _ = io.Copy(io.Discard, os.Stdin)
+		stop()
+	}()
 }
 
 // startHostProtocol runs host protocol 1 beside the older serving loop: process reports and output kept and sent,

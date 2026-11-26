@@ -8,6 +8,7 @@ use App\Support\EnrolledHost;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\Process\InputStream;
 
 /**
  * The real host binary, built from the checkout, run against the Docker stand-in daemon it carries and the test
@@ -33,6 +34,14 @@ final class RealHost
 
     private InvokedProcess|null $journal = null;
 
+    /**
+     * The open standard input of each host process this started: it ends when this test's process dies, and with it
+     * the host and the stand-in daemon, even when the test was killed before it could stop them.
+     *
+     * @var list<InputStream>
+     */
+    private array $inputs = [];
+
     private int $port = 0;
 
     private function __construct(
@@ -52,7 +61,8 @@ final class RealHost
         $real = new self($processes, $folder, $database);
         $real->port = self::freePort();
         $real->serveJournal();
-        $real->run([self::binary(), 'standin', 'docker', '--socket', "{$folder}/docker.sock", '--image', self::IMAGE]);
+        $socket = "{$folder}/docker.sock";
+        $real->run([self::binary(), 'standin', 'docker', '--socket', $socket, '--image', self::IMAGE, '--until-input-ends']);
         file_put_contents("{$folder}/secret", $host->secret);
         $enrolled = $processes->run([
             self::binary(), 'enroll', '--journal', "http://127.0.0.1:{$real->port}", '--host', $host->hostId,
@@ -206,6 +216,14 @@ final class RealHost
         }
     }
 
+    private function untilKilled(): InputStream
+    {
+        $input = new InputStream();
+        $this->inputs[] = $input;
+
+        return $input;
+    }
+
     private function serveJournal(): void
     {
         $command = ['php', '-S', "127.0.0.1:{$this->port}", '-t', base_path('public'), base_path('public/index.php')];
@@ -218,8 +236,9 @@ final class RealHost
     private function startHost(): void
     {
         $state = "{$this->folder}/state";
-        $command = [self::binary(), 'protocol', '--state', $state, '--docker', "unix://{$this->folder}/docker.sock"];
-        $this->host = $this->processes->env(getenv())->forever()->start($command);
+        $docker = "unix://{$this->folder}/docker.sock";
+        $command = [self::binary(), 'protocol', '--state', $state, '--docker', $docker, '--until-input-ends'];
+        $this->host = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }
 
@@ -228,7 +247,7 @@ final class RealHost
      */
     private function run(array $command): void
     {
-        $this->running[] = $this->processes->env(getenv())->forever()->start($command);
+        $this->running[] = $this->processes->env(getenv())->forever()->input($this->untilKilled())->start($command);
         usleep(200_000);
     }
 
