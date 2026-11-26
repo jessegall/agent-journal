@@ -26,12 +26,15 @@ use App\Events\Sessions\AgentRuntimeStarted;
 use App\Events\Sessions\AgentRuntimeStartGrantClaimed;
 use App\Events\Sessions\AgentRuntimeStartGrantHeld;
 use App\Events\Sessions\AgentRuntimeStopRequested;
+use App\Exceptions\CredentialRejected;
 use App\Models\Drivers\DriverRequest;
 use App\Models\Drivers\TerminalView;
 use App\Models\Hosts\HostProcess;
 use App\Models\Projects\Host;
 use App\Models\Support\JournalModel;
+use App\Support\AgentClientSettings;
 use App\Support\RuntimeStatuses;
+use App\Support\StartProfilePin;
 use App\Values\PinnedDriver;
 use App\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
@@ -241,6 +244,22 @@ final class AgentRuntime extends JournalModel implements EventSource, ReadableMo
         $this->start_grant = $token;
         $this->assertSaved($this->save());
         $this->raise(new AgentRuntimeStartGrantHeld($this->id));
+    }
+
+    /**
+     * The start's credentials, for the process the journal orders opened for this runtime under host protocol 1: the
+     * token the journal minted at the start, handed over once, with the URL the process reaches the journal at and
+     * the profile the session was pinned to.
+     *
+     * @throws CredentialRejected
+     */
+    public function handOverStartCredentials(string $journalUrl): AgentClientSettings
+    {
+        $token = $this->claimStartGrant() ?? throw CredentialRejected::unknown();
+        $session = $this->session()->sole();
+        $profile = new StartProfilePin($session->profile_key, $session->profile_revision);
+
+        return new AgentClientSettings($journalUrl, $token, $profile);
     }
 
     /**

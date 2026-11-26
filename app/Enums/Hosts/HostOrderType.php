@@ -61,6 +61,17 @@ enum HostOrderType: string
     }
 
     /**
+     * Whether this order opens a process, so its payload carries the process's environment.
+     */
+    public function isOpening(): bool
+    {
+        return match ($this) {
+            self::OpenProcess, self::OpenContainer => true,
+            default => false,
+        };
+    }
+
+    /**
      * Whether this order can be carried out on a process of that type: keys and screens need a terminal, standard
      * input needs pipes.
      */

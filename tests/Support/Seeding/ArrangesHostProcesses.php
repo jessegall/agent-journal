@@ -17,6 +17,7 @@ use App\Enums\Hosts\HostProcessReportType;
 use App\Enums\Hosts\HostProcessStatus;
 use App\Enums\Hosts\HostProcessType;
 use App\Enums\Hosts\RestartPolicy;
+use App\Models\Agents\AgentRuntime;
 use App\Models\Hosts\HostOrder;
 use App\Models\Hosts\HostProcess;
 use App\Support\ContainerManifest;
@@ -72,9 +73,7 @@ trait ArrangesHostProcesses
             [],
             base_path(),
         );
-        $this->hostProcesses[$name] = $this->asSystem(
-            new OpenHostProcessCommand($this->hostCalled($host)->hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
-        );
+        $this->openPlanned($host, $name, $runtimeId, $plan);
 
         return $this;
     }
@@ -226,9 +225,30 @@ trait ArrangesHostProcesses
                 true,
             ),
         );
-        $this->hostProcesses[$name] = $this->asSystem(
-            new OpenHostProcessCommand($this->hostCalled($host)->hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
+        $this->openPlanned($host, $name, $runtimeId, $plan);
+
+        return $this;
+    }
+
+    /**
+     * Opens a local process of pipes on the named host, which must run for real, with the argv and the start
+     * credentials of the runtime, handed over as the journal hands them to a process it orders opened.
+     *
+     * @param  list<string>  $argv
+     */
+    public function openWithStartCredentials(string $host, string $name, string $runtimeId, array $argv): self
+    {
+        $runtime = AgentRuntime::query()->whereKey($runtimeId)->sole();
+        $credentials = $runtime->handOverStartCredentials($this->realHostJournalUrl());
+        $plan = new HostProcessPlan(
+            HostProcessPurpose::Probe,
+            HostProcessType::Pipe,
+            RestartPolicy::Never,
+            $argv,
+            $credentials->environment(),
+            base_path(),
         );
+        $this->openPlanned($host, $name, $runtimeId, $plan);
 
         return $this;
     }
@@ -259,8 +279,12 @@ trait ArrangesHostProcesses
      *
      * @param  Closure(): bool  $until
      */
-    public function driveHostProcess(string $name, Closure $until, DriverWork|null $work = null, int $seconds = 10): DriverWork
-    {
+    public function driveHostProcess(
+        string $name,
+        Closure $until,
+        DriverWork|null $work = null,
+        int $seconds = 10,
+    ): DriverWork {
         $workers = $this->app->make(DriverWorkers::class);
         $work ??= $workers->begin($this->hostProcessCalled($name)->id);
         $deadline = microtime(true) + $seconds;
@@ -288,6 +312,21 @@ trait ArrangesHostProcesses
         Assert::assertSame($status, $this->hostProcessCalled($name)->status);
 
         return $this;
+    }
+
+    private function realHostJournalUrl(): string
+    {
+        $realHost = $this->realHost ?? throw FixtureRefused::missingAlias('real host', 'running', self::OWNER);
+
+        return $realHost->journalUrl();
+    }
+
+    private function openPlanned(string $host, string $name, string|null $runtimeId, HostProcessPlan $plan): void
+    {
+        $hostId = $this->hostCalled($host)->hostId;
+        $this->hostProcesses[$name] = $this->asSystem(
+            new OpenHostProcessCommand($hostId, $runtimeId, $plan, HostOrderSource::fromJournal()),
+        );
     }
 
     private function realHostFolder(): string

@@ -128,7 +128,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
         }
 
         $this->assertOpen();
-        $this->forgetTypedBytes();
+        $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Done;
         $this->answer = $answer->facts;
         $this->answered_at = $at;
@@ -144,7 +144,7 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     public function refuse(HostRefusal $refusal, array $facts, CarbonImmutable $at): void
     {
         $this->assertOpen();
-        $this->forgetTypedBytes();
+        $this->forgetCarriedSecrets();
         $this->status = HostOrderStatus::Refused;
         $this->refusal = $refusal;
         $this->answer = $facts;
@@ -162,13 +162,17 @@ final class HostOrder extends JournalModel implements EventSource, ReadableModel
     }
 
     /**
-     * An input order's bytes are needed only until the host answers it: then they are erased, so typed keys are kept
-     * no longer than they travel.
+     * An input order's bytes and an open order's environment, which holds the start's credentials, are needed only
+     * until the host answers it: then they are erased, so neither is kept longer than it travels.
      */
-    private function forgetTypedBytes(): void
+    private function forgetCarriedSecrets(): void
     {
         if ($this->type->isInput()) {
             $this->payload = [];
+        }
+
+        if ($this->type->isOpening()) {
+            $this->payload = [...$this->payload, 'environment' => []];
         }
     }
 

@@ -99,6 +99,14 @@ final class RealHost
     }
 
     /**
+     * The address the host, and every process it opens, reaches the journal at.
+     */
+    public function journalUrl(): string
+    {
+        return "http://127.0.0.1:{$this->port}";
+    }
+
+    /**
      * Stops the host binary and starts it again; the stand-in daemon and its containers run on.
      */
     public function restartHost(): void
@@ -151,7 +159,8 @@ final class RealHost
 
     private function startHost(): void
     {
-        $command = [self::binary(), 'protocol', '--state', "{$this->folder}/state", '--docker', "unix://{$this->folder}/docker.sock"];
+        $state = "{$this->folder}/state";
+        $command = [self::binary(), 'protocol', '--state', $state, '--docker', "unix://{$this->folder}/docker.sock"];
         $this->host = $this->processes->env(getenv())->forever()->start($command);
         usleep(200_000);
     }

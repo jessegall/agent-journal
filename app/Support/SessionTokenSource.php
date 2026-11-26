@@ -29,8 +29,8 @@ final readonly class SessionTokenSource implements SessionTokenSourceContract
      */
     public function forThisStart(): AgentClientSettings
     {
-        $journalUrl = rtrim($this->usable('JOURNAL_URL'), '/');
-        $token = $this->usable('JOURNAL_START_TOKEN');
+        $journalUrl = rtrim($this->usable(AgentClientSettings::JOURNAL_URL), '/');
+        $token = $this->usable(AgentClientSettings::START_TOKEN);
 
         if (parse_url($journalUrl, PHP_URL_SCHEME) !== 'https'
             && ! in_array(parse_url($journalUrl, PHP_URL_HOST), self::LOOPBACK_HOSTS, true)) {
@@ -48,11 +48,11 @@ final readonly class SessionTokenSource implements SessionTokenSourceContract
      */
     private function profile(): StartProfilePin
     {
-        $key = $this->usable('JOURNAL_PROFILE');
-        $revision = $this->usable('JOURNAL_PROFILE_REVISION');
+        $key = $this->usable(AgentClientSettings::PROFILE);
+        $revision = $this->usable(AgentClientSettings::PROFILE_REVISION);
 
         if (preg_match('/^[1-9][0-9]{0,8}$/', $revision) !== 1) {
-            throw SessionTokenRefused::placeholder('JOURNAL_PROFILE_REVISION');
+            throw SessionTokenRefused::placeholder(AgentClientSettings::PROFILE_REVISION);
         }
 
         return new StartProfilePin($key, (int) $revision);
