@@ -201,7 +201,10 @@ abstract class RouteEntryTestCase extends TestCase
         $matched = $this->app->make(Router::class)->getRoutes()->match($request);
         $this->assertSame($this->entry()->name, $matched->getName(), "{$call->recordedAddress} is not this route.");
 
-        return [$matched->parameters(), $request->query->all()];
+        // The address's own parameters only: a route's defaults, such as its declaration, are not part of it.
+        $parameters = array_intersect_key($matched->parameters(), array_flip($matched->parameterNames()));
+
+        return [$parameters, $request->query->all()];
     }
 
     private function startOf(RouteCall $call): TestStart|string
