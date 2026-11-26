@@ -87,3 +87,10 @@ secrets/*
 /_ide_helper_models.php
 /.phpstorm.meta.php
 /_ide_helper_scopes.php
+
+# What the app and the tools write at run time; only the folder skeleton, kept by its .gitignore files, is tracked
+/storage/*
+!/storage/app/
+!/storage/framework/
+!/storage/logs/
+/storage/framework/*.txt

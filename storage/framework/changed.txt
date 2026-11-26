@@ -346,7 +346,7 @@ tests/Fixtures/Hooks/WorkStates/SilentWork.php
 tests/Fixtures/Modules/Notes/src/WatchingNoteState.php
 tests/Fixtures/Modules/Notes/src/WatchingNoteStateFactory.php
 tests/Fixtures/Modules/Notes/src/WritingNoteState.php
-tests/Fixtures/UiDeclarations/StubDraftProducer.php
+tests/Fixtures/ClientDeclarations/StubDraftProducer.php
 tests/Support/CommittedHookStack.php
 tests/Support/MessagingTestCase.php
 tests/Support/OpensPairChats.php
