@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Sharing\Tests\Commands;
 
 use App\Support\ActorReference;
-use App\Support\AuditPruning;
 use App\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\PruneShareAudit\PruneShareAuditCommand;
@@ -14,6 +13,7 @@ use Domain\Sharing\Enums\ShareStatus;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
 use Domain\Sharing\Models\ShareGatewayConfiguration;
+use Domain\Sharing\Support\AuditPruning;
 use Domain\Sharing\Tests\Fixtures\ShareFixtures;
 use Domain\Sharing\Tests\Support\FakeShareGateway;
 use Domain\Sharing\Tests\TestCase;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Domain\Sharing\Support;
 
 /**
  * What one PruneShareAudit run did: how many audit rows past their retention it removed, and whether more wait.

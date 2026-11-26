@@ -39,6 +39,6 @@ fenced by its run and lease. A stale or expired claim cannot activate anything.
 
 ## Visitor addresses
 
-`App\Support\SourceAddressRule` says how a gateway's forwarded requests name a visitor: `none()` ignores
+`Domain\Sharing\Support\SourceAddressRule` says how a gateway's forwarded requests name a visitor: `none()` ignores
 forwarded headers, and `forHeader($name)` trusts one header only after a fixture proves the gateway overwrites it.
 Every gateway uses `none()` today, so only the per-share and overall limits apply.

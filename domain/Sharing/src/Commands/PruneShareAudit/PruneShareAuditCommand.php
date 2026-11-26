@@ -6,8 +6,8 @@ namespace Domain\Sharing\Commands\PruneShareAudit;
 
 use App\Accounts\Enums\CommandEntry;
 use App\Attributes\Commands\Entry;
-use App\Support\AuditPruning;
 use App\Support\Command;
+use Domain\Sharing\Support\AuditPruning;
 
 /**
  * The sharing supervisor removes, oldest first, at most 100 audit rows past their retention (a public read after 30

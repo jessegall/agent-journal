@@ -103,9 +103,9 @@ final class MorphKeyScan
             }
         }
 
-        foreach ($class->getMethod('__construct')?->params ?? [] as $parameter) {
-            if (self::isMarked($parameter) && $parameter->var instanceof Variable) {
-                $names[] = (string) $parameter->var->name;
+        foreach ($class->getMethod('__construct')->params ?? [] as $parameter) {
+            if (self::isMarked($parameter) && $parameter->var instanceof Variable && is_string($parameter->var->name)) {
+                $names[] = $parameter->var->name;
             }
         }
 

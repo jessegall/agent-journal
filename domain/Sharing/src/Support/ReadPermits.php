@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Sharing\Support;
 
 use App\Exceptions\ReadPermitMissing;
-use App\Support\ReadPermit;
 use App\Support\Registry;
 use Domain\Sharing\Exceptions\ShareLinkRefused;
 use Domain\Sharing\Models\Share;

@@ -16,7 +16,6 @@ use App\Support\ActorReference;
 use App\Terminals\Commands\CloseTerminalView\CloseTerminalViewCommand;
 use App\Terminals\Commands\OpenTerminalView\OpenTerminalViewCommand;
 use App\Terminals\Exceptions\TerminalViewRefused;
-use App\Terminals\WatchedRuntimes;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\Entries\Attributes\TestsCommand;
@@ -44,12 +43,10 @@ final class OpenTerminalViewTest extends TestCase
         $this->journal->owner();
     }
 
-    public function test_a_good_open_makes_one_live_view_of_the_viewer_and_changes_the_hosts_version(): void
+    public function test_a_good_open_makes_one_live_view_of_the_viewer(): void
     {
         $this->freezeTime();
         $runtime = $this->runtimeOn('host-1');
-        $watched = $this->app->make(WatchedRuntimes::class);
-        $this->assertSame(0, $watched->version('host-1'));
 
         $receipt = $this->asOwner($this->open($runtime, 1000));
 
@@ -63,7 +60,6 @@ final class OpenTerminalViewTest extends TestCase
             $receipt->isLive,
         ]);
         $this->assertTrue($view->isLive());
-        $this->assertNotSame(0, $watched->version('host-1'));
     }
 
     public function test_a_process_driver_agent_is_refused_and_no_view_is_made(): void

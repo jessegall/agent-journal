@@ -6,8 +6,8 @@ namespace Domain\Sharing\Support\Gateways;
 
 use App\Sharing\GatewayEndpoint;
 use App\Sharing\GatewayHealth;
-use App\Support\ProbeChallenges;
-use App\Support\PublicAddresses;
+use Domain\Sharing\Support\ProbeChallenges;
+use Domain\Sharing\Support\PublicAddresses;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpClient;
 

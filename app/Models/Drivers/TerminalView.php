@@ -201,22 +201,6 @@ final class TerminalView extends JournalModel implements EventSource, ReadableMo
     }
 
     /**
-     * One row per runtime of the host with a view not ended, carrying the shortest interval its views ask for.
-     *
-     * @param  Builder<static>  $query
-     */
-    #[Scope]
-    protected function watchedOnHost(Builder $query, string $hostId): void
-    {
-        $query->whereNull('closed_at')
-            ->whereHas('runtime', fn (Builder $runtime) => $runtime->where('host_id', $hostId))
-            ->select('agent_runtime_id')
-            ->selectRaw('min(interval_ms) as interval_ms')
-            ->groupBy('agent_runtime_id')
-            ->orderBy('agent_runtime_id');
-    }
-
-    /**
      * Views of any runtime of the agent.
      *
      * @param  Builder<static>  $query

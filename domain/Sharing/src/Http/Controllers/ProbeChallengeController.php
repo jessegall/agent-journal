@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sharing\Http\Controllers;
 
-use App\Support\ProbeChallenges;
 use Domain\Sharing\Http\Responses\SharedPageResponses;
+use Domain\Sharing\Support\ProbeChallenges;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 

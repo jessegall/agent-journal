@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Domain\Sharing\Support;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Attributes\Config;

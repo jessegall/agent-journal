@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Sharing\Commands\PruneShareAudit;
 
 use App\Support\ActorReference;
-use App\Support\AuditPruning;
 use Carbon\CarbonImmutable;
 use Domain\Sharing\Commands\Support\SharingCommandHandler;
 use Domain\Sharing\Enums\ShareAuditType;
 use Domain\Sharing\Models\Share;
 use Domain\Sharing\Models\ShareAudit;
+use Domain\Sharing\Support\AuditPruning;
 
 /**
  * Locks the shares of the rows past retention by id, adds each share's removed reads, denials and life steps to its

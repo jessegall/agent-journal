@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
+namespace Domain\Sharing\Support;
 
 /**
  * Whether a host name resolves only to public addresses, so a probe never reaches a private or reserved network.

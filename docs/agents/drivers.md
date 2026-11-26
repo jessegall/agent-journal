@@ -50,9 +50,6 @@ still be watched.
 - The browser renews its view every 10 seconds, and a view lapses 30 seconds after its last renewal. Each engine pass
   (`app/Terminals/Commands/EndTerminalViews/EndTerminalViewsCommand.php`) ends lapsed views and views of stopped runtimes, and deletes views
   that ended a day ago.
-- The claim answer carries `watched: [{runtime_id, interval_ms}]` and `watched_version`, a hash of that list (0 when
-  nobody watches); the host sends the last version it saw, and a claim returns at once when the version differs
-  (`app/Terminals/WatchedRuntimes.php`).
 - The host's watcher (`tools/journal-agent/host/screen_watch.go`) captures each watched runtime at its interval
   (500 ms or 1 s), sends a frame only when the screen changed or 10 seconds passed, and sends nothing for a runtime
   nobody watches. A frame is the whole screen as styled runs (`tools/journal-agent/screen/frame.go`); over 256 KiB it

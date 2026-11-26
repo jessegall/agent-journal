@@ -7,15 +7,15 @@ namespace Domain\Sharing\Http\Controllers;
 use App\Accounts\Enums\CommandEntry;
 use App\Bus\Attributes\Dispatches;
 use App\Bus\JournalCommands;
-use App\Support\ReadPermit;
-use App\Support\SourceAddressRule;
 use Domain\Sharing\Commands\ReadShare\ReadShareCommand;
 use Domain\Sharing\Exceptions\ShareLinkRefused;
 use Domain\Sharing\Exceptions\ShareReadLimited;
 use Domain\Sharing\Http\Requests\ReadShareRequest;
 use Domain\Sharing\Http\Responses\SharedPageResponses;
+use Domain\Sharing\Support\ReadPermit;
 use Domain\Sharing\Support\ReadPermits;
 use Domain\Sharing\Support\ShareReadLimits;
+use Domain\Sharing\Support\SourceAddressRule;
 use Illuminate\Http\Response;
 
 /**

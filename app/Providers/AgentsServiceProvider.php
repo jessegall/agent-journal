@@ -143,8 +143,7 @@ use PhpOption\Some;
 /**
  * Gives each request its own agent context, which only the agent middleware fills; without it, asking for one fails.
  * A start runs in a plain transaction until another domain supplies a bounded one. Agents are registered as holders
- * of
- * assigned work, and their present sessions are counted for ActiveActorsResolver.
+ * of assigned work.
  */
 final class AgentsServiceProvider extends ServiceProvider
 {
